@@ -37,9 +37,11 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     return;
                 },
                 result = ensure_chapter_is_in_storage(
+                    db,
                     chapter_storage,
                     source,
                     &information.id,
+                    information.title.as_deref().unwrap_or("Unknown"),
                     information.chapter_number.and_then(|number| number.to_f64())
                 ) => result
             };

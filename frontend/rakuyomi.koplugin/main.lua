@@ -3,6 +3,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local FileManager = require("apps/filemanager/filemanager")
 local UIManager = require("ui/uimanager")
+local Dispatcher = require("dispatcher")
 local logger = require("logger")
 local _ = require("gettext")
 local OfflineAlertDialog = require("OfflineAlertDialog")
@@ -31,8 +32,30 @@ function Rakuyomi:init()
     self.ui.menu:registerToMainMenu(self)
   end
 
+  
+  Dispatcher:registerAction("start_library_view", {
+    category = "none", 
+    event = "StartLibraryView", 
+    title = _("Rakuyomi"),
+    general = true
+  })
+
   Testing:init()
   Testing:emitEvent('initialized')
+end
+
+function Rakuyomi:onStartLibraryView()
+  if self.ui.name == "ReaderUI" then
+    MangaReader:initializeFromReaderUI(self.ui)
+  else
+    if not backendInitialized then
+      self:showErrorDialog()
+
+      return
+    end
+
+    self:openLibraryView()
+  end
 end
 
 function Rakuyomi:addToMainMenu(menu_items)

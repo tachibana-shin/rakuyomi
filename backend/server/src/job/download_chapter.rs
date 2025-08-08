@@ -6,7 +6,7 @@ use shared::{
 };
 use tokio::sync::Mutex;
 
-use crate::{AppError, ErrorResponse};
+use crate::{AppError, ErrorResponse, database::Database};
 
 use super::state::{Job, JobState};
 

@@ -147,7 +147,7 @@ async fn get_cached_manga_chapters(
     let chapters =
         usecases::get_cached_manga_chapters(&database, chapter_storage, manga_id).await?;
 
-    let chapters = chapters.into_iter().map(Chapter::from).collect();
+    let chapters: Vec<Chapter> = chapters.into_iter().map(Chapter::from).collect();
 
     Ok(Json(chapters))
 }
@@ -173,6 +173,7 @@ struct DownloadMangaChapterParams {
 #[derive(Deserialize)]
 struct DownloadMangaChapterQuery {
     chapter_num: Option<f64>,
+    chapter_title: String
 }
 
 impl From<DownloadMangaChapterParams> for ChapterId {
@@ -183,16 +184,17 @@ impl From<DownloadMangaChapterParams> for ChapterId {
 
 async fn download_manga_chapter(
     StateExtractor(State {
+        database,
         chapter_storage, ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
-    Query(DownloadMangaChapterQuery { chapter_num }): Query<DownloadMangaChapterQuery>,
+    Query(DownloadMangaChapterQuery { chapter_num , chapter_title}): Query<DownloadMangaChapterQuery>,
 ) -> Result<Json<String>, AppError> {
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
     let output_path =
-        usecases::fetch_manga_chapter(&source, chapter_storage, &chapter_id, chapter_num)
+        usecases::fetch_manga_chapter(&source, &database, chapter_storage, &chapter_id, &chapter_title, chapter_num)
             .await
             .map_err(AppError::from_fetch_manga_chapters_error)?;
 

@@ -44,6 +44,7 @@ struct CreateDownloadChapterJobBody {
     source_id: String,
     manga_id: String,
     chapter_id: String,
+    chapter_title: String,
     chapter_num: Option<f64>,
 }
 
@@ -57,6 +58,7 @@ async fn create_download_chapter_job(
     StateExtractor(AppState {
         source_manager,
         chapter_storage,
+        database,
         ..
     }): StateExtractor<AppState>,
     StateExtractor(State { job_registry }): StateExtractor<State>,
@@ -65,8 +67,14 @@ async fn create_download_chapter_job(
     let id = Uuid::new_v4();
     let chapter_num = body.chapter_num;
     let chapter_storage = chapter_storage.lock().await.clone();
-    let job =
-        DownloadChapterJob::spawn_new(source_manager, chapter_storage, body.into(), chapter_num);
+    let job = DownloadChapterJob::spawn_new(
+        source_manager,
+        &database,
+        chapter_storage,
+        body.into(),
+        &body.chapter_title,
+        chapter_num,
+    );
 
     job_registry
         .lock()

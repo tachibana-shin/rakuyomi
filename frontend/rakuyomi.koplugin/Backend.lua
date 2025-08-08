@@ -158,6 +158,7 @@ end
 
 --- @class Chapter
 --- @field id string The ID of this chapter.
+--- @field title string The title of this chapter.
 --- @field source_id string The ID of the source for this chapter.
 --- @field manga_id string The ID of the manga that this chapter belongs to.
 --- @field scanlator string? The scanlation group that worked on this chapter.
@@ -257,8 +258,10 @@ end
 
 --- Downloads the given chapter to the storage.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
+function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_title, chapter_num)
   local query_params = {}
+
+  query_params.chapter_title = chapter_title
 
   if chapter_num ~= nil then
     query_params.chapter_num = chapter_num
@@ -392,7 +395,7 @@ end
 
 --- Creates a new download chapter job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num)
+function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_title, chapter_num)
   return Backend.requestJson({
     path = "/jobs/download-chapter",
     method = 'POST',
@@ -400,6 +403,7 @@ function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapt
       source_id = source_id,
       manga_id = manga_id,
       chapter_id = chapter_id,
+      chapter_title = chapter_title,
       chapter_num = chapter_num,
     }
   })

@@ -337,7 +337,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     -- If the download job we have is already invalid (internet problems, for example),
     -- spawn a new job before proceeding.
     if download_job == nil or download_job:poll().type == 'ERROR' then
-      download_job = DownloadChapter:new(chapter.source_id, chapter.manga_id, chapter.id, chapter.chapter_num)
+      download_job = DownloadChapter:new(chapter.source_id, chapter.manga_id, chapter.id, chapter.title, chapter.chapter_num)
     end
 
     if download_job == nil then
@@ -376,6 +376,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
         nextChapter.source_id,
         nextChapter.manga_id,
         nextChapter.id,
+        nextChapter.title,
         nextChapter.chapter_num
       )
     end

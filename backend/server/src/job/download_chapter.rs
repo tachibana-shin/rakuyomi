@@ -16,8 +16,10 @@ pub struct DownloadChapterJob(Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>>
 impl DownloadChapterJob {
     pub fn spawn_new(
         source_manager: Arc<Mutex<SourceManager>>,
+        database: Database,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
+        chapter_title: &str,
         chapter_num: Option<f64>,
     ) -> Self {
         let output: Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>> = Default::default();
@@ -25,7 +27,7 @@ impl DownloadChapterJob {
 
         tokio::spawn(async move {
             *output_clone.lock().await =
-                Some(Self::do_job(source_manager, chapter_storage, chapter_id, chapter_num).await);
+                Some(Self::do_job(source_manager, database, chapter_storage, chapter_id, chapter_title, chapter_num).await);
         });
 
         Self(output)
@@ -33,8 +35,10 @@ impl DownloadChapterJob {
 
     async fn do_job(
         source_manager: Arc<Mutex<SourceManager>>,
+        database: Database,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
+        chapter_title: &str,
         chapter_num: Option<f64>,
     ) -> Result<PathBuf, ErrorResponse> {
         let source_manager = source_manager.lock().await;
@@ -43,7 +47,7 @@ impl DownloadChapterJob {
             .ok_or(AppError::SourceNotFound)?;
 
         Ok(
-            usecases::fetch_manga_chapter(source, &chapter_storage, &chapter_id, chapter_num)
+            usecases::fetch_manga_chapter(source, &database, &chapter_storage, &chapter_id, &chapter_title, chapter_num)
                 .await
                 .map_err(AppError::from)?,
         )

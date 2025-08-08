@@ -3,10 +3,11 @@ use std::{path::PathBuf, sync::Arc};
 use shared::{
     chapter_storage::ChapterStorage, model::ChapterId, source_collection::SourceCollection,
     source_manager::SourceManager, usecases,
+    database::Database
 };
 use tokio::sync::Mutex;
 
-use crate::{AppError, ErrorResponse, database::Database};
+use crate::{AppError, ErrorResponse};
 
 use super::state::{Job, JobState};
 
@@ -16,10 +17,10 @@ pub struct DownloadChapterJob(Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>>
 impl DownloadChapterJob {
     pub fn spawn_new(
         source_manager: Arc<Mutex<SourceManager>>,
-        database: Database,
+        database: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
-        chapter_title: &str,
+        chapter_title: String,
         chapter_num: Option<f64>,
     ) -> Self {
         let output: Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>> = Default::default();
@@ -27,7 +28,7 @@ impl DownloadChapterJob {
 
         tokio::spawn(async move {
             *output_clone.lock().await =
-                Some(Self::do_job(source_manager, database, chapter_storage, chapter_id, chapter_title, chapter_num).await);
+                Some(Self::do_job(source_manager, database, chapter_storage, chapter_id, &chapter_title, chapter_num).await);
         });
 
         Self(output)
@@ -35,7 +36,7 @@ impl DownloadChapterJob {
 
     async fn do_job(
         source_manager: Arc<Mutex<SourceManager>>,
-        database: Database,
+        database: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         chapter_title: &str,

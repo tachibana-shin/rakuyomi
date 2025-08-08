@@ -1,5 +1,4 @@
 use axum::{
-    async_trait,
     extract::{FromRequestParts, Path},
     http::request::Parts,
 };
@@ -15,7 +14,6 @@ pub struct SourceParams {
     pub source_id: String,
 }
 
-#[async_trait]
 impl FromRequestParts<State> for SourceExtractor {
     type Rejection = AppError;
 

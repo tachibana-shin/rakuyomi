@@ -66,13 +66,15 @@ async fn create_download_chapter_job(
 ) -> Result<Json<Uuid>, AppError> {
     let id = Uuid::new_v4();
     let chapter_num = body.chapter_num;
+    let chapter_title = body.chapter_title.clone();
+
     let chapter_storage = chapter_storage.lock().await.clone();
     let job = DownloadChapterJob::spawn_new(
         source_manager,
-        &database,
+        database,
         chapter_storage,
         body.into(),
-        &body.chapter_title,
+        chapter_title,
         chapter_num,
     );
 

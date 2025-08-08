@@ -45,7 +45,7 @@ pub async fn ensure_chapter_is_in_storage(
     if pages.is_empty() {
         return Err(Error::DownloadError(anyhow!(
             "No pages found for chapter {}",
-            chapter_id.value()
+            chapter.id.value()
         )));
     }
 

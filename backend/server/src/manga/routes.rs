@@ -173,7 +173,7 @@ struct DownloadMangaChapterParams {
 #[derive(Deserialize)]
 struct DownloadMangaChapterQuery {
     chapter_num: Option<f64>,
-    chapter_title: String
+    chapter_title: String,
 }
 
 impl From<DownloadMangaChapterParams> for ChapterId {
@@ -185,18 +185,28 @@ impl From<DownloadMangaChapterParams> for ChapterId {
 async fn download_manga_chapter(
     StateExtractor(State {
         database,
-        chapter_storage, ..
+        chapter_storage,
+        ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
-    Query(DownloadMangaChapterQuery { chapter_num , chapter_title}): Query<DownloadMangaChapterQuery>,
+    Query(DownloadMangaChapterQuery {
+        chapter_num,
+        chapter_title,
+    }): Query<DownloadMangaChapterQuery>,
 ) -> Result<Json<String>, AppError> {
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
-    let output_path =
-        usecases::fetch_manga_chapter(&source, &database, chapter_storage, &chapter_id, &chapter_title, chapter_num)
-            .await
-            .map_err(AppError::from_fetch_manga_chapters_error)?;
+    let output_path = usecases::fetch_manga_chapter(
+        &source,
+        &database,
+        chapter_storage,
+        &chapter_id,
+        &chapter_title,
+        chapter_num,
+    )
+    .await
+    .map_err(AppError::from_fetch_manga_chapters_error)?;
 
     Ok(Json(output_path.to_string_lossy().into()))
 }

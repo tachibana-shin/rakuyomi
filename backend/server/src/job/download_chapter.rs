@@ -1,9 +1,8 @@
 use std::{path::PathBuf, sync::Arc};
 
 use shared::{
-    chapter_storage::ChapterStorage, model::ChapterId, source_collection::SourceCollection,
-    source_manager::SourceManager, usecases,
-    database::Database
+    chapter_storage::ChapterStorage, database::Database, model::ChapterId,
+    source_collection::SourceCollection, source_manager::SourceManager, usecases,
 };
 use tokio::sync::Mutex;
 
@@ -27,8 +26,17 @@ impl DownloadChapterJob {
         let output_clone = output.clone();
 
         tokio::spawn(async move {
-            *output_clone.lock().await =
-                Some(Self::do_job(source_manager, database, chapter_storage, chapter_id, &chapter_title, chapter_num).await);
+            *output_clone.lock().await = Some(
+                Self::do_job(
+                    source_manager,
+                    database,
+                    chapter_storage,
+                    chapter_id,
+                    &chapter_title,
+                    chapter_num,
+                )
+                .await,
+            );
         });
 
         Self(output)
@@ -47,11 +55,16 @@ impl DownloadChapterJob {
             .get_by_id(chapter_id.source_id())
             .ok_or(AppError::SourceNotFound)?;
 
-        Ok(
-            usecases::fetch_manga_chapter(source, &database, &chapter_storage, &chapter_id, &chapter_title, chapter_num)
-                .await
-                .map_err(AppError::from)?,
+        Ok(usecases::fetch_manga_chapter(
+            source,
+            &database,
+            &chapter_storage,
+            &chapter_id,
+            &chapter_title,
+            chapter_num,
         )
+        .await
+        .map_err(AppError::from)?)
     }
 }
 

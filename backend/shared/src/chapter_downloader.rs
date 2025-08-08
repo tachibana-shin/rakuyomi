@@ -1,4 +1,5 @@
 use futures::{stream, StreamExt, TryStreamExt};
+use rust_decimal::prelude::*;
 use std::{
     io::Seek,
     io::Write,
@@ -11,8 +12,9 @@ use anyhow::{anyhow, Context};
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use crate::{
+    cbz_metadata::ComicInfo,
     chapter_storage::ChapterStorage,
-    model::ChapterId,
+    model::{ChapterInformation, MangaInformation},
     source::{model::Page, Source},
 };
 
@@ -21,10 +23,10 @@ const CONCURRENT_REQUESTS: usize = 4;
 pub async fn ensure_chapter_is_in_storage(
     chapter_storage: &ChapterStorage,
     source: &Source,
-    chapter_id: &ChapterId,
-    chapter_num: Option<f64>,
+    manga: &MangaInformation,
+    chapter: &ChapterInformation,
 ) -> Result<PathBuf, Error> {
-    if let Some(path) = chapter_storage.get_stored_chapter(chapter_id) {
+    if let Some(path) = chapter_storage.get_stored_chapter(&chapter.id) {
         return Ok(path);
     }
 
@@ -32,9 +34,9 @@ pub async fn ensure_chapter_is_in_storage(
     let pages = source
         .get_page_list(
             CancellationToken::new(),
-            chapter_id.manga_id().value().clone(),
-            chapter_id.value().clone(),
-            chapter_num,
+            chapter.id.manga_id().value().clone(),
+            chapter.id.value().clone(),
+            chapter.chapter_number.unwrap_or_default().to_f64(),
         )
         .await
         .with_context(|| "Failed to get page list")
@@ -50,13 +52,15 @@ pub async fn ensure_chapter_is_in_storage(
     // FIXME this logic should be contained entirely within the storage..? maybe we could return something that's writable
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
     // could be errors while committing it)
-    let output_path = chapter_storage.get_path_to_store_chapter(chapter_id);
+    let output_path = chapter_storage.get_path_to_store_chapter(&chapter.id);
+
+    let metadata = ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages);
 
     // Write chapter pages to a temporary file, so that if things go wrong
     // we do not have a borked .cbz file in the chapter storage.
     let temporary_file =
         NamedTempFile::new_in(output_path.parent().unwrap()).map_err(|e| Error::Other(e.into()))?;
-    download_chapter_pages_as_cbz(&temporary_file, source, pages)
+    download_chapter_pages_as_cbz(&temporary_file, metadata, source, pages)
         .await
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
@@ -64,11 +68,11 @@ pub async fn ensure_chapter_is_in_storage(
     // If we succeeded downloading all the chapter pages, persist our temporary
     // file into the chapter storage definitively.
     chapter_storage
-        .persist_chapter(chapter_id, temporary_file)
+        .persist_chapter(&chapter.id, temporary_file)
         .with_context(|| {
             format!(
                 "Failed to persist chapter {} into storage",
-                chapter_id.value()
+                chapter.id.value()
             )
         })
         .map_err(Error::Other)?;
@@ -86,6 +90,7 @@ pub enum Error {
 
 pub async fn download_chapter_pages_as_cbz<W>(
     output: W,
+    metadata: ComicInfo,
     source: &Source,
     pages: Vec<Page>,
 ) -> anyhow::Result<()>
@@ -93,13 +98,19 @@ where
     W: Write + Seek,
 {
     let mut writer = ZipWriter::new(output);
+    let file_options = FileOptions::default().compression_method(CompressionMethod::Stored);
+
+    // Add ComicInfo.xml to the CBZ file
+    writer.start_file("ComicInfo.xml", file_options)?;
+    let xml_content = metadata.to_xml()?;
+    writer.write_all(xml_content.as_bytes())?;
+
     let client = reqwest::Client::builder()
         // Some sources return invalid certs, but otherwise download images just fine...
         // This is kinda bad.
         .danger_accept_invalid_certs(true)
         .build()
         .unwrap();
-    let file_options = FileOptions::default().compression_method(CompressionMethod::Stored);
 
     stream::iter(pages)
         .map(|page| {

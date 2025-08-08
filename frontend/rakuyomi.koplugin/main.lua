@@ -1,13 +1,11 @@
-local Device = require("device")
-local InfoMessage = require("ui/widget/infomessage")
+local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
-local FileManager = require("apps/filemanager/filemanager")
-local UIManager = require("ui/uimanager")
 local logger = require("logger")
 local _ = require("gettext")
 local OfflineAlertDialog = require("OfflineAlertDialog")
 
 local Backend = require("Backend")
+local CbzDocument = require("extensions/CbzDocument")
 local ErrorDialog = require("ErrorDialog")
 local LibraryView = require("LibraryView")
 local MangaReader = require("MangaReader")
@@ -30,6 +28,8 @@ function Rakuyomi:init()
   else
     self.ui.menu:registerToMainMenu(self)
   end
+
+  CbzDocument:register(DocumentRegistry)
 
   Testing:init()
   Testing:emitEvent('initialized')

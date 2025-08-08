@@ -72,10 +72,9 @@
               CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static -C linker=${TARGET_CC}";
             };
 
+          mkCbzMetadataReaderPackage = buildBackendRustPackage { packageName = "cbz_metadata_reader"; };
           mkServerPackage = buildBackendRustPackage { packageName = "server"; };
-
           mkUdsHttpRequestPackage = buildBackendRustPackage { packageName = "uds_http_request"; };
-
           mkSharedPackage = buildBackendRustPackage { packageName = "shared"; copyTarget = true; };
 
           mkBuildInfoFile = packageName: pkgs.writers.writeJSON "BUILD_INFO.json" {
@@ -99,6 +98,7 @@
 
           mkPluginFolderWithServer = { buildName, target }:
             let
+              cbzMetadataReader = mkCbzMetadataReaderPackage target;
               server = mkServerPackage target;
               udsHttpRequest = mkUdsHttpRequestPackage target;
               buildInfoFile = mkBuildInfoFile buildName;
@@ -109,6 +109,7 @@
                 installPhase = ''
                   mkdir $out
                   cp -r ${pluginFolderWithoutServer}/* $out/
+                  cp ${cbzMetadataReader}/bin/cbz_metadata_reader $out/cbz_metadata_reader
                   cp ${server}/bin/server $out/server
                   cp ${udsHttpRequest}/bin/uds_http_request $out/uds_http_request
                   cp ${buildInfoFile} $out/BUILD_INFO.json

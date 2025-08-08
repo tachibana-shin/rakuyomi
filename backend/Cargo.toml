@@ -5,7 +5,8 @@ members = [
     "server",
     "uds_http_request",
     "wasm_macros",
-    "wasm_shared"
+    "wasm_shared",
+    "cbz_metadata_reader"
 ]
 
 [workspace.dependencies]

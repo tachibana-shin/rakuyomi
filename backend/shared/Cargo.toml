@@ -56,6 +56,9 @@ serde_json_lenient = "0.2.3"
 futures-util = "0.3.31"
 sha2 = "0.10"
 base64 = "0.22"
+epub-builder = "0.8.0"
+kuchiki = "0.8.1"
+markup5ever = "=0.10.1"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

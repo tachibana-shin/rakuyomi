@@ -17,6 +17,7 @@ local Menu = require("widgets/Menu")
 local Settings = require("Settings")
 local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
+local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 
 local LibraryView = Menu:extend {
   name = "library_view",
@@ -119,8 +120,7 @@ function LibraryView:onPrimaryMenuChoice(item)
     end
 
     ChapterListing:fetchAndShow(manga, onReturnCallback, true)
-
-    self:onClose(self)
+    self:onClose()
   end)
 end
 
@@ -128,7 +128,58 @@ end
 function LibraryView:onContextMenuChoice(item)
   --- @type Manga
   local manga = item.manga
+  local dialog_context_menu
 
+  local context_menu_buttons = {
+    {
+      {
+        text = "Continue Reading",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          self:_handleContinueReading(manga)
+        end,
+      },
+    },
+    {
+      {
+        text = "Remove from Library",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          self:_handleRemoveFromLibrary(manga)
+        end,
+      },
+    },
+  }
+  dialog_context_menu = ButtonDialog:new {
+    title = manga.title,
+    buttons = context_menu_buttons,
+  }
+  UIManager:show(dialog_context_menu)
+end
+
+--- Handles "Continue Reading" action
+--- @private
+function LibraryView:_handleContinueReading(manga)
+  local callbacks = {
+    onReturn = function()
+      self:fetchAndShow()
+    end,
+    onError = function(error_msg)
+      ErrorDialog:show(error_msg)
+    end,
+    onChapterRead = function(chapter)
+      Testing:emitEvent('chapter_read_from_library', {
+        manga_id = manga.id,
+        chapter_id = chapter.id
+      })
+    end
+  }
+  
+  ContinueReadingHandler.handle(manga, self, callbacks)
+end
+
+--- @private
+function LibraryView:_handleRemoveFromLibrary(manga)
   UIManager:show(ConfirmBox:new {
     text = "Do you want to remove \"" .. manga.title .. "\" from your library?",
     ok_text = "Remove",
@@ -140,18 +191,7 @@ function LibraryView:onContextMenuChoice(item)
 
         return
       end
-
-      local response = Backend.getMangasInLibrary()
-
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
-
-        return
-      end
-
-      self.mangas = response.body
-
-      self:updateItems()
+      self:fetchAndShow()
     end
   })
 end

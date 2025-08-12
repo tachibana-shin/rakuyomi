@@ -1,6 +1,5 @@
 use async_stream::stream;
 use futures::Stream;
-use rust_decimal::prelude::*;
 use std::collections::HashSet;
 use tokio::select;
 use tokio_util::sync::CancellationToken;
@@ -23,6 +22,14 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     filter: Filter,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
+        let manga = match db.find_cached_manga_information(&id).await {
+            Some(manga) => manga,
+            None => {
+                yield ProgressReport::Errored(Error::Other(anyhow::anyhow!("Expected manga to be in the database")));
+                return;
+            }
+        };
+
         let all_chapters = db.find_cached_chapter_informations(&id).await;
         let chapters_to_download = apply_chapter_filter(db, all_chapters, filter).await;
 
@@ -39,8 +46,8 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                 result = ensure_chapter_is_in_storage(
                     chapter_storage,
                     source,
-                    &information.id,
-                    information.chapter_number.and_then(|number| number.to_f64())
+                    &manga,
+                    &information,
                 ) => result
             };
 

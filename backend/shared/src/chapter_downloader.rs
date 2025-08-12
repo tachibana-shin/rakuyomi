@@ -19,8 +19,9 @@ use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 use epub_builder::{EpubBuilder, EpubContent, ReferenceType, ZipLibrary};
 
 use crate::{
+    cbz_metadata::ComicInfo,
     chapter_storage::ChapterStorage,
-    model::ChapterId,
+    model::{ChapterInformation, MangaInformation},
     source::{model::Page, Source},
 };
 
@@ -29,10 +30,10 @@ const CONCURRENT_REQUESTS: usize = 4;
 pub async fn ensure_chapter_is_in_storage(
     chapter_storage: &ChapterStorage,
     source: &Source,
-    chapter_id: &ChapterId,
-    chapter_num: Option<f64>,
+    manga: &MangaInformation,
+    chapter: &ChapterInformation,
 ) -> Result<PathBuf, Error> {
-    if let Some(path) = chapter_storage.get_stored_chapter(chapter_id) {
+    if let Some(path) = chapter_storage.get_stored_chapter(&chapter.id) {
         return Ok(path);
     }
 
@@ -40,9 +41,9 @@ pub async fn ensure_chapter_is_in_storage(
     let pages = source
         .get_page_list(
             CancellationToken::new(),
-            chapter_id.manga_id().value().clone(),
-            chapter_id.value().clone(),
-            chapter_num,
+            chapter.id.manga_id().value().clone(),
+            chapter.id.value().clone(),
+            chapter.chapter_number.unwrap_or_default().to_f64(),
         )
         .await
         .with_context(|| "Failed to get page list")
@@ -51,7 +52,7 @@ pub async fn ensure_chapter_is_in_storage(
     if pages.is_empty() {
         return Err(Error::DownloadError(anyhow!(
             "No pages found for chapter {}",
-            chapter_id.value()
+            chapter.id.value()
         )));
     }
     let is_novel = matches!(pages[0].text.as_deref(), Some("novel"));
@@ -60,6 +61,8 @@ pub async fn ensure_chapter_is_in_storage(
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
     // could be errors while committing it)
     let output_path: PathBuf = chapter_storage.get_path_to_store_chapter(chapter_id, is_novel);
+
+    let metadata = ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages);
 
     // Write chapter pages to a temporary file, so that if things go wrong
     // we do not have a borked .cbz file in the chapter storage.
@@ -84,7 +87,7 @@ pub async fn ensure_chapter_is_in_storage(
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
     } else {
-        download_chapter_pages_as_cbz(&temporary_file, source, pages)
+        download_chapter_pages_as_cbz(&temporary_file, metadata, source, pages)
             .await
             .with_context(|| "Failed to download chapter pages")
             .map_err(Error::DownloadError)?;
@@ -97,7 +100,7 @@ pub async fn ensure_chapter_is_in_storage(
         .with_context(|| {
             format!(
                 "Failed to persist chapter {} into storage",
-                chapter_id.value()
+                chapter.id.value()
             )
         })
         .map_err(Error::Other)?;
@@ -115,6 +118,7 @@ pub enum Error {
 
 pub async fn download_chapter_pages_as_cbz<W>(
     output: W,
+    metadata: ComicInfo,
     source: &Source,
     pages: Vec<Page>,
 ) -> anyhow::Result<()>
@@ -122,13 +126,19 @@ where
     W: Write + Seek,
 {
     let mut writer = ZipWriter::new(output);
+    let file_options = FileOptions::default().compression_method(CompressionMethod::Stored);
+
+    // Add ComicInfo.xml to the CBZ file
+    writer.start_file("ComicInfo.xml", file_options)?;
+    let xml_content = metadata.to_xml()?;
+    writer.write_all(xml_content.as_bytes())?;
+
     let client = reqwest::Client::builder()
         // Some sources return invalid certs, but otherwise download images just fine...
         // This is kinda bad.
         .danger_accept_invalid_certs(true)
         .build()
         .unwrap();
-    let file_options = FileOptions::default().compression_method(CompressionMethod::Stored);
 
     stream::iter(pages)
         .map(|page| {

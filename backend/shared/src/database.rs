@@ -151,6 +151,31 @@ impl Database {
         maybe_row.map(|row| row.into())
     }
 
+    pub async fn find_cached_chapter_information(
+        &self,
+        chapter_id: &ChapterId,
+    ) -> Option<ChapterInformation> {
+        let source_id = chapter_id.source_id().value();
+        let manga_id = chapter_id.manga_id().value();
+        let chapter_id = chapter_id.value();
+
+        let maybe_row = sqlx::query_as!(
+            ChapterInformationsRow,
+            r#"
+                SELECT * FROM chapter_informations
+                WHERE source_id = ?1 AND manga_id = ?2 AND chapter_id = ?3;
+            "#,
+            source_id,
+            manga_id,
+            chapter_id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .unwrap();
+
+        maybe_row.map(|row| row.into())
+    }
+
     pub async fn find_cached_chapter_informations(
         &self,
         manga_id: &MangaId,

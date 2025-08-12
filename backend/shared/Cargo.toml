@@ -59,6 +59,7 @@ base64 = "0.22"
 epub-builder = "0.8.0"
 kuchiki = "0.8.1"
 markup5ever = "=0.10.1"
+quick-xml = { version = "0.30.0", features = ["serialize"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

@@ -18,21 +18,21 @@ pub fn routes() -> Router<State> {
     Router::new()
         .route("/available-sources", get(list_available_sources))
         .route(
-            "/available-sources/:source_id/install",
+            "/available-sources/{source_id}/install",
             post(install_source),
         )
         .route("/installed-sources", get(list_installed_sources))
-        .route("/installed-sources/:source_id", delete(uninstall_source))
+        .route("/installed-sources/{source_id}", delete(uninstall_source))
         .route(
-            "/installed-sources/:source_id/setting-definitions",
+            "/installed-sources/{source_id}/setting-definitions",
             get(get_source_setting_definitions),
         )
         .route(
-            "/installed-sources/:source_id/stored-settings",
+            "/installed-sources/{source_id}/stored-settings",
             get(get_source_stored_settings),
         )
         .route(
-            "/installed-sources/:source_id/stored-settings",
+            "/installed-sources/{source_id}/stored-settings",
             post(set_source_stored_settings),
         )
 }

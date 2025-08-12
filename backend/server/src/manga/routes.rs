@@ -20,37 +20,37 @@ pub fn routes() -> Router<State> {
         .route("/library", get(get_manga_library))
         .route("/mangas", get(get_mangas))
         .route(
-            "/mangas/:source_id/:manga_id/add-to-library",
+            "/mangas/{source_id}/{manga_id}/add-to-library",
             post(add_manga_to_library),
         )
         .route(
-            "/mangas/:source_id/:manga_id/remove-from-library",
+            "/mangas/{source_id}/{manga_id}/remove-from-library",
             post(remove_manga_from_library),
         )
         .route(
-            "/mangas/:source_id/:manga_id/chapters",
+            "/mangas/{source_id}/{manga_id}/chapters",
             get(get_cached_manga_chapters),
         )
         .route(
-            "/mangas/:source_id/:manga_id/refresh-chapters",
+            "/mangas/{source_id}/{manga_id}/refresh-chapters",
             post(refresh_manga_chapters),
         )
         // FIXME i dont think the route should be named download because it doesnt
         // always download the file...
         .route(
-            "/mangas/:source_id/:manga_id/chapters/:chapter_id/download",
+            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/download",
             post(download_manga_chapter),
         )
         .route(
-            "/mangas/:source_id/:manga_id/chapters/:chapter_id/mark-as-read",
+            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/mark-as-read",
             post(mark_chapter_as_read),
         )
         .route(
-            "/mangas/:source_id/:manga_id/preferred-scanlator",
+            "/mangas/{source_id}/{manga_id}/preferred-scanlator",
             get(get_manga_preferred_scanlator),
         )
         .route(
-            "/mangas/:source_id/:manga_id/preferred-scanlator",
+            "/mangas/{source_id}/{manga_id}/preferred-scanlator",
             post(set_manga_preferred_scanlator),
         )
 }

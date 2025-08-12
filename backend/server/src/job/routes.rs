@@ -35,8 +35,8 @@ pub fn routes() -> Router<AppState> {
             "/jobs/download-scanlator-chapters",
             post(create_download_scanlator_chapters_job),
         )
-        .route("/jobs/:id", get(get_job))
-        .route("/jobs/:id", delete(cancel_job))
+        .route("/jobs/{id}", get(get_job))
+        .route("/jobs/{id}", delete(cancel_job))
 }
 
 #[derive(Deserialize)]

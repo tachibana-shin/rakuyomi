@@ -8,6 +8,10 @@
     <em><small><a href="https://seotch.wordpress.com/ubunchu/">"Ubunchu!"</a> by Hiroshi Seo is licensed under <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0</a>.</small></em>
 </p>
 
+> [!TIP]
+>
+> This fork currently supports my Light Novel sources: [tachibana-shin/aidoku-community-sources](https://github.com/tachibana-shin/aidoku-community-sources)
+
 ## Installation & Usage
 
 For detailed installation and usage instructions, please check out the [Installation](https://hanatsumi.github.io/rakuyomi/user-guide/installation/) and [Quickstart](https://hanatsumi.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!

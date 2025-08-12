@@ -25,6 +25,8 @@ use crate::{
     source::{model::Page, Source},
 };
 
+use rust_decimal::prelude::ToPrimitive;
+
 const CONCURRENT_REQUESTS: usize = 4;
 
 pub async fn ensure_chapter_is_in_storage(
@@ -60,7 +62,7 @@ pub async fn ensure_chapter_is_in_storage(
     // FIXME this logic should be contained entirely within the storage..? maybe we could return something that's writable
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
     // could be errors while committing it)
-    let output_path: PathBuf = chapter_storage.get_path_to_store_chapter(chapter_id, is_novel);
+    let output_path: PathBuf = chapter_storage.get_path_to_store_chapter(&chapter.id, is_novel);
 
     let metadata = ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages);
 
@@ -96,7 +98,7 @@ pub async fn ensure_chapter_is_in_storage(
     // If we succeeded downloading all the chapter pages, persist our temporary
     // file into the chapter storage definitively.
     chapter_storage
-        .persist_chapter(chapter_id, is_novel, temporary_file)
+        .persist_chapter(&chapter.id, is_novel, temporary_file)
         .with_context(|| {
             format!(
                 "Failed to persist chapter {} into storage",

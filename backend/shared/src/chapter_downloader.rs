@@ -2,11 +2,10 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use futures::{stream, StreamExt, TryStreamExt};
 use kuchiki::{parse_html, traits::TendrilSink, NodeRef};
-use wreq::{
+use reqwest::{
     header::{HeaderMap, HeaderValue},
     Client,
 };
-use wreq_util::Emulation;
 use scraper::{Html, Selector};
 use std::{
     collections::HashMap,
@@ -139,7 +138,7 @@ where
     let xml_content = metadata.to_xml()?;
     writer.write_all(xml_content.as_bytes())?;
 
-    let client = reqwest::Client::builder()
+    let client = Client::builder()
         // Some sources return invalid certs, but otherwise download images just fine...
         // This is kinda bad.
         .build()
@@ -251,9 +250,7 @@ pub async fn download_chapter_novel_as_epub<W>(
 where
     W: Write + Seek,
 {
-    let client = Client::builder()
-        .emulation(Emulation::Chrome136)
-        .build()?;
+    let client = Client::builder().build().unwrap();
 
     let image_refs = extract_image_urls(&pages).await?;
 
@@ -360,8 +357,7 @@ where
     let filename_to_bytes = std::mem::take(&mut filename_to_bytes);
     let pages_for_epub = std::mem::take(&mut pages);
 
-    let reqwest_client = reqwest::Client::builder().build().unwrap();
-    let cursor_cover_img = prepare_cover_cursor(cover_url, &reqwest_client, source).await;
+    let cursor_cover_img = prepare_cover_cursor(cover_url, &client, source).await;
 
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
         let mut output = std::fs::OpenOptions::new()

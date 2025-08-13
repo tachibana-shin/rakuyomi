@@ -2,7 +2,11 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use futures::{stream, StreamExt, TryStreamExt};
 use kuchiki::{parse_html, traits::TendrilSink, NodeRef};
-use reqwest::Client;
+use wreq::{
+    header::{HeaderMap, HeaderValue},
+    Client,
+};
+use wreq_util::Emulation;
 use scraper::{Html, Selector};
 use std::{
     collections::HashMap,
@@ -138,7 +142,6 @@ where
     let client = reqwest::Client::builder()
         // Some sources return invalid certs, but otherwise download images just fine...
         // This is kinda bad.
-        .danger_accept_invalid_certs(true)
         .build()
         .unwrap();
 
@@ -249,7 +252,7 @@ where
     W: Write + Seek,
 {
     let client = Client::builder()
-        .danger_accept_invalid_certs(true)
+        .emulation(Emulation::Chrome136)
         .build()?;
 
     let image_refs = extract_image_urls(&pages).await?;
@@ -297,7 +300,13 @@ where
                 if meta.contains("base64") {
                     match BASE64.decode(data_part.as_bytes()) {
                         Ok(b) => Some(b),
-                        Err(_) => None,
+                        Err(e) => {
+                            eprintln!(
+                                "[WARN] Base64 decode failed for page {}: {:?}",
+                                page_index, e
+                            );
+                            None
+                        }
                     }
                 } else {
                     None
@@ -306,11 +315,33 @@ where
                 None
             }
         } else {
-            // HTTP fetch
-            let req = source.get_image_request(abs.clone()).await?;
-            let resp = client.execute(req).await?.error_for_status()?;
-            let b = resp.bytes().await?;
-            Some(b.to_vec())
+            // HTTP fetch with error handling
+
+            let mut headers = HeaderMap::new();
+            headers  .insert("User-Agent", 
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0".parse().unwrap());
+
+            headers.insert("Referer", "https://docln.net/".parse().unwrap());
+
+            match client.get(abs.clone()).headers(headers).send().await {
+                Ok(resp) => match resp.error_for_status() {
+                    Ok(ok_resp) => match ok_resp.bytes().await {
+                        Ok(b) => Some(b.to_vec()),
+                        Err(e) => {
+                            eprintln!("[WARN] Read bytes failed for {}: {:?}", abs, e);
+                            None
+                        }
+                    },
+                    Err(e) => {
+                        eprintln!("[WARN] HTTP status error for {}: {:?}", abs, e);
+                        None
+                    }
+                },
+                Err(e) => {
+                    eprintln!("[WARN] Request execution failed for {}: {:?}", abs, e);
+                    None
+                }
+            }
         };
 
         if let Some(bvec) = bytes_vec {
@@ -329,7 +360,8 @@ where
     let filename_to_bytes = std::mem::take(&mut filename_to_bytes);
     let pages_for_epub = std::mem::take(&mut pages);
 
-    let cursor_cover_img = prepare_cover_cursor(cover_url, &client, source).await;
+    let reqwest_client = reqwest::Client::builder().build().unwrap();
+    let cursor_cover_img = prepare_cover_cursor(cover_url, &reqwest_client, source).await;
 
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
         let mut output = std::fs::OpenOptions::new()

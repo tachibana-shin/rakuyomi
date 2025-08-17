@@ -178,8 +178,6 @@ where
                     let blocks: Vec<Block> = serde_json::from_str(blocks_json)
                         .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
 
-                    println!("{:?}", blocks);
-
                     match unscrable_image(response_bytes.to_vec(), blocks) {
                         Ok(result) => result,
                         Err(e) => {
@@ -215,7 +213,6 @@ pub async fn extract_image_urls(pages: &[Page]) -> anyhow::Result<Vec<(usize, St
         let selector = Selector::parse("img").unwrap();
         for img in doc.select(&selector) {
             if let Some(src) = img.value().attr("src") {
-                println!("image ====== {}", src.to_string());
                 urls.push((i, src.to_string()));
             }
         }
@@ -438,8 +435,6 @@ where
                 html_escape::encode_text(&title),
                 String::from_utf8(buffer).unwrap()
             );
-
-            println!("chapter name = {}", title);
 
             epub.add_content(
                 EpubContent::new(

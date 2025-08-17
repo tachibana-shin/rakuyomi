@@ -2,10 +2,7 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use futures::{stream, StreamExt, TryStreamExt};
 use kuchiki::{parse_html, traits::TendrilSink, NodeRef};
-use reqwest::{
-    header::{HeaderMap, HeaderValue},
-    Client,
-};
+use reqwest::{header::HeaderMap, Client};
 use scraper::{Html, Selector};
 use std::{
     collections::HashMap,
@@ -60,7 +57,7 @@ pub async fn ensure_chapter_is_in_storage(
             chapter.id.value()
         )));
     }
-    let is_novel = matches!(pages[0].text.as_deref(), Some("novel"));
+    let is_novel = pages.get(0).and_then(|p| p.text.as_ref()).is_some();
 
     // FIXME this logic should be contained entirely within the storage..? maybe we could return something that's writable
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
@@ -79,12 +76,17 @@ pub async fn ensure_chapter_is_in_storage(
         let temp_path = temporary_file.path().to_path_buf();
         let book_name: String = pages[0].base64.clone().unwrap_or("Unknown".to_string());
         let cover_url = pages[0].image_url.clone();
+        let p_pages = if matches!(pages[0].text.as_deref(), Some("novel")) {
+            pages.to_vec()[1..].to_owned()
+        } else {
+            pages
+        };
 
         download_chapter_novel_as_epub(
             &temporary_file,
             temp_path,
             source,
-            pages.to_vec()[1..].to_owned(),
+            p_pages,
             book_name,
             cover_url,
         )

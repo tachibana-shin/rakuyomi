@@ -21,3 +21,4 @@ For detailed installation and usage instructions, please check out the [Installa
 ## Contributing
 
 For information on how to contribute to rakuyomi, please check out the [Setting up the Environment](https://hanatsumi.github.io/rakuyomi/contributing/setting-up-the-environment.html) section on our guide!
+

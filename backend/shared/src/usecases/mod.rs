@@ -18,6 +18,7 @@ pub mod search_mangas;
 pub mod set_manga_preferred_scanlator;
 pub mod set_source_stored_settings;
 pub mod uninstall_source;
+pub mod unscrable_image;
 pub mod update_settings;
 
 pub use add_manga_to_library::add_manga_to_library;
@@ -40,4 +41,5 @@ pub use search_mangas::search_mangas;
 pub use set_manga_preferred_scanlator::set_manga_preferred_scanlator;
 pub use set_source_stored_settings::set_source_stored_settings;
 pub use uninstall_source::uninstall_source;
+pub use unscrable_image::unscrable_image;
 pub use update_settings::update_settings;

@@ -23,6 +23,7 @@ use crate::{
     chapter_storage::ChapterStorage,
     model::{ChapterInformation, MangaInformation},
     source::{model::Page, Source},
+    usecases::unscrable_image::{unscrable_image, Block},
 };
 
 use rust_decimal::prelude::ToPrimitive;
@@ -173,7 +174,24 @@ where
                     .bytes()
                     .await?;
 
-                anyhow::Ok((filename, response_bytes))
+                let final_image = if let Some(blocks_json) = page.base64.as_ref() {
+                    let blocks: Vec<Block> = serde_json::from_str(blocks_json)
+                        .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+
+                    println!("{:?}", blocks);
+
+                    match unscrable_image(response_bytes.to_vec(), blocks) {
+                        Ok(result) => result,
+                        Err(e) => {
+                            println!("unscrable_image failed: {}", e);
+                            anyhow::bail!(e)
+                        }
+                    }
+                } else {
+                    response_bytes.to_vec()
+                };
+
+                anyhow::Ok((filename, final_image))
             }
         })
         .buffer_unordered(CONCURRENT_REQUESTS)

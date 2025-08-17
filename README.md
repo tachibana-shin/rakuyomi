@@ -11,6 +11,8 @@
 > [!TIP]
 >
 > This fork currently supports my Light Novel sources: [tachibana-shin/aidoku-community-sources](https://github.com/tachibana-shin/aidoku-community-sources)
+>
+> Now support plugin image DRM
 
 ## Installation & Usage
 

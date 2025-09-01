@@ -39,7 +39,7 @@ impl ChapterStorage {
 
         let new_path_novel = self.path_for_chapter(id, true);
         if new_path_novel.exists() {
-            return Some(new_path);
+            return Some(new_path_novel);
         }
 
         // Backwards compatibility: check the old path format

@@ -45,6 +45,13 @@ function InstalledSourcesListing:init()
   self:updateItems()
 end
 
+function InstalledSourcesListing:onClose()
+  UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
+end
+
 --- Updates the menu item contents with the sources information
 --- @private
 function InstalledSourcesListing:updateItems()
@@ -153,7 +160,7 @@ function InstalledSourcesListing:openAvailableSourcesListing()
 
     AvailableSourcesListing:fetchAndShow(onReturnCallback)
 
-    self:onClose()
+    -- self:onClose()
   end)
 end
 

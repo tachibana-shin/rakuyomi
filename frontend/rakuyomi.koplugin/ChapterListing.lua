@@ -71,6 +71,14 @@ function ChapterListing:init()
   self:updateChapterList()
 end
 
+function ChapterListing:onClose()
+  UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
+end
+
+
 --- Fetches the cached chapter list from the backend and updates the menu items.
 function ChapterListing:updateChapterList()
   local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
@@ -94,9 +102,9 @@ end
 -- Load saved scanlator preference from backend
 function ChapterListing:loadSavedScanlatorPreference()
   local response = Backend.getPreferredScanlator(self.manga.source.id, self.manga.id)
-  
+
   self.selected_scanlator = nil
-  
+
   if response.type == 'SUCCESS' and response.body then
     for _, available_scanlator in ipairs(self.available_scanlators) do
       if available_scanlator == response.body then
@@ -111,7 +119,7 @@ end
 function ChapterListing:extractAvailableScanlators()
   local scanlators = {}
   local scanlator_set = {}
-  
+
   for _, chapter in ipairs(self.chapters) do
     local scanlator = chapter.scanlator or "Unknown"
     if not scanlator_set[scanlator] then
@@ -119,9 +127,9 @@ function ChapterListing:extractAvailableScanlators()
       table.insert(scanlators, scanlator)
     end
   end
-  
+
   table.sort(scanlators)
-  
+
   self.available_scanlators = scanlators
 end
 
@@ -280,12 +288,14 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
 
   local settings = response.body
 
-  UIManager:show(ChapterListing:new {
+  local ui = ChapterListing:new {
     manga = manga,
     chapter_sorting_mode = settings.chapter_sorting_mode,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
-  })
+  }
+  ui.on_return_callback = onReturnCallback
+  UIManager:show(ui)
 
   Testing:emitEvent("chapter_listing_shown")
 end
@@ -430,10 +440,10 @@ function ChapterListing:openMenu()
 
   -- Add scanlator filter button if multiple scanlators exist
   if #self.available_scanlators > 1 then
-    local scanlator_text = self.selected_scanlator and 
-      (Icons.FA_FILTER .. " Group: " .. self.selected_scanlator) or 
-      Icons.FA_FILTER .. " Filter by Group"
-    
+    local scanlator_text = self.selected_scanlator and
+        (Icons.FA_FILTER .. " Group: " .. self.selected_scanlator) or
+        Icons.FA_FILTER .. " Filter by Group"
+
     table.insert(buttons, {
       {
         text = scanlator_text,
@@ -464,9 +474,9 @@ function ChapterListing:showScanlatorDialog()
       callback = function()
         UIManager:close(dialog)
         self.selected_scanlator = nil
-        
+
         Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, nil)
-        
+
         self:updateItems()
         UIManager:show(InfoMessage:new { text = "Showing all groups", timeout = 1 })
       end
@@ -477,16 +487,16 @@ function ChapterListing:showScanlatorDialog()
   for _, scanlator in ipairs(self.available_scanlators) do
     local is_selected = self.selected_scanlator == scanlator
     local text = is_selected and (Icons.FA_CHECK .. " " .. scanlator) or scanlator
-    
+
     table.insert(buttons, {
       {
         text = text,
         callback = function()
           UIManager:close(dialog)
           self.selected_scanlator = scanlator
-          
+
           Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, scanlator)
-          
+
           self:updateItems()
           UIManager:show(InfoMessage:new { text = "Filtered to: " .. scanlator, timeout = 1 })
         end
@@ -508,9 +518,9 @@ function ChapterListing:onDownloadUnreadChapters()
     title = "Download unread chapters...",
     input_type = "number",
     input_hint = "Amount of unread chapters (default: all)",
-    description = self.selected_scanlator and 
-      ("Will download from: " .. self.selected_scanlator .. "\n\nSpecify amount or leave empty for all.") or
-      "Specify the amount of unread chapters to download, or leave empty to download all of them.",
+    description = self.selected_scanlator and
+        ("Will download from: " .. self.selected_scanlator .. "\n\nSpecify amount or leave empty for all.") or
+        "Specify the amount of unread chapters to download, or leave empty to download all of them.",
     buttons = {
       {
         {

@@ -169,11 +169,13 @@ function InstalledSourcesListing:fetchAndShow(onReturnCallback)
 
   local installed_sources = response.body
 
-  UIManager:show(InstalledSourcesListing:new {
+  local ui = InstalledSourcesListing:new {
     installed_sources = installed_sources,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
-  })
+  }
+  ui.on_return_callback = onReturnCallback
+  UIManager:show(ui)
 
   Testing:emitEvent("installed_sources_listing_shown")
 end

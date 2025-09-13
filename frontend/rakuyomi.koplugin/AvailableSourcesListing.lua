@@ -43,6 +43,13 @@ function AvailableSourcesListing:init()
   self:updateItems()
 end
 
+function AvailableSourcesListing:onClose()
+  UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
+end
+
 --- Updates the menu item contents with the sources information.
 --- @private
 function AvailableSourcesListing:updateItems()
@@ -182,12 +189,14 @@ function AvailableSourcesListing:fetchAndShow(onReturnCallback)
 
   local available_sources = available_sources_response.body
 
-  UIManager:show(AvailableSourcesListing:new {
+  local ui = AvailableSourcesListing:new {
     installed_sources = installed_sources,
     available_sources = available_sources,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
-  })
+  }
+  ui.on_return_callback = onReturnCallback
+  UIManager:show(ui)
 
   Testing:emitEvent("available_sources_listing_shown")
 end

@@ -153,6 +153,9 @@ end
 --- @private
 function Settings:onClose()
   UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
 end
 
 --- @private
@@ -178,10 +181,12 @@ function Settings:fetchAndShow(on_return_callback)
     ErrorDialog:show(response.message)
   end
 
-  UIManager:show(Settings:new {
+  local ui = Settings:new {
     settings = response.body,
     on_return_callback = on_return_callback
-  })
+  }
+  ui.on_return_callback = on_return_callback
+  UIManager:show(ui)
 end
 
 return Settings

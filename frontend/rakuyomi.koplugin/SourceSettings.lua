@@ -212,6 +212,9 @@ end
 --- @private
 function SourceSettings:onClose()
   UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
 end
 
 --- @private
@@ -248,12 +251,14 @@ function SourceSettings:fetchAndShow(source_id, on_return_callback)
   local setting_definitions = setting_definitions_response.body
   local stored_settings = stored_settings_response.body
 
-  UIManager:show(SourceSettings:new {
+  local ui = SourceSettings:new {
     source_id = source_id,
     setting_definitions = setting_definitions,
     stored_settings = stored_settings,
     on_return_callback = on_return_callback,
-  })
+  }
+  ui.on_return_callback = on_return_callback
+  UIManager:show(ui)
 end
 
 return SourceSettings

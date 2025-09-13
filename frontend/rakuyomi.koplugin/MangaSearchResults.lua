@@ -43,6 +43,13 @@ function MangaSearchResults:init()
   self:updateItems()
 end
 
+function MangaSearchResults:onClose()
+  UIManager:close(self)
+  if self.on_return_callback then
+    self.on_return_callback()
+  end
+end
+
 --- Updates the menu item contents with the manga information
 --- @private
 function MangaSearchResults:updateItems()
@@ -99,11 +106,13 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
 
   local results = response.body
 
-  UIManager:show(MangaSearchResults:new {
+  local ui = MangaSearchResults:new {
     results = results,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
-  })
+  }
+  ui.on_return_callback = onReturnCallback
+  UIManager:show(ui)
 
   Testing:emitEvent("manga_search_results_shown")
 end

@@ -8,6 +8,7 @@ local Screen = require("device").screen
 local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
 local util = require("util")
+local ffiutil = require("ffi/util")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -374,7 +375,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     -- FIXME Mutating here _still_ sucks, we gotta think of a better way.
     chapter.downloaded = true
 
-    local manga_path = response.body
+    local manga_path = ffiutil.realpath(response.body)
 
     logger.info("Waited ", time.to_ms(time.since(start_time)), "ms for download job to finish.")
 

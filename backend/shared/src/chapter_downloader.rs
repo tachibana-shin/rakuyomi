@@ -105,6 +105,7 @@ pub async fn ensure_chapter_is_in_storage(
     // file into the chapter storage definitively.
     chapter_storage
         .persist_chapter(&chapter.id, is_novel, temporary_file)
+        .await
         .with_context(|| {
             format!(
                 "Failed to persist chapter {} into storage",

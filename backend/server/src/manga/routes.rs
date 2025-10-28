@@ -85,7 +85,7 @@ async fn get_mangas(
     Query(GetMangasQuery { q }): Query<GetMangasQuery>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
     let source_manager = &*source_manager.lock().await;
-    let results = cancel_after(Duration::from_secs(15), |token| {
+    let results = cancel_after(Duration::from_secs(120), |token| {
         usecases::search_mangas(source_manager, &database, token, q)
     })
     .await

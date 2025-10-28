@@ -56,7 +56,9 @@ function ChapterListing:init()
 
   -- FIXME `Menu` calls `updateItems()` during init, but we haven't fetched any items yet, as
   -- we do it in `updateChapterList`. Not sure if there's any downside to it, but here's a notice.
+  local page = self.page
   Menu.init(self)
+  self.page = page
 
   -- we need to fill this with *something* in order to Koreader actually recognize
   -- that the back button is active, so yeah
@@ -272,7 +274,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     function()
       return Backend.refreshChapters(manga.source.id, manga.id)
     end,
-    function ()
+    function()
       -- No cancellation support for now
       cancelled = true
     end
@@ -303,6 +305,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     chapter_sorting_mode = settings.chapter_sorting_mode,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
+    page = self.page
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)

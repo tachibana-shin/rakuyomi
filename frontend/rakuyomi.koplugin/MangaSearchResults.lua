@@ -31,7 +31,9 @@ function MangaSearchResults:init()
   self.results = self.results or {}
   self.width = Screen:getWidth()
   self.height = Screen:getHeight()
+  local page = self.page
   Menu.init(self)
+  self.page = page
 
   -- see `ChapterListing` for an explanation on this
   -- FIXME we could refactor this into a single class
@@ -116,6 +118,7 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
     results = results,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
+    page = self.page
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)

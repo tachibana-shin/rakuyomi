@@ -39,7 +39,9 @@ function LibraryView:init()
   self.width = Screen:getWidth()
   self.height = Screen:getHeight()
 
+  local page = self.page
   Menu.init(self)
+  self.page = page
 
   self:updateItems()
 end
@@ -104,6 +106,7 @@ function LibraryView:fetchAndShow()
   UIManager:show(LibraryView:new {
     mangas = mangas,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
+    page = self.page
   })
 
   Testing:emitEvent('library_view_shown')

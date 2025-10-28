@@ -45,6 +45,7 @@ impl DownloadUnreadChaptersJob {
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         filter: ChapterToDownloadFilter,
+        concurrent_requests_pages: usize,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let cancellation_token_clone = cancellation_token.clone();
@@ -63,6 +64,7 @@ impl DownloadUnreadChaptersJob {
                 &chapter_storage,
                 manga_id,
                 filter,
+                concurrent_requests_pages,
             );
 
             pin_mut!(progress_report_stream);

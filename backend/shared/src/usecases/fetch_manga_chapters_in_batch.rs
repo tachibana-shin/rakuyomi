@@ -20,6 +20,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     chapter_storage: &'a ChapterStorage,
     id: MangaId,
     filter: Filter,
+    concurrent_requests_pages: usize,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
         let manga = match db.find_cached_manga_information(&id).await {
@@ -48,6 +49,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     source,
                     &manga,
                     &information,
+                    concurrent_requests_pages,
                 ) => result
             };
 

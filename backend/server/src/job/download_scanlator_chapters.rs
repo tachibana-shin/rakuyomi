@@ -40,6 +40,7 @@ impl DownloadScanlatorChaptersJob {
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         scanlator_filter: ScanlatorFilter,
+        concurrent_requests_pages: usize,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let output: Arc<Mutex<Option<Result<(), ErrorResponse>>>> = Default::default();
@@ -65,6 +66,7 @@ impl DownloadScanlatorChaptersJob {
                     &chapter_storage,
                     manga_id,
                     filter,
+                    concurrent_requests_pages,
                 );
 
             use futures::StreamExt;

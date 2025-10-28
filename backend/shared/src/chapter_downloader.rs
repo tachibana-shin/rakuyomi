@@ -28,13 +28,12 @@ use crate::{
 
 use rust_decimal::prelude::ToPrimitive;
 
-const CONCURRENT_REQUESTS: usize = 4;
-
 pub async fn ensure_chapter_is_in_storage(
     chapter_storage: &ChapterStorage,
     source: &Source,
     manga: &MangaInformation,
     chapter: &ChapterInformation,
+    concurrent_requests_pages: usize,
 ) -> Result<PathBuf, Error> {
     if let Some(path) = chapter_storage.get_stored_chapter(&chapter.id) {
         return Ok(path);
@@ -95,10 +94,16 @@ pub async fn ensure_chapter_is_in_storage(
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
     } else {
-        download_chapter_pages_as_cbz(&temporary_file, metadata, source, pages)
-            .await
-            .with_context(|| "Failed to download chapter pages")
-            .map_err(Error::DownloadError)?;
+        download_chapter_pages_as_cbz(
+            &temporary_file,
+            metadata,
+            source,
+            pages,
+            concurrent_requests_pages,
+        )
+        .await
+        .with_context(|| "Failed to download chapter pages")
+        .map_err(Error::DownloadError)?;
     }
 
     // If we succeeded downloading all the chapter pages, persist our temporary
@@ -130,6 +135,7 @@ pub async fn download_chapter_pages_as_cbz<W>(
     metadata: ComicInfo,
     source: &Source,
     pages: Vec<Page>,
+    concurrent_requests_pages: usize,
 ) -> anyhow::Result<()>
 where
     W: Write + Seek,
@@ -193,7 +199,7 @@ where
                 anyhow::Ok((filename, final_image))
             }
         })
-        .buffer_unordered(CONCURRENT_REQUESTS)
+        .buffer_unordered(concurrent_requests_pages)
         .try_collect::<Vec<_>>()
         .await?
         .into_iter()

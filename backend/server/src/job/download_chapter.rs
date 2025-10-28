@@ -19,13 +19,22 @@ impl DownloadChapterJob {
         db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
+        concurrent_requests_pages: usize,
     ) -> Self {
         let output: Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>> = Default::default();
         let output_clone = output.clone();
 
         tokio::spawn(async move {
-            *output_clone.lock().await =
-                Some(Self::do_job(source_manager, db, chapter_storage, chapter_id).await);
+            *output_clone.lock().await = Some(
+                Self::do_job(
+                    source_manager,
+                    db,
+                    chapter_storage,
+                    chapter_id,
+                    concurrent_requests_pages,
+                )
+                .await,
+            );
         });
 
         Self(output)
@@ -36,17 +45,22 @@ impl DownloadChapterJob {
         db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
+        concurrent_requests_pages: usize,
     ) -> Result<PathBuf, ErrorResponse> {
         let source_manager = source_manager.lock().await;
         let source = source_manager
             .get_by_id(chapter_id.source_id())
             .ok_or(AppError::SourceNotFound)?;
 
-        Ok(
-            usecases::fetch_manga_chapter(&db, source, &chapter_storage, &chapter_id)
-                .await
-                .map_err(AppError::from)?,
+        Ok(usecases::fetch_manga_chapter(
+            &db,
+            source,
+            &chapter_storage,
+            &chapter_id,
+            concurrent_requests_pages,
         )
+        .await
+        .map_err(AppError::from)?)
     }
 }
 

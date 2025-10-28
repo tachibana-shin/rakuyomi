@@ -12,6 +12,7 @@ local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local logger = require("logger")
 local Paths = require("Paths")
+local Device = require("device")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -78,6 +79,17 @@ function Settings:init()
         unit = 'MB'
       }
     },
+    {
+      'concurrent_requests_pages',
+      {
+        type = 'integer',
+        title = 'Concurrent page requests',
+        min_value = 1,
+        max_value = 20,
+        unit = 'pages',
+        default = Device.isKindle() and 4 or 5
+      }
+    }
   }
 
   local vertical_group = VerticalGroup:new {

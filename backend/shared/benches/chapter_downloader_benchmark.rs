@@ -3,7 +3,8 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use futures::executor;
 use pprof::criterion::{Output, PProfProfiler};
 use shared::{
-    chapter_downloader::download_chapter_pages_as_cbz, settings::Settings, source::Source,
+    cbz_metadata::ComicInfo, chapter_downloader::download_chapter_pages_as_cbz, settings::Settings,
+    source::Source,
 };
 use std::{env, io, path::PathBuf};
 use tokio_util::sync::CancellationToken;
@@ -14,6 +15,9 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
     let chapter_id = env::var("BENCHMARK_CHAPTER_ID").unwrap();
     let settings = Settings::default();
 
+    let metadata = ComicInfo {
+        ..Default::default()
+    };
     let source = Source::from_aix_file(source_path.as_ref(), settings).unwrap();
     let pages = executor::block_on(source.get_page_list(
         CancellationToken::new(),
@@ -27,7 +31,13 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
 
     c.bench_function("download_chapter_pages_as_cbz", |b| {
         b.to_async(&runtime).iter(|| {
-            download_chapter_pages_as_cbz(io::Cursor::new(Vec::new()), &source, pages.clone())
+            download_chapter_pages_as_cbz(
+                io::Cursor::new(Vec::new()),
+                metadata.clone(),
+                &source,
+                pages.clone(),
+                4,
+            )
         })
     });
 }

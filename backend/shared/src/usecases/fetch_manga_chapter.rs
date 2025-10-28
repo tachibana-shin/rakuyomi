@@ -15,6 +15,7 @@ pub async fn fetch_manga_chapter(
     source: &Source,
     chapter_storage: &ChapterStorage,
     chapter_id: &ChapterId,
+    concurrent_requests_pages: usize,
 ) -> Result<PathBuf, Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
@@ -26,12 +27,18 @@ pub async fn fetch_manga_chapter(
         .await
         .ok_or_else(|| anyhow!("Expected chapter to be in the database"))?;
 
-    ensure_chapter_is_in_storage(chapter_storage, source, &manga, &chapter)
-        .await
-        .map_err(|e| match e {
-            ChapterDownloaderError::DownloadError(e) => Error::DownloadError(e),
-            ChapterDownloaderError::Other(e) => Error::Other(e),
-        })
+    ensure_chapter_is_in_storage(
+        chapter_storage,
+        source,
+        &manga,
+        &chapter,
+        concurrent_requests_pages,
+    )
+    .await
+    .map_err(|e| match e {
+        ChapterDownloaderError::DownloadError(e) => Error::DownloadError(e),
+        ChapterDownloaderError::Other(e) => Error::Other(e),
+    })
 }
 
 #[derive(thiserror::Error, Debug)]

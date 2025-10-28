@@ -60,6 +60,9 @@ pub struct Settings {
     /// `volume_descending`.
     #[serde(default)]
     pub chapter_sorting_mode: ChapterSortingMode,
+
+    #[serde(default)]
+    pub concurrent_requests_pages: Option<usize>,
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

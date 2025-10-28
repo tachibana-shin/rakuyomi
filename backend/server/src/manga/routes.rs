@@ -193,17 +193,26 @@ async fn download_manga_chapter(
     StateExtractor(State {
         database,
         chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
 ) -> Result<Json<String>, AppError> {
+    let settings = settings.lock().await;
+
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
-    let output_path =
-        usecases::fetch_manga_chapter(&database, &source, chapter_storage, &chapter_id)
-            .await
-            .map_err(AppError::from_fetch_manga_chapters_error)?;
+    let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap();
+    let output_path = usecases::fetch_manga_chapter(
+        &database,
+        &source,
+        chapter_storage,
+        &chapter_id,
+        concurrent_requests_pages,
+    )
+    .await
+    .map_err(AppError::from_fetch_manga_chapters_error)?;
 
     Ok(Json(output_path.to_string_lossy().into()))
 }

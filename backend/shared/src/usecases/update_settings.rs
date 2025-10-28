@@ -27,6 +27,7 @@ pub struct UpdateableSettings {
     chapter_sorting_mode: ChapterSortingMode,
     storage_size_limit_mb: usize,
     storage_path: Option<PathBuf>,
+    concurrent_requests_pages: Option<usize>,
 }
 
 impl UpdateableSettings {
@@ -35,6 +36,7 @@ impl UpdateableSettings {
         settings.storage_size_limit =
             StorageSizeLimit(Size::from_megabytes(self.storage_size_limit_mb));
         settings.storage_path = self.storage_path;
+        settings.concurrent_requests_pages = self.concurrent_requests_pages;
     }
 }
 
@@ -46,6 +48,7 @@ impl From<&Settings> for UpdateableSettings {
                 .try_into()
                 .unwrap(),
             storage_path: value.storage_path.clone(),
+            concurrent_requests_pages: value.concurrent_requests_pages,
         }
     }
 }

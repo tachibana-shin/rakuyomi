@@ -7,8 +7,17 @@ use super::schema::Settings;
 impl Settings {
     pub fn from_file(path: &Path) -> Result<Self> {
         let file = File::open(path).with_context(|| "Couldn't open file")?;
-        let settings = serde_json_lenient::from_reader(file)
+        let mut settings: Settings = serde_json_lenient::from_reader(file)
             .with_context(|| "Couldn't parse file contents")?;
+
+        if settings.concurrent_requests_pages.is_none() {
+            settings.concurrent_requests_pages =
+                Some(if cfg!(target_arch = "arm") && cfg!(target_os = "linux") {
+                    4
+                } else {
+                    5
+                });
+        }
 
         Ok(settings)
     }

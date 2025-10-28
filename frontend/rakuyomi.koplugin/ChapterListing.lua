@@ -46,7 +46,7 @@ local ChapterListing = Menu:extend {
 }
 
 function ChapterListing:init()
-  self.title_bar_left_icon = "appbar.menu"
+  self.title_bar_left_icon = "cre.render.reload"
   self.onLeftButtonTap = function()
     self:openMenu()
   end

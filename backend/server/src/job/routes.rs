@@ -44,7 +44,7 @@ struct CreateDownloadChapterJobBody {
     source_id: String,
     manga_id: String,
     chapter_id: String,
-    chapter_num: Option<f64>,
+    // chapter_num: Option<f64>,
 }
 
 impl From<CreateDownloadChapterJobBody> for ChapterId {

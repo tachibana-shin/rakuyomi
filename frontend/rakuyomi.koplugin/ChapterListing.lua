@@ -369,7 +369,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     local time = require("ui/time")
     local start_time = time.now()
     local response = LoadingDialog:showAndRun(
-      "Downloading chapter...",
+      "Downloading chapter..."
+      .. '\nCh.' .. (chapter.chapter_num or 'unknown')
+      .. ' '
+      .. (chapter.title or ''),
       function()
         return download_job:runUntilCompletion()
       end,

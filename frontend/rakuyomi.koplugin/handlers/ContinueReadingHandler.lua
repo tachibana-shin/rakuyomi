@@ -139,9 +139,14 @@ local function downloadChapter(chapter)
   if not download_job then
     return { type = 'ERROR', message = MESSAGES.DOWNLOAD_FAILED }
   end
-  return LoadingDialog:showAndRun(MESSAGES.DOWNLOADING, function()
-    return download_job:runUntilCompletion()
-  end)
+  return LoadingDialog:showAndRun(
+    MESSAGES.DOWNLOADING
+    .. '\nCh.' .. (chapter.chapter_num or 'unknown')
+    .. ' '
+    .. (chapter.title or ''),
+    function()
+      return download_job:runUntilCompletion()
+    end)
 end
 
 local function openChapterInReader(chapter, all_chapters, callbacks)

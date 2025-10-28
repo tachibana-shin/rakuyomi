@@ -165,6 +165,7 @@ end
 --- @field volume_num number? The volume that this chapter belongs to, if known.
 --- @field read boolean If this chapter was read to its end.
 --- @field downloaded boolean If this chapter was already downloaded to the storage.
+--- @field title string? The title of this chapter, if any.
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.

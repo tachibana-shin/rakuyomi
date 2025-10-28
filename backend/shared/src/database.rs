@@ -3,9 +3,14 @@ use std::{collections::HashSet, path::Path};
 use anyhow::Result;
 use futures::{stream, StreamExt, TryStreamExt};
 use sqlx::{sqlite::SqliteConnectOptions, Pool, QueryBuilder, Sqlite};
+use url::Url;
 
-use crate::model::{
-    ChapterId, ChapterInformation, ChapterState, MangaId, MangaInformation, MangaState,
+use crate::{
+    model::{
+        ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation, MangaState,
+        SourceId, SourceInformation,
+    },
+    source_collection::SourceCollection,
 };
 
 pub struct Database {
@@ -39,6 +44,61 @@ impl Database {
         .unwrap();
 
         rows.into_iter().map(|row| row.manga_id()).collect()
+    }
+
+    pub async fn get_manga_library_with_read_count(
+        &self,
+        source_collection: &impl SourceCollection,
+    ) -> Result<Vec<Manga>> {
+        let rows = sqlx::query_as!(
+            MangaLibraryRowWithReadCount,
+            r#"
+            SELECT
+                ml.source_id,
+                ml.manga_id,
+                mi.title,
+                mi.author,
+                mi.artist,
+                mi.cover_url,
+                COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+            FROM manga_library AS ml
+            JOIN manga_informations AS mi
+                ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+            LEFT JOIN chapter_informations AS ci
+                ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+            LEFT JOIN chapter_state AS cs
+                ON cs.source_id = ci.source_id
+                AND cs.manga_id = ci.manga_id
+                AND cs.chapter_id = ci.chapter_id
+                AND cs.read = 1
+            GROUP BY ml.source_id, ml.manga_id
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mangas = rows
+            .into_iter()
+            .filter_map(|row| {
+                let source = source_collection.get_by_id(&SourceId::new(row.source_id.clone()))?;
+                let info = MangaInformation {
+                    id: MangaId::from_strings(row.source_id, row.manga_id),
+                    title: row.title,
+                    author: row.author,
+                    artist: row.artist,
+                    cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                };
+
+                Some(Manga {
+                    source_information: SourceInformation::from(source.manifest()),
+                    information: info,
+                    state: MangaState::default(),
+                    unread_chapters_count: Some(row.unread_chapters_count as usize),
+                })
+            })
+            .collect();
+
+        Ok(mangas)
     }
 
     pub async fn add_manga_to_library(&self, manga_id: MangaId) {
@@ -402,6 +462,32 @@ impl Database {
         .await
         .unwrap();
     }
+}
+
+/// Represents a manga entry in the user's library, joined with its information
+/// and the computed number of unread chapters.
+#[derive(sqlx::FromRow)]
+pub struct MangaLibraryRowWithReadCount {
+    /// ID of the source (e.g., MangaDex, NHentai, etc.)
+    pub source_id: String,
+
+    /// ID of the manga within the source
+    pub manga_id: String,
+
+    /// Manga title (nullable in DB)
+    pub title: Option<String>,
+
+    /// Author name (nullable in DB)
+    pub author: Option<String>,
+
+    /// Artist name (nullable in DB)
+    pub artist: Option<String>,
+
+    /// Cover image URL (nullable in DB)
+    pub cover_url: Option<String>,
+
+    /// Number of unread chapters (computed via COUNT)
+    pub unread_chapters_count: i64,
 }
 
 #[derive(sqlx::FromRow)]

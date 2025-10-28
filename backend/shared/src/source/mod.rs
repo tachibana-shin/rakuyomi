@@ -296,8 +296,22 @@ impl BlockingSource {
         {
             Value::Array(array) => array
                 .iter()
-                .map(|v| match v {
-                    Value::Object(ObjectValue::Chapter(chapter)) => Some(chapter.clone()),
+                .enumerate()
+                .map(|(index, v)| match v {
+                    Value::Object(ObjectValue::Chapter(chapter)) => {
+                        let mut chapter = chapter.clone();
+
+                        if chapter.title.as_ref().map(|s| s.is_empty()).unwrap_or(true) {
+                            chapter.title = Some(format!(
+                                "Ch.{}",
+                                chapter
+                                    .chapter_num
+                                    .unwrap_or(chapter.volume_num.unwrap_or(index as f32))
+                            ));
+                        }
+
+                        Some(chapter)
+                    }
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()

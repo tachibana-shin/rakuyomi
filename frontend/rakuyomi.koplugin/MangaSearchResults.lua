@@ -93,10 +93,16 @@ end
 --- @param search_text string The text to be searched for.
 --- @param onReturnCallback any
 function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
+  local cancel = false
   local response = LoadingDialog:showAndRun(
     "Searching for \"" .. search_text .. "\"",
-    function() return Backend.searchMangas(search_text) end
+    function() return Backend.searchMangas(search_text) end,
+    function() cancel = true end
   )
+
+  if cancel then
+    return
+  end
 
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)

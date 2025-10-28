@@ -266,12 +266,21 @@ end
 function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
   accept_cached_results = accept_cached_results or false
 
+  local cancelled = false
   local refresh_chapters_response = LoadingDialog:showAndRun(
     "Refreshing chapters...",
     function()
       return Backend.refreshChapters(manga.source.id, manga.id)
+    end,
+    function ()
+      -- No cancellation support for now
+      cancelled = true
     end
   )
+
+  if cancelled then
+    return
+  end
 
   if not accept_cached_results and refresh_chapters_response.type == 'ERROR' then
     ErrorDialog:show(refresh_chapters_response.message)
@@ -363,6 +372,9 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       "Downloading chapter...",
       function()
         return download_job:runUntilCompletion()
+      end,
+      function()
+        download_job:requestCancellation()
       end
     )
 

@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use anyhow::{anyhow, bail, Context, Result};
-use chrono::{DateTime, TimeZone};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone};
 use log::debug;
 use pared::sync::Parc;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
@@ -297,6 +297,35 @@ fn read_date(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<F64> 
     Ok(result.into())
 }
 
+fn parse_flexible_datetime(
+    string: &str,
+    format_string: &str,
+    timezone: chrono_tz::Tz,
+) -> Result<chrono::DateTime<chrono_tz::Tz>> {
+    // Try parse as full datetime first
+    if let Ok(dt) = NaiveDateTime::parse_from_str(string, format_string) {
+        return dt
+            .and_local_timezone(timezone)
+            .single()
+            .context("failed to apply timezone to parsed datetime");
+    }
+
+    // Fallback – try parse only date and add 00:00:00
+    if let Ok(date) = NaiveDate::parse_from_str(string, format_string) {
+        let dt = NaiveDateTime::new(date, NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+        return dt
+            .and_local_timezone(timezone)
+            .single()
+            .context("failed to apply timezone to fallback date");
+    }
+
+    // If both failed
+    anyhow::bail!(
+        "failed to parse date string in read_date_string: {}",
+        string
+    );
+}
+
 #[aidoku_wasm_function]
 fn read_date_string(
     mut caller: Caller<'_, WasmStore>,
@@ -354,10 +383,14 @@ fn read_date_string(
         .and_then(|tz_str| tz_str.parse().ok())
         .unwrap_or(chrono_tz::UTC);
     let format_string = swift_dateformat_to_strptime(&format_string);
-    let date_time = chrono::NaiveDateTime::parse_from_str(string, &format_string)
-        .ok()
-        .and_then(|dt| dt.and_local_timezone(timezone).single())
+
+    let date_time = parse_flexible_datetime(string, &format_string, timezone)
         .context("failed to parse date string in read_date_string")?;
+    // chrono::NaiveDateTime::parse_from_str(string, &format_string)
+    //     .ok()
+    //     .and_then(|dt| dt.and_local_timezone(timezone).single())
+    //     .context("failed to parse date string in read_date_string")?;
+
     let timestamp = date_time.timestamp() as f64
         + (date_time.timestamp_subsec_nanos() as f64) / (10f64.powi(9));
     Ok(timestamp.into())

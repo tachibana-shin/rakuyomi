@@ -43,6 +43,9 @@ function LibraryView:init()
   Menu.init(self)
   self.page = page
 
+  self.mangas_raw = self.mangas
+  self.favorite_search_keyword = nil
+
   self:updateItems()
 end
 
@@ -177,7 +180,7 @@ function LibraryView:_handleContinueReading(manga)
       })
     end
   }
-  
+
   ContinueReadingHandler.handle(manga, self, callbacks)
 end
 
@@ -213,6 +216,16 @@ function LibraryView:openMenu()
           self:openSearchMangasDialog()
         end
       },
+    },
+    {
+      {
+        text = "\u{E644} Search favorites",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:openSearchFavoritesDialog()
+        end
+      }
     },
     {
       {
@@ -278,6 +291,61 @@ function LibraryView:openSearchMangasDialog()
             UIManager:close(dialog)
 
             self:searchMangas(dialog:getInputText())
+          end,
+        },
+      }
+    }
+  }
+
+  UIManager:show(dialog)
+  dialog:onShowKeyboard()
+end
+
+--- @private
+function LibraryView:openSearchFavoritesDialog()
+  local dialog
+  dialog = InputDialog:new {
+    title = _("Favorite search..."),
+    input = self.favorite_search_keyword,
+    input_hint = _("Tonikaku Kawaii"),
+    description = _("Type the manga name to search for"),
+    buttons = {
+      {
+        {
+          text = _("Cancel"),
+          id = "close",
+          callback = function()
+            UIManager:close(dialog)
+          end,
+        },
+        {
+          text = _("Search"),
+          is_enter_default = true,
+          callback = function()
+            UIManager:close(dialog)
+
+            local query = dialog:getInputText()
+
+            query = query and query:match("^%s*(.-)%s*$"):lower()
+
+            local mangas = {}
+
+            if query and query ~= "" then
+              for _, manga in ipairs(self.mangas_raw) do
+                -- convert manga title to lowercase for comparison
+                local title = (manga.title or ""):lower()
+                if title:find(query, 1, true) then
+                  table.insert(mangas, manga)
+                end
+              end
+            else
+              mangas = self.mangas_raw
+            end
+
+            self.mangas = mangas
+            self.favorite_search_keyword = dialog:getInputText()
+
+            self:updateItems()
           end,
         },
       }

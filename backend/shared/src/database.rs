@@ -63,18 +63,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY ml.rowid
                     "#
                 )
@@ -92,18 +112,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY ml.rowid DESC
                     "#
                 )
@@ -121,18 +161,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY mi.title COLLATE NOCASE ASC
                     "#
                 )
@@ -150,18 +210,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY mi.title COLLATE NOCASE DESC
                     "#
                 )
@@ -179,18 +259,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY unread_chapters_count ASC
                     "#
                 )
@@ -208,18 +308,38 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                        COALESCE((
+                            SELECT COUNT(*)
+                            FROM chapter_informations ci
+                            WHERE ci.source_id = ml.source_id
+                            AND ci.manga_id = ml.manga_id
+                            AND (
+                                ms.preferred_scanlator IS NULL
+                                OR ci.scanlator = ms.preferred_scanlator
+                                OR ci.scanlator IS NULL
+                            )
+                            AND ci.chapter_number > COALESCE((
+                                SELECT MAX(ci2.chapter_number)
+                                FROM chapter_informations ci2
+                                JOIN chapter_state cs2
+                                    ON ci2.source_id = cs2.source_id
+                                AND ci2.manga_id = cs2.manga_id
+                                AND ci2.chapter_id = cs2.chapter_id
+                                WHERE ci2.source_id = ml.source_id
+                                    AND ci2.manga_id = ml.manga_id
+                                    AND (
+                                        ms.preferred_scanlator IS NULL
+                                        OR ci2.scanlator = ms.preferred_scanlator
+                                        OR ci2.scanlator IS NULL
+                                    )
+                                    AND cs2.read = 1
+                            ), -1)
+                        ), 0) AS unread_chapters_count
                     FROM manga_library AS ml
                     JOIN manga_informations AS mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-                    LEFT JOIN chapter_informations AS ci
-                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-                    LEFT JOIN chapter_state AS cs
-                        ON cs.source_id = ci.source_id
-                        AND cs.manga_id = ci.manga_id
-                        AND cs.chapter_id = ci.chapter_id
-                        AND cs.read = 1
-                    GROUP BY ml.source_id, ml.manga_id
+                    LEFT JOIN manga_state AS ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
                     ORDER BY unread_chapters_count DESC
                     "#
                 )
@@ -244,7 +364,7 @@ impl Database {
                     source_information: SourceInformation::from(source.manifest()),
                     information: info,
                     state: MangaState::default(),
-                    unread_chapters_count: Some(row.unread_chapters_count as usize),
+                    unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                 })
             })
             .collect();
@@ -638,7 +758,8 @@ pub struct MangaLibraryRowWithReadCount {
     pub cover_url: Option<String>,
 
     /// Number of unread chapters (computed via COUNT)
-    pub unread_chapters_count: i64,
+    /// Compatible sqlx but never None in practice
+    pub unread_chapters_count: Option<i32>,
 }
 
 #[derive(sqlx::FromRow)]

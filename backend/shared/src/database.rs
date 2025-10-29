@@ -72,6 +72,7 @@ impl Database {
                 AND cs.chapter_id = ci.chapter_id
                 AND cs.read = 1
             GROUP BY ml.source_id, ml.manga_id
+            ORDER BY ml.rowid
             "#
         )
         .fetch_all(&self.pool)

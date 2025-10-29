@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                    WITH last_read AS (\n                        SELECT\n                            ci.source_id,\n                            ci.manga_id,\n                            MAX(ci.chapter_number) AS last_read_chapter\n                        FROM chapter_informations ci\n                        JOIN chapter_state cs\n                            ON ci.source_id = cs.source_id\n                            AND ci.manga_id = cs.manga_id\n                            AND ci.chapter_id = cs.chapter_id\n                        LEFT JOIN manga_state ms\n                            ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id\n                        WHERE ms.preferred_scanlator IS NULL\n                        OR ci.scanlator = ms.preferred_scanlator\n                        OR ci.scanlator IS NULL\n                        AND cs.read = 1\n                        GROUP BY ci.source_id, ci.manga_id\n                    )\n                    SELECT\n                        ml.source_id,\n                        ml.manga_id,\n                        mi.title,\n                        mi.author,\n                        mi.artist,\n                        mi.cover_url,\n                        COUNT(ci.chapter_number) AS unread_chapters_count\n                    FROM manga_library ml\n                    JOIN manga_informations mi\n                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id\n                    LEFT JOIN manga_state ms\n                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id\n                    LEFT JOIN last_read lr\n                        ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id\n                    LEFT JOIN chapter_informations ci\n                        ON ci.source_id = ml.source_id\n                        AND ci.manga_id = ml.manga_id\n                        AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)\n                        AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)\n                    GROUP BY ml.source_id, ml.manga_id\n                    ORDER BY unread_chapters_count DESC\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "artist",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "cover_url",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "unread_chapters_count",
+        "ordinal": 6,
+        "type_info": "Int"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "c3729b2406babd5c45d817c70267b3d238da46a5656e6a5b0cb61badd09e539c"
+}

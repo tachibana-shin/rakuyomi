@@ -61,6 +61,21 @@ function Settings:init()
       }
     },
     {
+      'library_sorting_mode',
+      {
+        type = 'enum',
+        title = 'Library sorting mode',
+        options = {
+          { label = 'Ascending (Default)',   value = 'ascending' },
+          { label = 'Descending',  value = 'descending' },
+          { label = 'Title Asc',   value = 'title_asc' },
+          { label = 'Title Desc',  value = 'title_desc' },
+          { label = 'Unread Asc',  value = 'unread_asc' },
+          { label = 'Unread Desc', value = 'unread_desc' },
+        }
+      }
+    },
+    {
       'storage_path',
       {
         type = 'path',

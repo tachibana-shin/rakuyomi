@@ -49,34 +49,184 @@ impl Database {
     pub async fn get_manga_library_with_read_count(
         &self,
         source_collection: &impl SourceCollection,
+        library_sorting_mode: &crate::settings::LibrarySortingMode,
     ) -> Result<Vec<Manga>> {
-        let rows = sqlx::query_as!(
-            MangaLibraryRowWithReadCount,
-            r#"
-            SELECT
-                ml.source_id,
-                ml.manga_id,
-                mi.title,
-                mi.author,
-                mi.artist,
-                mi.cover_url,
-                COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
-            FROM manga_library AS ml
-            JOIN manga_informations AS mi
-                ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
-            LEFT JOIN chapter_informations AS ci
-                ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
-            LEFT JOIN chapter_state AS cs
-                ON cs.source_id = ci.source_id
-                AND cs.manga_id = ci.manga_id
-                AND cs.chapter_id = ci.chapter_id
-                AND cs.read = 1
-            GROUP BY ml.source_id, ml.manga_id
-            ORDER BY ml.rowid
-            "#
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows = match library_sorting_mode {
+            &crate::settings::LibrarySortingMode::Ascending => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY ml.rowid
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            &crate::settings::LibrarySortingMode::Descending => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY ml.rowid DESC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            &crate::settings::LibrarySortingMode::TitleAsc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY mi.title COLLATE NOCASE ASC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            &crate::settings::LibrarySortingMode::TitleDesc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY mi.title COLLATE NOCASE DESC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            &crate::settings::LibrarySortingMode::UnreadAsc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY unread_chapters_count ASC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            &crate::settings::LibrarySortingMode::UnreadDesc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_id) - COUNT(cs.read) AS unread_chapters_count
+                    FROM manga_library AS ml
+                    JOIN manga_informations AS mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations AS ci
+                        ON ci.source_id = ml.source_id AND ci.manga_id = ml.manga_id
+                    LEFT JOIN chapter_state AS cs
+                        ON cs.source_id = ci.source_id
+                        AND cs.manga_id = ci.manga_id
+                        AND cs.chapter_id = ci.chapter_id
+                        AND cs.read = 1
+                    GROUP BY ml.source_id, ml.manga_id
+                    ORDER BY unread_chapters_count DESC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+        };
 
         let mangas = rows
             .into_iter()

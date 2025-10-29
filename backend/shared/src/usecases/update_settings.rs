@@ -4,7 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use size::{consts, Size};
 
-use crate::settings::{ChapterSortingMode, Settings, StorageSizeLimit};
+use crate::settings::{ChapterSortingMode, LibrarySortingMode, Settings, StorageSizeLimit};
 
 pub fn update_settings(
     settings: &mut Settings,
@@ -25,6 +25,7 @@ pub fn update_settings(
 #[derive(Serialize, Deserialize)]
 pub struct UpdateableSettings {
     chapter_sorting_mode: ChapterSortingMode,
+    library_sorting_mode: LibrarySortingMode,
     storage_size_limit_mb: usize,
     storage_path: Option<PathBuf>,
     concurrent_requests_pages: Option<usize>,
@@ -33,6 +34,7 @@ pub struct UpdateableSettings {
 impl UpdateableSettings {
     pub fn apply_updates(self, settings: &mut Settings) {
         settings.chapter_sorting_mode = self.chapter_sorting_mode;
+        settings.library_sorting_mode = self.library_sorting_mode;
         settings.storage_size_limit =
             StorageSizeLimit(Size::from_megabytes(self.storage_size_limit_mb));
         settings.storage_path = self.storage_path;
@@ -44,6 +46,7 @@ impl From<&Settings> for UpdateableSettings {
     fn from(value: &Settings) -> Self {
         Self {
             chapter_sorting_mode: value.chapter_sorting_mode,
+            library_sorting_mode: value.library_sorting_mode,
             storage_size_limit_mb: (value.storage_size_limit.0.bytes() / consts::MB)
                 .try_into()
                 .unwrap(),

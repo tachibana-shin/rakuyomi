@@ -59,14 +59,22 @@ async fn get_manga_library(
     StateExtractor(State {
         database,
         source_manager,
+        settings,
         ..
     }): StateExtractor<State>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
-    let mangas = usecases::get_manga_library(&database, &*source_manager.lock().await)
-        .await?
-        .into_iter()
-        .map(Manga::from)
-        .collect();
+    let settings = settings.lock().await;
+    let library_sorting_mode = &settings.library_sorting_mode;
+
+    let mangas = usecases::get_manga_library(
+        &database,
+        &*source_manager.lock().await,
+        library_sorting_mode,
+    )
+    .await?
+    .into_iter()
+    .map(Manga::from)
+    .collect();
 
     Ok(Json(mangas))
 }

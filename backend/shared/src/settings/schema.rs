@@ -27,6 +27,18 @@ pub enum ChapterSortingMode {
     ChapterDescending,
 }
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum LibrarySortingMode {
+    #[default]
+    Ascending,
+    Descending,
+    TitleAsc,
+    TitleDesc,
+    UnreadAsc,
+    UnreadDesc,
+}
+
 /// Settings used to configure rakuyomi's behavior.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, JsonSchema)]
 pub struct Settings {
@@ -60,6 +72,9 @@ pub struct Settings {
     /// `volume_descending`.
     #[serde(default)]
     pub chapter_sorting_mode: ChapterSortingMode,
+
+    #[serde(default)]
+    pub library_sorting_mode: LibrarySortingMode,
 
     #[serde(default)]
     pub concurrent_requests_pages: Option<usize>,

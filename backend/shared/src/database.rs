@@ -420,31 +420,27 @@ impl Database {
         let row = sqlx::query_as!(
             UnreadChaptersRow,
             r#"
-                SELECT COUNT(*) as count,
-                    EXISTS(SELECT 1 FROM chapter_informations 
-                            WHERE source_id = ?1 AND manga_id = ?2 
-                            AND (?3 IS NULL OR scanlator = ?3 OR scanlator IS NULL)) AS "has_chapters: bool"
-                FROM chapter_informations ci
-                LEFT JOIN chapter_state cs 
-                    ON ci.source_id = cs.source_id 
-                    AND ci.manga_id = cs.manga_id 
-                    AND ci.chapter_id = cs.chapter_id
-                WHERE ci.source_id = ?1 
-                    AND ci.manga_id = ?2 
+                WITH filtered AS (
+                    SELECT ci.chapter_number, cs.read
+                    FROM chapter_informations ci
+                    LEFT JOIN chapter_state cs 
+                        ON ci.source_id = cs.source_id
+                        AND ci.manga_id = cs.manga_id
+                        AND ci.chapter_id = cs.chapter_id
+                    WHERE ci.source_id = ?1
+                    AND ci.manga_id = ?2
                     AND (?3 IS NULL OR ci.scanlator = ?3 OR ci.scanlator IS NULL)
-                    AND ci.chapter_number > COALESCE(
-                        (SELECT MAX(ci2.chapter_number) 
-                        FROM chapter_informations ci2 
-                        JOIN chapter_state cs2 
-                            ON ci2.source_id = cs2.source_id 
-                            AND ci2.manga_id = cs2.manga_id 
-                            AND ci2.chapter_id = cs2.chapter_id
-                        WHERE ci2.source_id = ?1 
-                            AND ci2.manga_id = ?2 
-                            AND (?3 IS NULL OR ci2.scanlator = ?3 OR ci2.scanlator IS NULL)
-                            AND cs2.read = 1
-                        ), -1
-                    )
+                ),
+                max_read AS (
+                    SELECT COALESCE(MAX(chapter_number), -1) AS last_read
+                    FROM filtered
+                    WHERE read = 1
+                )
+                SELECT
+                    COUNT(*) AS count,
+                    CASE WHEN EXISTS (SELECT 1 FROM filtered) THEN 1 ELSE 0 END AS "has_chapters: bool"
+                FROM filtered, max_read
+                WHERE filtered.chapter_number > max_read.last_read
             "#,
             source_id, manga_id, preferred_scanlator
         )

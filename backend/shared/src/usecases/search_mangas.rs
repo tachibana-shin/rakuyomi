@@ -54,9 +54,7 @@ pub async fn search_mangas(
             };
 
             // Write through to the database
-            stream::iter(&manga_informations)
-                .for_each(|information| db.upsert_cached_manga_information(information.clone()))
-                .await;
+            let _ = db.upsert_cached_manga_information(&manga_informations).await;
 
             // Fetch unread chapters count for each manga
             let mangas = stream::iter(manga_informations)

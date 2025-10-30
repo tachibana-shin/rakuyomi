@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::Path};
 
 use anyhow::Result;
 use futures::{stream, StreamExt, TryStreamExt};
-use sqlx::{sqlite::SqliteConnectOptions, Pool, QueryBuilder, Sqlite};
+use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, QueryBuilder, Sqlite};
 use url::Url;
 
 use crate::{
@@ -527,28 +527,62 @@ impl Database {
         rows.into_iter().map(|row| row.into()).collect()
     }
 
-    pub async fn upsert_cached_manga_information(&self, manga_information: MangaInformation) {
-        let source_id = manga_information.id.source_id().value();
-        let manga_id = manga_information.id.value();
-        let cover_url = manga_information.cover_url.map(|url| url.to_string());
+    pub async fn upsert_cached_manga_information(
+        &self,
+        manga_informations: &[MangaInformation],
+    ) -> Result<(), Error> {
+        if manga_informations.is_empty() {
+            return Ok(());
+        }
 
-        sqlx::query!(
-            r#"
-                INSERT INTO manga_informations (source_id, manga_id, title, author, artist, cover_url)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-                ON CONFLICT DO UPDATE SET
+        const MAX_BATCH_SIZE: usize = 20; // Kindle safe size
+        let mut start = 0;
+
+        while start < manga_informations.len() {
+            let end = (start + MAX_BATCH_SIZE).min(manga_informations.len());
+            let chunk = &manga_informations[start..end];
+            start = end;
+
+            // Build VALUES (?, ?, ?, ?, ?, ?), ...
+            let mut values_sql = String::new();
+            for (i, _) in chunk.iter().enumerate() {
+                if i > 0 {
+                    values_sql.push_str(", ");
+                }
+                values_sql.push_str("(?, ?, ?, ?, ?, ?)");
+            }
+
+            let sql = format!(
+                r#"
+                INSERT INTO manga_informations (
+                    source_id, manga_id, title, author, artist, cover_url
+                )
+                VALUES {values_sql}
+                ON CONFLICT(source_id, manga_id) DO UPDATE SET
                     title = excluded.title,
                     author = excluded.author,
                     artist = excluded.artist,
                     cover_url = excluded.cover_url
-            "#,
-            source_id,
-            manga_id,
-            manga_information.title,
-            manga_information.author,
-            manga_information.artist,
-            cover_url
-        ).execute(&self.pool).await.unwrap();
+                "#
+            );
+
+            let mut query = sqlx::query(&sql);
+            for info in chunk {
+                query = query.bind(info.id.source_id().value());
+                query = query.bind(info.id.value());
+                query = query.bind(&info.title);
+                query = query.bind(&info.author);
+                query = query.bind(&info.artist);
+                query = query.bind(info.cover_url.as_ref().map(|url| url.to_string()));
+            }
+
+            // No transaction, flush immediately
+            if let Err(e) = query.execute(&self.pool).await {
+                eprintln!("WARN: upsert_cached_manga_information failed: {e}");
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn upsert_cached_chapter_informations(

@@ -9,9 +9,9 @@ pub async fn refresh_manga_chapters(db: &Database, source: &Source, id: MangaId)
         .await?
         .into_iter()
         .map(From::from)
-        .collect();
+        .collect::<Vec<_>>();
 
-    db.upsert_cached_chapter_informations(&id, fresh_chapter_informations)
+    let _ = db.upsert_cached_chapter_informations(&id, &fresh_chapter_informations)
         .await;
 
     Ok(())

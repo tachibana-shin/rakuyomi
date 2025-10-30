@@ -1,7 +1,6 @@
 use std::{collections::HashSet, path::Path};
 
 use anyhow::Result;
-use futures::{stream, StreamExt, TryStreamExt};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, QueryBuilder, Sqlite};
 use url::Url;
 
@@ -588,93 +587,87 @@ impl Database {
     pub async fn upsert_cached_chapter_informations(
         &self,
         manga_id: &MangaId,
-        chapter_informations: Vec<ChapterInformation>,
-    ) {
-        // We need to both update the existing information about the chapters, and delete the chapters that are no longer present
-        let cached_chapter_ids: HashSet<_> = self
-            .find_cached_chapter_informations(manga_id)
-            .await
-            .into_iter()
-            .map(|information| information.id)
-            .collect();
+        chapter_informations: &[ChapterInformation],
+    ) -> Result<()> {
+        let source_id_value = manga_id.source_id().value().to_string();
+        let manga_id_value = manga_id.value().to_string();
+
+        let cached_chapter_ids: HashSet<_> = sqlx::query_scalar!(
+            "SELECT chapter_id FROM chapter_informations WHERE source_id = ? AND manga_id = ?",
+            source_id_value,
+            manga_id_value,
+        )
+        .fetch_all(&self.pool)
+        .await?
+        .into_iter()
+        .map(|id| ChapterId::new(manga_id.clone(), id))
+        .collect();
 
         let chapter_ids: HashSet<_> = chapter_informations
             .iter()
-            .map(|information| information.id.clone())
+            .map(|info| info.id.clone())
+            .collect();
+        let removed_chapter_ids: Vec<_> = cached_chapter_ids
+            .difference(&chapter_ids)
+            .cloned()
             .collect();
 
-        let removed_chapter_ids: Vec<_> =
-            (&cached_chapter_ids - &chapter_ids).into_iter().collect();
+        const DELETE_BATCH_SIZE: usize = 64;
+        let delete_limit = BIND_LIMIT.saturating_sub(2);
 
-        // We use 2 binds to place the `source_id` and `manga_id` on the query.
-        let remove_chapters_query_available_binds = BIND_LIMIT - 2;
+        for chunk in removed_chapter_ids.chunks(delete_limit.min(DELETE_BATCH_SIZE)) {
+            let mut builder =
+                QueryBuilder::new("DELETE FROM chapter_informations WHERE source_id = ");
+            builder
+                .push_bind(manga_id.source_id().value())
+                .push(" AND manga_id = ")
+                .push_bind(manga_id.value())
+                .push(" AND chapter_id IN (");
 
-        stream::iter(removed_chapter_ids.chunks(remove_chapters_query_available_binds))
-            .then(|chapter_ids| async move {
-                let mut builder = QueryBuilder::new("DELETE FROM chapter_informations WHERE ");
+            let mut separated = builder.separated(", ");
+            for id in chunk {
+                separated.push_bind(id.value());
+            }
+            separated.push_unseparated(")");
 
-                builder
-                    .push(" source_id = ")
-                    .push_bind(manga_id.source_id().value())
-                    .push(" AND manga_id = ")
-                    .push_bind(manga_id.value())
-                    .push(" AND chapter_id IN ")
-                    .push_tuples(chapter_ids, |mut b, chapter_id| {
-                        b.push_bind(chapter_id.value());
-                    });
+            builder.build().execute(&self.pool).await?;
+        }
 
-                builder.build().execute(&self.pool).await?;
+        const INSERT_FIELD_COUNT: usize = 8;
+        const INSERT_BATCH_SIZE: usize = 64;
+        let max_rows = BIND_LIMIT / INSERT_FIELD_COUNT;
 
-                anyhow::Ok(())
-            })
-            .try_collect::<()>()
-            .await
-            .unwrap();
+        for chunk in chapter_informations.chunks(max_rows.min(INSERT_BATCH_SIZE)) {
+            let mut builder = QueryBuilder::new(
+            "INSERT INTO chapter_informations \
+             (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number) VALUES "
+        );
+            builder.push_values(chunk.iter().enumerate(), |mut b, (index, chapter)| {
+                let chapter_number = chapter.chapter_number.map(|d| f64::try_from(d).unwrap());
+                let volume_number = chapter.volume_number.map(|d| f64::try_from(d).unwrap());
+                b.push_bind(chapter.id.source_id().value())
+                    .push_bind(chapter.id.manga_id().value())
+                    .push_bind(chapter.id.value())
+                    .push_bind(index as i64)
+                    .push_bind(&chapter.title)
+                    .push_bind(&chapter.scanlator)
+                    .push_bind(chapter_number)
+                    .push_bind(volume_number);
+            });
 
-        let insert_field_count = 8;
-        stream::iter(chapter_informations.into_iter().enumerate().collect::<Vec<_>>().chunks(BIND_LIMIT / insert_field_count))
-            .then(|enumerated_chapter_informations| async move {
-                let mut builder = QueryBuilder::new(
-                    "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number) "
-                );
+            builder.push(
+                " ON CONFLICT(source_id, manga_id, chapter_id) DO UPDATE SET \
+              manga_order = excluded.manga_order, \
+              title = excluded.title, \
+              scanlator = excluded.scanlator, \
+              chapter_number = excluded.chapter_number, \
+              volume_number = excluded.volume_number",
+            );
 
-                builder
-                    .push_values(enumerated_chapter_informations, |mut b, (index, chapter_information)| {
-                        let index = *index as i64;
-                        let source_id = chapter_information.id.source_id().value();
-                        let manga_id = chapter_information.id.manga_id().value();
-                        let chapter_id = chapter_information.id.value();
+            builder.build().execute(&self.pool).await?;
+        }
 
-                        let chapter_number = chapter_information
-                            .chapter_number
-                            .map(|dec| f64::try_from(dec).unwrap());
-                        let volume_number = chapter_information
-                            .volume_number
-                            .map(|dec| f64::try_from(dec).unwrap());
-
-                        b.push_bind(source_id)
-                            .push_bind(manga_id)
-                            .push_bind(chapter_id)
-                            .push_bind(index)
-                            .push_bind(chapter_information.title.clone())
-                            .push_bind(chapter_information.scanlator.clone())
-                            .push_bind(chapter_number)
-                            .push_bind(volume_number);
-                    })
-                    .push(r#"
-                        ON CONFLICT DO UPDATE SET
-                        manga_order = excluded.manga_order,
-                        title = excluded.title,
-                        scanlator = excluded.scanlator,
-                        chapter_number = excluded.chapter_number,
-                        volume_number = excluded.volume_number
-                    "#);
-
-                builder.build().execute(&self.pool).await?;
-
-                anyhow::Ok(())
-            })
-            .try_collect::<()>().await.unwrap();
+        Ok(())
     }
 
     pub async fn find_manga_state(&self, manga_id: &MangaId) -> Option<MangaState> {

@@ -580,6 +580,31 @@ impl Database {
         maybe_row.map(|row| row.into())
     }
 
+    pub async fn find_cached_chapter_ids(
+        &self,
+        manga_id: &MangaId,
+    ) -> anyhow::Result<HashSet<ChapterId>> {
+        let source_id = manga_id.source_id().value();
+        let manga_id_value = manga_id.value();
+
+        let rows = sqlx::query!(
+            r#"
+                SELECT chapter_id
+                FROM chapter_informations
+                WHERE source_id = ?1 AND manga_id = ?2
+            "#,
+            source_id,
+            manga_id_value
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|row| ChapterId::new(manga_id.clone(), row.chapter_id))
+            .collect())
+    }
+
     pub async fn find_cached_chapter_informations(
         &self,
         manga_id: &MangaId,
@@ -734,20 +759,10 @@ impl Database {
         &self,
         manga_id: &MangaId,
         chapter_informations: &[ChapterInformation],
-    ) -> Result<()> {
-        let source_id_value = manga_id.source_id().value().to_string();
-        let manga_id_value = manga_id.value().to_string();
+    ) -> anyhow::Result<()> {
+        use rust_decimal::prelude::ToPrimitive;
 
-        let cached_chapter_ids: HashSet<_> = sqlx::query_scalar!(
-            "SELECT chapter_id FROM chapter_informations WHERE source_id = ? AND manga_id = ?",
-            source_id_value,
-            manga_id_value,
-        )
-        .fetch_all(&self.pool)
-        .await?
-        .into_iter()
-        .map(|id| ChapterId::new(manga_id.clone(), id))
-        .collect();
+        let cached_chapter_ids: HashSet<_> = self.find_cached_chapter_ids(manga_id).await?;
 
         let chapter_ids: HashSet<_> = chapter_informations
             .iter()
@@ -758,56 +773,51 @@ impl Database {
             .cloned()
             .collect();
 
-        const DELETE_BATCH_SIZE: usize = 64;
-        let delete_limit = BIND_LIMIT.saturating_sub(2);
-
-        for chunk in removed_chapter_ids.chunks(delete_limit.min(DELETE_BATCH_SIZE)) {
-            let mut builder =
-                QueryBuilder::new("DELETE FROM chapter_informations WHERE source_id = ");
+        let remove_chunk_size = BIND_LIMIT.saturating_sub(2);
+        for chunk in removed_chapter_ids.chunks(remove_chunk_size) {
+            let mut builder = QueryBuilder::new("DELETE FROM chapter_informations WHERE ");
             builder
+                .push("source_id = ")
                 .push_bind(manga_id.source_id().value())
                 .push(" AND manga_id = ")
                 .push_bind(manga_id.value())
-                .push(" AND chapter_id IN (");
-
-            let mut separated = builder.separated(", ");
-            for id in chunk {
-                separated.push_bind(id.value());
-            }
-            separated.push_unseparated(")");
+                .push(" AND chapter_id IN ")
+                .push_tuples(chunk, |mut b, chapter_id| {
+                    b.push_bind(chapter_id.value());
+                });
 
             builder.build().execute(&self.pool).await?;
         }
 
         const INSERT_FIELD_COUNT: usize = 8;
-        const INSERT_BATCH_SIZE: usize = 64;
-        let max_rows = BIND_LIMIT / INSERT_FIELD_COUNT;
+        const CHUNK_SIZE: usize = BIND_LIMIT / INSERT_FIELD_COUNT;
 
-        for chunk in chapter_informations.chunks(max_rows.min(INSERT_BATCH_SIZE)) {
+        for (offset, chunk) in chapter_informations.chunks(CHUNK_SIZE).enumerate() {
             let mut builder = QueryBuilder::new(
-            "INSERT INTO chapter_informations \
-             (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number) VALUES "
-        );
-            builder.push_values(chunk.iter().enumerate(), |mut b, (index, chapter)| {
-                let chapter_number = chapter.chapter_number.map(|d| f64::try_from(d).unwrap());
-                let volume_number = chapter.volume_number.map(|d| f64::try_from(d).unwrap());
-                b.push_bind(chapter.id.source_id().value())
-                    .push_bind(chapter.id.manga_id().value())
-                    .push_bind(chapter.id.value())
-                    .push_bind(index as i64)
-                    .push_bind(&chapter.title)
-                    .push_bind(&chapter.scanlator)
+            "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number)"
+            );
+
+            builder.push_values(chunk.iter().enumerate(), |mut b, (i, info)| {
+                let chapter_number = info.chapter_number.map(|d| d.to_f64());
+                let volume_number = info.volume_number.map(|d| d.to_f64());
+
+                b.push_bind(info.id.source_id().value())
+                    .push_bind(info.id.manga_id().value())
+                    .push_bind(info.id.value())
+                    .push_bind((offset * CHUNK_SIZE + i) as i64)
+                    .push_bind(&info.title)
+                    .push_bind(&info.scanlator)
                     .push_bind(chapter_number)
                     .push_bind(volume_number);
             });
 
             builder.push(
-                " ON CONFLICT(source_id, manga_id, chapter_id) DO UPDATE SET \
-              manga_order = excluded.manga_order, \
-              title = excluded.title, \
-              scanlator = excluded.scanlator, \
-              chapter_number = excluded.chapter_number, \
-              volume_number = excluded.volume_number",
+                " ON CONFLICT DO UPDATE SET
+                manga_order = excluded.manga_order,
+                title = excluded.title,
+                scanlator = excluded.scanlator,
+                chapter_number = excluded.chapter_number,
+                volume_number = excluded.volume_number",
             );
 
             builder.build().execute(&self.pool).await?;
@@ -1015,6 +1025,13 @@ impl From<ChapterStateRow> for ChapterState {
 struct UnreadChaptersRow {
     count: Option<i32>,
     has_chapters: Option<bool>,
+}
+
+#[derive(sqlx::FromRow)]
+struct UnreadChaptersRowFull {
+    source_id: String,
+    manga_id: String,
+    count: Option<i32>,
 }
 
 #[derive(sqlx::FromRow)]

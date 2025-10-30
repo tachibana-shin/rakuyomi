@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT chapter_id FROM chapter_informations WHERE source_id = ? AND manga_id = ?",
+  "query": "\n                SELECT chapter_id\n                FROM chapter_informations\n                WHERE source_id = ?1 AND manga_id = ?2\n            ",
   "describe": {
     "columns": [
       {
@@ -16,5 +16,5 @@
       false
     ]
   },
-  "hash": "279f0aa8a066ac9176eaa1f8ee453a866c23eef0657b6aa6f43f5fd7e11fadf8"
+  "hash": "3269befde5a9fe70916dc9b19e74ee3be5ed4c7053c511c273e01b0031e39099"
 }

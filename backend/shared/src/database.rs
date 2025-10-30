@@ -1,13 +1,14 @@
 use std::{collections::HashSet, path::Path};
 
 use anyhow::Result;
+use rust_decimal::{prelude::FromPrimitive, Decimal};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, QueryBuilder, Sqlite};
 use url::Url;
 
 use crate::{
     model::{
-        ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation, MangaState,
-        SourceId, SourceInformation,
+        Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation,
+        MangaState, SourceId, SourceInformation,
     },
     source_collection::SourceCollection,
 };
@@ -524,6 +525,75 @@ impl Database {
         .unwrap();
 
         rows.into_iter().map(|row| row.into()).collect()
+    }
+
+    pub async fn find_cached_chapters(
+        &self,
+        manga_id: &MangaId,
+        chapter_storage: &crate::chapter_storage::ChapterStorage,
+    ) -> Vec<Chapter> {
+        let source_id = manga_id.source_id().value();
+        let manga_id_val = manga_id.value();
+
+        let rows = sqlx::query!(
+            r#"
+            SELECT 
+                ci.source_id,
+                ci.manga_id,
+                ci.chapter_id,
+                ci.title,
+                ci.scanlator,
+                ci.chapter_number,
+                ci.volume_number,
+                cs.read AS "read?: bool"
+            FROM chapter_informations ci
+            LEFT JOIN chapter_state cs
+                ON ci.source_id = cs.source_id
+                AND ci.manga_id = cs.manga_id
+                AND ci.chapter_id = cs.chapter_id
+            WHERE ci.source_id = ?1 AND ci.manga_id = ?2
+            ORDER BY ci.manga_order ASC;
+            "#,
+            source_id,
+            manga_id_val,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+
+        let start = std::time::Instant::now();
+        let out = rows.into_iter()
+            .map(|row| {
+                let id = ChapterId::new(
+                    MangaId::new(SourceId::new(row.source_id), row.manga_id),
+                    row.chapter_id,
+                );
+
+                let information = ChapterInformation {
+                    id: id.clone(),
+                    title: row.title,
+                    scanlator: row.scanlator,
+
+                    chapter_number: row.chapter_number.and_then(|f| Decimal::from_f64(f)),
+                    volume_number: row.volume_number.and_then(|f| Decimal::from_f64(f)),
+                    // manga_order: row.manga_order as usize,
+                };
+
+                let state = ChapterState {
+                    read: row.read.unwrap_or(false),
+                };
+
+                let downloaded = chapter_storage.get_stored_chapter(&id).is_some();
+
+                Chapter {
+                    information,
+                    state,
+                    downloaded,
+                }
+            })
+            .collect();
+        println!("fs Fetched cached chapters time = {:?}", start.elapsed());
+        out
     }
 
     pub async fn upsert_cached_manga_information(

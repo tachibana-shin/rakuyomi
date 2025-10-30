@@ -1,4 +1,7 @@
-use std::{collections::HashSet, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 use anyhow::Result;
 use rust_decimal::{prelude::FromPrimitive, Decimal};
@@ -455,6 +458,80 @@ impl Database {
         row.count.map(|count| count.try_into().unwrap())
     }
 
+    pub async fn fetch_unread_chapter_counts_minimal(
+        &self,
+        manga_ids: &[MangaId],
+    ) -> HashMap<MangaId, i64> {
+        let mut map = HashMap::new();
+
+        if manga_ids.is_empty() {
+            return map;
+        }
+
+        // Build dynamic SQL placeholders
+        let pairs: Vec<String> = manga_ids.iter().map(|_| "(?, ?)".into()).collect();
+        let in_clause = pairs.join(", ");
+
+        let query = format!(
+            r#"
+            WITH filtered AS (
+                SELECT
+                    ci.source_id,
+                    ci.manga_id,
+                    ci.chapter_number,
+                    cs.read
+                FROM chapter_informations ci
+                LEFT JOIN chapter_state cs
+                    ON ci.source_id = cs.source_id
+                    AND ci.manga_id = cs.manga_id
+                    AND ci.chapter_id = cs.chapter_id
+                WHERE (ci.source_id, ci.manga_id) IN ({})
+            ),
+            max_read AS (
+                SELECT
+                    source_id,
+                    manga_id,
+                    COALESCE(MAX(chapter_number), -1) AS last_read
+                FROM filtered
+                WHERE read = 1
+                GROUP BY source_id, manga_id
+            )
+            SELECT
+                f.source_id,
+                f.manga_id,
+                COUNT(*) AS count
+            FROM filtered f
+            JOIN max_read mr
+                ON f.source_id = mr.source_id AND f.manga_id = mr.manga_id
+            WHERE f.chapter_number > mr.last_read
+            GROUP BY f.source_id, f.manga_id;
+            "#,
+            in_clause
+        );
+
+        // Bind params
+        let mut query_builder = sqlx::query_as::<_, UnreadChaptersRowFull>(&query);
+        for id in manga_ids {
+            query_builder = query_builder.bind(id.source_id().value()).bind(id.value());
+        }
+
+        let rows = query_builder
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+
+        for row in rows {
+            let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
+            map.insert(id, row.count.unwrap_or(0).into());
+        }
+
+        for id in manga_ids {
+            map.entry(id.clone()).or_insert(0);
+        }
+
+        map
+    }
+
     pub async fn find_cached_manga_information(
         &self,
         manga_id: &MangaId,
@@ -561,8 +638,8 @@ impl Database {
         .await
         .unwrap();
 
-        let start = std::time::Instant::now();
-        let out = rows.into_iter()
+        let out = rows
+            .into_iter()
             .map(|row| {
                 let id = ChapterId::new(
                     MangaId::new(SourceId::new(row.source_id), row.manga_id),
@@ -592,7 +669,6 @@ impl Database {
                 }
             })
             .collect();
-        println!("fs Fetched cached chapters time = {:?}", start.elapsed());
         out
     }
 

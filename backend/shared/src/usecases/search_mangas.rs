@@ -57,14 +57,18 @@ pub async fn search_mangas(
             let _ = db.upsert_cached_manga_information(&manga_informations).await;
 
             // Fetch unread chapters count for each manga
-            let mangas = stream::iter(manga_informations)
-                .then(|manga| async move {
-                    let unread_count = db.count_unread_chapters(&manga.id).await;
-
+            let manga_ids: Vec<_> = manga_informations.iter().map(|m| m.id.clone()).collect();
+            let unread_counts_map = db.fetch_unread_chapter_counts_minimal(&manga_ids).await;
+            let mangas: Vec<_> = manga_informations
+                .into_iter()
+                .map(|manga| {
+                    let unread_count = unread_counts_map
+                        .get(&manga.id)
+                        .copied()
+                        .map(|v| v as usize);
                     (manga, unread_count)
                 })
-                .collect::<Vec<_>>()
-                .await;
+                .collect();
 
             SourceMangaSearchResults {
                 source_information: source.manifest().into(),

@@ -34,7 +34,7 @@ impl ChapterStorage {
     pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {
         let new_path = self.path_for_chapter(id, false);
         if new_path.exists() {
-            return Some(new_path);  
+            return Some(new_path);
         }
 
         let new_path_novel = self.path_for_chapter(id, true);

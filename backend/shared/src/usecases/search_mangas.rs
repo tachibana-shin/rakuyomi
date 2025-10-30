@@ -54,7 +54,9 @@ pub async fn search_mangas(
             };
 
             // Write through to the database
-            let _ = db.upsert_cached_manga_information(&manga_informations).await;
+            let _ = db
+                .upsert_cached_manga_information(&manga_informations)
+                .await;
 
             // Fetch unread chapters count for each manga
             let manga_ids: Vec<_> = manga_informations.iter().map(|m| m.id.clone()).collect();

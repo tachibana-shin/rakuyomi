@@ -11,7 +11,8 @@ pub async fn refresh_manga_chapters(db: &Database, source: &Source, id: MangaId)
         .map(From::from)
         .collect::<Vec<_>>();
 
-    let _ = db.upsert_cached_chapter_informations(&id, &fresh_chapter_informations)
+    let _ = db
+        .upsert_cached_chapter_informations(&id, &fresh_chapter_informations)
         .await;
 
     Ok(())

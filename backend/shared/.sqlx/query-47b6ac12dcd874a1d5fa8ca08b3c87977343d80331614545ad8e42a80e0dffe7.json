@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                WITH filtered AS (\n                    SELECT ci.chapter_number, cs.read\n                    FROM chapter_informations ci\n                    LEFT JOIN chapter_state cs\n                        ON ci.source_id = cs.source_id\n                        AND ci.manga_id = cs.manga_id\n                        AND ci.chapter_id = cs.chapter_id\n                    WHERE ci.source_id = ?1\n                    AND ci.manga_id = ?2\n                    AND (?3 IS NULL OR ci.scanlator = ?3 OR ci.scanlator IS NULL)\n                ),\n                max_read AS (\n                    SELECT COALESCE(MAX(chapter_number), -1) AS last_read\n                    FROM filtered\n                    WHERE read = 1\n                )\n                SELECT\n                    COUNT(*) AS count,\n                    CASE WHEN EXISTS (SELECT 1 FROM filtered) THEN 1 ELSE 0 END AS \"has_chapters: bool\"\n                FROM filtered, max_read\n                WHERE filtered.chapter_number > max_read.last_read\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "count",
+        "ordinal": 0,
+        "type_info": "Int"
+      },
+      {
+        "name": "has_chapters: bool",
+        "ordinal": 1,
+        "type_info": "Int"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "47b6ac12dcd874a1d5fa8ca08b3c87977343d80331614545ad8e42a80e0dffe7"
+}

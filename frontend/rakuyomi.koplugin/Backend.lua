@@ -155,6 +155,7 @@ end
 --- @field source SourceInformation The source information for this manga.
 --- @field title string The title of this manga.
 --- @field unread_chapters_count number|nil The number of unread chapters for this manga, or `nil` if we do not know how many chapters this manga has.
+--- @field last_read number|nil The timestamp (in seconds since epoch) of when this manga was last read, or `nil` if we don't know.
 
 --- @class Chapter
 --- @field id string The ID of this chapter.
@@ -164,6 +165,7 @@ end
 --- @field chapter_num number? The chapter number.
 --- @field volume_num number? The volume that this chapter belongs to, if known.
 --- @field read boolean If this chapter was read to its end.
+--- @field last_read number? The timestamp (in seconds since epoch) of when this chapter was last read to its end.
 --- @field downloaded boolean If this chapter was already downloaded to the storage.
 --- @field title string? The title of this chapter, if any.
 
@@ -269,6 +271,16 @@ function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/download",
     query_params = query_params,
+    method = "POST",
+  })
+end
+
+--- Updates the last read position for the chapter.
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/update-last-read",
     method = "POST",
   })
 end

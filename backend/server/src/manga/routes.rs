@@ -46,6 +46,10 @@ pub fn routes() -> Router<State> {
             post(mark_chapter_as_read),
         )
         .route(
+            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/update-last-read",
+            post(update_last_read),
+        )
+        .route(
             "/mangas/{source_id}/{manga_id}/preferred-scanlator",
             get(get_manga_preferred_scanlator),
         )
@@ -74,7 +78,7 @@ async fn get_manga_library(
     .await?
     .into_iter()
     .map(Manga::from)
-    .collect();
+    .collect::<Vec<_>>();
 
     Ok(Json(mangas))
 }
@@ -232,7 +236,19 @@ async fn mark_chapter_as_read(
 ) -> Json<()> {
     let chapter_id = ChapterId::from(params);
 
-    usecases::mark_chapter_as_read(&database, chapter_id).await;
+    usecases::mark_chapter_as_read(&database, &chapter_id).await;
+
+    Json(())
+}
+
+async fn update_last_read(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<DownloadMangaChapterParams>,
+) -> Json<()> {
+    let chapter_id = ChapterId::from(params);
+
+    usecases::update_last_read_chapter(&database, &chapter_id).await;
 
     Json(())
 }

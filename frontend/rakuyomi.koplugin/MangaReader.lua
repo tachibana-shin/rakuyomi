@@ -10,6 +10,8 @@ local Testing = require('testing')
 local MangaReader = {
   on_return_callback = nil,
   on_end_of_book_callback = nil,
+  chapter = nil,
+  on_close_book_callback = nil,
   is_showing = false,
 }
 
@@ -17,6 +19,8 @@ local MangaReader = {
 --- @field path string Path to the file to be displayed.
 --- @field on_return_callback fun(): nil Function to be called when the user selects "Go back to Rakuyomi".
 --- @field on_end_of_book_callback fun(): nil Function to be called when the user reaches the end of the file.
+--- @field chapter? Chapter The chapter being read.
+--- @field on_close_book_callback? fun(Chapter): nil Function to be called when the user closes the manga reader.
 
 --- Displays the file located in `path` in the KOReader's reader.
 --- If a file is already being displayed, it will be replaced.
@@ -25,6 +29,8 @@ local MangaReader = {
 function MangaReader:show(options)
   self.on_return_callback = options.on_return_callback
   self.on_end_of_book_callback = options.on_end_of_book_callback
+  self.chapter = options.chapter
+  self.on_close_book_callback = options.on_close_book_callback
 
   if self.is_showing then
     -- if we're showing, just switch the document
@@ -125,6 +131,10 @@ end
 
 --- @private
 function MangaReader:onReaderUiCloseWidget()
+  if self.on_close_book_callback ~= nil then
+    self.on_close_book_callback(self.chapter)
+  end
+
   self.is_showing = false
 end
 

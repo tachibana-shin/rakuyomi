@@ -1,4 +1,5 @@
 use serde::Serialize;
+
 use shared::model::{
     Chapter as DomainChapter, Manga as DomainManga, SourceInformation as DomainSourceInformation,
 };
@@ -28,6 +29,7 @@ pub struct Manga {
     source: SourceInformation,
     title: String,
     unread_chapters_count: Option<usize>,
+    last_read: Option<i64>,
 }
 
 impl From<DomainManga> for Manga {
@@ -37,6 +39,7 @@ impl From<DomainManga> for Manga {
             source: value.source_information.into(),
             title: value.information.title.unwrap_or("Unknown title".into()),
             unread_chapters_count: value.unread_chapters_count,
+            last_read: value.last_read,
         }
     }
 }
@@ -51,6 +54,7 @@ pub struct Chapter {
     chapter_num: Option<f32>,
     volume_num: Option<f32>,
     read: bool,
+    last_read: Option<i64>,
     downloaded: bool,
 }
 
@@ -76,6 +80,7 @@ impl From<DomainChapter> for Chapter {
                 .volume_number
                 .map(|decimal| decimal.try_into().unwrap()),
             read: state.read,
+            last_read: state.last_read,
             downloaded,
         }
     }

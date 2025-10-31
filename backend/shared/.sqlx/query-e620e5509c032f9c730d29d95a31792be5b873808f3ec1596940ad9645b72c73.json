@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO chapter_state (source_id, manga_id, chapter_id, read, last_read)\n                VALUES (?1, ?2, ?3, ?4, ?5)\n                ON CONFLICT DO UPDATE SET\n                    read = excluded.read,\n                    last_read = excluded.last_read\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "e620e5509c032f9c730d29d95a31792be5b873808f3ec1596940ad9645b72c73"
+}

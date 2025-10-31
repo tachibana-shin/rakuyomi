@@ -63,11 +63,10 @@ pub async fn search_mangas(
             let unread_counts_map = db.fetch_unread_chapter_counts_minimal(&manga_ids).await;
             let mangas: Vec<_> = manga_informations
                 .into_iter()
-                .map(|manga| {
+                .map(move |manga| {
                     let unread_count = unread_counts_map
                         .get(&manga.id)
-                        .copied()
-                        .map(|v| v as usize);
+                        .copied();
                     (manga, unread_count)
                 })
                 .collect();
@@ -89,11 +88,16 @@ pub async fn search_mangas(
                 source_information,
             } = results;
 
-            mangas.into_iter().map(move |(manga, unread_count)| Manga {
-                source_information: source_information.clone(),
-                information: manga,
-                state: MangaState::default(),
-                unread_chapters_count: unread_count,
+            mangas.into_iter().map(move |(manga, option_tuple)| {
+                let (unread_count, last_read) = option_tuple.unwrap_or((None, None));
+
+                Manga {
+                    source_information: source_information.clone(),
+                    information: manga,
+                    state: MangaState::default(),
+                    unread_chapters_count: unread_count,
+                    last_read: last_read,
+                }
             })
         })
         .collect();
@@ -111,5 +115,6 @@ pub enum Error {
 
 struct SourceMangaSearchResults {
     source_information: SourceInformation,
-    mangas: Vec<(MangaInformation, Option<usize>)>,
+    /// mangas: Vec<Manga>, $0 is unread chapters count, $1 is last read time
+    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>)>)>
 }

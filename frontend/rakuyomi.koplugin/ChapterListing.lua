@@ -19,6 +19,7 @@ local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
 local MangaReader = require("MangaReader")
 local Testing = require("testing")
+local calcLastReadText = require("utils/calcLastReadText")
 
 local findNextChapter = require("chapters/findNextChapter")
 
@@ -80,7 +81,6 @@ function ChapterListing:onClose()
     self.on_return_callback()
   end
 end
-
 
 --- Fetches the cached chapter list from the backend and updates the menu items.
 function ChapterListing:updateChapterList()
@@ -238,7 +238,8 @@ function ChapterListing:generateItemTableFromChapters(chapters)
     end
 
     if chapter.downloaded then
-      mandatory = mandatory .. Icons.FA_DOWNLOAD
+      mandatory = (chapter.last_read and calcLastReadText(chapter.last_read) .. " " or "") ..
+      mandatory .. Icons.FA_DOWNLOAD
     end
 
     table.insert(item_table, {
@@ -430,9 +431,23 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end
     end
 
+    Backend.updateLastReadChapter(
+      chapter.source_id,
+      chapter.manga_id,
+      chapter.id
+    )
+
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
+      chapter = chapter,
+      on_close_book_callback = function(chapter)
+        Backend.updateLastReadChapter(
+          chapter.source_id,
+          chapter.manga_id,
+          chapter.id
+        )
+      end,
       on_return_callback = onReturnCallback,
     })
 

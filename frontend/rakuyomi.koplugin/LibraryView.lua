@@ -18,6 +18,7 @@ local Settings = require("Settings")
 local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
 local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
+local calcLastReadText = require("utils/calcLastReadText")
 
 local LibraryView = Menu:extend {
   name = "library_view",
@@ -72,7 +73,8 @@ function LibraryView:generateItemTableFromMangas(mangas)
     local mandatory = nil
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = Icons.FA_BELL .. " " .. manga.unread_chapters_count
+      mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
+          .. Icons.FA_BELL .. manga.unread_chapters_count
     end
 
     table.insert(item_table, {

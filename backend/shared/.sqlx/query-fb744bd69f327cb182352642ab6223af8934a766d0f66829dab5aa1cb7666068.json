@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT \n                ci.source_id,\n                ci.manga_id,\n                ci.chapter_id,\n                ci.title,\n                ci.scanlator,\n                ci.chapter_number,\n                ci.volume_number,\n                cs.read AS \"read?: bool\"\n            FROM chapter_informations ci\n            LEFT JOIN chapter_state cs\n                ON ci.source_id = cs.source_id\n                AND ci.manga_id = cs.manga_id\n                AND ci.chapter_id = cs.chapter_id\n            WHERE ci.source_id = ?1 AND ci.manga_id = ?2\n            ORDER BY ci.manga_order ASC;\n            ",
+  "query": "\n            SELECT \n                ci.source_id,\n                ci.manga_id,\n                ci.chapter_id,\n                ci.title,\n                ci.scanlator,\n                ci.chapter_number,\n                ci.volume_number,\n                cs.read AS \"read?: bool\",\n                cs.last_read AS \"last_read?: i64\"\n            FROM chapter_informations ci\n            LEFT JOIN chapter_state cs\n                ON ci.source_id = cs.source_id\n                AND ci.manga_id = cs.manga_id\n                AND ci.chapter_id = cs.chapter_id\n            WHERE ci.source_id = ?1 AND ci.manga_id = ?2\n            ORDER BY ci.manga_order ASC;\n            ",
   "describe": {
     "columns": [
       {
@@ -42,6 +42,11 @@
         "name": "read?: bool",
         "ordinal": 7,
         "type_info": "Int64"
+      },
+      {
+        "name": "last_read?: i64",
+        "ordinal": 8,
+        "type_info": "Int64"
       }
     ],
     "parameters": {
@@ -55,8 +60,9 @@
       true,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "2db7ee9690186493ce3d17c05f141cda8cea0bc3ba65dd6dc6689dbcabaee948"
+  "hash": "fb744bd69f327cb182352642ab6223af8934a766d0f66829dab5aa1cb7666068"
 }

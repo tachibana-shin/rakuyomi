@@ -124,6 +124,7 @@ pub struct MangaState {
 #[derive(Default)]
 pub struct ChapterState {
     pub read: bool,
+    pub last_read: Option<i64>,
 }
 
 pub struct Chapter {
@@ -137,6 +138,7 @@ pub struct Manga {
     pub information: MangaInformation,
     pub state: MangaState,
     pub unread_chapters_count: Option<usize>,
+    pub last_read: Option<i64>,
 }
 
 impl From<SourceManifest> for SourceInformation {

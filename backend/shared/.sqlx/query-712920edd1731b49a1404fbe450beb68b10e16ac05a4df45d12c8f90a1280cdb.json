@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n                SELECT source_id, manga_id, chapter_id, read AS \"read: bool\" FROM chapter_state\n                WHERE source_id = ?1 AND manga_id = ?2 AND chapter_id = ?3;\n            ",
+  "query": "\n                SELECT source_id, manga_id, chapter_id, read AS \"read: bool\", last_read AS \"last_read?: i64\" FROM chapter_state\n                WHERE source_id = ?1 AND manga_id = ?2 AND chapter_id = ?3;\n            ",
   "describe": {
     "columns": [
       {
@@ -22,6 +22,11 @@
         "name": "read: bool",
         "ordinal": 3,
         "type_info": "Int64"
+      },
+      {
+        "name": "last_read?: i64",
+        "ordinal": 4,
+        "type_info": "Int64"
       }
     ],
     "parameters": {
@@ -31,8 +36,9 @@
       false,
       false,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "c60d9e2f0c7499d52a2f2284c07664a43da77f246224a9e7c315c3c474fd0c91"
+  "hash": "712920edd1731b49a1404fbe450beb68b10e16ac05a4df45d12c8f90a1280cdb"
 }

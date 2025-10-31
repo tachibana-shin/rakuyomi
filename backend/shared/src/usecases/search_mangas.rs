@@ -64,9 +64,7 @@ pub async fn search_mangas(
             let mangas: Vec<_> = manga_informations
                 .into_iter()
                 .map(move |manga| {
-                    let unread_count = unread_counts_map
-                        .get(&manga.id)
-                        .copied();
+                    let unread_count = unread_counts_map.get(&manga.id).copied();
                     (manga, unread_count)
                 })
                 .collect();
@@ -116,5 +114,5 @@ pub enum Error {
 struct SourceMangaSearchResults {
     source_information: SourceInformation,
     /// mangas: Vec<Manga>, $0 is unread chapters count, $1 is last read time
-    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>)>)>
+    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>)>)>,
 }

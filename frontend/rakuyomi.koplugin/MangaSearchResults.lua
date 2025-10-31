@@ -10,6 +10,7 @@ local LoadingDialog = require("LoadingDialog")
 local ChapterListing = require("ChapterListing")
 local Testing = require("testing")
 local Icons = require("Icons")
+local calcLastReadText = require("utils/calcLastReadText")
 
 --- @class MangaSearchResults: { [any]: any }
 --- @field results Manga[]
@@ -67,10 +68,10 @@ end
 function MangaSearchResults:generateItemTableFromSearchResults(results)
   local item_table = {}
   for _, manga in ipairs(results) do
-    local mandatory = nil
+    local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = Icons.FA_BELL .. " " .. manga.unread_chapters_count
+      mandatory = (mandatory or "") .. Icons.FA_BELL .. " " .. manga.unread_chapters_count
     end
 
     table.insert(item_table, {

@@ -70,10 +70,10 @@ end
 function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   for _, manga in ipairs(mangas) do
-    local mandatory = nil
+    local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
+      mandatory = (mandatory or "")
           .. Icons.FA_BELL .. manga.unread_chapters_count
     end
 

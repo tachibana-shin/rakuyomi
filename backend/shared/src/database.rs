@@ -784,6 +784,7 @@ impl Database {
                 AND ci.manga_id = cs.manga_id
                 AND ci.chapter_id = cs.chapter_id
             WHERE ci.source_id = ?1 AND ci.manga_id = ?2
+            GROUP BY ci.source_id, ci.manga_id, ci.chapter_id
             ORDER BY ci.manga_order ASC;
             "#,
             source_id,

@@ -101,7 +101,16 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   local response = LoadingDialog:showAndRun(
     "Searching for \"" .. search_text .. "\"",
     function() return Backend.searchMangas(search_text) end,
-    function() cancel = true end
+    function()
+      local InfoMessage = require("ui/widget/infomessage")
+
+      local cancelledMessage = InfoMessage:new {
+        text = "Search cancelled.",
+      }
+      UIManager:show(cancelledMessage)
+
+      cancel = true
+    end
   )
 
   if cancel then

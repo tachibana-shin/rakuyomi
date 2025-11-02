@@ -278,6 +278,11 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     end,
     function()
       -- No cancellation support for now
+      local cancelledMessage = InfoMessage:new {
+        text = "Cancelled.",
+      }
+      UIManager:show(cancelledMessage)
+
       cancelled = true
     end
   )
@@ -341,6 +346,12 @@ function ChapterListing:refreshChapters()
       "Refreshing chapters...",
       function()
         return Backend.refreshChapters(self.manga.source.id, self.manga.id)
+      end,
+      function()
+        local cancelledMessage = InfoMessage:new {
+          text = "Cancelled.",
+        }
+        UIManager:show(cancelledMessage)
       end
     )
 
@@ -383,6 +394,11 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end,
       function()
         download_job:requestCancellation()
+
+        local cancelledMessage = InfoMessage:new {
+          text = "Download cancelled.",
+        }
+        UIManager:show(cancelledMessage)
       end
     )
 

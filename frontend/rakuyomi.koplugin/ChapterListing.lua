@@ -473,6 +473,16 @@ function ChapterListing:openMenu()
     },
     {
       {
+        text = Icons.FA_BELL .. _(" Add to Library"),
+        callback = function()
+          UIManager:close(dialog)
+
+          self:addToLibrary()
+        end
+      },
+    },
+    {
+      {
         text = Icons.RESTORE .. " Resume",
         callback = function()
           UIManager:close(dialog)
@@ -523,6 +533,26 @@ function ChapterListing:openMenu()
   }
 
   UIManager:show(dialog)
+end
+
+function ChapterListing:addToLibrary()
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(
+      _("Adding to library..."),
+      function()
+        return Backend.addMangaToLibrary(self.manga.source.id, self.manga.id)
+      end
+    )
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(_("Failed to add to library: ") .. response.message)
+      return
+    end
+
+    UIManager:show(InfoMessage:new {
+      text = _("Added to library."),
+    })
+  end)
 end
 
 function ChapterListing:readContinue(nextChapter)

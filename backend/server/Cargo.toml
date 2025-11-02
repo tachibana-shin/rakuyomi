@@ -23,3 +23,4 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
 axum = "0.8.4"
+humansize = "2.1.3"

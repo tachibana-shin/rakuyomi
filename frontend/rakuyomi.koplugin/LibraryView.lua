@@ -20,6 +20,8 @@ local UpdateChecker = require("UpdateChecker")
 local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 local calcLastReadText = require("utils/calcLastReadText")
 
+local LoadingDialog = require("LoadingDialog")
+
 local LibraryView = Menu:extend {
   name = "library_view",
   is_enable_shortcut = false,
@@ -232,6 +234,16 @@ function LibraryView:openMenu()
     },
     {
       {
+        text = "\u{e000} Cleaner chapters",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:openCleanerDialog()
+        end
+      }
+    },
+    {
+      {
         text = Icons.FA_PLUG .. " Manage sources",
         callback = function()
           UIManager:close(dialog)
@@ -357,6 +369,84 @@ function LibraryView:openSearchFavoritesDialog()
 
   UIManager:show(dialog)
   dialog:onShowKeyboard()
+end
+
+function LibraryView:startCleaner(modeInvalid)
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(
+      "Scaning files...",
+      function() return Backend.findOrphanOrReadFiles(modeInvalid) end
+    )
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+
+      return
+    end
+
+    local filenames = response.body.filenames or {}
+    local total_size = response.body.total_text
+
+    local confirm = ConfirmBox:new {
+      text = string.format(
+        "Found %d files.\n\nTotal size %s.\n\nOnly file .cbz and .epub scan.",
+        #filenames,
+        total_size
+      ),
+      ok_text = "Clean",
+      ok_callback = function()
+        local ProgressbarDialog = require("ui/widget/progressbardialog")
+        local InfoMessage = require("ui/widget/infomessage")
+
+        local progressbar_dialog = ProgressbarDialog:new {
+          title = "Deleting...",
+          progress_max = #filenames
+        }
+
+        for i, filename in ipairs(filenames) do
+          local response = Backend.removeFile(filename)
+          if response.type == 'ERROR' then
+            ErrorDialog:show(response.message)
+            return
+          end
+          progressbar_dialog:reportProgress(i + 1)
+        end
+
+        UIManager:show(InfoMessage:new {
+          text = string.format("Cleaned free %s storage", total_size)
+        })
+      end
+    }
+
+    UIManager:show(confirm)
+  end
+  )
+end
+
+--- @private
+function LibraryView:openCleanerDialog()
+  local dialog
+
+  dialog = ConfirmBox:new {
+    text = "Cleaner\n\n" ..
+        "Normal: Find and delete invalid files including files from deleted sources\n\n" ..
+        "Chapter read done: Find and delete chapters that have been read\n\n" ..
+        "IMPORTANT: Meta files (bookmark, history) not keep!",
+    ok_text = "Normal",
+    ok_callback = function()
+      self:startCleaner(true)
+    end,
+    other_buttons = { {
+      {
+        text = "Chapter read done",
+        callback = function()
+          self:startCleaner(false)
+        end
+      }
+    }
+    } }
+
+  UIManager:show(dialog)
 end
 
 --- @private

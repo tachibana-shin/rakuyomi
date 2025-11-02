@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM chapter_informations",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_order",
+        "ordinal": 3,
+        "type_info": "Int64"
+      },
+      {
+        "name": "title",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "scanlator",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_number",
+        "ordinal": 6,
+        "type_info": "Float"
+      },
+      {
+        "name": "volume_number",
+        "ordinal": 7,
+        "type_info": "Float"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "0818ed573f56ea18652de75c52739903514cb172c9e749f17863a3878c7dcd93"
+}

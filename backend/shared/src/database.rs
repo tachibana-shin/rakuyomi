@@ -1,6 +1,7 @@
+use futures::TryStreamExt;
 use std::{
     collections::{HashMap, HashSet},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use anyhow::Result;
@@ -707,6 +708,55 @@ impl Database {
         .unwrap();
 
         maybe_row.map(|row| row.into())
+    }
+
+    pub async fn find_orphan_or_read_files(
+        &self,
+        chapter_storage: &crate::chapter_storage::ChapterStorage,
+        invalid_mode: bool,
+    ) -> Vec<PathBuf> {
+        if invalid_mode {
+            let mut remaining = chapter_storage.collect_all_files(1);
+
+            let mut stream = sqlx::query_as!(
+                ChapterInformationsRow,
+                r#"SELECT * FROM chapter_informations"#
+            )
+            .fetch(&self.pool);
+
+            while let Some(row) = stream.try_next().await.unwrap() {
+                let row = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
+
+                remaining.remove(&chapter_storage.get_path_to_store_chapter(&row, false));
+                remaining.remove(&chapter_storage.get_path_to_store_chapter(&row, true));
+            }
+
+            remaining.into_iter().collect()
+        } else {
+            let mut paths = Vec::new();
+
+            let mut stream = sqlx::query!(
+                r#"
+                SELECT source_id, manga_id, chapter_id
+                FROM chapter_state
+                WHERE read = 1
+                "#
+            )
+            .fetch(&self.pool);
+
+            while let Some(row) = stream.try_next().await.unwrap() {
+                let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
+
+                for compressed in [false, true] {
+                    let path = chapter_storage.get_path_to_store_chapter(&id, compressed);
+                    if tokio::fs::try_exists(&path).await.unwrap_or(false) {
+                        paths.push(path);
+                    }
+                }
+            }
+
+            paths
+        }
     }
 
     pub async fn find_cached_chapter_ids(

@@ -173,11 +173,37 @@ end
 --- @field source_information SourceInformation Information about the source that generated those results.
 --- @field mangas Manga[] Found mangas.
 
+--- @class FileSummary
+--- @field filenames string[] The names
+--- @field total_size number The total size
+--- @field total_text string The total size text format kb, mb...
+
 --- Lists mangas added to the user's library.
 --- @return SuccessfulResponse<Manga[]>|ErrorResponse
 function Backend.getMangasInLibrary()
   return Backend.requestJson({
     path = "/library",
+  })
+end
+
+--- Lists path files invalidate
+--- @param modeInvalid boolean
+--- @return SuccessfulResponse<FileSummary>|ErrorResponse
+function Backend.findOrphanOrReadFiles(modeInvalid)
+  return Backend.requestJson({
+    path = "/find-orphan-or-read-files",
+    query_params = { invalid = modeInvalid and "true" or "false" }
+  })
+end
+
+--- Delete file
+--- @param filename string The name of the file to delete.
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.removeFile(filename)
+  return Backend.requestJson({
+    path = "/delete-file",
+    body = filename,
+    method = "POST"
   })
 end
 
@@ -441,7 +467,7 @@ function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlat
     scanlator = scanlator,
     amount = amount
   }
-  
+
   return Backend.requestJson({
     path = "/jobs/download-scanlator-chapters",
     method = 'POST',

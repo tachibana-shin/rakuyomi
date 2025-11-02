@@ -31,6 +31,28 @@ impl ChapterStorage {
         })
     }
 
+    pub fn collect_all_files(&self, depth: usize) -> std::collections::HashSet<PathBuf> {
+        WalkDir::new(&self.downloads_folder_path)
+            .max_depth(depth)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().is_file())
+            .filter(|entry| {
+                if let Some(ext) = entry.path().extension().and_then(|e| e.to_str()) {
+                    matches!(ext.to_lowercase().as_str(), "cbz" | "epub")
+                } else {
+                    false
+                }
+            })
+            .map(|entry| entry.path().to_path_buf())
+            .collect()
+    }
+
+    pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
+        let file_path = self.downloads_folder_path.join(filename);
+        tokio::fs::remove_file(file_path).await
+    }
+
     pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {
         let new_path = self.path_for_chapter(id, false);
         if new_path.exists() {

@@ -5,7 +5,7 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use futures::Future;
 use log::warn;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use shared::model::{ChapterId, MangaId};
 use shared::usecases;
 use tokio_util::sync::CancellationToken;
@@ -18,6 +18,8 @@ use crate::AppError;
 pub fn routes() -> Router<State> {
     Router::new()
         .route("/library", get(get_manga_library))
+        .route("/find-orphan-or-read-files", get(find_orphan_or_read_files))
+        .route("/delete-file", post(delete_file))
         .route("/mangas", get(get_mangas))
         .route(
             "/mangas/{source_id}/{manga_id}/add-to-library",
@@ -81,6 +83,67 @@ async fn get_manga_library(
     .collect::<Vec<_>>();
 
     Ok(Json(mangas))
+}
+
+async fn find_orphan_or_read_files(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<State>,
+    Query(GetCleanerQuery { invalid }): Query<GetCleanerQuery>,
+) -> Result<Json<FileSummary>, AppError> {
+    let chapter_storage = chapter_storage.lock().await;
+
+    let paths =
+        usecases::find_orphan_or_read_files(&database, &chapter_storage, invalid == "true").await?;
+
+    let filenames: Vec<String> = paths
+        .iter()
+        .filter_map(|p| p.file_name()?.to_str().map(|s| s.to_string()))
+        .collect();
+
+    let mut total_size = 0u64;
+    for p in paths {
+        if let Ok(meta) = tokio::fs::metadata(p).await {
+            total_size += meta.len();
+        }
+    }
+
+    let total_text = humansize::format_size(total_size, humansize::DECIMAL);
+
+    let summary = FileSummary {
+        filenames,
+        total_size,
+        total_text,
+    };
+
+    Ok(Json(summary))
+}
+
+async fn delete_file(
+    StateExtractor(State {
+        chapter_storage, ..
+    }): StateExtractor<State>,
+    Json(filename): Json<String>,
+) -> Result<Json<()>, AppError> {
+    let chapter_storage = chapter_storage.lock().await;
+
+    let _ = chapter_storage.delete_filename(filename).await;
+
+    Ok(Json(()))
+}
+
+#[derive(Deserialize)]
+struct GetCleanerQuery {
+    invalid: String,
+}
+
+#[derive(Serialize)]
+struct FileSummary {
+    filenames: Vec<String>,
+    total_size: u64,
+    total_text: String,
 }
 
 #[derive(Deserialize)]

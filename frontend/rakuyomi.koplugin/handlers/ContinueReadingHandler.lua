@@ -7,7 +7,8 @@ local ConfirmBox = require("ui/widget/confirmbox")
 
 local Backend = require("Backend")
 local ChapterListing = require("ChapterListing")
-local findNextChapter = require("chapters/findNextChapter")
+-- local findNextChapter = require("chapters/findNextChapter")
+local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local ContinueReadingHandler = {}
 
@@ -16,18 +17,6 @@ local MESSAGES = {
   NO_CHAPTERS = "No chapters found for this manga.",
   NO_NEXT_CHAPTER = "Sadly, no next chapter available! :c"
 }
-
-local function getChapterDisplayName(chapter)
-  local name = ""
-  if chapter.volume_num then name = name .. "Vol. " .. chapter.volume_num .. " " end
-  if chapter.chapter_num then name = name .. "Ch. " .. chapter.chapter_num .. " " end
-  if chapter.title and chapter.title ~= "" then
-    name = name .. "\"" .. chapter.title .. "\""
-  elseif name == "" then
-    name = "Chapter " .. (chapter.id or "?")
-  end
-  return name
-end
 
 local function showChapterConfirmation(chapter, onConfirm, onCancel)
   local confirm_dialog = ConfirmBox:new {
@@ -47,19 +36,34 @@ local function showChapterConfirmation(chapter, onConfirm, onCancel)
 end
 
 local function findChapterToOpen(chapters)
-  local chapters_copy = {}
-  for _, ch in ipairs(chapters) do table.insert(chapters_copy, ch) end
+  local last_read_chapter = nil
+  local last_read_chapter_num = -math.huge
+  local next_chapter = nil
+  local first_chapter = nil
+  local first_chapter_num = math.huge
 
-  local last_read = nil
-  for i, ch in ipairs(chapters_copy) do
-    if ch.read then
-      last_read = ch
-    else
-      return ch
+  for _, chapter in ipairs(chapters) do
+    local num = chapter.chapter_num
+    if num then
+      if num < first_chapter_num then
+        first_chapter = chapter
+        first_chapter_num = num
+      end
+
+      if chapter.read and num > last_read_chapter_num then
+        last_read_chapter = chapter
+        last_read_chapter_num = num
+      end
     end
   end
 
-  return last_read
+  if not last_read_chapter then
+    next_chapter = first_chapter
+  else
+    next_chapter = last_read_chapter
+  end
+
+  return next_chapter
 end
 
 function ContinueReadingHandler.handle(manga, original_view, custom_callbacks)

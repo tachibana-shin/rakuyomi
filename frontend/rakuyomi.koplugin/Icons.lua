@@ -17,4 +17,7 @@ return {
   FA_FILTER            = "\u{f0b0}",
   WIFI_OFF             = "\u{ECA9}",
   UNICODE_ARROW_RIGHT  = "\u{25B8}",
+  REFRESHING           = "\u{f021}",
+  RESTORE              = "\u{f1da}",
+  ANGLES_RIGHT         = "\u{f101}"
 }

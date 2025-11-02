@@ -9,6 +9,7 @@ local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
 local util = require("util")
 local ffiutil = require("ffi/util")
+local _ = require("gettext")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -47,7 +48,7 @@ local ChapterListing = Menu:extend {
 }
 
 function ChapterListing:init()
-  self.title_bar_left_icon = "cre.render.reload"
+  self.title_bar_left_icon = "appbar.menu"
   self.onLeftButtonTap = function()
     self:openMenu()
   end
@@ -239,7 +240,7 @@ function ChapterListing:generateItemTableFromChapters(chapters)
 
     if chapter.downloaded then
       mandatory = (chapter.last_read and calcLastReadText(chapter.last_read) .. " " or "") ..
-      mandatory .. Icons.FA_DOWNLOAD
+          mandatory .. Icons.FA_DOWNLOAD
     end
 
     table.insert(item_table, {
@@ -462,6 +463,34 @@ function ChapterListing:openMenu()
   local buttons = {
     {
       {
+        text = Icons.REFRESHING .. " Refresh",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:refreshChapters()
+        end
+      },
+    },
+    {
+      {
+        text = Icons.RESTORE .. " Resume",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:readContinue(false)
+        end
+      },
+      {
+        text = Icons.ANGLES_RIGHT .. " Next Chapter",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:readContinue(true)
+        end
+      }
+    },
+    {
+      {
         text = Icons.FA_DOWNLOAD .. " Download unread chapters…",
         callback = function()
           UIManager:close(dialog)
@@ -494,6 +523,76 @@ function ChapterListing:openMenu()
   }
 
   UIManager:show(dialog)
+end
+
+function ChapterListing:readContinue(nextChapter)
+  local last_read_chapter = nil
+  local last_read_chapter_num = -math.huge
+  local next_chapter = nil
+  local next_chapter_num = math.huge
+  local first_chapter = nil
+  local first_chapter_num = math.huge
+
+  for _, chapter in ipairs(self.chapters) do
+    local num = chapter.chapter_num
+    if num then
+      if num < first_chapter_num then
+        first_chapter = chapter
+        first_chapter_num = num
+      end
+
+      if chapter.read and num > last_read_chapter_num then
+        last_read_chapter = chapter
+        last_read_chapter_num = num
+      end
+    end
+  end
+
+  if not last_read_chapter then
+    next_chapter = first_chapter
+  else
+    if nextChapter then
+      for _, chapter in ipairs(self.chapters) do
+        local num = chapter.chapter_num
+        if num and not chapter.read and num > last_read_chapter_num and num < next_chapter_num then
+          next_chapter = chapter
+          next_chapter_num = num
+        end
+      end
+    else
+      next_chapter = last_read_chapter
+    end
+  end
+
+  next_chapter = next_chapter or first_chapter
+
+  if next_chapter == nil then
+    UIManager:show(InfoMessage:new {
+      text = _("No more chapters to read!"),
+      timeout = 2,
+    })
+    return
+  end
+
+  local ConfirmBox = require("ui/widget/confirmbox")
+  local getChapterDisplayName = require("utils/getChapterDisplayName")
+
+  local confirm_dialog
+  confirm_dialog = ConfirmBox:new {
+    text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(next_chapter) .. "?",
+    ok_text = _("Read"),
+    cancel_text = _("Cancel"),
+    ok_callback = function()
+      UIManager:close(confirm_dialog)
+
+      self:openChapterOnReader(next_chapter)
+    end,
+    cancel_callback = function()
+      UIManager:close(confirm_dialog)
+    end
+  }
+
+  UIManager:show(confirm_dialog)
 end
 
 -- Scanlator selection dialog with persistence
@@ -609,6 +708,7 @@ function ChapterListing:onDownloadUnreadChapters()
 end
 
 function ChapterListing:createDownloadJob(amount)
+  print("call me ")
   return DownloadUnreadChapters:new({
     source_id = self.manga.source.id,
     manga_id = self.manga.id,

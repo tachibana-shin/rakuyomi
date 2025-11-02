@@ -240,9 +240,7 @@ function LibraryView:openMenu()
 
           self:openCleanerDialog()
         end
-      }
-    },
-    {
+      },
       {
         text = Icons.FA_PLUG .. " Manage sources",
         callback = function()
@@ -261,8 +259,6 @@ function LibraryView:openMenu()
           self:openSettings()
         end
       },
-    },
-    {
       {
         text = Icons.FA_ARROW_UP .. " Check for updates",
         callback = function()

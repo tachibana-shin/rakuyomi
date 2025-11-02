@@ -76,7 +76,8 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
 
     table.insert(item_table, {
       manga = manga,
-      text = manga.title .. " (" .. manga.source.name .. ")",
+      text = manga.title,
+      post_text = manga.source.name,
       mandatory = mandatory,
     })
   end

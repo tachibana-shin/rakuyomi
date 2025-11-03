@@ -291,10 +291,12 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     return
   end
 
-  if not accept_cached_results and refresh_chapters_response.type == 'ERROR' then
-    ErrorDialog:show(refresh_chapters_response.message)
+  if refresh_chapters_response.type == 'ERROR' then
+    ErrorDialog:show('Refresh chapter error\n\n' .. refresh_chapters_response.message)
 
-    return
+    if not accept_cached_results then
+      return
+    end
   end
 
   local response = Backend.getSettings()
@@ -754,7 +756,6 @@ function ChapterListing:onDownloadUnreadChapters()
 end
 
 function ChapterListing:createDownloadJob(amount)
-  print("call me ")
   return DownloadUnreadChapters:new({
     source_id = self.manga.source.id,
     manga_id = self.manga.id,

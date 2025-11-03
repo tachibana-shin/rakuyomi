@@ -168,6 +168,19 @@ function LibraryView:onContextMenuChoice(item)
   UIManager:show(dialog_context_menu)
 end
 
+--- @private
+function LibraryView:onSwipe(arg, ges_ev)
+  local BD = require("ui/bidi")
+  local direction = BD.flipDirectionIfMirroredUILayout(ges_ev.direction)
+  if direction == "south" then
+    self:refreshAllChapters()
+
+    return
+  end
+
+  Menu.onSwipe(self, arg, ges_ev)
+end
+
 --- Handles "Continue Reading" action
 --- @private
 function LibraryView:_handleContinueReading(manga)

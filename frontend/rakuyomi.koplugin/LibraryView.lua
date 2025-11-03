@@ -398,6 +398,7 @@ function LibraryView:startCleaner(modeInvalid)
           title = "Deleting...",
           progress_max = #filenames
         }
+        UIManager:show(progressbar_dialog)
 
         for i, filename in ipairs(filenames) do
           local response = Backend.removeFile(filename)
@@ -406,7 +407,10 @@ function LibraryView:startCleaner(modeInvalid)
             return
           end
           progressbar_dialog:reportProgress(i + 1)
+          progressbar_dialog:redrawProgressbarIfNeeded()
         end
+
+        progressbar_dialog:close()
 
         UIManager:show(InfoMessage:new {
           text = string.format("Cleaned free %s storage", total_size)

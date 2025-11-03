@@ -224,6 +224,14 @@ function LibraryView:openMenu()
     },
     {
       {
+        text = Icons.REFRESHING .. " Refresh mangas",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:refreshAllChapters()
+        end
+      },
+      {
         text = "\u{E644} Search favorites",
         callback = function()
           UIManager:close(dialog)
@@ -421,6 +429,49 @@ function LibraryView:startCleaner(modeInvalid)
     UIManager:show(confirm)
   end
   )
+end
+
+--- @private
+function LibraryView:refreshAllChapters()
+  local ProgressbarDialog = require("ui/widget/progressbardialog")
+  local InfoMessage = require("ui/widget/infomessage")
+
+  local progressbar_dialog = ProgressbarDialog:new {
+    title = "Refresh mangas...",
+    progress_max = #self.mangas_raw
+  }
+  UIManager:show(progressbar_dialog)
+  local errors = {}
+
+  for i, manga in ipairs(self.mangas_raw) do
+    local response = Backend.refreshChapters(manga.source.id, manga.id)
+
+    if response.type == 'ERROR' then
+      table.insert(errors, {
+        id = manga.id,
+        title = manga.title,
+        source = manga.source.id,
+        message = response.message
+      })
+    end
+
+    progressbar_dialog:reportProgress(i + 1)
+    progressbar_dialog:redrawProgressbarIfNeeded()
+  end
+
+  progressbar_dialog:close()
+
+  if #errors > 0 then
+    local msg = "Some manga updates fail:\n\n"
+    for _, err in ipairs(errors) do
+      msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
+    end
+    ErrorDialog:show(msg)
+  else
+    UIManager:show(InfoMessage:new {
+      text = "All chapters manga updated!"
+    })
+  end
 end
 
 --- @private

@@ -144,6 +144,30 @@ function LibraryView:onContextMenuChoice(item)
   local context_menu_buttons = {
     {
       {
+        text = Icons.REFRESHING .. " Refresh",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          local response = self:_refreshManga(manga)
+
+
+          local InfoMessage = require("ui/widget/infomessage")
+          if response.type == 'ERROR' then
+            UIManager:show(InfoMessage:new {
+              text = response.message
+            })
+          else
+            UIManager:show(InfoMessage:new {
+              text = "Refreshed manga"
+            })
+          end
+
+          UIManager:close(self)
+          self:fetchAndShow()
+        end
+      }
+    },
+    {
+      {
         text = "Continue Reading",
         callback = function()
           UIManager:close(dialog_context_menu)
@@ -445,46 +469,57 @@ function LibraryView:startCleaner(modeInvalid)
 end
 
 --- @private
+function LibraryView:_refreshManga(manga)
+  local response = Backend.refreshChapters(manga.source.id, manga.id)
+  return response
+end
+
+--- @private
 function LibraryView:refreshAllChapters()
   local ProgressbarDialog = require("ui/widget/progressbardialog")
   local InfoMessage = require("ui/widget/infomessage")
 
-  local progressbar_dialog = ProgressbarDialog:new {
-    title = "Refresh mangas...",
-    progress_max = #self.mangas_raw
-  }
-  UIManager:show(progressbar_dialog)
-  local errors = {}
+  Trapper:wrap(function()
+    local progressbar_dialog = ProgressbarDialog:new {
+      title = "Refresh mangas...",
+      progress_max = #self.mangas_raw
+    }
+    UIManager:show(progressbar_dialog)
+    local errors = {}
 
-  for i, manga in ipairs(self.mangas_raw) do
-    local response = Backend.refreshChapters(manga.source.id, manga.id)
+    for i, manga in ipairs(self.mangas_raw) do
+      local response = self:_refreshManga(manga)
 
-    if response.type == 'ERROR' then
-      table.insert(errors, {
-        id = manga.id,
-        title = manga.title,
-        source = manga.source.id,
-        message = response.message
+      if response.type == 'ERROR' then
+        table.insert(errors, {
+          id = manga.id,
+          title = manga.title,
+          source = manga.source.id,
+          message = response.message
+        })
+      end
+
+      progressbar_dialog:reportProgress(i + 1)
+      progressbar_dialog:redrawProgressbarIfNeeded()
+    end
+
+    UIManager:close(self)
+    self:fetchAndShow()
+
+    progressbar_dialog:close()
+
+    if #errors > 0 then
+      local msg = "Some manga updates fail:\n\n"
+      for _, err in ipairs(errors) do
+        msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
+      end
+      ErrorDialog:show(msg)
+    else
+      UIManager:show(InfoMessage:new {
+        text = "All chapters manga updated!"
       })
     end
-
-    progressbar_dialog:reportProgress(i + 1)
-    progressbar_dialog:redrawProgressbarIfNeeded()
-  end
-
-  progressbar_dialog:close()
-
-  if #errors > 0 then
-    local msg = "Some manga updates fail:\n\n"
-    for _, err in ipairs(errors) do
-      msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
-    end
-    ErrorDialog:show(msg)
-  else
-    UIManager:show(InfoMessage:new {
-      text = "All chapters manga updated!"
-    })
-  end
+  end)
 end
 
 --- @private

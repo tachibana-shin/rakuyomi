@@ -14,6 +14,7 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 
 use anyhow::{anyhow, Context};
+use tokio::sync::mpsc;
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 use epub_builder::{EpubBuilder, EpubContent, ReferenceType, ZipLibrary};
@@ -136,7 +137,7 @@ pub async fn download_chapter_pages_as_cbz<W>(
     source: &Source,
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
-) -> anyhow::Result<()>
+) -> anyhow::Result<(), anyhow::Error>
 where
     W: Write + Seek,
 {
@@ -154,61 +155,77 @@ where
         .build()
         .unwrap();
 
-    stream::iter(pages)
-        .map(|page| {
-            let client = &client;
+    let (tx, mut rx) = mpsc::channel::<(usize, String, Vec<u8>)>(concurrent_requests_pages * 2);
 
-            async move {
-                let image_url = page.image_url.ok_or(anyhow!("page has no image URL"))?;
-                let extension = Path::new(image_url.path())
-                    .extension()
-                    .and_then(|ext| ext.to_str())
-                    .unwrap_or("jpg")
-                    .to_owned();
+    let tx_main = tx.clone();
+    tokio::spawn({
+        let client = client.clone();
+        let source = source.clone();
+        async move {
+            stream::iter(pages)
+                .map(|page| {
+                    let tx = tx.clone();
+                    let client = client.clone();
+                    let source = source.clone();
 
-                // FIXME we should left pad this number with zeroes up to the maximum
-                // amount of pages needed, but for now we pad 4 digits
-                // stop reading the bible if this ever becomes an issue
-                let filename = format!("{:0>4}.{}", page.index, extension);
+                    async move {
+                        let image_url = page.image_url.ok_or(anyhow!("page has no image URL"))?;
+                        let extension = Path::new(image_url.path())
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .unwrap_or("jpg")
+                            .to_owned();
 
-                // TODO we could stream the data from the client into the file
-                // would save a bit of memory but i dont think its a big deal
-                let request = source.get_image_request(image_url).await?;
-                let response_bytes = client
-                    .execute(request)
-                    .await?
-                    .error_for_status()?
-                    .bytes()
-                    .await?;
+                        // FIXME we should left pad this number with zeroes up to the maximum
+                        // amount of pages needed, but for now we pad 4 digits
+                        // stop reading the bible if this ever becomes an issue
+                        let filename = format!("{:0>4}.{}", page.index, extension);
 
-                let final_image = if let Some(blocks_json) = page.base64.as_ref() {
-                    let blocks: Vec<Block> = serde_json::from_str(blocks_json)
-                        .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+                        // TODO we could stream the data from the client into the file
+                        // would save a bit of memory but i dont think its a big deal
+                        let request = source.get_image_request(image_url).await?;
+                        let response_bytes = client
+                            .execute(request)
+                            .await?
+                            .error_for_status()?
+                            .bytes()
+                            .await?;
 
-                    match unscrable_image(response_bytes.to_vec(), blocks) {
-                        Ok(result) => result,
-                        Err(e) => {
-                            println!("unscrable_image failed: {}", e);
-                            anyhow::bail!(e)
-                        }
+                        let final_image = if let Some(blocks_json) = page.base64.as_ref() {
+                            let blocks: Vec<Block> = serde_json::from_str(blocks_json)
+                                .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+
+                            match unscrable_image(response_bytes.to_vec(), blocks) {
+                                Ok(result) => result,
+                                Err(e) => {
+                                    println!("unscrable_image failed: {}", e);
+                                    anyhow::bail!(e)
+                                }
+                            }
+                        } else {
+                            response_bytes.to_vec()
+                        };
+
+                        tx.send((page.index, filename, final_image)).await.ok();
+                        Ok::<_, anyhow::Error>(())
                     }
-                } else {
-                    response_bytes.to_vec()
-                };
+                })
+                .buffer_unordered(concurrent_requests_pages)
+                .try_collect::<Vec<_>>() // chỉ để propagate lỗi
+                .await
+                .ok();
 
-                anyhow::Ok((filename, final_image))
-            }
-        })
-        .buffer_unordered(concurrent_requests_pages)
-        .try_collect::<Vec<_>>()
-        .await?
-        .into_iter()
-        .try_for_each(|(filename, response_bytes)| {
-            writer.start_file(filename, file_options)?;
-            writer.write_all(response_bytes.as_ref())?;
+            drop(tx_main);
+        }
+    });
 
-            Ok(())
-        })
+    // Writer task — sequential zip writing
+    while let Some((_index, filename, data)) = rx.recv().await {
+        writer.start_file(filename.clone(), file_options)?;
+        writer.write_all(&data)?;
+    }
+
+    Ok(())
 }
 // assume Page.text: Option<String>, Page.base64: Option<String>, Page.url: String
 pub async fn extract_image_urls(pages: &[Page]) -> anyhow::Result<Vec<(usize, String)>> {

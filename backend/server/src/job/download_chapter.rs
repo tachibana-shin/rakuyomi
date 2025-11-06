@@ -1,60 +1,67 @@
-use std::{path::PathBuf, sync::Arc};
-
 use shared::{
     chapter_storage::ChapterStorage, database::Database, model::ChapterId,
     source_collection::SourceCollection, source_manager::SourceManager, usecases,
 };
-use tokio::sync::Mutex;
+use std::{path::PathBuf, sync::Arc};
+use tokio::sync::watch;
+use tokio::task::JoinHandle;
 
 use crate::{AppError, ErrorResponse};
 
 use super::state::{Job, JobState};
 
 // FIXME this is kinda ugly, maybe some type aliases would help here
-pub struct DownloadChapterJob(Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>>);
+pub struct DownloadChapterJob {
+    tx: watch::Sender<Option<Result<Arc<PathBuf>, ErrorResponse>>>,
+    rx: watch::Receiver<Option<Result<Arc<PathBuf>, ErrorResponse>>>,
+    handle: JoinHandle<()>,
+}
 
 impl DownloadChapterJob {
     pub fn spawn_new(
-        source_manager: Arc<Mutex<SourceManager>>,
+        source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
         db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
     ) -> Self {
-        let output: Arc<Mutex<Option<Result<PathBuf, ErrorResponse>>>> = Default::default();
-        let output_clone = output.clone();
+        let (tx, rx) = watch::channel::<Option<Result<Arc<PathBuf>, ErrorResponse>>>(None);
 
-        tokio::spawn(async move {
-            *output_clone.lock().await = Some(
-                Self::do_job(
-                    source_manager,
-                    db,
-                    chapter_storage,
-                    chapter_id,
-                    concurrent_requests_pages,
-                )
-                .await,
-            );
+        let tx_clone = tx.clone();
+        let handle = tokio::spawn(async move {
+            let result = Self::do_job(
+                source_manager,
+                db,
+                chapter_storage,
+                chapter_id,
+                concurrent_requests_pages,
+            )
+            .await
+            .map(|p| Arc::new(p));
+
+            let _ = tx_clone.send_replace(Some(result));
         });
 
-        Self(output)
+        Self { tx, rx, handle }
     }
 
     async fn do_job(
-        source_manager: Arc<Mutex<SourceManager>>,
+        source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
         db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
     ) -> Result<PathBuf, ErrorResponse> {
-        let source_manager = source_manager.lock().await;
-        let source = source_manager
-            .get_by_id(chapter_id.source_id())
-            .ok_or(AppError::SourceNotFound)?;
+        let source = {
+            let mgr = source_manager.lock().await;
+            mgr.get_by_id(chapter_id.source_id())
+                .cloned()
+                .ok_or(AppError::SourceNotFound)?
+        };
 
         Ok(usecases::fetch_manga_chapter(
             &db,
-            source,
+            &source,
             &chapter_storage,
             &chapter_id,
             concurrent_requests_pages,
@@ -66,23 +73,24 @@ impl DownloadChapterJob {
 
 impl Job for DownloadChapterJob {
     type Progress = ();
-    type Output = PathBuf;
+    type Output = Arc<PathBuf>;
     type Error = ErrorResponse;
 
     async fn cancel(&self) -> Result<(), AppError> {
-        *self.0.lock().await = Some(Err(ErrorResponse {
-            message: "Download was cancel by user".to_string(),
-        }));
+        self.handle.abort();
+
+        let _ = self.tx.send(Some(Err(ErrorResponse {
+            message: "Download was canceled by user".into(),
+        })));
+
         Ok(())
     }
 
     async fn poll(&self) -> JobState<Self::Progress, Self::Output, Self::Error> {
-        match &*self.0.lock().await {
+        match self.rx.borrow().as_ref() {
             None => JobState::InProgress(()),
-            Some(result) => match result {
-                Ok(path) => JobState::Completed(path.clone()),
-                Err(e) => JobState::Errored(e.clone()),
-            },
+            Some(Ok(path)) => JobState::Completed(path.clone()),
+            Some(Err(e)) => JobState::Errored(e.clone()),
         }
     }
 }

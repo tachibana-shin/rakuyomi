@@ -2,6 +2,17 @@
 
 **rakuyomi** is a manga reader plugin for [KOReader](https://github.com/koreader/koreader).
 
+This fork:
+- Added last read time for manga, chapter
+- Improved UI now you can see exactly which source manga belongs to
+- Added cancel download methods to avoid freezing
+- Fixed back button not working properly
+- Added processing menu in chapter list
+- Added "continue read"
+- Correct write processing to save RAM to avoid freezing KoReader
+- Added cleaner to free up memory
+- Improved SQLite query method to speed up all operations by `200 times` including: library access, search, chapter list (`x300 times`)
+
 <p align="center">
     <img src="docs/src/images/demo.gif" width="60%" />
     <br/>

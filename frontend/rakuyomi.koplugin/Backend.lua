@@ -3,7 +3,6 @@ local ffiutil = require("ffi/util")
 local rapidjson = require("rapidjson")
 local util = require("util")
 
-local Paths = require("Paths")
 local Platform = require("Platform")
 
 local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or 5)

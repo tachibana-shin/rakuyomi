@@ -1,4 +1,4 @@
-use std::io;
+use std::{env, io};
 use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -56,10 +56,7 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    let mut request_json = String::new();
-    std::io::stdin()
-        .read_line(&mut request_json)
-        .with_context(|| "while reading the request from stdin")?;
+    let request_json = env::args().nth(1).expect("missing json argument");
 
     let request: Request = serde_json::from_str(request_json.as_str())
         .with_context(|| format!("while parsing the request from stdin: {}", &request_json))?;

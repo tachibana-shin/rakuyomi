@@ -57,33 +57,18 @@ function UnixServer:request(request)
 
   local udsHttpRequestCommand = REQUEST_COMMAND_OVERRIDE or Paths.getPluginDirectory() .. "/uds_http_request"
 
-  -- i swear to god i hate lua it has literally nothing on its stdlib so we have
-  -- to do those horrible hacks
-  local requestFilePath = os.tmpname()
-  local requestFile, err = io.open(requestFilePath, 'w')
-  if requestFile == nil then
-    return { type = 'ERROR', message = err }
-  end
-
-  requestFile:write(requestJson)
-  requestFile:close()
-
-  local command = 'cat ' .. requestFilePath .. ' | ' .. udsHttpRequestCommand
+  local command = udsHttpRequestCommand .. " '" .. requestJson .. "'"
   if REQUEST_COMMAND_WORKING_DIRECTORY ~= nil then
     command = 'cd ' .. REQUEST_COMMAND_WORKING_DIRECTORY .. ' && ' .. command
   end
 
   local output, err = io.popen(command, 'r')
   if output == nil then
-    os.remove(requestFilePath)
-
     return { type = 'ERROR', message = err }
   end
 
   local responseJson = output:read('*a')
   output:close()
-
-  os.remove(requestFilePath)
 
   local response, err = rapidjson.decode(responseJson)
   if err ~= nil then

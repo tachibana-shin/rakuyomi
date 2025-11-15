@@ -233,20 +233,8 @@ async fn refresh_manga_chapters(
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
-    let timeout_result = tokio::time::timeout(
-        Duration::from_secs(60),
-        usecases::refresh_manga_chapters(&database, &source, manga_id.clone()),
-    )
-    .await;
 
-    match timeout_result {
-        Ok(result) => result?,
-        Err(_) => {
-            return Err(AppError::Other(anyhow::anyhow!(
-                "Refresh chapters timed out"
-            )));
-        }
-    }
+    let _ = usecases::refresh_manga_chapters(&database, &source, manga_id.clone(), 60).await;
 
     Ok(Json(()))
 }

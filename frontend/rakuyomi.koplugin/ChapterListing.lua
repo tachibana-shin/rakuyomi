@@ -76,9 +76,9 @@ function ChapterListing:init()
   self:updateChapterList()
 end
 
-function ChapterListing:onClose()
+function ChapterListing:onClose(call_return)
   UIManager:close(self)
-  if self.on_return_callback then
+  if self.on_return_callback and call_return ~= false then
     self.on_return_callback()
   end
 end
@@ -470,7 +470,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       on_return_callback = onReturnCallback,
     })
 
-    self:onClose()
+    self:onClose(false)
   end)
 end
 

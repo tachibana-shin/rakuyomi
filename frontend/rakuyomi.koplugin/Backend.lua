@@ -551,6 +551,7 @@ end
 -- detect we're done and cleanup
 if _VERSION == "Lua 5.1" then
   logger.info("setting up __gc proxy")
+  ---@diagnostic disable-next-line: deprecated
   local proxy = newproxy(true)
   local proxyMeta = getmetatable(proxy)
 

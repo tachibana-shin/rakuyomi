@@ -12,11 +12,13 @@ local Job = require('jobs/Job')
 local DownloadUnreadChapters = Job:extend()
 
 --- Creates a new `DownloadUnreadChapters` job.
----
---- @param source_id string
---- @param manga_id string
---- @param amount number|nil
---- @param scanlator string|nil NEW: Optional scanlator filter
+--- @class DownloadUnreadChaptersParams
+--- @field source_id string
+--- @field manga_id string
+--- @field amount number|nil
+--- @field scanlator string|nil NEW: Optional scanlator filt
+
+--- @param params  DownloadUnreadChaptersParams
 --- @return self|nil job A new job, or `nil`, if the job could not be created.
 function DownloadUnreadChapters:new(params)
   local o = {

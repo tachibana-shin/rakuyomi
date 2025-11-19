@@ -1,7 +1,5 @@
 local PdfDocument = require('document/pdfdocument')
-local Document = require("document/document")
 local logger = require("logger")
-local util = require("util")
 local rapidjson = require("rapidjson")
 local Paths = require('Paths')
 

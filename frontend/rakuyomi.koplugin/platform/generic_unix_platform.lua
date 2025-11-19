@@ -5,7 +5,7 @@ local C = ffi.C
 local ffiutil = require('ffi/util')
 local Paths = require('Paths')
 local util = require('frontend/util')
-local platformUtil = require('platform/util')
+local platformUtil = require('./util')
 local must = platformUtil.must
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
@@ -154,6 +154,7 @@ function GenericUnixPlatform:startServer()
 
     local exitCode = must(
       "execl",
+      ---@diagnostic disable-next-line: deprecated
       C.execl(serverCommandWithArgs[1], unpack(serverCommandWithArgs, 1, #serverCommandWithArgs + 1))
     )
 

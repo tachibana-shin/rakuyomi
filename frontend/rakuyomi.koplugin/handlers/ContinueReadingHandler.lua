@@ -19,7 +19,8 @@ local MESSAGES = {
 }
 
 local function showChapterConfirmation(chapter, onConfirm, onCancel)
-  local confirm_dialog = ConfirmBox:new {
+  local confirm_dialog
+  confirm_dialog = ConfirmBox:new {
     text = "Resume reading with:\n" .. getChapterDisplayName(chapter) .. "?",
     ok_text = "Read",
     cancel_text = "Cancel",

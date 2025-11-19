@@ -319,7 +319,7 @@ function LibraryView:openMenu()
         Trapper:wrap(function()
           local response = LoadingDialog:showAndRun(
             "Sync to WebDAV...",
-            function() return Backend.syncDatabase(false) end
+            function() return Backend.syncDatabase(false, false) end
           )
 
           if response.type == 'ERROR' then
@@ -338,7 +338,7 @@ function LibraryView:openMenu()
                 Trapper:wrap(function()
                   local response = LoadingDialog:showAndRun(
                     "Migrating database...",
-                    function() return Backend.syncDatabase(true) end
+                    function() return Backend.syncDatabase(true, false) end
                   )
 
                   if response.type == 'ERROR' then

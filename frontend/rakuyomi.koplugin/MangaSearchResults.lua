@@ -128,7 +128,6 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   end
 
   local results = response.body
-  print(require('json').encode(results))
 
   local ui = MangaSearchResults:new {
     results = results,

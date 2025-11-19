@@ -78,6 +78,9 @@ pub struct Settings {
 
     #[serde(default)]
     pub concurrent_requests_pages: Option<usize>,
+
+    #[serde(default)]
+    pub api_sync: Option<String>,
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

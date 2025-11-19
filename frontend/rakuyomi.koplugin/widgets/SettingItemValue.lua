@@ -53,8 +53,11 @@ function SettingItemValue:init()
 end
 
 --- @private
-function SettingItemValue:getCurrentValue()
-  return self.value
+function SettingItemValue:getCurrentValue(real_val)
+  if real_val then
+    return self.value
+  end
+  return self.value or "<unknown>"
 end
 
 --- @private
@@ -154,7 +157,7 @@ function SettingItemValue:onTap()
     local dialog
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue(),
+      input = self:getCurrentValue(true),
       input_hint = self.value_definition.placeholder,
       buttons = {
         {

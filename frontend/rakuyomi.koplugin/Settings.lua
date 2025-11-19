@@ -104,6 +104,14 @@ function Settings:init()
         unit = 'pages',
         default = Device.isKindle() and 4 or 5
       }
+    },
+    {
+      'api_sync',
+      {
+        type = 'string',
+        title = 'WebDAV Sync',
+        placeholder = 'user:password@example.com/folder',
+      }
     }
   }
 

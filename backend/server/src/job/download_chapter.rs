@@ -20,7 +20,7 @@ pub struct DownloadChapterJob {
 impl DownloadChapterJob {
     pub fn spawn_new(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<Database>,
+        db: Arc<tokio::sync::Mutex<Database>>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
@@ -47,7 +47,7 @@ impl DownloadChapterJob {
 
     async fn do_job(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<Database>,
+        db: Arc<tokio::sync::Mutex<Database>>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
@@ -58,6 +58,7 @@ impl DownloadChapterJob {
                 .cloned()
                 .ok_or(AppError::SourceNotFound)?
         };
+        let db = db.lock().await;
 
         Ok(usecases::fetch_manga_chapter(
             &db,

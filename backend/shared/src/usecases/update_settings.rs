@@ -29,6 +29,7 @@ pub struct UpdateableSettings {
     storage_size_limit_mb: usize,
     storage_path: Option<PathBuf>,
     concurrent_requests_pages: Option<usize>,
+    api_sync: Option<String>,
 }
 
 impl UpdateableSettings {
@@ -39,6 +40,7 @@ impl UpdateableSettings {
             StorageSizeLimit(Size::from_megabytes(self.storage_size_limit_mb));
         settings.storage_path = self.storage_path;
         settings.concurrent_requests_pages = self.concurrent_requests_pages;
+        settings.api_sync = self.api_sync;
     }
 }
 
@@ -52,6 +54,7 @@ impl From<&Settings> for UpdateableSettings {
                 .unwrap(),
             storage_path: value.storage_path.clone(),
             concurrent_requests_pages: value.concurrent_requests_pages,
+            api_sync: value.api_sync.clone(),
         }
     }
 }

@@ -18,6 +18,7 @@ use crate::{
 };
 
 pub struct Database {
+    pub filename: PathBuf,
     pool: Pool<Sqlite>,
 }
 
@@ -33,7 +34,27 @@ impl Database {
 
         sqlx::migrate!().run(&pool).await?;
 
-        Ok(Self { pool })
+        Ok(Self {
+            pool,
+            filename: filename.to_path_buf(),
+        })
+    }
+
+    pub async fn hot_replace(&mut self, buf: &Vec<u8>) -> Result<()> {
+        self.pool.close().await;
+
+        tokio::fs::write(&self.filename, buf).await?;
+
+        let options = SqliteConnectOptions::new()
+            .filename(&self.filename)
+            .create_if_missing(true);
+        let pool = Pool::<Sqlite>::connect_with(options).await?;
+
+        sqlx::migrate!().run(&pool).await?;
+
+        self.pool = pool;
+
+        Ok(())
     }
 
     pub async fn get_manga_library(&self) -> Vec<MangaId> {

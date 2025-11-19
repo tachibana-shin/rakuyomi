@@ -36,7 +36,7 @@ pub struct ScanlatorFilter {
 impl DownloadScanlatorChaptersJob {
     pub fn spawn_new(
         source: Source,
-        database: Arc<Database>,
+        database: Arc<tokio::sync::Mutex<Database>>,
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         scanlator_filter: ScanlatorFilter,
@@ -57,6 +57,7 @@ impl DownloadScanlatorChaptersJob {
                 scanlator: scanlator_filter.scanlator,
                 amount: scanlator_filter.amount,
             };
+            let database = database.lock().await;
 
             let stream =
                 shared::usecases::fetch_manga_chapters_in_batch::fetch_manga_chapters_in_batch(

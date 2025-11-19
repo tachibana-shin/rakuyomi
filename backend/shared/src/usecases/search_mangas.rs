@@ -87,7 +87,8 @@ pub async fn search_mangas(
             } = results;
 
             mangas.into_iter().map(move |(manga, option_tuple)| {
-                let (unread_count, last_read, in_library) = option_tuple.unwrap_or((None, None, false));
+                let (unread_count, last_read, in_library) =
+                    option_tuple.unwrap_or((None, None, false));
 
                 Manga {
                     source_information: source_information.clone(),

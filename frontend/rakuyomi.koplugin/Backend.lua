@@ -207,6 +207,18 @@ function Backend.removeFile(filename)
   })
 end
 
+--- Sync database
+--- @param accept_migrate_local boolean Flag if true allow migrate database local from WebDAV
+--- @param accept_replace_remote boolean Flag if true allow replace database remote from local
+--- @return SuccessfulResponse<string>|ErrorResponse
+function Backend.syncDatabase(accept_migrate_local, accept_replace_remote)
+  return Backend.requestJson({
+    path = "/sync-database",
+    body = { accept_migrate_local, accept_replace_remote },
+    method = "POST"
+  })
+end
+
 --- Adds a manga to the user's library.
 --- @return SuccessfulResponse<nil>|ErrorResponse
 function Backend.addMangaToLibrary(source_id, manga_id)

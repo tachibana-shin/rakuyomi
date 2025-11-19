@@ -86,7 +86,7 @@ async fn main() -> anyhow::Result<()> {
 
     let state = State {
         source_manager: Arc::new(Mutex::new(source_manager)),
-        database: Arc::new(database),
+        database: Arc::new(Mutex::new(database)),
         chapter_storage: Arc::new(Mutex::new(chapter_storage)),
         settings: Arc::new(Mutex::new(settings)),
         settings_path,

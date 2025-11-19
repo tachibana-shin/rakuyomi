@@ -21,4 +21,5 @@ return {
   RESTORE              = "\u{f1da}",
   ANGLES_RIGHT         = "\u{f101}",
   COD_LIBRARY          = "\u{f005}",
+  SYNC                 = "\u{f46a}",
 }

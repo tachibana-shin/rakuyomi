@@ -313,6 +313,99 @@ function LibraryView:openMenu()
         end
       },
     },
+    { {
+      text = Icons.SYNC .. " Sync Database (Beta)",
+      callback = function()
+        Trapper:wrap(function()
+          local response = LoadingDialog:showAndRun(
+            "Sync to WebDAV...",
+            function() return Backend.syncDatabase(false) end
+          )
+
+          if response.type == 'ERROR' then
+            ErrorDialog:show(response.message)
+
+            return
+          end
+
+          local InfoMessage = require("ui/widget/infomessage")
+
+          if response.body == 'update_required' then
+            UIManager:show(ConfirmBox:new {
+              text = "The remote database is newer than the local one.\nDo you want to migrate your local database from the server?\n\nThis action cannot be undone.",
+              ok_text = "Migrate",
+              ok_callback = function()
+                Trapper:wrap(function()
+                  local response = LoadingDialog:showAndRun(
+                    "Migrating database...",
+                    function() return Backend.syncDatabase(true) end
+                  )
+
+                  if response.type == 'ERROR' then
+                    ErrorDialog:show(response.message)
+
+                    return
+                  end
+
+                  UIManager:show(InfoMessage:new {
+                    text = "Local database has been migrated from the server!"
+                  })
+
+                  UIManager:close(self)
+                  UIManager:close(dialog)
+                  self:fetchAndShow()
+                end)
+              end,
+              other_buttons = {
+                {
+                  {
+                    text = "Replace Cloud",
+                    callback = function()
+                      Trapper:wrap(function()
+                        local response = LoadingDialog:showAndRun(
+                          "Replacing cloud...",
+                          function() return Backend.syncDatabase(false, true) end
+                        )
+                        if response.type == 'ERROR' then
+                          ErrorDialog:show(response.message)
+
+                          return
+                        end
+
+                        UIManager:show(InfoMessage:new {
+                          text = "Cloud database has been forcedly replaced with local one!"
+                        })
+
+                        UIManager:close(self)
+                        UIManager:close(dialog)
+                        self:fetchAndShow()
+                      end)
+                    end,
+                  }
+                }
+              }
+            })
+
+            return
+          end
+
+          local msg = '';
+          if response.body == 'up_to_date' then
+            msg = "Database is already up to date!"
+          elseif response.body == 'updated_to_server' then
+            msg = "Database has been synced to the server!"
+          elseif response.body == 'updated' then
+            msg = "Local database has been migrated from the server!"
+          else
+            msg = "Sync completed!"
+          end
+
+          UIManager:show(InfoMessage:new {
+            text = msg
+          })
+        end)
+      end
+    } }
   }
 
   dialog = ButtonDialog:new {

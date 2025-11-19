@@ -87,14 +87,15 @@ pub async fn search_mangas(
             } = results;
 
             mangas.into_iter().map(move |(manga, option_tuple)| {
-                let (unread_count, last_read) = option_tuple.unwrap_or((None, None));
+                let (unread_count, last_read, in_library) = option_tuple.unwrap_or((None, None, false));
 
                 Manga {
                     source_information: source_information.clone(),
                     information: manga,
                     state: MangaState::default(),
                     unread_chapters_count: unread_count,
-                    last_read: last_read,
+                    last_read,
+                    in_library,
                 }
             })
         })
@@ -114,5 +115,5 @@ pub enum Error {
 struct SourceMangaSearchResults {
     source_information: SourceInformation,
     /// mangas: Vec<Manga>, $0 is unread chapters count, $1 is last read time
-    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>)>)>,
+    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>, bool)>)>,
 }

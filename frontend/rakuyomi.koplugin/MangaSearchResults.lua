@@ -71,7 +71,11 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
     local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = (mandatory or "") .. Icons.FA_BELL .. " " .. manga.unread_chapters_count
+      mandatory = (mandatory or "") .. Icons.FA_BELL .. manga.unread_chapters_count
+    end
+
+    if manga.in_library then
+      mandatory = (mandatory or "") .. Icons.COD_LIBRARY
     end
 
     table.insert(item_table, {
@@ -124,6 +128,7 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   end
 
   local results = response.body
+  print(require('json').encode(results))
 
   local ui = MangaSearchResults:new {
     results = results,

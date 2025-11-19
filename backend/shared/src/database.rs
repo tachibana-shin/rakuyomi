@@ -496,6 +496,7 @@ impl Database {
                     state: MangaState::default(),
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
+                    in_library: true,
                 })
             })
             .collect();
@@ -589,7 +590,7 @@ impl Database {
     pub async fn fetch_unread_chapter_counts_minimal(
         &self,
         manga_ids: &[MangaId],
-    ) -> HashMap<MangaId, (Option<usize>, Option<i64>)> {
+    ) -> HashMap<MangaId, (Option<usize>, Option<i64>, bool)> {
         let mut map = HashMap::new();
 
         if manga_ids.is_empty() {
@@ -602,39 +603,49 @@ impl Database {
 
         let query = format!(
             r#"
-            WITH filtered AS (
+            WITH inputs(source_id, manga_id) AS (
+                VALUES
+                {}
+            ),
+            filtered AS (
                 SELECT
-                    ci.source_id,
-                    ci.manga_id,
+                    i.source_id,
+                    i.manga_id,
                     ci.chapter_number,
                     cs.read,
-                    cs.last_time
-                FROM chapter_informations ci
+                    cs.last_read as last_time
+                FROM inputs i
+                LEFT JOIN chapter_informations ci
+                    ON ci.source_id = i.source_id AND ci.manga_id = i.manga_id
                 LEFT JOIN chapter_state cs
                     ON ci.source_id = cs.source_id
                     AND ci.manga_id = cs.manga_id
                     AND ci.chapter_id = cs.chapter_id
-                WHERE (ci.source_id, ci.manga_id) IN ({})
             ),
             max_read AS (
                 SELECT
                     source_id,
                     manga_id,
                     COALESCE(MAX(CASE WHEN read = 1 THEN chapter_number END), -1) AS last_read,
-                    COALESCE(MAX(last_time), 0) AS last_read_time
+                    COALESCE(MAX(last_time), NULL) AS last_read_time
                 FROM filtered
                 GROUP BY source_id, manga_id
             )
             SELECT
-                f.source_id,
-                f.manga_id,
-                COUNT(*) AS count,
-                mr.last_read_time as "last_time?: i64"
-            FROM filtered f
-            JOIN max_read mr
-                ON f.source_id = mr.source_id AND f.manga_id = mr.manga_id
-            WHERE f.chapter_number > mr.last_read
-            GROUP BY f.source_id, f.manga_id, mr.last_read_time
+                i.source_id,
+                i.manga_id,
+                COALESCE(COUNT(f.chapter_number), -1) AS count,
+                mr.last_read_time AS last_time,
+                CASE WHEN ml.source_id IS NOT NULL THEN TRUE ELSE FALSE END AS in_library
+            FROM inputs i
+            LEFT JOIN filtered f
+                ON i.source_id = f.source_id AND i.manga_id = f.manga_id
+                AND f.chapter_number > COALESCE((SELECT last_read FROM max_read mr2 WHERE mr2.source_id = i.source_id AND mr2.manga_id = i.manga_id), -1)
+            LEFT JOIN max_read mr
+                ON i.source_id = mr.source_id AND i.manga_id = mr.manga_id
+            LEFT JOIN manga_library ml
+                ON i.source_id = ml.source_id AND i.manga_id = ml.manga_id
+            GROUP BY i.source_id, i.manga_id, mr.last_read_time, in_library
             "#,
             in_clause
         );
@@ -648,15 +659,21 @@ impl Database {
         let rows = query_builder
             .fetch_all(&self.pool)
             .await
-            .unwrap_or_default();
+            .map_err(|e| {
+                eprintln!("🔥 SQL query failed: {}", e);
+            })
+            .unwrap();
 
         for row in rows {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
-            map.insert(id, (row.count.map(|v| v as usize), row.last_time));
+            map.insert(
+                id,
+                (row.count.map(|v| v as usize), row.last_time, row.in_library),
+            );
         }
 
         for id in manga_ids {
-            map.entry(id.clone()).or_insert((None, None));
+            map.entry(id.clone()).or_insert((None, None, false));
         }
 
         map
@@ -1273,6 +1290,7 @@ struct UnreadChaptersRowFull {
     manga_id: String,
     count: Option<i32>,
     last_time: Option<i64>,
+    in_library: bool,
 }
 
 #[derive(sqlx::FromRow)]

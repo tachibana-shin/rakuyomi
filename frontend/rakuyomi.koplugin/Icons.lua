@@ -19,5 +19,6 @@ return {
   UNICODE_ARROW_RIGHT  = "\u{25B8}",
   REFRESHING           = "\u{f021}",
   RESTORE              = "\u{f1da}",
-  ANGLES_RIGHT         = "\u{f101}"
+  ANGLES_RIGHT         = "\u{f101}",
+  COD_LIBRARY          = "\u{f005}",
 }

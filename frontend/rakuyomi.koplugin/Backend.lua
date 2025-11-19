@@ -155,6 +155,7 @@ end
 --- @field title string The title of this manga.
 --- @field unread_chapters_count number|nil The number of unread chapters for this manga, or `nil` if we do not know how many chapters this manga has.
 --- @field last_read number|nil The timestamp (in seconds since epoch) of when this manga was last read, or `nil` if we don't know.
+--- @field in_library boolean Whether this manga is in the user's library.
 
 --- @class Chapter
 --- @field id string The ID of this chapter.

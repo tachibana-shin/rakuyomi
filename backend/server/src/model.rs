@@ -30,6 +30,7 @@ pub struct Manga {
     title: String,
     unread_chapters_count: Option<usize>,
     last_read: Option<i64>,
+    in_library: bool,
 }
 
 impl From<DomainManga> for Manga {
@@ -40,6 +41,7 @@ impl From<DomainManga> for Manga {
             title: value.information.title.unwrap_or("Unknown title".into()),
             unread_chapters_count: value.unread_chapters_count,
             last_read: value.last_read,
+            in_library: value.in_library,
         }
     }
 }

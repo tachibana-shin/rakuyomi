@@ -516,7 +516,7 @@ impl Database {
                     information: info,
                     state: MangaState::default(),
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
-                    last_read: row.last_read,
+                    last_read: row.last_read.map(|v| v as i64),
                     in_library: true,
                 })
             })
@@ -689,7 +689,7 @@ impl Database {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
             map.insert(
                 id,
-                (row.count.map(|v| v as usize), row.last_time, row.in_library),
+                (row.count.map(|v| v as usize), row.last_time.map(|v| v as i64), row.in_library),
             );
         }
 
@@ -1209,7 +1209,7 @@ pub struct MangaLibraryRowWithReadCount {
 
     /// Number of unread chapters (computed via COUNT)
     /// Compatible sqlx but never None in practice
-    pub unread_chapters_count: Option<i32>,
+    pub unread_chapters_count: Option<i64>,
 
     /// Timestamp of the last read chapter (nullable in DB)
     pub last_read: Option<i64>,
@@ -1301,7 +1301,7 @@ impl From<ChapterStateRow> for ChapterState {
 
 #[derive(sqlx::FromRow)]
 struct UnreadChaptersRow {
-    count: Option<i32>,
+    count: Option<i64>,
     has_chapters: Option<bool>,
 }
 
@@ -1310,7 +1310,7 @@ struct UnreadChaptersRowFull {
     source_id: String,
     manga_id: String,
     count: Option<i32>,
-    last_time: Option<i64>,
+    last_time: Option<i32>,
     in_library: bool,
 }
 

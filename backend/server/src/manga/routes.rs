@@ -148,7 +148,13 @@ async fn sync_database(
     let mut settings = settings.lock().await;
     let mut database = database.lock().await;
 
-    let state = usecases::sync_database(&mut database, &mut settings, accept_migrate_local, accept_replace_remote).await?;
+    let state = usecases::sync_database(
+        &mut database,
+        &mut settings,
+        accept_migrate_local,
+        accept_replace_remote,
+    )
+    .await?;
 
     Ok(Json(state))
 }

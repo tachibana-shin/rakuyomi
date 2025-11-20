@@ -55,7 +55,7 @@ pub struct HTMLElement {
 }
 
 impl HTMLElement {
-    pub fn element_ref(&self) -> ElementRef {
+    pub fn element_ref(&'_ self) -> ElementRef<'_> {
         ElementRef::wrap(self.document.tree.get(self.node_id).unwrap()).unwrap()
     }
 }

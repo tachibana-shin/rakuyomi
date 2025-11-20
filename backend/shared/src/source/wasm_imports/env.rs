@@ -5,7 +5,7 @@ use wasm_shared::{
     get_memory,
     memory_reader::{read_bytes, read_string},
 };
-use wasmi::{core::HostError, Caller, Linker};
+use wasmi::{errors::HostError, Caller, Linker};
 
 use crate::source::wasm_store::WasmStore;
 

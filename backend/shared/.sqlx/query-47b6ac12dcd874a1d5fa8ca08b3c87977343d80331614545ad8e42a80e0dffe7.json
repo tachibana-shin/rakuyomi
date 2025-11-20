@@ -6,20 +6,20 @@
       {
         "name": "count",
         "ordinal": 0,
-        "type_info": "Int"
+        "type_info": "Integer"
       },
       {
         "name": "has_chapters: bool",
         "ordinal": 1,
-        "type_info": "Int"
+        "type_info": "Integer"
       }
     ],
     "parameters": {
       "Right": 3
     },
     "nullable": [
-      null,
-      null
+      false,
+      false
     ]
   },
   "hash": "47b6ac12dcd874a1d5fa8ca08b3c87977343d80331614545ad8e42a80e0dffe7"

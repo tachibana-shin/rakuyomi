@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
-use quick_xml::{de::from_str, se::to_string, DeError};
+use quick_xml::SeError;
+use quick_xml::{de::from_str, se::to_string};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
@@ -199,7 +200,7 @@ impl ComicInfo {
         comic_info
     }
 
-    pub fn to_xml(&self) -> Result<String, DeError> {
+    pub fn to_xml(&self) -> Result<String, SeError> {
         let xml_header = r#"<?xml version="1.0" encoding="utf-8"?>"#;
         let xml_content = to_string(&self)?;
         Ok(format!("{}\n{}", xml_header, xml_content))

@@ -3,6 +3,7 @@ use reqwest::{Method, Request};
 use serde::Deserialize;
 use std::{
     fs,
+    io::Read,
     path::Path,
     sync::{Arc, Mutex},
 };
@@ -160,14 +161,18 @@ impl BlockingSource {
 
         let source_settings = SourceSettings::new(&setting_definitions, stored_source_settings)?;
 
-        let wasm_file = archive
+        let mut wasm_bytes = Vec::new();
+        archive
             .by_name("Payload/main.wasm")
-            .with_context(|| "while loading main.wasm")?;
+            .with_context(|| "while loading main.wasm")?
+            .read_to_end(&mut wasm_bytes)
+            .with_context(|| format!("failed reading wasm from zip entry {}", path.display()))?;
 
         let engine = Engine::default();
         let wasm_store = WasmStore::new(manifest.info.id.clone(), source_settings, settings);
         let mut store = Store::new(&engine, wasm_store);
-        let module = Module::new_streaming(&engine, wasm_file)
+
+        let module = Module::new(&engine, &wasm_bytes)
             .with_context(|| format!("failed loading module from {}", path.display()))?;
 
         let mut linker = Linker::new(&engine);
@@ -180,14 +185,8 @@ impl BlockingSource {
         register_std_imports(&mut linker)?;
 
         let instance = linker
-            .instantiate(&mut store, &module)
-            .with_context(|| {
-                format!(
-                    "failed creating instance when loading from {}",
-                    path.display()
-                )
-            })?
-            .start(&mut store)?;
+            .instantiate_and_start(&mut store, &module)
+            .with_context(|| format!("failed creating instance from {}", path.display()))?;
 
         Ok(Self {
             store,

@@ -21,12 +21,12 @@
       {
         "name": "read: bool",
         "ordinal": 3,
-        "type_info": "Int64"
+        "type_info": "Integer"
       },
       {
         "name": "last_read?: i64",
         "ordinal": 4,
-        "type_info": "Int64"
+        "type_info": "Integer"
       }
     ],
     "parameters": {

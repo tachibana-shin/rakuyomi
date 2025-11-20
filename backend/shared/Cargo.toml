@@ -4,68 +4,68 @@ version = "0.1.0"
 edition = "2021"
 
 [build-dependencies]
-regex = "1.10.4"
-schemars = { version = "0.8.16", features = ["url"] }
-size = "0.4.1"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.103"
-url = { version = "2.4.0", features = ["serde"] }
+regex = "1.12.2"
+schemars = { version = "1.1.0", features = ["url2"] }
+size = "0.5.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+url = { version = "2.5.7", features = ["serde"] }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-anyhow = "1.0.71"
-chrono = "0.4.26"
-chrono-tz = "0.8.3"
-darling = "0.20.3"
-num_enum = "0.6.1"
-proc-macro2 = "1.0.65"
-quote = "1.0.30"
-syn = { version = "2.0.26", features = ["full"] }
-url = { version = "2.4.0", features = ["serde"] }
+anyhow = "1.0.100"
+chrono = "0.4.42"
+chrono-tz = "0.10.4"
+darling = "0.21.3"
+num_enum = "0.7.5"
+proc-macro2 = "1.0.103"
+quote = "1.0.42"
+syn = { version = "2.0.110", features = ["full"] }
+url = { version = "2.5.7", features = ["serde"] }
 wasm_macros = { path = "../wasm_macros" }
 wasm_shared = { path = "../wasm_shared" }
-serde_json = "1.0.103"
-scraper = "0.23.1"
-ouroboros = "0.17.1"
+serde_json = "1.0.145"
+scraper = "0.24.0"
+ouroboros = "0.18.5"
 ego-tree = "0.10.0"
 html-escape = "0.2.13"
-reqwest = { version = "0.11.18", default-features = false, features = ["blocking", "json", "rustls-tls", "stream"] }
+reqwest = { version = "0.12.24", default-features = false, features = ["blocking", "json", "rustls-tls", "stream"] }
 semver = "1.0"
-zip = { version = "0.6.6", default-features = false, features = ["deflate", "bzip2"] }
-serde = { version = "1.0.193", features = ["derive"] }
+zip = { version = "6.0.0", default-features = false, features = ["deflate", "bzip2"] }
+serde = { version = "1.0.228", features = ["derive"] }
 scopeguard = "1.2.0"
-tokio = { version = "1.35.1", features = ["full"] }
+tokio = { version = "1.48.0", features = ["full"] }
 wasmi.workspace = true
-futures = "0.3.30"
-rust_decimal = "1.33.1"
-sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio"] }
-thiserror = "1.0.56"
-surge-ping = "0.8.0"
-async-stream = "0.3.5"
-tokio-util = "0.7.10"
-tempfile = "3.9.0"
-log = "0.4.21"
-derive_more = { version = "1.0.0", features = ["from", "try_unwrap", "deref"] }
-size = "0.4.1"
+futures = "0.3.31"
+rust_decimal = "1.39.0"
+sqlx = { version = "0.8.6", features = ["sqlite", "runtime-tokio"] }
+thiserror = "2.0.17"
+surge-ping = "0.8.3"
+async-stream = "0.3.6"
+tokio-util = "0.7.17"
+tempfile = "3.23.0"
+log = "0.4.28"
+derive_more = { version = "2.0.1", features = ["from", "try_unwrap", "deref"] }
+size = "0.5.0"
 walkdir = "2.5.0"
-regex = "1.10.4"
-schemars = { version = "0.8.16", features = ["url"] }
+regex = "1.12.2"
+schemars = { version = "1.1.0", features = ["url2"] }
 pared = { git = "https://github.com/hanatsumi/pared.git", branch = "feat/unwrap-or-clone" }
-sanitize-filename = "0.5.0"
-serde_json_lenient = "0.2.3"
+sanitize-filename = "0.6.0"
+serde_json_lenient = "0.2.4"
 futures-util = "0.3.31"
 sha2 = "0.10"
 base64 = "0.22"
-epub-builder = "0.8.0"
+epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }
 kuchiki = "0.8.1"
 markup5ever = "=0.10.1"
-quick-xml = { version = "0.30.0", features = ["serialize"] }
-image = "0.25.6"
+quick-xml = { version = "0.38.4", features = ["serialize"] }
+image = "0.25.9"
 percent-encoding = "2.3.2"
 
 [dev-dependencies]
-criterion = { version = "0.5.1", features = ["async_tokio"] }
-pprof = { version = "0.13", features = ["criterion", "flamegraph"] }
+criterion = { version = "0.7.0", features = ["async_tokio"] }
+pprof = { version = "0.15", features = ["criterion", "flamegraph"] }
 
 [[bench]]
 name = "chapter_downloader_benchmark"

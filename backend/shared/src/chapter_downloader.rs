@@ -15,7 +15,7 @@ use url::Url;
 
 use anyhow::{anyhow, Context};
 use tokio::sync::mpsc;
-use zip::{write::FileOptions, CompressionMethod, ZipWriter};
+use zip::{CompressionMethod, ZipWriter};
 
 use epub_builder::{EpubBuilder, EpubContent, ReferenceType, ZipLibrary};
 
@@ -142,7 +142,8 @@ where
     W: Write + Seek,
 {
     let mut writer = ZipWriter::new(output);
-    let file_options = FileOptions::default().compression_method(CompressionMethod::Stored);
+    let file_options: zip::write::FileOptions<'_, ()> =
+        zip::write::FileOptions::default().compression_method(CompressionMethod::Stored);
 
     // Add ComicInfo.xml to the CBZ file
     writer.start_file("ComicInfo.xml", file_options)?;

@@ -36,12 +36,12 @@
       {
         "name": "unread_chapters_count",
         "ordinal": 6,
-        "type_info": "Int"
+        "type_info": "Integer"
       },
       {
         "name": "last_read?: i64",
         "ordinal": 7,
-        "type_info": "Int"
+        "type_info": "Integer"
       }
     ],
     "parameters": {

@@ -160,19 +160,23 @@ impl<'de> Deserialize<'de> for StorageSizeLimit {
 }
 
 impl JsonSchema for StorageSizeLimit {
-    fn schema_name() -> String {
-        "StorageSizeLimit".to_owned()
+    fn schema_name() -> Cow<'static, str> {
+        "StorageSizeLimit".to_owned().into()
     }
 
     fn schema_id() -> Cow<'static, str> {
         Cow::Borrowed(concat!(module_path!(), "::StorageSizeLimit"))
     }
 
-    fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
-        let mut schema_object = gen.subschema_for::<String>().into_object();
+    fn json_schema(gen: &mut schemars::generate::SchemaGenerator) -> schemars::Schema {
+        let mut binding = gen.subschema_for::<String>();
+        let schema_object = binding.as_object_mut().unwrap();
 
-        schema_object.string().pattern = Some(STORAGE_SIZE_LIMIT_REGEX.to_owned());
+        schema_object.insert(
+            "pattern".to_owned(),
+            Some(STORAGE_SIZE_LIMIT_REGEX.to_owned()).into(),
+        );
 
-        schema_object.into()
+        schema_object.clone().into()
     }
 }

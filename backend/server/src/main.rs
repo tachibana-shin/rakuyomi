@@ -168,9 +168,9 @@ impl AppError {
 impl From<&AppError> for StatusCode {
     fn from(value: &AppError) -> Self {
         match &value {
-            AppError::SourceNotFound | AppError::NotFound | AppError::DownloadAllChaptersProgressNotFound => {
-                StatusCode::NOT_FOUND
-            }
+            AppError::SourceNotFound
+            | AppError::NotFound
+            | AppError::DownloadAllChaptersProgressNotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -187,7 +187,11 @@ impl From<&AppError> for ErrorResponse {
             AppError::NetworkFailure(_) => {
                 "There was a network error. Check your connection and try again.".to_string()
             }
-            AppError::Other(ref e) => format!("Something went wrong: {}", e),
+            AppError::Other(ref e) => {
+                eprintln!("Unexpected error: {:?}", e);
+
+                format!("Something went wrong: {}", e)
+            }
         };
 
         Self { message }

@@ -11,8 +11,6 @@ pub async fn get_cached_manga_details(
     match db.find_cached_manga_details(&id).await {
         Some((mut details, per_read)) => {
             if let Some(url) = &details.cover_url {
-                let req = source.get_image_request(url.to_owned()).await?;
-
                 let output = chapter_storage
                     .cached_poster(&url, || source.get_image_request(url.to_owned()))
                     .await?

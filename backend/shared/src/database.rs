@@ -1063,10 +1063,7 @@ impl Database {
             r#"
             SELECT 
                 md.*, 
-                COALESCE(
-                    CAST(SUM(cs.read) AS FLOAT) / NULLIF(COUNT(cs.chapter_id), 0), 
-                    0
-                ) AS "per_read: f64",
+                COALESCE(AVG(cs.read), 0) AS "per_read: f64",
                 COALESCE(
                     MAX(cs.last_read),
                     0

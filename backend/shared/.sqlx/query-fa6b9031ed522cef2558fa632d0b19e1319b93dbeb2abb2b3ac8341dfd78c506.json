@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT \n                md.*, \n                COALESCE(\n                    CAST(SUM(cs.read) AS FLOAT) / NULLIF(COUNT(cs.chapter_id), 0), \n                    0\n                ) AS \"per_read: f64\",\n                COALESCE(\n                    MAX(cs.last_read),\n                    0\n                ) AS \"last_read: i64\"\n            FROM manga_details md\n            LEFT JOIN chapter_state cs\n                ON cs.source_id = md.source_id\n                AND cs.manga_id = md.id\n            WHERE md.source_id = ?1 AND md.id = ?2\n            GROUP BY md.source_id, md.id\n            ",
+  "query": "\n            SELECT \n                md.*, \n                COALESCE(AVG(cs.read), 0) AS \"per_read: f64\",\n                COALESCE(\n                    MAX(cs.last_read),\n                    0\n                ) AS \"last_read: i64\"\n            FROM manga_details md\n            LEFT JOIN chapter_state cs\n                ON cs.source_id = md.source_id\n                AND cs.manga_id = md.id\n            WHERE md.source_id = ?1 AND md.id = ?2\n            GROUP BY md.source_id, md.id\n            ",
   "describe": {
     "columns": [
       {
@@ -112,5 +112,5 @@
       null
     ]
   },
-  "hash": "34ab2eef0733316e66725eb32726b0471484eaeee840ddea1b3ec1c66d70d27e"
+  "hash": "fa6b9031ed522cef2558fa632d0b19e1319b93dbeb2abb2b3ac8341dfd78c506"
 }

@@ -206,8 +206,9 @@ function MangaSearchResults:onContextMenuChoice(item)
             ui.on_return_callback = self.onReturnCallback
             UIManager:show(ui)
           end
-          MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
-          UIManager:close(self)
+          MangaInfoWidget:fetchAndShow(manga, function()
+            UIManager:close(self)
+          end, onReturnCallback)
         end
       }
     },

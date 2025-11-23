@@ -174,8 +174,9 @@ function LibraryView:onContextMenuChoice(item)
           local onReturnCallback = function()
             self:fetchAndShow()
           end
-          MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
-          UIManager:close(self)
+          MangaInfoWidget:fetchAndShow(manga, function()
+            UIManager:close(self)
+          end, onReturnCallback)
         end
       }
     },

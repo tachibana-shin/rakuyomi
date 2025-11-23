@@ -558,9 +558,10 @@ function MangaInfoWidget:refreshDetails(source_id, manga_id)
 end
 
 --- @param raw_manga Manga
+--- @param close_parent fun()
 --- @param on_return_callback fun()|nil
 --- @param no_refresh boolean|nil
-function MangaInfoWidget:fetchAndShow(raw_manga, on_return_callback, no_refresh)
+function MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callback, no_refresh)
   -- Trapper:wrap(function()
   local response = LoadingDialog:showAndRun(
     "Loading details...",
@@ -571,7 +572,7 @@ function MangaInfoWidget:fetchAndShow(raw_manga, on_return_callback, no_refresh)
 
   if response.type == 'ERROR' and response.status == 404 and no_refresh ~= true then
     MangaInfoWidget:refreshDetails(raw_manga.source.id, raw_manga.id)
-    MangaInfoWidget:fetchAndShow(raw_manga, on_return_callback, true)
+    MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callback, true)
 
     return
   end
@@ -593,6 +594,7 @@ function MangaInfoWidget:fetchAndShow(raw_manga, on_return_callback, no_refresh)
     per_read = response.body[2],
     on_return_callback = on_return_callback,
   }
+  close_parent()
   UIManager:show(widget)
   -- end)
 end

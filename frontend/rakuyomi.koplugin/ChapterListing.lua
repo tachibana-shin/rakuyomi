@@ -509,8 +509,9 @@ function ChapterListing:openMenu()
           local onReturnCallback = function()
             self:fetchAndShow(self.manga, self.on_return_callback, self.accept_cached_results)
           end
-          MangaInfoWidget:fetchAndShow(self.manga, onReturnCallback)
-          UIManager:close(self)
+          MangaInfoWidget:fetchAndShow(self.manga, function()
+            UIManager:close(self)
+          end, onReturnCallback)
         end
       }
     },

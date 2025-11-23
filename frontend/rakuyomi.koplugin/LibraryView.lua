@@ -21,6 +21,7 @@ local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 local calcLastReadText = require("utils/calcLastReadText")
 
 local LoadingDialog = require("LoadingDialog")
+local MangaInfoWidget = require("MangaInfoWidget")
 
 local LibraryView = Menu:extend {
   name = "library_view",
@@ -163,6 +164,18 @@ function LibraryView:onContextMenuChoice(item)
 
           UIManager:close(self)
           self:fetchAndShow()
+        end
+      },
+      {
+        text = Icons.INFO .. " Details",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          local onReturnCallback = function()
+            self:fetchAndShow()
+          end
+          MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
+          UIManager:close(self)
         end
       }
     },

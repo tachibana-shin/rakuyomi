@@ -19,6 +19,7 @@ local Icons = require("Icons")
 local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
 local MangaReader = require("MangaReader")
+local MangaInfoWidget = require("MangaInfoWidget")
 local Testing = require("testing")
 local calcLastReadText = require("utils/calcLastReadText")
 
@@ -267,7 +268,8 @@ end
 --- @param onReturnCallback fun(): nil
 --- @param accept_cached_results? boolean If set, failing to refresh the list of chapters from the source
 --- will not show an error. Defaults to false.
-function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
+--- @param bypass_trapper_check? boolean If set to true, will not check whether the function
+function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results, bypass_trapper_check)
   accept_cached_results = accept_cached_results or false
 
   local cancelled = false
@@ -284,7 +286,8 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
       UIManager:show(cancelledMessage)
 
       cancelled = true
-    end
+    end,
+    bypass_trapper_check
   )
 
   if cancelled then
@@ -481,16 +484,6 @@ function ChapterListing:openMenu()
   local buttons = {
     {
       {
-        text = Icons.REFRESHING .. " Refresh",
-        callback = function()
-          UIManager:close(dialog)
-
-          self:refreshChapters()
-        end
-      },
-    },
-    {
-      {
         text = Icons.FA_BELL .. _(" Add to Library"),
         callback = function()
           UIManager:close(dialog)
@@ -498,6 +491,28 @@ function ChapterListing:openMenu()
           self:addToLibrary()
         end
       },
+    },
+    {
+      {
+        text = Icons.REFRESHING .. " Refresh",
+        callback = function()
+          UIManager:close(dialog)
+
+          self:refreshChapters()
+        end
+      },
+      {
+        text = Icons.INFO .. " Details",
+        callback = function()
+          UIManager:close(dialog)
+
+          local onReturnCallback = function()
+            self:fetchAndShow(self.manga, self.on_return_callback, self.accept_cached_results)
+          end
+          MangaInfoWidget:fetchAndShow(self.manga, onReturnCallback)
+          UIManager:close(self)
+        end
+      }
     },
     {
       {

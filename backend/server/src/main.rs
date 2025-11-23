@@ -139,6 +139,7 @@ fn get_build_info() -> Option<BuildInfo> {
 // Make our own error that wraps `anyhow::Error`.
 pub enum AppError {
     SourceNotFound,
+    NotFound,
     DownloadAllChaptersProgressNotFound,
     NetworkFailure(anyhow::Error),
     Other(anyhow::Error),
@@ -167,7 +168,7 @@ impl AppError {
 impl From<&AppError> for StatusCode {
     fn from(value: &AppError) -> Self {
         match &value {
-            AppError::SourceNotFound | AppError::DownloadAllChaptersProgressNotFound => {
+            AppError::SourceNotFound | AppError::NotFound | AppError::DownloadAllChaptersProgressNotFound => {
                 StatusCode::NOT_FOUND
             }
             _ => StatusCode::INTERNAL_SERVER_ERROR,
@@ -179,6 +180,7 @@ impl From<&AppError> for ErrorResponse {
     fn from(value: &AppError) -> Self {
         let message = match value {
             AppError::SourceNotFound => "Source was not found".to_string(),
+            AppError::NotFound => "Requested item was not found".to_string(),
             AppError::DownloadAllChaptersProgressNotFound => {
                 "No download is in progress.".to_string()
             }

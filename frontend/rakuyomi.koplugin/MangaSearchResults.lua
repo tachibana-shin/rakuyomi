@@ -1,7 +1,8 @@
-local ConfirmBox = require("ui/widget/confirmbox")
+local ButtonDialog = require("ui/widget/buttondialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
+local _ = require("gettext")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -10,6 +11,7 @@ local LoadingDialog = require("LoadingDialog")
 local ChapterListing = require("ChapterListing")
 local Testing = require("testing")
 local Icons = require("Icons")
+local MangaInfoWidget = require("MangaInfoWidget")
 local calcLastReadText = require("utils/calcLastReadText")
 
 --- @class MangaSearchResults: { [any]: any }
@@ -161,24 +163,61 @@ end
 function MangaSearchResults:onContextMenuChoice(item)
   --- @type Manga
   local manga = item.manga
-  UIManager:show(ConfirmBox:new {
-    text = "Do you want to add \"" .. manga.title .. "\" to your library?",
-    ok_text = "Add",
-    ok_callback = function()
-      local _, err = Backend.addMangaToLibrary(manga.source.id, manga.id)
 
-      if err ~= nil then
-        ErrorDialog:show(err)
+  local dialog
+  local buttons = {
+    {
+      {
+        text = Icons.FA_BELL .. _(" Add to Library"),
+        callback = function()
+          UIManager:close(dialog)
 
-        return
-      end
+          local _, err = Backend.addMangaToLibrary(manga.source.id, manga.id)
 
-      Testing:emitEvent("manga_added_to_library", {
-        source_id = manga.source.id,
-        manga_id = manga.id,
-      })
-    end
-  })
+          if err ~= nil then
+            ErrorDialog:show(err)
+
+            return
+          end
+
+          manga.in_library = true
+          self:updateItems()
+
+          Testing:emitEvent("manga_added_to_library", {
+            source_id = manga.source.id,
+            manga_id = manga.id,
+          })
+        end
+      },
+    },
+    {
+      {
+        text = Icons.INFO .. " " .. _("Details"),
+        callback = function()
+          UIManager:close(dialog)
+
+          local onReturnCallback = function()
+            local ui = MangaSearchResults:new {
+              results = self.results,
+              on_return_callback = self.onReturnCallback,
+              covers_fullscreen = true, -- hint for UIManager:_repaint()
+              page = self.page
+            }
+            ui.on_return_callback = self.onReturnCallback
+            UIManager:show(ui)
+          end
+          MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
+          UIManager:close(self)
+        end
+      }
+    },
+  }
+
+  dialog = ButtonDialog:new {
+    buttons = buttons,
+  }
+
+  UIManager:show(dialog)
 end
 
 return MangaSearchResults

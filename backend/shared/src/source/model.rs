@@ -45,7 +45,7 @@ pub enum SettingDefinition {
     Link { title: String, url: String },
 }
 
-#[derive(Debug, Clone, Default, FromPrimitive)]
+#[derive(Serialize, Debug, Clone, Default, FromPrimitive)]
 #[repr(u8)]
 pub enum PublishingStatus {
     #[default]
@@ -57,7 +57,7 @@ pub enum PublishingStatus {
     NotPublished = 5,
 }
 
-#[derive(Debug, Clone, Default, FromPrimitive)]
+#[derive(Serialize, Debug, Clone, Default, FromPrimitive)]
 #[repr(u8)]
 pub enum MangaContentRating {
     #[default]
@@ -66,7 +66,7 @@ pub enum MangaContentRating {
     Nsfw = 2,
 }
 
-#[derive(Debug, Clone, Default, FromPrimitive)]
+#[derive(Serialize, Debug, Clone, Default, FromPrimitive)]
 #[repr(u8)]
 pub enum MangaViewer {
     #[default]
@@ -77,7 +77,7 @@ pub enum MangaViewer {
     Scroll = 4,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Serialize, Debug, Clone, Default)]
 pub struct Manga {
     pub source_id: String,
     pub id: String,

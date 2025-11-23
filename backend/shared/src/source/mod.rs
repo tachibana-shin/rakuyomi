@@ -91,6 +91,13 @@ impl Source {
     );
 
     wrap_blocking_source_fn!(
+        get_manga_details,
+        Result<Manga>,
+        cancellation_token: CancellationToken,
+        manga_id: String
+    );
+
+    wrap_blocking_source_fn!(
         get_chapter_list,
         Result<Vec<Chapter>>,
         cancellation_token: CancellationToken,
@@ -251,6 +258,55 @@ impl BlockingSource {
         // TODO remove page_descriptor and filters_descriptor from the source's storage
 
         Ok(mangas)
+    }
+
+    pub fn get_manga_details(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga_id: String,
+    ) -> Result<Manga> {
+        self.run_under_context(
+            cancellation_token,
+            OperationContextObject::Manga {
+                id: manga_id.clone(),
+            },
+            |this| this.get_manga_details_inner(manga_id),
+        )
+    }
+
+    fn get_manga_details_inner(&mut self, manga_id: String) -> Result<Manga> {
+        // HACK aidoku actually places the entire `Manga` object into the store, but it seems only
+        // the `id` field is needed, so we just store a `HashMap` with the `id` set.
+        // surely this wont break in the future!
+        let mut manga_hashmap = ValueMap::new();
+        manga_hashmap.insert("id".to_string(), manga_id.into());
+
+        let manga_descriptor = self.store.data_mut().store_std_value(
+            Value::Object(ObjectValue::ValueMap(manga_hashmap)).into(),
+            None,
+        );
+
+        let wasm_function = self
+            .instance
+            .get_typed_func::<i32, i32>(&mut self.store, "get_manga_details")?;
+
+        let manga_details_descriptor =
+            wasm_function.call(&mut self.store, manga_descriptor as i32)?;
+        let manga: Manga = match self
+            .store
+            .data_mut()
+            .get_std_value(manga_details_descriptor as usize)
+            .ok_or(anyhow!("could not read data from manga details descriptor"))?
+            .as_ref()
+        {
+            Value::Object(ObjectValue::Manga(manga)) => manga.clone(),
+            other => bail!(
+                "expected manga details descriptor to be a manga object, found {:?} instead",
+                other
+            ),
+        };
+
+        Ok(manga)
     }
 
     pub fn get_chapter_list(

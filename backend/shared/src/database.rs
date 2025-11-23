@@ -1,3 +1,4 @@
+use chrono::TimeZone;
 use futures::TryStreamExt;
 use std::{
     collections::{HashMap, HashSet},
@@ -689,7 +690,11 @@ impl Database {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
             map.insert(
                 id,
-                (row.count.map(|v| v as usize), row.last_time.map(|v| v as i64), row.in_library),
+                (
+                    row.count.map(|v| v as usize),
+                    row.last_time.map(|v| v as i64),
+                    row.in_library,
+                ),
             );
         }
 
@@ -1046,6 +1051,132 @@ impl Database {
         Ok(())
     }
 
+    pub async fn find_cached_manga_details(
+        &self,
+        manga_id: &MangaId,
+    ) -> Option<(crate::source::model::Manga, f64)> {
+        let source_id = manga_id.source_id().value();
+        let manga_id = manga_id.value();
+
+        let row = sqlx::query_as!(
+            MangaDetailsRow,
+            r#"
+            SELECT 
+                md.*, 
+                COALESCE(
+                    CAST(SUM(cs.read) AS FLOAT) / NULLIF(COUNT(cs.chapter_id), 0), 
+                    0
+                ) AS "per_read: f64",
+                COALESCE(
+                    MAX(cs.last_read),
+                    0
+                ) AS "last_read: i64"
+            FROM manga_details md
+            LEFT JOIN chapter_state cs
+                ON cs.source_id = md.source_id
+                AND cs.manga_id = md.id
+            WHERE md.source_id = ?1 AND md.id = ?2
+            GROUP BY md.source_id, md.id
+            "#,
+            source_id,
+            manga_id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .unwrap();
+
+        row.map(|v| {
+            let per_read = v.per_read.unwrap_or(0.0);
+            let manga = v.into();
+            (manga, per_read)
+        })
+    }
+
+    pub async fn upsert_cached_manga_details(
+        &self,
+        manga_id: &MangaId,
+        manga: &crate::source::model::Manga,
+    ) -> Result<()> {
+        // Extract keys
+        let source_id = manga_id.source_id().value();
+        let id = manga_id.value();
+
+        // Serialize tags to JSON (Option<Vec<String>> → Option<String>)
+        let tags = manga
+            .tags
+            .as_ref()
+            .map(|t| serde_json::to_string(t).unwrap());
+
+        // Convert Url → Option<String>
+        let cover_url = manga.cover_url.as_ref().map(|u| u.as_str().to_string());
+        let url = manga.url.as_ref().map(|u| u.as_str().to_string());
+
+        // Convert DateTime → Option<String> (ISO8601)
+        let last_updated = manga.last_updated.map(|dt| dt.to_rfc3339());
+        let last_opened = manga.last_opened.map(|dt| dt.to_rfc3339());
+        let date_added = manga.date_added.map(|dt| dt.to_rfc3339());
+
+        let status = manga.status.clone() as u8;
+        let nsfw = manga.nsfw.clone() as u8;
+        let viewer = manga.viewer.clone() as u8;
+
+        sqlx::query!(
+            r#"
+            INSERT INTO manga_details (
+                source_id,
+                id,
+                title,
+                author,
+                artist,
+                description,
+                tags,
+                cover_url,
+                url,
+                status,
+                nsfw,
+                viewer,
+                last_updated,
+                last_opened,
+                date_added
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)
+            ON CONFLICT(source_id, id) DO UPDATE SET
+                title        = excluded.title,
+                author       = excluded.author,
+                artist       = excluded.artist,
+                description  = excluded.description,
+                tags         = excluded.tags,
+                cover_url    = excluded.cover_url,
+                url          = excluded.url,
+                status       = excluded.status,
+                nsfw         = excluded.nsfw,
+                viewer       = excluded.viewer,
+                last_updated = excluded.last_updated,
+                last_opened  = excluded.last_opened,
+                date_added   = excluded.date_added
+            "#,
+            source_id,
+            id,
+            manga.title,
+            manga.author,
+            manga.artist,
+            manga.description,
+            tags,
+            cover_url,
+            url,
+            status,
+            nsfw,
+            viewer,
+            last_updated,
+            last_opened,
+            date_added,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn find_manga_state(&self, manga_id: &MangaId) -> Option<MangaState> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
@@ -1235,6 +1366,85 @@ impl From<MangaInformationsRow> for MangaInformation {
             cover_url: value
                 .cover_url
                 .map(|url_string| url_string.as_str().try_into().unwrap()),
+        }
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct MangaDetailsRow {
+    source_id: String,
+    id: String,
+    title: Option<String>,
+    author: Option<String>,
+    artist: Option<String>,
+    description: Option<String>,
+    tags: Option<String>,
+    cover_url: Option<String>,
+    url: Option<String>,
+    status: i64,
+    nsfw: i64,
+    viewer: i64,
+    // FIXME i dont think those are needed, the sources have no way of creating them
+    last_updated: Option<String>,
+    last_opened: Option<String>,
+    last_read: Option<i64>,
+    date_added: Option<String>,
+
+    pub per_read: Option<f64>,
+}
+impl From<MangaDetailsRow> for crate::source::model::Manga {
+    fn from(row: MangaDetailsRow) -> Self {
+        // Parse enums (SQLite returns INTEGER as i64)
+        let status = crate::source::model::PublishingStatus::from(row.status as u8);
+        let nsfw = crate::source::model::MangaContentRating::from(row.nsfw as u8);
+        let viewer = crate::source::model::MangaViewer::from(row.viewer as u8);
+
+        // Parse tags JSON
+        let tags = row.tags.map(|json| serde_json::from_str(&json).unwrap());
+
+        // Parse URLs
+        let cover_url = row
+            .cover_url
+            .as_ref()
+            .map(|s| s.as_str().try_into().unwrap());
+
+        let url = row.url.as_ref().map(|s| s.as_str().try_into().unwrap());
+
+        // Parse datetime
+        let parse_dt = |v: Option<String>| {
+            v.map(|s| {
+                chrono::DateTime::parse_from_rfc3339(&s)
+                    .unwrap()
+                    .with_timezone(&chrono_tz::UTC)
+            })
+        };
+
+        Self {
+            source_id: row.source_id,
+            id: row.id,
+            title: row.title,
+            author: row.author,
+            artist: row.artist,
+            description: row.description,
+
+            tags,
+            cover_url,
+            url,
+
+            status,
+            nsfw,
+            viewer,
+
+            last_updated: parse_dt(row.last_updated),
+            last_opened: parse_dt(row.last_opened),
+            last_read: if let Some(last_read) = row.last_read {
+                chrono::Utc.timestamp_opt(last_read, 0)
+                    .single()
+                    .map(|d| d.with_timezone(&chrono_tz::UTC))
+            } else {
+                None
+            },
+            date_added: parse_dt(row.date_added),
         }
     }
 }

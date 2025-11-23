@@ -37,7 +37,7 @@ end
 --- @field timeout number? The timeout used for this request. If unset, the default value for the platform will be used (usually 60 seconds).
 
 --- @class SuccessfulResponse<T>: { type: 'SUCCESS', body: T }
---- @class ErrorResponse: { type: 'ERROR', message: string }
+--- @class ErrorResponse: { type: 'ERROR', status: number, message: string }
 
 --- Performs a HTTP request, using JSON to encode the request body and to decode the response body.
 --- @private
@@ -100,7 +100,7 @@ function Backend.requestJson(request)
     local error_message = parsed_body.message
     assert(error_message ~= nil, "Request failed without error message")
 
-    return { type = 'ERROR', message = error_message }
+    return { type = 'ERROR', status = response.status, message = error_message }
   end
 
   return { type = 'SUCCESS', body = replaceRapidJsonNullWithNilRecursively(parsed_body) }
@@ -177,6 +177,68 @@ end
 --- @field filenames string[] The names
 --- @field total_size number The total size
 --- @field total_text string The total size text format kb, mb...
+
+--- Publishing status of a manga.
+---
+--- @enum PublishingStatus
+PublishingStatus = {
+  Unknown      = 'Unknown', -- Status cannot be determined from the source
+  Ongoing      = 'Ongoing', -- Still releasing new chapters
+  Completed    = 'Completed', -- Fully published and finished
+  Cancelled    = 'Cancelled', -- Publication ended prematurely
+  Hiatus       = 'Hiatus', -- Temporarily stopped by author/publisher
+  NotPublished = 'Not Published', -- Announced but not yet started
+}
+
+--- Content rating for a manga, used to decide filtering and NSFW handling.
+---
+--- @enum MangaContentRating
+MangaContentRating = {
+  Safe       = 'Safe', -- No adult content
+  Suggestive = 'Suggestive', -- Mildly sexual themes or suggestive content
+  Nsfw       = 'NSFW', -- Explicit adult content
+}
+
+--- Preferred reading mode for a manga.
+--- This determines how pages should be displayed in the reader UI.
+---
+--- @enum MangaViewer
+MangaViewer = {
+  DefaultViewer = 0, -- Use the source's default or the app's default setting
+  Rtl           = 1, -- Right-to-left page navigation (typical for Japanese manga)
+  Ltr           = 2, -- Left-to-right navigation (Western comics / manhwa translations)
+  Vertical      = 3, -- Vertical strip reading (webtoons, long-strip manga)
+  Scroll        = 4, -- Free scrolling mode (continuous scroll)
+}
+
+--- Represents a manga entry returned by a source or stored locally.
+--- This table contains all metadata used to describe a manga.
+---
+--- @class MManga
+--- @field source_id string                -- Unique ID of the source (e.g. "mangadex", "asurascans")
+--- @field id string                       -- Manga ID inside the source. Usually short.
+--- @field title string|nil                -- Manga title, may be missing if source doesn't provide it
+--- @field author string|nil               -- Name of the author
+--- @field artist string|nil               -- Name of the artist
+--- @field description string|nil          -- Summary or description text
+--- @field tags string[]|nil               -- List of genre / tags (e.g. {"Action", "Romance"})
+--- @field cover_url string|nil            -- URL to the cover image
+--- @field url string|nil                  -- URL to the manga page on the source website
+---
+--- @field status PublishingStatus         -- Current publication status (e.g. ONGOING, COMPLETED)
+--- @field nsfw MangaContentRating         -- NSFW rating (e.g. SAFE, SUGGESTIVE, EXPLICIT)
+--- @field viewer MangaViewer              -- Suggested reading mode (e.g. paged, long-strip)
+---
+--- @field last_updated string|nil         -- Timestamp of latest metadata update (ISO8601)
+--- @field last_opened string|nil          -- When the user last opened this manga
+--- @field last_read string|nil            -- When the user last read a chapter
+--- @field date_added string|nil           -- When this manga was added to the library
+---
+--- Notes:
+--- - Some fields are optional because many sources do not provide full metadata.
+--- - All timestamps are expected to be ISO8601 strings.
+--- - `status`, `nsfw`, and `viewer` are enums defined elsewhere in the system.
+
 
 --- Lists mangas added to the user's library.
 --- @return SuccessfulResponse<Manga[]>|ErrorResponse
@@ -261,6 +323,23 @@ end
 function Backend.refreshChapters(source_id, manga_id)
   return Backend.requestJson({
     path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/refresh-chapters",
+    method = "POST",
+  })
+end
+
+--- Gets the cached details of a given manga from the database.
+--- @return SuccessfulResponse<[MManga, number]>|ErrorResponse
+function Backend.cachedMangaDetails(source_id, manga_id)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/details",
+  })
+end
+
+--- Refreshes the details of a given manga on the database.
+--- @return SuccessfulResponse<{}>|ErrorResponse
+function Backend.refreshMangaDetails(source_id, manga_id)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/refresh-details",
     method = "POST",
   })
 end

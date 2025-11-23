@@ -1,0 +1,116 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT \n                md.*, \n                COALESCE(\n                    CAST(SUM(cs.read) AS FLOAT) / NULLIF(COUNT(cs.chapter_id), 0), \n                    0\n                ) AS \"per_read: f64\",\n                COALESCE(\n                    MAX(cs.last_read),\n                    0\n                ) AS \"last_read: i64\"\n            FROM manga_details md\n            LEFT JOIN chapter_state cs\n                ON cs.source_id = md.source_id\n                AND cs.manga_id = md.id\n            WHERE md.source_id = ?1 AND md.id = ?2\n            GROUP BY md.source_id, md.id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "artist",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "tags",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "cover_url",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "status",
+        "ordinal": 9,
+        "type_info": "Integer"
+      },
+      {
+        "name": "nsfw",
+        "ordinal": 10,
+        "type_info": "Integer"
+      },
+      {
+        "name": "viewer",
+        "ordinal": 11,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_updated",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_opened",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_added",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "per_read: f64",
+        "ordinal": 15,
+        "type_info": "Null"
+      },
+      {
+        "name": "last_read: i64",
+        "ordinal": 16,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "34ab2eef0733316e66725eb32726b0471484eaeee840ddea1b3ec1c66d70d27e"
+}

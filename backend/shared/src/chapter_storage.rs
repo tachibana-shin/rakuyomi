@@ -1,6 +1,6 @@
-use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::{fs, future::Future};
 
 use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
@@ -8,7 +8,12 @@ use log::debug;
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
+use tokio::io::AsyncReadExt;
 use walkdir::{DirEntry, WalkDir};
+
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use image::ImageFormat;
+use reqwest::Request;
 
 use crate::model::ChapterId;
 
@@ -51,6 +56,106 @@ impl ChapterStorage {
     pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
         let file_path = self.downloads_folder_path.join(filename);
         tokio::fs::remove_file(file_path).await
+    }
+
+    pub async fn cached_poster<F, Fut>(&self, url: &url::Url, req: F) -> Result<PathBuf>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<Request>>,
+    {
+        // --- Hash URL for stable filename ---
+        let mut hasher = Sha256::new();
+        hasher.update(url.as_str().as_bytes());
+        let encoded_hash = URL_SAFE_NO_PAD.encode(hasher.finalize());
+
+        // --- Directory for posters ---
+        let poster_dir = self.downloads_folder_path.join(".posters");
+        tokio::fs::create_dir_all(&poster_dir).await?;
+
+        // --- Sidecar: stores only extension ---
+        let meta_path = poster_dir.join(format!(".{encoded_hash}"));
+
+        // ============================================================
+        // FAST PATH → Use existing cache without doing HTTP requests
+        // ============================================================
+        if meta_path.exists() {
+            let mut f = tokio::fs::File::open(&meta_path).await?;
+            let mut ext = String::new();
+            f.read_to_string(&mut ext).await?;
+
+            let cached_path = poster_dir.join(format!("{encoded_hash}.{}", ext));
+
+            if cached_path.exists() {
+                return Ok(cached_path);
+            }
+        }
+
+        // ============================================================
+        // SLOW PATH → download file with custom headers
+        // ============================================================
+
+        let client = reqwest::Client::new();
+        let req = req().await?;
+
+        let res = client.execute(req).await?.error_for_status()?;
+
+        // --- Detect extension from Content-Type ---
+        let mut ext: Option<&str> = res
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|h| h.to_str().ok())
+            .and_then(|mime| match mime {
+                "image/jpeg" => Some("jpg"),
+                "image/png" => Some("png"),
+                "image/webp" => Some("webp"),
+                "image/avif" => Some("avif"),
+                "image/gif" => Some("gif"),
+                _ => None,
+            });
+
+        // --- Detect from URL path ---
+        if ext.is_none() {
+            if let Some(path) = url.path().rsplit('/').next() {
+                if let Some(dot) = path.split('.').last() {
+                    ext = match dot.to_lowercase().as_str() {
+                        "jpg" | "jpeg" => Some("jpg"),
+                        "png" => Some("png"),
+                        "webp" => Some("webp"),
+                        "gif" => Some("gif"),
+                        "avif" => Some("avif"),
+                        _ => None,
+                    };
+                }
+            }
+        }
+        let bytes = res.bytes().await?;
+
+        // --- Detect from actual image bytes ---
+        if ext.is_none() {
+            if let Ok(format) = image::guess_format(&bytes) {
+                ext = Some(match format {
+                    ImageFormat::Jpeg => "jpg",
+                    ImageFormat::Png => "png",
+                    ImageFormat::WebP => "webp",
+                    ImageFormat::Gif => "gif",
+                    ImageFormat::Avif => "avif",
+                    _ => anyhow::bail!("unsupported image format"),
+                });
+            }
+        }
+
+        // 最後のフォールバック
+        let ext = ext.unwrap_or("jpg");
+
+        let poster_path = poster_dir.join(format!("{encoded_hash}.{ext}"));
+
+        // --- Save poster file ---
+        tokio::fs::write(&poster_path, &bytes).await?;
+
+        // --- Save metadata sidecar (.hash → ext) ---
+        tokio::fs::write(&meta_path, ext).await?;
+
+        Ok(poster_path)
     }
 
     pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {

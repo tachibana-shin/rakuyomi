@@ -38,6 +38,14 @@ pub fn routes() -> Router<State> {
             "/mangas/{source_id}/{manga_id}/refresh-chapters",
             post(refresh_manga_chapters),
         )
+        .route(
+            "/mangas/{source_id}/{manga_id}/details",
+            get(get_cached_manga_details),
+        )
+        .route(
+            "/mangas/{source_id}/{manga_id}/refresh-details",
+            post(refresh_manga_details),
+        )
         // FIXME i dont think the route should be named download because it doesnt
         // always download the file...
         .route(
@@ -265,6 +273,50 @@ async fn refresh_manga_chapters(
     let database = database.lock().await;
 
     let _ = usecases::refresh_manga_chapters(&database, &source, manga_id.clone(), 60).await;
+
+    Ok(Json(()))
+}
+
+async fn get_cached_manga_details(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<State>,
+    SourceExtractor(source): SourceExtractor,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+) -> Result<Json<(shared::source::model::Manga, f64)>, AppError> {
+    let manga_id = MangaId::from(params);
+    let chapter_storage = &*chapter_storage.lock().await;
+    let database = database.lock().await;
+
+    let manga =
+        usecases::get_cached_manga_details(&database, chapter_storage, &source, manga_id).await?;
+
+    if let Some(manga) = manga {
+        Ok(Json(manga))
+    } else {
+        Err(AppError::NotFound)
+    }
+}
+
+async fn refresh_manga_details(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<State>,
+    SourceExtractor(source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+) -> Result<Json<()>, AppError> {
+    let manga_id = MangaId::from(params);
+    let database = database.lock().await;
+    let chapter_storage = &*chapter_storage.lock().await;
+
+    let _ =
+        usecases::refresh_manga_details(&database, &chapter_storage, &source, manga_id.clone(), 60)
+            .await;
 
     Ok(Json(()))
 }

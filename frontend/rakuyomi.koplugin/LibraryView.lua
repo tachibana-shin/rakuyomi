@@ -8,6 +8,8 @@ local _ = require("gettext")
 local Icons = require("Icons")
 local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
+local IconButton = require("ui/widget/iconbutton")
+local HorizontalGroup = require("ui/widget/horizontalgroup")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -23,6 +25,7 @@ local calcLastReadText = require("utils/calcLastReadText")
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
 
+local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local LibraryView = Menu:extend {
   name = "library_view",
   is_enable_shortcut = false,
@@ -50,7 +53,49 @@ function LibraryView:init()
   self.mangas_raw = self.mangas
   self.favorite_search_keyword = nil
 
+  self:patchTitleBar()
   self:updateItems()
+end
+
+--- @private
+function LibraryView:patchTitleBar()
+  -- custom
+  local right_icon_size_ratio = self.title_bar.right_icon_size_ratio
+  local right_icon_rotation_angle = self.title_bar.right_icon_rotation_angle
+  local right_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * right_icon_size_ratio)
+  local button_padding = Screen:scaleBySize(11)
+
+  self.title_bar.right_button = HorizontalGroup:new {
+    -- align = "end",
+    IconButton:new {
+      icon = "appbar.search",
+      -- 1.1 patch for icon appbar.search.svg wrong size
+      width = right_icon_size,
+      height = right_icon_size,
+      padding = button_padding,
+      padding_left = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding, -- extend button tap zone
+      padding_bottom = right_icon_size,
+      callback = function()
+        self:openSearchMangasDialog()
+      end,
+    },
+    IconButton:new {
+      icon = "close",
+      icon_rotation_angle = right_icon_rotation_angle,
+      width = right_icon_size,
+      height = right_icon_size,
+      padding = button_padding,
+      padding_bottom = right_icon_size,
+      callback = self.title_bar.right_icon_tap_callback,
+      hold_callback = self.title_bar.right_icon_hold_callback,
+    },
+  }
+  --- [1] left button
+  --- [2] title
+  --- [3] right button
+  if self.title_bar[3] ~= nil then
+    self.title_bar[3] = self.title_bar.right_button
+  end
 end
 
 --- @private

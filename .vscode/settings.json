@@ -1,10 +1,7 @@
 {
-    "editor.formatOnSave": true,
-    "rust-analyzer.linkedProjects": [
-        "backend/Cargo.toml"
-    ],
-    "rust-analyzer.server.path": "rust-analyzer",
-    "lldb.launch.sourceLanguages": [
-        "rust"
-    ],
+  "editor.formatOnSave": true,
+  "rust-analyzer.linkedProjects": ["backend/Cargo.toml"],
+  "rust-analyzer.server.path": "rust-analyzer",
+  "lldb.launch.sourceLanguages": ["rust"],
+  "Lua.diagnostics.globals": ["G_defaults"]
 }

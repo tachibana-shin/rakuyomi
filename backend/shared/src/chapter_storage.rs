@@ -58,6 +58,30 @@ impl ChapterStorage {
         tokio::fs::remove_file(file_path).await
     }
 
+    pub async fn cache_poster(&self, url: &url::Url) -> Result<Option<PathBuf>> {
+        let mut hasher = Sha256::new();
+        hasher.update(url.as_str().as_bytes());
+        let encoded_hash = URL_SAFE_NO_PAD.encode(hasher.finalize());
+
+        let poster_dir = self.downloads_folder_path.join(".posters");
+
+        let meta_path = poster_dir.join(format!(".{encoded_hash}"));
+
+        if meta_path.exists() {
+            let mut f = tokio::fs::File::open(&meta_path).await?;
+            let mut ext = String::new();
+            f.read_to_string(&mut ext).await?;
+
+            let cached_path = poster_dir.join(format!("{encoded_hash}.{}", ext));
+
+            if cached_path.exists() {
+                return Ok(Some(cached_path));
+            }
+        }
+
+        Ok(None)
+    }
+
     pub async fn cached_poster<F, Fut>(&self, url: &url::Url, req: F) -> Result<PathBuf>
     where
         F: Fn() -> Fut,

@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                n.id,\n                n.source_id,\n                n.manga_id,\n                n.chapter_id,\n                mi.title AS manga_title,\n                md.cover_url AS manga_cover,\n                md.status AS manga_status,\n                ci.title AS chapter_title,\n                ci.chapter_number,\n                n.created_at\n            FROM\n                notifications n\n            LEFT JOIN manga_informations mi\n                ON mi.manga_id = n.manga_id AND mi.source_id = n.source_id\n            LEFT JOIN manga_details md\n                ON md.id = n.manga_id AND md.source_id = n.source_id\n            LEFT JOIN chapter_informations ci\n                ON ci.manga_id = n.manga_id AND ci.source_id = n.source_id AND ci.chapter_id = n.chapter_id\n            WHERE\n                n.is_read = 0\n            ORDER BY\n                n.created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_title",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_cover",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_status",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "chapter_title",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_number",
+        "ordinal": 8,
+        "type_info": "Float"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 9,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "1c8785f22e9da6b8e30dcd5cab74c1958defac769d8c243fabe91abaf5368637"
+}

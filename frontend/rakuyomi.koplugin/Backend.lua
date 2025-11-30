@@ -182,11 +182,11 @@ end
 ---
 --- @enum PublishingStatus
 PublishingStatus = {
-  Unknown      = 'Unknown', -- Status cannot be determined from the source
-  Ongoing      = 'Ongoing', -- Still releasing new chapters
-  Completed    = 'Completed', -- Fully published and finished
-  Cancelled    = 'Cancelled', -- Publication ended prematurely
-  Hiatus       = 'Hiatus', -- Temporarily stopped by author/publisher
+  Unknown      = 'Unknown',       -- Status cannot be determined from the source
+  Ongoing      = 'Ongoing',       -- Still releasing new chapters
+  Completed    = 'Completed',     -- Fully published and finished
+  Cancelled    = 'Cancelled',     -- Publication ended prematurely
+  Hiatus       = 'Hiatus',        -- Temporarily stopped by author/publisher
   NotPublished = 'Not Published', -- Announced but not yet started
 }
 
@@ -194,9 +194,9 @@ PublishingStatus = {
 ---
 --- @enum MangaContentRating
 MangaContentRating = {
-  Safe       = 'Safe', -- No adult content
+  Safe       = 'Safe',       -- No adult content
   Suggestive = 'Suggestive', -- Mildly sexual themes or suggestive content
-  Nsfw       = 'NSFW', -- Explicit adult content
+  Nsfw       = 'NSFW',       -- Explicit adult content
 }
 
 --- Preferred reading mode for a manga.
@@ -623,6 +623,56 @@ function Backend.cleanup()
   if Backend.server ~= nil then
     Backend.server:stop()
   end
+end
+
+--- @return SuccessfulResponse<number>|ErrorResponse
+function Backend.getCountNotification()
+  return Backend.requestJson({
+    path = "/count-notifications",
+    method = 'GET'
+  })
+end
+
+--- @class MangaId
+--- @field source_id string
+--- @field manga_id string
+
+--- @class ChapterId
+--- @field manga_id MangaId
+--- @field chapter_id string
+
+--- @class Notification
+--- @field id number
+--- @field chapter_id ChapterId
+--- @field manga_title string
+--- @field manga_cover string|nil
+--- @field manga_status number|nil
+--- @field chapter_title string|nil
+--- @field chapter_number number
+--- @field created_at number
+
+--- @return SuccessfulResponse<Notification[]>|ErrorResponse
+function Backend.getNotifications()
+  return Backend.requestJson({
+    path = "/notifications",
+    method = 'GET'
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.removeNotification(id)
+  return Backend.requestJson({
+    path = "/notifications/" .. id,
+    method = 'DELETE'
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.clearNotifications()
+  return Backend.requestJson({
+    path = "/clear-notifications",
+    method = 'POST'
+  })
 end
 
 -- we can't really rely upon Koreader informing us it has terminated because

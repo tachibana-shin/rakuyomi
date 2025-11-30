@@ -1,3 +1,4 @@
+pub mod arima_light;
 pub mod cbz_metadata;
 pub mod chapter_downloader;
 pub mod chapter_storage;

@@ -1,5 +1,5 @@
 use rust_decimal::Decimal;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::source::{
@@ -7,19 +7,19 @@ use crate::source::{
     SourceManifest,
 };
 
-#[derive(Clone, Eq, PartialEq, Hash, Deserialize, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Deserialize, Debug, Serialize)]
 #[serde(transparent)]
 pub struct SourceId {
     source_id: String,
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize)]
 pub struct MangaId {
     source_id: SourceId,
     manga_id: String,
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize)]
 pub struct ChapterId {
     manga_id: MangaId,
     chapter_id: String,
@@ -114,6 +114,7 @@ pub struct ChapterInformation {
     pub scanlator: Option<String>,
     pub chapter_number: Option<Decimal>,
     pub volume_number: Option<Decimal>,
+    pub last_updated: Option<i64>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -173,6 +174,19 @@ impl From<SourceChapter> for ChapterInformation {
             // FIXME is this ever fallible?
             chapter_number: value.chapter_num.map(|num| num.try_into().unwrap()),
             volume_number: value.volume_num.map(|num| num.try_into().unwrap()),
+            last_updated: value.date_uploaded.map(|d| d.timestamp()),
         }
     }
+}
+
+#[derive(Serialize)]
+pub struct NotificationInformation {
+    pub id: i64,
+    pub chapter_id: ChapterId,
+    pub manga_title: String,
+    pub manga_cover: Option<Url>,
+    pub manga_status: Option<i64>,
+    pub chapter_title: String,
+    pub chapter_number: f64,
+    pub created_at: i64,
 }

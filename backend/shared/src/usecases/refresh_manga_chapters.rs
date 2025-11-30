@@ -2,14 +2,18 @@ use anyhow::{anyhow, Result};
 use tokio::time::{timeout, Duration};
 use tokio_util::sync::CancellationToken;
 
-use crate::{database::Database, model::MangaId, source::Source};
+use crate::{
+    database::Database,
+    model::{ChapterInformation, MangaId},
+    source::Source,
+};
 
-pub async fn refresh_manga_chapters(
-    db: &Database,
-    source: &Source,
-    id: MangaId,
+pub async fn refresh_manga_chapters<'a>(
+    db: &'a Database,
+    source: &'a Source,
+    id: &'a MangaId,
     seconds: u64,
-) -> Result<()> {
+) -> Result<Vec<ChapterInformation>> {
     let token = CancellationToken::new();
     let duration = Duration::from_secs(seconds);
 
@@ -35,5 +39,5 @@ pub async fn refresh_manga_chapters(
         .upsert_cached_chapter_informations(&id, &fresh_chapter_informations)
         .await;
 
-    Ok(())
+    Ok(fresh_chapter_informations)
 }

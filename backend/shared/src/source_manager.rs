@@ -10,6 +10,7 @@ use crate::{
     model::SourceId, settings::Settings, source::Source, source_collection::SourceCollection,
 };
 
+#[derive(Clone)]
 pub struct SourceManager {
     sources_folder: PathBuf,
     sources_by_id: HashMap<SourceId, Source>,

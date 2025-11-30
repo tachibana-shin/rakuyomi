@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT \n                ml.manga_id,\n                ml.source_id,\n                md.status\n            FROM manga_library ml\n            LEFT JOIN manga_details md\n                ON ml.manga_id = md.id\n            AND ml.source_id = md.source_id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "manga_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "status",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "817b27aa5a3930821b906957c66ded2c3e3a85c923946d97f8952d1b156e0516"
+}

@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                ml.manga_id, ml.source_id, md.status\n            FROM\n                last_check_update ml\n            LEFT JOIN manga_details md\n            ON ml.manga_id = md.id AND\n                ml.source_id = md.source_id\n            WHERE ml.next_ts_arima <= ?1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "manga_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "status",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "eb48848325d31264373e258ee4257a3a2bdc2b3ab359db968a5776c6703a7543"
+}

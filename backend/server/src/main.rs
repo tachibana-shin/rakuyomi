@@ -84,6 +84,17 @@ async fn main() -> anyhow::Result<()> {
     let chapter_storage = ChapterStorage::new(downloads_folder_path, settings.storage_size_limit.0)
         .context("couldn't initialize chapter storage")?;
 
+    if settings.enabled_cron_check_mangas_update {
+        let db_clone = database.clone();
+        let sm_clone = source_manager.clone();
+        let cs_clone = chapter_storage.clone();
+        let settings = settings.clone();
+
+        tokio::spawn(async move {
+            shared::usecases::run_manga_cron(&db_clone, &cs_clone, &sm_clone, &settings).await;
+        });
+    }
+
     let state = State {
         source_manager: Arc::new(Mutex::new(source_manager)),
         database: Arc::new(Mutex::new(database)),

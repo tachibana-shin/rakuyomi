@@ -45,7 +45,7 @@ pub enum SettingDefinition {
     Link { title: String, url: String },
 }
 
-#[derive(Serialize, Debug, Clone, Default, FromPrimitive)]
+#[derive(Serialize, Debug, Clone, Default, PartialEq, FromPrimitive)]
 #[repr(u8)]
 pub enum PublishingStatus {
     #[default]

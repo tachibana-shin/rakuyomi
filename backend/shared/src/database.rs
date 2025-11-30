@@ -13,11 +13,13 @@ use url::Url;
 use crate::{
     model::{
         Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation,
-        MangaState, SourceId, SourceInformation,
+        MangaState, NotificationInformation, SourceId, SourceInformation,
     },
+    source::model::PublishingStatus,
     source_collection::SourceCollection,
 };
 
+#[derive(Clone)]
 pub struct Database {
     pub filename: PathBuf,
     pool: Pool<Sqlite>,
@@ -70,6 +72,37 @@ impl Database {
         .unwrap();
 
         rows.into_iter().map(|row| row.manga_id()).collect()
+    }
+
+    pub async fn get_manga_library_and_status(&self) -> Vec<(MangaId, PublishingStatus)> {
+        let rows = sqlx::query!(
+            r#"
+            SELECT 
+                ml.manga_id,
+                ml.source_id,
+                md.status
+            FROM manga_library ml
+            LEFT JOIN manga_details md
+                ON ml.manga_id = md.id
+            AND ml.source_id = md.source_id
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+
+        rows.into_iter()
+            .map(|row| {
+                (
+                    MangaId::from_strings(row.source_id, row.manga_id),
+                    row.status
+                        .map(|s| {
+                            <PublishingStatus as num_enum::FromPrimitive>::from_primitive(s as u8)
+                        })
+                        .unwrap_or(PublishingStatus::Unknown),
+                )
+            })
+            .collect()
     }
 
     pub async fn get_manga_library_with_read_count(
@@ -869,6 +902,7 @@ impl Database {
                 ci.scanlator,
                 ci.chapter_number,
                 ci.volume_number,
+                ci.last_updated,
                 cs.read AS "read?: bool",
                 cs.last_read AS "last_read?: i64"
             FROM chapter_informations ci
@@ -903,6 +937,7 @@ impl Database {
                     chapter_number: row.chapter_number.and_then(|f| Decimal::from_f64(f)),
                     volume_number: row.volume_number.and_then(|f| Decimal::from_f64(f)),
                     // manga_order: row.manga_order as usize,
+                    last_updated: row.last_updated,
                 };
 
                 let state = ChapterState {
@@ -1019,12 +1054,13 @@ impl Database {
 
         for (offset, chunk) in chapter_informations.chunks(CHUNK_SIZE).enumerate() {
             let mut builder = QueryBuilder::new(
-            "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number)"
+            "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number, last_updated)"
             );
 
             builder.push_values(chunk.iter().enumerate(), |mut b, (i, info)| {
                 let chapter_number = info.chapter_number.map(|d| d.to_f64());
                 let volume_number = info.volume_number.map(|d| d.to_f64());
+                let last_updated = info.last_updated;
 
                 b.push_bind(info.id.source_id().value())
                     .push_bind(info.id.manga_id().value())
@@ -1033,7 +1069,8 @@ impl Database {
                     .push_bind(&info.title)
                     .push_bind(&info.scanlator)
                     .push_bind(chapter_number)
-                    .push_bind(volume_number);
+                    .push_bind(volume_number)
+                    .push_bind(last_updated);
             });
 
             builder.push(
@@ -1042,7 +1079,8 @@ impl Database {
                 title = excluded.title,
                 scanlator = excluded.scanlator,
                 chapter_number = excluded.chapter_number,
-                volume_number = excluded.volume_number",
+                volume_number = excluded.volume_number,
+                last_updated = excluded.last_updated",
             );
 
             builder.build().execute(&self.pool).await?;
@@ -1311,6 +1349,259 @@ impl Database {
         .await
         .unwrap();
     }
+
+    pub async fn get_last_check_update_manga(&self, id: &MangaId) -> Option<(i64, i64)> {
+        let source_id = id.source_id().value();
+        let manga_id = id.value();
+
+        let maybe_row = sqlx::query!(
+            r#"SELECT last_check, next_ts_arima FROM last_check_update WHERE source_id = ?1 AND manga_id = ?2"#,
+            source_id,
+            manga_id,
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .unwrap();
+
+        maybe_row.map(|row| (row.last_check, row.next_ts_arima))
+    }
+
+    pub async fn set_last_check_update_manga(&self, id: &MangaId, value: i64, next_ts_arima: i64) {
+        let source_id = id.source_id().value();
+        let manga_id = id.value();
+
+        sqlx::query!(
+            r#"
+            INSERT INTO last_check_update (
+                source_id,
+                manga_id,
+                last_check,
+                next_ts_arima
+            ) VALUES (?1, ?2, ?3, ?4)
+            ON CONFLICT(source_id, manga_id) DO UPDATE SET
+                last_check = excluded.last_check,
+                next_ts_arima = excluded.next_ts_arima
+            "#,
+            source_id,
+            manga_id,
+            value,
+            next_ts_arima
+        )
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    pub async fn delete_last_check_update_manga(&self, id: &MangaId) {
+        let source_id = id.source_id().value();
+        let manga_id = id.value();
+
+        sqlx::query!(
+            r#"
+            DELETE FROM last_check_update WHERE source_id = ?1 AND manga_id = ?2
+            "#,
+            source_id,
+            manga_id
+        )
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    pub async fn insert_notification(
+        &self,
+        manga_id: &MangaId,
+        new_chapters: &[ChapterInformation],
+    ) -> Result<(), sqlx::Error> {
+        if new_chapters.is_empty() {
+            return Ok(());
+        }
+
+        let now = chrono::Utc::now().timestamp();
+
+        // Build query string: "(?, ?, ?, ?, ?), (?, ?, ?, ?, ?), ..."
+        let mut sql = String::from(
+            "INSERT INTO notifications (source_id, manga_id, chapter_id, created_at) VALUES ",
+        );
+
+        for (i, _) in new_chapters.iter().enumerate() {
+            if i > 0 {
+                sql.push_str(", ");
+            }
+            sql.push_str("(?, ?, ?, ?)");
+        }
+
+        // Create query
+        let mut query = sqlx::query(&sql);
+
+        // Bind all values in order
+        for ch in new_chapters {
+            query = query
+                .bind(manga_id.source_id().value())
+                .bind(manga_id.value()) // manga_id
+                .bind(ch.id.value()) // chapter_id
+                .bind(now); // created_at
+        }
+
+        // Execute
+        query.execute(&self.pool).await?;
+
+        Ok(())
+    }
+
+    pub async fn get_next_ts_arima_min(&self, skip_sources: &Vec<&str>) -> Option<(MangaId, i64)> {
+        let condition = if skip_sources.is_empty() {
+            "".into()
+        } else {
+            format!(
+                "AND source_id NOT IN ({})",
+                std::iter::repeat("?")
+                    .take(skip_sources.len())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+        };
+
+        let sql = format!(
+            r#"
+            SELECT manga_id, source_id, next_ts_arima
+            FROM last_check_update
+            WHERE next_ts_arima IS NOT NULL
+            {condition}
+            ORDER BY next_ts_arima ASC
+            LIMIT 1
+            "#
+        );
+
+        let mut query = sqlx::query(&sql);
+
+        for s in skip_sources {
+            query = query.bind(s);
+        }
+
+        let row = query.fetch_optional(&self.pool).await.unwrap();
+
+        use sqlx::Row;
+        row.map(|row| {
+            (
+                MangaId::from_strings(
+                    row.get::<String, _>("source_id"),
+                    row.get::<String, _>("manga_id"),
+                ),
+                row.get::<i64, _>("next_ts_arima"),
+            )
+        })
+    }
+
+    pub async fn get_due_mangas(&self) -> Vec<(MangaId, PublishingStatus)> {
+        let now = chrono::Utc::now().timestamp();
+        let due_mangas = sqlx::query!(
+            r#"
+            SELECT
+                ml.manga_id, ml.source_id, md.status
+            FROM
+                last_check_update ml
+            LEFT JOIN manga_details md
+            ON ml.manga_id = md.id AND
+                ml.source_id = md.source_id
+            WHERE ml.next_ts_arima <= ?1
+            "#,
+            now
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+
+        due_mangas
+            .into_iter()
+            .map(|row| {
+                (
+                    MangaId::from_strings(row.source_id, row.manga_id),
+                    row.status
+                        .map(|s| {
+                            <PublishingStatus as num_enum::FromPrimitive>::from_primitive(s as u8)
+                        })
+                        .unwrap_or(PublishingStatus::Unknown),
+                )
+            })
+            .collect()
+    }
+
+    pub async fn get_count_notifications(&self) -> i32 {
+        let value = sqlx::query!(
+            r#"
+            SELECT
+                COUNT(*) as "count: i32"
+            FROM
+                notifications
+            WHERE is_read = 0
+            "#
+        )
+        .fetch_one(&self.pool)
+        .await
+        .unwrap();
+
+        value.count.into()
+    }
+
+    pub async fn get_notifications(&self) -> Vec<NotificationInformation> {
+        let rows = sqlx::query_as!(
+            NotificationInformationRow,
+            r#"
+            SELECT
+                n.id,
+                n.source_id,
+                n.manga_id,
+                n.chapter_id,
+                mi.title AS manga_title,
+                md.cover_url AS manga_cover,
+                md.status AS manga_status,
+                ci.title AS chapter_title,
+                ci.chapter_number,
+                n.created_at
+            FROM
+                notifications n
+            LEFT JOIN manga_informations mi
+                ON mi.manga_id = n.manga_id AND mi.source_id = n.source_id
+            LEFT JOIN manga_details md
+                ON md.id = n.manga_id AND md.source_id = n.source_id
+            LEFT JOIN chapter_informations ci
+                ON ci.manga_id = n.manga_id AND ci.source_id = n.source_id AND ci.chapter_id = n.chapter_id
+            WHERE
+                n.is_read = 0
+            ORDER BY
+                n.created_at DESC
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+
+        rows.into_iter().map(|row| row.into()).collect()
+    }
+
+    pub async fn delete_notification(&self, id: i32) {
+        sqlx::query!(
+            r#"
+            DELETE FROM notifications WHERE id = ?1
+            "#,
+            id
+        )
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    pub async fn clear_notifications(&self) {
+        sqlx::query!(
+            r#"
+            DELETE FROM notifications WHERE 1 = 1
+            "#,
+        )
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
 }
 
 /// Represents a manga entry in the user's library, joined with its information
@@ -1435,7 +1726,8 @@ impl From<MangaDetailsRow> for crate::source::model::Manga {
             last_updated: parse_dt(row.last_updated),
             last_opened: parse_dt(row.last_opened),
             last_read: if let Some(last_read) = row.last_read {
-                chrono::Utc.timestamp_opt(last_read, 0)
+                chrono::Utc
+                    .timestamp_opt(last_read, 0)
                     .single()
                     .map(|d| d.with_timezone(&chrono_tz::UTC))
             } else {
@@ -1457,6 +1749,7 @@ struct ChapterInformationsRow {
     scanlator: Option<String>,
     chapter_number: Option<f64>,
     volume_number: Option<f64>,
+    last_updated: Option<i64>,
 }
 
 impl From<ChapterInformationsRow> for ChapterInformation {
@@ -1471,6 +1764,7 @@ impl From<ChapterInformationsRow> for ChapterInformation {
             volume_number: value
                 .volume_number
                 .map(|decimal_as_f64| decimal_as_f64.try_into().unwrap()),
+            last_updated: value.last_updated,
         }
     }
 }
@@ -1533,6 +1827,38 @@ impl From<MangaStateRow> for MangaState {
     fn from(value: MangaStateRow) -> Self {
         Self {
             preferred_scanlator: value.preferred_scanlator,
+        }
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct NotificationInformationRow {
+    id: i64,
+    source_id: String,
+    manga_id: String,
+    chapter_id: String,
+    manga_title: Option<String>,
+    manga_cover: Option<String>,
+    manga_status: Option<i64>,
+    chapter_title: Option<String>,
+    chapter_number: Option<f64>,
+    created_at: i64,
+}
+
+impl From<NotificationInformationRow> for NotificationInformation {
+    fn from(value: NotificationInformationRow) -> Self {
+        Self {
+            id: value.id,
+            chapter_id: ChapterId::from_strings(value.source_id, value.manga_id, value.chapter_id),
+            manga_title: value.manga_title.unwrap_or("Unknown".to_owned()),
+            manga_cover: value
+                .manga_cover
+                .map(|u| url::Url::parse(&u).map(|v| Some(v)).unwrap_or(None))
+                .unwrap_or(None),
+            manga_status: value.manga_status,
+            chapter_title: value.chapter_title.unwrap_or("Unknown".to_owned()),
+            chapter_number: value.chapter_number.unwrap_or(-1.0),
+            created_at: value.created_at,
         }
     }
 }

@@ -42,6 +42,11 @@
         "name": "volume_number",
         "ordinal": 7,
         "type_info": "Float"
+      },
+      {
+        "name": "last_updated",
+        "ordinal": 8,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -52,6 +57,7 @@
       false,
       false,
       false,
+      true,
       true,
       true,
       true,

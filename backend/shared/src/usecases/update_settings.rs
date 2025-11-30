@@ -30,6 +30,8 @@ pub struct UpdateableSettings {
     storage_path: Option<PathBuf>,
     concurrent_requests_pages: Option<usize>,
     api_sync: Option<String>,
+    enabled_cron_check_mangas_update: bool,
+    source_skip_cron: Option<String>,
 }
 
 impl UpdateableSettings {
@@ -41,6 +43,8 @@ impl UpdateableSettings {
         settings.storage_path = self.storage_path;
         settings.concurrent_requests_pages = self.concurrent_requests_pages;
         settings.api_sync = self.api_sync;
+        settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
+        settings.source_skip_cron = self.source_skip_cron;
     }
 }
 
@@ -55,6 +59,8 @@ impl From<&Settings> for UpdateableSettings {
             storage_path: value.storage_path.clone(),
             concurrent_requests_pages: value.concurrent_requests_pages,
             api_sync: value.api_sync.clone(),
+            enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
+            source_skip_cron: value.source_skip_cron.clone(),
         }
     }
 }

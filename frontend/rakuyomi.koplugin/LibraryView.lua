@@ -10,6 +10,11 @@ local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
 local IconButton = require("ui/widget/iconbutton")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
+local HorizontalSpan = require("ui/widget/horizontalspan")
+local Button = require("ui/widget/button")
+local Font = require("ui/font")
+local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -21,11 +26,13 @@ local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
 local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 local calcLastReadText = require("utils/calcLastReadText")
+local NotificationView = require("NotificationView")
 
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
+local SMALL_FONT_FACE = Font:getFace("smallffont")
 local LibraryView = Menu:extend {
   name = "library_view",
   is_enable_shortcut = false,
@@ -53,12 +60,30 @@ function LibraryView:init()
   self.mangas_raw = self.mangas
   self.favorite_search_keyword = nil
 
-  self:patchTitleBar()
+  self:patchTitleBar(0)
+  self:fetchCountNotification()
+
   self:updateItems()
 end
 
 --- @private
-function LibraryView:patchTitleBar()
+function LibraryView:fetchCountNotification()
+  local response = Backend.getCountNotification()
+  if response.type == 'ERROR' then
+    ErrorDialog:show(response.message)
+
+    return
+  end
+
+  local count_notify = response.body
+  self:patchTitleBar(count_notify)
+
+  UIManager:setDirty(self.show_parent, "ui", self.dimen)
+end
+
+--- @private
+--- @param count_notify number
+function LibraryView:patchTitleBar(count_notify)
   -- custom
   local right_icon_size_ratio = self.title_bar.right_icon_size_ratio
   local right_icon_rotation_angle = self.title_bar.right_icon_rotation_angle
@@ -66,14 +91,38 @@ function LibraryView:patchTitleBar()
   local button_padding = Screen:scaleBySize(11)
 
   self.title_bar.right_button = HorizontalGroup:new {
-    -- align = "end",
+    HorizontalSpan:new {
+      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - right_icon_size - button_padding, -- extend button tap zone
+    },
+    VerticalGroup:new {
+      Button:new {
+        text = Icons.FA_BELL .. count_notify,
+        face = SMALL_FONT_FACE,
+        bordersize = 0,
+        enabled = true,
+        text_font_size = 16,
+        text_font_bold = false,
+        callback = function()
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              self:fetchAndShow()
+            end
+
+            NotificationView:fetchAndShow(onReturnCallback)
+
+            self:onClose()
+          end)
+        end
+      },
+      VerticalSpan:new {
+        width = right_icon_size / 2
+      }
+    },
     IconButton:new {
       icon = "appbar.search",
-      -- 1.1 patch for icon appbar.search.svg wrong size
       width = right_icon_size,
       height = right_icon_size,
       padding = button_padding,
-      padding_left = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding, -- extend button tap zone
       padding_bottom = right_icon_size,
       callback = function()
         self:openSearchMangasDialog()

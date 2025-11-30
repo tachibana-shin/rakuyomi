@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO last_check_update (\n                source_id,\n                manga_id,\n                last_check,\n                next_ts_arima\n            ) VALUES (?1, ?2, ?3, ?4)\n            ON CONFLICT(source_id, manga_id) DO UPDATE SET\n                last_check = excluded.last_check,\n                next_ts_arima = excluded.next_ts_arima\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "dde04fc0a17e96c41d94e317316bc54c79fb69feb125602fdf38f36190be9fdc"
+}

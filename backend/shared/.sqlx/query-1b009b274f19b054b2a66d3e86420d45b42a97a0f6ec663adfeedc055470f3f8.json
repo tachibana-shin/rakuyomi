@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT last_check, next_ts_arima FROM last_check_update WHERE source_id = ?1 AND manga_id = ?2",
+  "describe": {
+    "columns": [
+      {
+        "name": "last_check",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "next_ts_arima",
+        "ordinal": 1,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1b009b274f19b054b2a66d3e86420d45b42a97a0f6ec663adfeedc055470f3f8"
+}

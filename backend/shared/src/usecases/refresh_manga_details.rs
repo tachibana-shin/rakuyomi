@@ -2,15 +2,20 @@ use anyhow::{anyhow, Result};
 use tokio::time::{timeout, Duration};
 use tokio_util::sync::CancellationToken;
 
-use crate::{chapter_storage::ChapterStorage, database::Database, model::MangaId, source::Source};
+use crate::{
+    chapter_storage::ChapterStorage,
+    database::Database,
+    model::MangaId,
+    source::{model::PublishingStatus, Source},
+};
 
 pub async fn refresh_manga_details(
     db: &Database,
     chapter_storage: &ChapterStorage,
     source: &Source,
-    id: MangaId,
+    id: &MangaId,
     seconds: u64,
-) -> Result<()> {
+) -> Result<PublishingStatus> {
     let token = CancellationToken::new();
     let duration = Duration::from_secs(seconds);
 
@@ -42,5 +47,5 @@ pub async fn refresh_manga_details(
             .await?;
     }
 
-    Ok(())
+    Ok(manga_details.status)
 }

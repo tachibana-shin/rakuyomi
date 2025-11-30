@@ -1,12 +1,12 @@
 use std::time::Duration;
 
 use axum::extract::{Path, Query, State as StateExtractor};
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use futures::Future;
 use log::warn;
 use serde::{Deserialize, Serialize};
-use shared::model::{ChapterId, MangaId};
+use shared::model::{ChapterId, MangaId, NotificationInformation};
 use shared::usecases;
 use tokio_util::sync::CancellationToken;
 
@@ -21,6 +21,11 @@ pub fn routes() -> Router<State> {
         .route("/find-orphan-or-read-files", get(find_orphan_or_read_files))
         .route("/delete-file", post(delete_file))
         .route("/sync-database", post(sync_database))
+        .route("/check-mangas-update", post(check_mangas_update))
+        .route("/count-notifications", get(get_count_notifications))
+        .route("/notifications", get(get_notifications))
+        .route("/notifications/{id}", delete(delete_notification))
+        .route("/clear-notifications", post(clear_notifications))
         .route("/mangas", get(get_mangas))
         .route(
             "/mangas/{source_id}/{manga_id}/add-to-library",
@@ -167,6 +172,23 @@ async fn sync_database(
     Ok(Json(state))
 }
 
+async fn check_mangas_update(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        source_manager,
+        ..
+    }): StateExtractor<State>,
+) -> Result<Json<()>, AppError> {
+    let database = database.lock().await;
+    let chapter_storage = chapter_storage.lock().await;
+    let source_manager = source_manager.lock().await;
+
+    let _ = usecases::check_mangas_update(&database, &chapter_storage, &source_manager).await;
+
+    Ok(Json(()))
+}
+
 #[derive(Deserialize)]
 struct GetCleanerQuery {
     invalid: String,
@@ -207,6 +229,11 @@ async fn get_mangas(
 }
 
 #[derive(Deserialize)]
+struct NotificationParams {
+    id: i32,
+}
+
+#[derive(Deserialize)]
 struct MangaChaptersPathParams {
     source_id: String,
     manga_id: String,
@@ -219,14 +246,80 @@ impl From<MangaChaptersPathParams> for MangaId {
 }
 
 async fn add_manga_to_library(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        source_manager,
+        settings,
+        ..
+    }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
+
+    let settings = settings.lock().await;
+
     let database = database.lock().await;
 
     usecases::add_manga_to_library(&database, manga_id).await?;
+
+    if settings.enabled_cron_check_mangas_update {
+        let db = database.clone();
+        let cs = chapter_storage.lock().await.clone();
+        let sm = source_manager.lock().await.clone();
+        let settings = settings.clone();
+
+        tokio::spawn(async move {
+            shared::usecases::run_manga_cron(&db, &cs, &sm, &settings).await;
+        });
+    }
+
+    Ok(Json(()))
+}
+
+async fn get_count_notifications(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+) -> Result<Json<i32>, AppError> {
+    let database = database.lock().await;
+
+    let count = usecases::get_count_notifications(&database).await?;
+
+    Ok(Json(count))
+}
+
+async fn get_notifications(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<State>,
+) -> Result<Json<Vec<NotificationInformation>>, AppError> {
+    let database = database.lock().await;
+    let chapter_storage = chapter_storage.lock().await;
+
+    let rows = usecases::get_notifications(&database, &chapter_storage).await?;
+
+    Ok(Json(rows))
+}
+
+async fn delete_notification(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    Path(params): Path<NotificationParams>,
+) -> Result<Json<()>, AppError> {
+    let database = database.lock().await;
+
+    let _ = usecases::delete_notification(&database, params.id).await?;
+
+    Ok(Json(()))
+}
+
+async fn clear_notifications(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+) -> Result<Json<()>, AppError> {
+    let database = database.lock().await;
+
+    let _ = usecases::clear_notifications(&database).await?;
 
     Ok(Json(()))
 }
@@ -272,7 +365,7 @@ async fn refresh_manga_chapters(
     let manga_id = MangaId::from(params);
     let database = database.lock().await;
 
-    let _ = usecases::refresh_manga_chapters(&database, &source, manga_id.clone(), 60).await;
+    let _ = usecases::refresh_manga_chapters(&database, &source, &manga_id, 60).await;
 
     Ok(Json(()))
 }
@@ -315,8 +408,7 @@ async fn refresh_manga_details(
     let chapter_storage = &*chapter_storage.lock().await;
 
     let _ =
-        usecases::refresh_manga_details(&database, &chapter_storage, &source, manga_id.clone(), 60)
-            .await;
+        usecases::refresh_manga_details(&database, &chapter_storage, &source, &manga_id, 60).await;
 
     Ok(Json(()))
 }

@@ -77,12 +77,12 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "boolean" then
     return CheckMark:new {
-      checked = self:getCurrentValue(),
+      checked = self:getCurrentValue(true),
       face = Font:getFace("smallinfofont", SETTING_ITEM_FONT_SIZE),
     }
   elseif self.value_definition.type == "integer" then
     return TextWidget:new {
-      text = self:getCurrentValue() .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
+      text = self:getCurrentValue(true) .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -102,7 +102,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "path" then
     return TextWidget:new {
-      text = self:getCurrentValue() .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = self:getCurrentValue(true) .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -122,7 +122,7 @@ function SettingItemValue:onTap()
         {
           text = option.label,
           provider = option.value,
-          checked = self:getCurrentValue() == option.value,
+          checked = self:getCurrentValue(true) == option.value,
         },
       })
     end
@@ -140,11 +140,11 @@ function SettingItemValue:onTap()
 
     UIManager:show(dialog)
   elseif self.value_definition.type == "boolean" then
-    self:updateCurrentValue(not self:getCurrentValue())
+    self:updateCurrentValue(not self:getCurrentValue(true))
   elseif self.value_definition.type == "integer" then
     local dialog = SpinWidget:new {
       title_text = self.value_definition.title,
-      value = self:getCurrentValue(),
+      value = self:getCurrentValue(true),
       value_min = self.value_definition.min_value,
       value_max = self.value_definition.max_value,
       callback = function(spin)

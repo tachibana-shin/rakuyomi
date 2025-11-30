@@ -3850,6 +3850,7 @@ dependencies = [
  "log",
  "markup5ever 0.10.1",
  "num_enum",
+ "once_cell",
  "ouroboros",
  "pared",
  "percent-encoding",

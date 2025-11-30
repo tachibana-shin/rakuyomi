@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            DELETE FROM last_check_update WHERE source_id = ?1 AND manga_id = ?2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "65261900756a07f04d281d5e9565598c0b22c26cacf92f03caec7fa718519a0c"
+}

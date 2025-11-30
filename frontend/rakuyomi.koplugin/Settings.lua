@@ -10,6 +10,7 @@ local Size = require("ui/size")
 local TitleBar = require("ui/widget/titlebar")
 local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
+local InfoMessage = require("ui/widget/infomessage")
 local logger = require("logger")
 local Paths = require("Paths")
 local Device = require("device")
@@ -66,12 +67,12 @@ function Settings:init()
         type = 'enum',
         title = 'Library sorting mode',
         options = {
-          { label = 'Ascending (Default)',   value = 'ascending' },
-          { label = 'Descending',  value = 'descending' },
-          { label = 'Title Asc',   value = 'title_asc' },
-          { label = 'Title Desc',  value = 'title_desc' },
-          { label = 'Unread Asc',  value = 'unread_asc' },
-          { label = 'Unread Desc', value = 'unread_desc' },
+          { label = 'Ascending (Default)', value = 'ascending' },
+          { label = 'Descending',          value = 'descending' },
+          { label = 'Title Asc',           value = 'title_asc' },
+          { label = 'Title Desc',          value = 'title_desc' },
+          { label = 'Unread Asc',          value = 'unread_asc' },
+          { label = 'Unread Desc',         value = 'unread_desc' },
         }
       }
     },
@@ -111,6 +112,22 @@ function Settings:init()
         type = 'string',
         title = 'WebDAV Sync',
         placeholder = 'user:password@example.com/folder',
+      }
+    },
+    {
+      'enabled_cron_check_mangas_update',
+      {
+        type = 'boolean',
+        title = 'Enabled cron check for manga updates',
+        -- default = true,
+      }
+    },
+    {
+      'source_skip_cron',
+      {
+        type = 'string',
+        title = 'Source IDs skip check update',
+        placeholder = 'com.manga,com.manga2'
       }
     }
   }
@@ -207,6 +224,13 @@ function Settings:updateSetting(key, value)
   local response = Backend.setSettings(self.settings)
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
+    return
+  end
+
+  if key == "enabled_cron_check_mangas_update" or key == "source_skip_cron" then
+    UIManager:show(InfoMessage:new {
+      text = "You'll need to restart the app for this change to take effect"
+    })
   end
 end
 

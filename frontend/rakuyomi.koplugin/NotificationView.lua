@@ -227,7 +227,7 @@ function MenuItem:genCover(wleft_width, wleft_height)
   local border_size = Size.border.thin
 
   local wleft
-  if starts_with(self.entry.manga_cover, "file://") then
+  if self.entry.manga_cover and starts_with(self.entry.manga_cover, "file://") then
     local wimage = ImageWidget:new {
       file = self.entry.manga_cover:gsub("^file://", ""),
       -- scale_factor = 0.5

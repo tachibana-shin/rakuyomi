@@ -330,7 +330,7 @@ function MangaInfoWidget:genBookInfoGroup(manga)
   -- }
   -- cc.loadImage(manga.cover_url)
 
-  if thumbnail then
+  if thumbnail and thumbnail:sub(1, #"file://") == "file://" then
     -- Much like BookInfoManager, honor AR here
     -- local cbb_w, cbb_h = thumbnail:getWidth(), thumbnail:getHeight()
     -- if cbb_w > img_width or cbb_h > img_height then

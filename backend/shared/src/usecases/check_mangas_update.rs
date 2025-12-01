@@ -72,8 +72,9 @@ async fn check_manga_update(
         }
         Err(err) => {
             bail!(
-                "refresh_manga_details failed for manga {} ({:?})",
+                "refresh_manga_details failed for manga {}<{}> ({:?})",
                 manga.value(),
+                manga.source_id().value(),
                 err
             )
         }

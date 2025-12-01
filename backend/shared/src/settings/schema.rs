@@ -82,7 +82,7 @@ pub struct Settings {
     #[serde(default)]
     pub api_sync: Option<String>,
 
-    #[serde(default = "default_true")]
+    #[serde(default = "default_false")]
     pub enabled_cron_check_mangas_update: bool,
 
     #[serde(default)]
@@ -97,8 +97,8 @@ fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {
     *size == default_storage_size_limit()
 }
 
-fn default_true() -> bool {
-    true
+fn default_false() -> bool {
+    false
 }
 
 impl Default for StorageSizeLimit {

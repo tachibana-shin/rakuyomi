@@ -15,10 +15,12 @@ This fork:
 - Details manga
 
 <table>
+  <tr>
+    <td><img width="200" alt="image" src="https://github.com/user-attachments/assets/cccf4076-79d3-4eb2-af80-62266b0e7ede" /></td>
+    <td><img src="https://github.com/user-attachments/assets/4edec936-8034-4467-bdce-5b060d799967" width="200" /></td>
+    <td><img src="https://github.com/user-attachments/assets/1c5d29fe-5a2f-4bf9-8437-bd1afe1b4e8b" width="200" /></td>
+  </tr>
 <tr>
-  <td><img src="https://github.com/user-attachments/assets/b94ff79c-4967-425d-b976-bdf6519e7704" width="200" /></td>
-  <td><img src="https://github.com/user-attachments/assets/4edec936-8034-4467-bdce-5b060d799967" width="200" /></td>
-  <td><img src="https://github.com/user-attachments/assets/1c5d29fe-5a2f-4bf9-8437-bd1afe1b4e8b" width="200" /></td>
   <td><img src="https://github.com/user-attachments/assets/89397e28-65ae-46dc-b36f-dfc1d5e5b78c" width="200" /></td>
   <td><img src="https://github.com/user-attachments/assets/e71a161f-ffa0-4109-b602-3c36d3fddc2f" width="200" /></td>
   <td><img src="https://github.com/user-attachments/assets/36957374-89fb-490c-bea9-f52f750ca1d9" width="200" /></td>

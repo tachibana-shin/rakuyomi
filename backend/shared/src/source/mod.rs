@@ -132,7 +132,8 @@ impl Source {
     wrap_blocking_source_fn!(
         get_manga_list,
         Result<Vec<Manga>>,
-        cancellation_token: CancellationToken
+        cancellation_token: CancellationToken,
+        listing: String
     );
 
     wrap_blocking_source_fn!(
@@ -217,6 +218,16 @@ fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory
         Some(Extern::Memory(memory)) => Ok(memory),
         _ => bail!("failed to get memory"),
     }
+}
+
+/// from aidoku sdk
+/// A page of manga entries.
+#[derive(Default, Clone, Debug, PartialEq, Deserialize)]
+pub struct NextMangaPageResult {
+    /// List of manga entries.
+    pub entries: Vec<aidoku::Manga>,
+    /// Whether the next page is available or not.
+    pub has_next_page: bool,
 }
 
 struct BlockingSource {
@@ -363,7 +374,16 @@ impl BlockingSource {
         }
     }
 
-    pub fn get_manga_list(&mut self, cancellation_token: CancellationToken) -> Result<Vec<Manga>> {
+    pub fn get_manga_list(&mut self, cancellation_token: CancellationToken, listing: String) -> Result<Vec<Manga>> {
+        if self.next_sdk {
+            return self
+                .get_manga_list_next(cancellation_token, listing, 1)
+                .map(|list| {
+                    list.into_iter()
+                        .map(|v| Manga::from(v, self.id.clone()))
+                        .collect::<Vec<_>>()
+                });
+        }
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.search_mangas_by_filters_inner(vec![])
         })
@@ -475,8 +495,7 @@ impl BlockingSource {
             args = (manga_descriptor as i32),
             free = [manga_descriptor],
             as Manga,
-            parse = | descriptor, store: &mut Store<WasmStore>, _| {
-
+            parse = |descriptor, store: &mut Store<WasmStore>, _| {
                 match store.data_mut()
                     .get_std_value(descriptor as usize)
                     .ok_or(anyhow!("could not read data from manga details descriptor"))?
@@ -581,46 +600,44 @@ impl BlockingSource {
             .get_typed_func::<i32, i32>(&mut self.store, "get_chapter_list")?;
 
         let chapters = call_cleanup!(
-                   blocking = self,
-                   func = wasm_function,
-                   args = (manga_descriptor as i32),
-                   free = [manga_descriptor],
-                   as  Vec<Chapter>,
-                   parse = |chapter_list_descriptor, store: &mut Store<WasmStore>, _| {
-                    Ok(match store.data_mut()
-            .get_std_value(chapter_list_descriptor as usize)
-            .ok_or(anyhow!("could not read data from chapter list descriptor"))?
-            .as_ref()
-        {
-        Value::Array(array) => array
-                       .iter()
-                       .enumerate()
-                       .map(|(index, v)| match v {
-                           Value::Object(ObjectValue::Chapter(chapter)) => {
-                               let mut chapter = chapter.clone();
+            blocking = self,
+            func = wasm_function,
+            args = (manga_descriptor as i32),
+            free = [manga_descriptor],
+            as  Vec<Chapter>,
+            parse = |chapter_list_descriptor, store: &mut Store<WasmStore>, _| {
+                Ok(match store.data_mut()
+                    .get_std_value(chapter_list_descriptor as usize)
+                    .ok_or(anyhow!("could not read data from chapter list descriptor"))?
+                    .as_ref() {
+                        Value::Array(array) => array
+                            .iter()
+                            .enumerate()
+                            .map(|(index, v)| match v {
+                                Value::Object(ObjectValue::Chapter(chapter)) => {
+                                    let mut chapter = chapter.clone();
 
-                               if chapter.title.as_ref().map(|s| s.is_empty()).unwrap_or(true) {
-                                   chapter.title = Some(format!(
-                                       "Ch.{}",
-                                       chapter
-                                           .chapter_num
-                                           .unwrap_or(chapter.volume_num.unwrap_or(index as f32))
-                                   ));
-                               }
+                                    if chapter.title.as_ref().map(|s| s.is_empty()).unwrap_or(true) {
+                                        chapter.title = Some(format!(
+                                            "Ch.{}",
+                                            chapter
+                                                .chapter_num
+                                                .unwrap_or(chapter.volume_num.unwrap_or(index as f32))
+                                        ));
+                                    }
 
-                               Some(chapter)
-                           }
-                           _ => None,
-                       })
-                       .collect::<Option<Vec<_>>>()
-                       .ok_or(anyhow!("unexpected element in chapter array"))?,
-                   other => bail!(
-                       "expected page descriptor to be an array, found {:?} instead",
-                       other
-                   ),
-                   })
-                }
-               )?;
+                                    Some(chapter)
+                                }
+                                _ => None,
+                            })
+                            .collect::<Option<Vec<_>>>()
+                            .ok_or(anyhow!("unexpected element in chapter array"))?,
+                        other => bail!(
+                            "expected page descriptor to be an array, found {:?} instead",
+                            other
+                        ),
+                    })
+            })?;
 
         Ok(chapters)
     }
@@ -688,32 +705,30 @@ impl BlockingSource {
             .get_typed_func::<i32, i32>(&mut self.store, "get_page_list")?;
 
         let pages = call_cleanup!(
-                       blocking = self,
-                       func = wasm_function,
-                       args = (chapter_descriptor as i32),
-                       free = [chapter_descriptor],
-                       as  Vec<Page>,
-                       parse = |page_list_descriptor, store: &mut Store<WasmStore>, _| {
-           Ok(match store.data_mut()
+            blocking = self,
+            func = wasm_function,
+            args = (chapter_descriptor as i32),
+            free = [chapter_descriptor],
+            as  Vec<Page>,
+            parse = |page_list_descriptor, store: &mut Store<WasmStore>, _| {
+                Ok(match store.data_mut()
                 .get_std_value(page_list_descriptor as usize)
                 .ok_or(anyhow!("could not read data from page list descriptor"))?
-                .as_ref()
-            {
-                Value::Array(array) => array
-                    .iter()
-                    .map(|v| match v {
-                        Value::Object(ObjectValue::Page(page)) => Some(page.clone()),
-                        _ => None,
-                    })
-                    .collect::<Option<Vec<_>>>()
-                    .ok_or(anyhow!("unexpected element in page array"))?,
-                other => bail!(
-                    "expected page descriptor to be an array, found {:?} instead",
-                    other
-                ),
-            })
-        }
-                   )?;
+                .as_ref() {
+                    Value::Array(array) => array
+                        .iter()
+                        .map(|v| match v {
+                            Value::Object(ObjectValue::Page(page)) => Some(page.clone()),
+                            _ => None,
+                        })
+                        .collect::<Option<Vec<_>>>()
+                        .ok_or(anyhow!("unexpected element in page array"))?,
+                    other => bail!(
+                        "expected page descriptor to be an array, found {:?} instead",
+                        other
+                    ),
+                })
+            })?;
 
         Ok(pages)
     }
@@ -843,18 +858,17 @@ impl BlockingSource {
         let filters = store.store_std_value(Value::NextFilters([].to_vec()).into(), None);
 
         let mangas = call_cleanup!(
-                       blocking = self,
-                       func = wasm_function,
-                       args = (keyword as i32, page, filters as i32),
-                       free = [keyword, filters],
-                       as  Vec<aidoku::Manga>,
-                       parse = |pointer, store: &mut Store<WasmStore>, instance| {
-            let memory = get_memory(instance, store)?;
-            let mangas = read_next::<Vec<aidoku::Manga>>(&memory, &store, pointer)?;
+            blocking = self,
+            func = wasm_function,
+            args = (keyword as i32, page, filters as i32),
+            free = [keyword, filters],
+            as  Vec<aidoku::Manga>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
+                let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
 
-            Ok(mangas)
-        }
-                   )?;
+                Ok(mangas.entries)
+            })?;
 
         Ok(mangas)
     }
@@ -886,18 +900,17 @@ impl BlockingSource {
             .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_manga_update")?;
 
         let manga_o = call_cleanup!(
-                       blocking = self,
-                       func = wasm_function,
-                       args = (manga as i32, if needs_details { 1 } else { 0 }, if needs_chapters { 1 } else { 0 }),
-                       free = [manga],
-                       as  aidoku::Manga,
-                       parse = |pointer, store: &mut Store<WasmStore>, instance| {
-            let memory = get_memory(instance, store)?;
-        let manga_o = read_next::<aidoku::Manga>(&memory, &store, pointer)?;
+            blocking = self,
+            func = wasm_function,
+            args = (manga as i32, if needs_details { 1 } else { 0 }, if needs_chapters { 1 } else { 0 }),
+            free = [manga],
+            as  aidoku::Manga,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
+                let manga_o = read_next::<aidoku::Manga>(&memory, &store, pointer)?;
 
-            Ok(manga_o)
-        }
-                   )?;
+                Ok(manga_o)
+            })?;
 
         Ok(manga_o)
     }
@@ -928,18 +941,17 @@ impl BlockingSource {
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_page_list")?;
 
         let pages = call_cleanup!(
-                       blocking = self,
-                       func = wasm_function,
-                       args = (manga as i32, chapter as i32),
-                       free = [manga, chapter],
-                       as  Vec<aidoku::Page>,
-                       parse = |pointer, store: &mut Store<WasmStore>, instance| {
-            let memory = get_memory(instance, store)?;
-        let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
+            blocking = self,
+            func = wasm_function,
+            args = (manga as i32, chapter as i32),
+            free = [manga, chapter],
+            as  Vec<aidoku::Page>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
+                let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
 
-        Ok(pages)
-        }
-                   )?;
+                Ok(pages)
+            })?;
 
         Ok(pages)
     }
@@ -1106,68 +1118,107 @@ impl BlockingSource {
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "process_page_image")?;
 
         let image_data = call_cleanup!(
-                       blocking = self,
-                       func = wasm_function,
-                       args = (image_id, context_id),
-                       free = [image_id, context_id, image_ref],
-                       as  Vec<u8>,
-                       parse = |pointer, store: &mut Store<WasmStore>, instance| {
-            let memory = get_memory(instance, store)?;
+            blocking = self,
+            func = wasm_function,
+            args = (image_id, context_id),
+            free = [image_id, context_id, image_ref],
+            as  Vec<u8>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
 
-        let Some(image_pointer) = read_next::<i32>(&memory, &store, pointer).ok() else {
-            return Err(anyhow::anyhow!("pointer image error {pointer}"));
-        };
-
-
-
-        let image_data = {
-            let store =store.data_mut();
-            let (width, height, pixels) = {
-                let Some(image) = store.get_image(image_pointer) else {
-                    return Err(anyhow::anyhow!(
-                        "failed to get image for process_page_image point = {image_pointer}"
-                    ));
+                let Some(image_pointer) = read_next::<i32>(&memory, &store, pointer).ok() else {
+                    return Err(anyhow::anyhow!("pointer image error {pointer}"));
                 };
 
-                // image.data は Vec<u32> の参照なので、clone して borrow を即終了する
-                (image.width as u32, image.height as u32, image.data.clone())
-            };
 
-            let pointer = usize::try_from(image_pointer)
-                .context(format!("process_page_image failed {image_pointer}"))?;
-            store.take_std_value(pointer);
 
-            // RGBA に変換（元は ARGB）
-            let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
+                let image_data = {
+                    let store =store.data_mut();
+                    let (width, height, pixels) = {
+                        let Some(image) = store.get_image(image_pointer) else {
+                            return Err(anyhow::anyhow!(
+                                "failed to get image for process_page_image point = {image_pointer}"
+                            ));
+                        };
 
-            for px in &pixels {
-                let _a = ((px >> 24) & 0xFF) as u8;
-                let r = ((px >> 16) & 0xFF) as u8;
-                let g = ((px >> 8) & 0xFF) as u8;
-                let b = (px & 0xFF) as u8;
+                        // image.data は Vec<u32> の参照なので、clone して borrow を即終了する
+                        (image.width as u32, image.height as u32, image.data.clone())
+                    };
 
-                // JPEG は alpha に対応しないため RGB のみ書き込む
-                rgb_pixels.extend_from_slice(&[r, g, b]);
-            }
+                    let pointer = usize::try_from(image_pointer)
+                        .context(format!("process_page_image failed {image_pointer}"))?;
+                    store.take_std_value(pointer);
 
-            let mut out = Vec::<u8>::new();
+                    // RGBA に変換（元は ARGB）
+                    let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
 
-            // JPEG エンコーダ（Seek 不要）
-            let encoder = JpegEncoder::new_with_quality(&mut out, 100);
+                    for px in &pixels {
+                        let _a = ((px >> 24) & 0xFF) as u8;
+                        let r = ((px >> 16) & 0xFF) as u8;
+                        let g = ((px >> 8) & 0xFF) as u8;
+                        let b = (px & 0xFF) as u8;
 
-            // RGB24 としてエンコード
-            encoder
-                .write_image(&rgb_pixels, width, height, ColorType::Rgb8.into())
-                .expect("JPEG encode failed");
+                        // JPEG は alpha に対応しないため RGB のみ書き込む
+                        rgb_pixels.extend_from_slice(&[r, g, b]);
+                    }
 
-            out
-        };
+                    let mut out = Vec::<u8>::new();
+
+                    // JPEG エンコーダ（Seek 不要）
+                    let encoder = JpegEncoder::new_with_quality(&mut out, 100);
+
+                    // RGB24 としてエンコード
+                    encoder
+                        .write_image(&rgb_pixels, width, height, ColorType::Rgb8.into())
+                        .expect("JPEG encode failed");
+
+                    out
+                };
+
+                Ok(image_data)
+            })?;
 
         Ok(image_data)
-        }
-                   )?;
+    }
 
-        Ok(image_data)
+    pub fn get_manga_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        listing: String,
+        page: i32,
+    ) -> Result<Vec<aidoku::Manga>> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_manga_list_next_inner(listing, page)
+        })
+    }
+
+    fn get_manga_list_next_inner(
+        &mut self,
+        listing: String,
+        page: i32,
+    ) -> Result<Vec<aidoku::Manga>> {
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
+
+        let store = self.store.data_mut();
+
+        let listing = store.store_std_value(Value::from(listing).into(), None);
+
+        let mangas = call_cleanup!(
+            blocking = self,
+            func = wasm_function,
+            args = (listing as i32, page),
+            free = [listing],
+            as  Vec<aidoku::Manga>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
+                let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
+
+                Ok(mangas.entries)
+            })?;
+
+        Ok(mangas)
     }
 
     fn run_under_context<T, F>(

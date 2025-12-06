@@ -490,17 +490,7 @@ fn get(mut caller: Caller<'_, WasmStore>, ptr: i32, index: i32) -> FFIResult {
     };
 
     let len = html_elements.len() as i32;
-    let index = if index < 0 || index >= len {
-        let mut index = len % index;
-
-        if index < 0 {
-            index = len + index;
-        }
-
-        index
-    } else {
-        index
-    };
+    let index = ((index % len) + len) % len;
 
     let element = html_elements.get(index as usize);
     if let Some(element) = element {

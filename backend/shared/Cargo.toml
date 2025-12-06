@@ -57,7 +57,6 @@ futures-util = "0.3.31"
 sha2 = "0.10"
 base64 = "0.22"
 epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }
-kuchiki = "0.8.1"
 markup5ever = "=0.10.1"
 quick-xml = { version = "0.38.4", features = ["serialize"] }
 image = "0.25.9"
@@ -67,6 +66,7 @@ postcard = "1.1.3"
 aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default-features = false }
 raqote = "0.8.5"
 font-kit = "0.14.3"
+kuchiki = "0.8.1"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

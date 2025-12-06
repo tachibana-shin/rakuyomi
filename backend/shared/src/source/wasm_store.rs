@@ -64,6 +64,18 @@ impl HTMLElement {
     pub fn element_ref(&'_ self) -> ElementRef<'_> {
         ElementRef::wrap(self.document.tree.get(self.node_id).unwrap()).unwrap()
     }
+    pub fn data(&'_ self) -> String {
+        let mut result = String::new();
+
+        for child in self.element_ref().children() {
+            match child.value() {
+                scraper::Node::Text(text) => result.push_str(&**text),
+                _ => {}
+            }
+        }
+
+        result
+    }
 }
 
 #[derive(Debug, Clone, From, TryUnwrap)]

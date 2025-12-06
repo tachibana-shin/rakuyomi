@@ -41,6 +41,22 @@ impl From<ResultContext> for i32 {
     }
 }
 
+macro_rules! serialize_variant {
+    ($value:expr, $unwrap_fn:ident) => {{
+        postcard::to_allocvec(
+            &$value
+                .into_iter()
+                .map(|v| v.$unwrap_fn().unwrap())
+                .collect::<Vec<_>>(),
+        )
+    }};
+}
+macro_rules! serialize_null {
+    ($value:expr) => {{
+        postcard::to_allocvec(&$value.into_iter().map(|_| None::<()>).collect::<Vec<_>>())
+    }};
+}
+
 fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Result<Vec<u8>> {
     let wasm_store = caller.data_mut();
     let value_ref = wasm_store.get_std_value(pointer.clone()).context(-1)?;
@@ -59,7 +75,39 @@ fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Resul
         Value::Bool(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Date(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Vec(value) => postcard::to_allocvec(&value).unwrap(),
-        Value::Array(_) => anyhow::bail!("Can't serialize Array"),
+        Value::Array(value) => {
+            if value.len() == 0 {
+                return Ok(postcard::to_allocvec::<Vec<String>>(&vec![]).unwrap());
+            } else {
+                let first = value.first().unwrap();
+                let bytes = match first {
+                    Value::String(_) => serialize_variant!(value, try_unwrap_string),
+                    Value::Int(_) => serialize_variant!(value, try_unwrap_int),
+                    Value::Float(_) => serialize_variant!(value, try_unwrap_float),
+                    Value::Bool(_) => serialize_variant!(value, try_unwrap_bool),
+                    Value::Date(_) => serialize_variant!(value, try_unwrap_date),
+                    Value::Vec(_) => serialize_variant!(value, try_unwrap_vec),
+
+                    Value::Array(_) => anyhow::bail!("Can't serialize Array"),
+                    Value::Object(_) => anyhow::bail!("Can't serialize Object"),
+                    Value::HTMLElements(_) => anyhow::bail!("Can't serialize HTMLElements"),
+
+                    Value::Null => serialize_null!(value),
+
+                    Value::NextFilters(_) => serialize_variant!(value, try_unwrap_next_filters),
+                    Value::NextManga(_) => serialize_variant!(value, try_unwrap_next_manga),
+                    Value::NextChapter(_) => serialize_variant!(value, try_unwrap_next_chapter),
+                    Value::NextPageContext(_) => {
+                        serialize_variant!(value, try_unwrap_next_page_context)
+                    }
+                    Value::NextImageResponse(_) => {
+                        serialize_variant!(value, try_unwrap_next_image_response)
+                    }
+                }?;
+
+                return Ok(bytes);
+            }
+        }
         Value::Object(_) => anyhow::bail!("Can't serialize Object"),
         Value::HTMLElements(_) => anyhow::bail!("Can't serialize HTMLElements"),
         Value::Null => anyhow::bail!("Can't serialize Null"),

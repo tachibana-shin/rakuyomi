@@ -1,3 +1,7 @@
+#![allow(unreachable_code)]
+#![allow(unreachable_patterns)]
+#![allow(unreachable_code)]
+
 #[allow(unused_imports)]
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use futures::executor;
@@ -9,6 +13,7 @@ use shared::{
 use std::{env, io, path::PathBuf};
 use tokio_util::sync::CancellationToken;
 
+#[allow(unused)]
 pub fn chapter_downloader_benchmark(c: &mut Criterion) {
     let source_path: PathBuf = env::var("BENCHMARK_SOURCE_PATH").unwrap().into();
     let manga_id = env::var("BENCHMARK_MANGA_ID").unwrap();

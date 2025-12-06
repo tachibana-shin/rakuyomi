@@ -43,7 +43,7 @@ pub async fn refresh_manga_details(
 
     if let Some(url) = &manga_details.cover_url {
         chapter_storage
-            .cached_poster(url, || source.get_image_request(url.to_owned()))
+            .cached_poster(url, || source.get_image_request(url.to_owned(), None))
             .await?;
     }
 

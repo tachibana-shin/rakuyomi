@@ -64,7 +64,7 @@ impl From<AidokuHttpMethod> for Method {
     }
 }
 
-fn get_building_request<'a>(
+pub fn get_building_request<'a>(
     wasm_store: &'a mut WasmStore,
     descriptor: usize,
 ) -> Result<&'a mut crate::source::wasm_store::RequestBuildingState> {
@@ -113,7 +113,7 @@ fn close(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Resu
 }
 
 #[aidoku_wasm_function]
-fn set_url(
+pub fn set_url(
     mut caller: Caller<'_, WasmStore>,
     request_descriptor_i32: i32,
     url: Option<String>,
@@ -125,7 +125,7 @@ fn set_url(
 }
 
 #[aidoku_wasm_function]
-fn set_header(
+pub fn set_header(
     mut caller: Caller<'_, WasmStore>,
     request_descriptor_i32: i32,
     name: Option<String>,
@@ -141,7 +141,7 @@ fn set_header(
 }
 
 #[aidoku_wasm_function]
-fn set_body(
+pub fn set_body(
     mut caller: Caller<'_, WasmStore>,
     request_descriptor_i32: i32,
     bytes: Option<Vec<u8>>,
@@ -163,7 +163,7 @@ fn set_rate_limit_period(_caller: Caller<'_, WasmStore>, _rate_limit_period: i32
 }
 
 #[aidoku_wasm_function]
-fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<()> {
+pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<()> {
     let request_descriptor_i32: usize = request_descriptor_i32
         .try_into()
         .context("invalid descriptor")?;
@@ -195,7 +195,12 @@ fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Resul
 
     let response =
         match executor::block_on(cancellation_token.run_until_cancelled(client.execute(request))) {
-            Some(response) => response.context("failed to execute request")?,
+            Some(response) => response
+                .map_err(|err| {
+                    println!("request failed: {err}");
+                    err
+                })
+                .context("failed to execute request")?,
             _ => {
                 warn_cancellation();
                 anyhow::bail!("request was cancelled mid-flight");
@@ -239,7 +244,10 @@ fn get_url(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Re
 }
 
 #[aidoku_wasm_function]
-fn get_data_size(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
+pub fn get_data_size(
+    mut caller: Caller<'_, WasmStore>,
+    request_descriptor_i32: i32,
+) -> Result<i32> {
     let request_descriptor: usize = request_descriptor_i32
         .try_into()
         .context("invalid request descriptor")?;
@@ -265,7 +273,7 @@ fn get_data_size(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32)
 }
 
 #[aidoku_wasm_function]
-fn get_data(
+pub fn get_data(
     mut caller: Caller<'_, WasmStore>,
     request_descriptor_i32: i32,
     buffer: i32,
@@ -304,7 +312,7 @@ fn get_data(
     Ok(())
 }
 #[aidoku_wasm_function]
-fn get_header(
+pub fn get_header(
     mut caller: Caller<'_, WasmStore>,
     request_descriptor_i32: i32,
     name: Option<String>,
@@ -336,7 +344,10 @@ fn get_header(
 }
 
 #[aidoku_wasm_function]
-fn get_status_code(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
+pub fn get_status_code(
+    mut caller: Caller<'_, WasmStore>,
+    request_descriptor_i32: i32,
+) -> Result<i32> {
     let request_descriptor: usize = request_descriptor_i32
         .try_into()
         .context("invalid request descriptor")?;
@@ -378,7 +389,7 @@ fn json(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Resul
 }
 
 #[aidoku_wasm_function]
-fn html(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
+pub fn html(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
     let request_descriptor: usize = request_descriptor_i32.try_into()?;
     let wasm_store = caller.data_mut();
     let request = wasm_store

@@ -216,6 +216,7 @@ pub fn create_page(
         image_url: image_url.and_then(|url| Url::parse(&url).ok()),
         base64,
         text,
+        ctx: None,
     };
 
     Ok(wasm_store.store_std_value(Value::Object(ObjectValue::Page(page)).into(), None) as i32)

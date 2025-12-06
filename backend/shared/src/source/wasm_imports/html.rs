@@ -109,7 +109,7 @@ fn parse_fragment_with_uri(
 }
 
 #[aidoku_wasm_function]
-fn select(
+pub fn select(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     selector: Option<String>,
@@ -150,7 +150,7 @@ fn select(
 }
 
 #[aidoku_wasm_function]
-fn attr(
+pub fn attr(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     selector: Option<String>,
@@ -235,7 +235,7 @@ fn append(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<St
 }
 
 #[aidoku_wasm_function]
-fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -253,7 +253,7 @@ fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> 
 }
 
 #[aidoku_wasm_function]
-fn last(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn last(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -332,7 +332,7 @@ fn previous(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -363,7 +363,7 @@ fn body(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -389,7 +389,7 @@ fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -412,7 +412,7 @@ fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Res
 }
 
 #[aidoku_wasm_function]
-fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -470,7 +470,7 @@ fn array(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> 
 }
 
 #[aidoku_wasm_function]
-fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -493,7 +493,7 @@ fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn outer_html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn outer_html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -574,7 +574,7 @@ fn unescape(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -601,7 +601,7 @@ fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -623,7 +623,7 @@ fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -651,7 +651,7 @@ fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<
 }
 
 #[aidoku_wasm_function]
-fn has_class(
+pub fn has_class(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     class_name: Option<String>,
@@ -682,7 +682,7 @@ fn has_class(
 }
 
 #[aidoku_wasm_function]
-fn has_attr(
+pub fn has_attr(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     attr_name: Option<String>,

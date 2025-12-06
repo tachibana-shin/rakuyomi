@@ -192,9 +192,9 @@ pub fn attr(
             .iter()
             .find_map(|element| element.base_uri.as_ref())
             .context("base URI not found")?;
-        let attr_url = Url::parse(&attr).context("failed to parse attribute URL")?;
+
         let absolute_url = base_uri
-            .join(attr_url.as_str())
+            .join(&attr)
             .context("failed to join base URI and attribute URL")?;
 
         absolute_url.to_string()
@@ -443,8 +443,21 @@ pub fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Resul
 }
 
 #[aidoku_wasm_function]
-fn data(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32) -> i32 {
-    todo!("yeah idk man")
+pub fn data(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+    let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor)
+        .context("failed to get value from store")?;
+    let text = match std_value.as_ref() {
+        Value::HTMLElements(elements) if elements.len() == 1 => Some(elements.first().unwrap().data()),
+        Value::String(s) => Some(s.to_string()),
+        _ => None,
+    }
+    .context("expected single HTMLElement or String value")?;
+
+    Ok(wasm_store.store_std_value(Value::String(text).into(), Some(descriptor)) as i32)
 }
 
 #[aidoku_wasm_function]

@@ -433,8 +433,8 @@ fn own_text(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn data(_caller: Caller<'_, WasmStore>, _ptr: i32) -> Result<i32> {
-    Ok(-1)
+fn data(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
+    crate::source::wasm_imports::html::data(caller, ptr)
 }
 
 #[aidoku_wasm_function]

@@ -76,8 +76,8 @@ fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Resul
         Value::Date(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Vec(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Array(value) => {
-            if value.len() == 0 {
-                return Ok(postcard::to_allocvec::<Vec<String>>(&vec![]).unwrap());
+            if value.is_empty() {
+                return Ok(postcard::to_allocvec(&Vec::<()>::new())?);
             } else {
                 let first = value.first().unwrap();
                 let bytes = match first {

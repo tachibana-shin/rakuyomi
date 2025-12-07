@@ -64,7 +64,6 @@ in {
     sqlx-cli
     sshpass
     pkg-config
-    fontconfig
   ] ++ lib.optionals (!stdenv.isDarwin) [
     mold-wrapped
   ] ++ lib.optionals stdenv.isDarwin [

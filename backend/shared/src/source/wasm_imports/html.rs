@@ -234,7 +234,7 @@ where
     let document = kuchiki::parse_html().one(html);
     let mut root = document
         .select_first("*")
-        .expect("kuchiki could not select root element")
+        .context("kuchiki could not select root element")?
         .as_node()
         .clone();
 

@@ -49,9 +49,9 @@
               crossSystem.config = target;
             };
 
-            craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable."1.91.1".default.override {
-              targets = [target];
-            });
+            craneLib = (crane.mkLib pkgs).overrideToolchain (p:
+              p.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml
+            );
           in
             with pkgs; craneLib.buildPackage rec {
               doInstallCargoArtifacts = copyTarget;

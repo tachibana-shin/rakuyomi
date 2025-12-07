@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 
+use kuchiki::traits::TendrilSink;
 use scraper::{Element, Html as ScraperHtml, Node, Selector};
 use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
@@ -205,33 +206,151 @@ pub fn attr(
     Ok(wasm_store.store_std_value(Value::from(attr).into(), Some(descriptor)) as i32)
 }
 
+fn modify_dom<F>(
+    caller: &mut Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    mut callback: F,
+) -> Result<()>
+where
+    F: FnMut(&mut kuchiki::NodeRef),
+{
+    let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor)
+        .context("failed to get standard value")?;
+    let mut elements = match std_value.as_ref() {
+        Value::HTMLElements(elements) => Some(elements.clone()),
+        _ => None,
+    }
+    .context("expected HTMLElements value")?;
+
+    let element = elements.first_mut().context("invalid descriptor")?;
+    let base_uri = element.base_uri.clone();
+
+    let html = element.element_ref().html();
+
+    let document = kuchiki::parse_html().one(html);
+    let mut root = document
+        .select_first("*")
+        .expect("kuchiki could not select root element")
+        .as_node()
+        .clone();
+
+    callback(&mut root);
+
+    let mut new_html = Vec::new();
+    root.serialize(&mut new_html).unwrap();
+    let new_html = String::from_utf8(new_html).unwrap();
+
+    let doc_scraper = scraper::Html::parse_fragment(&new_html);
+    let node_id = doc_scraper.root_element().id();
+
+    *element = HTMLElement {
+        document: Html::from(doc_scraper).into(),
+        node_id,
+        base_uri,
+    };
+
+    wasm_store.set_std_value(descriptor, Value::from(elements).into());
+
+    Ok(())
+}
+
 #[aidoku_wasm_function]
-fn set_text(
-    mut _caller: Caller<'_, WasmStore>,
+pub fn set_text(
+    mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     text: Option<String>,
 ) -> Result<i32> {
-    let _descriptor: usize = descriptor_i32
-        .try_into()
-        .context("failed to convert to descriptor")?;
-    let _text = text.context("text is required")?;
+    let text = text.unwrap_or_default();
 
-    todo!("modifying the HTML document is unsupported")
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.children().for_each(|child| child.detach());
+
+            root.append(kuchiki::NodeRef::new_text(text.clone()));
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn set_html(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn set_html(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    html: Option<String>,
+) -> Result<i32> {
+    let html = html.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.children().for_each(|child| child.detach());
+
+            let fragment = kuchiki::parse_html().one(html.clone());
+            let frag_root = fragment
+                .select_first("*")
+                .expect("no root element in fragment")
+                .as_node()
+                .clone();
+
+            for child in frag_root.children() {
+                root.append(child);
+            }
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn prepend(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn prepend(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    text: Option<String>,
+) -> Result<i32> {
+    let text = text.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            let new_node = kuchiki::NodeRef::new_text(text.clone());
+
+            if let Some(first) = root.first_child() {
+                first.insert_before(new_node);
+            } else {
+                root.append(new_node);
+            }
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn append(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn append(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    text: Option<String>,
+) -> Result<i32> {
+    let text = text.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.append(kuchiki::NodeRef::new_text(text.clone()));
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
@@ -451,7 +570,9 @@ pub fn data(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
         .get_std_value(descriptor)
         .context("failed to get value from store")?;
     let text = match std_value.as_ref() {
-        Value::HTMLElements(elements) if elements.len() == 1 => Some(elements.first().unwrap().data()),
+        Value::HTMLElements(elements) if elements.len() == 1 => {
+            Some(elements.first().unwrap().data())
+        }
         Value::String(s) => Some(s.to_string()),
         _ => None,
     }

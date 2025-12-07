@@ -239,20 +239,20 @@ fn outer_html(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
     crate::source::wasm_imports::html::outer_html(caller, ptr)
 }
 #[aidoku_wasm_function]
-pub fn set_text(mut _caller: Caller<'_, WasmStore>, _ptr: i32, _text: Option<String>) -> FFIResult {
-    Ok(-1)
+pub fn set_text(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
+    crate::source::wasm_imports::html::set_text(caller, ptr, text)
 }
 #[aidoku_wasm_function]
-fn set_html(mut _caller: Caller<'_, WasmStore>, _ptr: i32, _text: Option<String>) -> FFIResult {
-    Ok(-1)
+fn set_html(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
+    crate::source::wasm_imports::html::set_html(caller, ptr, text)
 }
 #[aidoku_wasm_function]
-fn prepend(mut _caller: Caller<'_, WasmStore>, _ptr: i32, _text: Option<String>) -> FFIResult {
-    Ok(-1)
+fn prepend(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
+    crate::source::wasm_imports::html::prepend(caller, ptr, text)
 }
 #[aidoku_wasm_function]
-fn append(mut _caller: Caller<'_, WasmStore>, _ptr: i32, _text: Option<String>) -> FFIResult {
-    Ok(-1)
+fn append(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
+    crate::source::wasm_imports::html::append(caller, ptr, text)
 }
 #[aidoku_wasm_function]
 fn parent(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {

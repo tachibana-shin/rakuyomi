@@ -1,4 +1,6 @@
 [workspace]
+name = "backend"
+version = "0.0.1"
 resolver = "2"
 members = [
     "shared",

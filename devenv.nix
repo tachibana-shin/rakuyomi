@@ -90,7 +90,8 @@ in {
   # https://devenv.sh/languages/
   languages.rust = {
     enable = true;
-    channel = "nightly";
+    channel = "stable";
+    version = "1.91.1";
   };
 
   # Enable cachix

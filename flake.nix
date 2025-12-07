@@ -2,7 +2,8 @@
   description = "Rust example flake for Zero to Nix";
 
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     crane.url = "github:ipetkov/crane";
     flake-utils.url  = "github:numtide/flake-utils";
     rust-overlay = {

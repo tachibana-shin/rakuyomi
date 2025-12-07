@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.dependencies]
-wasmi = "0.51.2"
+wasmi = "0.51.5"
 
 [profile.dev]
 incremental = true

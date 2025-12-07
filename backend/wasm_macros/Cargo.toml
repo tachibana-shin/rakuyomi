@@ -12,10 +12,10 @@ darling = "0.21.3"
 num_enum = "0.7.5"
 proc-macro2 = "1.0.103"
 quote = "1.0.42"
-syn = { version = "2.0.110", features = ["full"] }
+syn = { version = "2.0.111", features = ["full"] }
 url = "2.5.7"
 wasm_shared = { path = "../wasm_shared" }
-wasmi = "0.51.2"
+wasmi = "0.51.5"
 
 [lib]
 proc-macro = true

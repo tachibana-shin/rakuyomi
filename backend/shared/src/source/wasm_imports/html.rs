@@ -232,11 +232,12 @@ where
     let html = element.element_ref().html();
 
     let document = kuchiki::parse_html().one(html);
-    let mut root = document
-        .select_first("*")
-        .context("kuchiki could not select root element")?
-        .as_node()
-        .clone();
+    let mut root = match document.select_first("*") {
+        Ok(v) => v,
+        Err(_) => return Err(anyhow::anyhow!("kuchiki could not select root element")),
+    }
+    .as_node()
+    .clone();
 
     callback(&mut root);
 

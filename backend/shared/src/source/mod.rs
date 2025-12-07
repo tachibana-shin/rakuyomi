@@ -1186,7 +1186,7 @@ impl BlockingSource {
                 // RGB24 としてエンコード
                 encoder
                     .write_image(&rgb_pixels, width, height, ColorType::Rgb8.into())
-                    .expect("JPEG encode failed");
+                    .context("JPEG encode failed")?;
 
                 out
             };

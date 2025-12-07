@@ -581,11 +581,6 @@ impl BlockingSource {
                     true,
                 )
                 .map(|manga| {
-                    println!(
-                        "Chapters count = {}",
-                        manga.chapters.clone().unwrap_or_default().len()
-                    );
-
                     manga
                         .chapters
                         .unwrap_or_default()
@@ -970,8 +965,6 @@ impl BlockingSource {
             parse = |pointer, store: &mut Store<WasmStore>, instance| {
                 let memory = get_memory(instance, store)?;
                 let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
-
-                println!("pages = {:?}", pages);        
 
                 Ok(pages)
             })?;

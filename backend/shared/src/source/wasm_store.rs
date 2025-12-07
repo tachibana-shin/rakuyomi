@@ -218,6 +218,13 @@ pub struct ImageResponse {
     pub image: ImageRef,
 }
 
+#[derive(From, Debug)]
+pub struct JsContext(pub(crate) boa_engine::Context);
+
+// FIXME THIS IS BORKED AS FUCK
+unsafe impl Send for JsContext {}
+unsafe impl Sync for JsContext {}
+
 #[derive(Default)]
 pub struct WasmStore {
     pub id: String,
@@ -241,6 +248,10 @@ pub struct WasmStore {
     fonts_pointer: i32,
     fonts: HashMap<i32, (String, Properties)>,
     fonts_online: HashMap<i32, Vec<u8>>,
+    // js context
+    jscontext_pointer: i32,
+    jscontexts: HashMap<i32, JsContext>,
+
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -435,6 +446,17 @@ impl WasmStore {
         self.fonts_online.insert(idx, buffer.to_vec());
 
         idx
+    }
+    pub fn create_js_context(&mut self) -> i32 {
+        let idx = self.jscontext_pointer;
+        self.jscontext_pointer +=1;
+
+        self.jscontexts.insert(idx, JsContext(boa_engine::Context::default()));
+
+        idx
+    }
+    pub fn get_js_context(&mut self, pointer: i32) -> Option<&mut JsContext> {
+        self.jscontexts.get_mut(&pointer)
     }
 }
 

@@ -1643,7 +1643,6 @@ dependencies = [
  "dirs",
  "dwrote",
  "float-ord",
- "freetype",
  "freetype-sys",
  "lazy_static",
  "libc",
@@ -1689,16 +1688,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf"
 dependencies = [
  "percent-encoding",
-]
-
-[[package]]
-name = "freetype"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a440748e063798e4893ceb877151e84acef9bea9a8c6800645cf3f1b3a7806e"
-dependencies = [
- "freetype-sys",
- "libc",
 ]
 
 [[package]]

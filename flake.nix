@@ -48,7 +48,17 @@
               inherit system;
               config.allowUnsupportedSystem = true;
               crossSystem.config = target;
-            };
+              };
+
+            targetCLibs = [
+              pkgsCross.freetype
+              pkgsCross.fontconfig
+              pkgsCross.expat
+              pkgsCross.zlib
+              pkgsCross.libpng
+              pkgsCross.bzip2
+              pkgsCross.brotli
+            ];
 
             craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable."1.91.1".default.override {
               targets = [target];
@@ -71,6 +81,12 @@
               CARGO_BUILD_TARGET = target;
               # https://github.com/rust-lang/cargo/issues/4133
               CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static -C linker=${TARGET_CC}";
+              RUST_FONTCONFIG_DLOPEN = "on"
+              FONTCONFIG_NO_PKG_CONFIG = "1"
+              CARGO_BUILD_ENV = {
+                RUST_FONTCONFIG_DLOPEN = "on";
+                FONTCONFIG_NO_PKG_CONFIG = "1";
+              };
             };
 
           mkCbzMetadataReaderPackage = buildBackendRustPackage { packageName = "cbz_metadata_reader"; };

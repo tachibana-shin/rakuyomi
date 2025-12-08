@@ -65,7 +65,7 @@ once_cell = "1.21.3"
 postcard = "1.1.3"
 aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default-features = false }
 raqote = "0.8.5"
-font-kit = { version = "0.14.3", default-features = false, features = ["loader-freetype"] }
+font-kit = "0.14.3"
 kuchiki = "0.8.1"
 boa_engine = "0.21.0"
 

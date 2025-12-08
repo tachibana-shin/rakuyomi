@@ -2,7 +2,7 @@ use aidoku::FilterValue;
 use anyhow::{anyhow, bail, Context, Result};
 use image::{codecs::jpeg::JpegEncoder, ColorType, ImageEncoder};
 use reqwest::{header::HeaderMap, Method, Request, StatusCode};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{
     fs,
     io::Read,
@@ -129,8 +129,15 @@ impl Source {
         self.0.lock().unwrap().setting_definitions.clone()
     }
 
-    pub fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
-        BlockingSource::meta_source_path(path)
+    pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
+        fs::write(
+            &path,
+            serde_json::to_string(&SourceMeta {
+                source_of_source: Some(source_of_source),
+                is_next_sdk: None,
+            })?,
+        )
+        .context("while writing meta file")
     }
 
     wrap_blocking_source_fn!(
@@ -219,6 +226,13 @@ pub struct SourceFeatures {
     pub process_page_image: bool,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SourceMeta {
+    #[serde(rename = "from")]
+    pub source_of_source: Option<String>,
+    pub is_next_sdk: Option<bool>,
+}
+
 fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory> {
     match instance.get_export(&store, "memory") {
         Some(Extern::Memory(memory)) => Ok(memory),
@@ -260,18 +274,27 @@ impl BlockingSource {
         let manifest_file = archive
             .by_name("Payload/source.json")
             .with_context(|| "while loading source.json")?;
-        let manifest: SourceManifest = {
+        let (manifest, aidoku_sdk_next_from_meta): (SourceManifest, Option<bool>) = {
             let mut manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
 
             let meta_file = Self::meta_source_path(path)?;
 
+            let mut is_next_sdk = None;
             if fs::exists(&meta_file).unwrap_or(false) {
-                let source_of_source = fs::read_to_string(meta_file)
-                    .with_context(|| format!("failed to read file: {:?}", path))?;
-                manifest.source_of_source = Some(source_of_source);
+                let meta: Option<SourceMeta> = serde_json::from_str(
+                    &fs::read_to_string(&meta_file)
+                        .with_context(|| format!("failed to read file: {:?}", path))?,
+                )
+                .map(|v| Some(v))
+                .unwrap_or(None);
+
+                if let Some(meta) = meta {
+                    manifest.source_of_source = meta.source_of_source;
+                    is_next_sdk = meta.is_next_sdk;
+                }
             }
 
-            manifest
+            (manifest, is_next_sdk)
         };
 
         let url_settings = {
@@ -304,8 +327,10 @@ impl BlockingSource {
             setting_definitions.insert(0, url);
         }
 
-        let aidoku_sdk_next =
-            force_mode.unwrap_or(Self::is_aidoku_sdk_next(&manifest.info.min_app_version));
+        let aidoku_sdk_next = force_mode.unwrap_or(
+            aidoku_sdk_next_from_meta
+                .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version)),
+        );
 
         let stored_source_settings = settings
             .source_settings
@@ -380,6 +405,20 @@ impl BlockingSource {
                 .ok()
                 .unwrap_or(false),
         };
+
+        if aidoku_sdk_next_from_meta.is_none()
+            || aidoku_sdk_next_from_meta.unwrap() != aidoku_sdk_next
+        {
+            let meta_file = Self::meta_source_path(&path)?;
+
+            let _ = fs::write(
+                &meta_file,
+                serde_json::to_string(&SourceMeta {
+                    source_of_source: manifest.source_of_source.clone(),
+                    is_next_sdk: Some(aidoku_sdk_next),
+                })?,
+            );
+        }
 
         Ok(Self {
             id,

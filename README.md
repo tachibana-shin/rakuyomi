@@ -15,6 +15,12 @@ This fork:
 - Details manga
 - Aidoku source new SDK (0.7) support
 
+> ![TIP]
+>
+> The Aidoku Community sources supported
+> https://github.com/Aidoku-Community/sources
+> https://aidoku-community.github.io/sources/index.min.json
+
 <table>
   <tr>
     <td><img width="200" alt="image" src="https://github.com/user-attachments/assets/cccf4076-79d3-4eb2-af80-62266b0e7ede" /></td>

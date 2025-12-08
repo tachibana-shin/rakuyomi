@@ -38,7 +38,8 @@ impl SourceManager {
     ) -> Result<()> {
         let target_path = self.source_path(id);
         fs::write(&target_path, contents)?;
-        fs::write(&Source::meta_source_path(&target_path)?, source_of_source)?;
+
+        Source::write_meta_file(&target_path, source_of_source)?;
 
         self.sources_by_id.insert(
             id.clone(),

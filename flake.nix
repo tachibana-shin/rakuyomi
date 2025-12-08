@@ -76,7 +76,7 @@
               nativeBuildInputs = [
                 stdenv.cc
               ];
-
+              
               TARGET_CC = with pkgsCross.stdenv; "${cc}/bin/${cc.targetPrefix}cc";
               CARGO_BUILD_TARGET = target;
               # https://github.com/rust-lang/cargo/issues/4133
@@ -87,6 +87,7 @@
  FONTCONFIG_NO_PKG_CONFIG=1
  RUST_FONTCONFIG_DLOPEN=on
  RUST_FREETYPE_DLOPEN=on
+ FREETYPE_DLOPEN=1
 '';
 
             };

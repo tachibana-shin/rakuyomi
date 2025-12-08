@@ -23,4 +23,5 @@ return {
   COD_LIBRARY          = "\u{f005}",
   SYNC                 = "\u{f46a}",
   INFO                 = "\u{f129}",
+  CHECK_ALL            = "\u{ee29}",
 }

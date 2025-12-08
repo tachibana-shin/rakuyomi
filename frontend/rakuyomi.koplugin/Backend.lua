@@ -344,6 +344,19 @@ function Backend.refreshMangaDetails(source_id, manga_id)
   })
 end
 
+--- Refreshes the details of a given manga on the database.
+--- @return SuccessfulResponse<number|nil>|ErrorResponse
+function Backend.markChaptersAsRead(source_id, manga_id, range, state)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/mark-as-read",
+    method = "POST",
+    body = {
+      range = range,
+      state = state
+    }
+  })
+end
+
 --- Begins downloading all chapters from a given manga to the storage.
 --- @return SuccessfulResponse<nil>|ErrorResponse
 function Backend.downloadAllChapters(source_id, manga_id)

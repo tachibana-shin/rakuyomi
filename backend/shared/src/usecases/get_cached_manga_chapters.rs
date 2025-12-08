@@ -9,7 +9,7 @@ use crate::{
 pub async fn get_cached_manga_chapters(
     db: &Database,
     chapter_storage: &ChapterStorage,
-    id: MangaId,
+    id: &MangaId,
 ) -> Result<Vec<Chapter>> {
-    Ok(db.find_cached_chapters(&id, &chapter_storage).await)
+    Ok(db.find_cached_chapters(id, &chapter_storage).await)
 }

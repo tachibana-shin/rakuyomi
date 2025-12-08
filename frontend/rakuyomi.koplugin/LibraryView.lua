@@ -15,6 +15,7 @@ local Button = require("ui/widget/button")
 local Font = require("ui/font")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
+local InfoMessage = require("ui/widget/infomessage")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -244,8 +245,6 @@ function LibraryView:onContextMenuChoice(item)
           UIManager:close(dialog_context_menu)
           local response = self:_refreshManga(manga)
 
-
-          local InfoMessage = require("ui/widget/infomessage")
           if response.type == 'ERROR' then
             UIManager:show(InfoMessage:new {
               text = response.message
@@ -271,6 +270,30 @@ function LibraryView:onContextMenuChoice(item)
           MangaInfoWidget:fetchAndShow(manga, function()
             UIManager:close(self)
           end, onReturnCallback)
+        end
+      }
+    },
+    {
+      {
+        text = Icons.CHECK_ALL .. " Mark read",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          ChapterListing:openMarkDialog(manga, true, function(count)
+            manga.unread_chapters_count = count
+            self:updateItems()
+          end)
+        end
+      },
+      {
+        text = Icons.CHECK_ALL .. " Mark unread",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          ChapterListing:openMarkDialog(manga, false, function(count)
+            manga.unread_chapters_count = count
+            self:updateItems()
+          end)
         end
       }
     },
@@ -435,8 +458,6 @@ function LibraryView:openMenu()
 
             return
           end
-
-          local InfoMessage = require("ui/widget/infomessage")
 
           if response.body == 'update_required' then
             UIManager:show(ConfirmBox:new {
@@ -638,7 +659,6 @@ function LibraryView:startCleaner(modeInvalid)
       ok_text = "Clean",
       ok_callback = function()
         local ProgressbarDialog = require("ui/widget/progressbardialog")
-        local InfoMessage = require("ui/widget/infomessage")
 
         local progressbar_dialog = ProgressbarDialog:new {
           title = "Deleting...",
@@ -678,7 +698,6 @@ end
 --- @private
 function LibraryView:refreshAllChapters()
   local ProgressbarDialog = require("ui/widget/progressbardialog")
-  local InfoMessage = require("ui/widget/infomessage")
 
   Trapper:wrap(function()
     local progressbar_dialog = ProgressbarDialog:new {

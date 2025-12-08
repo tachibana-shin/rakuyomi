@@ -1602,6 +1602,60 @@ impl Database {
         .await
         .unwrap();
     }
+
+    pub async fn set_chapters_read_state(
+        &self,
+        manga_id: &MangaId,
+        ids: &[ChapterId],
+        read: bool,
+    ) -> anyhow::Result<Option<usize>> {
+        if ids.is_empty() {
+            return Ok(self.count_unread_chapters(manga_id).await);
+        }
+
+        // --- Build VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), ... ---
+        // Each row: (source_id, manga_id, chapter_id, read, last_read)
+        let mut sql = String::from(
+            r#"
+            INSERT INTO chapter_state (source_id, manga_id, chapter_id, read)
+            VALUES
+            "#,
+        );
+
+        for i in 0..ids.len() {
+            if i > 0 {
+                sql.push_str(", ");
+            }
+            sql.push_str("(?, ?, ?, ?)");
+        }
+
+        // Add ON CONFLICT logic
+        sql.push_str(
+            r#"
+            ON CONFLICT (source_id, manga_id, chapter_id)
+            DO UPDATE SET
+                read = excluded.read,
+                last_read = CASE
+                    WHEN excluded.read = TRUE THEN excluded.last_read
+                    ELSE chapter_state.last_read
+                END
+            "#,
+        );
+
+        let mut query = sqlx::query(&sql);
+
+        for id in ids {
+            query = query
+                .bind(id.source_id().value())
+                .bind(id.manga_id().value())
+                .bind(id.value())
+                .bind(read);
+        }
+
+        query.execute(&self.pool).await?;
+
+        Ok(self.count_unread_chapters(manga_id).await)
+    }
 }
 
 /// Represents a manga entry in the user's library, joined with its information

@@ -370,6 +370,61 @@ function ChapterListing:refreshChapters()
   end)
 end
 
+--- @param manga Manga
+--- @param read boolean mode mark read or unread
+--- @param callback nil|function(number)
+function ChapterListing:openMarkDialog(manga, read, callback)
+  local dialog
+  dialog = InputDialog:new {
+    title = _(read and "Mark read" or "Mark unread"),
+    input_hint = _("1 - 10.5, 20 - 100"),
+    description = _("Mark chapters as read or unreadn\n\nLeaving blank will select all"),
+    buttons = {
+      {
+        {
+          text = _("Cancel"),
+          id = "close",
+          callback = function()
+            UIManager:close(dialog)
+          end,
+        },
+        {
+          text = _("Mark"),
+          is_enter_default = true,
+          callback = function()
+            UIManager:close(dialog)
+
+            local text = dialog:getInputText()
+
+
+            Trapper:wrap(function()
+              local response = LoadingDialog:showAndRun(
+                "Marking...",
+                function() return Backend.markChaptersAsRead(manga.source.id, manga.id, text, read) end
+              )
+
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+
+                return
+              end
+
+              UIManager:show(InfoMessage:new { text = "Marked" })
+
+              if callback ~= nil then
+                callback(response.body)
+              end
+            end)
+          end,
+        },
+      }
+    }
+  }
+
+  UIManager:show(dialog)
+  dialog:onShowKeyboard()
+end
+
 --- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
@@ -512,6 +567,28 @@ function ChapterListing:openMenu()
           MangaInfoWidget:fetchAndShow(self.manga, function()
             UIManager:close(self)
           end, onReturnCallback)
+        end
+      }
+    },
+    {
+      {
+        text = Icons.CHECK_ALL .. " Mark read",
+        callback = function()
+          UIManager:close(dialog)
+
+          ChapterListing:openMarkDialog(self.manga, true, function ()
+            self:refreshChapters()
+          end)
+        end
+      },
+      {
+        text = Icons.CHECK_ALL .. " Mark unread",
+        callback = function()
+          UIManager:close(dialog)
+
+          ChapterListing:openMarkDialog(self.manga, false, function ()
+            self:refreshChapters()
+          end)
         end
       }
     },

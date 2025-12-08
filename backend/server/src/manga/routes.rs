@@ -51,6 +51,10 @@ pub fn routes() -> Router<State> {
             "/mangas/{source_id}/{manga_id}/refresh-details",
             post(refresh_manga_details),
         )
+        .route(
+            "/mangas/{source_id}/{manga_id}/mark-as-read",
+            post(mark_chapters_as_read),
+        )
         // FIXME i dont think the route should be named download because it doesnt
         // always download the file...
         .route(
@@ -239,6 +243,12 @@ struct MangaChaptersPathParams {
     manga_id: String,
 }
 
+#[derive(Deserialize)]
+struct MangaMarkChaptersAsRead {
+    range: String,
+    state: bool,
+}
+
 impl From<MangaChaptersPathParams> for MangaId {
     fn from(value: MangaChaptersPathParams) -> Self {
         MangaId::from_strings(value.source_id, value.manga_id)
@@ -350,7 +360,7 @@ async fn get_cached_manga_chapters(
     let chapter_storage = &*chapter_storage.lock().await;
     let database = database.lock().await;
     let chapters =
-        usecases::get_cached_manga_chapters(&database, chapter_storage, manga_id).await?;
+        usecases::get_cached_manga_chapters(&database, chapter_storage, &manga_id).await?;
 
     let chapters = chapters.into_iter().map(Chapter::from).collect();
 
@@ -411,6 +421,25 @@ async fn refresh_manga_details(
         usecases::refresh_manga_details(&database, &chapter_storage, &source, &manga_id, 60).await;
 
     Ok(Json(()))
+}
+
+async fn mark_chapters_as_read(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<State>,
+    Path(params): Path<MangaChaptersPathParams>,
+    Json(MangaMarkChaptersAsRead { range, state }): Json<MangaMarkChaptersAsRead>,
+) -> Result<Json<Option<usize>>, AppError> {
+    let manga_id = MangaId::from(params);
+    let database = database.lock().await;
+    let chapter_storage = &*chapter_storage.lock().await;
+
+    let count =
+        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state).await?;
+
+    Ok(Json(count))
 }
 
 #[derive(Deserialize)]

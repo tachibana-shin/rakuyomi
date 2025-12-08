@@ -18,6 +18,11 @@ build_one() {
   local target="${TARGETS[$name]}"
 
   echo "=== Building $name ($target) ==="
+  cat > .cargo/config.toml << 'EOF'
+[env]
+RUST_FONTCONFIG_DLOPEN = "on"
+FONTCONFIG_NO_PKG_CONFIG = "1"
+EOF
 
   # Build all required crates
   cd backend

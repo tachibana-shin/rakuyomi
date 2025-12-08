@@ -30,7 +30,18 @@ jobs:
         node-version: "lts/*"
 
     - name: Install system deps
-      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev
+      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev padman && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
+
+    - name: Install Rust 1.91.1
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.91.1
+        profile: minimal
+        components: rustfmt, clippy
+        override: true
+
+    - name: Install cross
+      run: cargo install cross
 
     - name: Get next version
       run: |
@@ -44,7 +55,7 @@ jobs:
         export SEMANTIC_RELEASE_VERSION="${{ steps.get-next-version.outputs.new-release-git-tag }}"
         # Using `--impure` here kinda sucks, but it's needed so that we can insert the `semantic-release`
         # version into the build.
-        nix build --impure --option sandbox false .#rakuyomi.${{ matrix.target }} -o build/rakuyomi.koplugin
+        bash scripts/build-all.sh ${{ matrix.target }}
     - name: Package plugin contents
       run: "cd build && zip -r rakuyomi-${{ matrix.target }}.zip rakuyomi.koplugin"
     - name: Upload plugin as workflow artifact

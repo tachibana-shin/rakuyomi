@@ -83,8 +83,10 @@
               CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static -C linker=${TARGET_CC}";
               RUST_FONTCONFIG_DLOPEN = "on";
               FONTCONFIG_NO_PKG_CONFIG = "1";
-              CARGO_BUILD_ENV = ''RUST_FONTCONFIG_DLOPEN=on
-FONTCONFIG_NO_PKG_CONFIG=1
+              CARGO_BUILD_ENV = ''FREETYPE_NO_PKG_CONFIG=1
+ FONTCONFIG_NO_PKG_CONFIG=1
+ RUST_FONTCONFIG_DLOPEN=on
+ RUST_FREETYPE_DLOPEN=on
 '';
 
             };

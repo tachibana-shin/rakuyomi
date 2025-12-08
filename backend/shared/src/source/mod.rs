@@ -361,7 +361,7 @@ impl BlockingSource {
             Err(error) => {
                 if force_mode.is_none() {
                     println!(
-                        "Error instantiating {id} retry mode {}",
+                        "Info: failed instantiating {id} retry mode {}",
                         if aidoku_sdk_next { "legacy" } else { "next" }
                     );
 

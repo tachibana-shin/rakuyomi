@@ -22,8 +22,8 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            server/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
+            backend/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('backend/Cargo.lock') }}
 
       - name: Install Rust 1.91.1
         uses: actions-rs/toolchain@v1

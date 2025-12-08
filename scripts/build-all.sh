@@ -18,6 +18,7 @@ build_one() {
   local target="${TARGETS[$name]}"
 
   echo "=== Building $name ($target) ==="
+  mkdir -p .cargo
   cat > .cargo/config.toml << 'EOF'
 [env]
 RUST_FONTCONFIG_DLOPEN = "on"

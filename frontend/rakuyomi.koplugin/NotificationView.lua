@@ -336,7 +336,7 @@ local NotificationView = Menu:extend {
   title = "Notification",
   with_context_menu = true,
 
-  items_per_page = math.floor(Screen:getHeight() / 60),
+  items_per_page = 10,
   notifications = nil,
   on_return_callback = nil
 }

@@ -83,10 +83,10 @@
               CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static -C linker=${TARGET_CC}";
               RUST_FONTCONFIG_DLOPEN = "on";
               FONTCONFIG_NO_PKG_CONFIG = "1";
-              CARGO_BUILD_ENV = {
-                RUST_FONTCONFIG_DLOPEN = "on";
-                FONTCONFIG_NO_PKG_CONFIG = "1";
-              };
+              CARGO_BUILD_ENV = ''RUST_FONTCONFIG_DLOPEN=on
+FONTCONFIG_NO_PKG_CONFIG=1
+'';
+
             };
 
           mkCbzMetadataReaderPackage = buildBackendRustPackage { packageName = "cbz_metadata_reader"; };

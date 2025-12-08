@@ -17,6 +17,7 @@ build_one() {
   local name="$1"
   local target="${TARGETS[$name]}"
 
+  cd backend
   echo "=== Building $name ($target) ==="
   mkdir -p .cargo
   cat > .cargo/config.toml << 'EOF'
@@ -26,12 +27,11 @@ FONTCONFIG_NO_PKG_CONFIG = "1"
 EOF
 
   # Build all required crates
-  cd backend
   cross build --release --target "$target"
   cd ..
 
-  # Package output
-  ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin"
+  # Package osh output
+  bash ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin"
 
   echo "=== DONE: $name ==="
 }

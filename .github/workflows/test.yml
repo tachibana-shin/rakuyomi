@@ -33,6 +33,6 @@ jobs:
           override: true
 
       - name: Run tests
-        working-directory: ./server
+        working-directory: ./backend
         run: cargo test --all
 

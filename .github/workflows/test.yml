@@ -14,7 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      - name: Install system deps
+        run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev
       - name: Cache Cargo
         uses: actions/cache@v4
         with:

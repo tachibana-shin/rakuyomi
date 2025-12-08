@@ -131,7 +131,7 @@ impl Source {
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
         fs::write(
-            &path,
+            BlockingSource::meta_source_path(&path)?,
             serde_json::to_string(&SourceMeta {
                 source_of_source: Some(source_of_source),
                 is_next_sdk: None,

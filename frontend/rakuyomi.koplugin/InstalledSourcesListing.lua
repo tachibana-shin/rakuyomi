@@ -80,6 +80,8 @@ function InstalledSourcesListing:generateItemTableFromInstalledSources(installed
     table.insert(item_table, {
       source_information = source_information,
       text = source_information.name .. " (version " .. source_information.version .. ")",
+      post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
+          "Unknown",
     })
   end
 

@@ -96,6 +96,10 @@ pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
     pub version: usize,
+
+    // source of source
+    #[serde(skip)]
+    pub source_of_source: Option<String>
 }
 
 #[derive(Clone, Debug)]
@@ -149,6 +153,7 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
+            source_of_source: value.source_of_source,
         }
     }
 }

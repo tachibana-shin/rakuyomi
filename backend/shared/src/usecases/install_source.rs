@@ -10,9 +10,16 @@ pub async fn install_source(
     source_manager: &mut SourceManager,
     source_lists: &Vec<Url>,
     source_id: SourceId,
+    source_of_source: String,
 ) -> Result<()> {
-    let (source_list, source_list_item) = stream::iter(source_lists)
+    let (source_list, source_list_item, source_of_source) =
+        stream::iter(source_lists.into_iter().filter(|url| {
+            let domain = url.domain().unwrap_or("").to_string();
+            domain == source_of_source
+        }))
         .then(|source_list| async move {
+            let domain = source_list.domain().unwrap_or("").to_string();
+
             let response = reqwest::get(source_list.clone())
                 .await
                 .with_context(|| format!("failed to fetch source list at {}", &source_list))?;
@@ -34,18 +41,18 @@ pub async fn install_source(
                     value
                 );
             };
-            anyhow::Ok((source_list, source_list_items))
+            anyhow::Ok((source_list, source_list_items, domain))
         })
         .try_collect::<Vec<_>>()
         .await?
         .into_iter()
-        .flat_map(|(source_list, items)| {
+        .flat_map(|(source_list, items, domain)| {
             items
                 .into_iter()
-                .map(|item| (source_list.clone(), item))
+                .map(|item| (source_list.clone(), item, domain.clone()))
                 .collect::<Vec<_>>()
         })
-        .find(|(_, item)| item.id == source_id)
+        .find(|(_, item, _)| item.id == source_id)
         .ok_or_else(|| anyhow!("couldn't find source with id '{:?}'", source_id))?;
 
     let aix_url = if source_list_item.file.starts_with("sources/") {
@@ -57,7 +64,7 @@ pub async fn install_source(
     };
     let aix_content = reqwest::get(aix_url).await?.bytes().await?;
 
-    source_manager.install_source(&source_id, aix_content)?;
+    source_manager.install_source(&source_id, aix_content, source_of_source)?;
 
     Ok(())
 }

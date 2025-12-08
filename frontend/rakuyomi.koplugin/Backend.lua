@@ -148,6 +148,7 @@ end
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
 --- @field version number The version of the source.
+--- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga
 --- @field id string The ID of the manga.
@@ -443,10 +444,11 @@ end
 
 --- Installs a source.
 --- @return SuccessfulResponse<SourceInformation[]>|ErrorResponse
-function Backend.installSource(source_id)
+function Backend.installSource(source_id, source_of_source)
   return Backend.requestJson({
     path = "/available-sources/" .. source_id .. "/install",
     method = "POST",
+    body = source_of_source,
   })
 end
 

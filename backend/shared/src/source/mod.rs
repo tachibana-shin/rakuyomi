@@ -129,6 +129,10 @@ impl Source {
         self.0.lock().unwrap().setting_definitions.clone()
     }
 
+    pub fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
+        BlockingSource::meta_source_path(path)
+    }
+
     wrap_blocking_source_fn!(
         get_manga_list,
         Result<Vec<Manga>>,
@@ -206,6 +210,8 @@ pub struct SourceConfig {
 pub struct SourceManifest {
     pub info: SourceInfo,
     pub config: Option<SourceConfig>,
+    #[serde(skip)]
+    pub source_of_source: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -254,7 +260,19 @@ impl BlockingSource {
         let manifest_file = archive
             .by_name("Payload/source.json")
             .with_context(|| "while loading source.json")?;
-        let manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
+        let manifest: SourceManifest = {
+            let mut manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
+
+            let meta_file = Self::meta_source_path(path)?;
+
+            if fs::exists(&meta_file).unwrap_or(false) {
+                let source_of_source = fs::read_to_string(meta_file)
+                    .with_context(|| format!("failed to read file: {:?}", path))?;
+                manifest.source_of_source = Some(source_of_source);
+            }
+
+            manifest
+        };
 
         let url_settings = {
             let manifest = manifest.clone();
@@ -372,6 +390,23 @@ impl BlockingSource {
             setting_definitions,
             features,
         })
+    }
+
+    pub fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
+        let parent = path
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("AIX file has no parent directory"))?;
+
+        let file_stem = path
+            .file_stem()
+            .ok_or_else(|| anyhow::anyhow!("AIX file has no filename stem"))?
+            .to_str()
+            .ok_or_else(|| anyhow::anyhow!("Filename is not valid UTF-8"))?;
+
+        // Build ".{filename}.source"
+        let meta_name = format!(".{}.source", file_stem);
+
+        Ok(parent.join(meta_name))
     }
 
     fn is_aidoku_sdk_next(min: &Option<String>) -> bool {
@@ -957,17 +992,17 @@ impl BlockingSource {
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_page_list")?;
 
         let pages = call_cleanup!(
-            blocking = self,
-            func = wasm_function,
-            args = (manga as i32, chapter as i32),
-            free = [manga, chapter],
-            as  Vec<aidoku::Page>,
-            parse = |pointer, store: &mut Store<WasmStore>, instance| {
-                let memory = get_memory(instance, store)?;
-                let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
+        blocking = self,
+        func = wasm_function,
+        args = (manga as i32, chapter as i32),
+        free = [manga, chapter],
+        as  Vec<aidoku::Page>,
+        parse = |pointer, store: &mut Store<WasmStore>, instance| {
+            let memory = get_memory(instance, store)?;
+            let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
 
-                Ok(pages)
-            })?;
+            Ok(pages)
+        })?;
 
         Ok(pages)
     }

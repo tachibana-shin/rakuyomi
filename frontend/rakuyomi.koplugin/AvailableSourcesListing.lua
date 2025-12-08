@@ -87,7 +87,8 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
     local mandatory = ""
     local callback = nil
 
-    if installed_sources_by_id[source_information.id] ~= nil then
+    local installed_info = installed_sources_by_id[source_information.id]
+    if installed_info ~= nil and installed_info.source_of_source == source_information.source_of_source then
       local installed_source_info = installed_sources_by_id[source_information.id]
 
       if installed_source_info.version < source_information.version then
@@ -107,6 +108,8 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
       source_information = source_information,
       text = source_information.name .. " (version " .. source_information.version .. ")",
       mandatory = mandatory,
+      post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
+          "Unknown",
       callback = callback,
     })
   end
@@ -139,7 +142,7 @@ function AvailableSourcesListing:installSource(source_information)
   Trapper:wrap(function()
     local response = LoadingDialog:showAndRun(
       "Installing source...",
-      function() return Backend.installSource(source_information.id) end
+      function() return Backend.installSource(source_information.id, source_information.source_of_source) end
     )
 
     if response.type == 'ERROR' then

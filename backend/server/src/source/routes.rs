@@ -62,11 +62,13 @@ async fn install_source(
         ..
     }): StateExtractor<State>,
     Path(InstallSourceParams { source_id }): Path<InstallSourceParams>,
+    Json(source_of_source): Json<String>,
 ) -> Result<Json<()>, AppError> {
     usecases::install_source(
         &mut *source_manager.lock().await,
         &settings.lock().await.source_lists,
         SourceId::new(source_id),
+        source_of_source,
     )
     .await?;
 

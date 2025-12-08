@@ -41,7 +41,9 @@ function LoadingDialog:showAndRun(message, runnable, onCancel, bypass_trapper_ch
   UIManager:forceRePaint()
 
   local completed, return_values = Trapper:dismissableRunInSubprocess(runnable, message_dialog)
-  assert(completed, "Expected runnable to run to completion")
+  if onCancel == nil then
+    assert(completed, "Expected runnable to run to completion")
+  end
 
   UIManager:close(message_dialog)
 

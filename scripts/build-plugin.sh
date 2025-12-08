@@ -10,9 +10,9 @@ mkdir -p "$OUT"
 
 cp -r frontend/rakuyomi.koplugin/* "$OUT/"
 
-cp target/$TARGET/release/cbz_metadata_reader "$OUT/"
-cp target/$TARGET/release/server "$OUT/"
-cp target/$TARGET/release/uds_http_request "$OUT/"
+cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
+cp backend/target/$TARGET/release/server "$OUT/"
+cp backend/target/$TARGET/release/uds_http_request "$OUT/"
 
 echo "{ \"version\": \"dev\", \"build\": \"$BUILD_NAME\" }" > "$OUT/BUILD_INFO.json"
 

@@ -25,7 +25,7 @@ build_one() {
   cd ..
 
   # Package output
-  ./scripts/build-plugin.sh "$target" "rakuyomi.plugin"
+  ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin"
 
   echo "=== DONE: $name ==="
 }

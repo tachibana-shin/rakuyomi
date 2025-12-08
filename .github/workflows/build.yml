@@ -30,7 +30,23 @@ jobs:
         node-version: "lts/*"
 
     - name: Install system deps
-      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev padman && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
+      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev podman && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache Podman images
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/containers
+          key: ${{ runner.os }}-podman-cross-${{ matrix.target }}
 
     - name: Install Rust 1.91.1
       uses: actions-rs/toolchain@v1

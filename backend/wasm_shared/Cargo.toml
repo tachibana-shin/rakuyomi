@@ -9,10 +9,10 @@ anyhow = "1.0.100"
 chrono = "0.4.42"
 chrono-tz = "0.10.4"
 darling = "0.21.3"
-log = "0.4.28"
+log = "0.4.29"
 num_enum = "0.7.5"
 proc-macro2 = "1.0.103"
 quote = "1.0.42"
-syn = { version = "2.0.110", features = ["full"] }
+syn = { version = "2.0.111", features = ["full"] }
 url = "2.5.7"
 wasmi.workspace = true

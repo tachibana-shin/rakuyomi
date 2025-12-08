@@ -20,7 +20,7 @@ darling = "0.21.3"
 num_enum = "0.7.5"
 proc-macro2 = "1.0.103"
 quote = "1.0.42"
-syn = { version = "2.0.110", features = ["full"] }
+syn = { version = "2.0.111", features = ["full"] }
 url = { version = "2.5.7", features = ["serde"] }
 wasm_macros = { path = "../wasm_macros" }
 wasm_shared = { path = "../wasm_shared" }
@@ -44,8 +44,8 @@ surge-ping = "0.8.3"
 async-stream = "0.3.6"
 tokio-util = "0.7.17"
 tempfile = "3.23.0"
-log = "0.4.28"
-derive_more = { version = "2.0.1", features = ["from", "try_unwrap", "deref"] }
+log = "0.4.29"
+derive_more = { version = "2.1.0", features = ["from", "try_unwrap", "deref"] }
 size = "0.5.0"
 walkdir = "2.5.0"
 regex = "1.12.2"
@@ -57,12 +57,17 @@ futures-util = "0.3.31"
 sha2 = "0.10"
 base64 = "0.22"
 epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }
-kuchiki = "0.8.1"
 markup5ever = "=0.10.1"
 quick-xml = { version = "0.38.4", features = ["serialize"] }
 image = "0.25.9"
 percent-encoding = "2.3.2"
 once_cell = "1.21.3"
+postcard = "1.1.3"
+aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default-features = false }
+raqote = "0.8.5"
+font-kit = "0.14.3"
+kuchiki = "0.8.1"
+boa_engine = "0.21.0"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

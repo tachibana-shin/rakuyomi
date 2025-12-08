@@ -1,0 +1,46 @@
+name: "Test"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+defaults:
+  run:
+    shell: devenv shell bash -- -e {0}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v31
+    - uses: cachix/cachix-action@v16
+      with:
+        name: rakuyomi
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        extraPullNames: devenv
+    - name: Install devenv.sh
+      shell: bash
+      run: nix profile install nixpkgs#devenv
+    - name: Check format
+      run: check-format
+    - name: Check lint
+      run: check-lint
+    - name: Run frontend unittests
+      run: test-frontend
+    - name: Install needed packages for E2E tests
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y fluxbox x11-xserver-utils gnome-screenshot ffmpeg
+    - name: Run E2E tests
+      run: xvfb-run ci/run-e2e-tests.sh
+      env:
+        OPENAI_API_KEY: '${{ secrets.OPENAI_API_KEY }}'
+        OPENAI_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai
+        OPENAI_MODEL: gemini-2.0-flash
+        RAKUYOMI_TEST_INITIALIZATION_TIMEOUT: '600'
+    - name: Upload test artifacts
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-screenshots
+        path: e2e-tests/screenshots/
+        if-no-files-found: ignore

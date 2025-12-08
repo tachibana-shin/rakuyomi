@@ -28,6 +28,37 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: "lts/*"
+
+    - name: Install system deps
+      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev podman && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+ 
+    - name: Cache Podman images
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.local/share/containers
+        key: ${{ runner.os }}-podman-cross-${{ matrix.target }}
+
+    - name: Install Rust 1.91.1
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.91.1
+        profile: minimal
+        components: rustfmt, clippy
+        override: true
+
+    - name: Install cross
+      run: cargo install cross
+
     - name: Get next version
       run: |
         npm install -D semantic-release-export-data
@@ -40,7 +71,7 @@ jobs:
         export SEMANTIC_RELEASE_VERSION="${{ steps.get-next-version.outputs.new-release-git-tag }}"
         # Using `--impure` here kinda sucks, but it's needed so that we can insert the `semantic-release`
         # version into the build.
-        nix build --impure .#rakuyomi.${{ matrix.target }} -o build/rakuyomi.koplugin
+        bash scripts/build-all.sh ${{ matrix.target }}
     - name: Package plugin contents
       run: "cd build && zip -r rakuyomi-${{ matrix.target }}.zip rakuyomi.koplugin"
     - name: Upload plugin as workflow artifact

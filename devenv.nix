@@ -63,6 +63,10 @@ in {
     python313Packages.tkinter
     sqlx-cli
     sshpass
+    pkg-config
+    freetype
+    freetype-sys
+    fontconfig
   ] ++ lib.optionals (!stdenv.isDarwin) [
     mold-wrapped
   ] ++ lib.optionals stdenv.isDarwin [
@@ -88,7 +92,8 @@ in {
   # https://devenv.sh/languages/
   languages.rust = {
     enable = true;
-    channel = "nightly";
+    channel = "stable";
+    version = "1.91.1";
   };
 
   # Enable cachix

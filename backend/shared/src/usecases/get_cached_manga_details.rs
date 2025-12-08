@@ -12,7 +12,7 @@ pub async fn get_cached_manga_details(
         Some((mut details, per_read)) => {
             if let Some(url) = &details.cover_url {
                 let output = chapter_storage
-                    .cached_poster(&url, || source.get_image_request(url.to_owned()))
+                    .cached_poster(&url, || source.get_image_request(url.to_owned(), None))
                     .await?;
 
                 details.url = match url::Url::from_file_path(output.clone()) {

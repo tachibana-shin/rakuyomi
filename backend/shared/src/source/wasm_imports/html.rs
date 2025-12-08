@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 
+use kuchiki::traits::TendrilSink;
 use scraper::{Element, Html as ScraperHtml, Node, Selector};
 use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
@@ -109,7 +110,7 @@ fn parse_fragment_with_uri(
 }
 
 #[aidoku_wasm_function]
-fn select(
+pub fn select(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     selector: Option<String>,
@@ -150,7 +151,7 @@ fn select(
 }
 
 #[aidoku_wasm_function]
-fn attr(
+pub fn attr(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     selector: Option<String>,
@@ -192,9 +193,9 @@ fn attr(
             .iter()
             .find_map(|element| element.base_uri.as_ref())
             .context("base URI not found")?;
-        let attr_url = Url::parse(&attr).context("failed to parse attribute URL")?;
+
         let absolute_url = base_uri
-            .join(attr_url.as_str())
+            .join(&attr)
             .context("failed to join base URI and attribute URL")?;
 
         absolute_url.to_string()
@@ -205,37 +206,156 @@ fn attr(
     Ok(wasm_store.store_std_value(Value::from(attr).into(), Some(descriptor)) as i32)
 }
 
+fn modify_dom<F>(
+    caller: &mut Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    mut callback: F,
+) -> Result<()>
+where
+    F: FnMut(&mut kuchiki::NodeRef),
+{
+    let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor)
+        .context("failed to get standard value")?;
+    let mut elements = match std_value.as_ref() {
+        Value::HTMLElements(elements) => Some(elements.clone()),
+        _ => None,
+    }
+    .context("expected HTMLElements value")?;
+
+    let element = elements.first_mut().context("invalid descriptor")?;
+    let base_uri = element.base_uri.clone();
+
+    let html = element.element_ref().html();
+
+    let document = kuchiki::parse_html().one(html);
+    let mut root = match document.select_first("*") {
+        Ok(v) => v,
+        Err(_) => return Err(anyhow::anyhow!("kuchiki could not select root element")),
+    }
+    .as_node()
+    .clone();
+
+    callback(&mut root);
+
+    let mut new_html = Vec::new();
+    root.serialize(&mut new_html).unwrap();
+    let new_html = String::from_utf8(new_html).unwrap();
+
+    let doc_scraper = scraper::Html::parse_fragment(&new_html);
+    let node_id = doc_scraper.root_element().id();
+
+    *element = HTMLElement {
+        document: Html::from(doc_scraper).into(),
+        node_id,
+        base_uri,
+    };
+
+    wasm_store.set_std_value(descriptor, Value::from(elements).into());
+
+    Ok(())
+}
+
 #[aidoku_wasm_function]
-fn set_text(
-    mut _caller: Caller<'_, WasmStore>,
+pub fn set_text(
+    mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     text: Option<String>,
 ) -> Result<i32> {
-    let _descriptor: usize = descriptor_i32
-        .try_into()
-        .context("failed to convert to descriptor")?;
-    let _text = text.context("text is required")?;
+    let text = text.unwrap_or_default();
 
-    todo!("modifying the HTML document is unsupported")
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.children().for_each(|child| child.detach());
+
+            root.append(kuchiki::NodeRef::new_text(text.clone()));
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn set_html(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn set_html(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    html: Option<String>,
+) -> Result<i32> {
+    let html = html.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.children().for_each(|child| child.detach());
+
+            let fragment = kuchiki::parse_html().one(html.clone());
+            let frag_root = fragment
+                .select_first("*")
+                .expect("no root element in fragment")
+                .as_node()
+                .clone();
+
+            for child in frag_root.children() {
+                root.append(child);
+            }
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn prepend(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn prepend(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    text: Option<String>,
+) -> Result<i32> {
+    let text = text.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            let new_node = kuchiki::NodeRef::new_text(text.clone());
+
+            if let Some(first) = root.first_child() {
+                first.insert_before(new_node);
+            } else {
+                root.append(new_node);
+            }
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn append(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32, _text: Option<String>) -> i32 {
-    todo!("modifying the HTML document is unsupported")
+pub fn append(
+    mut caller: Caller<'_, WasmStore>,
+    descriptor_i32: i32,
+    text: Option<String>,
+) -> Result<i32> {
+    let text = text.unwrap_or_default();
+
+    modify_dom(
+        &mut caller,
+        descriptor_i32,
+        |root: &mut kuchiki::NodeRef| {
+            root.append(kuchiki::NodeRef::new_text(text.clone()));
+        },
+    )?;
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
-fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -253,7 +373,7 @@ fn first(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> 
 }
 
 #[aidoku_wasm_function]
-fn last(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn last(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -332,7 +452,7 @@ fn previous(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -363,7 +483,7 @@ fn body(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -389,7 +509,7 @@ fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -412,7 +532,7 @@ fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Res
 }
 
 #[aidoku_wasm_function]
-fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -443,8 +563,23 @@ fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn data(_caller: Caller<'_, WasmStore>, _descriptor_i32: i32) -> i32 {
-    todo!("yeah idk man")
+pub fn data(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+    let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor)
+        .context("failed to get value from store")?;
+    let text = match std_value.as_ref() {
+        Value::HTMLElements(elements) if elements.len() == 1 => {
+            Some(elements.first().unwrap().data())
+        }
+        Value::String(s) => Some(s.to_string()),
+        _ => None,
+    }
+    .context("expected single HTMLElement or String value")?;
+
+    Ok(wasm_store.store_std_value(Value::String(text).into(), Some(descriptor)) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -470,7 +605,7 @@ fn array(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> 
 }
 
 #[aidoku_wasm_function]
-fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -493,7 +628,7 @@ fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn outer_html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn outer_html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -574,7 +709,7 @@ fn unescape(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -601,7 +736,7 @@ fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -623,7 +758,7 @@ fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 }
 
 #[aidoku_wasm_function]
-fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
+pub fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
     let wasm_store = caller.data_mut();
@@ -651,7 +786,7 @@ fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<
 }
 
 #[aidoku_wasm_function]
-fn has_class(
+pub fn has_class(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     class_name: Option<String>,
@@ -682,7 +817,7 @@ fn has_class(
 }
 
 #[aidoku_wasm_function]
-fn has_attr(
+pub fn has_attr(
     mut caller: Caller<'_, WasmStore>,
     descriptor_i32: i32,
     attr_name: Option<String>,

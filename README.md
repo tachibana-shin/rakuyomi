@@ -13,6 +13,7 @@ This fork:
 - Added cleaner to free up memory
 - Improved SQLite query method to speed up all operations by `200 times` including: library access, search, chapter list (`x300 times`)
 - Details manga
+- Aidoku source new SDK (0.7) support
 
 <table>
   <tr>

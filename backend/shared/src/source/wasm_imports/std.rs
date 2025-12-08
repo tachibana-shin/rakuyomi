@@ -162,6 +162,12 @@ fn type_of(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32
         Value::Object(_) => ObjectType::Object,
         Value::Date(_) => ObjectType::Date,
         Value::HTMLElements(_) => ObjectType::Node,
+        Value::Vec(_) => ObjectType::Array,
+        Value::NextFilters(_) => ObjectType::Array,
+        Value::NextManga(_) => ObjectType::Object,
+        Value::NextChapter(_) => ObjectType::Object,
+        Value::NextPageContext(_) => ObjectType::Object,
+        Value::NextImageResponse(_) => ObjectType::Object,
     };
     Ok(object_type as i32)
 }
@@ -297,7 +303,7 @@ fn read_date(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<F64> 
     Ok(result.into())
 }
 
-fn parse_flexible_datetime(
+pub fn parse_flexible_datetime(
     string: &str,
     format_string: &str,
     timezone: chrono_tz::Tz,

@@ -103,6 +103,10 @@ pub async fn ensure_chapter_is_in_storage(
             concurrent_requests_pages,
         )
         .await
+        .map_err(|err| {
+            println!("Error = {err}");
+            err
+        })
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
     }
@@ -151,8 +155,8 @@ where
     writer.write_all(xml_content.as_bytes())?;
 
     let client = Client::builder()
-        // Some sources return invalid certs, but otherwise download images just fine...
-        // This is kinda bad.
+        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_hostnames(true)
         .build()
         .unwrap();
 
@@ -162,12 +166,15 @@ where
     tokio::spawn({
         let client = client.clone();
         let source = source.clone();
+        let cancel_token = CancellationToken::new();
+
         async move {
             stream::iter(pages)
                 .map(|page| {
                     let tx = tx.clone();
                     let client = client.clone();
                     let source = source.clone();
+                    let cancel_token = cancel_token.clone();
 
                     async move {
                         let image_url = page.image_url.ok_or(anyhow!("page has no image URL"))?;
@@ -184,13 +191,30 @@ where
 
                         // TODO we could stream the data from the client into the file
                         // would save a bit of memory but i dont think its a big deal
-                        let request = source.get_image_request(image_url).await?;
-                        let response_bytes = client
-                            .execute(request)
-                            .await?
-                            .error_for_status()?
-                            .bytes()
+                        let request = source
+                            .get_image_request(image_url, page.ctx.clone())
                             .await?;
+                        let req_url = { request.url().clone() };
+                        let req_headers = { request.headers().clone() };
+                        let response = client.execute(request).await?.error_for_status()?;
+                        let status = { response.status() };
+                        let headers = { response.headers().clone() };
+
+                        let response_bytes = response.bytes().await?;
+
+                        let response_bytes = source
+                            .process_page_image(
+                                cancel_token.clone(),
+                                (req_url, req_headers),
+                                (status, headers),
+                                response_bytes,
+                                page.ctx.clone(),
+                            )
+                            .await
+                            .map_err(|err| {
+                                println!("Error = {err}");
+                                err
+                            })?;
 
                         let final_image = if let Some(blocks_json) = page.base64.as_ref() {
                             let blocks: Vec<Block> = serde_json::from_str(blocks_json)
@@ -251,7 +275,7 @@ async fn prepare_cover_cursor(
     source: &Source,
 ) -> Option<Cursor<Vec<u8>>> {
     if let Some(url) = cover_url {
-        let req = source.get_image_request(url).await.ok()?;
+        let req = source.get_image_request(url, None).await.ok()?;
         let resp = client.execute(req).await.ok()?.error_for_status().ok()?;
         let bytes = resp.bytes().await.ok()?;
         Some(Cursor::new(bytes.to_vec()))

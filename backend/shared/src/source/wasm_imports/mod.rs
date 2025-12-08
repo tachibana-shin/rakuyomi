@@ -1,5 +1,7 @@
 extern crate wasm_macros;
 
+pub mod next;
+
 pub mod aidoku;
 pub mod defaults;
 pub mod env;

@@ -1,5 +1,7 @@
+use aidoku::FilterValue;
 use anyhow::{anyhow, bail, Context, Result};
-use reqwest::{Method, Request};
+use image::{codecs::jpeg::JpegEncoder, ColorType, ImageEncoder};
+use reqwest::{header::HeaderMap, Method, Request, StatusCode};
 use serde::Deserialize;
 use std::{
     fs,
@@ -7,12 +9,20 @@ use std::{
     path::Path,
     sync::{Arc, Mutex},
 };
+use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 use url::Url;
 use wasmi::*;
 use zip::ZipArchive;
 
-use crate::settings::Settings;
+use crate::{
+    settings::Settings,
+    source::{
+        next_reader::read_next,
+        wasm_imports::next as sdk_next,
+        wasm_store::{ImageRef, ImageRequest, ImageResponse},
+    },
+};
 
 use self::{
     model::{Chapter, Filter, Manga, MangaPageResult, Page, SettingDefinition},
@@ -33,9 +43,20 @@ use self::{
 };
 
 pub mod model;
+mod next_reader;
 mod source_settings;
 mod wasm_imports;
 mod wasm_store;
+
+/**
+ * params need mark encode
+ * handle_notification
+ * handle_deep_link
+ * handle_basic_login
+ * handle_web_login
+ * handle_key_migration
+ *
+ */
 
 #[derive(Clone)]
 pub struct Source(
@@ -61,9 +82,40 @@ macro_rules! wrap_blocking_source_fn {
     };
 }
 
+macro_rules! call_cleanup {
+    (
+        blocking = $blocking:expr,
+        func = $func:expr,
+        args = ($($args:expr),*),
+        free = [$($descriptor:expr),*],
+        as $result_ty:ty,
+        parse = $parse_fn:expr
+    ) => {{
+        let result_descriptor = {$func.call(&mut $blocking.store, ($($args),*))
+            .expect("wasm call failed")};
+
+        let parsed: Result<$result_ty> = {
+            let store: &mut Store<WasmStore> = &mut $blocking.store;
+            $parse_fn(result_descriptor, store, $blocking.instance)
+        };
+
+        {
+            let store_mut = $blocking.store.data_mut();
+            $(store_mut.take_std_value($descriptor as usize);)*
+            let _ = $blocking.free_result(result_descriptor);
+        }
+
+        parsed
+    }};
+}
+
 impl Source {
     pub fn from_aix_file(path: &Path, settings: Settings) -> Result<Self> {
-        let blocking_source = BlockingSource::from_aix_file(path, settings)?;
+        let mut blocking_source = BlockingSource::from_aix_file(path, settings, None)?;
+
+        if blocking_source.next_sdk {
+            blocking_source.start()?;
+        }
 
         Ok(Self(Arc::new(Mutex::new(blocking_source))))
     }
@@ -80,7 +132,8 @@ impl Source {
     wrap_blocking_source_fn!(
         get_manga_list,
         Result<Vec<Manga>>,
-        cancellation_token: CancellationToken
+        cancellation_token: CancellationToken,
+        listing: String
     );
 
     wrap_blocking_source_fn!(
@@ -116,7 +169,18 @@ impl Source {
     wrap_blocking_source_fn!(
         get_image_request,
         Result<Request>,
-        url: Url
+        url: Url,
+        ctx: Option<aidoku::PageContext>
+    );
+
+    wrap_blocking_source_fn!(
+        process_page_image,
+        Result<Vec<u8>>,
+        cancellation_token: CancellationToken,
+        request: (Url, HeaderMap),
+        response: (StatusCode, HeaderMap),
+        bytes: Bytes,
+        ctx: Option<aidoku::PageContext>
     );
 }
 
@@ -124,25 +188,64 @@ impl Source {
 #[allow(dead_code)]
 pub struct SourceInfo {
     pub id: String,
-    pub lang: String,
+    pub lang: Option<String>,
     pub name: String,
     pub version: usize,
+    pub urls: Option<Vec<String>>,
+    #[serde(rename = "minAppVersion")]
+    pub min_app_version: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SourceConfig {
+    #[serde(rename = "allowsBaseUrlSelect")]
+    pub allows_base_url_select: Option<bool>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SourceManifest {
     pub info: SourceInfo,
+    pub config: Option<SourceConfig>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SourceFeatures {
+    pub process_page_image: bool,
+}
+
+fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory> {
+    match instance.get_export(&store, "memory") {
+        Some(Extern::Memory(memory)) => Ok(memory),
+        _ => bail!("failed to get memory"),
+    }
+}
+
+/// from aidoku sdk
+/// A page of manga entries.
+#[derive(Default, Clone, Debug, PartialEq, Deserialize)]
+pub struct NextMangaPageResult {
+    /// List of manga entries.
+    pub entries: Vec<aidoku::Manga>,
+    /// Whether the next page is available or not.
+    pub has_next_page: bool,
 }
 
 struct BlockingSource {
+    id: String,
     store: Store<WasmStore>,
     instance: Instance,
     manifest: SourceManifest,
     setting_definitions: Vec<SettingDefinition>,
+    pub next_sdk: bool,
+    features: SourceFeatures,
 }
 
 impl BlockingSource {
-    pub fn from_aix_file(path: &Path, settings: Settings) -> Result<Self> {
+    pub fn from_aix_file(
+        path: &Path,
+        settings: Settings,
+        force_mode: Option<bool>,
+    ) -> Result<Self> {
         let file =
             fs::File::open(path).with_context(|| format!("couldn't open {}", path.display()))?;
         let mut archive = ZipArchive::new(file)
@@ -153,12 +256,38 @@ impl BlockingSource {
             .with_context(|| "while loading source.json")?;
         let manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
 
-        let setting_definitions: Vec<SettingDefinition> =
+        let url_settings = {
+            let manifest = manifest.clone();
+            if manifest
+                .config
+                .map(|c| c.allows_base_url_select.unwrap_or(false))
+                .unwrap_or(false)
+            {
+                let urls = manifest.info.urls.clone().unwrap_or(vec![]);
+                Some(SettingDefinition::Select {
+                    title: "URL".to_owned(),
+                    key: "url".to_owned(),
+                    default: urls.first().unwrap_or(&"".to_owned()).to_string(),
+                    values: urls,
+                    titles: None,
+                })
+            } else {
+                None
+            }
+        };
+
+        let mut setting_definitions: Vec<SettingDefinition> =
             if let Ok(file) = archive.by_name("Payload/settings.json") {
                 serde_json::from_reader(file)?
             } else {
                 Vec::new()
             };
+        if let Some(url) = url_settings {
+            setting_definitions.insert(0, url);
+        }
+
+        let aidoku_sdk_next =
+            force_mode.unwrap_or(Self::is_aidoku_sdk_next(&manifest.info.min_app_version));
 
         let stored_source_settings = settings
             .source_settings
@@ -176,34 +305,106 @@ impl BlockingSource {
             .with_context(|| format!("failed reading wasm from zip entry {}", path.display()))?;
 
         let engine = Engine::default();
-        let wasm_store = WasmStore::new(manifest.info.id.clone(), source_settings, settings);
+        let wasm_store =
+            WasmStore::new(manifest.info.id.clone(), source_settings, settings.clone());
         let mut store = Store::new(&engine, wasm_store);
 
         let module = Module::new(&engine, &wasm_bytes)
             .with_context(|| format!("failed loading module from {}", path.display()))?;
 
         let mut linker = Linker::new(&engine);
-        register_aidoku_imports(&mut linker)?;
-        register_defaults_imports(&mut linker)?;
-        register_env_imports(&mut linker)?;
-        register_html_imports(&mut linker)?;
-        register_json_imports(&mut linker)?;
-        register_net_imports(&mut linker)?;
-        register_std_imports(&mut linker)?;
 
-        let instance = linker
+        if aidoku_sdk_next {
+            // register_aidoku_imports(&mut linker)?;
+            // register_json_imports(&mut linker)?;
+            sdk_next::register_std_imports(&mut linker)?; // ok
+            sdk_next::register_canvas_imports(&mut linker)?; // check
+            sdk_next::register_defaults_imports(&mut linker)?; // ok
+            sdk_next::register_env_imports(&mut linker)?; // ok
+            sdk_next::register_html_imports(&mut linker)?;
+            sdk_next::register_js_imports(&mut linker)?;
+            sdk_next::register_net_imports(&mut linker)?;
+        } else {
+            register_aidoku_imports(&mut linker)?;
+            register_defaults_imports(&mut linker)?;
+            register_env_imports(&mut linker)?;
+            register_html_imports(&mut linker)?;
+            register_json_imports(&mut linker)?;
+            register_net_imports(&mut linker)?;
+            register_std_imports(&mut linker)?;
+        }
+
+        let id = { manifest.info.id.clone() };
+        let instance = match linker
             .instantiate_and_start(&mut store, &module)
-            .with_context(|| format!("failed creating instance from {}", path.display()))?;
+            .with_context(|| format!("failed creating instance from {}", path.display()))
+        {
+            Ok(instance) => instance,
+            Err(error) => {
+                if force_mode.is_none() {
+                    println!(
+                        "Error instantiating {id} retry mode {}",
+                        if aidoku_sdk_next { "legacy" } else { "next" }
+                    );
+
+                    return Self::from_aix_file(path, settings.clone(), Some(!aidoku_sdk_next));
+                }
+
+                eprintln!("Error instantiating: {:?}", error);
+                return Err(error);
+            }
+        };
+
+        let features = SourceFeatures {
+            process_page_image: instance
+                .get_typed_func::<(i32, i32), i32>(&mut store, "process_page_image")
+                .map(|_| true)
+                .ok()
+                .unwrap_or(false),
+        };
 
         Ok(Self {
+            id,
             store,
             instance,
             manifest,
+            next_sdk: aidoku_sdk_next,
             setting_definitions,
+            features,
         })
     }
 
-    pub fn get_manga_list(&mut self, cancellation_token: CancellationToken) -> Result<Vec<Manga>> {
+    fn is_aidoku_sdk_next(min: &Option<String>) -> bool {
+        use semver::Version;
+        // parse "0.7" into a SemVer
+        let target = Version::parse("0.7.0").unwrap();
+
+        match min {
+            Some(v) => {
+                // Safely parse user's version
+                match Version::parse(v) {
+                    Ok(parsed) => parsed >= target,
+                    Err(_) => false, // invalid version string → treat as old
+                }
+            }
+            None => false,
+        }
+    }
+
+    pub fn get_manga_list(
+        &mut self,
+        cancellation_token: CancellationToken,
+        listing: String,
+    ) -> Result<Vec<Manga>> {
+        if self.next_sdk {
+            return self
+                .get_manga_list_next(cancellation_token, listing, 1)
+                .map(|list| {
+                    list.into_iter()
+                        .map(|v| Manga::from(v, self.id.clone()))
+                        .collect::<Vec<_>>()
+                });
+        }
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.search_mangas_by_filters_inner(vec![])
         })
@@ -214,6 +415,15 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         query: String,
     ) -> Result<Vec<Manga>> {
+        if self.next_sdk {
+            return self
+                .get_search_manga_list_next(cancellation_token, query, 1, [].to_vec())
+                .map(|list| {
+                    list.into_iter()
+                        .map(|v| Manga::from(v, self.id.clone()))
+                        .collect::<Vec<_>>()
+                });
+        }
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.search_mangas_by_filters_inner(vec![Filter::Title(query)])
         })
@@ -234,28 +444,28 @@ impl BlockingSource {
             None,
         );
 
-        // FIXME what if i actually want more pages tho
-        let page = 1i32;
-        let page_descriptor =
-            wasm_function.call(&mut self.store, (filters_descriptor as i32, page))?;
-        // TODO maybe use some `TryInto` implementation here to make things easier to read
-        let mangas: Vec<Manga> = match self
-            .store
-            .data_mut()
-            .get_std_value(page_descriptor as usize)
-            .ok_or(anyhow!("could not read data from page descriptor"))?
-            .as_ref()
-        {
-            Value::Object(ObjectValue::MangaPageResult(MangaPageResult { manga, .. })) => {
-                manga.clone()
+        let mangas = call_cleanup!(
+            blocking = self,
+            func = wasm_function,
+            args = (filters_descriptor as i32, 1),
+            free = [filters_descriptor],
+            as Vec<Manga>,
+            parse = |descriptor, store: &mut Store<WasmStore>, _| {
+                match store.data_mut()
+                    .get_std_value(descriptor as usize)
+                    .ok_or(anyhow!("could not read data from page descriptor"))?
+                    .as_ref()
+                {
+                    Value::Object(ObjectValue::MangaPageResult(MangaPageResult {
+                        manga: mangas, ..
+                    })) => Ok(mangas.clone()),
+                    other => bail!(
+                        "expected page descriptor to be an array, found {:?} instead",
+                        other
+                    ),
+                }
             }
-            other => bail!(
-                "expected page descriptor to be an array, found {:?} instead",
-                other
-            ),
-        };
-
-        // TODO remove page_descriptor and filters_descriptor from the source's storage
+        )?;
 
         Ok(mangas)
     }
@@ -265,6 +475,16 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Manga> {
+        if self.next_sdk {
+            return self
+                .get_manga_update_next(
+                    cancellation_token,
+                    BlockingSource::create_aidoku_manga(manga_id),
+                    true,
+                    false,
+                )
+                .map(|v| Manga::from(v, self.id.clone()));
+        }
         self.run_under_context(
             cancellation_token,
             OperationContextObject::Manga {
@@ -290,23 +510,61 @@ impl BlockingSource {
             .instance
             .get_typed_func::<i32, i32>(&mut self.store, "get_manga_details")?;
 
-        let manga_details_descriptor =
-            wasm_function.call(&mut self.store, manga_descriptor as i32)?;
-        let manga: Manga = match self
-            .store
-            .data_mut()
-            .get_std_value(manga_details_descriptor as usize)
-            .ok_or(anyhow!("could not read data from manga details descriptor"))?
-            .as_ref()
-        {
-            Value::Object(ObjectValue::Manga(manga)) => manga.clone(),
-            other => bail!(
-                "expected manga details descriptor to be a manga object, found {:?} instead",
-                other
-            ),
-        };
+        let manga = call_cleanup!(
+            blocking = self,
+            func = wasm_function,
+            args = (manga_descriptor as i32),
+            free = [manga_descriptor],
+            as Manga,
+            parse = |descriptor, store: &mut Store<WasmStore>, _| {
+                match store.data_mut()
+                    .get_std_value(descriptor as usize)
+                    .ok_or(anyhow!("could not read data from manga details descriptor"))?
+                    .as_ref()
+                {
+                    Value::Object(ObjectValue::Manga(manga)) => Ok(manga.clone()),
+                    other => bail!(
+                    "expected manga details descriptor to be a manga object, found {:?} instead",
+                    other
+                ),
+                }
+            }
+        )?;
 
         Ok(manga)
+    }
+
+    fn create_aidoku_manga(manga_id: String) -> aidoku::Manga {
+        aidoku::Manga {
+            key: manga_id,
+            title: "".to_owned(),
+            cover: None,
+            artists: None,
+            authors: None,
+            description: None,
+            url: None,
+            tags: None,
+            status: aidoku::MangaStatus::Unknown,
+            content_rating: aidoku::ContentRating::Unknown,
+            viewer: aidoku::Viewer::Unknown,
+            update_strategy: aidoku::UpdateStrategy::Never,
+            next_update_time: None,
+            chapters: None,
+        }
+    }
+    fn create_aidoku_chapter(chapter_id: String) -> aidoku::Chapter {
+        aidoku::Chapter {
+            key: chapter_id,
+            title: None,
+            chapter_number: None,
+            volume_number: None,
+            date_uploaded: None,
+            scanlators: None,
+            url: None,
+            language: None,
+            thumbnail: None,
+            locked: false,
+        }
     }
 
     pub fn get_chapter_list(
@@ -314,6 +572,23 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Vec<Chapter>> {
+        if self.next_sdk {
+            return self
+                .get_manga_update_next(
+                    cancellation_token,
+                    BlockingSource::create_aidoku_manga(manga_id.clone()),
+                    false,
+                    true,
+                )
+                .map(|manga| {
+                    manga
+                        .chapters
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map(|v| Chapter::from(v, self.id.clone(), manga_id.clone()))
+                        .collect::<Vec<_>>()
+                });
+        }
         self.run_under_context(
             cancellation_token,
             OperationContextObject::Manga {
@@ -339,43 +614,46 @@ impl BlockingSource {
         let wasm_function = self
             .instance
             .get_typed_func::<i32, i32>(&mut self.store, "get_chapter_list")?;
-        let chapter_list_descriptor =
-            wasm_function.call(&mut self.store, manga_descriptor as i32)?;
 
-        let chapters: Vec<Chapter> = match self
-            .store
-            .data_mut()
-            .get_std_value(chapter_list_descriptor as usize)
-            .ok_or(anyhow!("could not read data from chapter list descriptor"))?
-            .as_ref()
-        {
-            Value::Array(array) => array
-                .iter()
-                .enumerate()
-                .map(|(index, v)| match v {
-                    Value::Object(ObjectValue::Chapter(chapter)) => {
-                        let mut chapter = chapter.clone();
+        let chapters = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (manga_descriptor as i32),
+        free = [manga_descriptor],
+        as  Vec<Chapter>,
+        parse = |chapter_list_descriptor, store: &mut Store<WasmStore>, _| {
+            Ok(match store.data_mut()
+                .get_std_value(chapter_list_descriptor as usize)
+                .ok_or(anyhow!("could not read data from chapter list descriptor"))?
+                .as_ref() {
+                    Value::Array(array) => array
+                        .iter()
+                        .enumerate()
+                        .map(|(index, v)| match v {
+                            Value::Object(ObjectValue::Chapter(chapter)) => {
+                                let mut chapter = chapter.clone();
 
-                        if chapter.title.as_ref().map(|s| s.is_empty()).unwrap_or(true) {
-                            chapter.title = Some(format!(
-                                "Ch.{}",
-                                chapter
-                                    .chapter_num
-                                    .unwrap_or(chapter.volume_num.unwrap_or(index as f32))
-                            ));
-                        }
+                                if chapter.title.as_ref().map(|s| s.is_empty()).unwrap_or(true) {
+                                    chapter.title = Some(format!(
+                                        "Ch.{}",
+                                        chapter
+                                            .chapter_num
+                                            .unwrap_or(chapter.volume_num.unwrap_or(index as f32))
+                                    ));
+                                }
 
-                        Some(chapter)
-                    }
-                    _ => None,
+                                Some(chapter)
+                            }
+                            _ => None,
+                        })
+                        .collect::<Option<Vec<_>>>()
+                        .ok_or(anyhow!("unexpected element in chapter array"))?,
+                    other => bail!(
+                        "expected page descriptor to be an array, found {:?} instead",
+                        other
+                    ),
                 })
-                .collect::<Option<Vec<_>>>()
-                .ok_or(anyhow!("unexpected element in chapter array"))?,
-            other => bail!(
-                "expected page descriptor to be an array, found {:?} instead",
-                other
-            ),
-        };
+        })?;
 
         Ok(chapters)
     }
@@ -387,6 +665,23 @@ impl BlockingSource {
         chapter_id: String,
         chapter_num: Option<f64>,
     ) -> Result<Vec<Page>> {
+        if self.next_sdk {
+            return self
+                .get_page_list_next(
+                    cancellation_token,
+                    BlockingSource::create_aidoku_manga(manga_id.clone()),
+                    BlockingSource::create_aidoku_chapter(chapter_id),
+                )
+                .map(|pages| {
+                    pages
+                        .into_iter()
+                        .enumerate()
+                        .map(|(index, page)| {
+                            Page::from(index, page, self.id.clone(), manga_id.clone())
+                        })
+                        .collect()
+                });
+        }
         self.run_under_context(
             cancellation_token,
             OperationContextObject::Chapter {
@@ -424,34 +719,48 @@ impl BlockingSource {
         let wasm_function = self
             .instance
             .get_typed_func::<i32, i32>(&mut self.store, "get_page_list")?;
-        let page_list_descriptor =
-            wasm_function.call(&mut self.store, chapter_descriptor as i32)?;
 
-        let pages: Vec<Page> = match self
-            .store
-            .data_mut()
+        let pages = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (chapter_descriptor as i32),
+        free = [chapter_descriptor],
+        as  Vec<Page>,
+        parse = |page_list_descriptor, store: &mut Store<WasmStore>, _| {
+            Ok(match store.data_mut()
             .get_std_value(page_list_descriptor as usize)
             .ok_or(anyhow!("could not read data from page list descriptor"))?
-            .as_ref()
-        {
-            Value::Array(array) => array
-                .iter()
-                .map(|v| match v {
-                    Value::Object(ObjectValue::Page(page)) => Some(page.clone()),
-                    _ => None,
-                })
-                .collect::<Option<Vec<_>>>()
-                .ok_or(anyhow!("unexpected element in page array"))?,
-            other => bail!(
-                "expected page descriptor to be an array, found {:?} instead",
-                other
-            ),
-        };
+            .as_ref() {
+                Value::Array(array) => array
+                    .iter()
+                    .map(|v| match v {
+                        Value::Object(ObjectValue::Page(page)) => Some(page.clone()),
+                        _ => None,
+                    })
+                    .collect::<Option<Vec<_>>>()
+                    .ok_or(anyhow!("unexpected element in page array"))?,
+                other => bail!(
+                    "expected page descriptor to be an array, found {:?} instead",
+                    other
+                ),
+            })
+        })?;
 
         Ok(pages)
     }
 
-    pub fn get_image_request(&mut self, url: Url) -> Result<Request> {
+    pub fn get_image_request(
+        &mut self,
+        url: Url,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Request> {
+        if self.next_sdk {
+            self.get_image_request_next(url, ctx)
+        } else {
+            self.get_image_request_inner(url)
+        }
+    }
+    pub fn get_image_request_inner(&mut self, url: Url) -> Result<Request> {
         let request_descriptor = self.store.data_mut().create_request();
 
         // FIXME scoping here is so fucking scuffed
@@ -503,6 +812,429 @@ impl BlockingSource {
         .unwrap();
 
         (request_building_state as &RequestBuildingState).try_into()
+    }
+
+    // next sdk
+
+    pub fn start(&mut self) -> Result<()> {
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(), ()>(&mut self.store, "start")?;
+
+        wasm_function.call(&mut self.store, ())?;
+
+        Ok(())
+    }
+    pub fn free_result(&mut self, pointer: i32) -> Result<()> {
+        let wasm_function = self
+            .instance
+            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")?;
+
+        wasm_function.call(&mut self.store, pointer)?;
+
+        Ok(())
+    }
+
+    pub fn get_search_manga_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        _filters: Vec<FilterValue>,
+    ) -> Result<Vec<aidoku::Manga>> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_search_manga_list_next_inner(query, page, vec![])
+        })
+    }
+
+    fn get_memory(&self) -> Result<Memory> {
+        match self.instance.get_export(&self.store, "memory") {
+            Some(Extern::Memory(memory)) => Ok(memory),
+            _ => bail!("failed to get memory"),
+        }
+    }
+
+    fn get_search_manga_list_next_inner(
+        &mut self,
+        keyword: String,
+        page: i32,
+        filters: Vec<Filter>,
+    ) -> Result<Vec<aidoku::Manga>> {
+        if filters.len() > 0 {
+            eprintln!("The current version not support filters");
+        }
+
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_search_manga_list")?;
+
+        let store = self.store.data_mut();
+
+        let keyword = store.store_std_value(Value::from(keyword).into(), None);
+        let filters = store.store_std_value(Value::NextFilters([].to_vec()).into(), None);
+
+        let mangas = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (keyword as i32, page, filters as i32),
+        free = [keyword, filters],
+        as  Vec<aidoku::Manga>,
+        parse = |pointer, store: &mut Store<WasmStore>, instance| {
+            let memory = get_memory(instance, store)?;
+            let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
+
+            Ok(mangas.entries)
+        })?;
+
+        Ok(mangas)
+    }
+
+    pub fn get_manga_update_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        needs_details: bool,
+        needs_chapters: bool,
+    ) -> Result<aidoku::Manga> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_manga_update_next_inner(manga, needs_details, needs_chapters)
+        })
+    }
+
+    fn get_manga_update_next_inner(
+        &mut self,
+        manga: aidoku::Manga,
+        needs_details: bool,
+        needs_chapters: bool,
+    ) -> Result<aidoku::Manga> {
+        let store = self.store.data_mut();
+
+        let manga = store.store_std_value(Value::NextManga(manga).into(), None);
+
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_manga_update")?;
+
+        let manga_o = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (manga as i32, if needs_details { 1 } else { 0 }, if needs_chapters { 1 } else { 0 }),
+        free = [manga],
+        as  aidoku::Manga,
+        parse = |pointer, store: &mut Store<WasmStore>, instance| {
+            let memory = get_memory(instance, store)?;
+            let manga_o = read_next::<aidoku::Manga>(&memory, &store, pointer)?;
+
+            Ok(manga_o)
+        })?;
+
+        Ok(manga_o)
+    }
+
+    pub fn get_page_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        chapter: aidoku::Chapter,
+    ) -> Result<Vec<aidoku::Page>> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_page_list_next_inner(manga, chapter)
+        })
+    }
+
+    fn get_page_list_next_inner(
+        &mut self,
+        manga: aidoku::Manga,
+        chapter: aidoku::Chapter,
+    ) -> Result<Vec<aidoku::Page>> {
+        let store = self.store.data_mut();
+
+        let manga = store.store_std_value(Value::NextManga(manga).into(), None);
+        let chapter = store.store_std_value(Value::NextChapter(chapter).into(), None);
+
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_page_list")?;
+
+        let pages = call_cleanup!(
+            blocking = self,
+            func = wasm_function,
+            args = (manga as i32, chapter as i32),
+            free = [manga, chapter],
+            as  Vec<aidoku::Page>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
+                let pages = read_next::<Vec<aidoku::Page>>(&memory, &store, pointer)?;
+
+                Ok(pages)
+            })?;
+
+        Ok(pages)
+    }
+
+    pub fn get_image_request_next(
+        &mut self,
+        url: Url,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Request> {
+        self.get_image_request_next_inner(url, ctx)
+    }
+
+    pub fn get_image_request_next_inner(
+        &mut self,
+        url: Url,
+        context: Option<aidoku::PageContext>,
+    ) -> Result<Request> {
+        let (url_key, context_key) = {
+            let store = self.store.data_mut();
+
+            let url_key = store.store_std_value(Value::String(url.clone().into()).into(), None);
+            store.mark_str_encode(url_key);
+            let context_key = if let Some(context) = context {
+                store.store_std_value(Value::NextPageContext(context).into(), None) as i32
+            } else {
+                -1
+            };
+
+            // Drops here automatically
+            (url_key as i32, context_key)
+        };
+
+        let request_state = {
+            let wasm_function = self
+                .instance
+                .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_image_request");
+
+            let out = match wasm_function {
+                Ok(wasm_function) => {
+                    let pointer = wasm_function.call(&mut self.store, (url_key, context_key))?;
+                    let memory = self.get_memory()?;
+
+                    if pointer < 0 {
+                        eprintln!("get_image_request failed");
+
+                        bail!("get_image_request failed")
+                    } else {
+                        let request = read_next::<i32>(&memory, &self.store, pointer)?;
+                        let _ = self.free_result(pointer);
+
+                        let store = self.store.data_mut();
+                        store.get_mut_request(request as usize)
+                    }
+                }
+                Err(_) => None,
+            };
+
+            if let Some(state) = out {
+                state
+            } else {
+                let store = self.store.data_mut();
+                let pointer = store.create_request();
+                store
+                    .get_mut_request(pointer)
+                    .context("create request failed")?
+            }
+        };
+
+        let building_state: &mut RequestBuildingState = match request_state {
+            RequestState::Building(building_state) => building_state,
+            _ => return Err(anyhow::anyhow!("Not building state")),
+        };
+
+        if building_state.url.is_none() {
+            building_state.url = Some(url);
+        }
+        if building_state.method.is_none() {
+            building_state.method = Some(Method::GET);
+        }
+
+        if building_state.headers.get("User-Agent").is_none() {
+            building_state
+                .headers
+                .insert("User-Agent".to_string(), DEFAULT_USER_AGENT.to_string());
+        }
+
+        (&*building_state).try_into()
+    }
+
+    pub fn process_page_image(
+        &mut self,
+        cancellation_token: CancellationToken,
+        request: (Url, HeaderMap),
+        response: (StatusCode, HeaderMap),
+        bytes: Bytes,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Vec<u8>> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.process_page_image_inner(request, response, bytes, ctx)
+        })
+    }
+
+    pub fn process_page_image_inner(
+        &mut self,
+        request: (Url, HeaderMap),
+        response: (StatusCode, HeaderMap),
+        bytes: Bytes,
+        context: Option<aidoku::PageContext>,
+    ) -> Result<Vec<u8>> {
+        if !self.features.process_page_image {
+            return Ok(bytes.to_vec());
+        }
+
+        let (image_id, image_ref, context_id) = {
+            let store = self.store.data_mut();
+
+            let image_ref = store
+                .create_image(&bytes)
+                .context("failed create image for process_page_image")?;
+
+            let image_response = ImageResponse {
+                code: response.0.into(),
+                headers: response
+                    .1
+                    .iter()
+                    .map(|(k, v)| {
+                        let key = k.to_string();
+                        let value = v.to_str().unwrap_or("").to_string();
+                        (key, value)
+                    })
+                    .collect(),
+                request: ImageRequest {
+                    url: Some(String::from(request.0)),
+                    headers: request
+                        .1
+                        .iter()
+                        .map(|(k, v)| {
+                            let key = k.to_string();
+                            let value = v.to_str().unwrap_or("").to_string();
+                            (key, value)
+                        })
+                        .collect(),
+                },
+                image: ImageRef {
+                    rid: image_ref,
+                    externally_managed: false,
+                },
+            };
+
+            let image_id =
+                store.store_std_value(Value::NextImageResponse(image_response).into(), None) as i32;
+
+            let context_id = if let Some(context) = context {
+                store.store_std_value(Value::NextPageContext(context).into(), None) as i32
+            } else {
+                -1
+            };
+
+            (image_id, image_ref, context_id)
+        };
+
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32), i32>(&mut self.store, "process_page_image")?;
+
+        let image_data = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (image_id, context_id),
+        free = [image_id, context_id, image_ref],
+        as  Vec<u8>,
+        parse = |pointer, store: &mut Store<WasmStore>, instance| {
+            let memory = get_memory(instance, store)?;
+
+            let Some(image_pointer) = read_next::<i32>(&memory, &store, pointer).ok() else {
+                return Err(anyhow::anyhow!("pointer image error {pointer}"));
+            };
+
+
+
+            let image_data = {
+                let store =store.data_mut();
+                let (width, height, pixels) = {
+                    let Some(image) = store.get_image(image_pointer) else {
+                        return Err(anyhow::anyhow!(
+                            "failed to get image for process_page_image point = {image_pointer}"
+                        ));
+                    };
+
+                    // image.data は Vec<u32> の参照なので、clone して borrow を即終了する
+                    (image.width as u32, image.height as u32, image.data.clone())
+                };
+
+                let pointer = usize::try_from(image_pointer)
+                    .context(format!("process_page_image failed {image_pointer}"))?;
+                store.take_std_value(pointer);
+
+                // RGBA に変換（元は ARGB）
+                let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
+
+                for px in &pixels {
+                    let _a = ((px >> 24) & 0xFF) as u8;
+                    let r = ((px >> 16) & 0xFF) as u8;
+                    let g = ((px >> 8) & 0xFF) as u8;
+                    let b = (px & 0xFF) as u8;
+
+                    // JPEG は alpha に対応しないため RGB のみ書き込む
+                    rgb_pixels.extend_from_slice(&[r, g, b]);
+                }
+
+                let mut out = Vec::<u8>::new();
+
+                // JPEG エンコーダ（Seek 不要）
+                let encoder = JpegEncoder::new_with_quality(&mut out, 100);
+
+                // RGB24 としてエンコード
+                encoder
+                    .write_image(&rgb_pixels, width, height, ColorType::Rgb8.into())
+                    .context("JPEG encode failed")?;
+
+                out
+            };
+
+            Ok(image_data)
+        })?;
+
+        Ok(image_data)
+    }
+
+    pub fn get_manga_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        listing: String,
+        page: i32,
+    ) -> Result<Vec<aidoku::Manga>> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_manga_list_next_inner(listing, page)
+        })
+    }
+
+    fn get_manga_list_next_inner(
+        &mut self,
+        listing: String,
+        page: i32,
+    ) -> Result<Vec<aidoku::Manga>> {
+        let wasm_function = self
+            .instance
+            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
+
+        let store = self.store.data_mut();
+
+        let listing = store.store_std_value(Value::from(listing).into(), None);
+
+        let mangas = call_cleanup!(
+        blocking = self,
+        func = wasm_function,
+        args = (listing as i32, page),
+        free = [listing],
+        as  Vec<aidoku::Manga>,
+        parse = |pointer, store: &mut Store<WasmStore>, instance| {
+            let memory = get_memory(instance, store)?;
+            let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
+
+            Ok(mangas.entries)
+        })?;
+
+        Ok(mangas)
     }
 
     fn run_under_context<T, F>(

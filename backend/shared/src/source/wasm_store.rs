@@ -1,5 +1,11 @@
+use font_kit::{family_name::FamilyName, font::Font, properties::Properties, source::SystemSource};
+use image::ImageReader;
 use pared::sync::Parc;
-use std::collections::{BTreeMap, HashMap};
+use raqote::{DrawTarget, Transform};
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    io::Cursor,
+};
 use tokio_util::sync::CancellationToken;
 
 use anyhow::anyhow;
@@ -58,6 +64,18 @@ impl HTMLElement {
     pub fn element_ref(&'_ self) -> ElementRef<'_> {
         ElementRef::wrap(self.document.tree.get(self.node_id).unwrap()).unwrap()
     }
+    pub fn data(&'_ self) -> String {
+        let mut result = String::new();
+
+        for child in self.element_ref().children() {
+            match child.value() {
+                scraper::Node::Text(text) => result.push_str(&**text),
+                _ => {}
+            }
+        }
+
+        result
+    }
 }
 
 #[derive(Debug, Clone, From, TryUnwrap)]
@@ -71,11 +89,21 @@ pub enum Value {
     String(String),
     Bool(bool),
     Date(DateTime<chrono_tz::Tz>),
+    Vec(Vec<u8>),
     #[from(ignore)]
     Array(Vec<Value>),
     #[from(ignore)]
     Object(ObjectValue),
     HTMLElements(Vec<HTMLElement>),
+    NextFilters(Vec<aidoku::FilterValue>),
+    #[from(ignore)]
+    NextManga(aidoku::Manga),
+    #[from(ignore)]
+    NextChapter(aidoku::Chapter),
+    #[from(ignore)]
+    NextPageContext(aidoku::PageContext),
+    #[from(ignore)]
+    NextImageResponse(ImageResponse),
 }
 
 pub type ValueRef = Parc<Value>;
@@ -126,6 +154,78 @@ pub struct OperationContext {
 }
 
 #[derive(Default, Debug)]
+pub struct Drawer {
+    pub width: i32,
+    pub height: i32,
+    pub vec: Vec<u32>,
+    pub transform: Transform,
+}
+impl From<&mut DrawTarget> for Drawer {
+    fn from(dt: &mut DrawTarget) -> Self {
+        Self {
+            width: dt.width() as i32,
+            height: dt.height() as i32,
+            vec: dt.get_data().to_vec(),
+            transform: *dt.get_transform(),
+        }
+    }
+}
+
+// Convert Drawer -> DrawTarget
+impl From<&mut Drawer> for DrawTarget {
+    fn from(drawer: &mut Drawer) -> Self {
+        let data = &drawer.vec;
+        let mut dt = DrawTarget::from_vec(drawer.width, drawer.height, data.to_vec()); // ::new(drawer.width, drawer.height);
+        dt.set_transform(&drawer.transform);
+
+        dt
+    }
+}
+
+pub struct ImageData {
+    pub data: Vec<u32>,
+    pub width: i32,
+    pub height: i32,
+}
+
+/// from aidoku sdk
+/// The details of a HTTP request.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ImageRef {
+    pub rid: i32,
+    pub externally_managed: bool,
+}
+
+/// from aidoku sdk
+/// The details of a HTTP request.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ImageRequest {
+    pub url: Option<String>,
+    pub headers: HashMap<String, String>,
+}
+
+/// from aidoku sdk
+/// A response from a network image request.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct ImageResponse {
+    /// The HTTP status code.
+    pub code: u16,
+    /// The HTTP response headers.
+    pub headers: HashMap<String, String>,
+    /// The HTTP request details.
+    pub request: ImageRequest,
+    /// A reference to image data.
+    pub image: ImageRef,
+}
+
+#[derive(From, Debug)]
+pub struct JsContext(pub(crate) boa_engine::Context);
+
+// FIXME THIS IS BORKED AS FUCK
+unsafe impl Send for JsContext {}
+unsafe impl Sync for JsContext {}
+
+#[derive(Default)]
 pub struct WasmStore {
     pub id: String,
     pub context: OperationContext,
@@ -136,7 +236,40 @@ pub struct WasmStore {
     std_descriptor_pointer: Option<usize>,
     std_descriptors: HashMap<usize, ValueRef>,
     std_references: HashMap<usize, Vec<usize>>,
+    std_strs_encode: HashSet<usize>,
     requests: Vec<RequestState>,
+    // canvas
+    canvass_pointer: i32,
+    canvass: HashMap<i32, Drawer>,
+    // image
+    images_pointer: i32,
+    images: HashMap<i32, ImageData>,
+    // font
+    fonts_pointer: i32,
+    fonts: HashMap<i32, (String, Properties)>,
+    fonts_online: HashMap<i32, Vec<u8>>,
+    // js context
+    jscontext_pointer: i32,
+    jscontexts: HashMap<i32, JsContext>,
+
+}
+impl std::fmt::Debug for WasmStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WasmStore")
+            .field("id", &self.id)
+            .field("context", &self.context)
+            .field("source_settings", &self.source_settings)
+            .field("settings", &self.settings)
+            .field("std_descriptor_pointer", &self.std_descriptor_pointer)
+            .field("std_descriptors", &self.std_descriptors)
+            .field("std_references", &self.std_references)
+            .field("requests", &self.requests)
+            // ignore non-debug fields
+            // .field("canvass", &self.canvass)
+            // .field("images", &self.images)
+            // .field("fonts", &self.fonts)
+            .finish()
+    }
 }
 
 impl WasmStore {
@@ -154,7 +287,17 @@ impl WasmStore {
     }
 
     pub fn take_std_value(&mut self, descriptor: usize) -> Option<ValueRef> {
+        // println!("Free memory pointer {descriptor}");
+        self.std_strs_encode.remove(&descriptor);
         self.std_descriptors.remove(&descriptor)
+    }
+
+    pub fn mark_str_encode(&mut self, pointer: usize) {
+        self.std_strs_encode.insert(pointer);
+    }
+
+    pub fn is_str_encode(&mut self, pointer: usize) -> bool {
+        self.std_strs_encode.contains(&pointer)
     }
 
     pub fn set_std_value(&mut self, descriptor: usize, data: ValueRef) {
@@ -169,7 +312,7 @@ impl WasmStore {
     }
 
     pub fn remove_std_value(&mut self, descriptor: usize) {
-        self.std_descriptors.remove(&descriptor);
+        self.take_std_value(descriptor);
     }
 
     // This might be used by some Aidoku unimplemented functions
@@ -201,6 +344,119 @@ impl WasmStore {
         self.std_descriptor_pointer = Some(increased_value);
 
         increased_value
+    }
+
+    // canvas.rs
+    pub fn create_canvas(&mut self, width: f32, height: f32) -> i32 {
+        let new_canvas_state = &mut DrawTarget::new(width as i32, height as i32);
+        let idx = self.canvass_pointer;
+        self.canvass_pointer += 1;
+
+        self.canvass.insert(idx, new_canvas_state.into());
+
+        idx
+    }
+    pub fn get_mut_canvas(&mut self, descriptor: i32) -> Option<DrawTarget> {
+        self.canvass
+            .get_mut(&descriptor)
+            .map(|v| <&mut Drawer as Into<DrawTarget>>::into(v))
+    }
+    pub fn set_canvas(&mut self, descriptor: i32, draw: &mut DrawTarget) {
+        self.canvass.insert(descriptor, draw.into());
+    }
+    pub fn create_image(&mut self, data: &[u8]) -> Option<i32> {
+        let cursor = Cursor::new(data);
+        let Some(rgba_img) = ImageReader::new(cursor)
+            .with_guessed_format()
+            .ok()
+            .and_then(|r| r.decode().ok())
+            .map(|img| img.to_rgba8())
+        else {
+            return None;
+        };
+        let width = rgba_img.width() as i32;
+        let height = rgba_img.height() as i32;
+        let mut pixels: Vec<u32> = Vec::with_capacity((width * height) as usize);
+
+        for pixel in rgba_img.pixels() {
+            let [r, g, b, a] = pixel.0;
+
+            let val = ((a as u32) << 24) | ((r as u32) << 16) | ((g as u32) << 8) | (b as u32);
+
+            pixels.push(val);
+        }
+        let image = ImageData {
+            data: pixels,
+            width,
+            height,
+        };
+
+        Some(self.set_image_data(image))
+    }
+    pub fn get_image(&mut self, descriptor: i32) -> Option<&ImageData> {
+        self.images.get(&descriptor)
+    }
+    pub fn set_image_data(&mut self, image: ImageData) -> i32 {
+        let idx = self.images_pointer;
+        self.images_pointer += 1;
+
+        self.images.insert(idx, image);
+
+        idx
+    }
+    pub fn create_font(&mut self, name: String, property: Option<&Properties>) -> Option<i32> {
+        let Some(font) = SystemSource::new()
+            .select_best_match(
+                &[FamilyName::Title(name)],
+                &property.map(|v| *v).unwrap_or_else(Properties::new),
+            )
+            .ok()
+            .and_then(|h| h.load().ok())
+        else {
+            return None;
+        };
+
+        let idx = self.fonts_pointer;
+        self.fonts_pointer += 1;
+
+        self.fonts
+            .insert(idx, (font.family_name(), font.properties()));
+
+        Some(idx)
+    }
+    pub fn get_font(&mut self, descriptor: i32) -> Option<Font> {
+        let Some((family_name, properties)) = self.fonts.get(&descriptor.clone()) else {
+            let Some(buffer) = self.fonts_online.get(&descriptor) else {
+                return None;
+            };
+
+            return Font::from_bytes(buffer.clone().into(), 0).ok();
+        };
+        let font = SystemSource::new()
+            .select_best_match(&[FamilyName::Title(family_name.clone())], &properties)
+            .ok()
+            .and_then(|h| h.load().ok());
+
+        font
+    }
+    pub fn set_font_online(&mut self, buffer: &[u8]) -> i32 {
+        let idx = self.fonts_pointer;
+        self.fonts_pointer += 1;
+
+        self.fonts_online.insert(idx, buffer.to_vec());
+
+        idx
+    }
+    pub fn create_js_context(&mut self) -> i32 {
+        let idx = self.jscontext_pointer;
+        self.jscontext_pointer +=1;
+
+        self.jscontexts.insert(idx, JsContext(boa_engine::Context::default()));
+
+        idx
+    }
+    pub fn get_js_context(&mut self, pointer: i32) -> Option<&mut JsContext> {
+        self.jscontexts.get_mut(&pointer)
     }
 }
 

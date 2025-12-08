@@ -2,12 +2,13 @@
   description = "Rust example flake for Zero to Nix";
 
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     crane.url = "github:ipetkov/crane";
     flake-utils.url  = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -47,9 +48,19 @@
               inherit system;
               config.allowUnsupportedSystem = true;
               crossSystem.config = target;
-            };
+              };
 
-            craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable.latest.default.override {
+            targetCLibs = [
+              pkgsCross.freetype
+              pkgsCross.fontconfig
+              pkgsCross.expat
+              pkgsCross.zlib
+              pkgsCross.libpng
+              pkgsCross.bzip2
+              pkgsCross.brotli
+            ];
+
+            craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable."1.91.1".default.override {
               targets = [target];
             });
           in
@@ -65,11 +76,20 @@
               nativeBuildInputs = [
                 stdenv.cc
               ];
-
+              
               TARGET_CC = with pkgsCross.stdenv; "${cc}/bin/${cc.targetPrefix}cc";
               CARGO_BUILD_TARGET = target;
               # https://github.com/rust-lang/cargo/issues/4133
               CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static -C linker=${TARGET_CC}";
+              RUST_FONTCONFIG_DLOPEN = "on";
+              FONTCONFIG_NO_PKG_CONFIG = "1";
+              CARGO_BUILD_ENV = ''FREETYPE_NO_PKG_CONFIG=1
+ FONTCONFIG_NO_PKG_CONFIG=1
+ RUST_FONTCONFIG_DLOPEN=on
+ RUST_FREETYPE_DLOPEN=on
+ FREETYPE_DLOPEN=1
+'';
+
             };
 
           mkCbzMetadataReaderPackage = buildBackendRustPackage { packageName = "cbz_metadata_reader"; };

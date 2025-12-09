@@ -14,7 +14,8 @@ cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
 cp backend/target/$TARGET/release/server "$OUT/"
 cp backend/target/$TARGET/release/uds_http_request "$OUT/"
 
-echo "{ \"version\": \"dev\", \"build\": \"$BUILD_NAME\" }" > "$OUT/BUILD_INFO.json"
+VERSION="${SEMANTIC_RELEASE_VERSION:-1.0.0}"
+echo "{ \"version\": \"$VERSION\", \"build\": \"$BUILD_NAME\" }" \
+    > "$OUT/BUILD_INFO.json"
 
-echo "DONE → $OUT"
-
+echo "DONE → $OUT (version=$VERSION)"

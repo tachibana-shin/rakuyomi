@@ -2,7 +2,7 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use futures::{stream, StreamExt, TryStreamExt};
 use kuchiki::{parse_html, traits::TendrilSink, NodeRef};
-use reqwest::{header::HeaderMap, Client};
+use reqwest::{header::HeaderMap, redirect::Policy, Client, Request};
 use scraper::{Html, Selector};
 use std::{
     collections::HashMap,
@@ -135,6 +135,61 @@ pub enum Error {
     Other(#[from] anyhow::Error),
 }
 
+async fn request_with_forced_referer_from_request(
+    client: &Client,
+    mut req: Request,
+    max_redirects: usize,
+) -> Result<reqwest::Response, anyhow::Error> {
+    let referer = req
+        .headers()
+        .get("Referer")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string());
+
+    for _ in 0..max_redirects {
+        let req_method = { req.method().clone() };
+        let original_headers = { req.headers().clone() };
+
+        let resp = client.execute(req).await.context("request failed")?;
+
+        let status = resp.status();
+        if !status.is_redirection() {
+            return Ok(resp);
+        }
+
+        let loc = resp
+            .headers()
+            .get("Location")
+            .context("redirect missing Location header")?
+            .to_str()
+            .context("invalid Location header")?;
+
+        let next_url = resp.url().join(loc)?;
+
+        let mut new_req = { client.request(req_method, next_url.clone()).build()? };
+
+        {
+            let new_headers = new_req.headers_mut();
+
+            for (k, v) in original_headers.iter() {
+                if k.as_str().eq_ignore_ascii_case("referer") {
+                    continue; // we will re-add referer below
+                }
+                new_headers.insert(k, v.clone());
+            }
+
+            // If referer existed → keep it permanently
+            if let Some(ref r) = referer {
+                new_headers.insert("Referer", r.parse().unwrap());
+            }
+        }
+
+        req = new_req;
+    }
+
+    anyhow::bail!("too many redirects")
+}
+
 pub async fn download_chapter_pages_as_cbz<W>(
     output: W,
     metadata: ComicInfo,
@@ -157,6 +212,7 @@ where
     let client = Client::builder()
         .danger_accept_invalid_certs(true)
         .danger_accept_invalid_hostnames(true)
+        .redirect(Policy::none())
         .build()
         .unwrap();
 
@@ -193,10 +249,23 @@ where
                         // would save a bit of memory but i dont think its a big deal
                         let request = source
                             .get_image_request(image_url, page.ctx.clone())
-                            .await?;
+                            .await
+                            .map_err(|err| {
+                                println!("Failed WASM modify request {err}");
+                                err
+                            })?;
                         let req_url = { request.url().clone() };
                         let req_headers = { request.headers().clone() };
-                        let response = client.execute(request).await?.error_for_status()?;
+                        let response =
+                            request_with_forced_referer_from_request(&client, request, 10)
+                                .await
+                                .inspect_err(|err| {
+                                    eprintln!("Request error: {err}");
+                                })?
+                                .error_for_status()
+                                .inspect_err(|err| {
+                                    eprintln!("Request error: {err}");
+                                })?;
                         let status = { response.status() };
                         let headers = { response.headers().clone() };
 

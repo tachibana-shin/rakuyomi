@@ -10,13 +10,13 @@ use crate::{
 };
 
 pub async fn refresh_manga_details(
+    token: &CancellationToken,
     db: &Database,
     chapter_storage: &ChapterStorage,
     source: &Source,
     id: &MangaId,
     seconds: u64,
 ) -> Result<PublishingStatus> {
-    let token = CancellationToken::new();
     let duration = Duration::from_secs(seconds);
 
     let fetch_task = async {

@@ -27,6 +27,7 @@ pub fn routes() -> Router<State> {
         .route("/notifications/{id}", delete(delete_notification))
         .route("/clear-notifications", post(clear_notifications))
         .route("/mangas", get(get_mangas))
+        .route("/cancel-request", post(post_cancel_request))
         .route(
             "/mangas/{source_id}/{manga_id}/add-to-library",
             post(add_manga_to_library),
@@ -176,19 +177,27 @@ async fn sync_database(
     Ok(Json(state))
 }
 
+#[derive(Deserialize)]
+struct GetCheckMangasUpdate {
+    cancel_id: Option<usize>,
+}
 async fn check_mangas_update(
     StateExtractor(State {
         database,
         chapter_storage,
         source_manager,
+        cancel_token_store,
         ..
     }): StateExtractor<State>,
+    Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
 ) -> Result<Json<()>, AppError> {
     let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let source_manager = source_manager.lock().await;
+    let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::check_mangas_update(&database, &chapter_storage, &source_manager).await;
+    let _ =
+        usecases::check_mangas_update(&token, &database, &chapter_storage, &source_manager).await;
 
     Ok(Json(()))
 }
@@ -207,6 +216,7 @@ struct FileSummary {
 
 #[derive(Deserialize)]
 struct GetMangasQuery {
+    cancel_id: Option<usize>,
     q: String,
 }
 
@@ -214,13 +224,16 @@ async fn get_mangas(
     StateExtractor(State {
         database,
         source_manager,
+        cancel_token_store,
         ..
     }): StateExtractor<State>,
-    Query(GetMangasQuery { q }): Query<GetMangasQuery>,
+    Query(GetMangasQuery { cancel_id, q }): Query<GetMangasQuery>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
     let source_manager = &*source_manager.lock().await;
     let database = database.lock().await;
-    let results = cancel_after(Duration::from_secs(120), |token| {
+    let token = create_token(cancel_token_store, cancel_id).await;
+
+    let results = cancel_after(&token, Duration::from_secs(120), |token| {
         usecases::search_mangas(source_manager, &database, token, q)
     })
     .await
@@ -230,6 +243,28 @@ async fn get_mangas(
     .collect();
 
     Ok(Json(results))
+}
+
+async fn post_cancel_request(
+    StateExtractor(State {
+        cancel_token_store, ..
+    }): StateExtractor<State>,
+    Json(cancel_id): Json<usize>,
+) -> Result<Json<()>, AppError> {
+   let token = {
+        let store = cancel_token_store.lock().await;
+        store.get(&cancel_id).cloned()
+    };
+
+    if let Some(token) = token {
+        if !token.is_cancelled() {
+            token.cancel();
+        }
+
+        cancel_token_store.lock().await.remove(&cancel_id);
+    }
+
+    Ok(Json(()))
 }
 
 #[derive(Deserialize)]
@@ -368,14 +403,20 @@ async fn get_cached_manga_chapters(
 }
 
 async fn refresh_manga_chapters(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        cancel_token_store,
+        ..
+    }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
+    Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
     let database = database.lock().await;
+    let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_chapters(&database, &source, &manga_id, 60).await;
+    let _ = usecases::refresh_manga_chapters(&token, &database, &source, &manga_id, 60).await;
 
     Ok(Json(()))
 }
@@ -408,17 +449,27 @@ async fn refresh_manga_details(
     StateExtractor(State {
         database,
         chapter_storage,
+        cancel_token_store,
         ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
+    Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
     let database = database.lock().await;
     let chapter_storage = &*chapter_storage.lock().await;
+    let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ =
-        usecases::refresh_manga_details(&database, &chapter_storage, &source, &manga_id, 60).await;
+    let _ = usecases::refresh_manga_details(
+        &token,
+        &database,
+        &chapter_storage,
+        &source,
+        &manga_id,
+        60,
+    )
+    .await;
 
     Ok(Json(()))
 }
@@ -437,7 +488,8 @@ async fn mark_chapters_as_read(
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
-        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state).await?;
+        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state)
+            .await?;
 
     Ok(Json(count))
 }
@@ -460,18 +512,22 @@ async fn download_manga_chapter(
         database,
         chapter_storage,
         settings,
+        cancel_token_store,
         ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
+    Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<String>, AppError> {
     let settings = settings.lock().await;
     let database = database.lock().await;
+    let token = create_token(cancel_token_store, cancel_id).await;
 
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
     let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap();
     let output_path = usecases::fetch_manga_chapter(
+        &token,
         &database,
         &source,
         chapter_storage,
@@ -543,14 +599,45 @@ async fn set_manga_preferred_scanlator(
     Ok(Json(()))
 }
 
-async fn cancel_after<F, Fut>(duration: Duration, f: F) -> Fut::Output
+async fn create_token(
+    cancel_token_store: std::sync::Arc<
+        tokio::sync::Mutex<std::collections::HashMap<usize, CancellationToken>>,
+    >,
+    cancel_id: Option<usize>,
+) -> CancellationToken {
+    let token = CancellationToken::new();
+
+    if let Some(cancel_id) = cancel_id {
+        {
+            let mut store = cancel_token_store.lock().await;
+            let old = store.insert(cancel_id, token.clone());
+            if old.is_some() {
+                warn!("cancel token already in use: {}", cancel_id);
+            }
+        }
+
+        let store_clone = cancel_token_store.clone();
+        let token_clone = token.clone();
+
+        tokio::spawn(async move {
+            token_clone.cancelled().await;
+
+            let mut store = store_clone.lock().await;
+            store.remove(&cancel_id);
+        });
+    }
+
+    token
+}
+
+async fn cancel_after<F, Fut>(token: &CancellationToken, duration: Duration, f: F) -> Fut::Output
 where
     Fut: Future,
     F: FnOnce(CancellationToken) -> Fut + Send,
 {
-    let token = CancellationToken::new();
     let future = f(token.clone());
 
+    let token = token.clone();
     let request_cancellation_handle = tokio::spawn(async move {
         tokio::time::sleep(duration).await;
 

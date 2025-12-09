@@ -9,12 +9,12 @@ use crate::{
 };
 
 pub async fn refresh_manga_chapters<'a>(
+    token: &CancellationToken,
     db: &'a Database,
     source: &'a Source,
     id: &'a MangaId,
     seconds: u64,
 ) -> Result<Vec<ChapterInformation>> {
-    let token = CancellationToken::new();
     let duration = Duration::from_secs(seconds);
 
     let fetch_task = async {

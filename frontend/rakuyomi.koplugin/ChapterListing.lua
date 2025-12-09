@@ -7,6 +7,7 @@ local Trapper = require("ui/trapper")
 local Screen = require("device").screen
 local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
+---@diagnostic disable-next-line: different-requires
 local util = require("util")
 local ffiutil = require("ffi/util")
 local _ = require("gettext")
@@ -273,13 +274,15 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   accept_cached_results = accept_cached_results or false
 
   local cancelled = false
+  local cancel_id = Backend.createCancelId()
   local refresh_chapters_response = LoadingDialog:showAndRun(
     "Refreshing chapters...",
     function()
-      return Backend.refreshChapters(manga.source.id, manga.id)
+      return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
     end,
     function()
-      -- No cancellation support for now
+      Backend.cancel(cancel_id)
+
       local cancelledMessage = InfoMessage:new {
         text = "Cancelled.",
       }
@@ -347,12 +350,14 @@ end
 --- @private
 function ChapterListing:refreshChapters()
   Trapper:wrap(function()
+    local cancel_id = Backend.createCancelId()
     local refresh_chapters_response = LoadingDialog:showAndRun(
       "Refreshing chapters...",
       function()
-        return Backend.refreshChapters(self.manga.source.id, self.manga.id)
+        return Backend.refreshChapters(cancel_id, self.manga.source.id, self.manga.id)
       end,
       function()
+        Backend.cancel(cancel_id)
         local cancelledMessage = InfoMessage:new {
           text = "Cancelled.",
         }
@@ -576,7 +581,7 @@ function ChapterListing:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          ChapterListing:openMarkDialog(self.manga, true, function ()
+          ChapterListing:openMarkDialog(self.manga, true, function()
             self:refreshChapters()
           end)
         end
@@ -586,7 +591,7 @@ function ChapterListing:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          ChapterListing:openMarkDialog(self.manga, false, function ()
+          ChapterListing:openMarkDialog(self.manga, false, function()
             self:refreshChapters()
           end)
         end

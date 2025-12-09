@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::anyhow;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     chapter_downloader::{ensure_chapter_is_in_storage, Error as ChapterDownloaderError},
@@ -11,6 +12,7 @@ use crate::{
 };
 
 pub async fn fetch_manga_chapter(
+    token: &CancellationToken,
     database: &Database,
     source: &Source,
     chapter_storage: &ChapterStorage,
@@ -28,6 +30,7 @@ pub async fn fetch_manga_chapter(
         .ok_or_else(|| anyhow!("Expected chapter to be in the database"))?;
 
     ensure_chapter_is_in_storage(
+        token,
         chapter_storage,
         source,
         &manga,

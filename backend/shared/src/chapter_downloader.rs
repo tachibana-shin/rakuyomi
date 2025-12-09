@@ -30,6 +30,7 @@ use crate::{
 use rust_decimal::prelude::ToPrimitive;
 
 pub async fn ensure_chapter_is_in_storage(
+    token: &CancellationToken,
     chapter_storage: &ChapterStorage,
     source: &Source,
     manga: &MangaInformation,
@@ -43,7 +44,7 @@ pub async fn ensure_chapter_is_in_storage(
     // FIXME like downloaderror is a really bad name??
     let pages = source
         .get_page_list(
-            CancellationToken::new(),
+            token.clone(),
             chapter.id.manga_id().value().clone(),
             chapter.id.value().clone(),
             chapter.chapter_number.unwrap_or_default().to_f64(),
@@ -96,6 +97,7 @@ pub async fn ensure_chapter_is_in_storage(
         .map_err(Error::DownloadError)?;
     } else {
         download_chapter_pages_as_cbz(
+            &token.clone(),
             &temporary_file,
             metadata,
             source,
@@ -191,6 +193,7 @@ async fn request_with_forced_referer_from_request(
 }
 
 pub async fn download_chapter_pages_as_cbz<W>(
+    cancel_token: &CancellationToken,
     output: W,
     metadata: ComicInfo,
     source: &Source,
@@ -222,7 +225,7 @@ where
     tokio::spawn({
         let client = client.clone();
         let source = source.clone();
-        let cancel_token = CancellationToken::new();
+        let cancel_token = cancel_token.clone();
 
         async move {
             stream::iter(pages)

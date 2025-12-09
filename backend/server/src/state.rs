@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use axum_macros::FromRef;
 use shared::{
@@ -6,6 +6,7 @@ use shared::{
     source_manager::SourceManager,
 };
 use tokio::sync::Mutex;
+use tokio_util::sync::CancellationToken;
 
 use crate::job::State as JobState;
 
@@ -17,4 +18,5 @@ pub struct State {
     pub settings: Arc<Mutex<Settings>>,
     pub settings_path: PathBuf,
     pub job_state: JobState,
+    pub cancel_token_store: Arc<Mutex<HashMap<usize, CancellationToken>>>,
 }

@@ -10,6 +10,7 @@ mod update;
 use anyhow::Context;
 use log::{error, info, warn};
 use state::State;
+use std::collections::HashMap;
 use std::env::current_exe;
 use std::fs;
 use std::path::PathBuf;
@@ -102,6 +103,7 @@ async fn main() -> anyhow::Result<()> {
         settings: Arc::new(Mutex::new(settings)),
         settings_path,
         job_state: Default::default(),
+        cancel_token_store: Arc::new(Mutex::new(HashMap::new())),
     };
 
     let app = Router::new()

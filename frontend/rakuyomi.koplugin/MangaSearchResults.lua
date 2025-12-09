@@ -104,10 +104,12 @@ end
 --- @param onReturnCallback any
 function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   local cancel = false
+  local cancel_id = Backend.createCancelId()
   local response = LoadingDialog:showAndRun(
     "Searching for \"" .. search_text .. "\"",
-    function() return Backend.searchMangas(search_text) end,
+    function() return Backend.searchMangas(cancel_id, search_text) end,
     function()
+      Backend.cancel(cancel_id)
       local InfoMessage = require("ui/widget/infomessage")
 
       local cancelledMessage = InfoMessage:new {

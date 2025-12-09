@@ -243,7 +243,7 @@ function LibraryView:onContextMenuChoice(item)
         text = Icons.REFRESHING .. " Refresh",
         callback = function()
           UIManager:close(dialog_context_menu)
-          local response = self:_refreshManga(manga)
+          local response = self:_refreshManga(Backend.createCancelId(), manga)
 
           if response.type == 'ERROR' then
             UIManager:show(InfoMessage:new {
@@ -690,8 +690,10 @@ function LibraryView:startCleaner(modeInvalid)
 end
 
 --- @private
-function LibraryView:_refreshManga(manga)
-  local response = Backend.refreshChapters(manga.source.id, manga.id)
+--- @param cancel_id number
+--- @param manga Manga
+function LibraryView:_refreshManga(cancel_id, manga)
+  local response = Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
   return response
 end
 
@@ -708,7 +710,7 @@ function LibraryView:refreshAllChapters()
     local errors = {}
 
     for i, manga in ipairs(self.mangas_raw) do
-      local response = self:_refreshManga(manga)
+      local response = self:_refreshManga(Backend.createCancelId(), manga)
 
       if response.type == 'ERROR' then
         table.insert(errors, {

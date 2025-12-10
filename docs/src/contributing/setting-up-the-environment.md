@@ -21,7 +21,7 @@ Running KOReader under WSL requires [WSLg](https://learn.microsoft.com/en-us/win
 First, clone the repository, copy the `.envrc.dist` to `.envrc` and allow it to be loaded:
 
 ```bash
-$ git clone https://github.com/hanatsumi/rakuyomi.git
+$ git clone https://github.com/tachibana-shin/rakuyomi.git
 $ cd rakuyomi
 $ cp .envrc.dist .envrc
 $ direnv allow

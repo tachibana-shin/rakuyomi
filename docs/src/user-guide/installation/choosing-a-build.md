@@ -1,8 +1,8 @@
 # Choosing a Build
 
-In order to install rakuyomi, you'll first need to choose the correct build for your e-reader device. Read the section according to your device, and then download the appropriate build of the [latest release](https://github.com/hanatsumi/rakuyomi/releases/latest). With the correct build in hand, proceed to [install it to your device](./installing-to-your-device.md).
+In order to install rakuyomi, you'll first need to choose the correct build for your e-reader device. Read the section according to your device, and then download the appropriate build of the [latest release](https://github.com/tachibana-shin/rakuyomi/releases/latest). With the correct build in hand, proceed to [install it to your device](./installing-to-your-device.md).
 
-If your device is unsupported or does not work with the given builds, feel free to open an issue on the [issue tracker](https://github.com/hanatsumi/rakuyomi/issues)!
+If your device is unsupported or does not work with the given builds, feel free to open an issue on the [issue tracker](https://github.com/tachibana-shin/rakuyomi/issues)!
 
 ## Kindle
 

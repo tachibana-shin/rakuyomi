@@ -2,7 +2,6 @@ local logger = require("logger")
 local ffiutil = require("ffi/util")
 local rapidjson = require("rapidjson")
 local util = require("util")
-local NetworkMgr = require("ui/network/manager")
 
 local Platform = require("Platform")
 

@@ -1,7 +1,6 @@
 local BaseMenu = require("ui/widget/menu")
 local NetworkMgr = require("ui/network/manager")
 local logger = require("logger")
-local beforeWifi = require("utils/beforeWifi")
 
 local Icons = require("Icons")
 

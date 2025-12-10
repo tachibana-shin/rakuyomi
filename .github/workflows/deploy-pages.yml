@@ -25,12 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v2
-        with:
-          mdbook-version: '0.0.28'
-      
+
       - name: Cache Cargo
         uses: actions/cache@v4
         with:
@@ -40,8 +35,8 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-docs
  
-      - name: Setup mdbook-admonish (for admonishments)
-        run: cargo install mdbook-admonish
+      - name: Setup mdbook-admonish, mdbook
+        run: cargo install mdbook@0.0.28 mdbook-admonish
       
       - name: Build mdBook
         run: |

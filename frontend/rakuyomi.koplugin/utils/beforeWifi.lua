@@ -9,6 +9,7 @@ local function beforeWifi(callback)
 
   if not NetworkMgr:isConnected() then
     NetworkMgr:beforeWifiAction(callback)
+    return
   end
   NetworkMgr:beforeWifiAction()
 

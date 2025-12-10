@@ -22,7 +22,7 @@ end
 --- @param if_online_callback function|nil Callback to be called if the user is online.
 function OfflineAlertDialog:_showIfOffline(if_online_callback)
   -- Check if we're connected
-  if NetworkMgr:isOnline() then
+  if NetworkMgr:isConnected() then
     if if_online_callback ~= nil then
       if_online_callback()
     end

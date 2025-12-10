@@ -83,7 +83,7 @@ end
 
 ---@private
 function Menu:_updateOfflineSubtitle(skip_reinit)
-  if NetworkMgr:isOnline() then
+  if NetworkMgr:isConnected() then
     self.subtitle = nil
   else
     self.subtitle = Icons.WIFI_OFF .. " Offline mode"

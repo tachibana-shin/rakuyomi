@@ -1,13 +1,13 @@
 local NetworkMgr = require("ui/network/manager")
 
 local function beforeWifi(callback)
-  if NetworkMgr:isOnline() then
+  if NetworkMgr:isConnected() then
     callback()
 
     return
   end
 
-  if not NetworkMgr:isOnline() then
+  if not NetworkMgr:isConnected() then
     NetworkMgr:beforeWifiAction(callback)
   end
   NetworkMgr:beforeWifiAction()

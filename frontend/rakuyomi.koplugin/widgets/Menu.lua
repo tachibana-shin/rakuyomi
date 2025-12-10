@@ -76,13 +76,6 @@ end
 
 ---@private
 function Menu:updateOfflineSubtitle(skip_reinit)
-  beforeWifi(function()
-    self:_updateOfflineSubtitle(skip_reinit)
-  end)
-end
-
----@private
-function Menu:_updateOfflineSubtitle(skip_reinit)
   if NetworkMgr:isConnected() then
     self.subtitle = nil
   else

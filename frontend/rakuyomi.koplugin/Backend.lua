@@ -47,12 +47,6 @@ end
 --- @nodiscard
 --- @return SuccessfulResponse<T>|ErrorResponse # The parsed JSON response or nil, if there was an error.
 function Backend.requestJson(request)
-  if NetworkMgr:getBeforeActionFlag() == nil then
-    if not NetworkMgr:isConnected() then
-      NetworkMgr:beforeWifiAction()
-    end
-  end
-
   assert(Backend.server ~= nil, "backend wasn't initialized!")
   local url = require("socket.url")
 

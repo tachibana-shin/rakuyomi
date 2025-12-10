@@ -164,7 +164,7 @@ function InstalledSourcesListing:openAvailableSourcesListing()
 
     AvailableSourcesListing:fetchAndShow(onReturnCallback)
 
-    -- self:onClose()
+    UIManager:close(self)
   end)
 end
 

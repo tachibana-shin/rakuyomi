@@ -121,7 +121,9 @@ function MangaInfoWidget:getStatusContent(width, manga)
       local on_return_callback = self.on_return_callback
 
       local onReturnCallback = function()
-        self:fetchAndShow(raw_manga, on_return_callback)
+        self:fetchAndShow(raw_manga, function()
+
+        end, on_return_callback)
       end
 
       local ChapterListing = require("ChapterListing")

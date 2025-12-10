@@ -1,7 +1,7 @@
 [book]
 authors = ["hanatsumi", "tachibana-shin"]
 language = "en"
-multilingual = false
+multilanguage = false
 src = "src"
 title = "rakuyomi guide"
 

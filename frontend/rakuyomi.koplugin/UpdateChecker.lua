@@ -23,8 +23,6 @@ function UpdateChecker:checkForUpdates()
 end
 
 function UpdateChecker:_checkForUpdates()
-  NetworkMgr:beforeWifiAction()
-
   if not NetworkMgr:isConnected() then
     ErrorDialog:show(_("Cannot check for updates while offline"))
     return

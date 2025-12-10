@@ -77,10 +77,10 @@ end
 function Menu:updateOfflineSubtitle(skip_reinit)
   if NetworkMgr:isConnected() ~= true then
     NetworkMgr:beforeWifiAction(function()
-      self:_updateOfflineSubtitle()
+      self:_updateOfflineSubtitle(skip_reinit)
     end)
   else
-    self:_updateOfflineSubtitle()
+    self:_updateOfflineSubtitle(skip_reinit)
   end
 end
 

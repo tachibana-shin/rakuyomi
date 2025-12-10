@@ -9,6 +9,8 @@ local SpinWidget = require("ui/widget/spinwidget")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local TextWidget = require("ui/widget/textwidget")
 local UIManager = require("ui/uimanager")
+local CheckButton = require("ui/widget/checkbutton")
+local OverlapGroup = require("ui/widget/overlapgroup")
 
 local Icons = require("Icons")
 
@@ -17,12 +19,14 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class BooleanValueDefinition: { type: 'boolean' }
 --- @class EnumValueDefinitionOption: { label: string, value: string }
 --- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[] }
+--- @class MultiEnumValueDefinition: { type: 'multi-enum', title: string, options: EnumValueDefinitionOption[] }
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string }
 --- @class StringValueDefinition: { type: 'string', title: string, placeholder: string }
+--- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 
---- @alias ValueDefinition BooleanValueDefinition|EnumValueDefinition|IntegerValueDefinition|StringValueDefinition|LabelValueDefinition|PathValueDefinition
+--- @alias ValueDefinition BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
 
 --- @class SettingItemValue: { [any]: any }
 --- @field value_definition ValueDefinition
@@ -53,11 +57,8 @@ function SettingItemValue:init()
 end
 
 --- @private
-function SettingItemValue:getCurrentValue(real_val)
-  if real_val then
-    return self.value
-  end
-  return self.value or "<unknown>"
+function SettingItemValue:getCurrentValue()
+  return self.value
 end
 
 --- @private
@@ -75,21 +76,50 @@ function SettingItemValue:createValueWidget()
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
     }
+  elseif self.value_definition.type == "multi-enum" then
+    local label_for_value = {}
+    for _, option in ipairs(self.value_definition.options) do
+      label_for_value[option.value] = option.label
+    end
+
+    local keys = self:getCurrentValue()
+
+    local labels = {}
+    for _, key in ipairs(keys) do
+      local label = label_for_value[key]
+      if label then
+        table.insert(labels, label)
+      end
+    end
+
+    return TextWidget:new {
+      text = table.concat(labels, ", ") .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      editable = true,
+      face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
+      max_width = self.max_width,
+    }
   elseif self.value_definition.type == "boolean" then
     return CheckMark:new {
-      checked = self:getCurrentValue(true),
+      checked = self:getCurrentValue(),
       face = Font:getFace("smallinfofont", SETTING_ITEM_FONT_SIZE),
     }
   elseif self.value_definition.type == "integer" then
     return TextWidget:new {
-      text = self:getCurrentValue(true) .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
+      text = self:getCurrentValue() .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "string" then
     return TextWidget:new {
-      text = self:getCurrentValue(),
+      text = self:getCurrentValue() or "<empty>",
+      editable = true,
+      face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
+      max_width = self.max_width,
+    }
+  elseif self.value_definition.type == "list" then
+    return TextWidget:new {
+      text = table.concat(self:getCurrentValue(), "\n") or "<empty>",
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -102,7 +132,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "path" then
     return TextWidget:new {
-      text = self:getCurrentValue(true) .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = self:getCurrentValue() .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -111,6 +141,23 @@ function SettingItemValue:createValueWidget()
   else
     error("unexpected value definition type: " .. self.value_definition.type)
   end
+end
+
+local has_value = function(list, value)
+  for _, v in ipairs(list) do if v == value then return true end end
+  return false
+end
+-- split string by delimiter (default = whitespace)
+local function split(str, sep)
+    sep = sep or "%s"   -- default split on whitespace
+    local result = {}
+
+    -- iterate matches separated by 'sep'
+    for part in string.gmatch(str, "([^" .. sep .. "]+)") do
+        table.insert(result, part)
+    end
+    
+    return result
 end
 
 --- @private
@@ -122,7 +169,7 @@ function SettingItemValue:onTap()
         {
           text = option.label,
           provider = option.value,
-          checked = self:getCurrentValue(true) == option.value,
+          checked = self:getCurrentValue() == option.value,
         },
       })
     end
@@ -139,12 +186,28 @@ function SettingItemValue:onTap()
     }
 
     UIManager:show(dialog)
+  elseif self.value_definition.type == "multi-enum" then
+    local dialog = OverlapGroup:new {}
+    for _, option in ipairs(self.value_definition.options) do
+      table.insert(dialog, CheckButton:new {
+        {
+          text = option.label,
+          provider = option.value,
+          checked = has_value(self:getCurrentValue(), option.value),
+          callback = function()
+
+          end
+        },
+      })
+    end
+
+    UIManager:show(dialog)
   elseif self.value_definition.type == "boolean" then
-    self:updateCurrentValue(not self:getCurrentValue(true))
+    self:updateCurrentValue(not self:getCurrentValue())
   elseif self.value_definition.type == "integer" then
     local dialog = SpinWidget:new {
       title_text = self.value_definition.title,
-      value = self:getCurrentValue(true),
+      value = self:getCurrentValue(),
       value_min = self.value_definition.min_value,
       value_max = self.value_definition.max_value,
       callback = function(spin)
@@ -157,7 +220,7 @@ function SettingItemValue:onTap()
     local dialog
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue(true),
+      input = self:getCurrentValue(),
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -175,6 +238,36 @@ function SettingItemValue:onTap()
               UIManager:close(dialog)
 
               self:updateCurrentValue(dialog:getInputText())
+            end,
+          },
+        }
+      }
+    }
+
+    UIManager:show(dialog)
+    dialog:onShowKeyboard()
+  elseif self.value_definition.type == "list" then
+    local dialog
+    dialog = InputDialog:new {
+      title = self.value_definition.title,
+      input = table.concat(self:getCurrentValue(), "\n"),
+      input_hint = self.value_definition.placeholder,
+      buttons = {
+        {
+          {
+            text = "Cancel",
+            id = "close",
+            callback = function()
+              UIManager:close(dialog)
+            end,
+          },
+          {
+            text = "Save",
+            is_enter_default = true,
+            callback = function()
+              UIManager:close(dialog)
+
+              self:updateCurrentValue(split(dialog:getInputText(), "\n"))
             end,
           },
         }

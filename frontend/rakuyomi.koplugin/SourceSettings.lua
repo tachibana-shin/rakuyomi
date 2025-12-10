@@ -46,6 +46,38 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       title = setting_definition.title,
       options = options,
     }
+  elseif setting_definition.type == 'multi-select' then
+    local options = {}
+
+    print(setting_definition.values)
+
+    for index, value in ipairs(setting_definition.values) do
+      local title = value
+
+      if setting_definition.titles ~= nil then
+        title = setting_definition.titles[index]
+      end
+
+      table.insert(options, { label = title, value = value })
+    end
+
+    return {
+      type = 'multi-enum',
+      title = setting_definition.title,
+      options = options,
+    }
+  elseif setting_definition.type == 'login' then
+    return {
+      type = 'string',
+      title = setting_definition.title,
+      placeholder = 'Not support login'
+    }
+  elseif setting_definition.type == 'editable-list' then
+    return {
+      type = 'list',
+      title = setting_definition.title,
+      placeholder = setting_definition.placeholder
+    }
   elseif setting_definition.type == 'text' then
     return {
       type = 'string',

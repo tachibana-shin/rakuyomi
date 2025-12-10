@@ -17,6 +17,7 @@ pub struct StorageSizeLimit(pub Size);
 pub enum SourceSettingValue {
     Bool(bool),
     String(String),
+    Vec(Vec<String>),
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]

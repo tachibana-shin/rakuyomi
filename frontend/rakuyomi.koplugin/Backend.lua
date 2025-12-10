@@ -464,10 +464,13 @@ end
 --- @class GroupSettingDefinition: { type: 'group', title: string|nil, items: SettingDefinition[], footer: string|nil }
 --- @class SwitchSettingDefinition: { type: 'switch', title: string, key: string, default: boolean }
 --- @class SelectSettingDefinition: { type: 'select', title: string, key: string, values: string[], titles: string[]|nil, default: string  }
+--- @class MultiSelectSettingDefinition: { type: 'multi-select', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
+--- @class LoginSettingDefinition: { type: 'login', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
+--- @class EditableListSettingDefinition: { type: 'editable-list', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class TextSettingDefinition: { type: 'text', placeholder: string, key: string, default: string|nil }
 --- @class LinkSettingDefinition: { type: 'link', title: string, url: string }
 
---- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|TextSettingDefinition|LinkSettingDefinition
+--- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition
 
 --- Lists the setting definitions for a given source.
 --- @return SuccessfulResponse<SettingDefinition[]>|ErrorResponse

@@ -28,6 +28,23 @@ pub enum SettingDefinition {
         titles: Option<Vec<String>>,
         default: String,
     },
+    #[serde(rename = "multi-select")]
+    MultiSelect {
+        title: String,
+        key: String,
+        values: Vec<String>,
+        titles: Option<Vec<String>>,
+        default: Vec<String>,
+    },
+    #[serde(rename = "login")]
+    Login { title: String, key: String },
+    #[serde(rename = "editable-list")]
+    EditableList {
+        title: String,
+        key: String,
+        placeholder: Option<String>,
+        default: Vec<String>,
+    },
     #[serde(rename = "switch")]
     Switch {
         title: String,

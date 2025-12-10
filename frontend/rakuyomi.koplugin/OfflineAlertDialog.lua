@@ -12,7 +12,7 @@ local SETTINGS_KEY = "rakuyomi_offline_alert_do_not_show_again"
 --- Shows an alert dialog if the user is not connected to the internet.
 --- @param if_online_callback function|nil Callback to be called if the user is online.
 function OfflineAlertDialog:showIfOffline(if_online_callback)
-  if NetworkMgr:isConnected() ~= true then
+  if not NetworkMgr:isConnected() then
     NetworkMgr:beforeWifiAction(function()
       self:_showIfOffline(if_online_callback)
     end)

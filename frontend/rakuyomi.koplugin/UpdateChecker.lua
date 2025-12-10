@@ -13,7 +13,7 @@ local LoadingDialog = require("LoadingDialog")
 local UpdateChecker = {}
 
 function UpdateChecker:checkForUpdates()
-  if NetworkMgr:isConnected() ~= true then
+  if not NetworkMgr:isConnected() then
     NetworkMgr:beforeWifiAction(function()
       self:_checkForUpdates()
     end)

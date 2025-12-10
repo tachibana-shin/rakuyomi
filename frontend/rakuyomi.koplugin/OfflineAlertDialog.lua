@@ -3,6 +3,7 @@ local CheckButton = require("ui/widget/checkbutton")
 local UIManager = require("ui/uimanager")
 local NetworkMgr = require("ui/network/manager")
 local logger = require("logger")
+local beforeWifi = require("utils/beforeWifi")
 
 local OfflineAlertDialog = {}
 
@@ -12,20 +13,16 @@ local SETTINGS_KEY = "rakuyomi_offline_alert_do_not_show_again"
 --- Shows an alert dialog if the user is not connected to the internet.
 --- @param if_online_callback function|nil Callback to be called if the user is online.
 function OfflineAlertDialog:showIfOffline(if_online_callback)
-  if not NetworkMgr:isConnected() then
-    NetworkMgr:beforeWifiAction(function()
-      self:_showIfOffline(if_online_callback)
-    end)
-  else
+  beforeWifi(function()
     self:_showIfOffline(if_online_callback)
-  end
+  end)
 end
 
 --- Shows an alert dialog if the user is not connected to the internet.
 --- @param if_online_callback function|nil Callback to be called if the user is online.
 function OfflineAlertDialog:_showIfOffline(if_online_callback)
   -- Check if we're connected
-  if NetworkMgr:isConnected() then
+  if NetworkMgr:isOnline() then
     if if_online_callback ~= nil then
       if_online_callback()
     end

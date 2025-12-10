@@ -48,7 +48,7 @@ end
 --- @return SuccessfulResponse<T>|ErrorResponse # The parsed JSON response or nil, if there was an error.
 function Backend.requestJson(request)
   if NetworkMgr:getBeforeActionFlag() == nil then
-    if not NetworkMgr:isConnected() then
+    if not NetworkMgr:isOnline() then
       NetworkMgr:beforeWifiAction()
     end
   end

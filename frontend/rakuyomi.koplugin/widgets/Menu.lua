@@ -1,6 +1,7 @@
 local BaseMenu = require("ui/widget/menu")
 local NetworkMgr = require("ui/network/manager")
 local logger = require("logger")
+local beforeWifi = require("utils/beforeWifi")
 
 local Icons = require("Icons")
 
@@ -75,18 +76,14 @@ end
 
 ---@private
 function Menu:updateOfflineSubtitle(skip_reinit)
-  if not NetworkMgr:isConnected() then
-    NetworkMgr:beforeWifiAction(function()
-      self:_updateOfflineSubtitle(skip_reinit)
-    end)
-  else
+  beforeWifi(function()
     self:_updateOfflineSubtitle(skip_reinit)
-  end
+  end)
 end
 
 ---@private
 function Menu:_updateOfflineSubtitle(skip_reinit)
-  if NetworkMgr:isConnected() then
+  if NetworkMgr:isOnline() then
     self.subtitle = nil
   else
     self.subtitle = Icons.WIFI_OFF .. " Offline mode"

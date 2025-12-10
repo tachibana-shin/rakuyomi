@@ -4,6 +4,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local NetworkMgr = require("ui/network/manager")
 local Trapper = require("ui/trapper")
 local _ = require("gettext")
+local beforeWifi = require("utils/beforeWifi")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -13,17 +14,13 @@ local LoadingDialog = require("LoadingDialog")
 local UpdateChecker = {}
 
 function UpdateChecker:checkForUpdates()
-  if not NetworkMgr:isConnected() then
-    NetworkMgr:beforeWifiAction(function()
-      self:_checkForUpdates()
-    end)
-  else
+  beforeWifi(function()
     self:_checkForUpdates()
-  end
+  end)
 end
 
 function UpdateChecker:_checkForUpdates()
-  if not NetworkMgr:isConnected() then
+  if not NetworkMgr:isOnline() then
     ErrorDialog:show(_("Cannot check for updates while offline"))
     return
   end

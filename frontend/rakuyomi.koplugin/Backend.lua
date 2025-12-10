@@ -2,6 +2,7 @@ local logger = require("logger")
 local ffiutil = require("ffi/util")
 local rapidjson = require("rapidjson")
 local util = require("util")
+local NetworkMgr = require("ui/network/manager")
 
 local Platform = require("Platform")
 
@@ -46,6 +47,12 @@ end
 --- @nodiscard
 --- @return SuccessfulResponse<T>|ErrorResponse # The parsed JSON response or nil, if there was an error.
 function Backend.requestJson(request)
+  if NetworkMgr:getBeforeActionFlag() == nil then
+    if NetworkMgr:isConnected() ~= true then
+      NetworkMgr:beforeWifiAction()
+    end
+  end
+
   assert(Backend.server ~= nil, "backend wasn't initialized!")
   local url = require("socket.url")
 

@@ -13,6 +13,18 @@ local LoadingDialog = require("LoadingDialog")
 local UpdateChecker = {}
 
 function UpdateChecker:checkForUpdates()
+  if NetworkMgr:isConnected() ~= true then
+    NetworkMgr:beforeWifiAction(function()
+      self:_checkForUpdates()
+    end)
+  else
+    self:_checkForUpdates()
+  end
+end
+
+function UpdateChecker:_checkForUpdates()
+  NetworkMgr:beforeWifiAction()
+
   if not NetworkMgr:isConnected() then
     ErrorDialog:show(_("Cannot check for updates while offline"))
     return

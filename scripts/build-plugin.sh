@@ -17,6 +17,6 @@ cp backend/target/$TARGET/release/uds_http_request "$OUT/"
 
 VERSION="${SEMANTIC_RELEASE_VERSION:-1.0.0}"
 echo "{ \"version\": \"$VERSION\", \"build\": \"$TYPE_BUILD\" }" \
-    > "$OUT/c.json"
+    > "$OUT/BUILD_INFO.json"
 
 echo "DONE → $OUT (version=$VERSION)"

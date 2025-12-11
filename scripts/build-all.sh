@@ -31,7 +31,7 @@ EOF
   cd ..
 
   # Package osh output
-  bash ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin"
+  bash ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin" "$name"
 
   echo "=== DONE: $name ==="
 }

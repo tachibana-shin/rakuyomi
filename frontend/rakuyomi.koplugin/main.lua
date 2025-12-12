@@ -29,11 +29,11 @@ Rakuyomi.instance = nil
 -- - when the `ReaderUI` is initialized, we're also called
 -- so we should register to the menu accordingly
 function Rakuyomi:init()
-
   Rakuyomi.instance = self
 
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
+    self._rakuyomi_readerui_initialized = true
   else
     self.ui.menu:registerToMainMenu(self)
   end
@@ -43,7 +43,8 @@ function Rakuyomi:init()
     category = "none", 
     event = "StartLibraryView", 
     title = _("Rakuyomi"),
-    general = true  })
+    general = true
+    })
 
   Testing:init()
   Testing:emitEvent('initialized')
@@ -52,7 +53,6 @@ end
 function Rakuyomi:onStartLibraryView()
     Rakuyomi.openFromToolbar()
 end
-
 
 function Rakuyomi:addToMainMenu(menu_items)
   menu_items.rakuyomi = {
@@ -99,12 +99,18 @@ function Rakuyomi.openFromToolbar()
     end
 
     if self.ui and self.ui.name == "ReaderUI" then
+        -- Ensure ReaderUI hooks are registered before closing the reader
+        if not self._rakuyomi_readerui_initialized then
+            MangaReader:initializeFromReaderUI(self.ui)
+            self._rakuyomi_readerui_initialized = true
+        end
         MangaReader:closeReaderUi(function()
             show_library()
         end)
     else
         show_library()
     end
+  
 end
 
 package.loaded["rakuyomi"] = Rakuyomi

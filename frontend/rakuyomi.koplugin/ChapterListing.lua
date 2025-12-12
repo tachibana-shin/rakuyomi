@@ -385,7 +385,7 @@ function ChapterListing:onContextMenuChoice(item)
         callback = function()
           UIManager:close(dialog_context_menu)
 
-          self:markChapterAs(chapter, chapter.read and false)
+          self:markChapterAs(chapter, chapter.read and false or true)
         end
       }
     },

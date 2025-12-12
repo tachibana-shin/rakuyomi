@@ -158,6 +158,20 @@ function Settings:init()
     })
   end
 
+
+  table.insert(vertical_group, SettingItem:new {
+    show_parent = self,
+    width = self.item_width,
+    label = "Allow requisition of the back button",
+    value_definition = {
+      type = 'boolean',
+    },
+    value = G_reader_settings:nilOrFalse("allow_commaneer_filemanager") and false or true,
+    on_value_changed_callback = function(new_value)
+      G_reader_settings:saveSetting("allow_commaneer_filemanager", new_value)
+    end
+  })
+
   self.title_bar = TitleBar:new {
     title = "Settings",
     fullscreen = true,

@@ -429,8 +429,8 @@ where
                                             .status()
                                             .canonical_reason()
                                             .unwrap_or("Unknown Error"),
-                                        800,
-                                        1200,
+                                        500,
+                                        667,
                                     )?,
                                     Some(err),
                                 )

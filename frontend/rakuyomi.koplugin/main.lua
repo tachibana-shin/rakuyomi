@@ -43,7 +43,7 @@ function Rakuyomi:init()
     category = "none", 
     event = "StartLibraryView", 
     title = _("Rakuyomi"),
-    general = true
+    general = true,
     })
 
   Testing:init()

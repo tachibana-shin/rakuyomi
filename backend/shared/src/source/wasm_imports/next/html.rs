@@ -493,7 +493,6 @@ fn get(mut caller: Caller<'_, WasmStore>, ptr: i32, index: i32) -> FFIResult {
     if len == 0 {
         return ResultContext::NoResult.into();
     }
-    let index = ((index % len) + len) % len;
 
     let element = html_elements.get(index as usize);
     if let Some(element) = element {

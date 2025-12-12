@@ -86,6 +86,11 @@ end
 function Rakuyomi.openFromToolbar()
     local self = Rakuyomi.instance
     if not self then
+        logger.warn("Rakuyomi.openFromToolbar(): no instance available")
+        UIManager:show(InfoMessage:new{
+            text = _("Rakuyomi plugin is not ready yet."),
+            timeout = 2,
+        })
         return
     end
 
@@ -110,7 +115,6 @@ function Rakuyomi.openFromToolbar()
     else
         show_library()
     end
-  
 end
 
 package.loaded["rakuyomi"] = Rakuyomi

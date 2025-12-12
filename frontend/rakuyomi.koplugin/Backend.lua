@@ -390,8 +390,14 @@ function Backend.cancelDownloadAllChapters(source_id, manga_id)
   })
 end
 
+--- @class DownloadError
+--- @field page_index number
+--- @field url string
+--- @field reason string
+--- @field attempts number
+
 --- Downloads the given chapter to the storage.
---- @return SuccessfulResponse<string>|ErrorResponse
+--- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
 function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
   local query_params = {}
 
@@ -589,7 +595,7 @@ end
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<string>|ErroredJob
+--- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse

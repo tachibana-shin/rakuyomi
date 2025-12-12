@@ -52,7 +52,7 @@ function DownloadChapter:start()
   return true
 end
 
---- @return SuccessfulResponse<string>|ErrorResponse
+--- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
 function DownloadChapter:runUntilCompletion()
   return Job.runUntilCompletion(self)
 end

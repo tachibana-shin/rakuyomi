@@ -426,6 +426,32 @@ function ChapterListing:openMarkDialog(manga, read, callback)
   dialog:onShowKeyboard()
 end
 
+--- @param errors DownloadError[]
+local function formatDownloadErrors(errors)
+  if not errors or #errors == 0 then
+    return "No errors"
+  end
+
+  local max_items = 5
+  local lines = {}
+
+  for i = 1, math.min(#errors, max_items) do
+    local err = errors[i]
+    table.insert(lines, string.format(
+      "Page %d | %s (%d attempts)",
+      err.page_index,
+      err.reason,
+      err.attempts
+    ))
+  end
+
+  if #errors > max_items then
+    table.insert(lines, string.format("… and %d more errors", #errors - max_items))
+  end
+
+  return table.concat(lines, "\n")
+end
+
 --- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
@@ -472,7 +498,15 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     -- FIXME Mutating here _still_ sucks, we gotta think of a better way.
     chapter.downloaded = true
 
-    local manga_path = ffiutil.realpath(response.body)
+    if #response.body[2] > 0 then
+      logger.err("Download job errors: ", response.body[1])
+
+      UIManager:show(InfoMessage:new {
+        text = formatDownloadErrors(response.body[2])
+      })
+    end
+
+    local manga_path = ffiutil.realpath(response.body[1])
 
     logger.info("Waited ", time.to_ms(time.since(start_time)), "ms for download job to finish.")
 

@@ -437,7 +437,8 @@ async fn mark_chapters_as_read(
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
-        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state).await?;
+        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state)
+            .await?;
 
     Ok(Json(count))
 }
@@ -464,7 +465,7 @@ async fn download_manga_chapter(
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
-) -> Result<Json<String>, AppError> {
+) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
     let settings = settings.lock().await;
     let database = database.lock().await;
 
@@ -481,7 +482,10 @@ async fn download_manga_chapter(
     .await
     .map_err(AppError::from_fetch_manga_chapters_error)?;
 
-    Ok(Json(output_path.to_string_lossy().into()))
+    Ok(Json((
+        output_path.0.to_string_lossy().into(),
+        output_path.1,
+    )))
 }
 
 async fn mark_chapter_as_read(

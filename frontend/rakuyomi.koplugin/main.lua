@@ -86,11 +86,6 @@ end
 function Rakuyomi.openFromToolbar()
     local self = Rakuyomi.instance
     if not self then
-        logger.warn("Rakuyomi.openFromToolbar(): no instance available")
-        UIManager:show(InfoMessage:new{
-            text = "Rakuyomi: no instance",
-            timeout = 2,
-        })
         return
     end
 

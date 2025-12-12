@@ -296,6 +296,10 @@ impl ChapterStorage {
                 &self.errors_source_path(&path)?,
                 serde_json::to_vec(&errors)?,
             );
+        } else {
+            let _ = std::fs::remove_file(
+                &self.errors_source_path(&path)?
+            );
         }
 
         Ok(path)

@@ -413,6 +413,18 @@ function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
   })
 end
 
+--- @param source_id string
+--- @param manga_id string
+--- @param chapter_id string
+--- @return SuccessfulResponse<boolean>|ErrorResponse
+function Backend.revokeChapter(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    method = "POST",
+  })
+end
+
 --- Updates the last read position for the chapter.
 --- @return SuccessfulResponse<nil>|ErrorResponse
 function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
@@ -424,11 +436,13 @@ function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
 end
 
 --- Marks the chapter as read.
+--- @param value boolean|nil
 --- @return SuccessfulResponse<nil>|ErrorResponse
-function Backend.markChapterAsRead(source_id, manga_id, chapter_id)
+function Backend.markChapterAsRead(source_id, manga_id, chapter_id, value)
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/mark-as-read",
+    body = { state = value },
     method = "POST",
   })
 end

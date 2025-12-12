@@ -1325,8 +1325,9 @@ impl Database {
         .unwrap();
     }
 
-    pub async fn mark_chapter_as_read(&self, id: &ChapterId) {
+    pub async fn mark_chapter_as_read(&self, id: &ChapterId, value: Option<bool>) {
         let now = chrono::Utc::now().timestamp();
+        let value = value.unwrap_or(true);
 
         let source_id = id.source_id().value();
         let manga_id = id.manga_id().value();
@@ -1335,14 +1336,15 @@ impl Database {
         sqlx::query!(
             r#"
             INSERT INTO chapter_state (source_id, manga_id, chapter_id, read, last_read)
-            VALUES (?1, ?2, ?3, TRUE, ?4)
+            VALUES (?1, ?2, ?3, ?4, ?5)
             ON CONFLICT DO UPDATE SET
-                read = TRUE,
+                read = excluded.read,
                 last_read = excluded.last_read
         "#,
             source_id,
             manga_id,
             chapter_id,
+            value,
             now,
         )
         .execute(&self.pool)

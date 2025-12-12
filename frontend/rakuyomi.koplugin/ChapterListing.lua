@@ -155,6 +155,20 @@ function ChapterListing:updateItems()
   Menu.updateItems(self)
 end
 
+---@private
+---@param chapter Chapter
+---@return Chapter
+function ChapterListing:findRootChapter(chapter)
+  for _, root in ipairs(self.chapters) do
+    if root.id == chapter.id then
+      return root
+    end
+  end
+
+  ---@diagnostic disable-next-line: missing-return
+  assert(false, "not found chapter reference")
+end
+
 --- @private
 function ChapterListing:generateEmptyViewItemTable()
   return {
@@ -334,6 +348,125 @@ function ChapterListing:onPrimaryMenuChoice(item)
 end
 
 --- @private
+function ChapterListing:onContextMenuChoice(item)
+  ---@type Chapter
+  local chapter = item.chapter
+
+
+  local dialog_context_menu
+
+  local context_menu_buttons = {
+    {
+      {
+        text = Icons.FA_OPEN .. " Open",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          self:onPrimaryMenuChoice(item)
+        end
+      }
+    },
+    {
+      {
+        text = Icons.REFRESHING .. " Refresh",
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          self:revokeChapter(chapter, false)
+          self:downloadChapter(chapter, nil, function(manga_path)
+            UIManager:show(InfoMessage:new { text = "Chapter refreshed" })
+          end)
+        end
+      },
+      {
+        text_func = function()
+          return Icons.CHECK_ALL .. " Mark " .. (chapter.read and "unread" or "read")
+        end,
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          self:markChapterAs(chapter, chapter.read and false)
+        end
+      }
+    },
+    {
+      {
+        text_func = function()
+          return Icons.FA_DOWNLOAD .. " " .. (chapter.downloaded and "Remove" or "Download")
+        end,
+        callback = function()
+          UIManager:close(dialog_context_menu)
+
+          if chapter.downloaded then
+            self:revokeChapter(chapter)
+          else
+            self:downloadChapter(chapter, nil, function(manga_path)
+              UIManager:show(InfoMessage:new { text = "Chapter downloaded" })
+            end)
+          end
+        end
+      }
+    }
+  }
+  dialog_context_menu = ButtonDialog:new {
+    title = item.text,
+    buttons = context_menu_buttons,
+  }
+  UIManager:show(dialog_context_menu)
+end
+
+--- @private
+--- @param chapter Chapter
+function ChapterListing:revokeChapter(chapter, hide_notify)
+  Trapper:wrap(function()
+    local revoke_chapter_response = LoadingDialog:showAndRun(
+      "Revoke chapter...",
+      function()
+        return Backend.revokeChapter(self.manga.source.id, self.manga.id, chapter.id)
+      end
+    )
+
+    if revoke_chapter_response.type == 'ERROR' then
+      ErrorDialog:show(revoke_chapter_response.message)
+
+      return
+    end
+
+    if revoke_chapter_response then
+      self:findRootChapter(chapter).downloaded = false
+      self:updateItems()
+    end
+
+    if hide_notify ~= false then
+      UIManager:show(InfoMessage:new { text = "Removed chapter" })
+    end
+  end)
+end
+
+--- @private
+--- @param chapter Chapter
+--- @param value boolean
+function ChapterListing:markChapterAs(chapter, value)
+  Trapper:wrap(function()
+    local toggle_mark_response = LoadingDialog:showAndRun(
+      (value and "Marking" or "Un-marking") .. " chapter...",
+      function()
+        return Backend.markChapterAsRead(self.manga.source.id, self.manga.id, chapter.id, value)
+      end
+    )
+
+    if toggle_mark_response.type == 'ERROR' then
+      ErrorDialog:show(toggle_mark_response.message)
+
+      return
+    end
+
+    self:findRootChapter(chapter).read = value
+    self:updateItems()
+  end)
+end
+
+--- @private
 function ChapterListing:onSwipe(arg, ges_ev)
   local direction = BD.flipDirectionIfMirroredUILayout(ges_ev.direction)
   if direction == "south" then
@@ -455,7 +588,8 @@ end
 --- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
-function ChapterListing:openChapterOnReader(chapter, download_job)
+--- @param callback fun(manga_path)
+function ChapterListing:downloadChapter(chapter, download_job, callback)
   Trapper:wrap(function()
     -- If the download job we have is already invalid (internet problems, for example),
     -- spawn a new job before proceeding.
@@ -495,8 +629,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       return
     end
 
-    -- FIXME Mutating here _still_ sucks, we gotta think of a better way.
-    chapter.downloaded = true
+    self:findRootChapter(chapter).downloaded = true
 
     if #response.body[2] > 0 then
       logger.err("Download job errors: ", response.body[1])
@@ -510,6 +643,15 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
 
     logger.info("Waited ", time.to_ms(time.since(start_time)), "ms for download job to finish.")
 
+    callback(manga_path)
+  end)
+end
+
+--- @private
+--- @param chapter Chapter
+--- @param download_job DownloadChapter|nil
+function ChapterListing:openChapterOnReader(chapter, download_job)
+  self:downloadChapter(chapter, download_job, function(manga_path)
     local nextChapter = findNextChapter(self.chapters, chapter)
     local nextChapterDownloadJob = nil
 
@@ -920,7 +1062,7 @@ function ChapterListing:onDownloadAllChapters()
       -- - return the chapter list from the backend on the `downloadAllChapters` call
       -- - biting the bullet and making the API call
       for _, chapter in ipairs(self.chapters) do
-        chapter.downloaded = true
+        self:findRootChapter(chapter).downloaded = true
       end
 
       logger.info("Downloaded all chapters in ", time.to_ms(time.since(startTime)), "ms")

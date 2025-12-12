@@ -15,6 +15,8 @@ return {
   FA_MAGNIFYING_GLASS  = "\u{F002}",
   FA_PLUG              = "\u{F1E6}",
   FA_FILTER            = "\u{f0b0}",
+  FA_OPEN              = "\u{ede2}",
+  FA_REMOVE            = "\u{f01b4}",
   WIFI_OFF             = "\u{ECA9}",
   UNICODE_ARROW_RIGHT  = "\u{25B8}",
   REFRESHING           = "\u{f021}",
@@ -24,4 +26,5 @@ return {
   SYNC                 = "\u{f46a}",
   INFO                 = "\u{f129}",
   CHECK_ALL            = "\u{ee29}",
+  FA_CLEANER           = "\u{e000}",
 }

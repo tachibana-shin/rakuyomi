@@ -85,8 +85,8 @@ end
 
 function Rakuyomi.openFromToolbar()
     local self = Rakuyomi.instance
-    if not self then
-        logger.warn("Rakuyomi.openFromToolbar(): no instance available")
+    if not self or not self.ui then
+        logger.warn("Rakuyomi.openFromToolbar(): no instance/ui available")
         UIManager:show(InfoMessage:new{
             text = _("Rakuyomi plugin is not ready yet."),
             timeout = 2,
@@ -94,26 +94,36 @@ function Rakuyomi.openFromToolbar()
         return
     end
 
+    -- Prevent re-entrancy (rapid taps / gestures / toolbar)
+    if self._rakuyomi_open_from_toolbar_in_progress then
+        return
+    end
+    self._rakuyomi_open_from_toolbar_in_progress = true
+
+    local function done()
+        self._rakuyomi_open_from_toolbar_in_progress = false
+    end
+
     if not backendInitialized then
         self:showErrorDialog()
+        done()
         return
     end
 
-    local function show_library()
-        self:openLibraryView()
-    end
-
-    if self.ui and self.ui.name == "ReaderUI" then
-        -- Ensure ReaderUI hooks are registered before closing the reader
+    if self.ui.name == "ReaderUI" then
+        -- Ensure ReaderUI hooks are registered
         if not self._rakuyomi_readerui_initialized then
             MangaReader:initializeFromReaderUI(self.ui)
             self._rakuyomi_readerui_initialized = true
         end
+
         MangaReader:closeReaderUi(function()
-            show_library()
+            done()
+            self:openLibraryView()
         end)
     else
-        show_library()
+        done()
+        self:openLibraryView()
     end
 end
 

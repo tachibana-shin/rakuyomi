@@ -87,4 +87,8 @@ function Rakuyomi:openLibraryView()
   OfflineAlertDialog:showIfOffline()
 end
 
+function Rakuyomi:openFromToolbar()
+  self:openLibraryView()
+end
+
 return Rakuyomi

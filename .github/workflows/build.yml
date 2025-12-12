@@ -73,7 +73,7 @@ jobs:
         # version into the build.
         bash scripts/build-all.sh ${{ matrix.target }}
     - name: Package plugin contents
-      run: "cd build && rm rakuyomi.koplugin/package.json && zip -r rakuyomi-${{ matrix.target }}.zip rakuyomi.koplugin"
+      run: "cd build && zip -r rakuyomi-${{ matrix.target }}.zip rakuyomi.koplugin"
     - name: Upload plugin as workflow artifact
       uses: actions/upload-artifact@v4
       with:

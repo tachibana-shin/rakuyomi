@@ -1,6 +1,7 @@
 local logger = require("logger")
 local ffiutil = require("ffi/util")
 local rapidjson = require("rapidjson")
+---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
 local Platform = require("Platform")

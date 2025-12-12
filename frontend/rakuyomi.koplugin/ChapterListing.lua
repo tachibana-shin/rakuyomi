@@ -7,6 +7,7 @@ local Trapper = require("ui/trapper")
 local Screen = require("device").screen
 local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
+---@diagnostic disable-next-line: different-requires
 local util = require("util")
 local ffiutil = require("ffi/util")
 local _ = require("gettext")
@@ -576,7 +577,7 @@ function ChapterListing:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          ChapterListing:openMarkDialog(self.manga, true, function ()
+          ChapterListing:openMarkDialog(self.manga, true, function()
             self:refreshChapters()
           end)
         end
@@ -586,7 +587,7 @@ function ChapterListing:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          ChapterListing:openMarkDialog(self.manga, false, function ()
+          ChapterListing:openMarkDialog(self.manga, false, function()
             self:refreshChapters()
           end)
         end
@@ -824,6 +825,7 @@ function ChapterListing:onDownloadUnreadChapters()
             -- Use scanlator-aware download
             local job = self:createDownloadJob(amount)
             if job then
+              ---@diagnostic disable-next-line: undefined-field
               local dialog = DownloadUnreadChaptersJobDialog:new({
                 show_parent = self,
                 job = job,

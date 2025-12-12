@@ -5,6 +5,7 @@ local C = ffi.C
 local ffiutil = require('ffi/util')
 local Paths = require('Paths')
 local util = require('frontend/util')
+---@diagnostic disable-next-line: different-requires
 local platformUtil = require('platform/util')
 local must = platformUtil.must
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer

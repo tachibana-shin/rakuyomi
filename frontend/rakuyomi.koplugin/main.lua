@@ -33,7 +33,6 @@ function Rakuyomi:init()
 
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
-    self._rakuyomi_readerui_initialized = true
   else
     self.ui.menu:registerToMainMenu(self)
   end
@@ -51,7 +50,16 @@ function Rakuyomi:init()
 end
 
 function Rakuyomi:onStartLibraryView()
-    Rakuyomi.openFromToolbar()
+  if not Rakuyomi.instance then
+    logger.warn("Rakuyomi:onStartLibraryView(): no instance available")
+    UIManager:show(InfoMessage:new{
+      text = _("Rakuyomi plugin is not ready yet."),
+      timeout = 2,
+    })
+    return
+  end
+
+  Rakuyomi.instance:openFromToolbar()
 end
 
 function Rakuyomi:addToMainMenu(menu_items)
@@ -83,48 +91,34 @@ function Rakuyomi:openLibraryView()
   OfflineAlertDialog:showIfOffline()
 end
 
-function Rakuyomi.openFromToolbar()
-    local self = Rakuyomi.instance
-    if not self or not self.ui then
-        logger.warn("Rakuyomi.openFromToolbar(): no instance/ui available")
-        UIManager:show(InfoMessage:new{
-            text = _("Rakuyomi plugin is not ready yet."),
-            timeout = 2,
-        })
-        return
-    end
+function Rakuyomi:openFromToolbar()
+  -- Prevent re-entrancy (rapid taps / gestures / toolbar)
+  if self._otb_busy then
+    return
+  end
+  self._otb_busy = true
 
-    -- Prevent re-entrancy (rapid taps / gestures / toolbar)
-    if self._rakuyomi_open_from_toolbar_in_progress then
-        return
-    end
-    self._rakuyomi_open_from_toolbar_in_progress = true
+  local function done()
+    self._otb_busy = false
+  end
 
-    local function done()
-        self._rakuyomi_open_from_toolbar_in_progress = false
-    end
+  if not backendInitialized then
+    self:showErrorDialog()
+    done()
+    return
+  end
 
-    if not backendInitialized then
-        self:showErrorDialog()
-        done()
-        return
-    end
+  if self.ui and self.ui.name == "ReaderUI" then
+    MangaReader:initializeFromReaderUI(self.ui)
 
-    if self.ui.name == "ReaderUI" then
-        -- Ensure ReaderUI hooks are registered
-        if not self._rakuyomi_readerui_initialized then
-            MangaReader:initializeFromReaderUI(self.ui)
-            self._rakuyomi_readerui_initialized = true
-        end
-
-        MangaReader:closeReaderUi(function()
-            done()
-            self:openLibraryView()
-        end)
-    else
-        done()
-        self:openLibraryView()
-    end
+    MangaReader:closeReaderUi(function()
+      self:openLibraryView()
+      done()
+    end)
+  else
+    self:openLibraryView()
+    done()
+  end
 end
 
 package.loaded["rakuyomi"] = Rakuyomi

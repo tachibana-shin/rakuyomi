@@ -58,6 +58,9 @@ end
 
 --- @private
 function SettingItemValue:getCurrentValue()
+  if (self.value_definition.type == 'enum' or self.value_definition.type == 'multi-enum') and self.value == nil then
+    return self.value_definition.options[1].value
+  end
   return self.value
 end
 
@@ -149,15 +152,15 @@ local has_value = function(list, value)
 end
 -- split string by delimiter (default = whitespace)
 local function split(str, sep)
-    sep = sep or "%s"   -- default split on whitespace
-    local result = {}
+  sep = sep or "%s"   -- default split on whitespace
+  local result = {}
 
-    -- iterate matches separated by 'sep'
-    for part in string.gmatch(str, "([^" .. sep .. "]+)") do
-        table.insert(result, part)
-    end
-    
-    return result
+  -- iterate matches separated by 'sep'
+  for part in string.gmatch(str, "([^" .. sep .. "]+)") do
+    table.insert(result, part)
+  end
+
+  return result
 end
 
 --- @private

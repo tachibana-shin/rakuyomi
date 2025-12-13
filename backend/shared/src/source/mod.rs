@@ -299,16 +299,11 @@ impl BlockingSource {
 
         let url_settings = {
             let manifest = manifest.clone();
-            if manifest
-                .config
-                .map(|c| c.allows_base_url_select.unwrap_or(false))
-                .unwrap_or(false)
-            {
-                let urls = manifest.info.urls.clone().unwrap_or(vec![]);
+            if let Some(urls) = manifest.info.urls {
                 Some(SettingDefinition::Select {
                     title: "URL".to_owned(),
                     key: "url".to_owned(),
-                    default: urls.first().unwrap_or(&"".to_owned()).to_string(),
+                    default: Some(urls.first().unwrap_or(&"".to_owned()).to_string()),
                     values: urls,
                     titles: None,
                 })
@@ -319,7 +314,11 @@ impl BlockingSource {
 
         let mut setting_definitions: Vec<SettingDefinition> =
             if let Ok(file) = archive.by_name("Payload/settings.json") {
-                serde_json::from_reader(file)?
+                serde_json::from_reader(file).map_err(|err| {
+                    eprintln!("read file settings.json failed {}", err);
+
+                    err
+                })?
             } else {
                 Vec::new()
             };
@@ -327,10 +326,10 @@ impl BlockingSource {
             setting_definitions.insert(0, url);
         }
 
-        let aidoku_sdk_next = force_mode.unwrap_or(
+        let aidoku_sdk_next = force_mode.unwrap_or_else(|| {
             aidoku_sdk_next_from_meta
-                .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version)),
-        );
+                .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version))
+        });
 
         let stored_source_settings = settings
             .source_settings

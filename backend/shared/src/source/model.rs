@@ -24,9 +24,10 @@ pub enum SettingDefinition {
     Select {
         title: String,
         key: String,
+        #[serde(alias = "options")]
         values: Vec<String>,
         titles: Option<Vec<String>>,
-        default: String,
+        default: Option<String>,
     },
     #[serde(rename = "multi-select")]
     MultiSelect {

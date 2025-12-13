@@ -33,17 +33,18 @@ function Rakuyomi:init()
 
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
+    self._readerui_patched = self.ui
   else
     self.ui.menu:registerToMainMenu(self)
   end
 
   CbzDocument:register(DocumentRegistry)
   Dispatcher:registerAction("start_library_view", {
-    category = "none", 
-    event = "StartLibraryView", 
+    category = "none",
+    event = "StartLibraryView",
     title = _("Rakuyomi"),
     general = true,
-    })
+  })
 
   Testing:init()
   Testing:emitEvent('initialized')
@@ -109,7 +110,11 @@ function Rakuyomi:openFromToolbar()
   end
 
   if self.ui and self.ui.name == "ReaderUI" then
-    MangaReader:initializeFromReaderUI(self.ui)
+    -- Initialize ReaderUI hooks once per ReaderUI instance
+    if self._readerui_patched ~= self.ui then
+      MangaReader:initializeFromReaderUI(self.ui)
+      self._readerui_patched = self.ui
+    end
 
     MangaReader:closeReaderUi(function()
       self:openLibraryView()

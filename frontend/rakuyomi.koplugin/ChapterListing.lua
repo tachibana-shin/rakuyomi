@@ -64,13 +64,7 @@ function ChapterListing:init()
   Menu.init(self)
   self.page = page
 
-  -- we need to fill this with *something* in order to Koreader actually recognize
-  -- that the back button is active, so yeah
-  -- we also need to set this _after_ the `Menu.init` call, because it changes
-  -- this value to {}
-  self.paths = {
-    { callback = self.on_return_callback },
-  }
+  self.paths = { 0 }
   -- idk might make some gc shenanigans actually work
   self.on_return_callback = nil
 
@@ -271,10 +265,8 @@ end
 
 --- @private
 function ChapterListing:onReturn()
-  local path = table.remove(self.paths)
-
+  table.remove(self.paths, 1)
   self:onClose()
-  path.callback()
 end
 
 --- Shows the chapter list for a given manga. Must be called from a function wrapped with `Trapper:wrap()`.

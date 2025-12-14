@@ -23,6 +23,7 @@ local SettingItem = require('widgets/SettingItem')
 local Settings = FocusManager:extend {
   settings = {},
   on_return_callback = nil,
+  paths = { 0 }
 }
 
 --- @private
@@ -227,8 +228,6 @@ end
 --- @private
 function Settings:onReturn()
   self:onClose()
-
-  self.on_return_callback()
 end
 
 --- @private

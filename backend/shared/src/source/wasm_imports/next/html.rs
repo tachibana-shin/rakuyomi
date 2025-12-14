@@ -521,8 +521,5 @@ fn size(mut caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
         return ResultContext::NoResult.into();
     };
 
-    Ok(wasm_store.store_std_value(
-        Value::from(html_elements.len() as i64).into(),
-        Some(descriptor),
-    ) as i32)
+    Ok(html_elements.len() as i32)
 }

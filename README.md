@@ -51,7 +51,7 @@ This fork:
 
 ## Installation & Usage
 
-For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
+For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/README.html) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
 
 ## Contributing
 

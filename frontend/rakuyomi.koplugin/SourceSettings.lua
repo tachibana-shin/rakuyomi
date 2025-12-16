@@ -101,6 +101,7 @@ local SourceSettings = FocusManager:extend {
   stored_settings = nil,
   -- callback to be called when pressing the back button
   on_return_callback = nil,
+  paths = { 0 }
 }
 
 --- @private
@@ -252,8 +253,6 @@ end
 --- @private
 function SourceSettings:onReturn()
   self:onClose()
-
-  self.on_return_callback()
 end
 
 --- @private

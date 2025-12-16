@@ -1,6 +1,5 @@
 use shared::{
-    chapter_storage::ChapterStorage, database::Database, model::ChapterId,
-    source_collection::SourceCollection, source_manager::SourceManager, usecases,
+    chapter_downloader::DownloadError, chapter_storage::ChapterStorage, database::Database, model::ChapterId, source_collection::SourceCollection, source_manager::SourceManager, usecases
 };
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::watch;
@@ -12,8 +11,8 @@ use super::state::{Job, JobState};
 
 // FIXME this is kinda ugly, maybe some type aliases would help here
 pub struct DownloadChapterJob {
-    tx: watch::Sender<Option<Result<Arc<PathBuf>, ErrorResponse>>>,
-    rx: watch::Receiver<Option<Result<Arc<PathBuf>, ErrorResponse>>>,
+    tx: watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
+    rx: watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
     handle: JoinHandle<()>,
 }
 
@@ -25,7 +24,7 @@ impl DownloadChapterJob {
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
     ) -> Self {
-        let (tx, rx) = watch::channel::<Option<Result<Arc<PathBuf>, ErrorResponse>>>(None);
+        let (tx, rx) = watch::channel::<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>(None);
 
         let tx_clone = tx.clone();
         let handle = tokio::spawn(async move {
@@ -51,7 +50,7 @@ impl DownloadChapterJob {
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
-    ) -> Result<PathBuf, ErrorResponse> {
+    ) -> Result<(PathBuf, Vec<DownloadError>), ErrorResponse> {
         let source = {
             let mgr = source_manager.lock().await;
             mgr.get_by_id(chapter_id.source_id())
@@ -74,7 +73,7 @@ impl DownloadChapterJob {
 
 impl Job for DownloadChapterJob {
     type Progress = ();
-    type Output = Arc<PathBuf>;
+    type Output = Arc<(PathBuf, Vec<DownloadError>)>;
     type Error = ErrorResponse;
 
     async fn cancel(&self) -> Result<(), AppError> {

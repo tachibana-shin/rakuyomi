@@ -40,9 +40,7 @@ function InstalledSourcesListing:init()
 
   -- see `ChapterListing` for an explanation on this
   -- FIXME we could refactor this into a single class
-  self.paths = {
-    { callback = self.on_return_callback },
-  }
+  self.paths = { 0 }
 
   self:updateItems()
 end
@@ -149,10 +147,9 @@ end
 
 --- @private
 function InstalledSourcesListing:onReturn()
-  local path = table.remove(self.paths)
+  table.remove(self.paths)
 
   self:onClose()
-  path.callback()
 end
 
 --- @private

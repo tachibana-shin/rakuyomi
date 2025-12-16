@@ -62,6 +62,10 @@ pub fn routes() -> Router<State> {
             post(download_manga_chapter),
         )
         .route(
+            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/revoke",
+            post(revoke_manga_chapter),
+        )
+        .route(
             "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/mark-as-read",
             post(mark_chapter_as_read),
         )
@@ -437,7 +441,8 @@ async fn mark_chapters_as_read(
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
-        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state).await?;
+        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state)
+            .await?;
 
     Ok(Json(count))
 }
@@ -464,7 +469,7 @@ async fn download_manga_chapter(
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
-) -> Result<Json<String>, AppError> {
+) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
     let settings = settings.lock().await;
     let database = database.lock().await;
 
@@ -481,18 +486,40 @@ async fn download_manga_chapter(
     .await
     .map_err(AppError::from_fetch_manga_chapters_error)?;
 
-    Ok(Json(output_path.to_string_lossy().into()))
+    Ok(Json((
+        output_path.0.to_string_lossy().into(),
+        output_path.1,
+    )))
 }
 
+async fn revoke_manga_chapter(
+    StateExtractor(State {
+        chapter_storage, ..
+    }): StateExtractor<State>,
+    Path(params): Path<DownloadMangaChapterParams>,
+) -> Result<Json<bool>, AppError> {
+    let chapter_id = ChapterId::from(params);
+    let chapter_storage = &*chapter_storage.lock().await;
+
+    let result = usecases::revoke_manga_chapter(chapter_storage, &chapter_id).await?;
+
+    Ok(Json(result))
+}
+
+#[derive(Deserialize)]
+struct MarkChapterAsReadBody {
+    state: Option<bool>,
+}
 async fn mark_chapter_as_read(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
+    Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Json<()> {
     let chapter_id = ChapterId::from(params);
     let database = database.lock().await;
 
-    usecases::mark_chapter_as_read(&database, &chapter_id).await;
+    usecases::mark_chapter_as_read(&database, &chapter_id, state).await;
 
     Json(())
 }

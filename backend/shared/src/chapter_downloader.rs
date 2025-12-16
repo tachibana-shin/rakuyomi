@@ -29,15 +29,26 @@ use crate::{
 
 use rust_decimal::prelude::ToPrimitive;
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct DownloadError {
+    pub page_index: usize,
+    pub url: String,
+    pub reason: String,
+    pub attempts: usize,
+}
+
 pub async fn ensure_chapter_is_in_storage(
     chapter_storage: &ChapterStorage,
     source: &Source,
     manga: &MangaInformation,
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
-) -> Result<PathBuf, Error> {
-    if let Some(path) = chapter_storage.get_stored_chapter(&chapter.id) {
-        return Ok(path);
+) -> Result<(PathBuf, Vec<DownloadError>), Error> {
+    if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id)? {
+        return Ok((
+            output.0,
+            output.1.unwrap_or_else(|| Vec::<DownloadError>::from([])),
+        ));
     }
 
     // FIXME like downloaderror is a really bad name??
@@ -72,7 +83,7 @@ pub async fn ensure_chapter_is_in_storage(
     let temporary_file =
         NamedTempFile::new_in(output_path.parent().unwrap()).map_err(|e| Error::Other(e.into()))?;
 
-    if is_novel {
+    let errors = if is_novel {
         // is novel
         let temp_path = temporary_file.path().to_path_buf();
         let book_name: String = pages[0].base64.clone().unwrap_or("Unknown".to_string());
@@ -94,6 +105,8 @@ pub async fn ensure_chapter_is_in_storage(
         .await
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
+
+        Vec::<DownloadError>::from([])
     } else {
         download_chapter_pages_as_cbz(
             &temporary_file,
@@ -104,17 +117,17 @@ pub async fn ensure_chapter_is_in_storage(
         )
         .await
         .map_err(|err| {
-            println!("Error = {err}");
+            eprintln!("Error = {err}");
             err
         })
         .with_context(|| "Failed to download chapter pages")
-        .map_err(Error::DownloadError)?;
-    }
+        .map_err(Error::DownloadError)?
+    };
 
     // If we succeeded downloading all the chapter pages, persist our temporary
     // file into the chapter storage definitively.
     chapter_storage
-        .persist_chapter(&chapter.id, is_novel, temporary_file)
+        .persist_chapter(&chapter.id, is_novel, temporary_file, &errors)
         .await
         .with_context(|| {
             format!(
@@ -124,7 +137,7 @@ pub async fn ensure_chapter_is_in_storage(
         })
         .map_err(Error::Other)?;
 
-    Ok(output_path)
+    Ok((output_path, errors))
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -150,7 +163,41 @@ async fn request_with_forced_referer_from_request(
         let req_method = { req.method().clone() };
         let original_headers = { req.headers().clone() };
 
-        let resp = client.execute(req).await.context("request failed")?;
+        let mut last_err: Option<reqwest::Error> = None;
+        let mut resp_ok: Option<reqwest::Response> = None;
+
+        for attempt in 1..=3 {
+            let cloned_req = req.try_clone().context("Can't clone Request")?;
+            match client.execute(cloned_req).await {
+                Ok(resp) => {
+                    // HTTP status errors are considered *normal*
+                    // → do NOT retry
+                    resp_ok = Some(resp);
+                    break;
+                }
+                Err(e) => {
+                    // Only retry connection-level errors
+                    if e.is_status() {
+                        // HTTP status error is "normal", no retry
+                        return Err(e.into());
+                    }
+
+                    last_err = Some(e);
+
+                    if attempt < 3 {
+                        tokio::time::sleep(tokio::time::Duration::from_millis(
+                            200 * attempt as u64,
+                        ))
+                        .await;
+                    }
+                }
+            }
+        }
+
+        let resp = match resp_ok {
+            Some(r) => r,
+            None => return Err(last_err.unwrap().into()),
+        };
 
         let status = resp.status();
         if !status.is_redirection() {
@@ -190,13 +237,112 @@ async fn request_with_forced_referer_from_request(
     anyhow::bail!("too many redirects")
 }
 
+fn generate_error_image(
+    status_or_code: &str,
+    msg: &str,
+    width: u32,
+    height: u32,
+) -> anyhow::Result<Vec<u8>> {
+    use ab_glyph::{FontArc, PxScale};
+    use image::{ImageBuffer, Rgba};
+    use imageproc::drawing::draw_text_mut;
+
+    let mut img = ImageBuffer::from_pixel(width, height, Rgba([255, 255, 255, 255]));
+
+    let font_data = include_bytes!("../fonts/DejaVuSansMono.ttf") as &[u8];
+    let font = FontArc::try_from_vec(font_data.to_vec()).unwrap();
+
+    let title_scale = PxScale { x: 28.0, y: 28.0 };
+    let msg_scale = PxScale { x: 20.0, y: 20.0 };
+
+    let title = format!("ERROR {}", status_or_code);
+
+    draw_text_mut(
+        &mut img,
+        Rgba([0, 0, 0, 255]),
+        20,
+        20,
+        title_scale,
+        &font,
+        &title,
+    );
+
+    let wrapped = wrap_text(msg, 46);
+
+    let mut y = 60;
+    for line in wrapped {
+        draw_text_mut(
+            &mut img,
+            Rgba([0, 0, 0, 255]),
+            20,
+            y,
+            msg_scale,
+            &font,
+            &line,
+        );
+        y += 26;
+    }
+
+    for x in 0..width {
+        img.put_pixel(x, 0, Rgba([0, 0, 0, 255]));
+        img.put_pixel(x, height - 1, Rgba([0, 0, 0, 255]));
+    }
+    for y in 0..height {
+        img.put_pixel(0, y, Rgba([0, 0, 0, 255]));
+        img.put_pixel(width - 1, y, Rgba([0, 0, 0, 255]));
+    }
+
+    let mut buf = Vec::new();
+    {
+        use image::codecs::jpeg::JpegEncoder;
+        use image::ColorType;
+        use image::DynamicImage;
+        use image::ImageEncoder;
+
+        let img = DynamicImage::ImageRgba8(img).to_rgb8();
+
+        // JPEG エンコーダ（Seek 不要）
+        let encoder = JpegEncoder::new_with_quality(&mut buf, 100);
+
+        // RGB24 としてエンコード
+        encoder
+            .write_image(&img, width, height, ColorType::Rgb8.into())
+            .context("JPEG encode failed")?;
+    }
+
+    Ok(buf)
+}
+
+/// Simple line-wrapper
+fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut current = String::new();
+
+    for word in text.split_whitespace() {
+        if current.len() + word.len() + 1 > max_chars {
+            lines.push(current);
+            current = String::new();
+        }
+        if !current.is_empty() {
+            current.push(' ');
+        }
+        current.push_str(word);
+    }
+
+    if !current.is_empty() {
+        lines.push(current);
+    }
+
+    lines
+}
+
 pub async fn download_chapter_pages_as_cbz<W>(
     output: W,
     metadata: ComicInfo,
     source: &Source,
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
-) -> anyhow::Result<(), anyhow::Error>
+) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
     W: Write + Seek,
 {
@@ -216,7 +362,9 @@ where
         .build()
         .unwrap();
 
-    let (tx, mut rx) = mpsc::channel::<(usize, String, Vec<u8>)>(concurrent_requests_pages * 2);
+    let (tx, mut rx) = mpsc::channel::<(usize, String, Vec<u8>, Option<DownloadError>)>(
+        concurrent_requests_pages * 2,
+    );
 
     let tx_main = tx.clone();
     tokio::spawn({
@@ -251,7 +399,7 @@ where
                             .get_image_request(image_url, page.ctx.clone())
                             .await
                             .map_err(|err| {
-                                println!("Failed WASM modify request {err}");
+                                eprintln!("Failed WASM modify request {err}");
                                 err
                             })?;
                         let req_url = { request.url().clone() };
@@ -261,51 +409,80 @@ where
                                 .await
                                 .inspect_err(|err| {
                                     eprintln!("Request error: {err}");
-                                })?
-                                .error_for_status()
-                                .inspect_err(|err| {
-                                    eprintln!("Request error: {err}");
                                 })?;
-                        let status = { response.status() };
-                        let headers = { response.headers().clone() };
 
-                        let response_bytes = response.bytes().await?;
+                        let (final_bytes, error_info) = {
+                            if !response.status().is_success() {
+                                let err = DownloadError {
+                                    page_index: page.index,
+                                    url: req_url.clone().to_string(),
+                                    reason: format!("HTTP {}", response.status()),
+                                    attempts: 1,
+                                };
 
-                        let response_bytes = source
-                            .process_page_image(
-                                cancel_token.clone(),
-                                (req_url, req_headers),
-                                (status, headers),
-                                response_bytes,
-                                page.ctx.clone(),
-                            )
-                            .await
-                            .map_err(|err| {
-                                println!("Error = {err}");
-                                err
-                            })?;
+                                eprintln!("{:?}", err);
 
-                        let final_image = if let Some(blocks_json) = page.base64.as_ref() {
-                            let blocks: Vec<Block> = serde_json::from_str(blocks_json)
-                                .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+                                (
+                                    generate_error_image(
+                                        &response.status().as_u16().to_string(),
+                                        &response
+                                            .status()
+                                            .canonical_reason()
+                                            .unwrap_or("Unknown Error"),
+                                        500,
+                                        667,
+                                    )?,
+                                    Some(err),
+                                )
+                            } else {
+                                let status = { response.status() };
+                                let headers = { response.headers().clone() };
 
-                            match unscrable_image(response_bytes.to_vec(), blocks) {
-                                Ok(result) => result,
-                                Err(e) => {
-                                    println!("unscrable_image failed: {}", e);
-                                    anyhow::bail!(e)
-                                }
+                                let response_bytes = response.bytes().await?;
+
+                                let response_bytes = source
+                                    .process_page_image(
+                                        cancel_token.clone(),
+                                        (req_url, req_headers),
+                                        (status, headers),
+                                        response_bytes,
+                                        page.ctx.clone(),
+                                    )
+                                    .await
+                                    .map_err(|err| {
+                                        eprintln!("Error = {err}");
+                                        err
+                                    })?;
+
+                                let final_image = if let Some(blocks_json) = page.base64.as_ref() {
+                                    let blocks: Vec<Block> = serde_json::from_str(blocks_json)
+                                        .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+
+                                    match unscrable_image(response_bytes.to_vec(), blocks) {
+                                        Ok(result) => result,
+                                        Err(e) => {
+                                            eprintln!("unscrable_image failed: {}", e);
+                                            anyhow::bail!(e)
+                                        }
+                                    }
+                                } else {
+                                    response_bytes.to_vec()
+                                };
+
+                                (final_image, None)
                             }
-                        } else {
-                            response_bytes.to_vec()
                         };
 
-                        tx.send((page.index, filename, final_image)).await.ok();
+                        // Send result
+                        let _ = tx
+                            .send((page.index, filename, final_bytes, error_info))
+                            .await;
+
                         Ok::<_, anyhow::Error>(())
                     }
                 })
                 .buffer_unordered(concurrent_requests_pages)
-                .try_collect::<Vec<_>>() // chỉ để propagate lỗi
+                .try_collect::<Vec<_>>()
                 .await
                 .ok();
 
@@ -313,13 +490,20 @@ where
         }
     });
 
-    // Writer task — sequential zip writing
-    while let Some((_index, filename, data)) = rx.recv().await {
-        writer.start_file(filename.clone(), file_options)?;
+    // Collect errors
+    let mut errors = Vec::<DownloadError>::new();
+
+    // Writer task
+    while let Some((_index, filename, data, err)) = rx.recv().await {
+        if let Some(e) = err {
+            errors.push(e);
+        }
+
+        writer.start_file(filename, file_options)?;
         writer.write_all(&data)?;
     }
 
-    Ok(())
+    Ok(errors)
 }
 // assume Page.text: Option<String>, Page.base64: Option<String>, Page.url: String
 pub async fn extract_image_urls(pages: &[Page]) -> anyhow::Result<Vec<(usize, String)>> {

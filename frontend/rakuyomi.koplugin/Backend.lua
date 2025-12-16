@@ -1,6 +1,7 @@
 local logger = require("logger")
 local ffiutil = require("ffi/util")
 local rapidjson = require("rapidjson")
+---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
 local Platform = require("Platform")
@@ -389,8 +390,14 @@ function Backend.cancelDownloadAllChapters(source_id, manga_id)
   })
 end
 
+--- @class DownloadError
+--- @field page_index number
+--- @field url string
+--- @field reason string
+--- @field attempts number
+
 --- Downloads the given chapter to the storage.
---- @return SuccessfulResponse<string>|ErrorResponse
+--- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
 function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
   local query_params = {}
 
@@ -406,6 +413,18 @@ function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
   })
 end
 
+--- @param source_id string
+--- @param manga_id string
+--- @param chapter_id string
+--- @return SuccessfulResponse<boolean>|ErrorResponse
+function Backend.revokeChapter(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    method = "POST",
+  })
+end
+
 --- Updates the last read position for the chapter.
 --- @return SuccessfulResponse<nil>|ErrorResponse
 function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
@@ -417,11 +436,13 @@ function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
 end
 
 --- Marks the chapter as read.
+--- @param value boolean|nil
 --- @return SuccessfulResponse<nil>|ErrorResponse
-function Backend.markChapterAsRead(source_id, manga_id, chapter_id)
+function Backend.markChapterAsRead(source_id, manga_id, chapter_id, value)
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/mark-as-read",
+    body = { state = value },
     method = "POST",
   })
 end
@@ -588,7 +609,7 @@ end
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<string>|ErroredJob
+--- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse

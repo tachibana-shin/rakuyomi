@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global, undefined-field
 local findNextChapter = require('chapters/findNextChapter')
 
 --- @return Chapter

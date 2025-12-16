@@ -18,7 +18,9 @@ local F_SETFL = 4
 local O_NONBLOCK = 0x4
 
 ---@class SubprocessOutputCapturer
+---@diagnostic disable-next-line: undefined-doc-name
 ---@field stdout_pipe ffi.cdata*
+---@diagnostic disable-next-line: undefined-doc-name
 ---@field stderr_pipe ffi.cdata*
 local SubprocessOutputCapturer = {}
 

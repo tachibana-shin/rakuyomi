@@ -204,7 +204,7 @@ impl Chapter {
             manga_id,
             title: value.title,
             scanlator: value.scanlators.map(|v| v.join(", ")),
-            url: value.url.map(|v| url::Url::parse(&v).unwrap()),
+            url: value.url.and_then(|v| url::Url::parse(&v).ok()),
             lang: value.language.unwrap_or("en".to_owned()),
             chapter_num: value.chapter_number,
             volume_num: value.volume_number,

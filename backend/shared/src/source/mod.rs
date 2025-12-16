@@ -193,6 +193,13 @@ impl Source {
         bytes: Bytes,
         ctx: Option<aidoku::PageContext>
     );
+
+    wrap_blocking_source_fn!(
+        handle_notification_next,
+        Result<()>,
+        cancellation_token: CancellationToken,
+        key: String
+    );
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -1308,6 +1315,31 @@ impl BlockingSource {
         })?;
 
         Ok(mangas)
+    }
+
+    pub fn handle_notification_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        key: String,
+    ) -> Result<()> {
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.handle_notification_next_inner(key)
+        })
+    }
+
+    fn handle_notification_next_inner(&mut self, key: String) -> Result<()> {
+        let wasm_function = self
+            .instance
+            .get_typed_func::<i32, i32>(&mut self.store, "handle_notification")?;
+
+        let store = self.store.data_mut();
+
+        let key = store.store_std_value(Value::from(key).into(), None);
+
+        wasm_function.call(&mut self.store, key as i32)?;
+        let _ = &self.store.data_mut().take_std_value(key);
+
+        Ok(())
     }
 
     fn run_under_context<T, F>(

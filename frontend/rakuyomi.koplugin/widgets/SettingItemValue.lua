@@ -8,9 +8,17 @@ local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 local SpinWidget = require("ui/widget/spinwidget")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local TextWidget = require("ui/widget/textwidget")
+local ButtonWidget = require("ui/widget/button")
 local UIManager = require("ui/uimanager")
 local CheckButton = require("ui/widget/checkbutton")
 local OverlapGroup = require("ui/widget/overlapgroup")
+local ConfirmBox = require("ui/widget/confirmbox")
+local Trapper = require("ui/trapper")
+local LoadingDialog = require("LoadingDialog")
+local Backend = require("Backend")
+local ErrorDialog = require("ErrorDialog")
+local InfoMessage = require("ui/widget/infomessage")
+local _ = require("gettext")
 
 local Icons = require("Icons")
 
@@ -25,6 +33,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
+--- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
 
 --- @alias ValueDefinition BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
 
@@ -36,6 +45,7 @@ local SettingItemValue = InputContainer:extend {
   value_definition = nil,
   value = nil,
   on_value_changed_callback = nil,
+  source_id = nil,
 }
 
 --- @private
@@ -57,6 +67,7 @@ function SettingItemValue:init()
 end
 
 --- @private
+--- @return any
 function SettingItemValue:getCurrentValue()
   if (self.value_definition.type == 'enum' or self.value_definition.type == 'multi-enum') and self.value == nil then
     return self.value_definition.options[1].value
@@ -141,6 +152,37 @@ function SettingItemValue:createValueWidget()
       max_width = self.max_width,
       truncate_left = true,
     }
+  elseif self.value_definition.type == "button" then
+    return ButtonWidget:new {
+      text = self.value_definition.title,
+      callback = function()
+        local confirm_dialog
+        confirm_dialog = ConfirmBox:new {
+          text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
+          ok_text = _("Ok"),
+          cancel_text = _("Cancel"),
+          ok_callback = function()
+            UIManager:close(confirm_dialog)
+            Trapper:wrap(function()
+              local response = LoadingDialog:showAndRun(
+                _("Executing..."),
+                function() return Backend.handleSourceNotification(self.source_id, self.value_definition.key) end
+              )
+
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+
+                return
+              end
+
+              UIManager:show(InfoMessage:new { text = _("Done") })
+            end)
+          end,
+        }
+
+        UIManager:show(confirm_dialog)
+      end
+    }
   else
     error("unexpected value definition type: " .. self.value_definition.type)
   end
@@ -152,7 +194,7 @@ local has_value = function(list, value)
 end
 -- split string by delimiter (default = whitespace)
 local function split(str, sep)
-  sep = sep or "%s"   -- default split on whitespace
+  sep = sep or "%s" -- default split on whitespace
   local result = {}
 
   -- iterate matches separated by 'sep'

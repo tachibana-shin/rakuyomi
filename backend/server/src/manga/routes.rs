@@ -26,6 +26,10 @@ pub fn routes() -> Router<State> {
         .route("/notifications", get(get_notifications))
         .route("/notifications/{id}", delete(delete_notification))
         .route("/clear-notifications", post(clear_notifications))
+        .route(
+            "/{source_id}/handle-source-notification/{key}",
+            post(handle_source_notification),
+        )
         .route("/mangas", get(get_mangas))
         .route(
             "/mangas/{source_id}/{manga_id}/add-to-library",
@@ -338,9 +342,24 @@ async fn clear_notifications(
     Ok(Json(()))
 }
 
+#[derive(Deserialize)]
+struct HandleSourceNotificationParams {
+    key: String,
+}
+async fn handle_source_notification(
+    SourceExtractor(source): SourceExtractor,
+    Path(params): Path<HandleSourceNotificationParams>,
+) -> Result<Json<()>, AppError> {
+    cancel_after(Duration::from_secs(120), |token| {
+        source.handle_notification_next(token, params.key)
+    })
+    .await?;
+
+    Ok(Json(()))
+}
+
 async fn remove_manga_from_library(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);

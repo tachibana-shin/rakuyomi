@@ -46,6 +46,13 @@ pub enum SettingDefinition {
         placeholder: Option<String>,
         default: Vec<String>,
     },
+    #[serde(rename = "button", rename_all = "camelCase")]
+    Button {
+        key: String,
+        title: String,
+        confirm_title: Option<String>,
+        confirm_message: Option<String>,
+    },
     #[serde(rename = "switch")]
     Switch {
         title: String,

@@ -487,11 +487,12 @@ end
 --- @class SelectSettingDefinition: { type: 'select', title: string, key: string, values: string[], titles: string[]|nil, default: string  }
 --- @class MultiSelectSettingDefinition: { type: 'multi-select', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class LoginSettingDefinition: { type: 'login', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
+--- @class ButtonSettingDefinition: { type: 'button', title: string, key: string, confirmTitle: string|nil, confirmMessage: string|nil  }
 --- @class EditableListSettingDefinition: { type: 'editable-list', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class TextSettingDefinition: { type: 'text', placeholder: string, key: string, default: string|nil }
 --- @class LinkSettingDefinition: { type: 'link', title: string, url: string }
 
---- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition
+--- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|ButtonSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition
 
 --- Lists the setting definitions for a given source.
 --- @return SuccessfulResponse<SettingDefinition[]>|ErrorResponse
@@ -710,6 +711,16 @@ end
 function Backend.clearNotifications()
   return Backend.requestJson({
     path = "/clear-notifications",
+    method = 'POST'
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+--- @param source_id string
+---@param key string
+function Backend.handleSourceNotification(source_id, key)
+  return Backend.requestJson({
+    path = "/" .. source_id .. "/handle-source-notification/" .. key,
     method = 'POST'
   })
 end

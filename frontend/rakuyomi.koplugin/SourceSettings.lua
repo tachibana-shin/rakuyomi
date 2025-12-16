@@ -72,6 +72,14 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       title = setting_definition.title,
       placeholder = 'Not support login'
     }
+  elseif setting_definition.type == 'button' then
+   return {
+      type = 'button',
+      key = setting_definition.key,
+      title = setting_definition.title,
+      confirm_title = setting_definition.confirmTitle,
+      confirm_message = setting_definition.confirmMessage
+    }
   elseif setting_definition.type == 'editable-list' then
     return {
       type = 'list',
@@ -174,6 +182,7 @@ function SourceSettings:init()
         label = child.title or child.placeholder,
         value_definition = mapSettingDefinitionToValueDefinition(child),
         value = self.stored_settings[child.key] or child.default,
+        source_id = self.source_id,
         on_value_changed_callback = function(new_value)
           self:updateStoredSetting(child.key, new_value)
         end

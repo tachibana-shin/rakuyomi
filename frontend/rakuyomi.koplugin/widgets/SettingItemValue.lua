@@ -11,14 +11,21 @@ local TextWidget = require("ui/widget/textwidget")
 local ButtonWidget = require("ui/widget/button")
 local UIManager = require("ui/uimanager")
 local CheckButton = require("ui/widget/checkbutton")
-local OverlapGroup = require("ui/widget/overlapgroup")
 local ConfirmBox = require("ui/widget/confirmbox")
 local Trapper = require("ui/trapper")
 local LoadingDialog = require("LoadingDialog")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local InfoMessage = require("ui/widget/infomessage")
+local Screen = require("device").screen
+local Blitbuffer = require("ffi/blitbuffer")
+local Size = require("ui/size")
+local FrameContainer = require("ui/widget/container/framecontainer")
+local CenterContainer = require("ui/widget/container/centercontainer")
+local VerticalGroup = require("ui/widget/verticalgroup")
+local MovableContainer = require("ui/widget/container/movablecontainer")
 local _ = require("gettext")
+local DialogEmpty = require("DialogEmpty")
 
 local Icons = require("Icons")
 
@@ -232,19 +239,52 @@ function SettingItemValue:onTap()
 
     UIManager:show(dialog)
   elseif self.value_definition.type == "multi-enum" then
-    local dialog = OverlapGroup:new {}
+    local dialog = VerticalGroup:new {
+      align = "left"
+    }
     for _, option in ipairs(self.value_definition.options) do
-      table.insert(dialog, CheckButton:new {
-        {
-          text = option.label,
-          provider = option.value,
-          checked = has_value(self:getCurrentValue(), option.value),
-          callback = function()
+      local check = CheckButton:new {
+        text = option.label,
+        provider = option.value,
+        checked = has_value(self:getCurrentValue(), option.value),
+        width = math.floor(Screen:getWidth() * 0.8),
+        callback = function()
+          local checked = has_value(self:getCurrentValue(), option.value)
 
+          if checked then
+            for i = #self.value, 1, -1 do
+              if self.value[i] == option.value then
+                table.remove(self.value, i)
+                break
+              end
+            end
+          else
+            table.insert(self.value, option.value)
           end
-        },
-      })
+
+          self:updateCurrentValue(self.value)
+        end
+      }
+      check.parent = check
+      table.insert(dialog, check)
     end
+
+    local frame = FrameContainer:new {
+      padding = 16,
+      background = Blitbuffer.COLOR_WHITE,
+      radius = Size.radius.window,
+      dialog,
+    }
+
+    local dialog = DialogEmpty:new {}
+    dialog.movable = MovableContainer:new {
+      frame,
+      unmovable = dialog.unmovable,
+    }
+    dialog[1] = CenterContainer:new {
+      dimen = Screen:getSize(),
+      dialog.movable,
+    }
 
     UIManager:show(dialog)
   elseif self.value_definition.type == "boolean" then

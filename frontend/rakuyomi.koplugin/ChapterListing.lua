@@ -504,7 +504,7 @@ function ChapterListing:openMarkDialog(manga, read, callback)
   dialog = InputDialog:new {
     title = _(read and "Mark read" or "Mark unread"),
     input_hint = _("1 - 10.5, 20 - 100"),
-    description = _("Mark chapters as read or unreadn\n\nLeaving blank will select all"),
+    description = _("Mark chapters as read or unread\n\nLeaving blank will select all"),
     buttons = {
       {
         {

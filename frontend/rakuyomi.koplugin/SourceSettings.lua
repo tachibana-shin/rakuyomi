@@ -49,8 +49,6 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
   elseif setting_definition.type == 'multi-select' then
     local options = {}
 
-    print(setting_definition.values)
-
     for index, value in ipairs(setting_definition.values) do
       local title = value
 

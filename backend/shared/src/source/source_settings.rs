@@ -40,8 +40,24 @@ fn default_values_for_definition(
             .iter()
             .flat_map(default_values_for_definition)
             .collect(),
-        SettingDefinition::Select { key, default, .. } => {
-            HashMap::from([(key.clone(), SourceSettingValue::String(default.clone()))])
+        SettingDefinition::Select {
+            key,
+            default,
+            values,
+            ..
+        } => HashMap::from([(
+            key.clone(),
+            SourceSettingValue::String(
+                default
+                    .clone()
+                    .unwrap_or_else(|| values.first().unwrap_or(&"".to_string()).clone()),
+            ),
+        )]),
+        SettingDefinition::MultiSelect { key, default, .. } => {
+            HashMap::from([(key.clone(), SourceSettingValue::Vec(default.clone()))])
+        }
+        SettingDefinition::EditableList { key, default, .. } => {
+            HashMap::from([(key.clone(), SourceSettingValue::Vec(default.clone()))])
         }
         SettingDefinition::Switch { key, default, .. } => {
             HashMap::from([(key.clone(), SourceSettingValue::Bool(*default))])

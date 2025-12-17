@@ -26,6 +26,10 @@ pub fn routes() -> Router<State> {
         .route("/notifications", get(get_notifications))
         .route("/notifications/{id}", delete(delete_notification))
         .route("/clear-notifications", post(clear_notifications))
+        .route(
+            "/{source_id}/handle-source-notification/{key}",
+            post(handle_source_notification),
+        )
         .route("/mangas", get(get_mangas))
         .route("/cancel-request", post(post_cancel_request))
         .route(
@@ -61,6 +65,10 @@ pub fn routes() -> Router<State> {
         .route(
             "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/download",
             post(download_manga_chapter),
+        )
+        .route(
+            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/revoke",
+            post(revoke_manga_chapter),
         )
         .route(
             "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/mark-as-read",
@@ -251,7 +259,7 @@ async fn post_cancel_request(
     }): StateExtractor<State>,
     Json(cancel_id): Json<usize>,
 ) -> Result<Json<()>, AppError> {
-   let token = {
+    let token = {
         let store = cancel_token_store.lock().await;
         store.get(&cancel_id).cloned()
     };
@@ -369,9 +377,30 @@ async fn clear_notifications(
     Ok(Json(()))
 }
 
+#[derive(Deserialize)]
+struct HandleSourceNotificationParams {
+    key: String,
+}
+async fn handle_source_notification(
+    StateExtractor(State {
+        cancel_token_store, ..
+    }): StateExtractor<State>,
+    SourceExtractor(source): SourceExtractor,
+    Path(params): Path<HandleSourceNotificationParams>,
+    Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
+) -> Result<Json<()>, AppError> {
+    let token = create_token(cancel_token_store, cancel_id).await;
+
+    cancel_after(&token, Duration::from_secs(120), |token| {
+        source.handle_notification_next(token, params.key)
+    })
+    .await?;
+
+    Ok(Json(()))
+}
+
 async fn remove_manga_from_library(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
@@ -518,7 +547,7 @@ async fn download_manga_chapter(
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
     Json(cancel_id): Json<Option<usize>>,
-) -> Result<Json<String>, AppError> {
+) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
     let settings = settings.lock().await;
     let database = database.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
@@ -537,18 +566,40 @@ async fn download_manga_chapter(
     .await
     .map_err(AppError::from_fetch_manga_chapters_error)?;
 
-    Ok(Json(output_path.to_string_lossy().into()))
+    Ok(Json((
+        output_path.0.to_string_lossy().into(),
+        output_path.1,
+    )))
 }
 
+async fn revoke_manga_chapter(
+    StateExtractor(State {
+        chapter_storage, ..
+    }): StateExtractor<State>,
+    Path(params): Path<DownloadMangaChapterParams>,
+) -> Result<Json<bool>, AppError> {
+    let chapter_id = ChapterId::from(params);
+    let chapter_storage = &*chapter_storage.lock().await;
+
+    let result = usecases::revoke_manga_chapter(chapter_storage, &chapter_id).await?;
+
+    Ok(Json(result))
+}
+
+#[derive(Deserialize)]
+struct MarkChapterAsReadBody {
+    state: Option<bool>,
+}
 async fn mark_chapter_as_read(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
+    Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Json<()> {
     let chapter_id = ChapterId::from(params);
     let database = database.lock().await;
 
-    usecases::mark_chapter_as_read(&database, &chapter_id).await;
+    usecases::mark_chapter_as_read(&database, &chapter_id, state).await;
 
     Json(())
 }

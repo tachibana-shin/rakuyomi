@@ -4,7 +4,9 @@ use anyhow::anyhow;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-    chapter_downloader::{ensure_chapter_is_in_storage, Error as ChapterDownloaderError},
+    chapter_downloader::{
+        ensure_chapter_is_in_storage, DownloadError, Error as ChapterDownloaderError,
+    },
     chapter_storage::ChapterStorage,
     database::Database,
     model::ChapterId,
@@ -18,7 +20,7 @@ pub async fn fetch_manga_chapter(
     chapter_storage: &ChapterStorage,
     chapter_id: &ChapterId,
     concurrent_requests_pages: usize,
-) -> Result<PathBuf, Error> {
+) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
         .await

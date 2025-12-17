@@ -10,11 +10,15 @@ The `settings.json` file contains basic settings that rakuyomi needs to work, in
 
 Here's a recommended starter configuration that you can customize or use as-is:
 
+Any source that can run on [Aidoku](https://github.com/Aidoku) can also run on [rakuyomi](https://github.com/tachibana-shin/rakuyomi) (except `WebView`)
+
 ```json,downloadable:settings.json
 {
-  "$schema": "https://github.com/hanatsumi/rakuyomi/releases/download/main/settings.schema.json",
+  "$schema": "https://github.com/tachibana-shin/rakuyomi/releases/download/main/settings.schema.json",
   "source_lists": [
-    "https://raw.githubusercontent.com/Skittyblock/aidoku-community-sources/refs/heads/gh-pages/index.min.json"
+    "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/index.min.json",
+    
+    "https://aidoku-community.github.io/sources/index.min.json"
   ],
   "languages": ["en"]
 }

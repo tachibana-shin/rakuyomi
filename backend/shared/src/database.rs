@@ -801,10 +801,24 @@ impl Database {
             .fetch(&self.pool);
 
             while let Some(row) = stream.try_next().await.unwrap() {
-                let row = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
+                let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
-                remaining.remove(&chapter_storage.get_path_to_store_chapter(&row, false));
-                remaining.remove(&chapter_storage.get_path_to_store_chapter(&row, true));
+                for is_novel in [false, true] {
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    if tokio::fs::try_exists(&path).await.unwrap_or(false) {
+                        remaining.remove(&path);
+                    }
+
+                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok() else {
+                        continue;
+                    };
+                    if tokio::fs::try_exists(&path_file_errors)
+                        .await
+                        .unwrap_or(false)
+                    {
+                        remaining.remove(&path_file_errors);
+                    }
+                }
             }
 
             remaining.into_iter().collect()
@@ -823,10 +837,20 @@ impl Database {
             while let Some(row) = stream.try_next().await.unwrap() {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
-                for compressed in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, compressed);
+                for is_novel in [false, true] {
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
-                        paths.push(path);
+                        paths.push(path.clone());
+                    }
+
+                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok() else {
+                        continue;
+                    };
+                    if tokio::fs::try_exists(&path_file_errors)
+                        .await
+                        .unwrap_or(false)
+                    {
+                        paths.push(path_file_errors);
                     }
                 }
             }
@@ -1301,8 +1325,9 @@ impl Database {
         .unwrap();
     }
 
-    pub async fn mark_chapter_as_read(&self, id: &ChapterId) {
+    pub async fn mark_chapter_as_read(&self, id: &ChapterId, value: Option<bool>) {
         let now = chrono::Utc::now().timestamp();
+        let value = value.unwrap_or(true);
 
         let source_id = id.source_id().value();
         let manga_id = id.manga_id().value();
@@ -1311,14 +1336,15 @@ impl Database {
         sqlx::query!(
             r#"
             INSERT INTO chapter_state (source_id, manga_id, chapter_id, read, last_read)
-            VALUES (?1, ?2, ?3, TRUE, ?4)
+            VALUES (?1, ?2, ?3, ?4, ?5)
             ON CONFLICT DO UPDATE SET
-                read = TRUE,
+                read = excluded.read,
                 last_read = excluded.last_read
         "#,
             source_id,
             manga_id,
             chapter_id,
+            value,
             now,
         )
         .execute(&self.pool)

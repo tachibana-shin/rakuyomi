@@ -400,6 +400,12 @@ function Backend.cancelDownloadAllChapters(source_id, manga_id)
   })
 end
 
+--- @class DownloadError
+--- @field page_index number
+--- @field url string
+--- @field reason string
+--- @field attempts number
+
 --- Downloads the given chapter to the storage.
 --- @param cancel_id number
 --- @param source_id string
@@ -423,6 +429,18 @@ function Backend.downloadChapter(cancel_id, source_id, manga_id, chapter_id, cha
   })
 end
 
+--- @param source_id string
+--- @param manga_id string
+--- @param chapter_id string
+--- @return SuccessfulResponse<boolean>|ErrorResponse
+function Backend.revokeChapter(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    method = "POST",
+  })
+end
+
 --- Updates the last read position for the chapter.
 --- @return SuccessfulResponse<nil>|ErrorResponse
 function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
@@ -434,11 +452,13 @@ function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
 end
 
 --- Marks the chapter as read.
+--- @param value boolean|nil
 --- @return SuccessfulResponse<nil>|ErrorResponse
-function Backend.markChapterAsRead(source_id, manga_id, chapter_id)
+function Backend.markChapterAsRead(source_id, manga_id, chapter_id, value)
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/mark-as-read",
+    body = { state = value },
     method = "POST",
   })
 end
@@ -481,10 +501,14 @@ end
 --- @class GroupSettingDefinition: { type: 'group', title: string|nil, items: SettingDefinition[], footer: string|nil }
 --- @class SwitchSettingDefinition: { type: 'switch', title: string, key: string, default: boolean }
 --- @class SelectSettingDefinition: { type: 'select', title: string, key: string, values: string[], titles: string[]|nil, default: string  }
+--- @class MultiSelectSettingDefinition: { type: 'multi-select', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
+--- @class LoginSettingDefinition: { type: 'login', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
+--- @class ButtonSettingDefinition: { type: 'button', title: string, key: string, confirmTitle: string|nil, confirmMessage: string|nil  }
+--- @class EditableListSettingDefinition: { type: 'editable-list', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class TextSettingDefinition: { type: 'text', placeholder: string, key: string, default: string|nil }
 --- @class LinkSettingDefinition: { type: 'link', title: string, url: string }
 
---- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|TextSettingDefinition|LinkSettingDefinition
+--- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|ButtonSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition
 
 --- Lists the setting definitions for a given source.
 --- @return SuccessfulResponse<SettingDefinition[]>|ErrorResponse
@@ -602,7 +626,7 @@ end
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<string>|ErroredJob
+--- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse
@@ -720,6 +744,18 @@ function Backend.cancel(cancel_id)
     path = "/cancel-request",
     method = 'POST',
     body = cancel_id,
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+--- @param cancel_id number
+--- @param source_id string
+---@param key string
+function Backend.handleSourceNotification(cancel_id, source_id, key)
+  return Backend.requestJson({
+    path         = "/" .. source_id .. "/handle-source-notification/" .. key,
+    query_params = { cancel_id = cancel_id },
+    method       = 'POST'
   })
 end
 

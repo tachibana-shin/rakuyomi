@@ -1,7 +1,6 @@
 [book]
-authors = ["hanatsumi"]
+authors = ["hanatsumi", "tachibana-shin"]
 language = "en"
-multilingual = false
 src = "src"
 title = "rakuyomi guide"
 
@@ -15,6 +14,6 @@ assets_version = "3.0.2" # do not edit: managed by `mdbook-admonish install`
 
 [output.html]
 additional-css = ["./mdbook-admonish.css"]
-git-repository-url = "https://github.com/hanatsumi/rakuyomi"
-edit-url-template = "https://github.com/hanatsumi/rakuyomi/edit/main/docs/{path}"
+git-repository-url = "https://github.com/tachibana-shin/rakuyomi"
+edit-url-template = "https://github.com/tachibana-shin/rakuyomi/edit/main/docs/{path}"
 site-url = "/rakuyomi/"

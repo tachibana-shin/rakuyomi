@@ -1,7 +1,9 @@
 local ReaderUI = require("apps/reader/readerui")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
+local ConfirmBox = require("ui/widget/confirmbox")
 local logger = require("logger")
+local _ = require("gettext")
 
 local Testing = require('testing')
 
@@ -51,11 +53,12 @@ end
 function MangaReader:initializeFromReaderUI(ui)
   if self.is_showing then
     ui.menu:registerToMainMenu(MangaReader)
-  end
+    self:overrideBtnFileManager(ui.menu)
 
-  ui:registerPostInitCallback(function()
-    self:hookWithPriorityOntoReaderUiEvents(ui)
-  end)
+    ui:registerPostInitCallback(function()
+      self:hookWithPriorityOntoReaderUiEvents(ui)
+    end)
+  end
 end
 
 --- @private
@@ -136,6 +139,41 @@ function MangaReader:onReaderUiCloseWidget()
   end
 
   self.is_showing = false
+end
+
+--- @private
+function MangaReader:overrideBtnFileManager(menu)
+  local old_callback = menu.menu_items.filemanager.callback
+
+  if self.is_showing then
+    menu.menu_items.filemanager.callback = function()
+      local key = "allow_commaneer_filemanager"
+      if G_reader_settings:nilOrFalse(key) then
+        local confirm_dialog
+        confirm_dialog = ConfirmBox:new {
+          text = "どーも\nDo you want Rakuyomi to commandeer this button when you open it?\n\nThis setting only affects when you open it with Rakuyomi.",
+          dismissable = false,
+          ok_text = _("Yes"),
+          cancel_text = _("No"),
+          ok_callback = function()
+            UIManager:close(confirm_dialog)
+
+            G_reader_settings:saveSetting(key, true)
+            self:onReturn()
+          end,
+          cancel_callback = function()
+            UIManager:close(confirm_dialog)
+
+            old_callback()
+          end
+        }
+
+        UIManager:show(confirm_dialog)
+      else
+        self:onReturn()
+      end
+    end
+  end
 end
 
 return MangaReader

@@ -2,6 +2,14 @@
 
 **rakuyomi** is a manga reader plugin for [KOReader](https://github.com/koreader/koreader).
 
+> [!IMPORTANT]
+>
+> The original author of the [@hanatsumi](https://github.com/hanatsumi) project no longer uses the e-link reader, so I am authorized to maintain this branch as the official branch.
+>
+> Thank [@hanatsumi](https://github.com/hanatsumi) for the great work!!
+> 
+> `rakuyomi` currently supports all [Aidoku](https://github.com/Aidoku) sources including sources written with legacy SDK or next SDK ([Aidoku Community Sources](https://github.com/Aidoku-Community/sources), [Tachibana Shin Sources](https://github.com/tachibana-shin/aidoku-community-sources)...)
+
 This fork:
 - Added last read time for manga, chapter
 - Improved UI now you can see exactly which source manga belongs to
@@ -14,12 +22,6 @@ This fork:
 - Improved SQLite query method to speed up all operations by `200 times` including: library access, search, chapter list (`x300 times`)
 - Details manga
 - Aidoku source new SDK (0.7) support
-
-> ![TIP]
->
-> The Aidoku Community sources supported
-> https://github.com/Aidoku-Community/sources
-> https://aidoku-community.github.io/sources/index.min.json
 
 <table>
   <tr>
@@ -41,7 +43,7 @@ This fork:
     <em><small><a href="https://seotch.wordpress.com/ubunchu/">"Ubunchu!"</a> by Hiroshi Seo is licensed under <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0</a>.</small></em>
 </p>
 
-> [!TIP]
+> ![TIP]
 >
 > This fork currently supports my Light Novel sources: [tachibana-shin/aidoku-community-sources](https://github.com/tachibana-shin/aidoku-community-sources)
 >
@@ -49,9 +51,9 @@ This fork:
 
 ## Installation & Usage
 
-For detailed installation and usage instructions, please check out the [Installation](https://hanatsumi.github.io/rakuyomi/user-guide/installation/) and [Quickstart](https://hanatsumi.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
+For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/README.html) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
 
 ## Contributing
 
-For information on how to contribute to rakuyomi, please check out the [Setting up the Environment](https://hanatsumi.github.io/rakuyomi/contributing/setting-up-the-environment.html) section on our guide!
+For information on how to contribute to rakuyomi, please check out the [Setting up the Environment](https://tachibana-shin.github.io/rakuyomi/contributing/setting-up-the-environment.html) section on our guide!
 

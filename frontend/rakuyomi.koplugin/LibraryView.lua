@@ -355,6 +355,7 @@ function LibraryView:_handleContinueReading(manga)
   }
 
   ContinueReadingHandler.handle(manga, self, callbacks)
+  self:onClose()
 end
 
 --- @private
@@ -371,6 +372,7 @@ function LibraryView:_handleRemoveFromLibrary(manga)
         return
       end
       self:fetchAndShow()
+      self:onClose()
     end
   })
 end

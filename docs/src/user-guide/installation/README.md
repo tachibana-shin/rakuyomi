@@ -6,4 +6,4 @@ Installing rakuyomi on your e-reader is a straightforward process that consists 
 
 2. **Installing to Your Device**: Once you have the correct build, you'll set up a basic configuration file and copy the necessary files to your e-reader. The process is similar across different devices, with only minor variations in folder locations.
 
-Follow the chapters in this section to get rakuyomi up and running on your device. If you run into any issues, our community is here to help through the [issue tracker](https://github.com/hanatsumi/rakuyomi/issues).
+Follow the chapters in this section to get rakuyomi up and running on your device. If you run into any issues, our community is here to help through the [issue tracker](https://github.com/tachibana-shin/rakuyomi/issues).

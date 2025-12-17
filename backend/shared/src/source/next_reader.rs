@@ -21,29 +21,36 @@ pub fn read_next<T: serde::de::DeserializeOwned>(
         }
     }
 
-    // Read the first 8 bytes: len and capacity
-    let mut header = [0u8; 8];
+    let mut tag_bytes = [0u8; 4];
     memory
-        .read(store, ptr as usize, &mut header)
+        .read(store, ptr as usize, &mut tag_bytes)
         .context("Failed to read memory header")?;
 
-    let len = i32::from_le_bytes(header[0..4].try_into().unwrap()) as usize;
-    let _cap = i32::from_le_bytes(header[4..8].try_into().unwrap()) as usize;
+    let tag = i32::from_le_bytes(tag_bytes);
 
-    // Read the full buffer
-    let mut buffer = vec![0u8; len];
-    memory
-        .read(store, ptr as usize, &mut buffer)
-        .context("Failed to read full buffer")?;
+    if tag == -1 {
+        let mut hdr = [0u8; 8];
+        memory.read(store, ptr as usize + 4, &mut hdr)?;
 
-    // Check if this is an AidokuError::Message
-    if buffer[0..4] == (-1i32).to_le_bytes() {
-        let err_string =
-            String::from_utf8(buffer[12..].to_vec()).unwrap_or_else(|_| "<invalid utf8>".into());
-        bail!(err_string);
+        let _cap = i32::from_le_bytes(hdr[0..4].try_into().unwrap()) as usize;
+        let len = i32::from_le_bytes(hdr[4..8].try_into().unwrap()) as usize;
+
+        let mut buf = vec![0u8; 12 + len];
+        memory.read(store, ptr as usize, &mut buf)?;
+
+        let msg = String::from_utf8_lossy(&buf[12..]).to_string();
+        bail!(msg);
     }
 
-    // Otherwise, deserialize the Ok(T) payload using postcard
+    let len = tag as usize;
+
+    let mut cap_bytes = [0u8; 4];
+    memory.read(store, ptr as usize + 4, &mut cap_bytes)?;
+    let _cap = i32::from_le_bytes(cap_bytes) as usize;
+
+    let mut buffer = vec![0u8; 8 + len];
+    memory.read(store, ptr as usize, &mut buffer)?;
+
     from_bytes::<T>(&buffer[8..])
         .map_err(|err| {
             eprintln!("Error = {err}");

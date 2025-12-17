@@ -251,7 +251,6 @@ pub struct WasmStore {
     // js context
     jscontext_pointer: i32,
     jscontexts: HashMap<i32, JsContext>,
-
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -449,9 +448,10 @@ impl WasmStore {
     }
     pub fn create_js_context(&mut self) -> i32 {
         let idx = self.jscontext_pointer;
-        self.jscontext_pointer +=1;
+        self.jscontext_pointer += 1;
 
-        self.jscontexts.insert(idx, JsContext(boa_engine::Context::default()));
+        self.jscontexts
+            .insert(idx, JsContext(boa_engine::Context::default()));
 
         idx
     }
@@ -545,6 +545,9 @@ impl From<SourceSettingValue> for Value {
         match value {
             SourceSettingValue::Bool(v) => Value::Bool(v),
             SourceSettingValue::String(v) => Value::String(v),
+            SourceSettingValue::Vec(v) => {
+                Value::Array(v.into_iter().map(|v| Value::String(v)).collect())
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ local SettingItem = InputContainer:extend {
   value_definition = nil,
   value = nil,
   on_value_changed_callback = nil,
+  source_id = nil,
 }
 
 function SettingItem:init()
@@ -37,6 +38,7 @@ function SettingItem:init()
     value_definition = self.value_definition,
     max_width = self.width / 2,
     value = self.value,
+    source_id = self.source_id,
     on_value_changed_callback = function(new_value)
       self:onValueChanged(new_value)
     end,

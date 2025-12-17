@@ -182,6 +182,35 @@ impl ChapterStorage {
         Ok(poster_path)
     }
 
+    pub fn get_stored_chapter_and_errors(
+        &self,
+        id: &ChapterId,
+    ) -> anyhow::Result<
+        Option<(
+            PathBuf,
+            Option<Vec<crate::chapter_downloader::DownloadError>>,
+        )>,
+    > {
+        if let Some(path) = self.get_stored_chapter(id) {
+            let file_errors = self.errors_source_path(&path)?;
+
+            let errors = match std::fs::read(&file_errors) {
+                Ok(buffer) => match serde_json::from_slice::<
+                    Vec<crate::chapter_downloader::DownloadError>,
+                >(&buffer)
+                {
+                    Ok(list) => Some(list),
+                    Err(_) => None,
+                },
+                Err(_) => None,
+            };
+
+            return Ok(Some((path, errors)));
+        }
+
+        Ok(None)
+    }
+
     pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {
         let new_path = self.path_for_chapter(id, false);
         if new_path.exists() {
@@ -212,12 +241,29 @@ impl ChapterStorage {
         self.path_for_chapter(id, is_novel)
     }
 
+    pub fn errors_source_path(&self, path: &PathBuf) -> anyhow::Result<std::path::PathBuf> {
+        let parent = path
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!(".errors file has no parent directory"))?;
+
+        let file_stem = path
+            .file_stem()
+            .ok_or_else(|| anyhow::anyhow!(".errors file has no filename stem"))?
+            .to_str()
+            .ok_or_else(|| anyhow::anyhow!("Filename is not valid UTF-8"))?;
+
+        let meta_name = format!(".{}.errors", file_stem);
+
+        Ok(parent.join(meta_name))
+    }
+
     // FIXME depending on `NamedTempFile` here is pretty ugly
     pub async fn persist_chapter(
         &self,
         id: &ChapterId,
         is_novel: bool,
         temporary_file: NamedTempFile,
+        errors: &Vec<crate::chapter_downloader::DownloadError>,
     ) -> Result<PathBuf> {
         let mut current_size = self.calculate_storage_size();
         let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.size());
@@ -245,6 +291,17 @@ impl ChapterStorage {
         let path = self.path_for_chapter(id, is_novel);
         temporary_file.persist(&path)?;
 
+        if errors.len() > 0 {
+            let _ = std::fs::write(
+                &self.errors_source_path(&path)?,
+                serde_json::to_vec(&errors)?,
+            );
+        } else {
+            let _ = std::fs::remove_file(
+                &self.errors_source_path(&path)?
+            );
+        }
+
         Ok(path)
     }
 
@@ -257,6 +314,7 @@ impl ChapterStorage {
         Ok(())
     }
 
+    // cache this function
     fn calculate_storage_size(&self) -> Size {
         let size_in_bytes: u64 = self
             .chapter_files_iterator()

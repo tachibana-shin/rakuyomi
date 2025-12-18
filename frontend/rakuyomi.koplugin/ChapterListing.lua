@@ -897,7 +897,6 @@ function ChapterListing:readContinue(nextChapter)
     return
   end
 
-  local ConfirmBox = require("ui/widget/confirmbox")
   local getChapterDisplayName = require("utils/getChapterDisplayName")
 
   local confirm_dialog

@@ -110,7 +110,7 @@ pub async fn ensure_chapter_is_in_storage(
         Vec::<DownloadError>::from([])
     } else {
         download_chapter_pages_as_cbz(
-            &token.clone(),
+            &token,
             &temporary_file,
             metadata,
             source,

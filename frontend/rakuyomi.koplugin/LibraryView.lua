@@ -226,8 +226,9 @@ function LibraryView:onPrimaryMenuChoice(item)
       self:fetchAndShow()
     end
 
-    ChapterListing:fetchAndShow(manga, onReturnCallback, true)
-    self:onClose()
+    if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+      self:onClose()
+    end
   end)
 end
 
@@ -779,9 +780,9 @@ function LibraryView:searchMangas(search_text)
       self:fetchAndShow()
     end
 
-    MangaSearchResults:searchAndShow(search_text, onReturnCallback)
-
-    self:onClose()
+    if MangaSearchResults:searchAndShow(search_text, onReturnCallback) then
+      self:onClose()
+    end
   end)
 end
 

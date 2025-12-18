@@ -99,10 +99,10 @@ end
 --- Searches for mangas and shows the results.
 --- @param search_text string The text to be searched for.
 --- @param onReturnCallback any
+--- @return boolean
 function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
-  local cancel = false
   local cancel_id = Backend.createCancelId()
-  local response = LoadingDialog:showAndRun(
+  local response, cancelled = LoadingDialog:showAndRun(
     "Searching for \"" .. search_text .. "\"",
     function() return Backend.searchMangas(cancel_id, search_text) end,
     function()
@@ -113,19 +113,17 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
         text = "Search cancelled.",
       }
       UIManager:show(cancelledMessage)
-
-      cancel = true
     end
   )
 
-  if cancel then
-    return
+  if cancelled then
+    return false
   end
 
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
 
-    return
+    return false
   end
 
   local results = response.body
@@ -140,6 +138,8 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   UIManager:show(ui)
 
   Testing:emitEvent("manga_search_results_shown")
+
+  return true
 end
 
 --- @private
@@ -152,9 +152,9 @@ function MangaSearchResults:onPrimaryMenuChoice(item)
       UIManager:show(self)
     end
 
-    ChapterListing:fetchAndShow(manga, onReturnCallback)
-
-    UIManager:close(self)
+    if ChapterListing:fetchAndShow(manga, onReturnCallback) then
+      UIManager:close(self)
+    end
   end)
 end
 

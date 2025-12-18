@@ -11,7 +11,7 @@ local LoadingDialog = {}
 --- @param message string The message to be shown on the dialog.
 --- @param runnable fun(): T The function to be ran while showing the dialog.
 --- @param onCancel fun()?: T An optional function to be called if the dialog is dismissed/cancelled.
---- @return T
+--- @return T, boolean
 function LoadingDialog:showAndRun(message, runnable, onCancel, bypass_trapper_check)
   if not bypass_trapper_check then
     assert(Trapper:isWrapped(), "expected to be called inside a function wrapped with `Trapper:wrap()`")
@@ -22,18 +22,14 @@ function LoadingDialog:showAndRun(message, runnable, onCancel, bypass_trapper_ch
     dismissable = onCancel ~= nil,
   }
 
+  local cancelled = false
   if (onCancel ~= nil) then
     -- Override the dismiss handler to call `onCancel`.
     local originalOnTapClose = message_dialog.onTapClose
     message_dialog.onTapClose = function(self)
+      cancelled = true
       onCancel()
       originalOnTapClose(self)
-    end
-
-    local originalOnAnyKeyPressed = message_dialog.onAnyKeyPressed
-    message_dialog.onAnyKeyPressed = function(self)
-      onCancel()
-      originalOnAnyKeyPressed(self)
     end
   end
 
@@ -47,7 +43,7 @@ function LoadingDialog:showAndRun(message, runnable, onCancel, bypass_trapper_ch
 
   UIManager:close(message_dialog)
 
-  return return_values
+  return return_values, cancelled
 end
 
 return LoadingDialog

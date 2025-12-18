@@ -205,7 +205,7 @@ async fn check_mangas_update(
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let _ =
-        usecases::check_mangas_update(&token, &database, &chapter_storage, &source_manager).await;
+        usecases::check_mangas_update(&token.0, &database, &chapter_storage, &source_manager).await;
 
     Ok(Json(()))
 }
@@ -241,7 +241,7 @@ async fn get_mangas(
     let database = database.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let results = cancel_after(&token, Duration::from_secs(120), |token| {
+    let results = cancel_after(&token.0, Duration::from_secs(120), |token| {
         usecases::search_mangas(source_manager, &database, token, q)
     })
     .await
@@ -391,7 +391,7 @@ async fn handle_source_notification(
 ) -> Result<Json<()>, AppError> {
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    cancel_after(&token, Duration::from_secs(120), |token| {
+    cancel_after(&token.0, Duration::from_secs(120), |token| {
         source.handle_notification_next(token, params.key)
     })
     .await?;
@@ -445,7 +445,7 @@ async fn refresh_manga_chapters(
     let database = database.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_chapters(&token, &database, &source, &manga_id, 60).await;
+    let _ = usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await;
 
     Ok(Json(()))
 }
@@ -491,7 +491,7 @@ async fn refresh_manga_details(
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let _ = usecases::refresh_manga_details(
-        &token,
+        &token.0,
         &database,
         &chapter_storage,
         &source,
@@ -556,7 +556,7 @@ async fn download_manga_chapter(
     let chapter_storage = &*chapter_storage.lock().await;
     let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap();
     let output_path = usecases::fetch_manga_chapter(
-        &token,
+        &token.0,
         &database,
         &source,
         chapter_storage,
@@ -650,12 +650,27 @@ async fn set_manga_preferred_scanlator(
     Ok(Json(()))
 }
 
+type CancelTokenStore =
+    std::sync::Arc<tokio::sync::Mutex<std::collections::HashMap<usize, CancellationToken>>>;
+struct TokenGuard(CancellationToken, CancelTokenStore, Option<usize>);
+
+impl Drop for TokenGuard {
+    fn drop(&mut self) {
+        if let Some(cancel_id) = self.2 {
+            let store = self.1.clone();
+
+            tokio::spawn(async move {
+                let mut store = store.lock().await;
+                store.remove(&cancel_id);
+            });
+        }
+    }
+}
+
 async fn create_token(
-    cancel_token_store: std::sync::Arc<
-        tokio::sync::Mutex<std::collections::HashMap<usize, CancellationToken>>,
-    >,
+    cancel_token_store: CancelTokenStore,
     cancel_id: Option<usize>,
-) -> CancellationToken {
+) -> TokenGuard {
     let token = CancellationToken::new();
 
     if let Some(cancel_id) = cancel_id {
@@ -666,19 +681,9 @@ async fn create_token(
                 warn!("cancel token already in use: {}", cancel_id);
             }
         }
-
-        let store_clone = cancel_token_store.clone();
-        let token_clone = token.clone();
-
-        tokio::spawn(async move {
-            token_clone.cancelled().await;
-
-            let mut store = store_clone.lock().await;
-            store.remove(&cancel_id);
-        });
     }
 
-    token
+    TokenGuard(token, cancel_token_store, cancel_id)
 }
 
 async fn cancel_after<F, Fut>(token: &CancellationToken, duration: Duration, f: F) -> Fut::Output

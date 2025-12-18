@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 
 use scraper::{Html as CHtml, Selector};
-use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
@@ -86,17 +85,13 @@ type FFIResult = Result<i32>;
 fn parse(
     mut caller: Caller<'_, WasmStore>,
     data: Option<String>,
-    base_url: Option<String>,
+    base_uri: Option<String>,
 ) -> FFIResult {
     let store = caller.data_mut();
 
     let Some(text) = data else {
         return ResultContext::InvalidString.into();
     };
-    let Some(base_url_string) = base_url else {
-        return ResultContext::InvalidString.into();
-    };
-    let base_uri = Url::parse(&base_url_string).ok();
     let document = CHtml::parse_document(&text);
     let node_id = document.root_element().id();
 
@@ -115,18 +110,14 @@ fn parse(
 pub fn parse_fragment(
     mut caller: Caller<'_, WasmStore>,
     data: Option<String>,
-    uri: Option<String>,
+    base_uri: Option<String>,
 ) -> FFIResult {
     let store = caller.data_mut();
 
     let Some(text) = data else {
         return ResultContext::InvalidString.into();
     };
-    let Some(base_url_string) = uri else {
-        return ResultContext::InvalidString.into();
-    };
 
-    let base_uri = Url::parse(&base_url_string).ok();
     let document = CHtml::parse_fragment(&text);
     let node_id = document.root_element().id();
 

@@ -57,7 +57,7 @@ unsafe impl Sync for Html {}
 pub struct HTMLElement {
     pub document: Parc<Html>,
     pub node_id: NodeId,
-    pub base_uri: Option<Url>,
+    pub base_uri: Option<String>,
 }
 
 impl HTMLElement {

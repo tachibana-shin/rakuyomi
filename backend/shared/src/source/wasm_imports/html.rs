@@ -2,7 +2,6 @@ use anyhow::{anyhow, Context, Result};
 
 use kuchiki::traits::TendrilSink;
 use scraper::{Element, Html as ScraperHtml, Node, Selector};
-use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
@@ -67,18 +66,15 @@ fn parse_fragment(caller: Caller<'_, WasmStore>, data: Option<String>) -> Result
 fn parse_with_uri(
     mut caller: Caller<'_, WasmStore>,
     data: Option<String>,
-    uri: Option<String>,
+    base_uri: Option<String>,
 ) -> Result<i32> {
     let document =
         ScraperHtml::parse_document(&data.context("data is required for parse_with_uri")?);
     let node_id = document.root_element().id();
-    let uri = uri
-        .map(|u| Url::parse(&u).context("invalid URI"))
-        .transpose()?;
     let html_element = HTMLElement {
         document: Html::from(document).into(),
         node_id,
-        base_uri: uri,
+        base_uri,
     };
 
     let wasm_store = caller.data_mut();
@@ -90,18 +86,15 @@ fn parse_with_uri(
 fn parse_fragment_with_uri(
     mut caller: Caller<'_, WasmStore>,
     data: Option<String>,
-    uri: Option<String>,
+    base_uri: Option<String>,
 ) -> Result<i32> {
     let fragment =
         ScraperHtml::parse_fragment(&data.context("data is required for parse_fragment_with_uri")?);
     let node_id = fragment.root_element().id();
-    let uri = uri
-        .map(|u| Url::parse(&u).context("invalid URI"))
-        .transpose()?;
     let html_element = HTMLElement {
         document: Html::from(fragment).into(),
         node_id,
-        base_uri: uri,
+        base_uri,
     };
 
     let wasm_store = caller.data_mut();
@@ -192,9 +185,10 @@ pub fn attr(
         let base_uri = elements
             .iter()
             .find_map(|element| element.base_uri.as_ref())
-            .context("base URI not found")?;
+            .map_or("", |v| v);
 
-        let absolute_url = base_uri
+        let absolute_url = url::Url::parse(base_uri)
+            .unwrap_or_else(|_| url::Url::parse("file:///").unwrap())
             .join(&attr)
             .context("failed to join base URI and attribute URL")?;
 
@@ -468,11 +462,7 @@ pub fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Resul
     }
     .context("expected a single HTMLElement")?;
 
-    let base_uri = element
-        .base_uri
-        .as_ref()
-        .context("base URI not found")?
-        .to_string();
+    let base_uri = element.base_uri.unwrap_or("".to_string());
 
     Ok(wasm_store.store_std_value(Value::from(base_uri).into(), Some(descriptor)) as i32)
 }

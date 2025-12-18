@@ -35,14 +35,16 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
     c.bench_function("download_chapter_pages_as_cbz", |b| {
-        b.to_async(&runtime).iter(|| {
+        b.to_async(&runtime).iter(async || {
             download_chapter_pages_as_cbz(
+                &CancellationToken::new(),
                 io::Cursor::new(Vec::new()),
                 metadata.clone(),
                 &source,
                 pages.clone(),
                 4,
             )
+            .await;
         })
     });
 }

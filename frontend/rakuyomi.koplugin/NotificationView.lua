@@ -528,8 +528,10 @@ function NotificationView:onMenuSelect(item)
       },
       title = notify.manga_title
     }
-    ChapterListing:fetchAndShow(manga, onReturnCallback, true)
-    self:onClose(false)
+
+    if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+      self:onClose(false)
+    end
   end)
 end
 

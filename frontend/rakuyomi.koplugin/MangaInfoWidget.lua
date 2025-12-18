@@ -127,9 +127,9 @@ function MangaInfoWidget:getStatusContent(width, manga)
       end
 
       local ChapterListing = require("ChapterListing")
-      ChapterListing:fetchAndShow(raw_manga, onReturnCallback, true, true)
-
-      self:onClose(false)
+      if ChapterListing:fetchAndShow(raw_manga, onReturnCallback, true, true) then
+        self:onClose(false)
+      end
     end,
     show_parent = self,
   }
@@ -537,19 +537,25 @@ end
 --- @param source_id string
 --- @param manga_id string
 function MangaInfoWidget:refreshDetails(source_id, manga_id)
+  local cancel_id = Backend.createCancelId()
   Trapper:wrap(function()
-    local refresh_details_response = LoadingDialog:showAndRun(
+    local refresh_details_response, cancelled = LoadingDialog:showAndRun(
       "Refreshing details...",
       function()
-        return Backend.refreshMangaDetails(source_id, manga_id)
+        return Backend.refreshMangaDetails(cancel_id, source_id, manga_id)
       end,
       function()
+        Backend.cancel(cancel_id)
         local cancelledMessage = InfoMessage:new {
-          text = "Cancelled.",
+          text = "Refresh details cancelled.",
         }
         UIManager:show(cancelledMessage)
       end
     )
+
+    if cancelled then
+      return
+    end
 
     if refresh_details_response.type == 'ERROR' then
       ErrorDialog:show(refresh_details_response.message)
@@ -586,7 +592,7 @@ function MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callbac
   end
 
   Trapper:wrap(function()
-    Backend.refreshMangaDetails(raw_manga.source.id, raw_manga.id)
+    Backend.refreshMangaDetails(Backend.createCancelId(), raw_manga.source.id, raw_manga.id)
   end)
 
   ---@diagnostic disable-next-line: redundant-parameter

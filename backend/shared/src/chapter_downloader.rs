@@ -38,6 +38,7 @@ pub struct DownloadError {
 }
 
 pub async fn ensure_chapter_is_in_storage(
+    token: &CancellationToken,
     chapter_storage: &ChapterStorage,
     source: &Source,
     manga: &MangaInformation,
@@ -54,7 +55,7 @@ pub async fn ensure_chapter_is_in_storage(
     // FIXME like downloaderror is a really bad name??
     let pages = source
         .get_page_list(
-            CancellationToken::new(),
+            token.clone(),
             chapter.id.manga_id().value().clone(),
             chapter.id.value().clone(),
             chapter.chapter_number.unwrap_or_default().to_f64(),
@@ -109,6 +110,7 @@ pub async fn ensure_chapter_is_in_storage(
         Vec::<DownloadError>::from([])
     } else {
         download_chapter_pages_as_cbz(
+            &token,
             &temporary_file,
             metadata,
             source,
@@ -337,6 +339,7 @@ fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
 }
 
 pub async fn download_chapter_pages_as_cbz<W>(
+    cancel_token: &CancellationToken,
     output: W,
     metadata: ComicInfo,
     source: &Source,
@@ -370,7 +373,7 @@ where
     tokio::spawn({
         let client = client.clone();
         let source = source.clone();
-        let cancel_token = CancellationToken::new();
+        let cancel_token = cancel_token.clone();
 
         async move {
             stream::iter(pages)

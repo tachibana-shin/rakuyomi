@@ -189,7 +189,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     let warn_cancellation = || {
         warn!(
             "request to {:?} was cancelled mid-flight!",
-            &request_builder.url
+            &request_builder.url.as_ref().map(|u| u.to_string())
         );
     };
 

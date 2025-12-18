@@ -4,6 +4,7 @@ use shared::{
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 
 use crate::{AppError, ErrorResponse};
 
@@ -57,9 +58,10 @@ impl DownloadChapterJob {
                 .cloned()
                 .ok_or(AppError::SourceNotFound)?
         };
-        let db = db.lock().await;
+        let db: tokio::sync::MutexGuard<'_, Database> = { db.lock().await };
 
         Ok(usecases::fetch_manga_chapter(
+            &CancellationToken::new(),
             &db,
             &source,
             &chapter_storage,

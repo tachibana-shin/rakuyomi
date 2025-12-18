@@ -45,6 +45,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     return;
                 },
                 result = ensure_chapter_is_in_storage(
+                    &cancellation_token,
                     chapter_storage,
                     source,
                     &manga,

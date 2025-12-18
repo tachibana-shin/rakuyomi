@@ -302,12 +302,14 @@ function Backend.removeMangaFromLibrary(source_id, manga_id)
 end
 
 --- Searches manga from the manga sources.
+--- @param cancel_id number
 --- @return SuccessfulResponse<Manga[]>|ErrorResponse
-function Backend.searchMangas(search_text)
+function Backend.searchMangas(cancel_id, search_text)
   return Backend.requestJson({
     path = "/mangas",
     query_params = {
-      q = search_text
+      q = search_text,
+      cancel_id = cancel_id,
     }
   })
 end
@@ -321,11 +323,15 @@ function Backend.listCachedChapters(source_id, manga_id)
 end
 
 --- Refreshes the chapters of a given manga on the database.
+--- @param cancel_id number
+--- @param source_id string
+--- @param manga_id string
 --- @return SuccessfulResponse<{}>|ErrorResponse
-function Backend.refreshChapters(source_id, manga_id)
+function Backend.refreshChapters(cancel_id, source_id, manga_id)
   return Backend.requestJson({
     path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/refresh-chapters",
     method = "POST",
+    body = cancel_id,
   })
 end
 
@@ -338,11 +344,15 @@ function Backend.cachedMangaDetails(source_id, manga_id)
 end
 
 --- Refreshes the details of a given manga on the database.
+--- @param cancel_id number
+--- @param source_id string
+--- @param manga_id string
 --- @return SuccessfulResponse<{}>|ErrorResponse
-function Backend.refreshMangaDetails(source_id, manga_id)
+function Backend.refreshMangaDetails(cancel_id, source_id, manga_id)
   return Backend.requestJson({
     path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/refresh-details",
     method = "POST",
+    body = cancel_id,
   })
 end
 
@@ -397,8 +407,13 @@ end
 --- @field attempts number
 
 --- Downloads the given chapter to the storage.
---- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
-function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
+--- @param cancel_id number
+--- @param source_id string
+--- @param manga_id string
+--- @param chapter_id string
+--- @param chapter_num string
+--- @return SuccessfulResponse<string>|ErrorResponse
+function Backend.downloadChapter(cancel_id, source_id, manga_id, chapter_id, chapter_num)
   local query_params = {}
 
   if chapter_num ~= nil then
@@ -409,6 +424,7 @@ function Backend.downloadChapter(source_id, manga_id, chapter_id, chapter_num)
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/download",
     query_params = query_params,
+    body = cancel_id,
     method = "POST",
   })
 end
@@ -715,13 +731,31 @@ function Backend.clearNotifications()
   })
 end
 
+local idx = 0
+function Backend.createCancelId()
+  idx = idx + 1
+  return idx
+end
+
+--- @param cancel_id number
 --- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.cancel(cancel_id)
+  return Backend.requestJson({
+    path = "/cancel-request",
+    method = 'POST',
+    body = cancel_id,
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+--- @param cancel_id number
 --- @param source_id string
 ---@param key string
-function Backend.handleSourceNotification(source_id, key)
+function Backend.handleSourceNotification(cancel_id, source_id, key)
   return Backend.requestJson({
-    path = "/" .. source_id .. "/handle-source-notification/" .. key,
-    method = 'POST'
+    path         = "/" .. source_id .. "/handle-source-notification/" .. key,
+    query_params = { cancel_id = cancel_id },
+    method       = 'POST'
   })
 end
 

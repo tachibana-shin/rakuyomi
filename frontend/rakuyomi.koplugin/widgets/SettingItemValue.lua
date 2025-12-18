@@ -173,7 +173,10 @@ function SettingItemValue:createValueWidget()
             Trapper:wrap(function()
               local response = LoadingDialog:showAndRun(
                 _("Executing..."),
-                function() return Backend.handleSourceNotification(self.source_id, self.value_definition.key) end
+                function()
+                  return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
+                    self.value_definition.key)
+                end
               )
 
               if response.type == 'ERROR' then

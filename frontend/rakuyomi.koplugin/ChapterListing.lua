@@ -3,6 +3,7 @@ local ButtonDialog = require("ui/widget/buttondialog")
 local InfoMessage = require("ui/widget/infomessage")
 local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
+local ConfirmBox = require("ui/widget/confirmbox")
 local Trapper = require("ui/trapper")
 local Screen = require("device").screen
 local logger = require("logger")
@@ -276,36 +277,36 @@ end
 --- @param accept_cached_results? boolean If set, failing to refresh the list of chapters from the source
 --- will not show an error. Defaults to false.
 --- @param bypass_trapper_check? boolean If set to true, will not check whether the function
+--- @return boolean
 function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results, bypass_trapper_check)
   accept_cached_results = accept_cached_results or false
 
-  local cancelled = false
-  local refresh_chapters_response = LoadingDialog:showAndRun(
+  local cancel_id = Backend.createCancelId()
+  local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
     "Refreshing chapters...",
     function()
-      return Backend.refreshChapters(manga.source.id, manga.id)
+      return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
     end,
     function()
-      -- No cancellation support for now
+      Backend.cancel(cancel_id)
+
       local cancelledMessage = InfoMessage:new {
         text = "Cancelled.",
       }
       UIManager:show(cancelledMessage)
-
-      cancelled = true
     end,
     bypass_trapper_check
   )
 
   if cancelled then
-    return
+    return false
   end
 
   if refresh_chapters_response.type == 'ERROR' then
     ErrorDialog:show('Refresh chapter error\n\n' .. refresh_chapters_response.message)
 
     if not accept_cached_results then
-      return
+      return false
     end
   end
 
@@ -314,7 +315,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
 
-    return
+    return false
   end
 
   local settings = response.body
@@ -330,6 +331,8 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   UIManager:show(ui)
 
   Testing:emitEvent("chapter_listing_shown")
+
+  return true
 end
 
 --- @private
@@ -473,18 +476,24 @@ end
 --- @private
 function ChapterListing:refreshChapters()
   Trapper:wrap(function()
-    local refresh_chapters_response = LoadingDialog:showAndRun(
+    local cancel_id = Backend.createCancelId()
+    local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
       "Refreshing chapters...",
       function()
-        return Backend.refreshChapters(self.manga.source.id, self.manga.id)
+        return Backend.refreshChapters(cancel_id, self.manga.source.id, self.manga.id)
       end,
       function()
+        Backend.cancel(cancel_id)
         local cancelledMessage = InfoMessage:new {
           text = "Cancelled.",
         }
         UIManager:show(cancelledMessage)
       end
     )
+
+    if cancelled then
+      return
+    end
 
     if refresh_chapters_response.type == 'ERROR' then
       ErrorDialog:show(refresh_chapters_response.message)
@@ -597,7 +606,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
 
     local time = require("ui/time")
     local start_time = time.now()
-    local response = LoadingDialog:showAndRun(
+    local response, cancelled = LoadingDialog:showAndRun(
       "Downloading chapter..."
       .. '\nCh.' .. (chapter.chapter_num or 'unknown')
       .. ' '
@@ -614,6 +623,10 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
         UIManager:show(cancelledMessage)
       end
     )
+
+    if cancelled then
+      return
+    end
 
     if response.type == 'ERROR' then
       ErrorDialog:show(response.message)
@@ -884,7 +897,6 @@ function ChapterListing:readContinue(nextChapter)
     return
   end
 
-  local ConfirmBox = require("ui/widget/confirmbox")
   local getChapterDisplayName = require("utils/getChapterDisplayName")
 
   local confirm_dialog

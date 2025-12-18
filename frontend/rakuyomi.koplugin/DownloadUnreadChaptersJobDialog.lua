@@ -9,6 +9,7 @@ local logger = require('logger')
 --- @field show_parent unknown
 --- @field cancellation_requested boolean
 --- @field dismiss_callback fun():nil|nil
+--- @field new any
 local DownloadUnreadChaptersJobDialog = InputContainer:extend {
   show_parent = nil,
   modal = true,

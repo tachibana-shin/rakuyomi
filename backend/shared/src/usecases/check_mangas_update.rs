@@ -3,6 +3,7 @@ use std::{collections::HashSet, sync::atomic::AtomicBool};
 
 use anyhow::{bail, Result};
 use once_cell::sync::Lazy;
+use tokio_util::sync::CancellationToken;
 
 use crate::settings::Settings;
 use crate::{
@@ -17,6 +18,7 @@ use crate::{
 };
 
 pub async fn check_mangas_update(
+    token: &CancellationToken,
     db: &Database,
     chapter_storage: &ChapterStorage,
     source_manager: &SourceManager,
@@ -25,7 +27,7 @@ pub async fn check_mangas_update(
 
     for (manga, status) in mangas_library {
         if let Err(error) =
-            check_manga_update(db, chapter_storage, source_manager, &manga, &status).await
+            check_manga_update(token, db, chapter_storage, source_manager, &manga, &status).await
         {
             eprintln!("Warn[{}]: {}", manga.value(), error);
             continue;
@@ -34,6 +36,7 @@ pub async fn check_mangas_update(
 }
 
 async fn check_manga_update(
+    token: &CancellationToken,
     db: &Database,
     chapter_storage: &ChapterStorage,
     source_manager: &SourceManager,
@@ -62,7 +65,7 @@ async fn check_manga_update(
         )
     };
 
-    let status = match refresh_manga_details(db, chapter_storage, source, &manga, 60).await {
+    let status = match refresh_manga_details(token, db, chapter_storage, source, &manga, 60).await {
         Ok(status) => {
             if status == PublishingStatus::Completed {
                 db.delete_last_check_update_manga(&manga).await;
@@ -81,7 +84,7 @@ async fn check_manga_update(
     };
 
     let old_chapters = db.find_cached_chapter_informations(&manga).await;
-    let new_chapters = match refresh_manga_chapters(db, source, &manga, 60).await {
+    let new_chapters = match refresh_manga_chapters(token, db, source, &manga, 60).await {
         Ok(chaps) => chaps,
         Err(err) => {
             bail!(
@@ -160,6 +163,7 @@ pub async fn run_manga_cron(
     CRON_RUNNING.store(true, Ordering::SeqCst);
 
     println!("Cron started");
+    let token = &CancellationToken::new();
     loop {
         let now = chrono::Utc::now().timestamp();
         let source_skip_cron = settings.source_skip_cron.clone().unwrap_or("".to_owned());
@@ -169,7 +173,7 @@ pub async fn run_manga_cron(
         if next_manga.is_none() {
             println!("Next manga not found. Re-check all mangas");
 
-            check_mangas_update(&db, &chapter_storage, &source_manager).await;
+            check_mangas_update(token, &db, &chapter_storage, &source_manager).await;
             next_manga = db.get_next_ts_arima_min(&skip_sources).await;
 
             if next_manga.is_none() {
@@ -195,8 +199,15 @@ pub async fn run_manga_cron(
                 continue;
             }
 
-            if let Err(err) =
-                check_manga_update(&db, &chapter_storage, &source_manager, &manga_id, &status).await
+            if let Err(err) = check_manga_update(
+                token,
+                &db,
+                &chapter_storage,
+                &source_manager,
+                &manga_id,
+                &status,
+            )
+            .await
             {
                 eprintln!(
                     "[ERROR] check_mangas_update failed for {}: {:?}",

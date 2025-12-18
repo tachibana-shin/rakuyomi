@@ -301,9 +301,13 @@ function Backend.removeMangaFromLibrary(source_id, manga_id)
   })
 end
 
+--- @class SearchError
+--- @field source_id string
+--- @field reason string
+
 --- Searches manga from the manga sources.
 --- @param cancel_id number
---- @return SuccessfulResponse<Manga[]>|ErrorResponse
+--- @return SuccessfulResponse<[Manga[], SearchError[]]>|ErrorResponse
 function Backend.searchMangas(cancel_id, search_text)
   return Backend.requestJson({
     path = "/mangas",

@@ -2,6 +2,7 @@ local ButtonDialog = require("ui/widget/buttondialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
+local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext")
 
 local Backend = require("Backend")
@@ -96,6 +97,30 @@ function MangaSearchResults:onReturn()
   self:onClose()
 end
 
+--- @param errors SearchError[]
+local function formatSearchErrors(errors)
+  if not errors or #errors == 0 then
+    return "No errors"
+  end
+
+  local max_items = 5
+  local lines = {}
+
+  for i = 1, math.min(#errors, max_items) do
+    local err = errors[i]
+    table.insert(lines, string.format(
+      "Source %d | %s",
+      err.source_id,
+      err.reason
+    ))
+  end
+
+  if #errors > max_items then
+    table.insert(lines, string.format("… and %d more errors", #errors - max_items))
+  end
+
+  return table.concat(lines, "\n")
+end
 --- Searches for mangas and shows the results.
 --- @param search_text string The text to be searched for.
 --- @param onReturnCallback any
@@ -126,7 +151,13 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
     return false
   end
 
-  local results = response.body
+  if #response.body[2] > 0 then
+    UIManager:show(InfoMessage:new {
+      text = formatSearchErrors(response.body[2])
+    })
+  end
+
+  local results = response.body[1]
 
   local ui = MangaSearchResults:new {
     results = results,

@@ -236,21 +236,20 @@ async fn get_mangas(
         ..
     }): StateExtractor<State>,
     Query(GetMangasQuery { cancel_id, q }): Query<GetMangasQuery>,
-) -> Result<Json<Vec<Manga>>, AppError> {
-    let source_manager = &*source_manager.lock().await;
-    let database = database.lock().await;
+) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
+    let source_manager = { &*source_manager.lock().await };
+    let database = { database.lock().await };
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let results = cancel_after(&token.0, Duration::from_secs(120), |token| {
-        usecases::search_mangas(source_manager, &database, token, q)
+    let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(120), |token| {
+        usecases::search_mangas(source_manager, &database, token, q, 60)
     })
     .await
-    .map_err(AppError::from_search_mangas_error)?
-    .into_iter()
-    .map(Manga::from)
-    .collect();
+    .map_err(AppError::from_search_mangas_error)?;
 
-    Ok(Json(results))
+    let results = mangas.into_iter().map(Manga::from).collect();
+
+    Ok(Json((results, errors)))
 }
 
 async fn post_cancel_request(

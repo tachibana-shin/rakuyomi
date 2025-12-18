@@ -653,8 +653,10 @@ impl Drop for TokenGuard {
         if let Some(cancel_id) = self.2 {
             let store = self.1.clone();
 
-            let mut store = store.blocking_lock();
-            store.remove(&cancel_id);
+            tokio::spawn(async move {
+                let mut store = store.lock().await;
+                store.remove(&cancel_id);
+            });
         }
     }
 }

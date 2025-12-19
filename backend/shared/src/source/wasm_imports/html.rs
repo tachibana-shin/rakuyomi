@@ -143,6 +143,16 @@ pub fn select(
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
 }
 
+#[derive(Debug)]
+pub struct AttributeNotFound;
+
+impl std::fmt::Display for AttributeNotFound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "attribute not found")
+    }
+}
+
+impl std::error::Error for AttributeNotFound {}
 #[aidoku_wasm_function]
 pub fn attr(
     mut caller: Caller<'_, WasmStore>,
@@ -178,7 +188,7 @@ pub fn attr(
         })
         .find(|element| element.is_some())
         .flatten()
-        .context("attribute not found")?
+        .context(AttributeNotFound)?
         .to_string();
 
     let attr = if has_abs_prefix {

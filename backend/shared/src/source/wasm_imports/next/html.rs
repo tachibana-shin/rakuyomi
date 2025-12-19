@@ -210,7 +210,19 @@ fn select_first(
 }
 #[aidoku_wasm_function]
 fn attr(caller: Caller<'_, WasmStore>, ptr: i32, selector: Option<String>) -> Result<i32> {
-    crate::source::wasm_imports::html::attr(caller, ptr, selector)
+    match crate::source::wasm_imports::html::attr(caller, ptr, selector) {
+        Ok(v) => Ok(v),
+        Err(err) => {
+            if err
+                .downcast_ref::<crate::source::wasm_imports::html::AttributeNotFound>()
+                .is_some()
+            {
+                return ResultContext::NoResult.into();
+            } else {
+                return Err(err);
+            }
+        }
+    }
 }
 #[aidoku_wasm_function]
 fn text(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {

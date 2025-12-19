@@ -26,6 +26,92 @@ local Settings = FocusManager:extend {
   paths = { 0 }
 }
 
+
+--- @type [string, ValueDefinition][]
+Settings.setting_value_definitions = {
+  {
+    'chapter_sorting_mode',
+    {
+      type = 'enum',
+      title = 'Chapter sorting mode',
+      options = {
+        { label = 'By chapter ascending',  value = 'chapter_ascending' },
+        { label = 'By chapter descending', value = 'chapter_descending' },
+      }
+    }
+  },
+  {
+    'library_sorting_mode',
+    {
+      type = 'enum',
+      title = 'Library sorting mode',
+      options = {
+        { label = 'Ascending (Default)', value = 'ascending' },
+        { label = 'Descending',          value = 'descending' },
+        { label = 'Title Asc',           value = 'title_asc' },
+        { label = 'Title Desc',          value = 'title_desc' },
+        { label = 'Unread Asc',          value = 'unread_asc' },
+        { label = 'Unread Desc',         value = 'unread_desc' },
+      }
+    }
+  },
+  {
+    'storage_path',
+    {
+      type = 'path',
+      title = 'Chapter storage path',
+      path_type = 'directory',
+      default = Paths.getHomeDirectory() .. '/downloads',
+    }
+  },
+  {
+    'storage_size_limit_mb',
+    {
+      type = 'integer',
+      title = 'Storage size limit',
+      min_value = 1,
+      max_value = 10240,
+      unit = 'MB'
+    }
+  },
+  {
+    'concurrent_requests_pages',
+    {
+      type = 'integer',
+      title = 'Concurrent page requests',
+      min_value = 1,
+      max_value = 20,
+      unit = 'pages',
+      default = Device.isKindle() and 4 or 5
+    }
+  },
+  {
+    'api_sync',
+    {
+      type = 'string',
+      title = 'WebDAV Sync',
+      placeholder = 'user:password@example.com/folder',
+    }
+  },
+  {
+    'enabled_cron_check_mangas_update',
+    {
+      type = 'boolean',
+      title = 'Enabled cron check for manga updates',
+      -- default = true,
+    }
+  },
+  {
+    'source_skip_cron',
+    {
+      type = 'string',
+      title = 'Source IDs skip check update',
+      placeholder = 'com.manga,com.manga2'
+    }
+  }
+}
+
+
 --- @private
 function Settings:init()
   self.dimen = Geom:new {
@@ -49,95 +135,11 @@ function Settings:init()
 
   self.item_width = self.inner_dimen.w - 2 * padding
 
-  --- @type [string, ValueDefinition][]
-  local setting_value_definitions = {
-    {
-      'chapter_sorting_mode',
-      {
-        type = 'enum',
-        title = 'Chapter sorting mode',
-        options = {
-          { label = 'By chapter ascending',  value = 'chapter_ascending' },
-          { label = 'By chapter descending', value = 'chapter_descending' },
-        }
-      }
-    },
-    {
-      'library_sorting_mode',
-      {
-        type = 'enum',
-        title = 'Library sorting mode',
-        options = {
-          { label = 'Ascending (Default)', value = 'ascending' },
-          { label = 'Descending',          value = 'descending' },
-          { label = 'Title Asc',           value = 'title_asc' },
-          { label = 'Title Desc',          value = 'title_desc' },
-          { label = 'Unread Asc',          value = 'unread_asc' },
-          { label = 'Unread Desc',         value = 'unread_desc' },
-        }
-      }
-    },
-    {
-      'storage_path',
-      {
-        type = 'path',
-        title = 'Chapter storage path',
-        path_type = 'directory',
-        default = Paths.getHomeDirectory() .. '/downloads',
-      }
-    },
-    {
-      'storage_size_limit_mb',
-      {
-        type = 'integer',
-        title = 'Storage size limit',
-        min_value = 1,
-        max_value = 10240,
-        unit = 'MB'
-      }
-    },
-    {
-      'concurrent_requests_pages',
-      {
-        type = 'integer',
-        title = 'Concurrent page requests',
-        min_value = 1,
-        max_value = 20,
-        unit = 'pages',
-        default = Device.isKindle() and 4 or 5
-      }
-    },
-    {
-      'api_sync',
-      {
-        type = 'string',
-        title = 'WebDAV Sync',
-        placeholder = 'user:password@example.com/folder',
-      }
-    },
-    {
-      'enabled_cron_check_mangas_update',
-      {
-        type = 'boolean',
-        title = 'Enabled cron check for manga updates',
-        -- default = true,
-      }
-    },
-    {
-      'source_skip_cron',
-      {
-        type = 'string',
-        title = 'Source IDs skip check update',
-        placeholder = 'com.manga,com.manga2'
-      }
-    }
-  }
-
   local vertical_group = VerticalGroup:new {
     align = "left",
   }
 
-  for _, tuple in ipairs(setting_value_definitions) do
+  for _, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
 

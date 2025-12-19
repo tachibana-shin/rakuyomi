@@ -27,7 +27,9 @@ local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
 local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 local calcLastReadText = require("utils/calcLastReadText")
+local findEntries = require("utils/findEntries")
 local NotificationView = require("NotificationView")
+local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
@@ -86,10 +88,96 @@ end
 --- @param count_notify number
 function LibraryView:patchTitleBar(count_notify)
   -- custom
+  local left_icon_size_ratio = self.title_bar.left_icon_size_ratio
   local right_icon_size_ratio = self.title_bar.right_icon_size_ratio
   local right_icon_rotation_angle = self.title_bar.right_icon_rotation_angle
+
+  local left_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * left_icon_size_ratio)
   local right_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * right_icon_size_ratio)
   local button_padding = Screen:scaleBySize(11)
+
+  self.title_bar.left_button = HorizontalGroup:new {
+    IconButton:new {
+      icon = "appbar.settings",
+      icon_rotation_angle = self.left_icon_rotation_angle,
+      width = left_icon_size,
+      height = left_icon_size,
+      padding = button_padding,
+      padding_bottom = left_icon_size,
+      callback = self.title_bar.left_icon_tap_callback,
+      hold_callback = self.title_bar.left_icon_hold_callback,
+      allow_flash = self.title_bar.left_icon_allow_flash,
+      show_parent = self.title_bar.show_parent,
+    },
+    IconButton:new {
+      icon = "align.center",
+      width = left_icon_size,
+      height = left_icon_size,
+      padding = button_padding,
+      padding_bottom = right_icon_size,
+      padding_right = 2 * left_icon_size,
+      callback = function()
+        Trapper:wrap(function()
+          local response = Backend.getSettings()
+          if response.type == 'ERROR' then
+            ErrorDialog:show(response.message)
+          end
+
+          local settings = response.body
+
+          local key = "library_sorting_mode"
+          local tuple = findEntries(Settings.setting_value_definitions, key)
+
+          local radio_buttons = {}
+          for _, option in ipairs(tuple.options) do
+            table.insert(radio_buttons, {
+              {
+                text = option.label,
+                provider = option.value,
+                checked = settings[key] == option.value,
+              },
+            })
+          end
+
+          local dialog
+          dialog = RadioButtonWidget:new {
+            title_text = tuple.title,
+            radio_buttons = radio_buttons,
+            callback = function(radio)
+              UIManager:close(dialog)
+
+              settings[key] = radio.provider
+
+              local response = Backend.setSettings(settings)
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+                return
+              end
+
+              local response = Backend.getMangasInLibrary()
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+
+                return
+              end
+
+              local mangas = response.body
+
+              self.mangas_raw = mangas
+              self.favorite_search_keyword = nil
+              self.mangas = mangas
+
+              self:updateItems()
+
+              UIManager:show(dialog)
+            end
+          }
+
+          UIManager:show(dialog)
+        end)
+      end
+    },
+  }
 
   self.title_bar.right_button = HorizontalGroup:new {
     HorizontalSpan:new {
@@ -140,9 +228,12 @@ function LibraryView:patchTitleBar(count_notify)
       hold_callback = self.title_bar.right_icon_hold_callback,
     },
   }
-  --- [1] left button
-  --- [2] title
+  --- [1] title
+  --- [2] left button
   --- [3] right button
+  if self.title_bar[2] ~= nil then
+    self.title_bar[2] = self.title_bar.left_button
+  end
   if self.title_bar[3] ~= nil then
     self.title_bar[3] = self.title_bar.right_button
   end

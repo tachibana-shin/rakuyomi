@@ -1,11 +1,11 @@
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use futures::{stream, StreamExt, TryStreamExt};
-use kuchiki::{parse_html, traits::TendrilSink, NodeRef};
-use reqwest::{header::HeaderMap, redirect::Policy, Client, Request};
-use scraper::{Html, Selector};
+use kuchiki::{parse_html, traits::TendrilSink};
+use reqwest::{redirect::Policy, Client, Request};
+use scraper::Html;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     io::{Cursor, Seek, Write},
     path::{Path, PathBuf},
 };
@@ -13,7 +13,7 @@ use tempfile::NamedTempFile;
 use tokio_util::sync::CancellationToken;
 use url::Url;
 
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, bail, Context};
 use tokio::sync::mpsc;
 use zip::{CompressionMethod, ZipWriter};
 
@@ -87,25 +87,11 @@ pub async fn ensure_chapter_is_in_storage(
     let errors = if is_novel {
         // is novel
         let temp_path = temporary_file.path().to_path_buf();
-        let book_name: String = pages[0].base64.clone().unwrap_or("Unknown".to_string());
-        let cover_url = pages[0].image_url.clone();
-        let p_pages = if matches!(pages[0].text.as_deref(), Some("novel")) {
-            pages.to_vec()[1..].to_owned()
-        } else {
-            pages
-        };
 
-        download_chapter_novel_as_epub(
-            &temporary_file,
-            temp_path,
-            source,
-            p_pages,
-            book_name,
-            cover_url,
-        )
-        .await
-        .with_context(|| "Failed to download chapter pages")
-        .map_err(Error::DownloadError)?;
+        download_chapter_novel_as_epub(&temporary_file, temp_path, source, pages, chapter)
+            .await
+            .with_context(|| "Failed to download chapter pages")
+            .map_err(Error::DownloadError)?;
 
         Vec::<DownloadError>::from([])
     } else {
@@ -508,179 +494,250 @@ where
 
     Ok(errors)
 }
-// assume Page.text: Option<String>, Page.base64: Option<String>, Page.url: String
-pub async fn extract_image_urls(pages: &[Page]) -> anyhow::Result<Vec<(usize, String)>> {
-    // Return Vec of (page_index, src_string)
-    let mut urls = Vec::new();
-    for (i, page) in pages.iter().enumerate() {
-        let html_content = page.text.as_ref().context("Expected text in novel page")?;
-        let doc = Html::parse_fragment(html_content);
-        let selector = Selector::parse("img").unwrap();
-        for img in doc.select(&selector) {
-            if let Some(src) = img.value().attr("src") {
-                urls.push((i, src.to_string()));
-            }
-        }
-    }
-    Ok(urls)
-}
 
-async fn prepare_cover_cursor(
+async fn prepare_cover(
     cover_url: Option<Url>,
     client: &reqwest::Client,
     source: &Source,
-) -> Option<Cursor<Vec<u8>>> {
+) -> anyhow::Result<Option<Vec<u8>>> {
     if let Some(url) = cover_url {
-        let req = source.get_image_request(url, None).await.ok()?;
-        let resp = client.execute(req).await.ok()?.error_for_status().ok()?;
-        let bytes = resp.bytes().await.ok()?;
-        Some(Cursor::new(bytes.to_vec()))
+        let req = source.get_image_request(url, None).await?;
+        let resp = client.execute(req).await?.error_for_status()?;
+        let bytes = resp.bytes().await?;
+        let bytes_vec = bytes.to_vec();
+
+        // Ensure we return JPEG bytes. If already JPEG, return as-is.
+        Ok(match image::guess_format(&bytes_vec) {
+            Ok(image::ImageFormat::Jpeg) => Some(bytes_vec),
+            _ => {
+                // Try to decode and re-encode as JPEG (quality 90).
+                if let Ok(img) = image::load_from_memory(&bytes_vec) {
+                    let mut buf = Vec::new();
+                    if img
+                        .write_to(
+                            &mut std::io::Cursor::new(&mut buf),
+                            image::ImageFormat::Jpeg,
+                        )
+                        .is_ok()
+                    {
+                        Some(buf)
+                    } else {
+                        // fallback to original bytes on failure
+                        Some(bytes_vec)
+                    }
+                } else {
+                    // fallback: return original bytes
+                    Some(bytes_vec)
+                }
+            }
+        })
     } else {
-        None
+        Ok(None)
     }
 }
 
-fn replace_a_with_span(document: &NodeRef) {
-    for a_node in document.select("a").unwrap().collect::<Vec<_>>() {
-        let node = a_node.as_node();
+async fn download_image(
+    url: String,
+    index: usize,
+    source: &Source,
+) -> anyhow::Result<(Vec<u8>, String, String)> {
+    let Some(url) = &Url::parse(&url).ok() else {
+        bail!("Invalid URL: {}", url);
+    };
 
-        let span_node = NodeRef::new_element(
-            markup5ever::QualName::new(
-                None,
-                markup5ever::Namespace::from("http://www.w3.org/1999/xhtml"),
-                markup5ever::LocalName::from("span"),
-            ),
-            None,
-        );
-        for child in node.children() {
-            span_node.append(child);
+    let ext = url
+        .path_segments()
+        .and_then(|s| s.last())
+        .and_then(|name| name.split('.').last())
+        .unwrap_or("jpg");
+
+    let bytes_vec = if url.scheme() == "data" {
+        // Parse data URI
+        let s = url.as_str();
+        let Some(comma_idx) = s.find(',') else {
+            bail!("base64 data URI missing comma: {}", url);
+        };
+
+        let meta = &s[5..comma_idx];
+        let data_part = &s[comma_idx + 1..];
+        if !meta.contains("base64") {
+            bail!("data URI is not base64 encoded: {}", url);
         }
 
-        node.insert_after(span_node);
-        node.detach();
+        BASE64.decode(data_part.as_bytes()).map_err(|err| {
+            anyhow!(format!(
+                "base64 decode failed for page {}: {:?}",
+                index, err
+            ))
+        })?
+    } else {
+        let request = source
+            .get_image_request(url.clone(), None)
+            .await
+            .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
+        let req_url = { request.url().clone() };
+
+        let client = Client::builder().build()?;
+        let response = request_with_forced_referer_from_request(&client, request, 10)
+            .await
+            .map_err(|err| anyhow!(format!("Request error: {err}")))?;
+
+        response
+            .bytes()
+            .await
+            .map_err(|err| {
+                anyhow!(format!(
+                    "failed to get bytes for page {} from {}: {:?}",
+                    index, req_url, err
+                ))
+            })?
+            .to_vec()
+    };
+
+    Ok((
+        bytes_vec,
+        ext.to_string(),
+        mime_guess::from_path(format!("file.{}", ext))
+            .first_or_octet_stream()
+            .essence_str()
+            .to_string(),
+    ))
+}
+
+fn create_xhtml(title: &str, html: &str) -> String {
+    format!(
+        r#"<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="utf-8"/><title>{}</title></head>
+<body>{}</body>
+</html>"#,
+        html_escape::encode_text(&title),
+        html
+    )
+}
+
+pub fn into_html(text: &str) -> String {
+    // Regex: match HTML marker at beginning of document
+    // (?i)  : case-insensitive
+    // ^\s*  : allow leading whitespace
+    let html_marker = regex::Regex::new(r"(?i)^\s*<!--\s*html\s*-->").unwrap();
+
+    if html_marker.is_match(text) {
+        // Remove the marker and return raw HTML
+        html_marker.replace(text, "").to_string()
+    } else {
+        markdown::to_html(text)
     }
+}
+
+fn get_image_src<F>(base_url: Option<&Url>, get: F) -> Option<String>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    get("src")
+        .or_else(|| get("data-src"))
+        .or_else(|| get("data-srcset"))
+        .or_else(|| get("data-lazy"))
+        .map(|src| {
+            base_url
+                .and_then(|url| url.join(&src).ok().map(|url| url.to_string()))
+                .unwrap_or_else(|| src)
+        })
+}
+
+async fn download_all_images(
+    base_url: Option<&Url>,
+    pages: Vec<Page>,
+    source: &Source,
+) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
+    let mut seen = HashSet::<String>::new();
+    let mut tasks: Vec<
+        std::pin::Pin<
+            Box<
+                dyn futures::Future<Output = (String, anyhow::Result<(Vec<u8>, String, String)>)>
+                    + Send,
+            >,
+        >,
+    > = Vec::new();
+
+    for page in &pages {
+        if let Some(image_url) = &page.image_url {
+            if seen.insert(image_url.to_string()) {
+                let url = image_url.clone();
+                let index = page.index;
+                let source = source.clone();
+                tasks.push(Box::pin(async move {
+                    let result = download_image(url.to_string(), index, &source).await;
+                    (url.to_string(), result)
+                }));
+            }
+        }
+
+        if let Some(text) = &page.text {
+            let html = into_html(text);
+            let document = Html::parse_document(&html);
+            let img_selector = scraper::Selector::parse("img").unwrap();
+
+            for img in document.select(&img_selector) {
+                if let Some(src) =
+                    get_image_src(base_url, |n| img.value().attr(n).map(|v| v.to_string()))
+                {
+                    if seen.insert(src.clone()) {
+                        let url = src.clone();
+                        let index = page.index;
+                        let source = source.clone();
+                        tasks.push(Box::pin(async move {
+                            let result = download_image(url.clone(), index, &source).await;
+                            (url, result)
+                        }));
+                    }
+                }
+            }
+        }
+    }
+
+    let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(4).collect().await;
+
+    Ok(store)
 }
 
 pub async fn download_chapter_novel_as_epub<W>(
     _: W,
     temp_path: std::path::PathBuf,
     source: &Source,
-    mut pages: Vec<Page>,
-    book_name: String,
-    cover_url: Option<Url>,
+    pages: Vec<Page>,
+    chapter: &ChapterInformation,
 ) -> anyhow::Result<()>
 where
     W: Write + Seek,
 {
     let client = Client::builder().build().unwrap();
 
-    let image_refs = extract_image_urls(&pages).await?;
+    let cover_url = chapter.thumbnail.clone();
+    let lang = chapter.lang.clone();
 
-    let mut abs_to_filename: HashMap<String, String> = HashMap::new();
-    let mut filename_to_bytes: HashMap<String, Vec<u8>> = HashMap::new();
-    let mut page_repls: HashMap<usize, Vec<(String, String)>> = HashMap::new();
-    let mut file_counter: usize = 0;
-
-    for (page_index, orig_src) in image_refs.into_iter() {
-        let abs_opt: Option<Url> = match Url::parse(&orig_src) {
-            Ok(u) => Some(u),
-            Err(_) => None,
-        };
-
-        let abs = match abs_opt {
-            Some(u) => u,
-            None => continue,
-        };
-
-        let abs_str = abs.as_str().to_string();
-
-        if let Some(fname) = abs_to_filename.get(&abs_str) {
-            page_repls
-                .entry(page_index)
-                .or_default()
-                .push((orig_src.clone(), fname.clone()));
-            continue;
-        }
-
-        let ext = abs
-            .path_segments()
-            .and_then(|s| s.last())
-            .and_then(|name| name.split('.').last())
-            .unwrap_or("jpg");
-        let filename = format!("images/img_{}.{}", file_counter, ext);
-        file_counter += 1;
-
-        let bytes_vec: Option<Vec<u8>> = if abs.scheme() == "data" {
-            // Parse data URI
-            let s = abs.as_str();
-            if let Some(comma_idx) = s.find(',') {
-                let meta = &s[5..comma_idx];
-                let data_part = &s[comma_idx + 1..];
-                if meta.contains("base64") {
-                    match BASE64.decode(data_part.as_bytes()) {
-                        Ok(b) => Some(b),
-                        Err(e) => {
-                            eprintln!(
-                                "[WARN] Base64 decode failed for page {}: {:?}",
-                                page_index, e
-                            );
-                            None
-                        }
-                    }
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
+    let book_name: String = chapter.title.clone().unwrap_or_else(|| {
+        if let Some(chapter_number) = chapter.chapter_number {
+            format!("Ch.{chapter_number}")
         } else {
-            // HTTP fetch with error handling
-
-            let mut headers = HeaderMap::new();
-            headers  .insert("User-Agent", 
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0".parse().unwrap());
-
-            headers.insert("Referer", "https://docln.net/".parse().unwrap());
-
-            match client.get(abs.clone()).headers(headers).send().await {
-                Ok(resp) => match resp.error_for_status() {
-                    Ok(ok_resp) => match ok_resp.bytes().await {
-                        Ok(b) => Some(b.to_vec()),
-                        Err(e) => {
-                            eprintln!("[WARN] Read bytes failed for {}: {:?}", abs, e);
-                            None
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("[WARN] HTTP status error for {}: {:?}", abs, e);
-                        None
-                    }
-                },
-                Err(e) => {
-                    eprintln!("[WARN] Request execution failed for {}: {:?}", abs, e);
-                    None
-                }
-            }
-        };
-
-        if let Some(bvec) = bytes_vec {
-            abs_to_filename.insert(abs_str.clone(), filename.clone());
-            filename_to_bytes.insert(filename.clone(), bvec);
-            page_repls
-                .entry(page_index)
-                .or_default()
-                .push((orig_src.clone(), filename.clone()));
-        } else {
-            // failed download
-            continue;
+            "Unknown Title".to_owned()
         }
-    }
+    });
 
-    let filename_to_bytes = std::mem::take(&mut filename_to_bytes);
-    let pages_for_epub = std::mem::take(&mut pages);
+    let cover_img = prepare_cover(cover_url, &client, &source)
+        .await
+        .map_err(|e| {
+            eprintln!(
+                "Failed to prepare cover image for EPUB of book '{}': {:?}",
+                book_name, e
+            );
+        })
+        .ok()
+        .flatten();
 
-    let cursor_cover_img = prepare_cover_cursor(cover_url, &client, source).await;
+    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source).await?;
 
+    let chapter_url = chapter.url.clone();
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
         let mut output = std::fs::OpenOptions::new()
             .create(true)
@@ -689,69 +746,121 @@ where
             .open(&temp_path)?;
 
         let mut epub = EpubBuilder::new(ZipLibrary::new()?)?;
-        // epub.set_lang("vi");
+        if let Some(lang) = lang {
+            epub.set_lang(lang);
+        }
         epub.set_title(book_name);
-        epub.inline_toc().set_toc_name("Map");
 
-        if let Some(cursor) = cursor_cover_img {
-            epub.add_cover_image("cover.jpg", cursor, "image/jpeg")?;
+        let mut index_image = 0;
+        // epub.inline_toc().set_toc_name("Map");
+
+        if let Some(cursor) = cover_img {
+            epub.add_cover_image("cover.jpg", Cursor::new(cursor), "image/jpeg")?;
         }
 
-        for (filename, bytes) in filename_to_bytes {
-            let mime = if filename.ends_with(".png") {
-                "image/png"
-            } else if filename.ends_with(".gif") {
-                "image/gif"
-            } else {
-                "image/jpeg"
-            };
-            epub.add_resource(&filename, Cursor::new(bytes), mime)?;
-        }
-
-        for (idx, page) in pages_for_epub.into_iter().enumerate() {
+        for (idx, page) in pages.iter().enumerate() {
             let title = page
                 .base64
                 .clone()
-                .unwrap_or_else(|| format!("Chapter {}", idx + 1));
+                .unwrap_or_else(|| format!("Page {}", idx + 1));
 
-            let document = parse_html().one(page.text.unwrap_or_default().clone());
-            if let Some(rpls) = page_repls.get(&idx) {
-                for css_match in document.select("img").unwrap() {
-                    let mut attrs = css_match.attributes.borrow_mut();
-                    if let Some(src) = attrs.get_mut("src") {
-                        if let Some((_, fname)) = rpls.iter().find(|(orig, _)| orig == src) {
-                            *src = format!("../{}", fname.clone());
+            if let Some(image_url) = &page.image_url {
+                let Some(image_result) = images.get(&image_url.to_string()) else {
+                    continue;
+                };
+                let html = match image_result {
+                    Ok((image_bytes, ext, mime)) => {
+                        let filename = format!("images/img_{}.{}", index_image, ext);
+                        index_image += 1;
+
+                        epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
+
+                        format!("<img src=\"../{}\"/>", filename)
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to download image for EPUB: {:?}", e);
+
+                        format!(
+                            "<p><strong>Failed to download image: {}</strong></p>",
+                            e.to_string()
+                        )
+                    }
+                };
+                index_image += 1;
+
+                epub.add_content(
+                    EpubContent::new(
+                        format!("pages/page_{}.xhtml", idx + 1),
+                        Cursor::new(create_xhtml(&title, &html)),
+                    )
+                    .title(title)
+                    .reftype(ReferenceType::Text),
+                )?;
+            } else if let Some(text) = &page.text {
+                let document = parse_html().one(text.clone());
+
+                // Apply results sequentially
+                for img in document.select("img").unwrap() {
+                    let mut attrs = img.attributes.borrow_mut();
+                    let Some(src) = get_image_src(chapter_url.as_ref(), |n| {
+                        attrs.get(n).map(|v| v.to_string())
+                    }) else {
+                        continue;
+                    };
+                    let Some(image_result) = images.get(&src) else {
+                        continue;
+                    };
+                    match image_result {
+                        Ok((image_bytes, ext, mime)) => {
+                            let filename = format!("images/img_{}.{}", index_image, ext);
+                            index_image += 1;
+
+                            epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
+
+                            attrs.insert("src", format!("../{}", filename));
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to download image for EPUB: {:?}", e);
+
+                            let image_bytes =
+                                generate_error_image("Image error", &e.to_string(), 500, 667)?;
+
+                            let filename = format!("images/img_{}.{}", index_image, "jpeg");
+                            index_image += 1;
+
+                            epub.add_resource(&filename, Cursor::new(image_bytes), "image/jpeg")?;
+
+                            attrs.insert("src", format!("../{}", filename));
                         }
                     }
                 }
+
+                let mut buffer = Vec::new();
+                document.serialize(&mut buffer).unwrap();
+
+                let xhtml = create_xhtml(&title, &String::from_utf8(buffer).unwrap_or_default());
+
+                epub.add_content(
+                    EpubContent::new(format!("pages/page_{}.xhtml", idx + 1), Cursor::new(xhtml))
+                        .title(title)
+                        .reftype(ReferenceType::Text),
+                )?;
+            } else {
+                let html =
+                    "<p><strong>No content available for this page.</strong></p>".to_string();
+                epub.add_content(
+                    EpubContent::new(
+                        format!("pages/page_{}.xhtml", idx + 1),
+                        Cursor::new(create_xhtml(&title, &html)),
+                    )
+                    .title(title)
+                    .reftype(ReferenceType::Text),
+                )?;
             }
-
-            replace_a_with_span(&document);
-
-            let mut buffer = Vec::new();
-            document.serialize(&mut buffer).unwrap();
-
-            let xhtml = format!(
-                r#"<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="utf-8"/><title>{}</title></head>
-<body>{}</body>
-</html>"#,
-                html_escape::encode_text(&title),
-                String::from_utf8(buffer).unwrap()
-            );
-
-            epub.add_content(
-                EpubContent::new(
-                    format!("chapters/chapter_{}.xhtml", idx + 1),
-                    Cursor::new(xhtml),
-                )
-                .title(title)
-                .reftype(ReferenceType::Text),
-            )?;
         }
 
         epub.generate(&mut output)?;
+
         Ok(())
     })
     .await??;

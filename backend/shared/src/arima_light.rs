@@ -630,6 +630,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             })
             .collect()
     }
@@ -676,6 +679,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             },
             ChapterInformation {
                 chapter_number: None,
@@ -685,6 +691,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             },
             ChapterInformation {
                 chapter_number: Some(Decimal::from_f64(1.0).unwrap()),
@@ -693,6 +702,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             },
             ChapterInformation {
                 chapter_number: Some(Decimal::from_f64(2.0).unwrap()),
@@ -701,6 +713,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             },
             ChapterInformation {
                 chapter_number: None,
@@ -709,6 +724,9 @@ mod tests {
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
                 volume_number: Some(1.into()),
+                thumbnail: None,
+                lang: None,
+                url: None,
             },
         ];
         let ts = timestamps_from_chapters(&chapters, None).unwrap();

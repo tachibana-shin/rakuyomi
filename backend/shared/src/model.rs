@@ -119,6 +119,9 @@ pub struct ChapterInformation {
     pub chapter_number: Option<Decimal>,
     pub volume_number: Option<Decimal>,
     pub last_updated: Option<i64>,
+    pub thumbnail: Option<Url>,
+    pub lang: Option<String>,
+    pub url: Option<Url>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -180,6 +183,9 @@ impl From<SourceChapter> for ChapterInformation {
             chapter_number: value.chapter_num.map(|num| num.try_into().unwrap()),
             volume_number: value.volume_num.map(|num| num.try_into().unwrap()),
             last_updated: value.date_uploaded.map(|d| d.timestamp()),
+            thumbnail: value.thumbnail,
+            lang: value.lang,
+            url: value.url,
         }
     }
 }

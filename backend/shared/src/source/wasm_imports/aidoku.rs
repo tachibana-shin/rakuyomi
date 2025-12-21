@@ -184,11 +184,12 @@ fn create_chapter(
         title,
         scanlator,
         url: url.and_then(|url| Url::parse(&url).ok()),
-        lang: lang.unwrap_or("en".into()),
+        lang,
         chapter_num: if chapter > 0.0 { Some(chapter) } else { None },
         volume_num: if volume > 0.0 { Some(volume) } else { None },
         date_uploaded,
         source_order: 123,
+        thumbnail: None,
     };
 
     Ok(

@@ -809,7 +809,8 @@ impl Database {
                         remaining.remove(&path);
                     }
 
-                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok() else {
+                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok()
+                    else {
                         continue;
                     };
                     if tokio::fs::try_exists(&path_file_errors)
@@ -843,7 +844,8 @@ impl Database {
                         paths.push(path.clone());
                     }
 
-                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok() else {
+                    let Some(path_file_errors) = chapter_storage.errors_source_path(&path).ok()
+                    else {
                         continue;
                     };
                     if tokio::fs::try_exists(&path_file_errors)
@@ -927,6 +929,8 @@ impl Database {
                 ci.chapter_number,
                 ci.volume_number,
                 ci.last_updated,
+                ci.thumbnail,
+                ci.lang,
                 cs.read AS "read?: bool",
                 cs.last_read AS "last_read?: i64"
             FROM chapter_informations ci
@@ -962,6 +966,10 @@ impl Database {
                     volume_number: row.volume_number.and_then(|f| Decimal::from_f64(f)),
                     // manga_order: row.manga_order as usize,
                     last_updated: row.last_updated,
+                    thumbnail: row.thumbnail.and_then(|s| Url::parse(&s).ok()),
+                    lang: row.lang,
+
+                    url: None,
                 };
 
                 let state = ChapterState {
@@ -1078,7 +1086,7 @@ impl Database {
 
         for (offset, chunk) in chapter_informations.chunks(CHUNK_SIZE).enumerate() {
             let mut builder = QueryBuilder::new(
-            "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number, last_updated)"
+            "INSERT INTO chapter_informations (source_id, manga_id, chapter_id, manga_order, title, scanlator, chapter_number, volume_number, last_updated, thumbnail, lang)"
             );
 
             builder.push_values(chunk.iter().enumerate(), |mut b, (i, info)| {
@@ -1094,7 +1102,9 @@ impl Database {
                     .push_bind(&info.scanlator)
                     .push_bind(chapter_number)
                     .push_bind(volume_number)
-                    .push_bind(last_updated);
+                    .push_bind(last_updated)
+                    .push_bind(info.thumbnail.as_ref().map(|s| s.to_string()))
+                    .push_bind(info.lang.as_ref().map(|s| s.to_string()));
             });
 
             builder.push(
@@ -1830,6 +1840,8 @@ struct ChapterInformationsRow {
     chapter_number: Option<f64>,
     volume_number: Option<f64>,
     last_updated: Option<i64>,
+    thumbnail: Option<String>,
+    lang: Option<String>,
 }
 
 impl From<ChapterInformationsRow> for ChapterInformation {
@@ -1845,6 +1857,10 @@ impl From<ChapterInformationsRow> for ChapterInformation {
                 .volume_number
                 .map(|decimal_as_f64| decimal_as_f64.try_into().unwrap()),
             last_updated: value.last_updated,
+            thumbnail: value.thumbnail.and_then(|s| Url::parse(&s).ok()),
+            lang: value.lang,
+
+            url: None,
         }
     }
 }

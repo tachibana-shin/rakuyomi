@@ -194,7 +194,7 @@ pub struct Chapter {
     pub title: Option<String>,
     pub scanlator: Option<String>,
     pub url: Option<Url>,
-    pub lang: String,
+    pub lang: Option<String>,
     pub chapter_num: Option<f32>,
     pub volume_num: Option<f32>,
     pub date_uploaded: Option<DateTime<chrono_tz::Tz>>,
@@ -202,6 +202,7 @@ pub struct Chapter {
     // on the display page, but we already return an array on the get chapter list
     // call, so there's already an ordering there
     pub source_order: usize,
+    pub thumbnail: Option<Url>,
 }
 impl Chapter {
     pub fn from(value: aidoku::Chapter, source_id: String, manga_id: String) -> Self {
@@ -212,7 +213,7 @@ impl Chapter {
             title: value.title,
             scanlator: value.scanlators.map(|v| v.join(", ")),
             url: value.url.and_then(|v| url::Url::parse(&v).ok()),
-            lang: value.language.unwrap_or("en".to_owned()),
+            lang: value.language,
             chapter_num: value.chapter_number,
             volume_num: value.volume_number,
             date_uploaded: value.date_uploaded.map(|v| {
@@ -223,6 +224,7 @@ impl Chapter {
                     .unwrap()
             }),
             source_order: usize::MAX,
+            thumbnail: value.thumbnail.and_then(|u| url::Url::parse(&u).ok()),
         }
     }
 }

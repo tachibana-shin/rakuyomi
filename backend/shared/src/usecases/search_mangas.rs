@@ -8,6 +8,7 @@ use log::warn;
 use tokio::time::timeout;
 use tokio::time::Duration;
 use tokio_util::sync::CancellationToken;
+use unicode_normalization::UnicodeNormalization;
 
 const CONCURRENT_SEARCH_REQUESTS: usize = 5;
 
@@ -147,7 +148,15 @@ pub async fn search_mangas(
         })
         .collect();
 
-    mangas.sort_by_cached_key(|manga| manga.information.title.clone());
+    mangas.sort_by_cached_key(|manga| {
+        manga
+            .information
+            .title.clone()
+            .unwrap_or_default()
+            .nfkc()
+            .flat_map(char::to_lowercase)
+            .collect::<String>()
+    });
 
     Ok((mangas, errors))
 }

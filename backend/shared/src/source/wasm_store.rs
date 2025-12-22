@@ -225,7 +225,6 @@ pub struct JsContext(pub(crate) boa_engine::Context);
 unsafe impl Send for JsContext {}
 unsafe impl Sync for JsContext {}
 
-#[derive(Default)]
 pub struct WasmStore {
     pub id: String,
     pub context: OperationContext,
@@ -270,14 +269,44 @@ impl std::fmt::Debug for WasmStore {
             .finish()
     }
 }
+impl WasmStore {
+    pub fn default(source_settings: SourceSettings) -> Self {
+        Self {
+            id: String::new(),
+            context: OperationContext::default(),
+
+            source_settings,
+
+            settings: Settings::default(),
+
+            std_descriptor_pointer: None,
+            std_descriptors: HashMap::new(),
+            std_references: HashMap::new(),
+            std_strs_encode: HashSet::new(),
+            requests: Vec::new(),
+
+            canvass_pointer: 0,
+            canvass: HashMap::new(),
+
+            images_pointer: 0,
+            images: HashMap::new(),
+
+            fonts_pointer: 0,
+            fonts: HashMap::new(),
+            fonts_online: HashMap::new(),
+
+            jscontext_pointer: 0,
+            jscontexts: HashMap::new(),
+        }
+    }
+}
 
 impl WasmStore {
     pub fn new(id: String, source_settings: SourceSettings, settings: Settings) -> Self {
         Self {
             id,
-            source_settings,
             settings,
-            ..Default::default()
+            ..WasmStore::default(source_settings)
         }
     }
 
@@ -543,11 +572,15 @@ where
 impl From<SourceSettingValue> for Value {
     fn from(value: SourceSettingValue) -> Self {
         match value {
+            SourceSettingValue::Data(v) => Value::Vec(v),
             SourceSettingValue::Bool(v) => Value::Bool(v),
+            SourceSettingValue::Int(v) => Value::Int(v),
+            SourceSettingValue::Float(v) => Value::Float(v),
             SourceSettingValue::String(v) => Value::String(v),
             SourceSettingValue::Vec(v) => {
                 Value::Array(v.into_iter().map(|v| Value::String(v)).collect())
             }
+            SourceSettingValue::Null => Value::Null,
         }
     }
 }

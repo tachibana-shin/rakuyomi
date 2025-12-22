@@ -66,6 +66,7 @@ async fn install_source(
 ) -> Result<Json<()>, AppError> {
     usecases::install_source(
         &mut *source_manager.lock().await,
+        &source_manager,
         &settings.lock().await.source_lists,
         SourceId::new(source_id),
         source_of_source,
@@ -125,6 +126,7 @@ async fn set_source_stored_settings(
         &mut *settings.lock().await,
         &settings_path,
         &mut *source_manager.lock().await,
+        &source_manager,
         &SourceId::new(source_id),
         stored_settings,
     )?;

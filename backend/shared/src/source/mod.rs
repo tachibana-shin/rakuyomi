@@ -16,12 +16,13 @@ use wasmi::*;
 use zip::ZipArchive;
 
 use crate::{
-    settings::Settings,
+    settings::SourceSettingValue,
     source::{
         next_reader::read_next,
         wasm_imports::next as sdk_next,
         wasm_store::{ImageRef, ImageRequest, ImageResponse},
     },
+    source_manager::SourceManager,
 };
 
 use self::{
@@ -110,8 +111,12 @@ macro_rules! call_cleanup {
 }
 
 impl Source {
-    pub fn from_aix_file(path: &Path, settings: Settings) -> Result<Self> {
-        let mut blocking_source = BlockingSource::from_aix_file(path, settings, None)?;
+    pub fn from_aix_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let mut blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
 
         if blocking_source.next_sdk {
             blocking_source.start()?;
@@ -209,6 +214,7 @@ pub struct SourceInfo {
     pub lang: Option<String>,
     pub name: String,
     pub version: usize,
+    pub url: Option<String>,
     pub urls: Option<Vec<String>>,
     #[serde(rename = "minAppVersion")]
     pub min_app_version: Option<String>,
@@ -270,7 +276,8 @@ struct BlockingSource {
 impl BlockingSource {
     pub fn from_aix_file(
         path: &Path,
-        settings: Settings,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
         force_mode: Option<bool>,
     ) -> Result<Self> {
         let file =
@@ -318,6 +325,7 @@ impl BlockingSource {
                 None
             }
         };
+        let url_settings_support = url_settings.is_some();
 
         let mut setting_definitions: Vec<SettingDefinition> =
             if let Ok(file) = archive.by_name("Payload/settings.json") {
@@ -338,13 +346,26 @@ impl BlockingSource {
                 .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version))
         });
 
-        let stored_source_settings = settings
+        let stored_source_settings = manager
+            .settings
             .source_settings
             .get(&manifest.info.id)
             .cloned()
             .unwrap_or_default();
 
-        let source_settings = SourceSettings::new(&setting_definitions, stored_source_settings)?;
+        let id = { manifest.info.id.clone() };
+
+        let source_settings = SourceSettings::new(
+            id.clone(),
+            &setting_definitions,
+            &stored_source_settings,
+            arc_manager,
+        )?;
+        if !url_settings_support && source_settings.get(&"url".to_string()).is_none() {
+            if let Some(url) = manifest.info.url.clone() {
+                source_settings.set("url", SourceSettingValue::String(url));
+            }
+        }
 
         let mut wasm_bytes = Vec::new();
         archive
@@ -354,8 +375,11 @@ impl BlockingSource {
             .with_context(|| format!("failed reading wasm from zip entry {}", path.display()))?;
 
         let engine = Engine::default();
-        let wasm_store =
-            WasmStore::new(manifest.info.id.clone(), source_settings, settings.clone());
+        let wasm_store = WasmStore::new(
+            manifest.info.id.clone(),
+            source_settings,
+            manager.settings.clone(),
+        );
         let mut store = Store::new(&engine, wasm_store);
 
         let module = Module::new(&engine, &wasm_bytes)
@@ -383,7 +407,6 @@ impl BlockingSource {
             register_std_imports(&mut linker)?;
         }
 
-        let id = { manifest.info.id.clone() };
         let instance = match linker
             .instantiate_and_start(&mut store, &module)
             .with_context(|| format!("failed creating instance from {}", path.display()))
@@ -396,7 +419,7 @@ impl BlockingSource {
                         if aidoku_sdk_next { "legacy" } else { "next" }
                     );
 
-                    return Self::from_aix_file(path, settings.clone(), Some(!aidoku_sdk_next));
+                    return Self::from_aix_file(path, manager, arc_manager, Some(!aidoku_sdk_next));
                 }
 
                 eprintln!("Error instantiating: {:?}", error);

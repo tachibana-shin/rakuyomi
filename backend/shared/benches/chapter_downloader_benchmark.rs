@@ -8,9 +8,10 @@ use futures::executor;
 use pprof::criterion::{Output, PProfProfiler};
 use shared::{
     cbz_metadata::ComicInfo, chapter_downloader::download_chapter_pages_as_cbz, settings::Settings,
-    source::Source,
+    source::Source, source_manager::SourceManager,
 };
-use std::{env, io, path::PathBuf};
+use std::{collections::HashMap, env, io, path::PathBuf, sync::Arc};
+use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 
 #[allow(unused)]
@@ -23,7 +24,14 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
     let metadata = ComicInfo {
         ..Default::default()
     };
-    let source = Source::from_aix_file(source_path.as_ref(), settings).unwrap();
+    let arc_manager = Arc::new(Mutex::new(SourceManager::new(
+        PathBuf::new(),
+        HashMap::new(),
+        settings,
+    )));
+    let manager=  arc_manager.blocking_lock();
+    let source =
+        Source::from_aix_file(source_path.as_ref(), &manager, &arc_manager).unwrap();
     let pages = executor::block_on(source.get_page_list(
         CancellationToken::new(),
         manga_id,

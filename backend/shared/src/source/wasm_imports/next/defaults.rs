@@ -3,7 +3,13 @@ use pared::sync::Parc;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
-use crate::source::wasm_store::{Value, WasmStore};
+use crate::{
+    settings::SourceSettingValue,
+    source::{
+        next_reader::{read_next, read_next_raw},
+        wasm_store::{Value, WasmStore},
+    },
+};
 
 pub fn register_defaults_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "defaults", "get", get)?;
@@ -48,7 +54,7 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
         ) as i32);
     }
 
-    let Some(value) = wasm_store.source_settings.get(&key).cloned() else {
+    let Some(value) = wasm_store.source_settings.get(&key) else {
         return Ok(ResultContext::InvalidValue.into());
     };
 
@@ -58,10 +64,46 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
 }
 
 #[aidoku_wasm_function]
-fn set(_caller: Caller<'_, WasmStore>, key: Option<String>, _kind: i32, value: i32) -> Result<i32> {
+fn set(
+    mut caller: Caller<'_, WasmStore>,
+    key: Option<String>,
+    kind: i32,
+    value_ptr: i32,
+) -> Result<i32> {
     let Some(key) = key else {
         return Ok(ResultContext::InvalidKey.into());
     };
-    println!("defaults.set: {key:?} -> {value}");
+
+    let memory = {
+        let Some(memory) = wasm_shared::get_memory(&mut caller) else {
+            anyhow::bail!("get_memory failed");
+        };
+        memory
+    };
+    let decoded = match kind {
+        0 => read_next_raw(&memory, &caller, value_ptr).map(SourceSettingValue::Data),
+        1 => read_next::<bool>(&memory, &caller, value_ptr).map(SourceSettingValue::Bool),
+        2 => read_next::<i64>(&memory, &caller, value_ptr).map(SourceSettingValue::Int),
+        3 => read_next::<f64>(&memory, &caller, value_ptr).map(SourceSettingValue::Float),
+        4 => read_next::<String>(&memory, &caller, value_ptr).map(SourceSettingValue::String),
+        5 => read_next::<Vec<String>>(&memory, &caller, value_ptr).map(SourceSettingValue::Vec),
+        6 => Ok(SourceSettingValue::Null),
+        _ => return Ok(ResultContext::FailedDecoding.into()),
+    };
+
+    let value = match decoded {
+        Ok(v) => v,
+        Err(_) => return Ok(ResultContext::FailedDecoding.into()),
+    };
+
+    {
+        let wasm_store = caller.data_mut();
+
+        wasm_store
+            .source_settings
+            .save(&key.clone(), value.clone())?;
+    }
+
+    println!("defaults.set: {:?} -> {:?}", key, value);
     Ok(0)
 }

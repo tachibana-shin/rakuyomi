@@ -1,4 +1,5 @@
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, sync::Arc};
+use tokio::sync::Mutex;
 
 use anyhow::Result;
 
@@ -12,6 +13,7 @@ pub fn set_source_stored_settings(
     settings: &mut Settings,
     settings_path: &Path,
     source_manager: &mut SourceManager,
+    arc_source_manager: &Arc<Mutex<SourceManager>>,
     source_id: &SourceId,
     stored_settings: HashMap<String, SourceSettingValue>,
 ) -> Result<()> {
@@ -23,7 +25,7 @@ pub fn set_source_stored_settings(
         .insert(source_id.value().clone(), stored_settings);
     updated_settings.save_to_file(settings_path)?;
 
-    source_manager.update_settings(updated_settings.clone())?;
+    source_manager.update_settings(updated_settings.clone(), arc_source_manager)?;
     *settings = updated_settings;
 
     Ok(())

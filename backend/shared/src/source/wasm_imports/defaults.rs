@@ -28,7 +28,6 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
     let value = wasm_store
         .source_settings
         .get(&key)
-        .cloned()
         .context("key not found in source settings")?;
 
     Ok(wasm_store.store_std_value(Parc::from(Value::from(value)), None) as i32)

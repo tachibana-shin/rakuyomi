@@ -3,13 +3,7 @@ use postcard::from_bytes;
 use std::convert::TryInto;
 use wasmi::{AsContext, Memory};
 
-/// Read WASM result pointer and deserialize using `postcard`
-/// T: type of Ok result
-pub fn read_next<T: serde::de::DeserializeOwned>(
-    memory: &Memory,
-    store: &impl AsContext,
-    ptr: i32,
-) -> Result<T> {
+pub fn read_next_raw(memory: &Memory, store: &impl AsContext, ptr: i32) -> Result<Vec<u8>> {
     if ptr < 0 {
         eprintln!("pointer = {ptr}");
 
@@ -51,7 +45,17 @@ pub fn read_next<T: serde::de::DeserializeOwned>(
     let mut buffer = vec![0u8; 8 + len];
     memory.read(store, ptr as usize, &mut buffer)?;
 
-    from_bytes::<T>(&buffer[8..])
+    Ok(buffer[8..].to_vec())
+}
+/// Read WASM result pointer and deserialize using `postcard`
+/// T: type of Ok result
+pub fn read_next<T: serde::de::DeserializeOwned>(
+    memory: &Memory,
+    store: &impl AsContext,
+    ptr: i32,
+) -> Result<T> {
+    let buffer = read_next_raw(memory, store, ptr)?;
+    from_bytes::<T>(&buffer)
         .map_err(|err| {
             eprintln!("Error = {err}");
             eprintln!("capture = {:?}", String::from_utf8(buffer));

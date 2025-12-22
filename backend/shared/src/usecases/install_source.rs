@@ -1,3 +1,6 @@
+use std::sync::{Arc};
+use tokio::sync::Mutex;
+
 use anyhow::{anyhow, Context, Result};
 use futures::{stream, StreamExt, TryStreamExt};
 use serde::Deserialize;
@@ -8,6 +11,7 @@ use crate::{model::SourceId, source_manager::SourceManager};
 
 pub async fn install_source(
     source_manager: &mut SourceManager,
+    arc_manager: &Arc<Mutex<SourceManager>>,
     source_lists: &Vec<Url>,
     source_id: SourceId,
     source_of_source: String,
@@ -64,7 +68,7 @@ pub async fn install_source(
     };
     let aix_content = reqwest::get(aix_url).await?.bytes().await?;
 
-    source_manager.install_source(&source_id, aix_content, source_of_source)?;
+    source_manager.install_source(&source_id, aix_content, source_of_source, arc_manager)?;
 
     Ok(())
 }

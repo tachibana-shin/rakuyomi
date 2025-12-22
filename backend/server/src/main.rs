@@ -106,6 +106,13 @@ async fn main() -> anyhow::Result<()> {
         cancel_token_store: Arc::new(Mutex::new(HashMap::new())),
     };
 
+    {
+        let mut source_manager = state.source_manager.lock().await;
+        source_manager.sources_by_id = source_manager
+            .load_all_sources(&state.source_manager)
+            .context("couldn't load sources")?;
+    }
+
     let app = Router::new()
         .route("/health-check", get(health_check))
         .merge(manga::routes())

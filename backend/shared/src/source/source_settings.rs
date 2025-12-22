@@ -1,34 +1,73 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, sync::Arc};
+use tokio::sync::Mutex;
 
 use anyhow::Result;
 
-use crate::settings::SourceSettingValue;
+use crate::{settings::SourceSettingValue, source_manager::SourceManager};
 
 use super::model::SettingDefinition;
 
-#[derive(Default, Debug)]
-pub struct SourceSettings(HashMap<String, SourceSettingValue>);
+pub struct SourceSettings {
+    source_id: String,
+    defaults: HashMap<String, SourceSettingValue>,
+    stored: RefCell<HashMap<String, SourceSettingValue>>,
+    arc_manager: Arc<Mutex<SourceManager>>,
+}
+impl std::fmt::Debug for SourceSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SourceSettings")
+            .field("source_id", &self.source_id)
+            .field("defaults", &self.defaults)
+            .field("stored", &self.stored)
+            // SourceManager はデバッグ対象外（内部状態が重すぎる）
+            .field("arc_manager", &"<SourceManager>")
+            .finish()
+    }
+}
 
 impl SourceSettings {
     pub fn new(
+        source_id: String,
         setting_definitions: &[SettingDefinition],
-        stored_settings: HashMap<String, SourceSettingValue>,
+        stored_settings: &HashMap<String, SourceSettingValue>,
+        arc_manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<Self> {
-        let default_settings: HashMap<_, _> = setting_definitions
+        let defaults: HashMap<_, _> = setting_definitions
             .iter()
             .flat_map(default_values_for_definition)
             .collect();
 
-        let mut settings = HashMap::new();
-        settings.extend(default_settings);
-        settings.extend(stored_settings);
-
-        // FIXME maybe we should check if a definition with no defaults is missing from the stored settings?
-        Ok(Self(settings))
+        Ok(Self {
+            source_id,
+            defaults,
+            stored: RefCell::new(stored_settings.clone()),
+            arc_manager: arc_manager.clone(),
+        })
     }
 
-    pub fn get(&self, key: &String) -> Option<&SourceSettingValue> {
-        self.0.get(key)
+    pub fn get(&self, key: &String) -> Option<SourceSettingValue> {
+        self.stored
+            .borrow()
+            .get(key)
+            .cloned()
+            .or_else(|| self.defaults.get(key).cloned())
+    }
+
+    pub fn set(&self, key: &str, value: SourceSettingValue) {
+        self.stored.borrow_mut().insert(key.to_owned(), value);
+    }
+
+    pub fn save(&self, key: &str, value: SourceSettingValue) -> Result<()> {
+        let snapshot = {
+            let mut store = self.stored.borrow_mut();
+            store.insert(key.to_owned(), value);
+            store.clone()
+        };
+
+        let mut manager = self.arc_manager.blocking_lock();
+        manager.update_source_setting(self.source_id.clone(), snapshot, &self.arc_manager)?;
+
+        Ok(())
     }
 }
 
@@ -50,7 +89,7 @@ fn default_values_for_definition(
             SourceSettingValue::String(
                 default
                     .clone()
-                    .unwrap_or_else(|| values.first().unwrap_or(&"".to_string()).clone()),
+                    .unwrap_or_else(|| values.first().cloned().unwrap_or_default()),
             ),
         )]),
         SettingDefinition::MultiSelect { key, default, .. } => {
@@ -73,8 +112,12 @@ fn default_values_for_definition(
 
 #[cfg(test)]
 mod tests {
-    use crate::{settings::SourceSettingValue, source::model::SettingDefinition};
-    use std::collections::HashMap;
+    use crate::{
+        settings::{Settings, SourceSettingValue},
+        source::model::SettingDefinition,
+        source_manager::SourceManager,
+    };
+    use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
     use super::SourceSettings;
 
@@ -87,11 +130,21 @@ mod tests {
             default: true,
         };
 
-        let source_settings = SourceSettings::new(&[definition], stored_settings).unwrap();
+        let source_settings = SourceSettings::new(
+            "".to_owned(),
+            &[definition],
+            &stored_settings,
+            &Arc::new(tokio::sync::Mutex::new(SourceManager::new(
+                PathBuf::new(),
+                HashMap::new(),
+                Settings::default(),
+            ))),
+        )
+        .unwrap();
 
         assert_eq!(
             Some(SourceSettingValue::Bool(true)),
-            source_settings.get(&"ok".into()).cloned()
+            source_settings.get(&"ok".into())
         );
     }
 
@@ -106,11 +159,21 @@ mod tests {
             default: true,
         };
 
-        let source_settings = SourceSettings::new(&[definition], stored_settings).unwrap();
+        let source_settings = SourceSettings::new(
+            "".to_owned(),
+            &[definition],
+            &stored_settings,
+            &Arc::new(tokio::sync::Mutex::new(SourceManager::new(
+                PathBuf::new(),
+                HashMap::new(),
+                Settings::default(),
+            ))),
+        )
+        .unwrap();
 
         assert_eq!(
             Some(SourceSettingValue::Bool(false)),
-            source_settings.get(&"ok".into()).cloned()
+            source_settings.get(&"ok".into())
         );
     }
 }

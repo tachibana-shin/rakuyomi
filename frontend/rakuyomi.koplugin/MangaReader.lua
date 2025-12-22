@@ -34,7 +34,7 @@ function MangaReader:show(options)
   self.chapter = options.chapter
   self.on_close_book_callback = options.on_close_book_callback
 
-  if self.is_showing then
+  if self.is_showing and ReaderUI.instance then
     -- if we're showing, just switch the document
     ReaderUI.instance:switchDocument(options.path)
   else
@@ -51,7 +51,7 @@ end
 
 --- @param ui unknown The `ReaderUI` instance we're being called from.
 function MangaReader:initializeFromReaderUI(ui)
-  if self.is_showing then
+  if self.is_showing and ReaderUI.instance then
     ui.menu:registerToMainMenu(MangaReader)
     self:overrideBtnFileManager(ui.menu)
 

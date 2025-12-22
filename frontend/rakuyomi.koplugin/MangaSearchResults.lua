@@ -109,7 +109,7 @@ local function formatSearchErrors(errors)
   for i = 1, math.min(#errors, max_items) do
     local err = errors[i]
     table.insert(lines, string.format(
-      "Source %d | %s",
+      "%s | %s",
       err.source_id,
       err.reason
     ))
@@ -151,12 +151,6 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
     return false
   end
 
-  if #response.body[2] > 0 then
-    UIManager:show(InfoMessage:new {
-      text = formatSearchErrors(response.body[2])
-    })
-  end
-
   local results = response.body[1]
 
   local ui = MangaSearchResults:new {
@@ -167,6 +161,12 @@ function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)
+  if #response.body[2] > 0 then
+    UIManager:show(InfoMessage:new {
+      text = formatSearchErrors(response.body[2])
+    })
+  end
+
 
   Testing:emitEvent("manga_search_results_shown")
 

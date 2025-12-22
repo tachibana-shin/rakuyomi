@@ -241,8 +241,8 @@ async fn get_mangas(
     let database = { database.lock().await };
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(120), |token| {
-        usecases::search_mangas(source_manager, &database, token, q, 60)
+    let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
+        usecases::search_mangas(source_manager, &database, token, q, 30)
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;

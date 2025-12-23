@@ -5,6 +5,7 @@ use scraper::{Element, Html as ScraperHtml, Node, Selector};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
+use crate::scraper_ext::SelectSoup;
 use crate::source::wasm_store::{HTMLElement, Html, Value, WasmStore};
 
 pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
@@ -131,12 +132,13 @@ pub fn select(
         .flat_map(|element| {
             element
                 .element_ref()
-                .select(&selector)
+                .select_soup(&selector)
                 .map(|selected_element_ref| HTMLElement {
                     document: element.document.clone(),
                     node_id: selected_element_ref.id(),
                     base_uri: element.base_uri.clone(),
                 })
+                .collect::<Vec<_>>()
         })
         .collect();
 

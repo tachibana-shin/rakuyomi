@@ -4,7 +4,10 @@ use scraper::{Html as CHtml, Selector};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
-use crate::source::wasm_store::{HTMLElement, Html, Value, WasmStore};
+use crate::{
+    scraper_ext::SelectSoup,
+    source::wasm_store::{HTMLElement, Html, Value, WasmStore},
+};
 
 pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "parse", parse)?; // OK
@@ -190,7 +193,7 @@ fn select_first(
     };
     let selected_element = html_elements.iter().find_map(|el| {
         el.element_ref()
-            .select(&selector)
+            .select_soup(&selector)
             .next()
             .map(|selected_ref| HTMLElement {
                 document: el.document.clone(),

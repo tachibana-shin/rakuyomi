@@ -1,5 +1,6 @@
 use shared::{
-    chapter_downloader::DownloadError, chapter_storage::ChapterStorage, database::Database, model::ChapterId, source_collection::SourceCollection, source_manager::SourceManager, usecases
+    chapter_downloader::DownloadError, chapter_storage::ChapterStorage, database::Database,
+    model::ChapterId, source_collection::SourceCollection, source_manager::SourceManager, usecases,
 };
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::watch;
@@ -26,13 +27,16 @@ impl DownloadChapterJob {
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
     ) -> Self {
-        let (tx, rx) = watch::channel::<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>(None);
+        let (tx, rx) = watch::channel::<
+            Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>,
+        >(None);
 
         let cancellation_token = CancellationToken::new();
         let tx_clone = tx.clone();
+        let token_clone = cancellation_token.clone();
         let handle = tokio::spawn(async move {
             let result = Self::do_job(
-                cancellation_token.clone(),
+                token_clone,
                 source_manager,
                 db,
                 chapter_storage,
@@ -45,7 +49,12 @@ impl DownloadChapterJob {
             let _ = tx_clone.send_replace(Some(result));
         });
 
-        Self { tx, rx, handle, cancellation_token }
+        Self {
+            tx,
+            rx,
+            handle,
+            cancellation_token,
+        }
     }
 
     async fn do_job(

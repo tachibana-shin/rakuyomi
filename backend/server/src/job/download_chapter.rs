@@ -15,6 +15,7 @@ pub struct DownloadChapterJob {
     tx: watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
     rx: watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
     handle: JoinHandle<()>,
+    cancellation_token: CancellationToken,
 }
 
 impl DownloadChapterJob {
@@ -27,9 +28,11 @@ impl DownloadChapterJob {
     ) -> Self {
         let (tx, rx) = watch::channel::<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>(None);
 
+        let cancellation_token = CancellationToken::new();
         let tx_clone = tx.clone();
         let handle = tokio::spawn(async move {
             let result = Self::do_job(
+                cancellation_token.clone(),
                 source_manager,
                 db,
                 chapter_storage,
@@ -42,10 +45,11 @@ impl DownloadChapterJob {
             let _ = tx_clone.send_replace(Some(result));
         });
 
-        Self { tx, rx, handle }
+        Self { tx, rx, handle, cancellation_token }
     }
 
     async fn do_job(
+        cancellation_token: CancellationToken,
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
         db: Arc<tokio::sync::Mutex<Database>>,
         chapter_storage: ChapterStorage,
@@ -61,7 +65,7 @@ impl DownloadChapterJob {
         let db: tokio::sync::MutexGuard<'_, Database> = { db.lock().await };
 
         Ok(usecases::fetch_manga_chapter(
-            &CancellationToken::new(),
+            &cancellation_token,
             &db,
             &source,
             &chapter_storage,
@@ -79,6 +83,7 @@ impl Job for DownloadChapterJob {
     type Error = ErrorResponse;
 
     async fn cancel(&self) -> Result<(), AppError> {
+        self.cancellation_token.cancel();
         self.handle.abort();
 
         let _ = self.tx.send(Some(Err(ErrorResponse {

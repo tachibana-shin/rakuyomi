@@ -232,9 +232,9 @@ async fn cancel_job(
         .ok_or_else(|| anyhow!("couldn't find job"))?;
 
     match job {
+        RunningJob::DownloadChapter(job) => job.cancel().await?,
         RunningJob::DownloadUnreadChapters(job) => job.cancel().await?,
         RunningJob::DownloadScanlatorChapters(job) => job.cancel().await?,
-        _ => Err(anyhow!("job is not cancellable"))?,
     };
 
     Ok(Json(()))

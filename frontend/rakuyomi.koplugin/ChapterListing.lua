@@ -295,6 +295,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
       }
       UIManager:show(cancelledMessage)
     end,
+    nil,
     bypass_trapper_check
   )
 
@@ -621,6 +622,15 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
           text = "Download cancelled.",
         }
         UIManager:show(cancelledMessage)
+      end,
+      function(cancel)
+        local confirm = ConfirmBox:new {
+          text = "Are you sure you want to cancel the download?",
+          ok_callback = cancel
+        }
+        UIManager:show(confirm)
+
+        return confirm
       end
     )
 

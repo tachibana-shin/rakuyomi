@@ -595,7 +595,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
   Trapper:wrap(function()
     -- If the download job we have is already invalid (internet problems, for example),
     -- spawn a new job before proceeding.
-    if download_job == nil or download_job:poll().type == 'ERROR' then
+    if download_job == nil or (download_job.started and download_job:poll().type == 'ERROR') then
       download_job = DownloadChapter:new(chapter.source_id, chapter.manga_id, chapter.id, chapter.chapter_num)
     end
 
@@ -613,10 +613,19 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
       .. ' '
       .. (chapter.title or ''),
       function()
+        local response_start = download_job:start()
+        if response_start.type == 'ERROR' then
+          ErrorDialog:show('Could not download chapter.')
+
+          return response_start
+        end
+
         return download_job:runUntilCompletion()
       end,
       function()
-        download_job:requestCancellation()
+        if download_job.started then
+          download_job:requestCancellation()
+        end
 
         local cancelledMessage = InfoMessage:new {
           text = "Download cancelled.",
@@ -700,22 +709,26 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end
     end
 
-    Backend.updateLastReadChapter(
-      chapter.source_id,
-      chapter.manga_id,
-      chapter.id
-    )
+    Trapper:wrap(function()
+      Backend.updateLastReadChapter(
+        chapter.source_id,
+        chapter.manga_id,
+        chapter.id
+      )
+    end)
 
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
       chapter = chapter,
       on_close_book_callback = function(chapter)
-        Backend.updateLastReadChapter(
-          chapter.source_id,
-          chapter.manga_id,
-          chapter.id
-        )
+        Trapper:wrap(function()
+          Backend.updateLastReadChapter(
+            chapter.source_id,
+            chapter.manga_id,
+            chapter.id
+          )
+        end)
       end,
       on_return_callback = onReturnCallback,
     })

@@ -458,18 +458,23 @@ async fn get_cached_manga_details(
     StateExtractor(State {
         database,
         chapter_storage,
+        cancel_token_store,
         ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
+    Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
 ) -> Result<Json<(shared::source::model::Manga, f64)>, AppError> {
     let manga_id = MangaId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
     let database = database.lock().await;
 
+    let token = create_token(cancel_token_store, cancel_id).await;
+
     let manga =
-        usecases::get_cached_manga_details(&database, chapter_storage, &source, manga_id).await?;
+        usecases::get_cached_manga_details(&token.0, &database, chapter_storage, &source, manga_id)
+            .await?;
 
     if let Some(manga) = manga {
         Ok(Json(manga))

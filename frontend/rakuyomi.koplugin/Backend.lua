@@ -343,9 +343,10 @@ end
 
 --- Gets the cached details of a given manga from the database.
 --- @return SuccessfulResponse<[MManga, number]>|ErrorResponse
-function Backend.cachedMangaDetails(source_id, manga_id)
+function Backend.cachedMangaDetails(cancel_id, source_id, manga_id)
   return Backend.requestJson({
     path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/details",
+    query_params = { cancel_id = cancel_id }
   })
 end
 

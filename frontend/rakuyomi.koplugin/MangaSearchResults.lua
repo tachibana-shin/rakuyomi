@@ -227,19 +227,20 @@ function MangaSearchResults:onContextMenuChoice(item)
         callback = function()
           UIManager:close(dialog)
 
-          local onReturnCallback = function()
-            local ui = MangaSearchResults:new {
-              results = self.results,
-              on_return_callback = self.onReturnCallback,
-              covers_fullscreen = true, -- hint for UIManager:_repaint()
-              page = self.page
-            }
-            ui.on_return_callback = self.onReturnCallback
-            UIManager:show(ui)
-          end
-          MangaInfoWidget:fetchAndShow(manga, function()
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              local ui = MangaSearchResults:new {
+                results = self.results,
+                on_return_callback = self.onReturnCallback,
+                covers_fullscreen = true, -- hint for UIManager:_repaint()
+                page = self.page
+              }
+              ui.on_return_callback = self.onReturnCallback
+              UIManager:show(ui)
+            end
+            MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
             UIManager:close(self)
-          end, onReturnCallback)
+          end)
         end
       }
     },

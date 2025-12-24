@@ -13,12 +13,9 @@ local LoadingDialog = {}
 --- @param runnable fun(): T The function to be ran while showing the dialog.
 --- @param onCancel fun()?: T An optional function to be called if the dialog is dismissed/cancelled.
 --- @param onConfirmCancel (fun(any): any) | nil
---- @param bypass_trapper_check boolean?
 --- @return T, boolean
-function LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel, bypass_trapper_check)
-  if not bypass_trapper_check then
-    assert(Trapper:isWrapped(), "expected to be called inside a function wrapped with `Trapper:wrap()`")
-  end
+function LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
+  assert(Trapper:isWrapped(), "expected to be called inside a function wrapped with `Trapper:wrap()`")
 
   local cancelled = false
   local conConfirmCancel = nil

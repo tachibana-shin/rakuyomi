@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
 use tokio::io::AsyncReadExt;
+use tokio_util::sync::CancellationToken;
 use walkdir::{DirEntry, WalkDir};
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
@@ -81,7 +82,12 @@ impl ChapterStorage {
         Ok(None)
     }
 
-    pub async fn cached_poster<F, Fut>(&self, url: &url::Url, req: F) -> Result<PathBuf>
+    pub async fn cached_poster<F, Fut>(
+        &self,
+        token: &CancellationToken,
+        url: &url::Url,
+        req: F,
+    ) -> Result<PathBuf>
     where
         F: Fn() -> Fut,
         Fut: Future<Output = Result<Request>>,
@@ -118,10 +124,15 @@ impl ChapterStorage {
         // ============================================================
 
         let client = reqwest::Client::new();
-        let req = req().await?;
-
-        let res = client.execute(req).await?.error_for_status()?;
-        let bytes = res.bytes().await?;
+        let bytes = tokio::select! {
+            _ = token.cancelled() => Err(anyhow::anyhow!("cancelled")),
+            result = async {
+                let req = req().await?;
+                let res = client.execute(req).await?.error_for_status()?;
+                let bytes = res.bytes().await?;
+                Ok(bytes)
+            } => result,
+        }?;
 
         let ext = match image::guess_format(&bytes) {
             Ok(fmt) => fmt.extensions_str()[0].to_string(),

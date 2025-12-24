@@ -120,16 +120,17 @@ function MangaInfoWidget:getStatusContent(width, manga)
       local raw_manga = self.raw_manga
       local on_return_callback = self.on_return_callback
 
-      local onReturnCallback = function()
-        self:fetchAndShow(raw_manga, function()
-
-        end, on_return_callback)
-      end
-
       local ChapterListing = require("ChapterListing")
-      if ChapterListing:fetchAndShow(raw_manga, onReturnCallback, true, true) then
-        self:onClose(false)
-      end
+      Trapper:wrap(function()
+        local onReturnCallback = function()
+          Trapper:wrap(function()
+            self:fetchAndShow(raw_manga, on_return_callback)
+          end)
+        end
+        if ChapterListing:fetchAndShow(raw_manga, onReturnCallback, true) then
+          self:onClose(false)
+        end
+      end)
     end,
     show_parent = self,
   }
@@ -536,65 +537,55 @@ end
 
 --- @param source_id string
 --- @param manga_id string
+--- @return SuccessfulResponse<[MManga, number]>|ErrorResponse|nil
 function MangaInfoWidget:refreshDetails(source_id, manga_id)
-  local cancel_id = Backend.createCancelId()
-  Trapper:wrap(function()
-    local refresh_details_response, cancelled = LoadingDialog:showAndRun(
-      "Refreshing details...",
-      function()
-        return Backend.refreshMangaDetails(cancel_id, source_id, manga_id)
-      end,
-      function()
-        Backend.cancel(cancel_id)
-        local cancelledMessage = InfoMessage:new {
-          text = "Refresh details cancelled.",
-        }
-        UIManager:show(cancelledMessage)
-      end
-    )
+  local cancel_id_1 = Backend.createCancelId()
+  local cancel_id_2 = Backend.createCancelId()
 
-    if cancelled then
-      return
+  local responses, cancelled = LoadingDialog:showAndRun(
+    "Refreshing details...",
+    function()
+      local a1 = Backend.refreshMangaDetails(cancel_id_1, source_id, manga_id)
+      local a2 = Backend.cachedMangaDetails(cancel_id_2, source_id, manga_id)
+
+      return { a1, a2 }
+    end,
+    function()
+      Backend.cancel(cancel_id_1)
+      Backend.cancel(cancel_id_2)
+
+      local cancelledMessage = InfoMessage:new {
+        text = "Refresh details cancelled.",
+      }
+      UIManager:show(cancelledMessage)
     end
+  )
 
-    if refresh_details_response.type == 'ERROR' then
-      ErrorDialog:show(refresh_details_response.message)
+  if cancelled then
+    return
+  end
 
-      return
-    end
-  end)
+  if responses[1].type == 'ERROR' then
+    ErrorDialog:show(responses[1].message)
+
+    return
+  end
+  if responses[2].type == 'ERROR' then
+    ErrorDialog:show(responses[2].message)
+
+    return
+  end
+
+  return responses[2]
 end
 
 --- @param raw_manga Manga
---- @param close_parent fun()
 --- @param on_return_callback fun()|nil
---- @param no_refresh boolean|nil
-function MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callback, no_refresh)
-  -- Trapper:wrap(function()
-  local response = LoadingDialog:showAndRun(
-    "Loading details...",
-    function() return Backend.cachedMangaDetails(raw_manga.source.id, raw_manga.id) end,
-    nil,
-    nil,
-    true
-  )
-
-  if response.type == 'ERROR' and response.status == 404 and no_refresh ~= true then
-    MangaInfoWidget:refreshDetails(raw_manga.source.id, raw_manga.id)
-    MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callback, true)
-
+function MangaInfoWidget:fetchAndShow(raw_manga, on_return_callback)
+  local response = self:refreshDetails(raw_manga.source.id, raw_manga.id)
+  if response == nil then
     return
   end
-
-  if response.type == 'ERROR' then
-    ErrorDialog:show(response.message)
-
-    return
-  end
-
-  Trapper:wrap(function()
-    Backend.refreshMangaDetails(Backend.createCancelId(), raw_manga.source.id, raw_manga.id)
-  end)
 
   ---@diagnostic disable-next-line: redundant-parameter
   local widget = MangaInfoWidget:new {
@@ -603,9 +594,7 @@ function MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callbac
     per_read = response.body[2],
     on_return_callback = on_return_callback,
   }
-  close_parent()
   UIManager:show(widget)
-  -- end)
 end
 
 return MangaInfoWidget

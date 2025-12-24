@@ -70,7 +70,6 @@ kuchiki = "0.8.1"
 boa_engine = "0.21.0"
 imageproc = "0.25.0"
 ab_glyph = "0.2.32"
-mime_guess = "2.0.5"
 markdown = "1.0.0"
 unicode-normalization = "0.1.25"
 

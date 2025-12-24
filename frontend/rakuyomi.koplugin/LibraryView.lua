@@ -348,8 +348,8 @@ function LibraryView:onContextMenuChoice(item)
             })
           end
 
-          UIManager:close(self)
           self:fetchAndShow()
+          UIManager:close(self)
         end
       },
       {
@@ -357,12 +357,13 @@ function LibraryView:onContextMenuChoice(item)
         callback = function()
           UIManager:close(dialog_context_menu)
 
-          local onReturnCallback = function()
-            self:fetchAndShow()
-          end
-          MangaInfoWidget:fetchAndShow(manga, function()
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              self:fetchAndShow()
+            end
+            MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
             UIManager:close(self)
-          end, onReturnCallback)
+          end)
         end
       }
     },

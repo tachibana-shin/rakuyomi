@@ -276,9 +276,8 @@ end
 --- @param onReturnCallback fun(): nil
 --- @param accept_cached_results? boolean If set, failing to refresh the list of chapters from the source
 --- will not show an error. Defaults to false.
---- @param bypass_trapper_check? boolean If set to true, will not check whether the function
 --- @return boolean
-function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results, bypass_trapper_check)
+function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
   accept_cached_results = accept_cached_results or false
 
   local cancel_id = Backend.createCancelId()
@@ -295,8 +294,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
       }
       UIManager:show(cancelledMessage)
     end,
-    nil,
-    bypass_trapper_check
+    nil
   )
 
   if cancelled then
@@ -766,12 +764,15 @@ function ChapterListing:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          local onReturnCallback = function()
-            self:fetchAndShow(self.manga, self.on_return_callback, self.accept_cached_results)
-          end
-          MangaInfoWidget:fetchAndShow(self.manga, function()
+          Trapper:wrap(function()
+            local onReturnCallback = function()
+              Trapper:wrap(function()
+                self:fetchAndShow(self.manga, self.on_return_callback, self.accept_cached_results)
+              end)
+            end
+            MangaInfoWidget:fetchAndShow(self.manga, onReturnCallback)
             UIManager:close(self)
-          end, onReturnCallback)
+          end)
         end
       }
     },

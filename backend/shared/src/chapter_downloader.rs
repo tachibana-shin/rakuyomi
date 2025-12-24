@@ -88,7 +88,7 @@ pub async fn ensure_chapter_is_in_storage(
         // is novel
         let temp_path = temporary_file.path().to_path_buf();
 
-        download_chapter_novel_as_epub(&temporary_file, temp_path, source, pages, chapter)
+        download_chapter_novel_as_epub(&temporary_file, &token, temp_path, source, pages, chapter)
             .await
             .with_context(|| "Failed to download chapter pages")
             .map_err(Error::DownloadError)?;
@@ -341,15 +341,13 @@ where
 
     // Add ComicInfo.xml to the CBZ file
     writer.start_file("ComicInfo.xml", file_options)?;
-    let xml_content = metadata.to_xml()?;
-    writer.write_all(xml_content.as_bytes())?;
+    writer.write_all(metadata.to_xml()?.as_bytes())?;
 
     let client = Client::builder()
         .danger_accept_invalid_certs(true)
         .danger_accept_invalid_hostnames(true)
         .redirect(Policy::none())
-        .build()
-        .unwrap();
+        .build()?;
 
     let (tx, mut rx) = mpsc::channel::<(usize, String, Vec<u8>, Option<DownloadError>)>(
         concurrent_requests_pages * 2,
@@ -391,8 +389,8 @@ where
                                 eprintln!("Failed WASM modify request {err}");
                                 err
                             })?;
-                        let req_url = { request.url().clone() };
-                        let req_headers = { request.headers().clone() };
+                        let req_url = request.url().clone();
+                        let req_headers = request.headers().clone();
                         let response =
                             request_with_forced_referer_from_request(&client, request, 10)
                                 .await
@@ -404,7 +402,7 @@ where
                             if !response.status().is_success() {
                                 let err = DownloadError {
                                     page_index: page.index,
-                                    url: req_url.clone().to_string(),
+                                    url: req_url.to_string(),
                                     reason: format!("HTTP {}", response.status()),
                                     attempts: 1,
                                 };
@@ -424,8 +422,8 @@ where
                                     Some(err),
                                 )
                             } else {
-                                let status = { response.status() };
-                                let headers = { response.headers().clone() };
+                                let status = response.status();
+                                let headers = response.headers().clone();
 
                                 let response_bytes = response.bytes().await?;
 
@@ -649,6 +647,7 @@ async fn download_all_images(
     base_url: Option<&Url>,
     pages: Vec<Page>,
     source: &Source,
+    token: &CancellationToken,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
     let mut seen = HashSet::<String>::new();
     let mut tasks: Vec<
@@ -661,6 +660,9 @@ async fn download_all_images(
     > = Vec::new();
 
     for page in &pages {
+        if token.is_cancelled() {
+            break;
+        }
         if let Some(image_url) = &page.image_url {
             if seen.insert(image_url.to_string()) {
                 let url = image_url.clone();
@@ -703,6 +705,7 @@ async fn download_all_images(
 
 pub async fn download_chapter_novel_as_epub<W>(
     _: W,
+    token: &CancellationToken,
     temp_path: std::path::PathBuf,
     source: &Source,
     pages: Vec<Page>,
@@ -735,7 +738,7 @@ where
         .ok()
         .flatten();
 
-    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source).await?;
+    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source, &token).await?;
 
     let chapter_url = chapter.url.clone();
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {

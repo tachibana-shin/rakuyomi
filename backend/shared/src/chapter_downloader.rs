@@ -545,12 +545,6 @@ async fn download_image(
         bail!("Invalid URL: {}", url);
     };
 
-    let ext = url
-        .path_segments()
-        .and_then(|s| s.last())
-        .and_then(|name| name.split('.').last())
-        .unwrap_or("jpg");
-
     let bytes_vec = if url.scheme() == "data" {
         // Parse data URI
         let s = url.as_str();
@@ -575,7 +569,7 @@ async fn download_image(
             .get_image_request(url.clone(), None)
             .await
             .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
-        let req_url = { request.url().clone() };
+        let req_url = request.url().clone();
 
         let client = Client::builder().build()?;
         let response = request_with_forced_referer_from_request(&client, request, 10)
@@ -594,14 +588,20 @@ async fn download_image(
             .to_vec()
     };
 
-    Ok((
-        bytes_vec,
-        ext.to_string(),
-        mime_guess::from_path(format!("file.{}", ext))
-            .first_or_octet_stream()
-            .essence_str()
-            .to_string(),
-    ))
+    let (ext, mime) = match image::guess_format(&bytes_vec) {
+        Ok(fmt) => {
+            let ext = fmt.extensions_str()[0];
+            let mime = fmt.to_mime_type().to_string();
+            (ext.to_string(), mime)
+        }
+        Err(_) => {
+            let ext = "bin".to_string();
+            let mime = "application/octet-stream".to_string();
+            (ext, mime)
+        }
+    };
+
+    Ok((bytes_vec, ext, mime))
 }
 
 fn create_xhtml(title: &str, html: &str) -> String {

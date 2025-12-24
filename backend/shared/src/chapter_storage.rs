@@ -12,7 +12,6 @@ use tokio::io::AsyncReadExt;
 use walkdir::{DirEntry, WalkDir};
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use image::ImageFormat;
 use reqwest::Request;
 
 use crate::model::ChapterId;
@@ -122,54 +121,12 @@ impl ChapterStorage {
         let req = req().await?;
 
         let res = client.execute(req).await?.error_for_status()?;
-
-        // --- Detect extension from Content-Type ---
-        let mut ext: Option<&str> = res
-            .headers()
-            .get(reqwest::header::CONTENT_TYPE)
-            .and_then(|h| h.to_str().ok())
-            .and_then(|mime| match mime {
-                "image/jpeg" => Some("jpg"),
-                "image/png" => Some("png"),
-                "image/webp" => Some("webp"),
-                "image/avif" => Some("avif"),
-                "image/gif" => Some("gif"),
-                _ => None,
-            });
-
-        // --- Detect from URL path ---
-        if ext.is_none() {
-            if let Some(path) = url.path().rsplit('/').next() {
-                if let Some(dot) = path.split('.').last() {
-                    ext = match dot.to_lowercase().as_str() {
-                        "jpg" | "jpeg" => Some("jpg"),
-                        "png" => Some("png"),
-                        "webp" => Some("webp"),
-                        "gif" => Some("gif"),
-                        "avif" => Some("avif"),
-                        _ => None,
-                    };
-                }
-            }
-        }
         let bytes = res.bytes().await?;
 
-        // --- Detect from actual image bytes ---
-        if ext.is_none() {
-            if let Ok(format) = image::guess_format(&bytes) {
-                ext = Some(match format {
-                    ImageFormat::Jpeg => "jpg",
-                    ImageFormat::Png => "png",
-                    ImageFormat::WebP => "webp",
-                    ImageFormat::Gif => "gif",
-                    ImageFormat::Avif => "avif",
-                    _ => anyhow::bail!("unsupported image format"),
-                });
-            }
-        }
-
-        // 最後のフォールバック
-        let ext = ext.unwrap_or("jpg");
+        let ext = match image::guess_format(&bytes) {
+            Ok(fmt) => fmt.extensions_str()[0].to_string(),
+            Err(_) => ".bin".to_owned(),
+        };
 
         let poster_path = poster_dir.join(format!("{encoded_hash}.{ext}"));
 

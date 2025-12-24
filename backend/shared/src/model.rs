@@ -99,7 +99,7 @@ pub struct SourceInformation {
 
     // source of source
     #[serde(skip)]
-    pub source_of_source: Option<String>
+    pub source_of_source: Option<String>,
 }
 
 #[derive(Clone, Debug)]

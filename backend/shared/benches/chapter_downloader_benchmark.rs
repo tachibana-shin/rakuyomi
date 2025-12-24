@@ -29,9 +29,8 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
         HashMap::new(),
         settings,
     )));
-    let manager=  arc_manager.blocking_lock();
-    let source =
-        Source::from_aix_file(source_path.as_ref(), &manager, &arc_manager).unwrap();
+    let manager = arc_manager.blocking_lock();
+    let source = Source::from_aix_file(source_path.as_ref(), &manager, &arc_manager).unwrap();
     let pages = executor::block_on(source.get_page_list(
         CancellationToken::new(),
         manga_id,

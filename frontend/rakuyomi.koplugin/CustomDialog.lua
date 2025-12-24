@@ -46,9 +46,6 @@ function CustomDialog:init(sel)
     self.face = Font:getFace("infofont")
   end
 
-  local right_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * 0.6)
-  local button_padding = Screen:scaleBySize(11)
-
   if Device:hasKeys() then
     self.key_events.AnyKeyPressed = { { Input.group.Any } }
   end

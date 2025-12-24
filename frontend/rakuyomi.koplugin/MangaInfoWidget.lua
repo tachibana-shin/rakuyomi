@@ -575,6 +575,7 @@ function MangaInfoWidget:fetchAndShow(raw_manga, close_parent, on_return_callbac
     "Loading details...",
     function() return Backend.cachedMangaDetails(raw_manga.source.id, raw_manga.id) end,
     nil,
+    nil,
     true
   )
 

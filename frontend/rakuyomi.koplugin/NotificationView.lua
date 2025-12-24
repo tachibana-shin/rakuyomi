@@ -482,7 +482,7 @@ end
 function NotificationView:generateEmptyViewItemTable()
   return {
     {
-      text = "No notification",
+      text = "No notifications",
       dim = true,
       select_enabled = false,
     }

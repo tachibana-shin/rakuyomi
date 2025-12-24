@@ -123,13 +123,14 @@ local function formatSearchErrors(errors)
 end
 --- Searches for mangas and shows the results.
 --- @param search_text string The text to be searched for.
+--- @param exclude string[]
 --- @param onReturnCallback any
 --- @return boolean
-function MangaSearchResults:searchAndShow(search_text, onReturnCallback)
+function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback)
   local cancel_id = Backend.createCancelId()
   local response, cancelled = LoadingDialog:showAndRun(
     "Searching for \"" .. search_text .. "\"",
-    function() return Backend.searchMangas(cancel_id, search_text) end,
+    function() return Backend.searchMangas(cancel_id, search_text, exclude) end,
     function()
       Backend.cancel(cancel_id)
       local InfoMessage = require("ui/widget/infomessage")

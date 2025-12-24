@@ -225,6 +225,7 @@ struct FileSummary {
 #[derive(Deserialize)]
 struct GetMangasQuery {
     cancel_id: Option<usize>,
+    exclude: Option<String>,
     q: String,
 }
 
@@ -235,14 +236,24 @@ async fn get_mangas(
         cancel_token_store,
         ..
     }): StateExtractor<State>,
-    Query(GetMangasQuery { cancel_id, q }): Query<GetMangasQuery>,
+    Query(GetMangasQuery {
+        cancel_id,
+        exclude,
+        q,
+    }): Query<GetMangasQuery>,
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
     let token = create_token(cancel_token_store, cancel_id).await;
 
+    let exclude = exclude.map(|v| {
+        v.split(",")
+            .map(|x| x.trim().to_string())
+            .collect::<Vec<_>>()
+    });
+
     let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(source_manager, &database, token, q, 30)
+        usecases::search_mangas(source_manager, &database, token, q, &exclude, 30)
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;

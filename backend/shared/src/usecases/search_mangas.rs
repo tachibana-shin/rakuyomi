@@ -23,6 +23,7 @@ pub async fn search_mangas(
     db: &Database,
     cancellation_token: CancellationToken,
     query: String,
+    exclude: &Option<Vec<String>>,
     seconds: u64,
 ) -> Result<(Vec<Manga>, Vec<SearchError>), Error> {
     // FIXME this looks awful
@@ -45,6 +46,21 @@ pub async fn search_mangas(
                 let query = query.to_string();
 
                 async move {
+                    if exclude
+                        .as_ref()
+                        .map(|exclude| exclude.contains(&source.manifest().info.id))
+                        .unwrap_or(false)
+                    {
+                        let source_info = source.manifest().into();
+                        return (
+                            SourceMangaSearchResults {
+                                source_information: source_info,
+                                mangas: vec![],
+                            },
+                            None,
+                        );
+                    }
+
                     let token = cancellation_token.child_token();
 
                     let fetch_task = async { source.search_mangas(token.clone(), query).await };
@@ -151,7 +167,8 @@ pub async fn search_mangas(
     mangas.sort_by_cached_key(|manga| {
         manga
             .information
-            .title.clone()
+            .title
+            .clone()
             .unwrap_or_default()
             .nfkc()
             .flat_map(char::to_lowercase)

@@ -34,7 +34,7 @@ end
 --- @field path string The path of the request
 --- @field method string? The request method to be used
 --- @field body unknown? The request body to be sent. Must be encodable as JSON.
---- @field query_params table<string, string|number>? The query parameters to be sent on request.
+--- @field query_params table<string, string|number|nil>? The query parameters to be sent on request.
 --- @field timeout number? The timeout used for this request. If unset, the default value for the platform will be used (usually 60 seconds).
 
 --- @class SuccessfulResponse<T>: { type: 'SUCCESS', body: T }
@@ -307,12 +307,14 @@ end
 
 --- Searches manga from the manga sources.
 --- @param cancel_id number
+--- @param exclude string[]|nil
 --- @return SuccessfulResponse<[Manga[], SearchError[]]>|ErrorResponse
-function Backend.searchMangas(cancel_id, search_text)
+function Backend.searchMangas(cancel_id, search_text, exclude)
   return Backend.requestJson({
     path = "/mangas",
     query_params = {
       q = search_text,
+      exclude = exclude and table.concat(exclude, ",") or nil,
       cancel_id = cancel_id,
     }
   })

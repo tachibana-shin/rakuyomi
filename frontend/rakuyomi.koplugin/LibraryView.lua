@@ -33,6 +33,7 @@ local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
+local CheckboxDialog = require("CheckboxDialog")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
@@ -650,19 +651,38 @@ function LibraryView:openSearchMangasDialog()
     buttons = {
       {
         {
-          text = _("Cancel"),
-          id = "close",
-          callback = function()
-            UIManager:close(dialog)
-          end,
-        },
-        {
           text = _("Search"),
-          is_enter_default = true,
+          is_enter_default = false,
           callback = function()
             UIManager:close(dialog)
 
             self:searchMangas(dialog:getInputText())
+          end,
+        },
+        {
+          text = _("Search") .. "*",
+          is_enter_default = true,
+          callback = function()
+            UIManager:close(dialog)
+
+            self:searchMangas(dialog:getInputText(), G_reader_settings:readSetting(
+              "exlucde_source_ids_select_search", {}
+            ))
+          end,
+        },
+      },
+      {
+        {
+          text = _("Settings"),
+          callback = function()
+            self:openSettingsSearchDialog()
+          end
+        },
+        {
+          text = _("Cancel"),
+          id = "close",
+          callback = function()
+            UIManager:close(dialog)
           end,
         },
       }
@@ -671,6 +691,29 @@ function LibraryView:openSearchMangasDialog()
 
   UIManager:show(dialog)
   dialog:onShowKeyboard()
+end
+
+--- @private
+function LibraryView:openSettingsSearchDialog()
+  local response = Backend.listInstalledSources()
+  if response.type == 'ERROR' then
+    ErrorDialog:show(response.message)
+
+    return
+  end
+
+  local key = "exlucde_source_ids_select_search"
+  ---@diagnostic disable-next-line: redundant-parameter
+  local dialog = CheckboxDialog:new {
+    title = "Exclude source search for \"" .. _("Search") .. "*\"",
+    current = G_reader_settings:readSetting(key, {}),
+    options = response.body,
+    update_callback = function(value)
+      G_reader_settings:saveSetting(key, value)
+    end
+  }
+
+  UIManager:show(dialog)
 end
 
 --- @private
@@ -865,13 +908,13 @@ function LibraryView:openCleanerDialog()
 end
 
 --- @private
-function LibraryView:searchMangas(search_text)
+function LibraryView:searchMangas(search_text, exclude)
   Trapper:wrap(function()
     local onReturnCallback = function()
       self:fetchAndShow()
     end
 
-    if MangaSearchResults:searchAndShow(search_text, onReturnCallback) then
+    if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
       self:onClose()
     end
   end)

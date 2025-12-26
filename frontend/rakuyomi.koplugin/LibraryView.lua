@@ -344,7 +344,7 @@ function LibraryView:onContextMenuChoice(item)
             })
           else
             UIManager:show(InfoMessage:new {
-              text = "Refreshed manga"
+              text = "Manga refreshed"
             })
           end
 
@@ -506,7 +506,7 @@ function LibraryView:openMenu()
     },
     {
       {
-        text = "\u{e000} Cleaner chapters",
+        text = "\u{e000} Clean up chapters",
         callback = function()
           UIManager:close(dialog)
 
@@ -598,7 +598,7 @@ function LibraryView:openMenu()
                         end
 
                         UIManager:show(InfoMessage:new {
-                          text = "Cloud database has been forcedly replaced with local one!"
+                          text = "Cloud database has been forcibly replaced with local one!"
                         })
 
                         UIManager:close(self)
@@ -876,7 +876,7 @@ function LibraryView:refreshAllChapters()
       ErrorDialog:show(msg)
     else
       UIManager:show(InfoMessage:new {
-        text = "All chapters manga updated!"
+        text = "All manga chapters updated!"
       })
     end
   end)
@@ -889,15 +889,15 @@ function LibraryView:openCleanerDialog()
   dialog = ConfirmBox:new {
     text = "Cleaner\n\n" ..
         "Normal: Find and delete invalid files including files from deleted sources\n\n" ..
-        "Chapter read done: Find and delete chapters that have been read\n\n" ..
-        "IMPORTANT: Meta files (bookmark, history) not keep!",
+        "Delete read chapters: Find and delete chapters that have been read\n\n" ..
+        "IMPORTANT: Meta files (bookmarks, history) will not be kept!",
     ok_text = "Normal",
     ok_callback = function()
       self:startCleaner(true)
     end,
     other_buttons = { {
       {
-        text = "Chapter read done",
+        text = "Delete read chapters",
         callback = function()
           self:startCleaner(false)
         end

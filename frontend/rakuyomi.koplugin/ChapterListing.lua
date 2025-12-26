@@ -414,7 +414,7 @@ end
 function ChapterListing:revokeChapter(chapter, hide_notify)
   Trapper:wrap(function()
     local revoke_chapter_response = LoadingDialog:showAndRun(
-      "Revoke chapter...",
+      "Removing chapter...",
       function()
         return Backend.revokeChapter(self.manga.source.id, self.manga.id, chapter.id)
       end
@@ -443,7 +443,7 @@ end
 function ChapterListing:markChapterAs(chapter, value)
   Trapper:wrap(function()
     local toggle_mark_response = LoadingDialog:showAndRun(
-      (value and "Marking" or "Un-marking") .. " chapter...",
+      (value and "Marking" or "Unmarking") .. " chapter...",
       function()
         return Backend.markChapterAsRead(self.manga.source.id, self.manga.id, chapter.id, value)
       end

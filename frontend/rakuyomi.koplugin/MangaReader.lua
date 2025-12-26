@@ -151,7 +151,7 @@ function MangaReader:overrideBtnFileManager(menu)
       if G_reader_settings:nilOrFalse(key) then
         local confirm_dialog
         confirm_dialog = ConfirmBox:new {
-          text = "どーも\nDo you want Rakuyomi to commandeer this button when you open it?\n\nThis setting only affects when you open it with Rakuyomi.",
+          text = "Do you want Rakuyomi to take over this button?\n\nThis setting only applies when opening files with Rakuyomi.",
           dismissable = false,
           ok_text = _("Yes"),
           cancel_text = _("No"),

@@ -1,4 +1,4 @@
-local _ = require("gettext")
+local _ = require("gettext+")
 
 return {
   name = "rakuyomi",

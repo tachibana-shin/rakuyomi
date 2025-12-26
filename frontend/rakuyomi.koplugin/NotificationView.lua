@@ -1,4 +1,4 @@
-local _ = require("gettext")
+local _ = require("gettext+")
 local ImageWidget = require("ui/widget/imagewidget")
 local MenuItemRaw = require("MenuItem")
 local Blitbuffer = require("ffi/blitbuffer")
@@ -27,7 +27,7 @@ local TextWidget = require("ui/widget/textwidget")
 local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local ffiUtil = require("ffi/util")
-local _ = require("gettext")
+local _ = require("gettext+")
 local ChapterListing = require("ChapterListing")
 local InfoMessage = require("ui/widget/infomessage")
 local calcLastReadText = require("utils/calcLastReadText")
@@ -333,7 +333,7 @@ local NotificationView = Menu:extend {
   name = "notification_view",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Notification",
+  title = _("Notification"),
   with_context_menu = true,
 
   items_per_page = 10,
@@ -354,7 +354,7 @@ function NotificationView:init()
     end
 
     UIManager:show(InfoMessage:new {
-      text = "Cleared all notifications!"
+      text = _("Cleared all notifications!")
     })
 
     self.notifications = {}
@@ -482,7 +482,7 @@ end
 function NotificationView:generateEmptyViewItemTable()
   return {
     {
-      text = "No notification",
+      text = _("No notification"),
       dim = true,
       select_enabled = false,
     }
@@ -538,7 +538,7 @@ end
 function NotificationView:onMenuHold(item)
   local confirm_dialog
   confirm_dialog = ConfirmBox:new {
-    text = "Delete this notification?",
+    text = _("Delete this notification?"),
     ok_text = _("Delete"),
     cancel_text = _("Cancel"),
     ok_callback = function()

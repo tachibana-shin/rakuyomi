@@ -4,7 +4,7 @@ local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
-local _ = require("gettext")
+local _ = require("gettext+")
 local Icons = require("Icons")
 local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
@@ -41,7 +41,7 @@ local LibraryView = Menu:extend {
   name = "library_view",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Library",
+  title = _("Library"),
   with_context_menu = true,
 
   -- list of mangas in your library
@@ -282,7 +282,7 @@ end
 function LibraryView:generateEmptyViewItemTable()
   return {
     {
-      text = "No mangas found in library. Try adding some by holding their name on the search results!",
+      text = _("No mangas found in library") .. ". " .. _("Try adding some by holding their name on the search results!"),
       dim = true,
       select_enabled = false,
     }
@@ -333,7 +333,7 @@ function LibraryView:onContextMenuChoice(item)
   local context_menu_buttons = {
     {
       {
-        text = Icons.REFRESHING .. " Refresh",
+        text = Icons.REFRESHING .. " " .. _("Refresh"),
         callback = function()
           UIManager:close(dialog_context_menu)
           local response = self:_refreshManga(Backend.createCancelId(), manga)
@@ -344,7 +344,7 @@ function LibraryView:onContextMenuChoice(item)
             })
           else
             UIManager:show(InfoMessage:new {
-              text = "Refreshed manga"
+              text = _("Refreshed manga")
             })
           end
 
@@ -353,7 +353,7 @@ function LibraryView:onContextMenuChoice(item)
         end
       },
       {
-        text = Icons.INFO .. " Details",
+        text = Icons.INFO .. " " .. _("Details"),
         callback = function()
           UIManager:close(dialog_context_menu)
 
@@ -369,7 +369,7 @@ function LibraryView:onContextMenuChoice(item)
     },
     {
       {
-        text = Icons.CHECK_ALL .. " Mark read",
+        text = Icons.CHECK_ALL .. " " .. _("Mark read"),
         callback = function()
           UIManager:close(dialog_context_menu)
 
@@ -380,7 +380,7 @@ function LibraryView:onContextMenuChoice(item)
         end
       },
       {
-        text = Icons.CHECK_ALL .. " Mark unread",
+        text = Icons.CHECK_ALL .. " " .. _("Mark unread"),
         callback = function()
           UIManager:close(dialog_context_menu)
 
@@ -393,7 +393,7 @@ function LibraryView:onContextMenuChoice(item)
     },
     {
       {
-        text = "Continue Reading",
+        text = _("Continue Reading"),
         callback = function()
           UIManager:close(dialog_context_menu)
           self:_handleContinueReading(manga)
@@ -402,7 +402,7 @@ function LibraryView:onContextMenuChoice(item)
     },
     {
       {
-        text = "Remove from Library",
+        text = _("Remove from Library"),
         callback = function()
           UIManager:close(dialog_context_menu)
           self:_handleRemoveFromLibrary(manga)
@@ -455,8 +455,8 @@ end
 --- @private
 function LibraryView:_handleRemoveFromLibrary(manga)
   UIManager:show(ConfirmBox:new {
-    text = "Do you want to remove \"" .. manga.title .. "\" from your library?",
-    ok_text = "Remove",
+    text = _("Do you want to remove") .. "\" " .. manga.title .. "\" " .. _("from your library?"),
+    ok_text = _("Remove"),
     ok_callback = function()
       local response = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
 
@@ -478,7 +478,7 @@ function LibraryView:openMenu()
   local buttons = {
     {
       {
-        text = Icons.FA_MAGNIFYING_GLASS .. " Search for mangas",
+        text = Icons.FA_MAGNIFYING_GLASS .. " " .. _("Search for mangas"),
         callback = function()
           UIManager:close(dialog)
 
@@ -488,7 +488,7 @@ function LibraryView:openMenu()
     },
     {
       {
-        text = Icons.REFRESHING .. " Refresh mangas",
+        text = Icons.REFRESHING .. " " .. _("Refresh mangas"),
         callback = function()
           UIManager:close(dialog)
 
@@ -496,7 +496,7 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = "\u{E644} Search favorites",
+        text = "\u{E644}" .. " " .. _("Search favorites"),
         callback = function()
           UIManager:close(dialog)
 
@@ -506,7 +506,7 @@ function LibraryView:openMenu()
     },
     {
       {
-        text = "\u{e000} Cleaner chapters",
+        text = "\u{e000}" .. " " .. _("Cleaner chapters"),
         callback = function()
           UIManager:close(dialog)
 
@@ -514,7 +514,7 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = Icons.FA_PLUG .. " Manage sources",
+        text = Icons.FA_PLUG .. " " .. _("Manage sources"),
         callback = function()
           UIManager:close(dialog)
 
@@ -524,7 +524,7 @@ function LibraryView:openMenu()
     },
     {
       {
-        text = Icons.FA_GEAR .. " Settings",
+        text = Icons.FA_GEAR .. " " .. _("Settings"),
         callback = function()
           UIManager:close(dialog)
 
@@ -532,7 +532,7 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = Icons.FA_ARROW_UP .. " Check for updates",
+        text = Icons.FA_ARROW_UP .. " " .. _("Check for updates"),
         callback = function()
           UIManager:close(dialog)
 
@@ -541,11 +541,11 @@ function LibraryView:openMenu()
       },
     },
     { {
-      text = Icons.SYNC .. " Sync Database (Beta)",
+      text = Icons.SYNC .. " " .. _("Sync Database (Beta)"),
       callback = function()
         Trapper:wrap(function()
           local response = LoadingDialog:showAndRun(
-            "Sync to WebDAV...",
+            _("Sync to WebDAV..."),
             function() return Backend.syncDatabase(false, false) end
           )
 
@@ -557,12 +557,12 @@ function LibraryView:openMenu()
 
           if response.body == 'update_required' then
             UIManager:show(ConfirmBox:new {
-              text = "The remote database is newer than the local one.\nDo you want to migrate your local database from the server?\n\nThis action cannot be undone.",
-              ok_text = "Migrate",
+              text = _("The remote database is newer than the local one.") .. "\n" .. _("Do you want to migrate your local database from the server?") .. "\n\n" .. _("This action cannot be undone."),
+              ok_text = _("Migrate"),
               ok_callback = function()
                 Trapper:wrap(function()
                   local response = LoadingDialog:showAndRun(
-                    "Migrating database...",
+                    _("Migrating database..."),
                     function() return Backend.syncDatabase(true, false) end
                   )
 
@@ -573,7 +573,7 @@ function LibraryView:openMenu()
                   end
 
                   UIManager:show(InfoMessage:new {
-                    text = "Local database has been migrated from the server!"
+                    text = _("Local database has been migrated from the server!")
                   })
 
                   UIManager:close(self)
@@ -584,11 +584,11 @@ function LibraryView:openMenu()
               other_buttons = {
                 {
                   {
-                    text = "Replace Cloud",
+                    text = _("Replace Cloud"),
                     callback = function()
                       Trapper:wrap(function()
                         local response = LoadingDialog:showAndRun(
-                          "Replacing cloud...",
+                          _("Replacing cloud..."),
                           function() return Backend.syncDatabase(false, true) end
                         )
                         if response.type == 'ERROR' then
@@ -598,7 +598,7 @@ function LibraryView:openMenu()
                         end
 
                         UIManager:show(InfoMessage:new {
-                          text = "Cloud database has been forcedly replaced with local one!"
+                          text = _("Cloud database has been forcedly replaced with local one!")
                         })
 
                         UIManager:close(self)
@@ -616,13 +616,13 @@ function LibraryView:openMenu()
 
           local msg = '';
           if response.body == 'up_to_date' then
-            msg = "Database is already up to date!"
+            msg = _("Database is already up to date!")
           elseif response.body == 'updated_to_server' then
-            msg = "Database has been synced to the server!"
+            msg = _("Database has been synced to the server!")
           elseif response.body == 'updated' then
-            msg = "Local database has been migrated from the server!"
+            msg = _("Local database has been migrated from the server!")
           else
-            msg = "Sync completed!"
+            msg = _("Sync completed!")
           end
 
           UIManager:show(InfoMessage:new {
@@ -706,7 +706,7 @@ function LibraryView:openSettingsSearchDialog()
   local key = "exlucde_source_ids_select_search"
   ---@diagnostic disable-next-line: redundant-parameter
   local dialog = CheckboxDialog:new {
-    title = "Exclude source search for \"" .. _("Search") .. "*\"",
+    title = _("Exclude source search for") .. " \"" .. _("Search") .. "*\"",
     current = G_reader_settings:readSetting(key, {}),
     options = response.body,
     update_callback = function(value)
@@ -747,7 +747,7 @@ function LibraryView:openSearchFavoritesDialog()
             local mangas = {}
 
             if query and query ~= "" then
-              for _, manga in ipairs(self.mangas_raw) do
+              for __,manga in ipairs(self.mangas_raw) do
                 -- convert manga title to lowercase for comparison
                 local title = (manga.title or ""):lower()
                 if title:find(query, 1, true) then
@@ -775,7 +775,7 @@ end
 function LibraryView:startCleaner(modeInvalid)
   Trapper:wrap(function()
     local response = LoadingDialog:showAndRun(
-      "Scaning files...",
+      _("Scaning files..."),
       function() return Backend.findOrphanOrReadFiles(modeInvalid) end
     )
 
@@ -790,16 +790,18 @@ function LibraryView:startCleaner(modeInvalid)
 
     local confirm = ConfirmBox:new {
       text = string.format(
-        "Found %d files.\n\nTotal size %s.\n\nOnly file .cbz and .epub scan.",
+        _("Found %d files.") .. "\n\n" ..
+        _("Total size %s.") .. "\n\n" ..
+        _("RendOnly file .cbz and .epub scan."),
         #filenames,
         total_size
       ),
-      ok_text = "Clean",
+      ok_text = _("Clean"),
       ok_callback = function()
         local ProgressbarDialog = require("ui/widget/progressbardialog")
 
         local progressbar_dialog = ProgressbarDialog:new {
-          title = "Deleting...",
+          title = _("Deleting..."),
           progress_max = #filenames
         }
         UIManager:show(progressbar_dialog)
@@ -817,7 +819,7 @@ function LibraryView:startCleaner(modeInvalid)
         progressbar_dialog:close()
 
         UIManager:show(InfoMessage:new {
-          text = string.format("Cleaned free %s storage", total_size)
+          text = string.format(_("Cleaned free %s storage"), total_size)
         })
       end
     }
@@ -841,7 +843,7 @@ function LibraryView:refreshAllChapters()
 
   Trapper:wrap(function()
     local progressbar_dialog = ProgressbarDialog:new {
-      title = "Refresh mangas...",
+      title = _("Refresh mangas..."),
       progress_max = #self.mangas_raw
     }
     UIManager:show(progressbar_dialog)
@@ -869,14 +871,14 @@ function LibraryView:refreshAllChapters()
     progressbar_dialog:close()
 
     if #errors > 0 then
-      local msg = "Some manga updates fail:\n\n"
-      for _, err in ipairs(errors) do
+      local msg = _("Some manga updates fail:") .. "\n\n"
+      for __,err in ipairs(errors) do
         msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
       end
       ErrorDialog:show(msg)
     else
       UIManager:show(InfoMessage:new {
-        text = "All chapters manga updated!"
+        text = _("All chapters manga updated!")
       })
     end
   end)
@@ -887,17 +889,17 @@ function LibraryView:openCleanerDialog()
   local dialog
 
   dialog = ConfirmBox:new {
-    text = "Cleaner\n\n" ..
-        "Normal: Find and delete invalid files including files from deleted sources\n\n" ..
-        "Chapter read done: Find and delete chapters that have been read\n\n" ..
-        "IMPORTANT: Meta files (bookmark, history) not keep!",
-    ok_text = "Normal",
+    text = _("Cleaner") .. "\n\n" ..
+        _("Normal") .. ": " .. _("Find and delete invalid files including files from deleted sources") .. "\n\n" ..
+        ("Chapter read done: Find and delete chapters that have been read") .. "\n\n" ..
+        _("IMPORTANT: Meta files (bookmark, history) not keep!"),
+    ok_text = _("Normal"),
     ok_callback = function()
       self:startCleaner(true)
     end,
     other_buttons = { {
       {
-        text = "Chapter read done",
+        text = _("Chapter read done"),
         callback = function()
           self:startCleaner(false)
         end

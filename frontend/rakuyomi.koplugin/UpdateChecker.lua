@@ -3,7 +3,7 @@ local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 local NetworkMgr = require("ui/network/manager")
 local Trapper = require("ui/trapper")
-local _ = require("gettext")
+local _ = require("gettext+")
 local beforeWifi = require("utils/beforeWifi")
 
 local Backend = require("Backend")
@@ -47,7 +47,7 @@ function UpdateChecker:_checkForUpdates()
   local buttons
   if update_info.auto_installable then
     dialog_title = string.format(
-      _("Version %s is available. You're currently running version %s.\n\nWould you like to update now?"),
+      _("Version") .. "%s" .. _("is available") .. ". " .. _("You're currently running version ") .. "%s." .. "\n\n" .. _("Would you like to update now?"),
       update_info.latest_version,
       update_info.current_version or "unknown"
     )
@@ -71,9 +71,8 @@ function UpdateChecker:_checkForUpdates()
     }
   else
     dialog_title = string.format(
-      _(
-        "Version %s is available. You're currently running version %s.\n\n" ..
-        "This update cannot be installed automatically, please visit the user guide for instructions."),
+      _("Version") .. "%s" .. _("is available. You're currently running version ") .. "%s." .. "\n\n" ..
+      _("This update cannot be installed automatically") .. ", " .. _("please visit the user guide for instructions."),
       update_info.latest_version,
       update_info.current_version or "unknown"
     )
@@ -128,7 +127,7 @@ function UpdateChecker:installUpdate(version)
     }
 
     dialog = ButtonDialog:new {
-      title = _("The update has been installed successfully. KOReader needs to be restarted to apply the changes."),
+      title = _("The update has been installed successfully") .. ". " .. _("KOReader needs to be restarted to apply the changes."),
       buttons = buttons
     }
 

@@ -3,7 +3,7 @@ local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
 local InfoMessage = require("ui/widget/infomessage")
-local _ = require("gettext")
+local _ = require("gettext+")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -22,7 +22,7 @@ local MangaSearchResults = Menu:extend {
   name = "manga_search_results",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Search results...",
+  title = _("Search results..."),
   with_context_menu = true,
 
   -- list of mangas
@@ -100,7 +100,7 @@ end
 --- @param errors SearchError[]
 local function formatSearchErrors(errors)
   if not errors or #errors == 0 then
-    return "No errors"
+    return _("No errors")
   end
 
   local max_items = 5
@@ -116,7 +116,7 @@ local function formatSearchErrors(errors)
   end
 
   if #errors > max_items then
-    table.insert(lines, string.format("… and %d more errors", #errors - max_items))
+    table.insert(lines, string.format(_("… and %d more errors"), #errors - max_items))
   end
 
   return table.concat(lines, "\n")
@@ -129,14 +129,14 @@ end
 function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback)
   local cancel_id = Backend.createCancelId()
   local response, cancelled = LoadingDialog:showAndRun(
-    "Searching for \"" .. search_text .. "\"",
+    _("Searching for") .. " \"" .. search_text .. "\"",
     function() return Backend.searchMangas(cancel_id, search_text, exclude) end,
     function()
       Backend.cancel(cancel_id)
       local InfoMessage = require("ui/widget/infomessage")
 
       local cancelledMessage = InfoMessage:new {
-        text = "Search cancelled.",
+        text = _("Search cancelled."),
       }
       UIManager:show(cancelledMessage)
     end
@@ -199,7 +199,7 @@ function MangaSearchResults:onContextMenuChoice(item)
   local buttons = {
     {
       {
-        text = Icons.FA_BELL .. _(" Add to Library"),
+        text = Icons.FA_BELL .. " " .. _("Add to Library"),
         callback = function()
           UIManager:close(dialog)
 

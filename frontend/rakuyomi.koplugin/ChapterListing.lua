@@ -11,7 +11,7 @@ local LoadingDialog = require("LoadingDialog")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
 local ffiutil = require("ffi/util")
-local _ = require("gettext")
+local _ = require("gettext+")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -121,8 +121,8 @@ function ChapterListing:extractAvailableScanlators()
   local scanlators = {}
   local scanlator_set = {}
 
-  for _, chapter in ipairs(self.chapters) do
-    local scanlator = chapter.scanlator or "Unknown"
+  for __,chapter in ipairs(self.chapters) do
+    local scanlator = chapter.scanlator or _("Unknown")
     if not scanlator_set[scanlator] then
       scanlator_set[scanlator] = true
       table.insert(scanlators, scanlator)
@@ -168,7 +168,7 @@ end
 function ChapterListing:generateEmptyViewItemTable()
   return {
     {
-      text = "No chapters found. Try swiping down to refresh the chapter list.",
+      text = _("No chapters found") .. ". " .. _("Try swiping down to refresh the chapter list."),
       dim = true,
       select_enabled = false,
     }
@@ -201,8 +201,8 @@ function ChapterListing:generateItemTableFromChapters(chapters)
   local filtered_chapters = chapters
   if self.selected_scanlator then
     filtered_chapters = {}
-    for _, chapter in ipairs(chapters) do
-      local chapter_scanlator = chapter.scanlator or "Unknown"
+    for __,chapter in ipairs(chapters) do
+      local chapter_scanlator = chapter.scanlator or _("Unknown")
       if chapter_scanlator == self.selected_scanlator then
         table.insert(filtered_chapters, chapter)
       end
@@ -224,16 +224,16 @@ function ChapterListing:generateItemTableFromChapters(chapters)
 
   local item_table = {}
 
-  for _, chapter in ipairs(sorted_chapters_with_index) do
+  for __,chapter in ipairs(sorted_chapters_with_index) do
     local text = ""
     if chapter.volume_num ~= nil then
       -- FIXME we assume there's a chapter number if there's a volume number
       -- might not be true but who knows
-      text = text .. "Volume " .. chapter.volume_num .. ", "
+      text = text .. _("Volume") .. " " .. chapter.volume_num .. ", "
     end
 
     if chapter.chapter_num ~= nil then
-      text = text .. "Chapter " .. chapter.chapter_num .. " - "
+      text = text .. _("Chapter") .. " " .. chapter.chapter_num .. " - "
     end
 
     text = text .. chapter.title
@@ -282,7 +282,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
 
   local cancel_id = Backend.createCancelId()
   local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
-    "Refreshing chapters...",
+    _("Refreshing chapters..."),
     function()
       return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
     end,
@@ -290,7 +290,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
       Backend.cancel(cancel_id)
 
       local cancelledMessage = InfoMessage:new {
-        text = "Cancelled.",
+        text = _("Cancelled."),
       }
       UIManager:show(cancelledMessage)
     end,
@@ -302,7 +302,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   end
 
   if refresh_chapters_response.type == 'ERROR' then
-    ErrorDialog:show('Refresh chapter error\n\n' .. refresh_chapters_response.message)
+    ErrorDialog:show(_("Refresh chapter error") .. "\n\n" .. refresh_chapters_response.message)
 
     if not accept_cached_results then
       return false
@@ -352,7 +352,7 @@ function ChapterListing:onContextMenuChoice(item)
   local context_menu_buttons = {
     {
       {
-        text = Icons.FA_OPEN .. " Open",
+        text = Icons.FA_OPEN .. " " .. _("Open"),
         callback = function()
           UIManager:close(dialog_context_menu)
 
@@ -362,19 +362,19 @@ function ChapterListing:onContextMenuChoice(item)
     },
     {
       {
-        text = Icons.REFRESHING .. " Refresh",
+        text = Icons.REFRESHING .. " " .. _("Refresh"),
         callback = function()
           UIManager:close(dialog_context_menu)
 
           self:revokeChapter(chapter, false)
           self:downloadChapter(chapter, nil, function(manga_path)
-            UIManager:show(InfoMessage:new { text = "Chapter refreshed" })
+            UIManager:show(InfoMessage:new { text = _("Chapter refreshed") })
           end)
         end
       },
       {
         text_func = function()
-          return Icons.CHECK_ALL .. " Mark " .. (chapter.read and "unread" or "read")
+          return Icons.CHECK_ALL .. " " .. _("Mark") .. " " .. (chapter.read and "unread" or "read")
         end,
         callback = function()
           UIManager:close(dialog_context_menu)
@@ -386,7 +386,7 @@ function ChapterListing:onContextMenuChoice(item)
     {
       {
         text_func = function()
-          return Icons.FA_DOWNLOAD .. " " .. (chapter.downloaded and "Remove" or "Download")
+          return Icons.FA_DOWNLOAD .. " " .. (chapter.downloaded and _("Remove") or _("Download"))
         end,
         callback = function()
           UIManager:close(dialog_context_menu)
@@ -395,7 +395,7 @@ function ChapterListing:onContextMenuChoice(item)
             self:revokeChapter(chapter)
           else
             self:downloadChapter(chapter, nil, function(manga_path)
-              UIManager:show(InfoMessage:new { text = "Chapter downloaded" })
+              UIManager:show(InfoMessage:new { text = _("Chapter downloaded") })
             end)
           end
         end
@@ -414,7 +414,7 @@ end
 function ChapterListing:revokeChapter(chapter, hide_notify)
   Trapper:wrap(function()
     local revoke_chapter_response = LoadingDialog:showAndRun(
-      "Revoke chapter...",
+      _("Revoke chapter..."),
       function()
         return Backend.revokeChapter(self.manga.source.id, self.manga.id, chapter.id)
       end
@@ -432,7 +432,7 @@ function ChapterListing:revokeChapter(chapter, hide_notify)
     end
 
     if hide_notify ~= false then
-      UIManager:show(InfoMessage:new { text = "Removed chapter" })
+      UIManager:show(InfoMessage:new { text = _("Removed chapter") })
     end
   end)
 end
@@ -443,7 +443,7 @@ end
 function ChapterListing:markChapterAs(chapter, value)
   Trapper:wrap(function()
     local toggle_mark_response = LoadingDialog:showAndRun(
-      (value and "Marking" or "Un-marking") .. " chapter...",
+      (value and _("Marking") or _("Un-marking")) .. " " .. _("chapter..."),
       function()
         return Backend.markChapterAsRead(self.manga.source.id, self.manga.id, chapter.id, value)
       end
@@ -477,14 +477,14 @@ function ChapterListing:refreshChapters()
   Trapper:wrap(function()
     local cancel_id = Backend.createCancelId()
     local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
-      "Refreshing chapters...",
+      _("Refreshing chapters..."),
       function()
         return Backend.refreshChapters(cancel_id, self.manga.source.id, self.manga.id)
       end,
       function()
         Backend.cancel(cancel_id)
         local cancelledMessage = InfoMessage:new {
-          text = "Cancelled.",
+          text = _("Cancelled."),
         }
         UIManager:show(cancelledMessage)
       end
@@ -510,9 +510,9 @@ end
 function ChapterListing:openMarkDialog(manga, read, callback)
   local dialog
   dialog = InputDialog:new {
-    title = _(read and "Mark read" or "Mark unread"),
+    title = read and _("Mark read") or _("Mark unread"),
     input_hint = _("1 - 10.5, 20 - 100"),
-    description = _("Mark chapters as read or unread\n\nLeaving blank will select all"),
+    description = _("Mark chapters as read or unread") .. "\n\n" .. _("Leaving blank will select all"),
     buttons = {
       {
         {
@@ -533,7 +533,7 @@ function ChapterListing:openMarkDialog(manga, read, callback)
 
             Trapper:wrap(function()
               local response = LoadingDialog:showAndRun(
-                "Marking...",
+                _("Marking..."),
                 function() return Backend.markChaptersAsRead(manga.source.id, manga.id, text, read) end
               )
 
@@ -543,7 +543,7 @@ function ChapterListing:openMarkDialog(manga, read, callback)
                 return
               end
 
-              UIManager:show(InfoMessage:new { text = "Marked" })
+              UIManager:show(InfoMessage:new { text = _("Marked") })
 
               if callback ~= nil then
                 callback(response.body)
@@ -562,7 +562,7 @@ end
 --- @param errors DownloadError[]
 local function formatDownloadErrors(errors)
   if not errors or #errors == 0 then
-    return "No errors"
+    return _("No errors")
   end
 
   local max_items = 5
@@ -571,7 +571,7 @@ local function formatDownloadErrors(errors)
   for i = 1, math.min(#errors, max_items) do
     local err = errors[i]
     table.insert(lines, string.format(
-      "Page %d | %s (%d attempts)",
+      _("Page") .. " %d | %s (%d " .. _("attempts") .. ")",
       err.page_index,
       err.reason,
       err.attempts
@@ -579,7 +579,7 @@ local function formatDownloadErrors(errors)
   end
 
   if #errors > max_items then
-    table.insert(lines, string.format("… and %d more errors", #errors - max_items))
+    table.insert(lines, string.format(_("… and %d more errors"), #errors - max_items))
   end
 
   return table.concat(lines, "\n")
@@ -598,7 +598,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     end
 
     if download_job == nil then
-      ErrorDialog:show('Could not download chapter.')
+      ErrorDialog:show(_("Could not download chapter."))
 
       return
     end
@@ -606,14 +606,14 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     local time = require("ui/time")
     local start_time = time.now()
     local response, cancelled = LoadingDialog:showAndRun(
-      "Downloading chapter..."
-      .. '\nCh.' .. (chapter.chapter_num or 'unknown')
+      _("Downloading chapter...")
+      .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
       .. ' '
       .. (chapter.title or ''),
       function()
         local response_start = download_job:start()
         if response_start.type == 'ERROR' then
-          ErrorDialog:show('Could not download chapter.')
+          ErrorDialog:show(_('Could not download chapter.'))
 
           return response_start
         end
@@ -626,13 +626,13 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
         end
 
         local cancelledMessage = InfoMessage:new {
-          text = "Download cancelled.",
+          text = _("Download cancelled."),
         }
         UIManager:show(cancelledMessage)
       end,
       function(cancel)
         local confirm = ConfirmBox:new {
-          text = "Are you sure you want to cancel the download?",
+          text = _("Are you sure you want to cancel the download?"),
           ok_callback = cancel
         }
         UIManager:show(confirm)
@@ -742,7 +742,7 @@ function ChapterListing:openMenu()
   local buttons = {
     {
       {
-        text = Icons.FA_BELL .. _(" Add to Library"),
+        text = Icons.FA_BELL .. " " .. _("Add to Library"),
         callback = function()
           UIManager:close(dialog)
 
@@ -752,7 +752,7 @@ function ChapterListing:openMenu()
     },
     {
       {
-        text = Icons.REFRESHING .. " Refresh",
+        text = Icons.REFRESHING .. " " .. _("Refresh"),
         callback = function()
           UIManager:close(dialog)
 
@@ -760,7 +760,7 @@ function ChapterListing:openMenu()
         end
       },
       {
-        text = Icons.INFO .. " Details",
+        text = Icons.INFO .. " " .. _("Details"),
         callback = function()
           UIManager:close(dialog)
 
@@ -778,7 +778,7 @@ function ChapterListing:openMenu()
     },
     {
       {
-        text = Icons.CHECK_ALL .. " Mark read",
+        text = Icons.CHECK_ALL .. " " .. _("Mark read"),
         callback = function()
           UIManager:close(dialog)
 
@@ -788,7 +788,7 @@ function ChapterListing:openMenu()
         end
       },
       {
-        text = Icons.CHECK_ALL .. " Mark unread",
+        text = Icons.CHECK_ALL .. " " .. _("Mark unread"),
         callback = function()
           UIManager:close(dialog)
 
@@ -800,7 +800,7 @@ function ChapterListing:openMenu()
     },
     {
       {
-        text = Icons.RESTORE .. " Resume",
+        text = Icons.RESTORE .. " " .. _("Resume"),
         callback = function()
           UIManager:close(dialog)
 
@@ -808,7 +808,7 @@ function ChapterListing:openMenu()
         end
       },
       {
-        text = Icons.ANGLES_RIGHT .. " Next Chapter",
+        text = Icons.ANGLES_RIGHT .. " " .. _("Next Chapter"),
         callback = function()
           UIManager:close(dialog)
 
@@ -818,7 +818,7 @@ function ChapterListing:openMenu()
     },
     {
       {
-        text = Icons.FA_DOWNLOAD .. " Download unread chapters…",
+        text = Icons.FA_DOWNLOAD .. " " .. _("Download unread chapters…"),
         callback = function()
           UIManager:close(dialog)
 
@@ -831,8 +831,8 @@ function ChapterListing:openMenu()
   -- Add scanlator filter button if multiple scanlators exist
   if #self.available_scanlators > 1 then
     local scanlator_text = self.selected_scanlator and
-        (Icons.FA_FILTER .. " Group: " .. self.selected_scanlator) or
-        Icons.FA_FILTER .. " Filter by Group"
+        (Icons.FA_FILTER .. " " .. _("Group") .. ": " .. self.selected_scanlator) or
+        Icons.FA_FILTER .. " " .. _("Filter by Group")
 
     table.insert(buttons, {
       {
@@ -862,7 +862,7 @@ function ChapterListing:addToLibrary()
     )
 
     if response.type == 'ERROR' then
-      ErrorDialog:show(_("Failed to add to library: ") .. response.message)
+      ErrorDialog:show(_("Failed to add to library") .. ": " .. response.message)
       return
     end
 
@@ -880,7 +880,7 @@ function ChapterListing:readContinue(nextChapter)
   local first_chapter = nil
   local first_chapter_num = math.huge
 
-  for _, chapter in ipairs(self.chapters) do
+  for __,chapter in ipairs(self.chapters) do
     local num = chapter.chapter_num
     if num then
       if num < first_chapter_num then
@@ -899,7 +899,7 @@ function ChapterListing:readContinue(nextChapter)
     next_chapter = first_chapter
   else
     if nextChapter then
-      for _, chapter in ipairs(self.chapters) do
+      for __,chapter in ipairs(self.chapters) do
         local num = chapter.chapter_num
         if num and not chapter.read and num > last_read_chapter_num and num < next_chapter_num then
           next_chapter = chapter
@@ -949,7 +949,7 @@ function ChapterListing:showScanlatorDialog()
   -- Show All option
   table.insert(buttons, {
     {
-      text = self.selected_scanlator == nil and Icons.FA_CHECK .. " Show All" or "Show All",
+      text = self.selected_scanlator == nil and Icons.FA_CHECK .. " " .. _("Show All") or " " .. _("Show All"),
       callback = function()
         UIManager:close(dialog)
         self.selected_scanlator = nil
@@ -957,13 +957,13 @@ function ChapterListing:showScanlatorDialog()
         Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, nil)
 
         self:updateItems()
-        UIManager:show(InfoMessage:new { text = "Showing all groups", timeout = 1 })
+        UIManager:show(InfoMessage:new { text = _("Showing all groups"), timeout = 1 })
       end
     }
   })
 
   -- Individual scanlators
-  for _, scanlator in ipairs(self.available_scanlators) do
+  for __,scanlator in ipairs(self.available_scanlators) do
     local is_selected = self.selected_scanlator == scanlator
     local text = is_selected and (Icons.FA_CHECK .. " " .. scanlator) or scanlator
 
@@ -977,14 +977,14 @@ function ChapterListing:showScanlatorDialog()
           Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, scanlator)
 
           self:updateItems()
-          UIManager:show(InfoMessage:new { text = "Filtered to: " .. scanlator, timeout = 1 })
+          UIManager:show(InfoMessage:new { text = _("Filtered to") .. ": " .. scanlator, timeout = 1 })
         end
       }
     })
   end
 
   dialog = ButtonDialog:new {
-    title = "Filter by Group",
+    title = _("Filter by Group"),
     buttons = buttons,
   }
 
@@ -994,23 +994,23 @@ end
 function ChapterListing:onDownloadUnreadChapters()
   local input_dialog
   input_dialog = InputDialog:new {
-    title = "Download unread chapters...",
+    title = _("Download unread chapters..."),
     input_type = "number",
-    input_hint = "Amount of unread chapters (default: all)",
+    input_hint = _("Amount of unread chapters (default: all)"),
     description = self.selected_scanlator and
-        ("Will download from: " .. self.selected_scanlator .. "\n\nSpecify amount or leave empty for all.") or
-        "Specify the amount of unread chapters to download, or leave empty to download all of them.",
+        (_("Will download from") .. ": " .. self.selected_scanlator .. "\n\n" .. _("Specify amount or leave empty for all.")) or
+        _("Specify the amount of unread chapters to download") .. ", " .. _("or leave empty to download all of them."),
     buttons = {
       {
         {
-          text = "Cancel",
+          text = _("Cancel"),
           id = "close",
           callback = function()
             UIManager:close(input_dialog)
           end,
         },
         {
-          text = "Download",
+          text = _("Download"),
           is_enter_default = true,
           callback = function()
             UIManager:close(input_dialog)
@@ -1020,7 +1020,7 @@ function ChapterListing:onDownloadUnreadChapters()
               amount = tonumber(input_dialog:getInputText())
 
               if amount == nil then
-                ErrorDialog:show('Invalid amount of chapters!')
+                ErrorDialog:show(_("Invalid amount of chapters!"))
 
                 return
               end
@@ -1041,7 +1041,7 @@ function ChapterListing:onDownloadUnreadChapters()
               dialog:show()
             else
               UIManager:show(InfoMessage:new {
-                text = "No unread chapters found for " .. (self.selected_scanlator or "this manga"),
+                text = _("No unread chapters found for") .. " " .. (self.selected_scanlator or "this manga"),
                 timeout = 2,
               })
             end
@@ -1065,7 +1065,7 @@ end
 
 function ChapterListing:onDownloadAllChapters()
   local downloadingMessage = InfoMessage:new {
-    text = "Downloading all chapters, this will take a while…",
+    text = _("Downloading all chapters, this will take a while…"),
   }
 
   UIManager:show(downloadingMessage)
@@ -1089,7 +1089,7 @@ function ChapterListing:onDownloadAllChapters()
       -- some possible alternatives:
       -- - return the chapter list from the backend on the `downloadAllChapters` call
       -- - biting the bullet and making the API call
-      for _, chapter in ipairs(self.chapters) do
+      for __,chapter in ipairs(self.chapters) do
         self:findRootChapter(chapter).downloaded = true
       end
 
@@ -1113,7 +1113,7 @@ function ChapterListing:onDownloadAllChapters()
 
     local onCancelled = function()
       local cancelledMessage = InfoMessage:new {
-        text = "Cancelled.",
+        text = _("Cancelled."),
       }
 
       UIManager:show(cancelledMessage)
@@ -1140,7 +1140,7 @@ function ChapterListing:onDownloadAllChapters()
       local messageText = nil
       local isCancellable = false
       if downloadProgress.type == "INITIALIZING" then
-        messageText = "Downloading all chapters, this will take a while…"
+        messageText = _("Downloading all chapters, this will take a while…")
       elseif downloadProgress.type == "FINISHED" then
         onDownloadFinished()
 
@@ -1150,12 +1150,12 @@ function ChapterListing:onDownloadAllChapters()
 
         return
       elseif cancellationRequested then
-        messageText = "Waiting for download to be cancelled…"
+        messageText = _("Waiting for download to be cancelled…")
       elseif downloadProgress.type == "PROGRESSING" then
-        messageText = "Downloading all chapters, this will take a while… (" ..
+        messageText = _("Downloading all chapters, this will take a while… (") ..
             downloadProgress.downloaded .. "/" .. downloadProgress.total .. ")." ..
             "\n\n" ..
-            "Tap outside this message to cancel."
+            _("Tap outside this message to cancel.")
 
         isCancellable = true
       else

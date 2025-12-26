@@ -1,8 +1,7 @@
 local InfoMessage = require("ui/widget/infomessage")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local UIManager = require("ui/uimanager")
-
-local logger = require('logger')
+local _ = require("gettext+")
 
 --- @class DownloadUnreadChaptersJobDialog
 --- @field job DownloadUnreadChapters
@@ -49,18 +48,18 @@ function DownloadUnreadChaptersJobDialog:pollAndCreateTextWidget()
   local message = ''
 
   if state.type == 'SUCCESS' then
-    message = self.cancellation_requested and 'Download cancelled!' or 'Download complete!'
+    message = self.cancellation_requested and _("Download cancelled!") or _('Download complete!')
   elseif state.type == 'PENDING' then
     if self.cancellation_requested then
-      message = 'Waiting until downloads are cancelled…'
+      message = _("Waiting until downloads are cancelled…")
     elseif state.body.type == 'INITIALIZING' then
-      message = 'Downloading chapters, this will take a while…'
+      message = _("Downloading chapters, this will take a while…")
     else
-      message = 'Downloading chapters, this will take a while… (' ..
+      message = _("Downloading chapters, this will take a while… (") ..
           state.body.downloaded .. '/' .. state.body.total .. ')'
     end
   elseif state.type == 'ERROR' then
-    message = 'An error occurred while downloading chapters: ' .. state.message
+    message = _("An error occurred while downloading chapters") .. ": " .. state.message
   end
 
   local is_cancellable = state.type == 'PENDING' and not self.cancellation_requested

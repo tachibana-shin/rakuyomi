@@ -16,7 +16,7 @@ local LoadingDialog = require("LoadingDialog")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local InfoMessage = require("ui/widget/infomessage")
-local _ = require("gettext")
+local _ = require("gettext+")
 local CheckboxDialog = require("CheckboxDialog")
 
 local Icons = require("Icons")

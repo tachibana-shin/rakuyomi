@@ -2,6 +2,7 @@ local CheckButton = require("ui/widget/checkbutton")
 local UIManager = require("ui/uimanager")
 local CustomDialog = require("CustomDialog")
 local hasValue = require("utils/hasValue")
+---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
 --- @class BaseOption

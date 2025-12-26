@@ -1,1 +1,1 @@
-rsync -av frontend/rakuyomi.koplugin/ /usr/lib/koreader/plugins/rakuyomi.koplugin/
+rsync -av frontend/rakuyomi.koplugin/ ~/.config/koreader/plugins/rakuyomi.koplugin/

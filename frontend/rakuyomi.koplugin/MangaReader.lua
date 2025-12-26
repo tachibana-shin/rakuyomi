@@ -3,7 +3,7 @@ local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
 local logger = require("logger")
-local _ = require("gettext")
+local _ = require("gettext+")
 
 local Testing = require('testing')
 
@@ -86,7 +86,7 @@ end
 --- @private
 function MangaReader:addToMainMenu(menu_items)
   menu_items.go_back_to_rakuyomi = {
-    text = "Go back to Rakuyomi...",
+    text = _("Go back to Rakuyomi..."),
     sorting_hint = "main",
     callback = function()
       self:onReturn()
@@ -151,7 +151,7 @@ function MangaReader:overrideBtnFileManager(menu)
       if G_reader_settings:nilOrFalse(key) then
         local confirm_dialog
         confirm_dialog = ConfirmBox:new {
-          text = "どーも\nDo you want Rakuyomi to commandeer this button when you open it?\n\nThis setting only affects when you open it with Rakuyomi.",
+          text = "どーも" .. "\n" .. _("Do you want Rakuyomi to commandeer this button when you open it?") .. "\n\n" .. _("This setting only affects when you open it with Rakuyomi."),
           dismissable = false,
           ok_text = _("Yes"),
           cancel_text = _("No"),

@@ -7,6 +7,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local LoadingDialog = require("LoadingDialog")
 local Menu = require("widgets/Menu")
+local _ = require("gettext+")
 local Testing = require("testing")
 
 --- @class AvailableSourcesListing: { [any]: any }
@@ -17,7 +18,7 @@ local AvailableSourcesListing = Menu:extend {
   name = "available_sources_listing",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Available sources",
+  title = _("Available sources"),
 
   available_sources = nil,
   installed_sources = nil,
@@ -81,7 +82,7 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
   end
 
   local item_table = {}
-  for _, source_information in ipairs(available_sources) do
+  for __,source_information in ipairs(available_sources) do
     local mandatory = ""
     local callback = nil
 
@@ -90,24 +91,24 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
       local installed_source_info = installed_sources_by_id[source_information.id]
 
       if installed_source_info.version < source_information.version then
-        mandatory = mandatory .. Icons.FA_ARROW_UP .. " Update available!"
+        mandatory = mandatory .. Icons.FA_ARROW_UP .. " " .. _("Update available!")
 
         callback = function() self:installSource(source_information) end
       else
-        mandatory = mandatory .. Icons.FA_CHECK .. " Latest version installed"
+        mandatory = mandatory .. Icons.FA_CHECK .. " " .. _("Latest version installed")
       end
     else
-      mandatory = mandatory .. Icons.FA_DOWNLOAD .. " Installable"
+      mandatory = mandatory .. Icons.FA_DOWNLOAD .. " " .. _("Installable")
 
       callback = function() self:installSource(source_information) end
     end
 
     table.insert(item_table, {
       source_information = source_information,
-      text = source_information.name .. " (version " .. source_information.version .. ")",
+      text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
       mandatory = mandatory,
       post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
-          "Unknown",
+          _("Unknown"),
       callback = callback,
     })
   end
@@ -119,7 +120,7 @@ end
 function AvailableSourcesListing:generateEmptyViewItemTable()
   return {
     {
-      text = "No available sources found. Try adding some source lists by looking at our README!",
+      text = _("No available sources found.") .. " " .. _("Try adding some source lists by looking at our README!"),
       dim = true,
       select_enabled = false,
     }
@@ -137,7 +138,7 @@ end
 function AvailableSourcesListing:installSource(source_information)
   Trapper:wrap(function()
     local response = LoadingDialog:showAndRun(
-      "Installing source...",
+      _("Installing source..."),
       function() return Backend.installSource(source_information.id, source_information.source_of_source) end
     )
 

@@ -2,6 +2,7 @@ local UIManager = require("ui/uimanager")
 local ConfirmBox = require("ui/widget/confirmbox")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
+local _ = require("gettext+")
 
 local AvailableSourcesListing = require("AvailableSourcesListing")
 local Backend = require("Backend")
@@ -74,12 +75,12 @@ end
 --- @return table
 function InstalledSourcesListing:generateItemTableFromInstalledSources(installed_sources)
   local item_table = {}
-  for _, source_information in ipairs(installed_sources) do
+  for __,source_information in ipairs(installed_sources) do
     table.insert(item_table, {
       source_information = source_information,
-      text = source_information.name .. " (version " .. source_information.version .. ")",
+      text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
       post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
-          "Unknown",
+          _("Unknown"),
     })
   end
 
@@ -91,8 +92,8 @@ function InstalledSourcesListing:generateEmptyViewItemTable()
   return {
     {
       text =
-          "No installed sources found. Try installing some by tapping " ..
-          "the top-left button to list the available sources.",
+          _("No installed sources found") .. ". " .. _("Try installing some by tapping") ..
+          _("the top-left button to list the available sources."),
       dim = true,
       select_enabled = false,
     }
@@ -119,7 +120,7 @@ function InstalledSourcesListing:onContextMenuChoice(item)
   local source_information = item.source_information
 
   UIManager:show(ConfirmBox:new {
-    text = "Do you want to remove the \"" .. source_information.name .. "\" source?",
+    text = _("Do you want to remove the") .. " \"" .. source_information.name .. "\" " .. _("source?"),
     ok_text = "Remove",
     ok_callback = function()
       local response = Backend.uninstallSource(source_information.id)

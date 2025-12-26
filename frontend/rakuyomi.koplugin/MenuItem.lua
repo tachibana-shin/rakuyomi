@@ -18,7 +18,7 @@ local UIManager = require("ui/uimanager")
 local UnderlineContainer = require("ui/widget/container/underlinecontainer")
 local ffiUtil = require("ffi/util")
 local logger = require("logger")
-local _ = require("gettext")
+local _ = require("gettext+")
 local Screen = Device.screen
 local T = ffiUtil.template
 

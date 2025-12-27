@@ -4,6 +4,7 @@ local LoadingDialog = require("LoadingDialog")
 local InfoMessage = require("ui/widget/infomessage")
 local ErrorDialog = require("ErrorDialog")
 local ConfirmBox = require("ui/widget/confirmbox")
+local _ = require("gettext+")
 
 local Backend = require("Backend")
 local ChapterListing = require("ChapterListing")
@@ -13,17 +14,17 @@ local getChapterDisplayName = require("utils/getChapterDisplayName")
 local ContinueReadingHandler = {}
 
 local MESSAGES = {
-  FINDING = "Finding next chapter...",
-  NO_CHAPTERS = "No chapters found for this manga.",
-  NO_NEXT_CHAPTER = "Sadly, no next chapter available! :c"
+  FINDING = _("Finding next chapter..."),
+  NO_CHAPTERS = _("No chapters found for this manga."),
+  NO_NEXT_CHAPTER = _("Sadly, no next chapter available! :c")
 }
 
 local function showChapterConfirmation(chapter, onConfirm, onCancel)
   local confirm_dialog
   confirm_dialog = ConfirmBox:new {
-    text = "Resume reading with:\n" .. getChapterDisplayName(chapter) .. "?",
-    ok_text = "Read",
-    cancel_text = "Cancel",
+    text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter) .. "?",
+    ok_text = _("Read"),
+    cancel_text = _("Cancel"),
     ok_callback = function()
       UIManager:close(confirm_dialog)
       if onConfirm then onConfirm() end

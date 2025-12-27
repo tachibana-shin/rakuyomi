@@ -9,6 +9,12 @@ TYPE_BUILD=$3
 OUT="build/${BUILD_NAME}"
 mkdir -p "$OUT"
 
+cd frontend/rakuyomi.koplugin/l10n
+make mo
+rm -rf */*.po .gitignore *.sh Makefile *.md *.po
+
+cd ../../..
+
 cp -r frontend/rakuyomi.koplugin/* "$OUT/"
 
 cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"

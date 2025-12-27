@@ -11,7 +11,7 @@ local TitleBar = require("ui/widget/titlebar")
 local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local InfoMessage = require("ui/widget/infomessage")
-local logger = require("logger")
+local _ = require("gettext+")
 local Paths = require("Paths")
 local Device = require("device")
 
@@ -33,10 +33,10 @@ Settings.setting_value_definitions = {
     'chapter_sorting_mode',
     {
       type = 'enum',
-      title = 'Chapter sorting mode',
+      title = _('Chapter sorting mode'),
       options = {
-        { label = 'By chapter ascending',  value = 'chapter_ascending' },
-        { label = 'By chapter descending', value = 'chapter_descending' },
+        { label = _("By chapter ascending"),  value = 'chapter_ascending' },
+        { label = _("By chapter descending"), value = 'chapter_descending' },
       }
     }
   },
@@ -44,14 +44,14 @@ Settings.setting_value_definitions = {
     'library_sorting_mode',
     {
       type = 'enum',
-      title = 'Library sorting mode',
+      title = _("Library sorting mode"),
       options = {
-        { label = 'Ascending (Default)', value = 'ascending' },
-        { label = 'Descending',          value = 'descending' },
-        { label = 'Title Asc',           value = 'title_asc' },
-        { label = 'Title Desc',          value = 'title_desc' },
-        { label = 'Unread Asc',          value = 'unread_asc' },
-        { label = 'Unread Desc',         value = 'unread_desc' },
+        { label = _("Ascending (Default)"), value = 'ascending' },
+        { label = _("Descending"),          value = 'descending' },
+        { label = _("Title Asc"),           value = 'title_asc' },
+        { label = _("Title Desc"),          value = 'title_desc' },
+        { label = _("Unread Asc"),          value = 'unread_asc' },
+        { label = _("Unread Desc"),         value = 'unread_desc' },
       }
     }
   },
@@ -59,7 +59,7 @@ Settings.setting_value_definitions = {
     'storage_path',
     {
       type = 'path',
-      title = 'Chapter storage path',
+      title = _("Chapter storage path"),
       path_type = 'directory',
       default = Paths.getHomeDirectory() .. '/downloads',
     }
@@ -68,7 +68,7 @@ Settings.setting_value_definitions = {
     'storage_size_limit_mb',
     {
       type = 'integer',
-      title = 'Storage size limit',
+      title = _('Storage size limit'),
       min_value = 1,
       max_value = 10240,
       unit = 'MB'
@@ -78,7 +78,7 @@ Settings.setting_value_definitions = {
     'concurrent_requests_pages',
     {
       type = 'integer',
-      title = 'Concurrent page requests',
+      title = _("Concurrent page requests"),
       min_value = 1,
       max_value = 20,
       unit = 'pages',
@@ -89,7 +89,7 @@ Settings.setting_value_definitions = {
     'api_sync',
     {
       type = 'string',
-      title = 'WebDAV Sync',
+      title = _("WebDAV Sync"),
       placeholder = 'user:password@example.com/folder',
     }
   },
@@ -97,7 +97,7 @@ Settings.setting_value_definitions = {
     'enabled_cron_check_mangas_update',
     {
       type = 'boolean',
-      title = 'Enabled cron check for manga updates',
+      title = _("Enabled cron check for manga updates"),
       -- default = true,
     }
   },
@@ -105,7 +105,7 @@ Settings.setting_value_definitions = {
     'source_skip_cron',
     {
       type = 'string',
-      title = 'Source IDs skip check update',
+      title = _("Source IDs skip check update"),
       placeholder = 'com.manga,com.manga2'
     }
   }
@@ -165,7 +165,7 @@ function Settings:init()
   table.insert(vertical_group, SettingItem:new {
     show_parent = self,
     width = self.item_width,
-    label = "Allow requisition of the back button",
+    label = _("Allow requisition of the back button"),
     value_definition = {
       type = 'boolean',
     },

@@ -1,0 +1,973 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: rakuyomi.koreader \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-27 02:37+0700\n"
+"PO-Revision-Date: 2025-12-26 23:18+0700\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../AvailableSourcesListing.lua:21
+msgid "Available sources"
+msgstr "Διαθέσιμες πηγές"
+
+#: ../AvailableSourcesListing.lua:94
+msgid "Update available!"
+msgstr "Διαθέσιμη ενημέρωση!"
+
+#: ../AvailableSourcesListing.lua:98
+msgid "Latest version installed"
+msgstr "Εγκαταστάθηκε η τελευταία έκδοση"
+
+#: ../AvailableSourcesListing.lua:101
+msgid "Installable"
+msgstr "Με δυνατότητα εγκατάστασης"
+
+#: ../AvailableSourcesListing.lua:108 ../InstalledSourcesListing.lua:81
+msgid "version"
+msgstr "εκδοχή"
+
+#: ../AvailableSourcesListing.lua:111 ../ChapterListing.lua:125
+#: ../ChapterListing.lua:205 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:445
+msgid "Unknown"
+msgstr "Αγνωστος"
+
+#: ../AvailableSourcesListing.lua:123
+msgid "No available sources found."
+msgstr "Δεν βρέθηκαν διαθέσιμες πηγές."
+
+#: ../AvailableSourcesListing.lua:123
+msgid "Try adding some source lists by looking at our README!"
+msgstr "Δοκιμάστε να προσθέσετε μερικές λίστες πηγών κοιτάζοντας το README!"
+
+#: ../AvailableSourcesListing.lua:141
+msgid "Installing source..."
+msgstr "Εγκατάσταση πηγής..."
+
+#: ../ChapterListing.lua:171
+msgid "No chapters found"
+msgstr "Δεν βρέθηκαν κεφάλαια"
+
+#: ../ChapterListing.lua:171
+msgid "Try swiping down to refresh the chapter list."
+msgstr "Δοκιμάστε να σύρετε προς τα κάτω για να ανανεώσετε τη λίστα κεφαλαίων."
+
+#: ../ChapterListing.lua:232
+msgid "Volume"
+msgstr "Τόμος"
+
+#: ../ChapterListing.lua:236 ../utils/getChapterDisplayName.lua:10
+msgid "Chapter"
+msgstr "Κεφάλαιο"
+
+#: ../ChapterListing.lua:285 ../ChapterListing.lua:480
+msgid "Refreshing chapters..."
+msgstr "Ανανέωση κεφαλαίων..."
+
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:487
+#: ../ChapterListing.lua:1116
+msgid "Cancelled."
+msgstr "Ακυρώθηκε."
+
+#: ../ChapterListing.lua:305
+msgid "Refresh chapter error"
+msgstr "Σφάλμα ανανέωσης κεφαλαίου"
+
+#: ../ChapterListing.lua:355
+msgid "Open"
+msgstr "Ανοιχτό"
+
+#: ../ChapterListing.lua:365 ../ChapterListing.lua:755 ../LibraryView.lua:336
+msgid "Refresh"
+msgstr "Φρεσκάρω"
+
+#: ../ChapterListing.lua:371
+msgid "Chapter refreshed"
+msgstr "Το κεφάλαιο ανανεώθηκε"
+
+#: ../ChapterListing.lua:377 ../ChapterListing.lua:526
+msgid "Mark"
+msgstr "Σημάδι"
+
+#: ../ChapterListing.lua:389 ../ChapterListing.lua:1013
+msgid "Download"
+msgstr "Λήψη"
+
+#: ../ChapterListing.lua:389 ../LibraryView.lua:459
+msgid "Remove"
+msgstr "Αφαιρώ"
+
+#: ../ChapterListing.lua:398
+msgid "Chapter downloaded"
+msgstr "Κατέβασε το κεφάλαιο"
+
+#: ../ChapterListing.lua:417
+msgid "Revoke chapter..."
+msgstr "Ανάκληση κεφαλαίου..."
+
+#: ../ChapterListing.lua:435
+msgid "Removed chapter"
+msgstr "Καταργήθηκε το κεφάλαιο"
+
+#: ../ChapterListing.lua:446
+msgid "Marking"
+msgstr "Βαθμολόγηση"
+
+#: ../ChapterListing.lua:446
+msgid "Un-marking"
+msgstr "Αφαίρεση σήμανσης"
+
+#: ../ChapterListing.lua:446
+msgid "chapter..."
+msgstr "κεφάλαιο..."
+
+#: ../ChapterListing.lua:513 ../ChapterListing.lua:781 ../LibraryView.lua:372
+msgid "Mark read"
+msgstr "Σημάδι διαβάστε"
+
+#: ../ChapterListing.lua:513 ../ChapterListing.lua:791 ../LibraryView.lua:383
+msgid "Mark unread"
+msgstr "Επισήμανση ως μη αναγνωσμένο"
+
+#: ../ChapterListing.lua:514
+msgid "1 - 10.5, 20 - 100"
+msgstr "1 - 10,5, 20 - 100"
+
+#: ../ChapterListing.lua:515
+msgid "Leaving blank will select all"
+msgstr "Αν αφήσετε κενό, θα επιλέξετε όλα"
+
+#: ../ChapterListing.lua:515
+msgid "Mark chapters as read or unread"
+msgstr "Επισημάνετε τα κεφάλαια ως αναγνωσμένα ή μη"
+
+#: ../ChapterListing.lua:519 ../ChapterListing.lua:930
+#: ../ChapterListing.lua:1006 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
+#: ../widgets/SettingItemValue.lua:162
+msgid "Cancel"
+msgstr "Ματαίωση"
+
+#: ../ChapterListing.lua:536
+msgid "Marking..."
+msgstr "Βαθμολόγηση..."
+
+#: ../ChapterListing.lua:546
+msgid "Marked"
+msgstr "Μαρκαρισμένος"
+
+#: ../ChapterListing.lua:565 ../MangaSearchResults.lua:103
+msgid "No errors"
+msgstr "Χωρίς σφάλματα"
+
+#: ../ChapterListing.lua:574
+#, lua-format
+msgid "Page"
+msgstr "Σελίδα"
+
+#: ../ChapterListing.lua:574
+#, lua-format
+msgid "attempts"
+msgstr "προσπάθειες"
+
+#: ../ChapterListing.lua:582 ../MangaSearchResults.lua:119
+#, lua-format
+msgid "… and %d more errors"
+msgstr "… και %d περισσότερα σφάλματα"
+
+#: ../ChapterListing.lua:601 ../ChapterListing.lua:616
+msgid "Could not download chapter."
+msgstr "Δεν ήταν δυνατή η λήψη του κεφαλαίου."
+
+#: ../ChapterListing.lua:609
+msgid "Downloading chapter..."
+msgstr "Λήψη κεφαλαίου..."
+
+#: ../ChapterListing.lua:610
+msgid "unknown"
+msgstr "άγνωστος"
+
+#: ../ChapterListing.lua:629
+msgid "Download cancelled."
+msgstr "Η λήψη ακυρώθηκε."
+
+#: ../ChapterListing.lua:635
+msgid "Are you sure you want to cancel the download?"
+msgstr "Είστε βέβαιοι ότι θέλετε να ακυρώσετε τη λήψη;"
+
+#: ../ChapterListing.lua:745 ../MangaSearchResults.lua:202
+msgid "Add to Library"
+msgstr "Προσθήκη στη Βιβλιοθήκη"
+
+#: ../ChapterListing.lua:763 ../LibraryView.lua:356
+#: ../MangaSearchResults.lua:226
+msgid "Details"
+msgstr "Καθέκαστα"
+
+#: ../ChapterListing.lua:803
+msgid "Resume"
+msgstr "Περίληψη"
+
+#: ../ChapterListing.lua:811
+msgid "Next Chapter"
+msgstr "Επόμενο Κεφάλαιο"
+
+#: ../ChapterListing.lua:821
+msgid "Download unread chapters…"
+msgstr "Λήψη μη αναγνωσμένων κεφαλαίων…"
+
+#: ../ChapterListing.lua:834
+msgid "Group"
+msgstr "Ομάδα"
+
+#: ../ChapterListing.lua:835 ../ChapterListing.lua:987
+msgid "Filter by Group"
+msgstr "Φιλτράρισμα ανά ομάδα"
+
+#: ../ChapterListing.lua:858
+msgid "Adding to library..."
+msgstr "Προσθήκη στη βιβλιοθήκη..."
+
+#: ../ChapterListing.lua:865
+msgid "Failed to add to library"
+msgstr "Αποτυχία προσθήκης στη βιβλιοθήκη"
+
+#: ../ChapterListing.lua:870
+msgid "Added to library."
+msgstr "Προστέθηκε στη βιβλιοθήκη."
+
+#: ../ChapterListing.lua:918
+msgid "No more chapters to read!"
+msgstr "Δεν υπάρχουν άλλα κεφάλαια για ανάγνωση!"
+
+#: ../ChapterListing.lua:928
+msgid "Next"
+msgstr "Επόμενος"
+
+#: ../ChapterListing.lua:928
+msgid "reading with"
+msgstr "ανάγνωση με"
+
+#: ../ChapterListing.lua:929 ../handlers/ContinueReadingHandler.lua:26
+msgid "Read"
+msgstr "Ανάγνωση"
+
+#: ../ChapterListing.lua:952
+msgid "Show All"
+msgstr "Εμφάνιση όλων"
+
+#: ../ChapterListing.lua:960
+msgid "Showing all groups"
+msgstr "Εμφάνιση όλων των ομάδων"
+
+#: ../ChapterListing.lua:980
+msgid "Filtered to"
+msgstr "Φιλτράρεται σε"
+
+#: ../ChapterListing.lua:997
+msgid "Download unread chapters..."
+msgstr "Λήψη μη αναγνωσμένων κεφαλαίων..."
+
+#: ../ChapterListing.lua:999
+msgid "Amount of unread chapters (default: all)"
+msgstr "Ποσότητα μη αναγνωσμένων κεφαλαίων (προεπιλογή: όλα)"
+
+#: ../ChapterListing.lua:1001
+msgid "Specify amount or leave empty for all."
+msgstr "Προσδιορίστε το ποσό ή αφήστε κενό για όλους."
+
+#: ../ChapterListing.lua:1001
+msgid "Will download from"
+msgstr "Θα γίνει λήψη από"
+
+#: ../ChapterListing.lua:1002
+msgid "Specify the amount of unread chapters to download"
+msgstr "Καθορίστε τον αριθμό των μη αναγνωσμένων κεφαλαίων προς λήψη"
+
+#: ../ChapterListing.lua:1002
+msgid "or leave empty to download all of them."
+msgstr "ή αφήστε το κενό για να τα κατεβάσετε όλα."
+
+#: ../ChapterListing.lua:1023
+msgid "Invalid amount of chapters!"
+msgstr "Μη έγκυρος αριθμός κεφαλαίων!"
+
+#: ../ChapterListing.lua:1044
+msgid "No unread chapters found for"
+msgstr "Δεν βρέθηκαν μη αναγνωσμένα κεφάλαια για"
+
+#: ../ChapterListing.lua:1068 ../ChapterListing.lua:1143
+msgid "Downloading all chapters, this will take a while…"
+msgstr "Η λήψη όλων των κεφαλαίων, θα διαρκέσει λίγο…"
+
+#: ../ChapterListing.lua:1153
+msgid "Waiting for download to be cancelled…"
+msgstr "Αναμονή για ακύρωση λήψης…"
+
+#: ../ChapterListing.lua:1155
+msgid "Downloading all chapters, this will take a while… ("
+msgstr "Η λήψη όλων των κεφαλαίων, θα διαρκέσει λίγο… ("
+
+#: ../ChapterListing.lua:1158
+msgid "Tap outside this message to cancel."
+msgstr "Πατήστε έξω από αυτό το μήνυμα για ακύρωση."
+
+#: ../DownloadUnreadChaptersJobDialog.lua:51
+msgid "Download cancelled!"
+msgstr "Η λήψη ακυρώθηκε!"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:51
+msgid "Download complete!"
+msgstr "Η λήψη ολοκληρώθηκε!"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:54
+msgid "Waiting until downloads are cancelled…"
+msgstr "Αναμονή έως ότου ακυρωθούν οι λήψεις…"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:56
+msgid "Downloading chapters, this will take a while…"
+msgstr "Λήψη κεφαλαίων, θα διαρκέσει λίγο…"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:58
+msgid "Downloading chapters, this will take a while… ("
+msgstr "Λήψη κεφαλαίων, θα διαρκέσει λίγο… ("
+
+#: ../DownloadUnreadChaptersJobDialog.lua:62
+msgid "An error occurred while downloading chapters"
+msgstr "Παρουσιάστηκε σφάλμα κατά τη λήψη κεφαλαίων"
+
+#: ../InstalledSourcesListing.lua:95
+msgid "No installed sources found"
+msgstr "Δεν βρέθηκαν εγκατεστημένες πηγές"
+
+#: ../InstalledSourcesListing.lua:95
+msgid "Try installing some by tapping"
+msgstr "Δοκιμάστε να εγκαταστήσετε μερικά πατώντας"
+
+#: ../InstalledSourcesListing.lua:96
+msgid "the top-left button to list the available sources."
+msgstr "το επάνω αριστερό κουμπί για να εμφανίσετε τις διαθέσιμες πηγές."
+
+#: ../InstalledSourcesListing.lua:123
+msgid "Do you want to remove the"
+msgstr "Θέλετε να αφαιρέσετε το"
+
+#: ../InstalledSourcesListing.lua:123
+msgid "source?"
+msgstr "πηγή;"
+
+#: ../LibraryView.lua:44
+msgid "Library"
+msgstr "Βιβλιοθήκη"
+
+#: ../LibraryView.lua:285
+msgid "No mangas found in library"
+msgstr "Δεν βρέθηκαν mangas στη βιβλιοθήκη"
+
+#: ../LibraryView.lua:285
+msgid "Try adding some by holding their name on the search results!"
+msgstr ""
+"Δοκιμάστε να προσθέσετε μερικά κρατώντας το όνομά τους στα αποτελέσματα "
+"αναζήτησης!"
+
+#: ../LibraryView.lua:347
+msgid "Refreshed manga"
+msgstr "Ανανεωμένο manga"
+
+#: ../LibraryView.lua:396
+msgid "Continue Reading"
+msgstr "Συνεχίστε την ανάγνωση"
+
+#: ../LibraryView.lua:405
+msgid "Remove from Library"
+msgstr "Κατάργηση από τη Βιβλιοθήκη"
+
+#: ../LibraryView.lua:458
+msgid "Do you want to remove"
+msgstr "Θέλετε να αφαιρέσετε"
+
+#: ../LibraryView.lua:458
+msgid "from your library?"
+msgstr "από τη βιβλιοθήκη σας;"
+
+#: ../LibraryView.lua:481
+msgid "Search for mangas"
+msgstr "Αναζήτηση για mangas"
+
+#: ../LibraryView.lua:491
+msgid "Refresh mangas"
+msgstr "Ανανεώστε τα mangas"
+
+#: ../LibraryView.lua:499
+msgid "Search favorites"
+msgstr "Αναζήτηση αγαπημένων"
+
+#: ../LibraryView.lua:509
+msgid "Cleaner chapters"
+msgstr "Πιο καθαρά κεφάλαια"
+
+#: ../LibraryView.lua:517
+msgid "Manage sources"
+msgstr "Διαχείριση πηγών"
+
+#: ../LibraryView.lua:527 ../LibraryView.lua:677
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+#: ../LibraryView.lua:535
+msgid "Check for updates"
+msgstr "Ελέγξτε για ενημερώσεις"
+
+#: ../LibraryView.lua:544
+msgid "Sync Database (Beta)"
+msgstr "Συγχρονισμός βάσης δεδομένων (Beta)"
+
+#: ../LibraryView.lua:548
+msgid "Sync to WebDAV..."
+msgstr "Συγχρονισμός στο WebDAV..."
+
+#: ../LibraryView.lua:560
+msgid "Do you want to migrate your local database from the server?"
+msgstr ""
+"Θέλετε να μετεγκαταστήσετε την τοπική σας βάση δεδομένων από τον διακομιστή;"
+
+#: ../LibraryView.lua:560
+msgid "The remote database is newer than the local one."
+msgstr "Η απομακρυσμένη βάση δεδομένων είναι νεότερη από την τοπική."
+
+#: ../LibraryView.lua:560
+msgid "This action cannot be undone."
+msgstr "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
+
+#: ../LibraryView.lua:561
+msgid "Migrate"
+msgstr "Αποδημώ"
+
+#: ../LibraryView.lua:565
+msgid "Migrating database..."
+msgstr "Μετεγκατάσταση βάσης δεδομένων..."
+
+#: ../LibraryView.lua:576 ../LibraryView.lua:623
+msgid "Local database has been migrated from the server!"
+msgstr "Η τοπική βάση δεδομένων έχει μετεγκατασταθεί από τον διακομιστή!"
+
+#: ../LibraryView.lua:587
+msgid "Replace Cloud"
+msgstr "Αντικαταστήστε το Cloud"
+
+#: ../LibraryView.lua:591
+msgid "Replacing cloud..."
+msgstr "Αντικατάσταση cloud..."
+
+#: ../LibraryView.lua:601
+msgid "Cloud database has been forcedly replaced with local one!"
+msgstr "Η βάση δεδομένων Cloud έχει αντικατασταθεί αναγκαστικά με τοπική!"
+
+#: ../LibraryView.lua:619
+msgid "Database is already up to date!"
+msgstr "Η βάση δεδομένων είναι ήδη ενημερωμένη!"
+
+#: ../LibraryView.lua:621
+msgid "Database has been synced to the server!"
+msgstr "Η βάση δεδομένων έχει συγχρονιστεί με τον διακομιστή!"
+
+#: ../LibraryView.lua:625
+msgid "Sync completed!"
+msgstr "Ο συγχρονισμός ολοκληρώθηκε!"
+
+#: ../LibraryView.lua:649
+msgid "Manga search..."
+msgstr "Αναζήτηση Manga..."
+
+#: ../LibraryView.lua:650
+msgid "Houseki no Kuni"
+msgstr "Houseki no Kuni"
+
+#: ../LibraryView.lua:651 ../LibraryView.lua:727
+msgid "Type the manga name to search for"
+msgstr "Πληκτρολογήστε το όνομα manga για αναζήτηση"
+
+#: ../LibraryView.lua:655 ../LibraryView.lua:664 ../LibraryView.lua:709
+#: ../LibraryView.lua:738
+msgid "Search"
+msgstr "Ερευνα"
+
+#: ../LibraryView.lua:709
+msgid "Exclude source search for"
+msgstr "Εξαίρεση αναζήτησης πηγής για"
+
+#: ../LibraryView.lua:724
+msgid "Favorite search..."
+msgstr "Αγαπημένη αναζήτηση..."
+
+#: ../LibraryView.lua:726
+msgid "Tonikaku Kawaii"
+msgstr "Tonikaku Kawaii"
+
+#: ../LibraryView.lua:778
+msgid "Scaning files..."
+msgstr "Σάρωση αρχείων..."
+
+#: ../LibraryView.lua:793
+#, lua-format
+msgid "Found %d files."
+msgstr "Βρέθηκαν %d αρχεία."
+
+#: ../LibraryView.lua:794
+#, lua-format
+msgid "Total size %s."
+msgstr "Συνολικό μέγεθος %s."
+
+#: ../LibraryView.lua:795
+#, lua-format
+msgid "RendOnly file .cbz and .epub scan."
+msgstr "RendOnly αρχείο .cbz και .epub scan."
+
+#: ../LibraryView.lua:799
+msgid "Clean"
+msgstr "Καθαρός"
+
+#: ../LibraryView.lua:804
+msgid "Deleting..."
+msgstr "Διαγραφή..."
+
+#: ../LibraryView.lua:822
+#, lua-format
+msgid "Cleaned free %s storage"
+msgstr "Καθαρίστηκε ο δωρεάν αποθηκευτικός χώρος %s"
+
+#: ../LibraryView.lua:846
+msgid "Refresh mangas..."
+msgstr "Ανανεώστε τα mangas..."
+
+#: ../LibraryView.lua:874
+msgid "Some manga updates fail:"
+msgstr "Ορισμένες ενημερώσεις manga αποτυγχάνουν:"
+
+#: ../LibraryView.lua:881
+msgid "All chapters manga updated!"
+msgstr "Όλα τα κεφάλαια manga ενημερώθηκαν!"
+
+#: ../LibraryView.lua:892
+msgid "Cleaner"
+msgstr "Καθαριστής"
+
+#: ../LibraryView.lua:893
+msgid "Find and delete invalid files including files from deleted sources"
+msgstr ""
+"Βρείτε και διαγράψτε μη έγκυρα αρχεία, συμπεριλαμβανομένων αρχείων από "
+"διαγραμμένες πηγές"
+
+#: ../LibraryView.lua:893 ../LibraryView.lua:896
+msgid "Normal"
+msgstr "Κανονικός"
+
+#: ../LibraryView.lua:895
+msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr "ΣΗΜΑΝΤΙΚΟ: Τα αρχεία meta (σελιδοδείκτης, ιστορικό) δεν διατηρούνται!"
+
+#: ../LibraryView.lua:902
+msgid "Chapter read done"
+msgstr "Το κεφάλαιο που διαβάστηκε έγινε"
+
+#: ../MangaInfoWidget.lua:141
+msgid "Statistics"
+msgstr "Στατιστική"
+
+#: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
+#: ../MangaInfoWidget.lua:503
+msgid "Description"
+msgstr "Περιγραφή"
+
+#: ../MangaInfoWidget.lua:276
+msgid "%1 % Completed"
+msgstr "%1% Ολοκληρώθηκε"
+
+#: ../MangaInfoWidget.lua:308
+msgid "Last read: %1"
+msgstr "Τελευταία ανάγνωση: %1"
+
+#: ../MangaInfoWidget.lua:380
+msgid "Status"
+msgstr "Κατάσταση"
+
+#: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
+msgid "NSFW"
+msgstr "NSFW"
+
+#: ../MangaInfoWidget.lua:394
+msgid "Last Updated"
+msgstr "Τελευταία Ενημέρωση"
+
+#: ../MangaInfoWidget.lua:419
+msgid "N/A"
+msgstr "N/A"
+
+#: ../MangaInfoWidget.lua:435
+msgid "Ongoing"
+msgstr "Σε εξέλιξη"
+
+#: ../MangaInfoWidget.lua:437
+msgid "Completed"
+msgstr "Ολοκληρώθηκε το"
+
+#: ../MangaInfoWidget.lua:439
+msgid "Cancelled"
+msgstr "Ακυρώθηκε"
+
+#: ../MangaInfoWidget.lua:441
+msgid "Hiatus"
+msgstr "Κενό"
+
+#: ../MangaInfoWidget.lua:443
+msgid "Not published"
+msgstr "Δεν δημοσιεύτηκε"
+
+#: ../MangaInfoWidget.lua:451
+msgid "Safe"
+msgstr "Ασφαλής"
+
+#: ../MangaInfoWidget.lua:453
+msgid "Suggestive"
+msgstr "Υποδηλωτικός"
+
+#: ../MangaInfoWidget.lua:546
+msgid "Refreshing details..."
+msgstr "Ανανεωτικές λεπτομέρειες..."
+
+#: ../MangaInfoWidget.lua:558
+msgid "Refresh details cancelled."
+msgstr "Η ανανέωση των λεπτομερειών ακυρώθηκε."
+
+#: ../MangaReader.lua:89
+msgid "Go back to Rakuyomi..."
+msgstr "Επιστρέψτε στο Rakuyomi..."
+
+#: ../MangaReader.lua:154
+msgid "Do you want Rakuyomi to commandeer this button when you open it?"
+msgstr "Θέλετε ο Rakuyomi να χειρίζεται αυτό το κουμπί όταν το ανοίγετε;"
+
+#: ../MangaReader.lua:154
+msgid "This setting only affects when you open it with Rakuyomi."
+msgstr "Αυτή η ρύθμιση επηρεάζεται μόνο όταν την ανοίγετε με το Rakuyomi."
+
+#: ../MangaReader.lua:156
+msgid "Yes"
+msgstr "Ναί"
+
+#: ../MangaReader.lua:157
+msgid "No"
+msgstr "Οχι"
+
+#: ../MangaSearchResults.lua:25
+msgid "Search results..."
+msgstr "Αποτελέσματα αναζήτησης..."
+
+#: ../MangaSearchResults.lua:132
+msgid "Searching for"
+msgstr "Ψάχνοντας για"
+
+#: ../MangaSearchResults.lua:139
+msgid "Search cancelled."
+msgstr "Η αναζήτηση ακυρώθηκε."
+
+#: ../NotificationView.lua:336
+msgid "Notification"
+msgstr "Κοινοποίηση"
+
+#: ../NotificationView.lua:357
+msgid "Cleared all notifications!"
+msgstr "Διαγράφηκαν όλες οι ειδοποιήσεις!"
+
+#: ../NotificationView.lua:485
+msgid "No notification"
+msgstr "Καμία ειδοποίηση"
+
+#: ../NotificationView.lua:541
+msgid "Delete this notification?"
+msgstr "Διαγραφή αυτής της ειδοποίησης;"
+
+#: ../NotificationView.lua:542
+msgid "Delete"
+msgstr "Διαγράφω"
+
+#: ../OfflineAlertDialog.lua:44
+msgid "Some features may be limited"
+msgstr "Ορισμένες λειτουργίες ενδέχεται να είναι περιορισμένες"
+
+#: ../OfflineAlertDialog.lua:44
+msgid "You appear to be offline"
+msgstr "Φαίνεται ότι είστε εκτός σύνδεσης"
+
+#: ../OfflineAlertDialog.lua:45
+msgid "• You can still read any downloaded manga chapters"
+msgstr "• Μπορείτε ακόμα να διαβάσετε τυχόν ληφθέντα κεφάλαια manga"
+
+#: ../OfflineAlertDialog.lua:46
+msgid "• Your library content will be available"
+msgstr "• Το περιεχόμενο της βιβλιοθήκης σας θα είναι διαθέσιμο"
+
+#: ../OfflineAlertDialog.lua:47
+msgid "• New content and updates require a connection"
+msgstr "• Το νέο περιεχόμενο και οι ενημερώσεις απαιτούν σύνδεση"
+
+#: ../OfflineAlertDialog.lua:54
+msgid "Close"
+msgstr "Κοντά"
+
+#: ../OfflineAlertDialog.lua:64
+msgid "Do not show this message again"
+msgstr "Να μην εμφανιστεί ξανά αυτό το μήνυμα"
+
+#: ../Settings.lua:36
+msgid "Chapter sorting mode"
+msgstr "Λειτουργία ταξινόμησης κεφαλαίων"
+
+#: ../Settings.lua:38
+msgid "By chapter ascending"
+msgstr "Ανά κεφάλαιο αύξουσα"
+
+#: ../Settings.lua:39
+msgid "By chapter descending"
+msgstr "Κατά κεφάλαιο φθίνουσα"
+
+#: ../Settings.lua:47
+msgid "Library sorting mode"
+msgstr "Λειτουργία ταξινόμησης βιβλιοθήκης"
+
+#: ../Settings.lua:49
+msgid "Ascending (Default)"
+msgstr "Αύξουσα (Προεπιλογή)"
+
+#: ../Settings.lua:50
+msgid "Descending"
+msgstr "Φθίνων"
+
+#: ../Settings.lua:51
+msgid "Title Asc"
+msgstr "Τίτλος Asc"
+
+#: ../Settings.lua:52
+msgid "Title Desc"
+msgstr "Περιγραφή τίτλου"
+
+#: ../Settings.lua:53
+msgid "Unread Asc"
+msgstr "Μη αναγνωσμένο Asc"
+
+#: ../Settings.lua:54
+msgid "Unread Desc"
+msgstr "Μη αναγνωσμένη Περιγραφή"
+
+#: ../Settings.lua:62
+msgid "Chapter storage path"
+msgstr "Διαδρομή αποθήκευσης κεφαλαίου"
+
+#: ../Settings.lua:71
+msgid "Storage size limit"
+msgstr "Όριο μεγέθους αποθήκευσης"
+
+#: ../Settings.lua:81
+msgid "Concurrent page requests"
+msgstr "Ταυτόχρονα αιτήματα σελίδας"
+
+#: ../Settings.lua:92
+msgid "WebDAV Sync"
+msgstr "WebDAV Sync"
+
+#: ../Settings.lua:100
+msgid "Enabled cron check for manga updates"
+msgstr "Ενεργοποιήθηκε ο έλεγχος cron για ενημερώσεις manga"
+
+#: ../Settings.lua:108
+msgid "Source IDs skip check update"
+msgstr "Ενημέρωση ελέγχου παράβλεψης αναγνωριστικών πηγής"
+
+#: ../Settings.lua:168
+msgid "Allow requisition of the back button"
+msgstr "Επιτρέψτε την απαίτηση του κουμπιού πίσω"
+
+#: ../UpdateChecker.lua:24
+msgid "Cannot check for updates while offline"
+msgstr "Δεν είναι δυνατός ο έλεγχος για ενημερώσεις εκτός σύνδεσης"
+
+#: ../UpdateChecker.lua:39
+msgid "You're running the latest version!"
+msgstr "Εκτελείτε την πιο πρόσφατη έκδοση!"
+
+#: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
+#, lua-format
+msgid "Version"
+msgstr "Εκδοχή"
+
+#: ../UpdateChecker.lua:50
+#, lua-format
+msgid "Would you like to update now?"
+msgstr "Θέλετε να ενημερώσετε τώρα;"
+
+#: ../UpdateChecker.lua:50
+#, lua-format
+msgid "You're currently running version "
+msgstr "Αυτήν τη στιγμή εκτελείτε την έκδοση"
+
+#: ../UpdateChecker.lua:50
+#, lua-format
+msgid "is available"
+msgstr "είναι διαθέσιμο"
+
+#: ../UpdateChecker.lua:58
+msgid "Later"
+msgstr "Αργότερα"
+
+#: ../UpdateChecker.lua:64
+msgid "Update Now"
+msgstr "Ενημέρωση τώρα"
+
+#: ../UpdateChecker.lua:74
+#, lua-format
+msgid "is available. You're currently running version "
+msgstr "είναι διαθέσιμο. "
+
+#: ../UpdateChecker.lua:75
+#, lua-format
+msgid "This update cannot be installed automatically"
+msgstr "Αυτή η ενημέρωση δεν μπορεί να εγκατασταθεί αυτόματα"
+
+#: ../UpdateChecker.lua:75
+#, lua-format
+msgid "please visit the user guide for instructions."
+msgstr "επισκεφθείτε τον οδηγό χρήσης για οδηγίες."
+
+#: ../UpdateChecker.lua:83
+msgid "OK"
+msgstr "ΕΝΤΑΞΕΙ"
+
+#: ../UpdateChecker.lua:103
+msgid "Updating rakuyomi, please wait..."
+msgstr "Ενημέρωση rakuyomi, περιμένετε..."
+
+#: ../UpdateChecker.lua:119
+msgid "Restart Now"
+msgstr "Κάντε επανεκκίνηση τώρα"
+
+#: ../UpdateChecker.lua:130
+msgid "KOReader needs to be restarted to apply the changes."
+msgstr "Το KOReader πρέπει να επανεκκινηθεί για να εφαρμοστούν οι αλλαγές."
+
+#: ../UpdateChecker.lua:130
+msgid "The update has been installed successfully"
+msgstr "Η ενημέρωση εγκαταστάθηκε με επιτυχία"
+
+#: ../UpdateChecker.lua:140
+msgid "Restarting..."
+msgstr "Επανεκκίνηση…"
+
+#: ../_meta.lua:5
+msgid "rakuyomi"
+msgstr "rakuyomi"
+
+#: ../_meta.lua:6
+msgid "Download mangas on your e-book reader!"
+msgstr "Κατεβάστε manga στο πρόγραμμα ανάγνωσης ηλεκτρονικών βιβλίων σας!"
+
+#: ../handlers/ContinueReadingHandler.lua:17
+msgid "Finding next chapter..."
+msgstr "Εύρεση του επόμενου κεφαλαίου..."
+
+#: ../handlers/ContinueReadingHandler.lua:18
+msgid "No chapters found for this manga."
+msgstr "Δεν βρέθηκαν κεφάλαια για αυτό το manga."
+
+#: ../handlers/ContinueReadingHandler.lua:19
+msgid "Sadly, no next chapter available! :c"
+msgstr "Δυστυχώς, δεν υπάρχει επόμενο κεφάλαιο! "
+
+#: ../handlers/ContinueReadingHandler.lua:25
+msgid "Resume reading with:"
+msgstr "Συνέχιση της ανάγνωσης με:"
+
+#: ../main.lua:39 ../main.lua:63
+msgid "Rakuyomi"
+msgstr "Rakuyomi"
+
+#: ../main.lua:79
+msgid "Oops!"
+msgstr "Ωχ!"
+
+#: ../main.lua:79
+msgid "Rakuyomi encountered an issue while starting up!"
+msgstr "Ο Rakuyomi αντιμετώπισε πρόβλημα κατά την εκκίνηση!"
+
+#: ../main.lua:80
+msgid "Here are some messages that might help identify the problem:"
+msgstr ""
+"Ακολουθούν ορισμένα μηνύματα που μπορεί να βοηθήσουν στον εντοπισμό του "
+"προβλήματος:"
+
+#: ../utils/calcLastReadText.lua:10
+msgid "jnow"
+msgstr "jnow"
+
+#: ../utils/calcLastReadText.lua:10
+msgid "now"
+msgstr "τώρα"
+
+#: ../utils/calcLastReadText.lua:12
+#, lua-format
+msgid "%dm"
+msgstr "%dm"
+
+#: ../utils/calcLastReadText.lua:14
+#, lua-format
+msgid "%dh"
+msgstr "%dh"
+
+#: ../utils/calcLastReadText.lua:16
+#, lua-format
+msgid "%dd"
+msgstr "%dd"
+
+#: ../utils/calcLastReadText.lua:18
+#, lua-format
+msgid "%dw"
+msgstr "%dw"
+
+#: ../utils/calcLastReadText.lua:20
+#, lua-format
+msgid "%dM"
+msgstr "%dM"
+
+#: ../utils/calcLastReadText.lua:22
+#, lua-format
+msgid "%dy"
+msgstr "%dy"
+
+#: ../utils/getChapterDisplayName.lua:5
+msgid "Vol."
+msgstr "Τομ."
+
+#: ../utils/getChapterDisplayName.lua:6
+msgid "Ch."
+msgstr "Ch."
+
+#: ../widgets/Menu.lua:82
+msgid "Offline mode"
+msgstr "Λειτουργία εκτός σύνδεσης"
+
+#: ../widgets/SettingItemValue.lua:161
+msgid "Ok"
+msgstr "Εντάξει"
+
+#: ../widgets/SettingItemValue.lua:167
+msgid "Executing..."
+msgstr "Εκτέλεση..."
+
+#: ../widgets/SettingItemValue.lua:180
+msgid "Done"
+msgstr "Γινώμενος"

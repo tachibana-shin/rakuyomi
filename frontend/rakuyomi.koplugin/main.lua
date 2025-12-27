@@ -4,7 +4,7 @@ local FileManager = require("apps/filemanager/filemanager")
 local UIManager = require("ui/uimanager")
 local Dispatcher = require("dispatcher")
 local logger = require("logger")
-local _ = require("gettext")
+local _ = require("gettext+")
 local OfflineAlertDialog = require("OfflineAlertDialog")
 
 local Backend = require("Backend")
@@ -76,8 +76,8 @@ end
 
 function Rakuyomi:showErrorDialog()
   ErrorDialog:show(
-    "Oops! Rakuyomi encountered an issue while starting up!\n" ..
-    "Here are some messages that might help identify the problem:\n\n" ..
+    _("Oops!") .. _("Rakuyomi encountered an issue while starting up!") .. "\n" ..
+    _("Here are some messages that might help identify the problem:") .. "\n\n" ..
     logs
   )
 end

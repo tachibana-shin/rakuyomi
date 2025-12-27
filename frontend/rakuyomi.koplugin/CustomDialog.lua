@@ -18,8 +18,6 @@ local Screen = require("device").screen
 
 local Input = Device.input
 
-local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
-
 --- @class CustomDialog
 --- @field navbar_height number
 --- @field title string

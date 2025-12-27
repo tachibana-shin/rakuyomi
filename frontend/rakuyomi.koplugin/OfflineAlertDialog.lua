@@ -3,6 +3,7 @@ local CheckButton = require("ui/widget/checkbutton")
 local UIManager = require("ui/uimanager")
 local NetworkMgr = require("ui/network/manager")
 local logger = require("logger")
+local _ = require("gettext+")
 local beforeWifi = require("utils/beforeWifi")
 
 local OfflineAlertDialog = {}
@@ -40,17 +41,17 @@ function OfflineAlertDialog:_showIfOffline(if_online_callback)
   logger.info("OfflineAlertDialog:showIfOffline() - Showing offline alert dialog")
 
   local message =
-      "You appear to be offline. Some features may be limited.\n\n" ..
-      "• You can still read any downloaded manga chapters\n" ..
-      "• Your library content will be available\n" ..
-      "• New content and updates require a connection"
+      _("You appear to be offline") .. ". " .. _("Some features may be limited") .. ".\n\n" ..
+      _("• You can still read any downloaded manga chapters") .. "\n" ..
+      _("• Your library content will be available") .. "\n" ..
+      _("• New content and updates require a connection")
 
   local do_not_show_again = false
 
   local dialog = ConfirmBox:new {
     icon = "notice-warning",
     text = message,
-    cancel_text = "Close",
+    cancel_text = _("Close"),
     no_ok_button = true,
     cancel_callback = function()
       if do_not_show_again then
@@ -60,7 +61,7 @@ function OfflineAlertDialog:_showIfOffline(if_online_callback)
   }
 
   local check_button = CheckButton:new {
-    text = "Do not show this message again",
+    text = _("Do not show this message again"),
     callback = function()
       do_not_show_again = not do_not_show_again
     end,

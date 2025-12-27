@@ -24,7 +24,7 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local Trapper = require("ui/trapper")
-local _ = require("gettext")
+local _ = require("gettext+")
 local Screen = Device.screen
 local T = require("ffi/util").template
 
@@ -543,7 +543,7 @@ function MangaInfoWidget:refreshDetails(source_id, manga_id)
   local cancel_id_2 = Backend.createCancelId()
 
   local responses, cancelled = LoadingDialog:showAndRun(
-    "Refreshing details...",
+    _("Refreshing details..."),
     function()
       local a1 = Backend.refreshMangaDetails(cancel_id_1, source_id, manga_id)
       local a2 = Backend.cachedMangaDetails(cancel_id_2, source_id, manga_id)
@@ -555,7 +555,7 @@ function MangaInfoWidget:refreshDetails(source_id, manga_id)
       Backend.cancel(cancel_id_2)
 
       local cancelledMessage = InfoMessage:new {
-        text = "Refresh details cancelled.",
+        text = _("Refresh details cancelled."),
       }
       UIManager:show(cancelledMessage)
     end

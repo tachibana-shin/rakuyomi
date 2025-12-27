@@ -65,7 +65,7 @@ msgstr "Âm lượng"
 
 #: ../ChapterListing.lua:236 ../utils/getChapterDisplayName.lua:10
 msgid "Chapter"
-msgstr "chương"
+msgstr "Chương"
 
 #: ../ChapterListing.lua:285 ../ChapterListing.lua:480
 msgid "Refreshing chapters..."

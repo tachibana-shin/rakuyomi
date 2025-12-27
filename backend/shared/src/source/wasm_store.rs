@@ -5,6 +5,7 @@ use raqote::{DrawTarget, Transform};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     io::Cursor,
+    sync::{Arc, RwLock},
 };
 use tokio_util::sync::CancellationToken;
 
@@ -19,7 +20,10 @@ use reqwest::{
 };
 use scraper::{ElementRef, Html as ScraperHtml};
 
-use crate::settings::{Settings, SourceSettingValue};
+use crate::{
+    scraper_ext::SelectSoup,
+    settings::{Settings, SourceSettingValue},
+};
 
 use super::{
     model::{Chapter, DeepLink, Filter, Manga, MangaPageResult, Page},
@@ -48,6 +52,11 @@ pub enum ObjectValue {
 
 #[derive(From, Deref, Debug)]
 pub struct Html(ScraperHtml);
+impl From<Html> for Arc<RwLock<Html>> {
+    fn from(value: Html) -> Self {
+        Arc::new(RwLock::new(value))
+    }
+}
 
 // FIXME THIS IS BORKED AS FUCK
 unsafe impl Send for Html {}
@@ -55,26 +64,320 @@ unsafe impl Sync for Html {}
 
 #[derive(Debug, Clone)]
 pub struct HTMLElement {
-    pub document: Parc<Html>,
+    pub document: Arc<RwLock<Html>>,
     pub node_id: NodeId,
     pub base_uri: Option<String>,
 }
+#[derive(thiserror::Error, Debug)]
+#[error("NodeDrop: node_id {0} no longer exists")]
+pub struct NodeDrop(String);
 
 impl HTMLElement {
-    pub fn element_ref(&'_ self) -> ElementRef<'_> {
-        ElementRef::wrap(self.document.tree.get(self.node_id).unwrap()).unwrap()
-    }
-    pub fn data(&'_ self) -> String {
+    pub fn data(&'_ self) -> Option<String> {
         let mut result = String::new();
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
 
-        for child in self.element_ref().children() {
+        for child in node.children() {
             match child.value() {
                 scraper::Node::Text(text) => result.push_str(&**text),
                 _ => {}
             }
         }
 
-        result
+        Some(result)
+    }
+    pub fn attr(&'_ self, name: &str) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .attr(name)
+            .map(|v| v.to_owned())
+    }
+    pub fn select<'a>(&'a self, selector: &scraper::Selector) -> Option<Vec<HTMLElement>> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+
+        let element_ref = ElementRef::wrap(node).unwrap();
+
+        let iter = element_ref
+            .select_soup(selector)
+            .map(move |selected_ref| HTMLElement {
+                document: self.document.clone(),
+                node_id: selected_ref.id(),
+                base_uri: self.base_uri.clone(),
+            })
+            .collect::<Vec<_>>();
+
+        Some(iter)
+    }
+    pub fn select_first<'a>(&'a self, selector: &scraper::Selector) -> Option<HTMLElement> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+
+        let element_ref = ElementRef::wrap(node).unwrap();
+        let Some(first_node_id) = element_ref.select_soup(selector).next().map(|v| v.id()) else {
+            return None;
+        };
+
+        Some(HTMLElement {
+            document: self.document.clone(),
+            node_id: first_node_id,
+            base_uri: self.base_uri.clone(),
+        })
+    }
+    pub fn html(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(ElementRef::wrap(node).unwrap().html())
+    }
+    pub fn inner_html(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(ElementRef::wrap(node).unwrap().inner_html())
+    }
+    pub fn text(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(
+            ElementRef::wrap(node)
+                .unwrap()
+                .text()
+                .map(|s| s.trim())
+                .collect::<Vec<_>>()
+                .join(" ")
+                .trim()
+                .to_string(),
+        )
+    }
+    pub fn text_untrimmed(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(
+            ElementRef::wrap(node)
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .to_string(),
+        )
+    }
+    pub fn own_text(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(
+            ElementRef::wrap(node)
+                .unwrap()
+                .children()
+                .filter_map(|node_ref| match node_ref.value() {
+                    // FIXME WHAT
+                    // not use .text() is function traverse
+                    scraper::Node::Text(text) => Some(&**text),
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
+                .join(""),
+        )
+    }
+    pub fn next_sibling_element(&'_ self) -> Option<HTMLElement> {
+        use scraper::Element;
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .next_sibling_element()
+            .map(|n| HTMLElement {
+                document: self.document.clone(),
+                node_id: n.id(),
+                base_uri: self.base_uri.clone(),
+            })
+    }
+    pub fn prev_sibling_element(&'_ self) -> Option<HTMLElement> {
+        use scraper::Element;
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .prev_sibling_element()
+            .map(|n| HTMLElement {
+                document: self.document.clone(),
+                node_id: n.id(),
+                base_uri: self.base_uri.clone(),
+            })
+    }
+    pub fn parent(&'_ self) -> Option<HTMLElement> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .parent()
+            .map(|n| HTMLElement {
+                document: self.document.clone(),
+                node_id: n.id(),
+                base_uri: self.base_uri.clone(),
+            })
+    }
+    pub fn children(&'_ self) -> Option<Vec<HTMLElement>> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+        let element_ref = ElementRef::wrap(node).unwrap();
+
+        let iter = element_ref
+            .children()
+            .map(move |selected_ref| HTMLElement {
+                document: self.document.clone(),
+                node_id: selected_ref.id(),
+                base_uri: self.base_uri.clone(),
+            })
+            .collect::<Vec<_>>();
+
+        Some(iter)
+    }
+    pub fn next_siblings(&'_ self) -> Option<Vec<HTMLElement>> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+        let element_ref = ElementRef::wrap(node).unwrap();
+
+        let iter = element_ref
+            .next_siblings()
+            .map(move |selected_ref| HTMLElement {
+                document: self.document.clone(),
+                node_id: selected_ref.id(),
+                base_uri: self.base_uri.clone(),
+            })
+            .collect::<Vec<_>>();
+
+        Some(iter)
+    }
+    pub fn next_sibling(&'_ self) -> Option<HTMLElement> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+        let element_ref = ElementRef::wrap(node).unwrap();
+
+        element_ref
+            .next_sibling()
+            .map(move |selected_ref| HTMLElement {
+                document: self.document.clone(),
+                node_id: selected_ref.id(),
+                base_uri: self.base_uri.clone(),
+            })
+    }
+    pub fn prev_sibling(&'_ self) -> Option<HTMLElement> {
+        let document_guard = self.document.read().unwrap();
+        let node = match document_guard.tree.get(self.node_id) {
+            Some(n) => n,
+            None => {
+                return None;
+            }
+        };
+        let element_ref = ElementRef::wrap(node).unwrap();
+
+        element_ref
+            .prev_sibling()
+            .map(move |selected_ref| HTMLElement {
+                document: self.document.clone(),
+                node_id: selected_ref.id(),
+                base_uri: self.base_uri.clone(),
+            })
+    }
+    pub fn id(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .value()
+            .id()
+            .map(|s| s.to_string())
+    }
+    pub fn name(&'_ self) -> Option<String> {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return None;
+        };
+
+        Some(ElementRef::wrap(node).unwrap().value().name().to_string())
+    }
+    pub fn has_class(&'_ self, name: &str) -> bool {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return false;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .value()
+            .classes()
+            .any(|class| class == name)
+    }
+    pub fn has_attr(&'_ self, attr_name: &str) -> bool {
+        let document = self.document.read().unwrap();
+        let Some(node) = document.tree.get(self.node_id) else {
+            return false;
+        };
+
+        ElementRef::wrap(node)
+            .unwrap()
+            .value()
+            .attrs()
+            .any(|(name, _)| name == attr_name)
     }
 }
 
@@ -250,6 +553,8 @@ pub struct WasmStore {
     // js context
     jscontext_pointer: i32,
     jscontexts: HashMap<i32, JsContext>,
+
+    pub id_counter: i32,
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -297,6 +602,8 @@ impl WasmStore {
 
             jscontext_pointer: 0,
             jscontexts: HashMap::new(),
+
+            id_counter: 0,
         }
     }
 }
@@ -492,7 +799,7 @@ impl WasmStore {
 impl TryFrom<&RequestBuildingState> for BlockingRequest {
     type Error = anyhow::Error;
 
-    fn try_from(value: &RequestBuildingState) -> Result<Self, Self::Error> {
+    fn try_from(value: &RequestBuildingState) -> core::result::Result<Self, Self::Error> {
         let mut request = BlockingRequest::new(
             value
                 .method
@@ -524,7 +831,7 @@ impl TryFrom<&RequestBuildingState> for BlockingRequest {
 impl TryFrom<&RequestBuildingState> for Request {
     type Error = anyhow::Error;
 
-    fn try_from(value: &RequestBuildingState) -> Result<Self, Self::Error> {
+    fn try_from(value: &RequestBuildingState) -> core::result::Result<Self, Self::Error> {
         let mut request = Request::new(
             value
                 .method

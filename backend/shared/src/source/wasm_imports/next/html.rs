@@ -4,10 +4,7 @@ use scraper::{Html as CHtml, Selector};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
-use crate::{
-    scraper_ext::SelectSoup,
-    source::wasm_store::{HTMLElement, Html, Value, WasmStore},
-};
+use crate::source::wasm_store::{HTMLElement, Html, Value, WasmStore};
 
 pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "parse", parse)?; // OK
@@ -21,6 +18,7 @@ pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "untrimmed_text", untrimmed_text)?;
     register_wasm_function!(linker, "html", "html", html)?; // OK
     register_wasm_function!(linker, "html", "outer_html", outer_html)?;
+    register_wasm_function!(linker, "html", "remove", remove)?;
     register_wasm_function!(linker, "html", "set_text", set_text)?;
     register_wasm_function!(linker, "html", "set_html", set_html)?;
     register_wasm_function!(linker, "html", "prepend", prepend)?;
@@ -191,16 +189,9 @@ fn select_first(
     else {
         return ResultContext::InvalidQuery.into();
     };
-    let selected_element = html_elements.iter().find_map(|el| {
-        el.element_ref()
-            .select_soup(&selector)
-            .next()
-            .map(|selected_ref| HTMLElement {
-                document: el.document.clone(),
-                node_id: selected_ref.id(),
-                base_uri: el.base_uri.clone(),
-            })
-    });
+    let selected_element = html_elements
+        .iter()
+        .find_map(|el| el.select_first(&selector));
 
     let Some(selected_element) = selected_element else {
         return ResultContext::NoResult.into();
@@ -245,6 +236,28 @@ fn outer_html(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
     crate::source::wasm_imports::html::outer_html(caller, ptr)
 }
 #[aidoku_wasm_function]
+fn remove(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
+    let descriptor: usize = ptr.try_into().context("invalid descriptor")?;
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor)
+        .context("failed to get value from store")?;
+    let elements = match std_value.as_ref() {
+        Value::HTMLElements(elements) => Some(elements),
+        _ => None,
+    }
+    .context("expected HTMLElements value")?;
+
+    let htmls = elements
+        .iter()
+        .map(|element| element.html())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Ok(wasm_store.store_std_value(Value::from(htmls).into(), Some(descriptor)) as i32)
+}
+#[aidoku_wasm_function]
 pub fn set_text(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
     crate::source::wasm_imports::html::set_text(caller, ptr, text)
 }
@@ -279,16 +292,7 @@ fn parent(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .parent()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.parent())
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -313,16 +317,8 @@ fn children(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .children()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .filter_map(|element| element.children())
+        .flatten()
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -346,16 +342,8 @@ fn siblings(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .next_siblings()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .filter_map(|element| element.next_siblings())
+        .flatten()
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -379,16 +367,7 @@ fn next(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .next_sibling()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.next_sibling())
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -413,16 +392,7 @@ fn previous(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .prev_sibling()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.prev_sibling())
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)

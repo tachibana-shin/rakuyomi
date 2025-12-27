@@ -21,6 +21,7 @@ pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "untrimmed_text", untrimmed_text)?;
     register_wasm_function!(linker, "html", "html", html)?; // OK
     register_wasm_function!(linker, "html", "outer_html", outer_html)?;
+    register_wasm_function!(linker, "html", "remove", remove)?;
     register_wasm_function!(linker, "html", "set_text", set_text)?;
     register_wasm_function!(linker, "html", "set_html", set_html)?;
     register_wasm_function!(linker, "html", "prepend", prepend)?;
@@ -37,7 +38,11 @@ pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "tag_name", tag_name)?;
     register_wasm_function!(linker, "html", "class_name", class_name)?;
     register_wasm_function!(linker, "html", "has_class", has_class)?;
+    register_wasm_function!(linker, "html", "add_class", add_class)?;
+    register_wasm_function!(linker, "html", "remove_class", remove_class)?;
     register_wasm_function!(linker, "html", "has_attr", has_attr)?;
+    register_wasm_function!(linker, "html", "set_attr", set_attr)?;
+    register_wasm_function!(linker, "html", "remove_attr", remove_attr)?;
     register_wasm_function!(linker, "html", "first", first)?;
     register_wasm_function!(linker, "html", "last", last)?;
     register_wasm_function!(linker, "html", "get", get)?; // OK: fixed
@@ -243,6 +248,10 @@ fn html(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
 #[aidoku_wasm_function]
 fn outer_html(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
     crate::source::wasm_imports::html::outer_html(caller, ptr)
+}
+#[aidoku_wasm_function]
+fn remove(_caller: Caller<'_, WasmStore>, _ptr: i32) -> Result<i32> {
+    Ok(-1)
 }
 #[aidoku_wasm_function]
 pub fn set_text(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
@@ -461,10 +470,31 @@ fn class_name(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
 fn has_class(caller: Caller<'_, WasmStore>, ptr: i32, attr_name: Option<String>) -> Result<i32> {
     crate::source::wasm_imports::html::has_class(caller, ptr, attr_name)
 }
+#[aidoku_wasm_function]
+fn add_class(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
+    Ok(-1)
+}
+#[aidoku_wasm_function]
+fn remove_class(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
+    Ok(-1)
+}
 
 #[aidoku_wasm_function]
 fn has_attr(caller: Caller<'_, WasmStore>, ptr: i32, attr_name: Option<String>) -> Result<i32> {
     crate::source::wasm_imports::html::has_attr(caller, ptr, attr_name)
+}
+#[aidoku_wasm_function]
+fn set_attr(
+    _caller: Caller<'_, WasmStore>,
+    _ptr: i32,
+    _name: Option<String>,
+    _value: Option<String>,
+) -> Result<i32> {
+    Ok(-1)
+}
+#[aidoku_wasm_function]
+fn remove_attr(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
+    Ok(-1)
 }
 
 #[aidoku_wasm_function]

@@ -122,6 +122,7 @@ pub struct ChapterInformation {
     pub thumbnail: Option<Url>,
     pub lang: Option<String>,
     pub url: Option<Url>,
+    pub locked: Option<bool>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -186,6 +187,7 @@ impl From<SourceChapter> for ChapterInformation {
             thumbnail: value.thumbnail,
             lang: value.lang,
             url: value.url,
+            locked: value.locked,
         }
     }
 }

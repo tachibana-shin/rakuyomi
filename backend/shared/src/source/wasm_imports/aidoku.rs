@@ -190,6 +190,7 @@ fn create_chapter(
         date_uploaded,
         source_order: 123,
         thumbnail: None,
+        locked: None,
     };
 
     Ok(

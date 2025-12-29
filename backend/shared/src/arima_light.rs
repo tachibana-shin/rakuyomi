@@ -634,6 +634,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             })
             .collect()
     }
@@ -683,6 +684,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             },
             ChapterInformation {
                 chapter_number: None,
@@ -695,6 +697,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             },
             ChapterInformation {
                 chapter_number: Some(Decimal::from_f64(1.0).unwrap()),
@@ -706,6 +709,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             },
             ChapterInformation {
                 chapter_number: Some(Decimal::from_f64(2.0).unwrap()),
@@ -717,6 +721,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             },
             ChapterInformation {
                 chapter_number: None,
@@ -728,6 +733,7 @@ mod tests {
                 thumbnail: None,
                 lang: None,
                 url: None,
+                locked: None,
             },
         ];
         let ts = timestamps_from_chapters(&chapters, None).unwrap();

@@ -170,6 +170,7 @@ end
 --- @field last_read number? The timestamp (in seconds since epoch) of when this chapter was last read to its end.
 --- @field downloaded boolean If this chapter was already downloaded to the storage.
 --- @field title string? The title of this chapter, if any.
+--- @field locked boolean The locked
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.

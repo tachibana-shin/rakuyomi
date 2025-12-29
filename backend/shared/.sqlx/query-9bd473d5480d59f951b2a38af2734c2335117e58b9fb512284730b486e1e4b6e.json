@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT \n                ci.source_id,\n                ci.manga_id,\n                ci.chapter_id,\n                ci.title,\n                ci.scanlator,\n                ci.chapter_number,\n                ci.volume_number,\n                ci.last_updated,\n                ci.thumbnail,\n                ci.lang,\n                cs.read AS \"read?: bool\",\n                cs.last_read AS \"last_read?: i64\"\n            FROM chapter_informations ci\n            LEFT JOIN chapter_state cs\n                ON ci.source_id = cs.source_id\n                AND ci.manga_id = cs.manga_id\n                AND ci.chapter_id = cs.chapter_id\n            WHERE ci.source_id = ?1 AND ci.manga_id = ?2\n            GROUP BY ci.source_id, ci.manga_id, ci.chapter_id\n            ORDER BY ci.manga_order ASC;\n            ",
+  "query": "\n            SELECT \n                ci.source_id,\n                ci.manga_id,\n                ci.chapter_id,\n                ci.title,\n                ci.scanlator,\n                ci.chapter_number,\n                ci.volume_number,\n                ci.last_updated,\n                ci.thumbnail,\n                ci.lang,\n                ci.locked AS \"locked: bool\",\n                cs.read AS \"read?: bool\",\n                cs.last_read AS \"last_read?: i64\"\n            FROM chapter_informations ci\n            LEFT JOIN chapter_state cs\n                ON ci.source_id = cs.source_id\n                AND ci.manga_id = cs.manga_id\n                AND ci.chapter_id = cs.chapter_id\n            WHERE ci.source_id = ?1 AND ci.manga_id = ?2\n            GROUP BY ci.source_id, ci.manga_id, ci.chapter_id\n            ORDER BY ci.manga_order ASC;\n            ",
   "describe": {
     "columns": [
       {
@@ -54,13 +54,18 @@
         "type_info": "Text"
       },
       {
-        "name": "read?: bool",
+        "name": "locked: bool",
         "ordinal": 10,
         "type_info": "Integer"
       },
       {
-        "name": "last_read?: i64",
+        "name": "read?: bool",
         "ordinal": 11,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_read?: i64",
+        "ordinal": 12,
         "type_info": "Integer"
       }
     ],
@@ -79,8 +84,9 @@
       true,
       true,
       false,
+      false,
       true
     ]
   },
-  "hash": "04dd6031df75e758ed39c1ab4781317c4112f8e43a027249a54fe7585a522a60"
+  "hash": "9bd473d5480d59f951b2a38af2734c2335117e58b9fb512284730b486e1e4b6e"
 }

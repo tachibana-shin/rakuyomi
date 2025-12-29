@@ -57,6 +57,11 @@
         "name": "lang",
         "ordinal": 10,
         "type_info": "Text"
+      },
+      {
+        "name": "locked",
+        "ordinal": 11,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -73,7 +78,8 @@
       true,
       true,
       true,
-      true
+      true,
+      false
     ]
   },
   "hash": "0818ed573f56ea18652de75c52739903514cb172c9e749f17863a3878c7dcd93"

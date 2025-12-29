@@ -203,6 +203,7 @@ pub struct Chapter {
     // call, so there's already an ordering there
     pub source_order: usize,
     pub thumbnail: Option<Url>,
+    pub locked: Option<bool>,
 }
 impl Chapter {
     pub fn from(value: aidoku::Chapter, source_id: String, manga_id: String) -> Self {
@@ -225,6 +226,7 @@ impl Chapter {
             }),
             source_order: usize::MAX,
             thumbnail: value.thumbnail.and_then(|u| url::Url::parse(&u).ok()),
+            locked: Some(value.locked),
         }
     }
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-27 02:37+0700\n"
+"POT-Creation-Date: 2025-12-30 00:39+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,263 +63,271 @@ msgstr ""
 msgid "Try swiping down to refresh the chapter list."
 msgstr ""
 
-#: ../ChapterListing.lua:232
+#: ../ChapterListing.lua:233
 msgid "Volume"
 msgstr ""
 
-#: ../ChapterListing.lua:236 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
 msgid "Chapter"
 msgstr ""
 
-#: ../ChapterListing.lua:285 ../ChapterListing.lua:480
+#: ../ChapterListing.lua:261
+msgid "Locked"
+msgstr ""
+
+#: ../ChapterListing.lua:288 ../ChapterListing.lua:488
 msgid "Refreshing chapters..."
 msgstr ""
 
-#: ../ChapterListing.lua:293 ../ChapterListing.lua:487
-#: ../ChapterListing.lua:1116
+#: ../ChapterListing.lua:296 ../ChapterListing.lua:495
+#: ../ChapterListing.lua:1124
 msgid "Cancelled."
 msgstr ""
 
-#: ../ChapterListing.lua:305
+#: ../ChapterListing.lua:308
 msgid "Refresh chapter error"
 msgstr ""
 
-#: ../ChapterListing.lua:355
+#: ../ChapterListing.lua:346
+msgid "Chapter is locked"
+msgstr ""
+
+#: ../ChapterListing.lua:363
 msgid "Open"
 msgstr ""
 
-#: ../ChapterListing.lua:365 ../ChapterListing.lua:755 ../LibraryView.lua:336
+#: ../ChapterListing.lua:373 ../ChapterListing.lua:763 ../LibraryView.lua:336
 msgid "Refresh"
 msgstr ""
 
-#: ../ChapterListing.lua:371
+#: ../ChapterListing.lua:379
 msgid "Chapter refreshed"
 msgstr ""
 
-#: ../ChapterListing.lua:377 ../ChapterListing.lua:526
+#: ../ChapterListing.lua:385 ../ChapterListing.lua:534
 msgid "Mark"
 msgstr ""
 
-#: ../ChapterListing.lua:389 ../ChapterListing.lua:1013
+#: ../ChapterListing.lua:397 ../ChapterListing.lua:1021
 msgid "Download"
 msgstr ""
 
-#: ../ChapterListing.lua:389 ../LibraryView.lua:459
+#: ../ChapterListing.lua:397 ../LibraryView.lua:459
 msgid "Remove"
 msgstr ""
 
-#: ../ChapterListing.lua:398
+#: ../ChapterListing.lua:406
 msgid "Chapter downloaded"
 msgstr ""
 
-#: ../ChapterListing.lua:417
+#: ../ChapterListing.lua:425
 msgid "Revoke chapter..."
 msgstr ""
 
-#: ../ChapterListing.lua:435
+#: ../ChapterListing.lua:443
 msgid "Removed chapter"
 msgstr ""
 
-#: ../ChapterListing.lua:446
+#: ../ChapterListing.lua:454
 msgid "Marking"
 msgstr ""
 
-#: ../ChapterListing.lua:446
+#: ../ChapterListing.lua:454
 msgid "Un-marking"
 msgstr ""
 
-#: ../ChapterListing.lua:446
+#: ../ChapterListing.lua:454
 msgid "chapter..."
 msgstr ""
 
-#: ../ChapterListing.lua:513 ../ChapterListing.lua:781 ../LibraryView.lua:372
+#: ../ChapterListing.lua:521 ../ChapterListing.lua:789 ../LibraryView.lua:372
 msgid "Mark read"
 msgstr ""
 
-#: ../ChapterListing.lua:513 ../ChapterListing.lua:791 ../LibraryView.lua:383
+#: ../ChapterListing.lua:521 ../ChapterListing.lua:799 ../LibraryView.lua:383
 msgid "Mark unread"
 msgstr ""
 
-#: ../ChapterListing.lua:514
+#: ../ChapterListing.lua:522
 msgid "1 - 10.5, 20 - 100"
 msgstr ""
 
-#: ../ChapterListing.lua:515
+#: ../ChapterListing.lua:523
 msgid "Leaving blank will select all"
 msgstr ""
 
-#: ../ChapterListing.lua:515
+#: ../ChapterListing.lua:523
 msgid "Mark chapters as read or unread"
 msgstr ""
 
-#: ../ChapterListing.lua:519 ../ChapterListing.lua:930
-#: ../ChapterListing.lua:1006 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:938
+#: ../ChapterListing.lua:1014 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid "Cancel"
 msgstr ""
 
-#: ../ChapterListing.lua:536
+#: ../ChapterListing.lua:544
 msgid "Marking..."
 msgstr ""
 
-#: ../ChapterListing.lua:546
+#: ../ChapterListing.lua:554
 msgid "Marked"
 msgstr ""
 
-#: ../ChapterListing.lua:565 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:573 ../MangaSearchResults.lua:103
 msgid "No errors"
 msgstr ""
 
-#: ../ChapterListing.lua:574
+#: ../ChapterListing.lua:582
 #, lua-format
 msgid "Page"
 msgstr ""
 
-#: ../ChapterListing.lua:574
+#: ../ChapterListing.lua:582
 #, lua-format
 msgid "attempts"
 msgstr ""
 
-#: ../ChapterListing.lua:582 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:590 ../MangaSearchResults.lua:119
 #, lua-format
 msgid "… and %d more errors"
 msgstr ""
 
-#: ../ChapterListing.lua:601 ../ChapterListing.lua:616
+#: ../ChapterListing.lua:609 ../ChapterListing.lua:624
 msgid "Could not download chapter."
 msgstr ""
 
-#: ../ChapterListing.lua:609
+#: ../ChapterListing.lua:617
 msgid "Downloading chapter..."
 msgstr ""
 
-#: ../ChapterListing.lua:610
+#: ../ChapterListing.lua:618
 msgid "unknown"
 msgstr ""
 
-#: ../ChapterListing.lua:629
+#: ../ChapterListing.lua:637
 msgid "Download cancelled."
 msgstr ""
 
-#: ../ChapterListing.lua:635
+#: ../ChapterListing.lua:643
 msgid "Are you sure you want to cancel the download?"
 msgstr ""
 
-#: ../ChapterListing.lua:745 ../MangaSearchResults.lua:202
+#: ../ChapterListing.lua:753 ../MangaSearchResults.lua:207
 msgid "Add to Library"
 msgstr ""
 
-#: ../ChapterListing.lua:763 ../LibraryView.lua:356
-#: ../MangaSearchResults.lua:226
+#: ../ChapterListing.lua:771 ../LibraryView.lua:356
+#: ../MangaSearchResults.lua:239
 msgid "Details"
 msgstr ""
 
-#: ../ChapterListing.lua:803
+#: ../ChapterListing.lua:811
 msgid "Resume"
 msgstr ""
 
-#: ../ChapterListing.lua:811
+#: ../ChapterListing.lua:819
 msgid "Next Chapter"
 msgstr ""
 
-#: ../ChapterListing.lua:821
+#: ../ChapterListing.lua:829
 msgid "Download unread chapters…"
 msgstr ""
 
-#: ../ChapterListing.lua:834
+#: ../ChapterListing.lua:842
 msgid "Group"
 msgstr ""
 
-#: ../ChapterListing.lua:835 ../ChapterListing.lua:987
+#: ../ChapterListing.lua:843 ../ChapterListing.lua:995
 msgid "Filter by Group"
 msgstr ""
 
-#: ../ChapterListing.lua:858
+#: ../ChapterListing.lua:866
 msgid "Adding to library..."
 msgstr ""
 
-#: ../ChapterListing.lua:865
+#: ../ChapterListing.lua:873
 msgid "Failed to add to library"
 msgstr ""
 
-#: ../ChapterListing.lua:870
+#: ../ChapterListing.lua:878
 msgid "Added to library."
 msgstr ""
 
-#: ../ChapterListing.lua:918
+#: ../ChapterListing.lua:926
 msgid "No more chapters to read!"
 msgstr ""
 
-#: ../ChapterListing.lua:928
+#: ../ChapterListing.lua:936
 msgid "Next"
 msgstr ""
 
-#: ../ChapterListing.lua:928
+#: ../ChapterListing.lua:936
 msgid "reading with"
 msgstr ""
 
-#: ../ChapterListing.lua:929 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:937 ../handlers/ContinueReadingHandler.lua:26
 msgid "Read"
 msgstr ""
 
-#: ../ChapterListing.lua:952
+#: ../ChapterListing.lua:960
 msgid "Show All"
 msgstr ""
 
-#: ../ChapterListing.lua:960
+#: ../ChapterListing.lua:968
 msgid "Showing all groups"
 msgstr ""
 
-#: ../ChapterListing.lua:980
+#: ../ChapterListing.lua:988
 msgid "Filtered to"
 msgstr ""
 
-#: ../ChapterListing.lua:997
+#: ../ChapterListing.lua:1005
 msgid "Download unread chapters..."
 msgstr ""
 
-#: ../ChapterListing.lua:999
+#: ../ChapterListing.lua:1007
 msgid "Amount of unread chapters (default: all)"
 msgstr ""
 
-#: ../ChapterListing.lua:1001
+#: ../ChapterListing.lua:1009
 msgid "Specify amount or leave empty for all."
 msgstr ""
 
-#: ../ChapterListing.lua:1001
+#: ../ChapterListing.lua:1009
 msgid "Will download from"
 msgstr ""
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1010
 msgid "Specify the amount of unread chapters to download"
 msgstr ""
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1010
 msgid "or leave empty to download all of them."
 msgstr ""
 
-#: ../ChapterListing.lua:1023
+#: ../ChapterListing.lua:1031
 msgid "Invalid amount of chapters!"
 msgstr ""
 
-#: ../ChapterListing.lua:1044
+#: ../ChapterListing.lua:1052
 msgid "No unread chapters found for"
 msgstr ""
 
-#: ../ChapterListing.lua:1068 ../ChapterListing.lua:1143
+#: ../ChapterListing.lua:1076 ../ChapterListing.lua:1151
 msgid "Downloading all chapters, this will take a while…"
 msgstr ""
 
-#: ../ChapterListing.lua:1153
+#: ../ChapterListing.lua:1161
 msgid "Waiting for download to be cancelled…"
 msgstr ""
 
-#: ../ChapterListing.lua:1155
+#: ../ChapterListing.lua:1163
 msgid "Downloading all chapters, this will take a while… ("
 msgstr ""
 
-#: ../ChapterListing.lua:1158
+#: ../ChapterListing.lua:1166
 msgid "Tap outside this message to cancel."
 msgstr ""
 
@@ -387,7 +395,7 @@ msgstr ""
 msgid "Continue Reading"
 msgstr ""
 
-#: ../LibraryView.lua:405
+#: ../LibraryView.lua:405 ../MangaSearchResults.lua:204
 msgid "Remove from Library"
 msgstr ""
 

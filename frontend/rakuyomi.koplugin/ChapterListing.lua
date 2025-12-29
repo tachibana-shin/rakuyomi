@@ -121,7 +121,7 @@ function ChapterListing:extractAvailableScanlators()
   local scanlators = {}
   local scanlator_set = {}
 
-  for __,chapter in ipairs(self.chapters) do
+  for __, chapter in ipairs(self.chapters) do
     local scanlator = chapter.scanlator or _("Unknown")
     if not scanlator_set[scanlator] then
       scanlator_set[scanlator] = true
@@ -201,7 +201,7 @@ function ChapterListing:generateItemTableFromChapters(chapters)
   local filtered_chapters = chapters
   if self.selected_scanlator then
     filtered_chapters = {}
-    for __,chapter in ipairs(chapters) do
+    for __, chapter in ipairs(chapters) do
       local chapter_scanlator = chapter.scanlator or _("Unknown")
       if chapter_scanlator == self.selected_scanlator then
         table.insert(filtered_chapters, chapter)
@@ -209,10 +209,11 @@ function ChapterListing:generateItemTableFromChapters(chapters)
     end
   end
 
-  --- @type table
+  --- @type Chapter[]
   --- @diagnostic disable-next-line: assign-type-mismatch
   local sorted_chapters_with_index = util.tableDeepCopy(filtered_chapters)
   for index, chapter in ipairs(sorted_chapters_with_index) do
+    ---@diagnostic disable-next-line: inject-field
     chapter.index = index
   end
 
@@ -224,7 +225,7 @@ function ChapterListing:generateItemTableFromChapters(chapters)
 
   local item_table = {}
 
-  for __,chapter in ipairs(sorted_chapters_with_index) do
+  for __, chapter in ipairs(sorted_chapters_with_index) do
     local text = ""
     if chapter.volume_num ~= nil then
       -- FIXME we assume there's a chapter number if there's a volume number
@@ -257,7 +258,9 @@ function ChapterListing:generateItemTableFromChapters(chapters)
     table.insert(item_table, {
       chapter = chapter,
       text = text,
-      mandatory = mandatory,
+      post_text = chapter.locked and _("Locked") or nil,
+      dim = chapter.locked,
+      mandatory = chapter.locked and Icons.FA_LOCKED or mandatory,
     })
   end
 
@@ -336,9 +339,14 @@ end
 
 --- @private
 function ChapterListing:onPrimaryMenuChoice(item)
+  ---@type Chapter
   local chapter = item.chapter
 
-  self:openChapterOnReader(chapter)
+  if chapter.locked then
+    UIManager:show(InfoMessage:new { text = _("Chapter is locked") })
+  else
+    self:openChapterOnReader(chapter)
+  end
 end
 
 --- @private
@@ -880,7 +888,7 @@ function ChapterListing:readContinue(nextChapter)
   local first_chapter = nil
   local first_chapter_num = math.huge
 
-  for __,chapter in ipairs(self.chapters) do
+  for __, chapter in ipairs(self.chapters) do
     local num = chapter.chapter_num
     if num then
       if num < first_chapter_num then
@@ -899,7 +907,7 @@ function ChapterListing:readContinue(nextChapter)
     next_chapter = first_chapter
   else
     if nextChapter then
-      for __,chapter in ipairs(self.chapters) do
+      for __, chapter in ipairs(self.chapters) do
         local num = chapter.chapter_num
         if num and not chapter.read and num > last_read_chapter_num and num < next_chapter_num then
           next_chapter = chapter
@@ -963,7 +971,7 @@ function ChapterListing:showScanlatorDialog()
   })
 
   -- Individual scanlators
-  for __,scanlator in ipairs(self.available_scanlators) do
+  for __, scanlator in ipairs(self.available_scanlators) do
     local is_selected = self.selected_scanlator == scanlator
     local text = is_selected and (Icons.FA_CHECK .. " " .. scanlator) or scanlator
 
@@ -1089,7 +1097,7 @@ function ChapterListing:onDownloadAllChapters()
       -- some possible alternatives:
       -- - return the chapter list from the backend on the `downloadAllChapters` call
       -- - biting the bullet and making the API call
-      for __,chapter in ipairs(self.chapters) do
+      for __, chapter in ipairs(self.chapters) do
         self:findRootChapter(chapter).downloaded = true
       end
 

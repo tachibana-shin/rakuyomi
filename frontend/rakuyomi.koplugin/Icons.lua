@@ -27,4 +27,5 @@ return {
   INFO                 = "\u{f129}",
   CHECK_ALL            = "\u{ee29}",
   FA_CLEANER           = "\u{e000}",
+  FA_LOCKED            = "\u{f023}",
 }

@@ -519,7 +519,7 @@ pub fn swift_dateformat_to_strptime(swift_format: &str) -> String {
             // Handle quoted literals
             '\'' => {
                 // Skip the opening quote and collect characters until closing quote
-                while let Some(quoted_char) = chars.next() {
+                for quoted_char in chars.by_ref() {
                     if quoted_char == '\'' {
                         break; // Found closing quote
                     }

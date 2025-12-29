@@ -12,7 +12,7 @@ pub async fn mark_chapters_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
     manga_id: MangaId,
-    text: &String,
+    text: &str,
     state: bool,
 ) -> Result<Option<usize>> {
     let chapters = super::get_cached_manga_chapters(db, chapter_storage, &manga_id).await?;
@@ -23,16 +23,13 @@ pub async fn mark_chapters_as_read(
         .await
 }
 
-fn parse_chapter_ranges(chapters: &Vec<Chapter>, text: &str) -> Result<Vec<ChapterId>> {
+fn parse_chapter_ranges(chapters: &[Chapter], text: &str) -> Result<Vec<ChapterId>> {
     if text.trim().is_empty() {
-        return Ok(chapters
-            .into_iter()
-            .map(|c| c.information.id.clone())
-            .collect());
+        return Ok(chapters.iter().map(|c| c.information.id.clone()).collect());
     }
 
     let chapters: HashMap<_, _> = chapters
-        .into_iter()
+        .iter()
         .enumerate()
         .map(|(idx, ch)| {
             let key = ch

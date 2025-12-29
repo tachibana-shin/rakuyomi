@@ -27,9 +27,9 @@ pub trait Job {
 }
 
 pub enum RunningJob {
-    DownloadChapter(DownloadChapterJob),
-    DownloadUnreadChapters(DownloadUnreadChaptersJob),
-    DownloadScanlatorChapters(DownloadScanlatorChaptersJob),
+    Chapter(DownloadChapterJob),
+    UnreadChapters(DownloadUnreadChaptersJob),
+    ScanlatorChapters(DownloadScanlatorChaptersJob),
 }
 
 #[derive(Default, Clone)]

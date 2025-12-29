@@ -160,7 +160,7 @@ impl ComicInfo {
             ..Default::default()
         };
 
-        if comic_info.title.is_empty() && !chapter_info.chapter_number.is_some() {
+        if comic_info.title.is_empty() && chapter_info.chapter_number.is_none() {
             comic_info.title = format!(
                 "Ch.{}",
                 chapter_info.chapter_number.map(|n| n.to_string()).unwrap()

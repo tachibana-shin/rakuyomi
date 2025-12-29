@@ -12,12 +12,12 @@ use crate::{model::SourceId, source_manager::SourceManager};
 pub async fn install_source(
     source_manager: &mut SourceManager,
     arc_manager: &Arc<Mutex<SourceManager>>,
-    source_lists: &Vec<Url>,
+    source_lists: &[Url],
     source_id: SourceId,
     source_of_source: String,
 ) -> Result<()> {
     let (source_list, source_list_item, source_of_source) =
-        stream::iter(source_lists.into_iter().filter(|url| {
+        stream::iter(source_lists.iter().filter(|url| {
             let domain = url.domain().unwrap_or("").to_string();
             domain == source_of_source
         }))

@@ -225,9 +225,9 @@ fn attr(caller: Caller<'_, WasmStore>, ptr: i32, selector: Option<String>) -> Re
                 .downcast_ref::<crate::source::wasm_imports::html::AttributeNotFound>()
                 .is_some()
             {
-                return ResultContext::NoResult.into();
+                ResultContext::NoResult.into()
             } else {
-                return Err(err);
+                Err(err)
             }
         }
     }
@@ -532,11 +532,12 @@ fn get(mut caller: Caller<'_, WasmStore>, ptr: i32, index: i32) -> FFIResult {
 
     let element = html_elements.get(index as usize);
     if let Some(element) = element {
-        return Ok(wasm_store
-            .store_std_value(Value::from(vec![element.clone()]).into(), Some(descriptor))
-            as i32);
+        Ok(
+            wasm_store.store_std_value(Value::from(vec![element.clone()]).into(), Some(descriptor))
+                as i32,
+        )
     } else {
-        return ResultContext::NoResult.into();
+        ResultContext::NoResult.into()
     }
 }
 

@@ -323,6 +323,7 @@ pub fn fit_arima_from_chapters(
 }
 
 /// Weighted coordinate descent for ARIMA (recent residuals have more weight)
+#[allow(clippy::too_many_arguments)]
 fn coordinate_descent_optimize_weighted(
     diff: &[f64],
     p: usize,
@@ -442,7 +443,7 @@ fn sse_loss_weighted(diff: &[f64], p: usize, q: usize, params: &[f64]) -> f64 {
 }
 
 /// ---------- Helper utilities ----------
-
+///
 /// Extracts timestamps from chapters:
 /// - filters out items with missing last_updated
 /// - sorts by chapter_number (if available) ascending; if chapter_number missing uses last_updated ascending
@@ -593,13 +594,13 @@ fn compute_residuals_and_fitted(
     for t in 0..n {
         let mut ar_part = 0.0;
         for i in 0..p {
-            if t >= i + 1 {
+            if t > i {
                 ar_part += ar[i] * diff[t - 1 - i];
             }
         }
         let mut ma_part = 0.0;
         for i in 0..q {
-            if t >= i + 1 {
+            if t > i {
                 ma_part += ma[i] * resids[t - 1 - i];
             }
         }

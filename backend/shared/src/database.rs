@@ -110,8 +110,8 @@ impl Database {
         source_collection: &impl SourceCollection,
         library_sorting_mode: &crate::settings::LibrarySortingMode,
     ) -> Result<Vec<Manga>> {
-        let rows = match library_sorting_mode {
-            &crate::settings::LibrarySortingMode::Ascending => {
+        let rows = match *library_sorting_mode {
+            crate::settings::LibrarySortingMode::Ascending => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -181,7 +181,7 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            &crate::settings::LibrarySortingMode::Descending => {
+            crate::settings::LibrarySortingMode::Descending => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -251,7 +251,7 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            &crate::settings::LibrarySortingMode::TitleAsc => {
+            crate::settings::LibrarySortingMode::TitleAsc => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -321,7 +321,7 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            &crate::settings::LibrarySortingMode::TitleDesc => {
+            crate::settings::LibrarySortingMode::TitleDesc => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -391,7 +391,7 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            &crate::settings::LibrarySortingMode::UnreadAsc => {
+            crate::settings::LibrarySortingMode::UnreadAsc => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -461,7 +461,7 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            &crate::settings::LibrarySortingMode::UnreadDesc => {
+            crate::settings::LibrarySortingMode::UnreadDesc => {
                 sqlx::query_as!(
                     MangaLibraryRowWithReadCount,
                     r#"
@@ -550,7 +550,7 @@ impl Database {
                     information: info,
                     state: MangaState::default(),
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
-                    last_read: row.last_read.map(|v| v as i64),
+                    last_read: row.last_read,
                     in_library: true,
                 })
             })
@@ -949,8 +949,7 @@ impl Database {
         .await
         .unwrap();
 
-        let out = rows
-            .into_iter()
+        rows.into_iter()
             .map(|row| {
                 let id = ChapterId::new(
                     MangaId::new(SourceId::new(row.source_id), row.manga_id),
@@ -962,8 +961,8 @@ impl Database {
                     title: row.title,
                     scanlator: row.scanlator,
 
-                    chapter_number: row.chapter_number.and_then(|f| Decimal::from_f64(f)),
-                    volume_number: row.volume_number.and_then(|f| Decimal::from_f64(f)),
+                    chapter_number: row.chapter_number.and_then(Decimal::from_f64),
+                    volume_number: row.volume_number.and_then(Decimal::from_f64),
                     // manga_order: row.manga_order as usize,
                     last_updated: row.last_updated,
                     thumbnail: row.thumbnail.and_then(|s| Url::parse(&s).ok()),
@@ -985,8 +984,7 @@ impl Database {
                     downloaded,
                 }
             })
-            .collect();
-        out
+            .collect()
     }
 
     pub async fn upsert_cached_manga_information(
@@ -1491,8 +1489,7 @@ impl Database {
         } else {
             format!(
                 "AND source_id NOT IN ({})",
-                std::iter::repeat("?")
-                    .take(skip_sources.len())
+                std::iter::repeat_n("?", skip_sources.len())
                     .collect::<Vec<_>>()
                     .join(",")
             )
@@ -1577,7 +1574,7 @@ impl Database {
         .await
         .unwrap();
 
-        value.count.into()
+        value.count
     }
 
     pub async fn get_notifications(&self) -> Vec<NotificationInformation> {
@@ -1949,7 +1946,7 @@ impl From<NotificationInformationRow> for NotificationInformation {
             manga_title: value.manga_title.unwrap_or("Unknown".to_owned()),
             manga_cover: value
                 .manga_cover
-                .map(|u| url::Url::parse(&u).map(|v| Some(v)).unwrap_or(None))
+                .map(|u| url::Url::parse(&u).map(Some).unwrap_or(None))
                 .unwrap_or(None),
             manga_status: value.manga_status,
             chapter_title: value.chapter_title.unwrap_or("Unknown".to_owned()),

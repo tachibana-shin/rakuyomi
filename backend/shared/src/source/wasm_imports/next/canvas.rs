@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use aidoku::canvas::{Angle, FontWeight, PathOp};
 use anyhow::{bail, Result};
 use font_kit::properties::{Properties, Weight};
@@ -142,14 +144,7 @@ fn draw_image(
 
     {
         // NOTE: draw_image_with_size_at expects f32 and a Transform
-        canvas.draw_image_with_size_at(
-            width as f32,
-            height as f32,
-            x as f32,
-            y as f32,
-            &rq_img,
-            &raqote::DrawOptions::new(),
-        );
+        canvas.draw_image_with_size_at(width, height, x, y, &rq_img, &raqote::DrawOptions::new());
 
         store.set_canvas(ctx_id, canvas);
     }
@@ -422,7 +417,7 @@ fn system_font(mut caller: Caller<'_, WasmStore>, size: i32) -> Result<i32> {
     Ok(store
         .create_font(
             "sans-serif".to_string(),
-            Some(&Properties::new().weight(weight)),
+            Some(Properties::new().weight(weight)),
         )
         .unwrap_or(ResultContext::InvalidFont.into()))
 }
@@ -441,7 +436,7 @@ fn load_font(mut caller: Caller<'_, WasmStore>, url: Option<String>) -> Result<i
     };
 
     let store = caller.data_mut();
-    Ok(store.set_font_online(&bytes).into())
+    Ok(store.set_font_online(&bytes))
 }
 
 // ----------------- Image -----------------

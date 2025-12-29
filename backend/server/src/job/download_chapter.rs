@@ -12,9 +12,12 @@ use crate::{AppError, ErrorResponse};
 use super::state::{Job, JobState};
 
 // FIXME this is kinda ugly, maybe some type aliases would help here
+type JobSender = watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>;
+type JobReceiver =
+    watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>;
 pub struct DownloadChapterJob {
-    tx: watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
-    rx: watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>,
+    tx: JobSender,
+    rx: JobReceiver,
     handle: JoinHandle<()>,
     cancellation_token: CancellationToken,
 }
@@ -44,7 +47,7 @@ impl DownloadChapterJob {
                 concurrent_requests_pages,
             )
             .await
-            .map(|p| Arc::new(p));
+            .map(Arc::new);
 
             let _ = tx_clone.send_replace(Some(result));
         });

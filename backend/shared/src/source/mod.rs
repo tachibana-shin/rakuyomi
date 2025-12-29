@@ -136,7 +136,7 @@ impl Source {
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
         fs::write(
-            BlockingSource::meta_source_path(&path)?,
+            BlockingSource::meta_source_path(path)?,
             serde_json::to_string(&SourceMeta {
                 source_of_source: Some(source_of_source),
                 is_next_sdk: None,
@@ -247,7 +247,7 @@ pub struct SourceMeta {
 }
 
 fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory> {
-    match instance.get_export(&store, "memory") {
+    match instance.get_export(store, "memory") {
         Some(Extern::Memory(memory)) => Ok(memory),
         _ => bail!("failed to get memory"),
     }
@@ -299,7 +299,7 @@ impl BlockingSource {
                     &fs::read_to_string(&meta_file)
                         .with_context(|| format!("failed to read file: {:?}", path))?,
                 )
-                .map(|v| Some(v))
+                .map(Some)
                 .unwrap_or(None);
 
                 if let Some(meta) = meta {
@@ -313,17 +313,13 @@ impl BlockingSource {
 
         let url_settings = {
             let manifest = manifest.clone();
-            if let Some(urls) = manifest.info.urls {
-                Some(SettingDefinition::Select {
-                    title: "URL".to_owned(),
-                    key: "url".to_owned(),
-                    default: Some(urls.first().unwrap_or(&"".to_owned()).to_string()),
-                    values: urls,
-                    titles: None,
-                })
-            } else {
-                None
-            }
+            manifest.info.urls.map(|urls| SettingDefinition::Select {
+                title: "URL".to_owned(),
+                key: "url".to_owned(),
+                default: Some(urls.first().unwrap_or(&"".to_owned()).to_string()),
+                values: urls,
+                titles: None,
+            })
         };
         let url_settings_support = url_settings.is_some();
 
@@ -438,7 +434,7 @@ impl BlockingSource {
         if aidoku_sdk_next_from_meta.is_none()
             || aidoku_sdk_next_from_meta.unwrap() != aidoku_sdk_next
         {
-            let meta_file = Self::meta_source_path(&path)?;
+            let meta_file = Self::meta_source_path(path)?;
 
             let _ = fs::write(
                 &meta_file,
@@ -963,7 +959,7 @@ impl BlockingSource {
         page: i32,
         filters: Vec<Filter>,
     ) -> Result<Vec<aidoku::Manga>> {
-        if filters.len() > 0 {
+        if !filters.is_empty() {
             eprintln!("The current version not support filters");
         }
 
@@ -1151,7 +1147,7 @@ impl BlockingSource {
             building_state.method = Some(Method::GET);
         }
 
-        if building_state.headers.get("User-Agent").is_none() {
+        if !building_state.headers.contains_key("User-Agent") {
             building_state
                 .headers
                 .insert("User-Agent".to_string(), DEFAULT_USER_AGENT.to_string());

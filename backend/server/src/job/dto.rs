@@ -19,11 +19,9 @@ pub enum JobDetail {
 impl JobDetail {
     pub async fn from_job(job: RunningJob) -> (Self, Option<RunningJob>) {
         match job {
-            RunningJob::DownloadChapter(job) => Self::from_download_chapter_job(job).await,
-            RunningJob::DownloadUnreadChapters(job) => {
-                Self::from_download_unread_chapters_job(job).await
-            }
-            RunningJob::DownloadScanlatorChapters(job) => {
+            RunningJob::Chapter(job) => Self::from_download_chapter_job(job).await,
+            RunningJob::UnreadChapters(job) => Self::from_download_unread_chapters_job(job).await,
+            RunningJob::ScanlatorChapters(job) => {
                 Self::from_download_scanlator_chapters_job(job).await
             }
         }
@@ -33,7 +31,7 @@ impl JobDetail {
         match job.poll().await {
             JobState::InProgress(v) => (
                 JobDetail::Pending(serde_json::to_value(v).unwrap()),
-                Some(RunningJob::DownloadChapter(job)),
+                Some(RunningJob::Chapter(job)),
             ),
             JobState::Completed(v) => {
                 (JobDetail::Completed(serde_json::to_value(v).unwrap()), None)
@@ -48,7 +46,7 @@ impl JobDetail {
         match job.poll().await {
             JobState::InProgress(v) => (
                 JobDetail::Pending(serde_json::to_value(v).unwrap()),
-                Some(RunningJob::DownloadUnreadChapters(job)),
+                Some(RunningJob::UnreadChapters(job)),
             ),
             JobState::Completed(_) => (JobDetail::Completed(().into()), None),
             JobState::Errored(v) => (JobDetail::Error(serde_json::to_value(v).unwrap()), None),
@@ -61,7 +59,7 @@ impl JobDetail {
         match job.poll().await {
             JobState::InProgress(v) => (
                 JobDetail::Pending(serde_json::to_value(v).unwrap()),
-                Some(RunningJob::DownloadScanlatorChapters(job)),
+                Some(RunningJob::ScanlatorChapters(job)),
             ),
             JobState::Completed(_) => (JobDetail::Completed(().into()), None),
             JobState::Errored(v) => (JobDetail::Error(serde_json::to_value(v).unwrap()), None),

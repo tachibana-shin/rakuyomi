@@ -36,7 +36,7 @@ impl SourceManager {
         Ok(Self {
             sources_folder: path,
             sources_by_id: HashMap::new(),
-            settings: settings,
+            settings,
         })
     }
 

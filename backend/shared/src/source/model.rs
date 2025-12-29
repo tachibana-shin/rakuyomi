@@ -159,7 +159,7 @@ pub struct Manga {
 impl Manga {
     pub fn from(value: aidoku::Manga, source_id: String) -> Self {
         Self {
-            source_id: source_id,
+            source_id,
             title: Some(value.title),
             id: value.key,
             author: value.authors.map(|v| v.join(", ")),
@@ -246,7 +246,7 @@ impl Page {
             chapter_id,
             index,
             image_url: match &page.content {
-                aidoku::PageContent::Url(ref url, _) => Some(url::Url::parse(&url).unwrap()),
+                aidoku::PageContent::Url(ref url, _) => Some(url::Url::parse(url).unwrap()),
                 _ => None,
             },
             base64: None,

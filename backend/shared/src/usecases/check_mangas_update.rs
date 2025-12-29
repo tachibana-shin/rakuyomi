@@ -53,11 +53,11 @@ async fn check_manga_update(
     };
 
     if *status == PublishingStatus::Completed {
-        db.delete_last_check_update_manga(&manga).await;
+        db.delete_last_check_update_manga(manga).await;
         return Ok(());
     }
 
-    let Some(source) = source_manager.get_by_id(&manga.source_id()) else {
+    let Some(source) = source_manager.get_by_id(manga.source_id()) else {
         bail!(
             "Missing source {} – skip manga {}",
             manga.source_id().value(),
@@ -65,10 +65,10 @@ async fn check_manga_update(
         )
     };
 
-    let status = match refresh_manga_details(token, db, chapter_storage, source, &manga, 60).await {
+    let status = match refresh_manga_details(token, db, chapter_storage, source, manga, 60).await {
         Ok(status) => {
             if status == PublishingStatus::Completed {
-                db.delete_last_check_update_manga(&manga).await;
+                db.delete_last_check_update_manga(manga).await;
             }
 
             status
@@ -83,8 +83,8 @@ async fn check_manga_update(
         }
     };
 
-    let old_chapters = db.find_cached_chapter_informations(&manga).await;
-    let new_chapters = match refresh_manga_chapters(token, db, source, &manga, 60).await {
+    let old_chapters = db.find_cached_chapter_informations(manga).await;
+    let new_chapters = match refresh_manga_chapters(token, db, source, manga, 60).await {
         Ok(chaps) => chaps,
         Err(err) => {
             bail!(
@@ -95,7 +95,7 @@ async fn check_manga_update(
         }
     };
 
-    let added_chapters = if old_chapters.len() == 0 {
+    let added_chapters = if old_chapters.is_empty() {
         [].into()
     } else {
         compute_new_chapters(&old_chapters, &new_chapters)
@@ -106,14 +106,13 @@ async fn check_manga_update(
 
         let next_ts_update = match maybe_model {
             Ok(model) => {
-                let last_check_no_update = if added_chapters.len() == 0 {
+                let last_check_no_update = if added_chapters.is_empty() {
                     Some(chrono::Utc::now().timestamp())
                 } else {
-                    db.get_last_check_update_manga(&manga).await.map(|t| t.0)
+                    db.get_last_check_update_manga(manga).await.map(|t| t.0)
                 };
-                let next_ts = model.forecast_1_from_chapters(&new_chapters, last_check_no_update);
 
-                next_ts
+                model.forecast_1_from_chapters(&new_chapters, last_check_no_update)
             }
             Err(err) => {
                 eprintln!("{}", err);
@@ -123,11 +122,11 @@ async fn check_manga_update(
         }
         .unwrap_or_else(|| chrono::Utc::now().timestamp() + 24 * 60 * 60);
 
-        db.set_last_check_update_manga(&manga, chrono::Utc::now().timestamp(), next_ts_update)
+        db.set_last_check_update_manga(manga, chrono::Utc::now().timestamp(), next_ts_update)
             .await;
     }
 
-    let _ = db.insert_notification(&manga, &added_chapters).await;
+    let _ = db.insert_notification(manga, &added_chapters).await;
 
     Ok(())
 }
@@ -167,13 +166,13 @@ pub async fn run_manga_cron(
     loop {
         let now = chrono::Utc::now().timestamp();
         let source_skip_cron = settings.source_skip_cron.clone().unwrap_or("".to_owned());
-        let skip_sources: Vec<_> = source_skip_cron.split(",").into_iter().collect();
+        let skip_sources: Vec<_> = source_skip_cron.split(",").collect();
 
         let mut next_manga = db.get_next_ts_arima_min(&skip_sources).await;
         if next_manga.is_none() {
             println!("Next manga not found. Re-check all mangas");
 
-            check_mangas_update(token, &db, &chapter_storage, &source_manager).await;
+            check_mangas_update(token, db, chapter_storage, source_manager).await;
             next_manga = db.get_next_ts_arima_min(&skip_sources).await;
 
             if next_manga.is_none() {
@@ -201,9 +200,9 @@ pub async fn run_manga_cron(
 
             if let Err(err) = check_manga_update(
                 token,
-                &db,
-                &chapter_storage,
-                &source_manager,
+                db,
+                chapter_storage,
+                source_manager,
                 &manga_id,
                 &status,
             )

@@ -184,8 +184,9 @@ pub enum Error {
     SourceError(#[source] anyhow::Error),
 }
 
+type ResultManga = (MangaInformation, Option<(Option<usize>, Option<i64>, bool)>);
 struct SourceMangaSearchResults {
     source_information: SourceInformation,
     /// mangas: Vec<Manga>, $0 is unread chapters count, $1 is last read time
-    mangas: Vec<(MangaInformation, Option<(Option<usize>, Option<i64>, bool)>)>,
+    mangas: Vec<ResultManga>,
 }

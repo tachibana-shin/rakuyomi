@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::io::Cursor;
 
 fn load_image(image: Vec<u8>) -> DynamicImage {
-    return image::load_from_memory(image.as_slice()).expect("Failed to load image");
+    image::load_from_memory(image.as_slice()).expect("Failed to load image")
 }
 
 #[derive(Debug, Deserialize, Clone)]

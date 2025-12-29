@@ -70,7 +70,7 @@ pub async fn ensure_chapter_is_in_storage(
             chapter.id.value()
         )));
     }
-    let is_novel = pages.get(0).and_then(|p| p.text.as_ref()).is_some();
+    let is_novel = pages.first().and_then(|p| p.text.as_ref()).is_some();
 
     // FIXME this logic should be contained entirely within the storage..? maybe we could return something that's writable
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
@@ -88,7 +88,7 @@ pub async fn ensure_chapter_is_in_storage(
         // is novel
         let temp_path = temporary_file.path().to_path_buf();
 
-        download_chapter_novel_as_epub(&temporary_file, &token, temp_path, source, pages, chapter)
+        download_chapter_novel_as_epub(&temporary_file, token, temp_path, source, pages, chapter)
             .await
             .with_context(|| "Failed to download chapter pages")
             .map_err(Error::DownloadError)?;
@@ -96,7 +96,7 @@ pub async fn ensure_chapter_is_in_storage(
         Vec::<DownloadError>::from([])
     } else {
         download_chapter_pages_as_cbz(
-            &token,
+            token,
             &temporary_file,
             metadata,
             source,
@@ -412,7 +412,7 @@ where
                                 (
                                     generate_error_image(
                                         &response.status().as_u16().to_string(),
-                                        &response
+                                        response
                                             .status()
                                             .canonical_reason()
                                             .unwrap_or("Unknown Error"),
@@ -639,7 +639,7 @@ where
         .map(|src| {
             base_url
                 .and_then(|url| url.join(&src).ok().map(|url| url.to_string()))
-                .unwrap_or_else(|| src)
+                .unwrap_or(src)
         })
 }
 
@@ -650,14 +650,13 @@ async fn download_all_images(
     token: &CancellationToken,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
     let mut seen = HashSet::<String>::new();
-    let mut tasks: Vec<
-        std::pin::Pin<
-            Box<
-                dyn futures::Future<Output = (String, anyhow::Result<(Vec<u8>, String, String)>)>
-                    + Send,
-            >,
+    type Task = std::pin::Pin<
+        Box<
+            dyn futures::Future<Output = (String, anyhow::Result<(Vec<u8>, String, String)>)>
+                + Send,
         >,
-    > = Vec::new();
+    >;
+    let mut tasks: Vec<Task> = Vec::new();
 
     for page in &pages {
         if token.is_cancelled() {
@@ -727,7 +726,7 @@ where
         }
     });
 
-    let cover_img = prepare_cover(cover_url, &client, &source)
+    let cover_img = prepare_cover(cover_url, &client, source)
         .await
         .map_err(|e| {
             eprintln!(
@@ -738,7 +737,7 @@ where
         .ok()
         .flatten();
 
-    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source, &token).await?;
+    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source, token).await?;
 
     let chapter_url = chapter.url.clone();
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
@@ -783,10 +782,7 @@ where
                     Err(e) => {
                         eprintln!("Failed to download image for EPUB: {:?}", e);
 
-                        format!(
-                            "<p><strong>Failed to download image: {}</strong></p>",
-                            e.to_string()
-                        )
+                        format!("<p><strong>Failed to download image: {}</strong></p>", e)
                     }
                 };
                 index_image += 1;

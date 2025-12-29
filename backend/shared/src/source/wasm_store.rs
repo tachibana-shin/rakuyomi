@@ -68,9 +68,8 @@ impl HTMLElement {
         let mut result = String::new();
 
         for child in self.element_ref().children() {
-            match child.value() {
-                scraper::Node::Text(text) => result.push_str(&**text),
-                _ => {}
+            if let scraper::Node::Text(text) = child.value() {
+                result.push_str(text)
             }
         }
 
@@ -163,8 +162,8 @@ pub struct Drawer {
 impl From<&mut DrawTarget> for Drawer {
     fn from(dt: &mut DrawTarget) -> Self {
         Self {
-            width: dt.width() as i32,
-            height: dt.height() as i32,
+            width: dt.width(),
+            height: dt.height(),
             vec: dt.get_data().to_vec(),
             transform: *dt.get_transform(),
         }
@@ -387,21 +386,19 @@ impl WasmStore {
     pub fn get_mut_canvas(&mut self, descriptor: i32) -> Option<DrawTarget> {
         self.canvass
             .get_mut(&descriptor)
-            .map(|v| <&mut Drawer as Into<DrawTarget>>::into(v))
+            .map(<&mut Drawer as Into<DrawTarget>>::into)
     }
     pub fn set_canvas(&mut self, descriptor: i32, draw: &mut DrawTarget) {
         self.canvass.insert(descriptor, draw.into());
     }
     pub fn create_image(&mut self, data: &[u8]) -> Option<i32> {
         let cursor = Cursor::new(data);
-        let Some(rgba_img) = ImageReader::new(cursor)
+        let rgba_img = ImageReader::new(cursor)
             .with_guessed_format()
             .ok()
             .and_then(|r| r.decode().ok())
-            .map(|img| img.to_rgba8())
-        else {
-            return None;
-        };
+            .map(|img| img.to_rgba8())?;
+
         let width = rgba_img.width() as i32;
         let height = rgba_img.height() as i32;
         let mut pixels: Vec<u32> = Vec::with_capacity((width * height) as usize);
@@ -433,16 +430,13 @@ impl WasmStore {
         idx
     }
     pub fn create_font(&mut self, name: String, property: Option<&Properties>) -> Option<i32> {
-        let Some(font) = SystemSource::new()
+        let font = SystemSource::new()
             .select_best_match(
                 &[FamilyName::Title(name)],
-                &property.map(|v| *v).unwrap_or_else(Properties::new),
+                &property.copied().unwrap_or_default(),
             )
             .ok()
-            .and_then(|h| h.load().ok())
-        else {
-            return None;
-        };
+            .and_then(|h| h.load().ok())?;
 
         let idx = self.fonts_pointer;
         self.fonts_pointer += 1;
@@ -454,18 +448,15 @@ impl WasmStore {
     }
     pub fn get_font(&mut self, descriptor: i32) -> Option<Font> {
         let Some((family_name, properties)) = self.fonts.get(&descriptor.clone()) else {
-            let Some(buffer) = self.fonts_online.get(&descriptor) else {
-                return None;
-            };
+            let buffer = self.fonts_online.get(&descriptor)?;
 
             return Font::from_bytes(buffer.clone().into(), 0).ok();
         };
-        let font = SystemSource::new()
-            .select_best_match(&[FamilyName::Title(family_name.clone())], &properties)
-            .ok()
-            .and_then(|h| h.load().ok());
 
-        font
+        SystemSource::new()
+            .select_best_match(&[FamilyName::Title(family_name.clone())], properties)
+            .ok()
+            .and_then(|h| h.load().ok())
     }
     pub fn set_font_online(&mut self, buffer: &[u8]) -> i32 {
         let idx = self.fonts_pointer;
@@ -577,9 +568,7 @@ impl From<SourceSettingValue> for Value {
             SourceSettingValue::Int(v) => Value::Int(v),
             SourceSettingValue::Float(v) => Value::Float(v),
             SourceSettingValue::String(v) => Value::String(v),
-            SourceSettingValue::Vec(v) => {
-                Value::Array(v.into_iter().map(|v| Value::String(v)).collect())
-            }
+            SourceSettingValue::Vec(v) => Value::Array(v.into_iter().map(Value::String).collect()),
             SourceSettingValue::Null => Value::Null,
         }
     }

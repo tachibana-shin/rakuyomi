@@ -64,10 +64,10 @@ impl From<AidokuHttpMethod> for Method {
     }
 }
 
-pub fn get_building_request<'a>(
-    wasm_store: &'a mut WasmStore,
+pub fn get_building_request(
+    wasm_store: &mut WasmStore,
     descriptor: usize,
-) -> Result<&'a mut crate::source::wasm_store::RequestBuildingState> {
+) -> Result<&mut crate::source::wasm_store::RequestBuildingState> {
     let req = wasm_store
         .get_mut_request(descriptor)
         .context("failed to get request state")?;
@@ -383,7 +383,7 @@ fn json(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Resul
     // PERF If we remove the response from the state, we can parse this with ownership of the body,
     // which might enable some optimizations to be done by serde.
     // Check if Aidoku's source allows us to read from the response _after_ we have read it.
-    let value: Value = serde_json::from_slice(&body).context("failed to parse json")?;
+    let value: Value = serde_json::from_slice(body).context("failed to parse json")?;
 
     Ok(wasm_store.store_std_value(value.into(), None) as i32)
 }
@@ -403,7 +403,7 @@ pub fn html(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     let body = response.body.as_ref().context("no body")?;
 
     // FIXME we should consider the encoding that came on the request
-    let html_string = std::str::from_utf8(&body)?.to_string(); // minimal clone for string, body is Arc
+    let html_string = std::str::from_utf8(body)?.to_string(); // minimal clone for string, body is Arc
 
     // FIXME this is duplicated from the html module. not sure it's really worth refactoring
     // but here's a note

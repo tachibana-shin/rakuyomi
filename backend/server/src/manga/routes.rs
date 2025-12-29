@@ -168,7 +168,7 @@ async fn sync_database(
     }): StateExtractor<State>,
     Json(args): Json<Vec<bool>>,
 ) -> Result<Json<usecases::sync_database::SyncResult>, AppError> {
-    let accept_migrate_local = args.get(0).cloned().unwrap_or(false);
+    let accept_migrate_local = args.first().cloned().unwrap_or(false);
     let accept_replace_remote = args.get(1).cloned().unwrap_or(false);
 
     let mut settings = settings.lock().await;
@@ -366,7 +366,7 @@ async fn delete_notification(
 ) -> Result<Json<()>, AppError> {
     let database = database.lock().await;
 
-    let _ = usecases::delete_notification(&database, params.id).await?;
+    usecases::delete_notification(&database, params.id).await?;
 
     Ok(Json(()))
 }
@@ -376,7 +376,7 @@ async fn clear_notifications(
 ) -> Result<Json<()>, AppError> {
     let database = database.lock().await;
 
-    let _ = usecases::clear_notifications(&database).await?;
+    usecases::clear_notifications(&database).await?;
 
     Ok(Json(()))
 }
@@ -502,7 +502,7 @@ async fn refresh_manga_details(
     let _ = usecases::refresh_manga_details(
         &token.0,
         &database,
-        &chapter_storage,
+        chapter_storage,
         &source,
         &manga_id,
         60,
@@ -526,7 +526,7 @@ async fn mark_chapters_as_read(
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
-        usecases::mark_chapters_as_read(&database, &chapter_storage, manga_id, &range, state)
+        usecases::mark_chapters_as_read(&database, chapter_storage, manga_id, &range, state)
             .await?;
 
     Ok(Json(count))

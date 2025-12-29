@@ -11,14 +11,11 @@ pub async fn revoke_manga_chapter(
         return Ok(false);
     };
 
-    let removed_main = match tokio::fs::remove_file(&path).await {
-        Ok(_) => true,
-        Err(_) => false,
-    };
+    let removed_main = (tokio::fs::remove_file(&path).await).is_ok();
 
     // Get path to "errors file" (optional) and delete it,
     // but ignore all failures because it's best-effort cleanup.
-    if let Some(path_errors) = chapter_storage.errors_source_path(&path).ok() {
+    if let Ok(path_errors) = chapter_storage.errors_source_path(&path) {
         // fire-and-forget but awaited; failure ignored
         let _ = tokio::fs::remove_file(path_errors).await;
     }

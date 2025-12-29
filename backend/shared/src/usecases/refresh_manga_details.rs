@@ -37,13 +37,13 @@ pub async fn refresh_manga_details(
         }
     };
 
-    let _ = db.upsert_cached_manga_details(&id, &manga_details).await?;
+    db.upsert_cached_manga_details(id, &manga_details).await?;
 
     // source.manifest().
 
     if let Some(url) = &manga_details.cover_url {
         chapter_storage
-            .cached_poster(&token, url, || {
+            .cached_poster(token, url, || {
                 source.get_image_request(url.to_owned(), None)
             })
             .await?;

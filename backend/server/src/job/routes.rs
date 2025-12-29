@@ -79,7 +79,7 @@ async fn create_download_chapter_job(
     job_registry
         .lock()
         .await
-        .insert(id, RunningJob::DownloadChapter(job));
+        .insert(id, RunningJob::Chapter(job));
 
     Ok(Json(id))
 }
@@ -135,7 +135,7 @@ async fn create_download_unread_chapters_job(
     job_registry
         .lock()
         .await
-        .insert(id, RunningJob::DownloadUnreadChapters(job));
+        .insert(id, RunningJob::UnreadChapters(job));
 
     Ok(Json(id))
 }
@@ -193,7 +193,7 @@ async fn create_download_scanlator_chapters_job(
     job_registry
         .lock()
         .await
-        .insert(id, RunningJob::DownloadScanlatorChapters(job));
+        .insert(id, RunningJob::ScanlatorChapters(job));
 
     Ok(Json(id))
 }
@@ -232,9 +232,9 @@ async fn cancel_job(
         .ok_or_else(|| anyhow!("couldn't find job"))?;
 
     match job {
-        RunningJob::DownloadChapter(job) => job.cancel().await?,
-        RunningJob::DownloadUnreadChapters(job) => job.cancel().await?,
-        RunningJob::DownloadScanlatorChapters(job) => job.cancel().await?,
+        RunningJob::Chapter(job) => job.cancel().await?,
+        RunningJob::UnreadChapters(job) => job.cancel().await?,
+        RunningJob::ScanlatorChapters(job) => job.cancel().await?,
     };
 
     Ok(Json(()))

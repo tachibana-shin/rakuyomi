@@ -1,7 +1,5 @@
 #![allow(clippy::too_many_arguments)]
 
-use std::usize;
-
 use anyhow::{Context, Result};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasm_shared::{get_memory, memory_reader::write_bytes};
@@ -59,7 +57,7 @@ macro_rules! serialize_null {
 
 fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Result<Vec<u8>> {
     let wasm_store = caller.data_mut();
-    let value_ref = wasm_store.get_std_value(pointer.clone()).context(-1)?;
+    let value_ref = wasm_store.get_std_value(pointer).context(-1)?;
     let data = <wasm_store::Value as Clone>::clone(&value_ref);
 
     Ok(match data {

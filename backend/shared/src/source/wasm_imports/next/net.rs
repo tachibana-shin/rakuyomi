@@ -141,7 +141,7 @@ fn init(mut caller: Caller<'_, WasmStore>, method: i32) -> FFIResult {
     let Some(request) = get_building_request(wasm_store, request_descriptor).ok() else {
         return ResultContext::FailedMemoryWrite.into();
     };
-    request.method = Some(to_method(method.clone()));
+    request.method = Some(to_method(method));
 
     request
         .headers
@@ -162,7 +162,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
     };
 
     let ids = {
-        let Some(v) = read_values::<i32>(&memory, &mut caller, rd as usize, len as usize) else {
+        let Some(v) = read_values::<i32>(&memory, &caller, rd as usize, len as usize) else {
             return ResultContext::MissingData.into();
         };
         v

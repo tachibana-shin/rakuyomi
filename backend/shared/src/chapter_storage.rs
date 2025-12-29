@@ -163,13 +163,10 @@ impl ChapterStorage {
             let file_errors = self.errors_source_path(&path)?;
 
             let errors = match std::fs::read(&file_errors) {
-                Ok(buffer) => match serde_json::from_slice::<
-                    Vec<crate::chapter_downloader::DownloadError>,
-                >(&buffer)
-                {
-                    Ok(list) => Some(list),
-                    Err(_) => None,
-                },
+                Ok(buffer) => {
+                    serde_json::from_slice::<Vec<crate::chapter_downloader::DownloadError>>(&buffer)
+                        .ok()
+                }
                 Err(_) => None,
             };
 
@@ -198,9 +195,9 @@ impl ChapterStorage {
 
         let old_path_novel = self.path_for_chapter_legacy(id, true);
         if old_path_novel.exists() {
-            return Some(old_path_novel);
+            Some(old_path_novel)
         } else {
-            return None;
+            None
         }
     }
 
@@ -209,7 +206,7 @@ impl ChapterStorage {
         self.path_for_chapter(id, is_novel)
     }
 
-    pub fn errors_source_path(&self, path: &PathBuf) -> anyhow::Result<std::path::PathBuf> {
+    pub fn errors_source_path(&self, path: &std::path::Path) -> anyhow::Result<std::path::PathBuf> {
         let parent = path
             .parent()
             .ok_or_else(|| anyhow::anyhow!(".errors file has no parent directory"))?;
@@ -259,7 +256,7 @@ impl ChapterStorage {
         let path = self.path_for_chapter(id, is_novel);
         temporary_file.persist(&path)?;
 
-        if errors.len() > 0 {
+        if !errors.is_empty() {
             let _ = std::fs::write(
                 &self.errors_source_path(&path)?,
                 serde_json::to_vec(&errors)?,

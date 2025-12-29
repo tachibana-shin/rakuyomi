@@ -28,8 +28,28 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
     Ok(())
 }
 
+fn cleanup_tmp() -> anyhow::Result<()> {
+    let tmp_dir = std::env::temp_dir();
+
+    for entry in std::fs::read_dir(&tmp_dir)? {
+        let path = entry?.path();
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if name.starts_with("rakuyomi") {
+                if path.is_dir() {
+                    let _ = std::fs::remove_dir_all(&path);
+                } else {
+                    let _ = std::fs::remove_file(&path);
+                }
+            }
+        }
+    }
+    Ok(())
+}
 /// Downloads the update zip file and saves it to a temporary file.
-async fn download_update_zip(version: &str, build_name: &str) -> anyhow::Result<NamedTempFile> {
+async fn download_update_zip(
+    version: &str,
+    build_name: &str,
+) -> anyhow::Result<NamedTempFile> {
     let client = reqwest::Client::new();
     let asset_name = format!("rakuyomi-{}.zip", build_name);
     let url = format!(
@@ -48,35 +68,74 @@ async fn download_update_zip(version: &str, build_name: &str) -> anyhow::Result<
         .error_for_status()
         .context("Failed to download update (server error)")?;
 
-    // Create a named temp file for the download
-    let mut update_zip_file = tempfile::Builder::new()
-        .prefix("rakuyomi-update-")
-        .suffix(".zip")
-        .tempfile()
-        .context("Could not create named temporary file for download")?;
-
     let mut stream = response.bytes_stream();
     let mut downloaded_bytes = 0;
 
-    while let Some(item) = stream.next().await {
-        let chunk = item.context("Error while downloading file chunk")?;
-        update_zip_file
-            .write_all(&chunk)
-            .context("Failed to write chunk to temporary zip file")?;
-        downloaded_bytes += chunk.len();
+    // Retry loop: attempt twice (once + retry after cleanup)
+    for attempt in 0..2 {    // Create a named temp file for the download
+        let mut update_zip_file = tempfile::Builder::new()
+            .prefix("rakuyomi-update-")
+            .suffix(".zip")
+            .tempfile()
+            .context("Could not create named temporary file for download")?;
+
+        // Reset stream on retry
+        if attempt == 1 {
+            // must re-fetch on retry
+            let response_retry = client
+                .get(&url)
+                .header("User-Agent", "rakuyomi")
+                .timeout(Duration::from_secs(120))
+                .send()
+                .await
+                .context("Retry: Failed to initiate update download")?
+                .error_for_status()
+                .context("Retry: Failed to download update (server error)")?;
+
+            stream = response_retry.bytes_stream();
+            downloaded_bytes = 0;
+        }
+
+        let mut success = true;
+
+        while let Some(item) = stream.next().await {
+            let chunk = item.context("Error while downloading file chunk")?;
+
+            if let Err(e) = update_zip_file.write_all(&chunk) {
+                warn!("Write failed: {}", e);
+                success = false;
+                break;
+            }
+
+            downloaded_bytes += chunk.len();
+        }
+
+        if success {
+            // Flush
+            if let Err(e) = update_zip_file.flush() {
+                warn!("Flush failed: {}", e);
+                success = false;
+            }
+        }
+
+        if success {
+            info!(
+                "Update downloaded successfully ({} bytes) and saved to temporary file: {}",
+                downloaded_bytes,
+                update_zip_file.path().display()
+            );
+            return Ok(update_zip_file); // SUCCESS
+        }
+
+        // If fail → cleanup + retry
+        if attempt == 0 {
+            info!("Cleaning /tmp before retry…");
+            cleanup_tmp()?;
+            info!("Retrying download…");
+        }
     }
 
-    update_zip_file
-        .flush()
-        .context("Failed to flush temporary zip file")?;
-
-    info!(
-        "Update downloaded successfully ({} bytes) and saved to temporary file: {}",
-        downloaded_bytes,
-        update_zip_file.path().display()
-    );
-
-    Ok(update_zip_file)
+    anyhow::bail!("Failed to download update after retry")
 }
 
 /// Orchestrates the update extraction, backup, installation, and rollback/cleanup.

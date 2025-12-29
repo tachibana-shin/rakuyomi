@@ -59,7 +59,7 @@ msgstr  "Hãy thử vuốt xuống để làm mới danh sách chương."
 
 #: ../ChapterListing.lua:233
 msgid   "Volume"
-msgstr  "Âm lượng"
+msgstr  "Tập"
 
 #: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"

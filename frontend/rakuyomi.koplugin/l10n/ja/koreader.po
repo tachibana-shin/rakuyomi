@@ -59,7 +59,7 @@ msgstr  "下にスワイプしてチャプターリストを更新してみて�
 
 #: ../ChapterListing.lua:233
 msgid   "Volume"
-msgstr  "音量"
+msgstr  "話"
 
 #: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"

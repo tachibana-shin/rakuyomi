@@ -199,22 +199,35 @@ function MangaSearchResults:onContextMenuChoice(item)
   local buttons = {
     {
       {
-        text = Icons.FA_BELL .. " " .. _("Add to Library"),
+        text_func = function()
+          if manga.in_library then
+            return Icons.FA_BELL .. " " .. _("Remove from Library")
+          end
+
+          return Icons.FA_BELL .. " " .. _("Add to Library")
+        end,
         callback = function()
           UIManager:close(dialog)
 
-          local _, err = Backend.addMangaToLibrary(manga.source.id, manga.id)
+          --- @type ErrorResponse
+          local err = nil
+          if manga.in_library then
+            err = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
+          else
+            err = Backend.addMangaToLibrary(manga.source.id, manga.id)
+          end
 
-          if err ~= nil then
+          if err.type == 'ERROR' then
             ErrorDialog:show(err)
 
             return
           end
 
-          manga.in_library = true
+          local added = manga.in_library
+          manga.in_library = not added
           self:updateItems()
 
-          Testing:emitEvent("manga_added_to_library", {
+          Testing:emitEvent(added and "manga_removed_from_library" or "manga_added_to_library", {
             source_id = manga.source.id,
             manga_id = manga.id,
           })

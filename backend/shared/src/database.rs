@@ -6,7 +6,6 @@ use std::{
 };
 
 use anyhow::Result;
-use rust_decimal::{prelude::FromPrimitive, Decimal};
 use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, QueryBuilder, Sqlite};
 use url::Url;
 
@@ -60,7 +59,7 @@ impl Database {
         Ok(())
     }
 
-    pub async fn get_manga_library(&self) -> Vec<MangaId> {
+    pub async fn get_manga_library(&self) -> Result<Vec<MangaId>> {
         let rows = sqlx::query_as!(
             MangaLibraryRow,
             r#"
@@ -68,13 +67,12 @@ impl Database {
             "#
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        rows.into_iter().map(|row| row.manga_id()).collect()
+        Ok(rows.into_iter().map(|row| row.manga_id()).collect())
     }
 
-    pub async fn get_manga_library_and_status(&self) -> Vec<(MangaId, PublishingStatus)> {
+    pub async fn get_manga_library_and_status(&self) -> Result<Vec<(MangaId, PublishingStatus)>> {
         let rows = sqlx::query!(
             r#"
             SELECT 
@@ -88,10 +86,10 @@ impl Database {
             "#
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        rows.into_iter()
+        Ok(rows
+            .into_iter()
             .map(|row| {
                 (
                     MangaId::from_strings(row.source_id, row.manga_id),
@@ -102,7 +100,7 @@ impl Database {
                         .unwrap_or(PublishingStatus::Unknown),
                 )
             })
-            .collect()
+            .collect())
     }
 
     pub async fn get_manga_library_with_read_count(
@@ -559,7 +557,7 @@ impl Database {
         Ok(mangas)
     }
 
-    pub async fn add_manga_to_library(&self, manga_id: MangaId) {
+    pub async fn add_manga_to_library(&self, manga_id: MangaId) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -573,11 +571,12 @@ impl Database {
             manga_id
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn remove_manga_from_library(&self, manga_id: MangaId) {
+    pub async fn remove_manga_from_library(&self, manga_id: MangaId) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -590,15 +589,16 @@ impl Database {
             manga_id
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn count_unread_chapters(&self, manga_id: &MangaId) -> Option<usize> {
+    pub async fn count_unread_chapters(&self, manga_id: &MangaId) -> Result<Option<usize>> {
         // Get preferred scanlator if it exists
         let preferred_scanlator = self
             .find_manga_state(manga_id)
-            .await
+            .await?
             .and_then(|state| state.preferred_scanlator);
 
         let source_id = manga_id.source_id().value();
@@ -632,24 +632,23 @@ impl Database {
             source_id, manga_id, preferred_scanlator
         )
         .fetch_one(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
         if !row.has_chapters.unwrap_or(false) {
-            return None;
+            return Ok(None);
         }
 
-        row.count.map(|count| count.try_into().unwrap())
+        Ok(row.count.map(|count| count.try_into().unwrap()))
     }
 
     pub async fn fetch_unread_chapter_counts_minimal(
         &self,
         manga_ids: &[MangaId],
-    ) -> HashMap<MangaId, (Option<usize>, Option<i64>, bool)> {
+    ) -> Result<HashMap<MangaId, (Option<usize>, Option<i64>, bool)>> {
         let mut map = HashMap::new();
 
         if manga_ids.is_empty() {
-            return map;
+            return Ok(map);
         }
 
         // Build dynamic SQL placeholders
@@ -711,13 +710,10 @@ impl Database {
             query_builder = query_builder.bind(id.source_id().value()).bind(id.value());
         }
 
-        let rows = query_builder
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| {
-                eprintln!("🔥 SQL query failed: {}", e);
-            })
-            .unwrap();
+        let rows = query_builder.fetch_all(&self.pool).await.map_err(|e| {
+            eprintln!("🔥 SQL query failed: {}", e);
+            e
+        })?;
 
         for row in rows {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
@@ -735,13 +731,13 @@ impl Database {
             map.entry(id.clone()).or_insert((None, None, false));
         }
 
-        map
+        Ok(map)
     }
 
     pub async fn find_cached_manga_information(
         &self,
         manga_id: &MangaId,
-    ) -> Option<MangaInformation> {
+    ) -> Result<Option<MangaInformation>> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -755,16 +751,15 @@ impl Database {
             manga_id
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        maybe_row.map(|row| row.into())
+        Ok(maybe_row.map(|row| row.into()))
     }
 
     pub async fn find_cached_chapter_information(
         &self,
         chapter_id: &ChapterId,
-    ) -> Option<ChapterInformation> {
+    ) -> Result<Option<ChapterInformation>> {
         let source_id = chapter_id.source_id().value();
         let manga_id = chapter_id.manga_id().value();
         let chapter_id = chapter_id.value();
@@ -780,17 +775,16 @@ impl Database {
             chapter_id
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        maybe_row.map(|row| row.into())
+        Ok(maybe_row.map(|row| row.into()))
     }
 
     pub async fn find_orphan_or_read_files(
         &self,
         chapter_storage: &crate::chapter_storage::ChapterStorage,
         invalid_mode: bool,
-    ) -> Vec<PathBuf> {
+    ) -> Result<Vec<PathBuf>> {
         if invalid_mode {
             let mut remaining = chapter_storage.collect_all_files(1);
 
@@ -800,7 +794,7 @@ impl Database {
             )
             .fetch(&self.pool);
 
-            while let Some(row) = stream.try_next().await.unwrap() {
+            while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
@@ -822,7 +816,7 @@ impl Database {
                 }
             }
 
-            remaining.into_iter().collect()
+            Ok(remaining.into_iter().collect())
         } else {
             let mut paths = Vec::new();
 
@@ -835,7 +829,7 @@ impl Database {
             )
             .fetch(&self.pool);
 
-            while let Some(row) = stream.try_next().await.unwrap() {
+            while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
@@ -857,7 +851,7 @@ impl Database {
                 }
             }
 
-            paths
+            Ok(paths)
         }
     }
 
@@ -889,7 +883,7 @@ impl Database {
     pub async fn find_cached_chapter_informations(
         &self,
         manga_id: &MangaId,
-    ) -> Vec<ChapterInformation> {
+    ) -> Result<Vec<ChapterInformation>> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -904,17 +898,16 @@ impl Database {
             manga_id
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        rows.into_iter().map(|row| row.into()).collect()
+        Ok(rows.into_iter().map(|row| row.into()).collect())
     }
 
     pub async fn find_cached_chapters(
         &self,
         manga_id: &MangaId,
         chapter_storage: &crate::chapter_storage::ChapterStorage,
-    ) -> Vec<Chapter> {
+    ) -> Result<Vec<Chapter>> {
         let source_id = manga_id.source_id().value();
         let manga_id_val = manga_id.value();
 
@@ -947,10 +940,10 @@ impl Database {
             manga_id_val,
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        rows.into_iter()
+        Ok(rows
+            .into_iter()
             .map(|row| {
                 let id = ChapterId::new(
                     MangaId::new(SourceId::new(row.source_id), row.manga_id),
@@ -962,8 +955,8 @@ impl Database {
                     title: row.title,
                     scanlator: row.scanlator,
 
-                    chapter_number: row.chapter_number.and_then(Decimal::from_f64),
-                    volume_number: row.volume_number.and_then(Decimal::from_f64),
+                    chapter_number: row.chapter_number.map(|v| v as f32),
+                    volume_number: row.volume_number.map(|v| v as f32),
                     // manga_order: row.manga_order as usize,
                     last_updated: row.last_updated,
                     thumbnail: row.thumbnail.and_then(|s| Url::parse(&s).ok()),
@@ -986,7 +979,7 @@ impl Database {
                     downloaded,
                 }
             })
-            .collect()
+            .collect())
     }
 
     pub async fn upsert_cached_manga_information(
@@ -1052,8 +1045,6 @@ impl Database {
         manga_id: &MangaId,
         chapter_informations: &[ChapterInformation],
     ) -> anyhow::Result<()> {
-        use rust_decimal::prelude::ToPrimitive;
-
         let cached_chapter_ids: HashSet<_> = self.find_cached_chapter_ids(manga_id).await?;
 
         let chapter_ids: HashSet<_> = chapter_informations
@@ -1090,8 +1081,8 @@ impl Database {
             );
 
             builder.push_values(chunk.iter().enumerate(), |mut b, (i, info)| {
-                let chapter_number = info.chapter_number.map(|d| d.to_f64());
-                let volume_number = info.volume_number.map(|d| d.to_f64());
+                let chapter_number = info.chapter_number;
+                let volume_number = info.volume_number;
                 let last_updated = info.last_updated;
 
                 b.push_bind(info.id.source_id().value())
@@ -1131,7 +1122,7 @@ impl Database {
     pub async fn find_cached_manga_details(
         &self,
         manga_id: &MangaId,
-    ) -> Option<(crate::source::model::Manga, f64)> {
+    ) -> Result<Option<(crate::source::model::Manga, f64)>> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -1156,14 +1147,13 @@ impl Database {
             manga_id
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        row.map(|v| {
+        Ok(row.map(|v| {
             let per_read = v.per_read.unwrap_or(0.0);
             let manga = v.into();
             (manga, per_read)
-        })
+        }))
     }
 
     pub async fn upsert_cached_manga_details(
@@ -1251,7 +1241,7 @@ impl Database {
         Ok(())
     }
 
-    pub async fn find_manga_state(&self, manga_id: &MangaId) -> Option<MangaState> {
+    pub async fn find_manga_state(&self, manga_id: &MangaId) -> Result<Option<MangaState>> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -1266,13 +1256,12 @@ impl Database {
             manga_id,
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        maybe_row.map(|row| row.into())
+        Ok(maybe_row.map(|row| row.into()))
     }
 
-    pub async fn upsert_manga_state(&self, manga_id: &MangaId, state: MangaState) {
+    pub async fn upsert_manga_state(&self, manga_id: &MangaId, state: MangaState) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -1288,11 +1277,12 @@ impl Database {
             state.preferred_scanlator,
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn find_chapter_state(&self, chapter_id: &ChapterId) -> Option<ChapterState> {
+    pub async fn find_chapter_state(&self, chapter_id: &ChapterId) -> Result<Option<ChapterState>> {
         let source_id = chapter_id.source_id().value();
         let manga_id = chapter_id.manga_id().value();
         let chapter_id = chapter_id.value();
@@ -1310,13 +1300,16 @@ impl Database {
             chapter_id,
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        maybe_row.map(|row| row.into())
+        Ok(maybe_row.map(|row| row.into()))
     }
 
-    pub async fn upsert_chapter_state(&self, chapter_id: &ChapterId, state: ChapterState) {
+    pub async fn upsert_chapter_state(
+        &self,
+        chapter_id: &ChapterId,
+        state: ChapterState,
+    ) -> Result<()> {
         let source_id = chapter_id.source_id().value();
         let manga_id = chapter_id.manga_id().value();
         let chapter_id = chapter_id.value();
@@ -1336,11 +1329,12 @@ impl Database {
             state.last_read,
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn mark_chapter_as_read(&self, id: &ChapterId, value: Option<bool>) {
+    pub async fn mark_chapter_as_read(&self, id: &ChapterId, value: Option<bool>) -> Result<()> {
         let now = chrono::Utc::now().timestamp();
         let value = value.unwrap_or(true);
 
@@ -1363,11 +1357,12 @@ impl Database {
             now,
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn update_last_read_chapter(&self, id: &ChapterId) {
+    pub async fn update_last_read_chapter(&self, id: &ChapterId) -> Result<()> {
         let now = chrono::Utc::now().timestamp();
 
         let source_id = id.source_id().value();
@@ -1387,11 +1382,12 @@ impl Database {
             now,
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn get_last_check_update_manga(&self, id: &MangaId) -> Option<(i64, i64)> {
+    pub async fn get_last_check_update_manga(&self, id: &MangaId) -> Result<Option<(i64, i64)>> {
         let source_id = id.source_id().value();
         let manga_id = id.value();
 
@@ -1401,13 +1397,17 @@ impl Database {
             manga_id,
         )
         .fetch_optional(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        maybe_row.map(|row| (row.last_check, row.next_ts_arima))
+        Ok(maybe_row.map(|row| (row.last_check, row.next_ts_arima)))
     }
 
-    pub async fn set_last_check_update_manga(&self, id: &MangaId, value: i64, next_ts_arima: i64) {
+    pub async fn set_last_check_update_manga(
+        &self,
+        id: &MangaId,
+        value: i64,
+        next_ts_arima: i64,
+    ) -> Result<()> {
         let source_id = id.source_id().value();
         let manga_id = id.value();
 
@@ -1429,11 +1429,12 @@ impl Database {
             next_ts_arima
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn delete_last_check_update_manga(&self, id: &MangaId) {
+    pub async fn delete_last_check_update_manga(&self, id: &MangaId) -> Result<()> {
         let source_id = id.source_id().value();
         let manga_id = id.value();
 
@@ -1445,8 +1446,9 @@ impl Database {
             manga_id
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
     pub async fn insert_notification(
@@ -1490,7 +1492,10 @@ impl Database {
         Ok(())
     }
 
-    pub async fn get_next_ts_arima_min(&self, skip_sources: &Vec<&str>) -> Option<(MangaId, i64)> {
+    pub async fn get_next_ts_arima_min(
+        &self,
+        skip_sources: &Vec<&str>,
+    ) -> Result<Option<(MangaId, i64)>> {
         let condition = if skip_sources.is_empty() {
             "".into()
         } else {
@@ -1519,10 +1524,10 @@ impl Database {
             query = query.bind(s);
         }
 
-        let row = query.fetch_optional(&self.pool).await.unwrap();
+        let row = query.fetch_optional(&self.pool).await?;
 
         use sqlx::Row;
-        row.map(|row| {
+        Ok(row.map(|row| {
             (
                 MangaId::from_strings(
                     row.get::<String, _>("source_id"),
@@ -1530,10 +1535,10 @@ impl Database {
                 ),
                 row.get::<i64, _>("next_ts_arima"),
             )
-        })
+        }))
     }
 
-    pub async fn get_due_mangas(&self) -> Vec<(MangaId, PublishingStatus)> {
+    pub async fn get_due_mangas(&self) -> Result<Vec<(MangaId, PublishingStatus)>> {
         let now = chrono::Utc::now().timestamp();
         let due_mangas = sqlx::query!(
             r#"
@@ -1549,10 +1554,9 @@ impl Database {
             now
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        due_mangas
+        Ok(due_mangas
             .into_iter()
             .map(|row| {
                 (
@@ -1564,10 +1568,10 @@ impl Database {
                         .unwrap_or(PublishingStatus::Unknown),
                 )
             })
-            .collect()
+            .collect())
     }
 
-    pub async fn get_count_notifications(&self) -> i32 {
+    pub async fn get_count_notifications(&self) -> Result<i32> {
         let value = sqlx::query!(
             r#"
             SELECT
@@ -1578,13 +1582,12 @@ impl Database {
             "#
         )
         .fetch_one(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        value.count
+        Ok(value.count)
     }
 
-    pub async fn get_notifications(&self) -> Vec<NotificationInformation> {
+    pub async fn get_notifications(&self) -> Result<Vec<NotificationInformation>> {
         let rows = sqlx::query_as!(
             NotificationInformationRow,
             r#"
@@ -1614,13 +1617,12 @@ impl Database {
             "#,
         )
         .fetch_all(&self.pool)
-        .await
-        .unwrap();
+        .await?;
 
-        rows.into_iter().map(|row| row.into()).collect()
+        Ok(rows.into_iter().map(|row| row.into()).collect())
     }
 
-    pub async fn delete_notification(&self, id: i32) {
+    pub async fn delete_notification(&self, id: i32) -> Result<()> {
         sqlx::query!(
             r#"
             DELETE FROM notifications WHERE id = ?1
@@ -1628,19 +1630,21 @@ impl Database {
             id
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
-    pub async fn clear_notifications(&self) {
+    pub async fn clear_notifications(&self) -> Result<()> {
         sqlx::query!(
             r#"
             DELETE FROM notifications WHERE 1 = 1
             "#,
         )
         .execute(&self.pool)
-        .await
-        .unwrap();
+        .await?;
+
+        Ok(())
     }
 
     pub async fn set_chapters_read_state(
@@ -1650,7 +1654,7 @@ impl Database {
         read: bool,
     ) -> anyhow::Result<Option<usize>> {
         if ids.is_empty() {
-            return Ok(self.count_unread_chapters(manga_id).await);
+            return self.count_unread_chapters(manga_id).await;
         }
 
         // --- Build VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), ... ---
@@ -1694,7 +1698,7 @@ impl Database {
 
         query.execute(&self.pool).await?;
 
-        Ok(self.count_unread_chapters(manga_id).await)
+        self.count_unread_chapters(manga_id).await
     }
 }
 
@@ -1855,12 +1859,8 @@ impl From<ChapterInformationsRow> for ChapterInformation {
             id: ChapterId::from_strings(value.source_id, value.manga_id, value.chapter_id),
             title: value.title,
             scanlator: value.scanlator,
-            chapter_number: value
-                .chapter_number
-                .map(|decimal_as_f64| decimal_as_f64.try_into().unwrap()),
-            volume_number: value
-                .volume_number
-                .map(|decimal_as_f64| decimal_as_f64.try_into().unwrap()),
+            chapter_number: value.chapter_number.map(|v| v as f32),
+            volume_number: value.volume_number.map(|v| v as f32),
             last_updated: value.last_updated,
             thumbnail: value.thumbnail.and_then(|s| Url::parse(&s).ok()),
             lang: value.lang,

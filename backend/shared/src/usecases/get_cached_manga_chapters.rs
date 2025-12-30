@@ -11,5 +11,5 @@ pub async fn get_cached_manga_chapters(
     chapter_storage: &ChapterStorage,
     id: &MangaId,
 ) -> Result<Vec<Chapter>> {
-    Ok(db.find_cached_chapters(id, chapter_storage).await)
+    db.find_cached_chapters(id, chapter_storage).await
 }

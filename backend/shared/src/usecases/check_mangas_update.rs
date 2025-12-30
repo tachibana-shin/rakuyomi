@@ -23,7 +23,13 @@ pub async fn check_mangas_update(
     chapter_storage: &ChapterStorage,
     source_manager: &SourceManager,
 ) {
-    let mangas_library = db.get_manga_library_and_status().await;
+    let mangas_library = match db.get_manga_library_and_status().await {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Failed to get manga library: {}", e);
+            return;
+        }
+    };
 
     for (manga, status) in mangas_library {
         if let Err(error) =
@@ -53,7 +59,7 @@ async fn check_manga_update(
     };
 
     if *status == PublishingStatus::Completed {
-        db.delete_last_check_update_manga(manga).await;
+        db.delete_last_check_update_manga(manga).await?;
         return Ok(());
     }
 
@@ -68,7 +74,7 @@ async fn check_manga_update(
     let status = match refresh_manga_details(token, db, chapter_storage, source, manga, 60).await {
         Ok(status) => {
             if status == PublishingStatus::Completed {
-                db.delete_last_check_update_manga(manga).await;
+                db.delete_last_check_update_manga(manga).await?;
             }
 
             status
@@ -83,7 +89,7 @@ async fn check_manga_update(
         }
     };
 
-    let old_chapters = db.find_cached_chapter_informations(manga).await;
+    let old_chapters = db.find_cached_chapter_informations(manga).await?;
     let new_chapters = match refresh_manga_chapters(token, db, source, manga, 60).await {
         Ok(chaps) => chaps,
         Err(err) => {
@@ -109,7 +115,11 @@ async fn check_manga_update(
                 let last_check_no_update = if added_chapters.is_empty() {
                     Some(chrono::Utc::now().timestamp())
                 } else {
-                    db.get_last_check_update_manga(manga).await.map(|t| t.0)
+                    db.get_last_check_update_manga(manga)
+                        .await
+                        .ok()
+                        .flatten()
+                        .map(|t| t.0)
                 };
 
                 model.forecast_1_from_chapters(&new_chapters, last_check_no_update)
@@ -123,7 +133,7 @@ async fn check_manga_update(
         .unwrap_or_else(|| chrono::Utc::now().timestamp() + 24 * 60 * 60);
 
         db.set_last_check_update_manga(manga, chrono::Utc::now().timestamp(), next_ts_update)
-            .await;
+            .await?;
     }
 
     let _ = db.insert_notification(manga, &added_chapters).await;
@@ -168,30 +178,52 @@ pub async fn run_manga_cron(
         let source_skip_cron = settings.source_skip_cron.clone().unwrap_or("".to_owned());
         let skip_sources: Vec<_> = source_skip_cron.split(",").collect();
 
-        let mut next_manga = db.get_next_ts_arima_min(&skip_sources).await;
+        let mut next_manga = match db.get_next_ts_arima_min(&skip_sources).await {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("Error getting next manga for cron: {}", e);
+                break;
+            }
+        };
+
         if next_manga.is_none() {
             println!("Next manga not found. Re-check all mangas");
 
             check_mangas_update(token, db, chapter_storage, source_manager).await;
-            next_manga = db.get_next_ts_arima_min(&skip_sources).await;
+            next_manga = match db.get_next_ts_arima_min(&skip_sources).await {
+                Ok(v) => v,
+                Err(e) => {
+                    eprintln!("Error getting next manga for cron (retry): {}", e);
+                    break;
+                }
+            };
 
             if next_manga.is_none() {
                 break;
             }
         }
 
-        let wait_secs = next_manga.unwrap().1 - now;
+        let Some(next_manga_info) = next_manga else {
+            break;
+        };
+        let wait_secs = next_manga_info.1 - now;
 
         println!("Cron waiting {wait_secs}s");
 
         if wait_secs >= 0 {
             tokio::time::sleep(std::time::Duration::from_secs(
-                wait_secs.try_into().unwrap(),
+                wait_secs.try_into().unwrap_or(0),
             ))
             .await;
         }
 
-        let due_mangas = db.get_due_mangas().await;
+        let due_mangas = match db.get_due_mangas().await {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("Error getting due mangas: {}", e);
+                break;
+            }
+        };
 
         for (manga_id, status) in due_mangas {
             if skip_sources.contains(&manga_id.source_id().value().as_str()) {

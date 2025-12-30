@@ -218,7 +218,7 @@ fn modify_dom<F>(
     mut callback: F,
 ) -> Result<()>
 where
-    F: FnMut(&mut kuchiki::NodeRef),
+    F: FnMut(&mut kuchiki::NodeRef) -> Result<()>,
 {
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
 
@@ -245,11 +245,11 @@ where
     .as_node()
     .clone();
 
-    callback(&mut root);
+    callback(&mut root)?;
 
     let mut new_html = Vec::new();
-    root.serialize(&mut new_html).unwrap();
-    let new_html = String::from_utf8(new_html).unwrap();
+    root.serialize(&mut new_html)?;
+    let new_html = String::from_utf8(new_html)?;
 
     let doc_scraper = scraper::Html::parse_fragment(&new_html);
     let node_id = doc_scraper.root_element().id();
@@ -280,6 +280,8 @@ pub fn set_text(
             root.children().for_each(|child| child.detach());
 
             root.append(kuchiki::NodeRef::new_text(text.clone()));
+
+            Ok(())
         },
     )?;
 
@@ -303,13 +305,15 @@ pub fn set_html(
             let fragment = kuchiki::parse_html().one(html.clone());
             let frag_root = fragment
                 .select_first("*")
-                .expect("no root element in fragment")
+                .map_err(|_| anyhow!("no root element in fragment"))?
                 .as_node()
                 .clone();
 
             for child in frag_root.children() {
                 root.append(child);
             }
+
+            Ok(())
         },
     )?;
 
@@ -335,6 +339,8 @@ pub fn prepend(
             } else {
                 root.append(new_node);
             }
+
+            Ok(())
         },
     )?;
 
@@ -354,6 +360,8 @@ pub fn append(
         descriptor_i32,
         |root: &mut kuchiki::NodeRef| {
             root.append(kuchiki::NodeRef::new_text(text.clone()));
+
+            Ok(())
         },
     )?;
 

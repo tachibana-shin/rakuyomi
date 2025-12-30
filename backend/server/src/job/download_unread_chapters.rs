@@ -70,10 +70,8 @@ impl DownloadUnreadChaptersJob {
 
             pin_mut!(progress_report_stream);
 
-            let mut terminated = false;
-            while !terminated {
-                let progress_report = progress_report_stream.next().await.unwrap();
-                terminated = matches!(
+            while let Some(progress_report) = progress_report_stream.next().await {
+                let terminated = matches!(
                     &progress_report,
                     ProgressReport::Finished
                         | ProgressReport::Errored(_)
@@ -81,6 +79,10 @@ impl DownloadUnreadChaptersJob {
                 );
 
                 *status.lock().await = Status::Initialized(progress_report);
+
+                if terminated {
+                    break;
+                }
             }
         });
 

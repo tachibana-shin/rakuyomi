@@ -163,7 +163,11 @@ impl<'de> Deserialize<'de> for StorageSizeLimit {
                 let size = match dimension {
                     "GB" => Size::from_gigabytes(value),
                     "MB" => Size::from_megabytes(value),
-                    _ => panic!("unexpected dimension: {dimension}"),
+                    _ => {
+                        return Err(SerdeDeserialziationError::custom(format!(
+                            "unexpected dimension: {dimension}"
+                        )))
+                    }
                 };
 
                 Ok(StorageSizeLimit(size))
@@ -185,13 +189,13 @@ impl JsonSchema for StorageSizeLimit {
 
     fn json_schema(gen: &mut schemars::generate::SchemaGenerator) -> schemars::Schema {
         let mut binding = gen.subschema_for::<String>();
-        let schema_object = binding.as_object_mut().unwrap();
+        if let Some(schema_object) = binding.as_object_mut() {
+            schema_object.insert(
+                "pattern".to_owned(),
+                Some(STORAGE_SIZE_LIMIT_REGEX.to_owned()).into(),
+            );
+        }
 
-        schema_object.insert(
-            "pattern".to_owned(),
-            Some(STORAGE_SIZE_LIMIT_REGEX.to_owned()).into(),
-        );
-
-        schema_object.clone().into()
+        binding
     }
 }

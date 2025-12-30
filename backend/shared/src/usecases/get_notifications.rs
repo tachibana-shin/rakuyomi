@@ -6,7 +6,7 @@ pub async fn get_notifications(
     db: &Database,
     chapter_storage: &ChapterStorage,
 ) -> Result<Vec<NotificationInformation>> {
-    let mut notifications = db.get_notifications().await;
+    let mut notifications = db.get_notifications().await?;
 
     futures::future::join_all(notifications.iter_mut().map(|notify| async {
         if let Some(url) = &notify.manga_cover {

@@ -46,10 +46,7 @@ fn cleanup_tmp() -> anyhow::Result<()> {
     Ok(())
 }
 /// Downloads the update zip file and saves it to a temporary file.
-async fn download_update_zip(
-    version: &str,
-    build_name: &str,
-) -> anyhow::Result<NamedTempFile> {
+async fn download_update_zip(version: &str, build_name: &str) -> anyhow::Result<NamedTempFile> {
     let client = reqwest::Client::new();
     let asset_name = format!("rakuyomi-{}.zip", build_name);
     let url = format!(
@@ -72,7 +69,8 @@ async fn download_update_zip(
     let mut downloaded_bytes = 0;
 
     // Retry loop: attempt twice (once + retry after cleanup)
-    for attempt in 0..2 {    // Create a named temp file for the download
+    for attempt in 0..2 {
+        // Create a named temp file for the download
         let mut update_zip_file = tempfile::Builder::new()
             .prefix("rakuyomi-update-")
             .suffix(".zip")

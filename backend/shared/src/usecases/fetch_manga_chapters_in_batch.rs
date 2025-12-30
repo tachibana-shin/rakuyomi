@@ -24,14 +24,24 @@ pub fn fetch_manga_chapters_in_batch<'a>(
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
         let manga = match db.find_cached_manga_information(&id).await {
-            Some(manga) => manga,
-            None => {
+            Ok(Some(manga)) => manga,
+            Ok(None) => {
                 yield ProgressReport::Errored(Error::Other(anyhow::anyhow!("Expected manga to be in the database")));
+                return;
+            }
+            Err(e) => {
+                yield ProgressReport::Errored(Error::Other(e));
                 return;
             }
         };
 
-        let all_chapters = db.find_cached_chapter_informations(&id).await;
+        let all_chapters = match db.find_cached_chapter_informations(&id).await {
+            Ok(v) => v,
+            Err(e) => {
+                yield ProgressReport::Errored(Error::Other(e));
+                return;
+            }
+        };
         let chapters_to_download = apply_chapter_filter(db, all_chapters, filter).await;
 
         let total = chapters_to_download.len();
@@ -96,6 +106,7 @@ async fn apply_chapter_filter(
         let read = db
             .find_chapter_state(&chapter.id)
             .await
+            .unwrap_or(None)
             .is_some_and(|state| state.read);
 
         if read {
@@ -120,7 +131,7 @@ async fn apply_chapter_filter(
 
             unread_chapters
                 .take_while(|chapter| {
-                    seen_chapter_numbers.insert(chapter.chapter_number.unwrap_or_default());
+                    seen_chapter_numbers.insert(ordered_float::OrderedFloat(chapter.chapter_number.unwrap_or_default()));
 
                     seen_chapter_numbers.len() <= amount
                 })

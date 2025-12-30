@@ -37,7 +37,6 @@ scopeguard = "1.2.0"
 tokio = { version = "1.48.0", features = ["full"] }
 wasmi.workspace = true
 futures = "0.3.31"
-rust_decimal = "1.39.0"
 sqlx = { version = "0.8.6", features = ["sqlite", "runtime-tokio"] }
 thiserror = "2.0.17"
 surge-ping = "0.8.3"
@@ -72,6 +71,7 @@ imageproc = "0.25.0"
 ab_glyph = "0.2.32"
 markdown = "1.0.0"
 unicode-normalization = "0.1.25"
+ordered-float = "5.1.0"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

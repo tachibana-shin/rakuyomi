@@ -20,7 +20,6 @@
 //
 
 use anyhow::bail;
-use rust_decimal::prelude::ToPrimitive;
 use std::cmp::Ordering;
 
 use crate::model::ChapterInformation;
@@ -454,12 +453,10 @@ fn timestamps_from_chapters(
     rolling_window: Option<usize>,
 ) -> Option<Vec<i64>> {
     // Collect tuples: (chapter_number_opt, last_updated)
-    let mut items: Vec<(Option<f64>, i64)> = Vec::with_capacity(chapters.len());
+    let mut items: Vec<(Option<f32>, i64)> = Vec::with_capacity(chapters.len());
     for ch in chapters.iter() {
         if let Some(ts) = ch.last_updated {
-            // use chapter_number_as_f64 for ordering if available
-            let cn = ch.chapter_number.map(|v| v.to_f64()).unwrap_or(Some(0.0));
-            items.push((cn, ts));
+            items.push((ch.chapter_number, ts));
         }
     }
 
@@ -617,20 +614,16 @@ mod tests {
     use crate::model::ChapterId;
 
     use super::*;
-
-    use rust_decimal::prelude::FromPrimitive;
-    use rust_decimal::Decimal;
-
-    fn build_chapters(nums: Vec<Option<f64>>, ts: Vec<Option<i64>>) -> Vec<ChapterInformation> {
+    fn build_chapters(nums: Vec<Option<f32>>, ts: Vec<Option<i64>>) -> Vec<ChapterInformation> {
         nums.into_iter()
             .zip(ts.into_iter())
             .map(|(cn, ts)| ChapterInformation {
-                chapter_number: cn.map(|v| Decimal::from_f64(v).unwrap()),
+                chapter_number: cn,
                 last_updated: ts,
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,
@@ -647,7 +640,7 @@ mod tests {
         timestamps[5] += 3600; // +1 hour jitter
         timestamps[20] -= 7200; // -2 hours jitter
 
-        let nums = (1..=40).map(|i| Some(i as f64)).collect();
+        let nums = (1..=40).map(|i| Some(i as f32)).collect();
         let ts_opts = timestamps.iter().map(|&t| Some(t)).collect();
 
         let chapters = build_chapters(nums, ts_opts);
@@ -674,13 +667,13 @@ mod tests {
     fn test_preprocess_sorting() {
         let chapters = vec![
             ChapterInformation {
-                chapter_number: Some(Decimal::from_f64(2.0).unwrap()),
+                chapter_number: Some(2.0),
                 last_updated: Some(200),
 
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,
@@ -693,31 +686,31 @@ mod tests {
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,
                 locked: None,
             },
             ChapterInformation {
-                chapter_number: Some(Decimal::from_f64(1.0).unwrap()),
+                chapter_number: Some(1.0),
                 last_updated: Some(150),
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,
                 locked: None,
             },
             ChapterInformation {
-                chapter_number: Some(Decimal::from_f64(2.0).unwrap()),
+                chapter_number: Some(2.0),
                 last_updated: Some(250),
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,
@@ -729,7 +722,7 @@ mod tests {
                 id: ChapterId::from_strings("".to_owned(), "".to_owned(), "".to_owned()),
                 title: Some("".to_owned()),
                 scanlator: Some("".to_owned()),
-                volume_number: Some(1.into()),
+                volume_number: Some(1.0),
                 thumbnail: None,
                 lang: None,
                 url: None,

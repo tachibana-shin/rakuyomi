@@ -179,7 +179,7 @@ impl Source {
         cancellation_token: CancellationToken,
         manga_id: String,
         chapter_id: String,
-        chapter_num: Option<f64>
+        chapter_num: Option<f32>
     );
 
     wrap_blocking_source_fn!(
@@ -762,7 +762,7 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         manga_id: String,
         chapter_id: String,
-        chapter_num: Option<f64>,
+        chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
         if self.next_sdk {
             return self
@@ -794,7 +794,7 @@ impl BlockingSource {
         &mut self,
         manga_id: String,
         chapter_id: String,
-        chapter_num: Option<f64>,
+        chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
         // HACK the same thing with the `Manga` said above, we also usually only need the `id`
         // from the `Chapter` object and the `mangaId`.
@@ -806,7 +806,7 @@ impl BlockingSource {
         // like it's a huge fucking hack it's not even by accident XD
         // ref: https://github.com/Skittyblock/aidoku-community-sources/blob/bd79840e182ff7c90c8444ed160e2e8d50b6a219/src/rust/guya/sources/dankefurslesen/src/lib.rs#L54
         if let Some(chapter_num) = chapter_num {
-            chapter_hashmap.insert("chapterNum".to_string(), Value::Float(chapter_num));
+            chapter_hashmap.insert("chapterNum".to_string(), Value::Float(chapter_num as f64));
         }
 
         let chapter_descriptor = self.store.data_mut().store_std_value(

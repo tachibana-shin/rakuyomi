@@ -10,7 +10,7 @@ pub async fn get_cached_manga_details(
     source: &Source,
     id: MangaId,
 ) -> Result<Option<(crate::source::model::Manga, f64)>> {
-    match db.find_cached_manga_details(&id).await {
+    match db.find_cached_manga_details(&id).await? {
         Some((mut details, per_read)) => {
             if let Some(url) = &details.cover_url {
                 let output = chapter_storage

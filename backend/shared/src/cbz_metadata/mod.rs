@@ -22,8 +22,8 @@ pub struct ComicInfo {
     pub number: String,
     #[serde(default = "default_negative_one")]
     pub count: i32,
-    #[serde(default = "default_negative_one")]
-    pub volume: i32,
+    #[serde(default = "default_negative_float_one")]
+    pub volume: f32,
     #[serde(default)]
     pub alternate_series: String,
     #[serde(default)]
@@ -134,6 +134,9 @@ pub struct ComicPageInfo {
 fn default_negative_one() -> i32 {
     -1
 }
+fn default_negative_float_one() -> f32 {
+    -1.0
+}
 
 fn default_unknown() -> String {
     "Unknown".to_string()
@@ -173,7 +176,7 @@ impl ComicInfo {
 
         // Volume
         if let Some(volume) = chapter_info.volume_number {
-            comic_info.volume = volume.trunc().try_into().unwrap_or(default_negative_one());
+            comic_info.volume = volume.trunc();
         }
 
         // Credits

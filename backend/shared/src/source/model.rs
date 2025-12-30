@@ -217,12 +217,11 @@ impl Chapter {
             lang: value.language,
             chapter_num: value.chapter_number,
             volume_num: value.volume_number,
-            date_uploaded: value.date_uploaded.map(|v| {
+            date_uploaded: value.date_uploaded.and_then(|v| {
                 chrono::Utc
                     .timestamp_opt(v, 0)
                     .single()
                     .map(|d| d.with_timezone(&chrono_tz::UTC))
-                    .unwrap()
             }),
             source_order: usize::MAX,
             thumbnail: value.thumbnail.and_then(|u| url::Url::parse(&u).ok()),

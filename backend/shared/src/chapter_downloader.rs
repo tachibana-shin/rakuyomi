@@ -27,8 +27,6 @@ use crate::{
     usecases::unscrable_image::{unscrable_image, Block},
 };
 
-use rust_decimal::prelude::ToPrimitive;
-
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct DownloadError {
     pub page_index: usize,
@@ -58,7 +56,7 @@ pub async fn ensure_chapter_is_in_storage(
             token.clone(),
             chapter.id.manga_id().value().clone(),
             chapter.id.value().clone(),
-            chapter.chapter_number.unwrap_or_default().to_f64(),
+            chapter.chapter_number,
         )
         .await
         .with_context(|| "Failed to get page list")
@@ -81,8 +79,10 @@ pub async fn ensure_chapter_is_in_storage(
 
     // Write chapter pages to a temporary file, so that if things go wrong
     // we do not have a borked .cbz file in the chapter storage.
-    let temporary_file =
-        NamedTempFile::new_in(output_path.parent().unwrap()).map_err(|e| Error::Other(e.into()))?;
+    let parent = output_path
+        .parent()
+        .ok_or_else(|| Error::Other(anyhow::anyhow!("Output path has no parent")))?;
+    let temporary_file = NamedTempFile::new_in(parent).map_err(|e| Error::Other(e.into()))?;
 
     let errors = if is_novel {
         // is novel
@@ -713,7 +713,7 @@ pub async fn download_chapter_novel_as_epub<W>(
 where
     W: Write + Seek,
 {
-    let client = Client::builder().build().unwrap();
+    let client = Client::builder().build()?;
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();
@@ -835,7 +835,7 @@ where
                 }
 
                 let mut buffer = Vec::new();
-                document.serialize(&mut buffer).unwrap();
+                document.serialize(&mut buffer)?;
 
                 let xhtml = create_xhtml(&title, &String::from_utf8(buffer).unwrap_or_default());
 

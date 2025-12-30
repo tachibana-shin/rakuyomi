@@ -73,7 +73,7 @@ async fn create_download_chapter_job(
         database,
         chapter_storage,
         body.into(),
-        settings.concurrent_requests_pages.unwrap(),
+        settings.concurrent_requests_pages.unwrap_or(4),
     );
 
     job_registry
@@ -129,7 +129,7 @@ async fn create_download_unread_chapters_job(
         chapter_storage,
         manga_id,
         filter,
-        settings.concurrent_requests_pages.unwrap(),
+        settings.concurrent_requests_pages.unwrap_or(4),
     );
 
     job_registry
@@ -187,7 +187,7 @@ async fn create_download_scanlator_chapters_job(
         chapter_storage,
         manga_id,
         scanlator_filter,
-        settings.concurrent_requests_pages.unwrap(),
+        settings.concurrent_requests_pages.unwrap_or(4),
     );
 
     job_registry

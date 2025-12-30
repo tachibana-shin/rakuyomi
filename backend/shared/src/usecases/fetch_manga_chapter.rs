@@ -23,12 +23,12 @@ pub async fn fetch_manga_chapter(
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
-        .await
+        .await?
         .ok_or_else(|| anyhow!("Expected manga to be in the database"))?;
 
     let chapter = database
         .find_cached_chapter_information(chapter_id)
-        .await
+        .await?
         .ok_or_else(|| anyhow!("Expected chapter to be in the database"))?;
 
     ensure_chapter_is_in_storage(

@@ -24,13 +24,13 @@ pub async fn sync_database(
     accept_migrate_local: bool,
     accept_replace_remote: bool,
 ) -> Result<SyncResult> {
-    let endpoint = settings.api_sync.clone();
-    if endpoint.is_none() || endpoint.clone().unwrap().is_empty() {
-        bail!("No API sync endpoint configured.");
-    }
+    let url = settings
+        .api_sync
+        .as_ref()
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| anyhow::anyhow!("No API sync endpoint configured."))?;
 
-    let url = endpoint.unwrap();
-    let Some((user, password, host_path, root)) = parse_url_info(&url) else {
+    let Some((user, password, host_path, root)) = parse_url_info(url) else {
         bail!("Failed to parse endpoint URL");
     };
 

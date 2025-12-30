@@ -563,7 +563,7 @@ async fn download_manga_chapter(
 
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
-    let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap();
+    let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap_or(4);
     let output_path = usecases::fetch_manga_chapter(
         &token.0,
         &database,
@@ -604,26 +604,26 @@ async fn mark_chapter_as_read(
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
-) -> Json<()> {
+) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
     let database = database.lock().await;
 
-    usecases::mark_chapter_as_read(&database, &chapter_id, state).await;
+    usecases::mark_chapter_as_read(&database, &chapter_id, state).await?;
 
-    Json(())
+    Ok(Json(()))
 }
 
 async fn update_last_read(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
-) -> Json<()> {
+) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
     let database = database.lock().await;
 
-    usecases::update_last_read_chapter(&database, &chapter_id).await;
+    usecases::update_last_read_chapter(&database, &chapter_id).await?;
 
-    Json(())
+    Ok(Json(()))
 }
 
 // Scanlator preference handlers

@@ -112,8 +112,10 @@ pub async fn search_mangas(
                     // Fetch unread chapters count for each manga
                     let manga_ids: Vec<_> =
                         manga_informations.iter().map(|m| m.id.clone()).collect();
-                    let unread_counts_map =
-                        db.fetch_unread_chapter_counts_minimal(&manga_ids).await;
+                    let unread_counts_map = db
+                        .fetch_unread_chapter_counts_minimal(&manga_ids)
+                        .await
+                        .unwrap_or_default();
                     let mangas: Vec<_> = manga_informations
                         .into_iter()
                         .map(move |manga| {

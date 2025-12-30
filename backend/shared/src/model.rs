@@ -1,4 +1,3 @@
-use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -116,8 +115,8 @@ pub struct ChapterInformation {
     pub id: ChapterId,
     pub title: Option<String>,
     pub scanlator: Option<String>,
-    pub chapter_number: Option<Decimal>,
-    pub volume_number: Option<Decimal>,
+    pub chapter_number: Option<f32>,
+    pub volume_number: Option<f32>,
     pub last_updated: Option<i64>,
     pub thumbnail: Option<Url>,
     pub lang: Option<String>,
@@ -181,8 +180,8 @@ impl From<SourceChapter> for ChapterInformation {
             title: value.title,
             scanlator: value.scanlator,
             // FIXME is this ever fallible?
-            chapter_number: value.chapter_num.map(|num| num.try_into().unwrap()),
-            volume_number: value.volume_num.map(|num| num.try_into().unwrap()),
+            chapter_number: value.chapter_num,
+            volume_number: value.volume_num,
             last_updated: value.date_uploaded.map(|d| d.timestamp()),
             thumbnail: value.thumbnail,
             lang: value.lang,

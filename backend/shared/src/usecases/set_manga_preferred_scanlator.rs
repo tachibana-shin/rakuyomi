@@ -13,7 +13,8 @@ pub async fn set_manga_preferred_scanlator(
         preferred_scanlator,
     };
 
-    db.upsert_manga_state(&manga_id, updated_manga_state).await;
+    db.upsert_manga_state(&manga_id, updated_manga_state)
+        .await?;
 
     Ok(())
 }

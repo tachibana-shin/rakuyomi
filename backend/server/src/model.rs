@@ -78,12 +78,8 @@ impl From<DomainChapter> for Chapter {
             id: chapter_information.id.value().clone(),
             title: chapter_information.title.unwrap_or("Unknown title".into()),
             scanlator: chapter_information.scanlator,
-            chapter_num: chapter_information
-                .chapter_number
-                .map(|decimal| decimal.try_into().unwrap()),
-            volume_num: chapter_information
-                .volume_number
-                .map(|decimal| decimal.try_into().unwrap()),
+            chapter_num: chapter_information.chapter_number,
+            volume_num: chapter_information.volume_number,
             read: state.read,
             last_read: state.last_read,
             downloaded,

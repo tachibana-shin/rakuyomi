@@ -1824,10 +1824,14 @@ impl From<MangaDetailsRow> for crate::source::model::Manga {
             last_updated: parse_dt(row.last_updated),
             last_opened: parse_dt(row.last_opened),
             last_read: if let Some(last_read) = row.last_read {
-                chrono::Utc
-                    .timestamp_opt(last_read, 0)
-                    .single()
-                    .map(|d| d.with_timezone(&chrono_tz::UTC))
+                if last_read >= 0 {
+                    chrono::Utc
+                        .timestamp_opt(last_read, 0)
+                        .single()
+                        .map(|d| d.with_timezone(&chrono_tz::UTC))
+                } else {
+                    None
+                }
             } else {
                 None
             },

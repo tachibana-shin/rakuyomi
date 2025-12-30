@@ -916,37 +916,37 @@ msgstr  "じょー"
 
 #: ../utils/calcLastReadText.lua:10
 msgid   "now"
-msgstr  "今"
+msgstr  "じょー"
 
 #: ../utils/calcLastReadText.lua:12
 #, lua-format
 msgid   "%dm"
-msgstr  "%dm"
+msgstr  "%d分"
 
 #: ../utils/calcLastReadText.lua:14
 #, lua-format
 msgid   "%dh"
-msgstr  "%dh"
+msgstr  "%d時"
 
 #: ../utils/calcLastReadText.lua:16
 #, lua-format
 msgid   "%dd"
-msgstr  "%dd"
+msgstr  "%d日"
 
 #: ../utils/calcLastReadText.lua:18
 #, lua-format
 msgid   "%dw"
-msgstr  "%dw"
+msgstr  "%d週間"
 
 #: ../utils/calcLastReadText.lua:20
 #, lua-format
 msgid   "%dM"
-msgstr  "%dM"
+msgstr  "%dヶ月"
 
 #: ../utils/calcLastReadText.lua:22
 #, lua-format
 msgid   "%dy"
-msgstr  "%dy"
+msgstr  "%d年"
 
 #: ../utils/getChapterDisplayName.lua:5
 msgid   "Vol."

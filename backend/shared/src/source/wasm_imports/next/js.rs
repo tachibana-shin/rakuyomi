@@ -48,12 +48,12 @@ impl From<ResultContext> for i32 {
 fn context_create(mut caller: Caller<'_, WasmStore>) -> FFIResult {
     let store = caller.data_mut();
 
-    Ok(store.create_js_context())
+    Ok(store.create_js_context() as i32)
 }
 #[aidoku_wasm_function]
 fn context_eval(mut caller: Caller<'_, WasmStore>, ctx_id: i32, src: Option<String>) -> FFIResult {
     let store = caller.data_mut();
-    let Some(context) = store.get_js_context(ctx_id).map(|ctx| &mut ctx.0) else {
+    let Some(context) = store.get_js_context(ctx_id as usize).map(|ctx| &mut ctx.0) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
@@ -78,7 +78,7 @@ fn context_eval(mut caller: Caller<'_, WasmStore>, ctx_id: i32, src: Option<Stri
 #[aidoku_wasm_function]
 fn context_get(mut caller: Caller<'_, WasmStore>, ctx_id: i32, name: Option<String>) -> FFIResult {
     let store = caller.data_mut();
-    let Some(context) = store.get_js_context(ctx_id).map(|ctx| &mut ctx.0) else {
+    let Some(context) = store.get_js_context(ctx_id as usize).map(|ctx| &mut ctx.0) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 

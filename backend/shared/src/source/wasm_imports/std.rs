@@ -656,9 +656,10 @@ fn object_set(
         .clone();
     let mut hm_value = Parc::unwrap_or_clone(
         wasm_store
-            .take_std_value(descriptor)
+            .get_std_value(descriptor)
             .context("failed to take value in object_set")?,
     );
+    wasm_store.take_std_value(descriptor);
     let object_value = hm_value
         .try_unwrap_object_mut()
         .map_err(|_| anyhow::anyhow!("expected object in object_set"))?;
@@ -694,9 +695,10 @@ fn object_remove(
     let wasm_store = caller.data_mut();
     let mut value = Parc::unwrap_or_clone(
         wasm_store
-            .take_std_value(descriptor)
+            .get_std_value(descriptor)
             .context("failed to take value in object_remove")?,
     );
+    wasm_store.take_std_value(descriptor);
     let object_value = value
         .try_unwrap_object_mut()
         .map_err(|_| anyhow::anyhow!("expected object in object_remove"))?;
@@ -807,9 +809,10 @@ fn array_set(
         .context("failed to get value in array_set")?;
     let mut array_value = Parc::unwrap_or_clone(
         wasm_store
-            .take_std_value(descriptor)
+            .get_std_value(descriptor)
             .context("failed to take value in array_set")?,
     );
+    wasm_store.take_std_value(descriptor);
     let array = array_value
         .try_unwrap_array_mut()
         .map_err(|_| anyhow::anyhow!("expected array in array_set"))?;
@@ -840,8 +843,9 @@ fn array_append(
         .get_std_value(value_descriptor)
         .context("failed to get value in array_append")?;
     let array_value_ref = wasm_store
-        .take_std_value(descriptor)
+        .get_std_value(descriptor)
         .context("failed to take value in array_append")?;
+    wasm_store.take_std_value(descriptor);
     if Parc::strong_count(&array_value_ref) > 1 {
         debug!(
             "attempting to add to array with more than 1 reference (got {}), slow!",

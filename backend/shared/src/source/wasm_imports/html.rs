@@ -634,7 +634,7 @@ pub fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
         .collect::<Vec<_>>()
         .join("\n");
 
-    Ok(wasm_store.store_std_value(Value::from(inner_htmls).into(), Some(descriptor)) as i32)
+    Ok(wasm_store.store_std_value(Value::from(inner_htmls).into(), None) as i32)
 }
 
 #[aidoku_wasm_function]

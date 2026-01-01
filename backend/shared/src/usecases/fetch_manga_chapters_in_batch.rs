@@ -131,7 +131,9 @@ async fn apply_chapter_filter(
 
             unread_chapters
                 .take_while(|chapter| {
-                    seen_chapter_numbers.insert(ordered_float::OrderedFloat(chapter.chapter_number.unwrap_or_default()));
+                    seen_chapter_numbers.insert(ordered_float::OrderedFloat(
+                        chapter.chapter_number.unwrap_or_default(),
+                    ));
 
                     seen_chapter_numbers.len() <= amount
                 })

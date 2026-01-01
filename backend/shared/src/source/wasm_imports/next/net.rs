@@ -298,6 +298,7 @@ fn get_image(mut caller: Caller<'_, WasmStore>, request_ptr: i32) -> FFIResult {
 
     Ok(wasm_store
         .create_image(&bytes_to_create_image)
+        .map(|v| v as i32)
         .unwrap_or(ResultContext::NotAnImage.into()))
 }
 #[aidoku_wasm_function]

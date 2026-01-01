@@ -1,7 +1,7 @@
 use font_kit::{family_name::FamilyName, font::Font, properties::Properties, source::SystemSource};
 use image::ImageReader;
 use pared::sync::Parc;
-use raqote::{DrawTarget, Transform};
+use raqote::DrawTarget;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     io::Cursor,
@@ -152,35 +152,6 @@ pub struct OperationContext {
     pub current_object: OperationContextObject,
 }
 
-#[derive(Default, Debug)]
-pub struct Drawer {
-    pub width: i32,
-    pub height: i32,
-    pub vec: Vec<u32>,
-    pub transform: Transform,
-}
-impl From<&mut DrawTarget> for Drawer {
-    fn from(dt: &mut DrawTarget) -> Self {
-        Self {
-            width: dt.width(),
-            height: dt.height(),
-            vec: dt.get_data().to_vec(),
-            transform: *dt.get_transform(),
-        }
-    }
-}
-
-// Convert Drawer -> DrawTarget
-impl From<&mut Drawer> for DrawTarget {
-    fn from(drawer: &mut Drawer) -> Self {
-        let data = &drawer.vec;
-        let mut dt = DrawTarget::from_vec(drawer.width, drawer.height, data.to_vec()); // ::new(drawer.width, drawer.height);
-        dt.set_transform(&drawer.transform);
-
-        dt
-    }
-}
-
 pub struct ImageData {
     pub data: Vec<u32>,
     pub width: i32,
@@ -224,6 +195,11 @@ pub struct JsContext(pub(crate) boa_engine::Context);
 unsafe impl Send for JsContext {}
 unsafe impl Sync for JsContext {}
 
+#[derive(From)]
+pub struct Canvas(pub(crate) DrawTarget);
+unsafe impl Send for Canvas {}
+unsafe impl Sync for Canvas {}
+
 pub struct WasmStore {
     pub id: String,
     pub context: OperationContext,
@@ -231,24 +207,21 @@ pub struct WasmStore {
     // FIXME this probably should be source-specific, and not a copy of all settigns
     // we do rely on the `languages` global setting right now, so maybe this is really needed? idk
     pub settings: Settings,
-    std_descriptor_pointer: Option<usize>,
+    std_descriptor_pointer: usize,
     std_descriptors: HashMap<usize, ValueRef>,
     std_references: HashMap<usize, Vec<usize>>,
     std_strs_encode: HashSet<usize>,
-    requests: Vec<RequestState>,
+
+    requests: HashMap<usize, RequestState>,
     // canvas
-    canvass_pointer: i32,
-    canvass: HashMap<i32, Drawer>,
+    canvass: HashMap<usize, Canvas>,
     // image
-    images_pointer: i32,
-    images: HashMap<i32, ImageData>,
+    images: HashMap<usize, ImageData>,
     // font
-    fonts_pointer: i32,
-    fonts: HashMap<i32, (String, Properties)>,
-    fonts_online: HashMap<i32, Vec<u8>>,
+    fonts: HashMap<usize, (String, Properties)>,
+    fonts_online: HashMap<usize, Vec<u8>>,
     // js context
-    jscontext_pointer: i32,
-    jscontexts: HashMap<i32, JsContext>,
+    jscontexts: HashMap<usize, JsContext>,
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -278,23 +251,19 @@ impl WasmStore {
 
             settings: Settings::default(),
 
-            std_descriptor_pointer: None,
+            std_descriptor_pointer: 0,
             std_descriptors: HashMap::new(),
             std_references: HashMap::new(),
             std_strs_encode: HashSet::new(),
-            requests: Vec::new(),
+            requests: HashMap::new(),
 
-            canvass_pointer: 0,
             canvass: HashMap::new(),
 
-            images_pointer: 0,
             images: HashMap::new(),
 
-            fonts_pointer: 0,
             fonts: HashMap::new(),
             fonts_online: HashMap::new(),
 
-            jscontext_pointer: 0,
             jscontexts: HashMap::new(),
         }
     }
@@ -313,10 +282,27 @@ impl WasmStore {
         self.std_descriptors.get(&descriptor).cloned()
     }
 
-    pub fn take_std_value(&mut self, descriptor: usize) -> Option<ValueRef> {
+    pub fn take_std_value(&mut self, descriptor: usize) {
         // println!("Free memory pointer {descriptor}");
         self.std_strs_encode.remove(&descriptor);
-        self.std_descriptors.remove(&descriptor)
+
+        self.free_std_reference(descriptor);
+
+        macro_rules! try_remove {
+            ($map:expr) => {
+                if $map.remove(&descriptor).is_some() {
+                    return; // stop searching
+                }
+            };
+        }
+
+        try_remove!(self.std_descriptors);
+        try_remove!(self.requests);
+        try_remove!(self.canvass);
+        try_remove!(self.images);
+        try_remove!(self.fonts);
+        try_remove!(self.fonts_online);
+        try_remove!(self.jscontexts);
     }
 
     pub fn mark_str_encode(&mut self, pointer: usize) {
@@ -331,9 +317,13 @@ impl WasmStore {
         self.std_descriptors.insert(descriptor, data);
     }
 
-    pub fn store_std_value(&mut self, data: ValueRef, _from: Option<usize>) -> usize {
+    pub fn store_std_value(&mut self, data: ValueRef, from: Option<usize>) -> usize {
         let pointer = self.increase_and_get_std_desciptor_pointer();
         self.std_descriptors.insert(pointer, data);
+
+        if let Some(from) = from {
+            self.add_std_reference(from, pointer);
+        }
 
         pointer
     }
@@ -342,56 +332,57 @@ impl WasmStore {
         self.take_std_value(descriptor);
     }
 
-    // This might be used by some Aidoku unimplemented functions
-    #[allow(dead_code)]
     pub fn add_std_reference(&mut self, descriptor: usize, reference: usize) {
         let references_to_descriptor = self.std_references.entry(descriptor).or_default();
 
         references_to_descriptor.push(reference);
     }
+    fn free_std_reference(&mut self, descriptor: usize) {
+        if let Some(ids) = self.std_references.remove(&descriptor) {
+            for id in ids {
+                self.take_std_value(id);
+            }
+        }
+    }
 
     // TODO change this into a request descriptor
     pub fn create_request(&mut self) -> usize {
         let new_request_state = RequestState::Building(RequestBuildingState::default());
-        self.requests.push(new_request_state);
+        let idx = self.increase_and_get_std_desciptor_pointer();
 
-        self.requests.len() - 1
-    }
-
-    pub fn get_mut_request(&mut self, descriptor: usize) -> Option<&mut RequestState> {
-        self.requests.get_mut(descriptor)
-    }
-
-    fn increase_and_get_std_desciptor_pointer(&mut self) -> usize {
-        let increased_value = match self.std_descriptor_pointer {
-            Some(value) => value + 1,
-            None => 0,
-        };
-
-        self.std_descriptor_pointer = Some(increased_value);
-
-        increased_value
-    }
-
-    // canvas.rs
-    pub fn create_canvas(&mut self, width: f32, height: f32) -> i32 {
-        let new_canvas_state = &mut DrawTarget::new(width as i32, height as i32);
-        let idx = self.canvass_pointer;
-        self.canvass_pointer += 1;
-
-        self.canvass.insert(idx, new_canvas_state.into());
+        self.requests.insert(idx, new_request_state);
 
         idx
     }
-    pub fn get_mut_canvas(&mut self, descriptor: i32) -> Option<DrawTarget> {
-        self.canvass
-            .get_mut(&descriptor)
-            .map(<&mut Drawer as Into<DrawTarget>>::into)
+
+    pub fn get_mut_request(&mut self, descriptor: usize) -> Option<&mut RequestState> {
+        self.requests.get_mut(&descriptor)
     }
-    pub fn set_canvas(&mut self, descriptor: i32, draw: &mut DrawTarget) {
-        self.canvass.insert(descriptor, draw.into());
+
+    pub fn remove_request(&mut self, descriptor: usize) -> Option<RequestState> {
+        self.requests.remove(&descriptor)
     }
-    pub fn create_image(&mut self, data: &[u8]) -> Option<i32> {
+
+    fn increase_and_get_std_desciptor_pointer(&mut self) -> usize {
+        let idx = self.std_descriptor_pointer;
+        self.std_descriptor_pointer += 1;
+
+        idx
+    }
+
+    // canvas.rs
+    pub fn create_canvas(&mut self, width: f32, height: f32) -> usize {
+        let new_canvas_state = DrawTarget::new(width as i32, height as i32);
+        let idx = self.increase_and_get_std_desciptor_pointer();
+
+        self.canvass.insert(idx, Canvas(new_canvas_state));
+
+        idx
+    }
+    pub fn get_mut_canvas(&mut self, descriptor: usize) -> Option<&mut Canvas> {
+        self.canvass.get_mut(&descriptor)
+    }
+    pub fn create_image(&mut self, data: &[u8]) -> Option<usize> {
         let cursor = Cursor::new(data);
         let rgba_img = ImageReader::new(cursor)
             .with_guessed_format()
@@ -418,18 +409,17 @@ impl WasmStore {
 
         Some(self.set_image_data(image))
     }
-    pub fn get_image(&mut self, descriptor: i32) -> Option<&ImageData> {
+    pub fn get_image(&mut self, descriptor: usize) -> Option<&ImageData> {
         self.images.get(&descriptor)
     }
-    pub fn set_image_data(&mut self, image: ImageData) -> i32 {
-        let idx = self.images_pointer;
-        self.images_pointer += 1;
+    pub fn set_image_data(&mut self, image: ImageData) -> usize {
+        let idx = self.increase_and_get_std_desciptor_pointer();
 
         self.images.insert(idx, image);
 
         idx
     }
-    pub fn create_font(&mut self, name: String, property: Option<&Properties>) -> Option<i32> {
+    pub fn create_font(&mut self, name: String, property: Option<&Properties>) -> Option<usize> {
         let font = SystemSource::new()
             .select_best_match(
                 &[FamilyName::Title(name)],
@@ -438,15 +428,14 @@ impl WasmStore {
             .ok()
             .and_then(|h| h.load().ok())?;
 
-        let idx = self.fonts_pointer;
-        self.fonts_pointer += 1;
+        let idx = self.increase_and_get_std_desciptor_pointer();
 
         self.fonts
             .insert(idx, (font.family_name(), font.properties()));
 
         Some(idx)
     }
-    pub fn get_font(&mut self, descriptor: i32) -> Option<Font> {
+    pub fn get_font(&mut self, descriptor: usize) -> Option<Font> {
         let Some((family_name, properties)) = self.fonts.get(&descriptor.clone()) else {
             let buffer = self.fonts_online.get(&descriptor)?;
 
@@ -458,24 +447,22 @@ impl WasmStore {
             .ok()
             .and_then(|h| h.load().ok())
     }
-    pub fn set_font_online(&mut self, buffer: &[u8]) -> i32 {
-        let idx = self.fonts_pointer;
-        self.fonts_pointer += 1;
+    pub fn set_font_online(&mut self, buffer: &[u8]) -> usize {
+        let idx = self.increase_and_get_std_desciptor_pointer();
 
         self.fonts_online.insert(idx, buffer.to_vec());
 
         idx
     }
-    pub fn create_js_context(&mut self) -> i32 {
-        let idx = self.jscontext_pointer;
-        self.jscontext_pointer += 1;
+    pub fn create_js_context(&mut self) -> usize {
+        let idx = self.increase_and_get_std_desciptor_pointer();
 
         self.jscontexts
             .insert(idx, JsContext(boa_engine::Context::default()));
 
         idx
     }
-    pub fn get_js_context(&mut self, pointer: i32) -> Option<&mut JsContext> {
+    pub fn get_js_context(&mut self, pointer: usize) -> Option<&mut JsContext> {
         self.jscontexts.get_mut(&pointer)
     }
 }

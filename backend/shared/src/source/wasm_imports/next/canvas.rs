@@ -87,7 +87,7 @@ fn new_context(mut caller: Caller<'_, WasmStore>, width: f32, height: f32) -> Re
         bail!("Invalid bougus")
     }
 
-    Ok(store.create_canvas(width, height))
+    Ok(store.create_canvas(width, height) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -101,17 +101,16 @@ fn set_transform(
     rotate: f32,
 ) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
+    let Some(canvas) = store.get_mut_canvas(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
-    canvas.set_transform(
+    canvas.0.set_transform(
         &Transform::translation(translate_x, translate_y)
             .then_scale(scale_x, scale_y)
             .then_rotate(Angle { radians: rotate }),
     );
 
-    store.set_canvas(ctx_id, canvas);
     Ok(ResultContext::Success.into())
 }
 #[aidoku_wasm_function]
@@ -125,28 +124,26 @@ fn draw_image(
     height: f32,
 ) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
-        return Ok(ResultContext::InvalidContext.into());
-    };
-
-    let image = {
-        let Some(image) = store.get_image(img_id) else {
+    let rq_img = {
+        let Some(image) = store.get_image(img_id as usize) else {
             return Ok(ResultContext::InvalidImagePointer.into());
         };
-        image
-    };
 
-    let rq_img: raqote::Image<'_> = raqote::Image {
-        width: image.width,
-        height: image.height,
-        data: &image.data.clone(),
+        raqote::Image {
+            width: image.width,
+            height: image.height,
+            data: &image.data.clone(),
+        }
+    };
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
+        return Ok(ResultContext::InvalidContext.into());
     };
 
     {
         // NOTE: draw_image_with_size_at expects f32 and a Transform
-        canvas.draw_image_with_size_at(width, height, x, y, &rq_img, &raqote::DrawOptions::new());
-
-        store.set_canvas(ctx_id, canvas);
+        canvas
+            .0
+            .draw_image_with_size_at(width, height, x, y, &rq_img, &raqote::DrawOptions::new());
     }
 
     Ok(ResultContext::Success.into())
@@ -167,21 +164,19 @@ fn copy_image(
     dst_height: f32,
 ) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
-        return Ok(ResultContext::InvalidContext.into());
-    };
-
-    let image = {
-        let Some(image) = store.get_image(img_id) else {
+    let rq_img = {
+        let Some(image) = store.get_image(img_id as usize) else {
             return Ok(ResultContext::InvalidImagePointer.into());
         };
-        image
-    };
 
-    let rq_img: raqote::Image<'_> = raqote::Image {
-        width: image.width,
-        height: image.height,
-        data: &image.data.clone(),
+        raqote::Image {
+            width: image.width,
+            height: image.height,
+            data: &image.data.clone(),
+        }
+    };
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
+        return Ok(ResultContext::InvalidContext.into());
     };
 
     {
@@ -193,22 +188,22 @@ fn copy_image(
         let clip_path = clip_path.finish();
 
         // Push clip
-        canvas.push_clip(&clip_path);
+        canvas.0.push_clip(&clip_path);
 
         //      その後に拡大縮小して、最後に描画先位置へ移動。
         let transform = raqote::Transform::translation(-src_x, -src_y)
             .then_scale(scale_x, scale_y)
             .then_translate(Vector::new(dst_x, dst_y));
 
-        canvas.set_transform(&transform);
+        canvas.0.set_transform(&transform);
 
-        canvas.draw_image_at(0.0, 0.0, &rq_img, &raqote::DrawOptions::new());
+        canvas
+            .0
+            .draw_image_at(0.0, 0.0, &rq_img, &raqote::DrawOptions::new());
 
         // Reset
-        canvas.set_transform(&raqote::Transform::default());
-        canvas.pop_clip();
-
-        store.set_canvas(ctx_id, canvas);
+        canvas.0.set_transform(&raqote::Transform::default());
+        canvas.0.pop_clip();
     }
 
     Ok(ResultContext::Success.into())
@@ -256,11 +251,11 @@ fn fill(
     };
 
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
     let final_path = path_to_raqote_path(path);
-    canvas.fill(
+    canvas.0.fill(
         &final_path,
         &Source::Solid(raqote::SolidSource {
             r: r as u8,
@@ -271,7 +266,6 @@ fn fill(
         &DrawOptions::default(),
     );
 
-    store.set_canvas(ctx_id, canvas);
     Ok(ResultContext::Success.into())
 }
 #[aidoku_wasm_function]
@@ -305,13 +299,13 @@ fn stroke(
     };
 
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
     let final_path = path_to_raqote_path(path);
 
-    canvas.stroke(
+    canvas.0.stroke(
         &final_path,
         &Source::Solid(raqote::SolidSource {
             r: style.color.red as u8,
@@ -338,7 +332,6 @@ fn stroke(
         &DrawOptions::default(),
     );
 
-    store.set_canvas(ctx_id, canvas);
     Ok(ResultContext::Success.into())
 }
 #[aidoku_wasm_function]
@@ -360,15 +353,14 @@ fn draw_text(
     };
 
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
+    let Some(font) = store.get_font(font_id as usize) else {
+        return Ok(ResultContext::InvalidFont.into());
+    };
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
-    let Some(font) = store.get_font(font_id) else {
-        return Ok(ResultContext::InvalidFont.into());
-    };
-
-    canvas.draw_text(
+    canvas.0.draw_text(
         &font,
         size,
         &text,
@@ -382,7 +374,6 @@ fn draw_text(
         &DrawOptions::default(),
     );
 
-    store.set_canvas(ctx_id, canvas);
     Ok(ResultContext::Success.into())
 }
 
@@ -396,6 +387,7 @@ fn new_font(mut caller: Caller<'_, WasmStore>, name: Option<String>) -> Result<i
 
     Ok(store
         .create_font(name, None)
+        .map(|v| v as i32)
         .unwrap_or(ResultContext::InvalidFont.into()))
 }
 #[aidoku_wasm_function]
@@ -419,6 +411,7 @@ fn system_font(mut caller: Caller<'_, WasmStore>, size: i32) -> Result<i32> {
             "sans-serif".to_string(),
             Some(Properties::new().weight(weight)),
         )
+        .map(|v| v as i32)
         .unwrap_or(ResultContext::InvalidFont.into()))
 }
 #[aidoku_wasm_function]
@@ -436,7 +429,7 @@ fn load_font(mut caller: Caller<'_, WasmStore>, url: Option<String>) -> Result<i
     };
 
     let store = caller.data_mut();
-    Ok(store.set_font_online(&bytes))
+    Ok(store.set_font_online(&bytes) as i32)
 }
 
 // ----------------- Image -----------------
@@ -450,28 +443,29 @@ fn new_image(mut caller: Caller<'_, WasmStore>, bytes: Option<Vec<u8>>) -> Resul
 
     Ok(store
         .create_image(&bytes)
+        .map(|v| v as i32)
         .unwrap_or(ResultContext::InvalidData.into()))
 }
 #[aidoku_wasm_function]
 fn get_image(mut caller: Caller<'_, WasmStore>, ctx_id: i32) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(canvas) = &mut store.get_mut_canvas(ctx_id) else {
+    let Some(canvas) = &mut store.get_mut_canvas(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
-    let data = canvas.get_data();
+    let data = canvas.0.get_data();
     let image = crate::source::wasm_store::ImageData {
         data: data.to_vec(),
-        width: canvas.width(),
-        height: canvas.height(),
+        width: canvas.0.width(),
+        height: canvas.0.height(),
     };
 
-    Ok(store.set_image_data(image))
+    Ok(store.set_image_data(image) as i32)
 }
 #[aidoku_wasm_function]
 fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(image) = store.get_image(img_id) else {
+    let Some(image) = store.get_image(img_id as usize) else {
         return Ok(ResultContext::InvalidImagePointer.into());
     };
 
@@ -502,7 +496,7 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
 #[aidoku_wasm_function]
 fn get_image_width(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(image) = store.get_image(img_id) else {
+    let Some(image) = store.get_image(img_id as usize) else {
         return Ok(ResultContext::InvalidImagePointer.into());
     };
 
@@ -512,7 +506,7 @@ fn get_image_width(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32
 #[aidoku_wasm_function]
 fn get_image_height(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32> {
     let store = caller.data_mut();
-    let Some(image) = store.get_image(img_id) else {
+    let Some(image) = store.get_image(img_id as usize) else {
         return Ok(ResultContext::InvalidImagePointer.into());
     };
 

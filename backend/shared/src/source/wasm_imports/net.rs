@@ -415,5 +415,5 @@ pub fn html(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         base_uri: Some(response.url.to_string()),
     };
 
-    Ok(wasm_store.store_std_value(Value::from(vec![html_element]).into(), None) as i32)
+    Ok(wasm_store.store_std_value(Value::from(vec![html_element]).into(), Some(request_descriptor)) as i32)
 }

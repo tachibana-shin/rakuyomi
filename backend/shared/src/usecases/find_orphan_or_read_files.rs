@@ -9,7 +9,6 @@ pub async fn find_orphan_or_read_files(
     chapter_storage: &ChapterStorage,
     invalid_mode: bool,
 ) -> Result<Vec<PathBuf>> {
-    db
-        .find_orphan_or_read_files(chapter_storage, invalid_mode)
+    db.find_orphan_or_read_files(chapter_storage, invalid_mode)
         .await
 }

@@ -864,7 +864,7 @@ impl BlockingSource {
 
         // FIXME scoping here is so fucking scuffed
         {
-            let request_state = self
+            let request_state = &mut self
                 .store
                 .data_mut()
                 .get_mut_request(request_descriptor)
@@ -898,10 +898,10 @@ impl BlockingSource {
             }
         }
 
-        let request_state = self
+        let request_state = &mut self
             .store
             .data_mut()
-            .get_mut_request(request_descriptor)
+            .remove_request(request_descriptor)
             .unwrap();
 
         let request_building_state = match request_state {
@@ -1099,44 +1099,52 @@ impl BlockingSource {
             (url_key as i32, context_key)
         };
 
-        let request_state = {
+        let request_state_ptr = {
             let wasm_function = self
                 .instance
                 .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_image_request");
 
-            let out = match wasm_function {
-                Ok(wasm_function) => {
-                    let pointer = wasm_function.call(&mut self.store, (url_key, context_key))?;
-                    let memory = self.get_memory()?;
-
-                    if pointer < 0 {
-                        eprintln!("get_image_request failed");
-
-                        bail!("get_image_request failed")
-                    } else {
-                        let request = read_next::<i32>(&memory, &self.store, pointer)?;
-                        let _ = self.free_result(pointer);
-
-                        let store = self.store.data_mut();
-                        store.get_mut_request(request as usize)
-                    }
-                }
+            match wasm_function {
+                Ok(func) => Some(func.call(&mut self.store, (url_key, context_key))?),
                 Err(_) => None,
-            };
-
-            if let Some(state) = out {
-                state
-            } else {
-                let store = self.store.data_mut();
-                let pointer = store.create_request();
-                store
-                    .get_mut_request(pointer)
-                    .context("create request failed")?
             }
         };
+        // Drop std_value entries now
+        {
+            let store = self.store.data_mut();
+            store.take_std_value(url_key as usize);
+            if context_key >= 0 {
+                store.take_std_value(context_key as usize);
+            }
+        }
 
+        let request_state_opt = if let Some(request_state_ptr) = request_state_ptr {
+            if request_state_ptr < 0 {
+                eprintln!("get_image_request failed");
+                bail!("get_image_request failed");
+            }
+
+            let memory = self.get_memory()?;
+            let req_id = read_next::<i32>(&memory, &self.store, request_state_ptr)?;
+            let _ = self.free_result(request_state_ptr);
+
+            let store = self.store.data_mut();
+
+            store.remove_request(req_id as usize)
+        } else {
+            None
+        };
+
+        // Take request_state or build a fresh one
+        let request_state = &mut if let Some(state) = request_state_opt {
+            state
+        } else {
+            RequestState::Building(RequestBuildingState::default())
+        };
+
+        // Extract mutable building state
         let building_state: &mut RequestBuildingState = match request_state {
-            RequestState::Building(building_state) => building_state,
+            RequestState::Building(state) => state,
             _ => return Err(anyhow::anyhow!("Not building state")),
         };
 
@@ -1211,7 +1219,7 @@ impl BlockingSource {
                         .collect(),
                 },
                 image: ImageRef {
-                    rid: image_ref,
+                    rid: image_ref as i32,
                     externally_managed: false,
                 },
             };
@@ -1245,12 +1253,10 @@ impl BlockingSource {
                 return Err(anyhow::anyhow!("pointer image error {pointer}"));
             };
 
-
-
             let image_data = {
                 let store =store.data_mut();
                 let (width, height, pixels) = {
-                    let Some(image) = store.get_image(image_pointer) else {
+                    let Some(image) = store.get_image(image_pointer as usize) else {
                         return Err(anyhow::anyhow!(
                             "failed to get image for process_page_image point = {image_pointer}"
                         ));

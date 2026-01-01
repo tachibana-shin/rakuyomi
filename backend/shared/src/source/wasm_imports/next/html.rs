@@ -1,12 +1,12 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 
-use scraper::{Html as CHtml, Selector};
+use dom_query::Document;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
-use crate::{
-    scraper_ext::SelectSoup,
-    source::wasm_store::{HTMLElement, Html, Value, WasmStore},
+use crate::source::{
+    html_element::HTMLElement,
+    wasm_store::{Value, WasmStore},
 };
 
 pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
@@ -100,18 +100,15 @@ fn parse(
     let Some(text) = data else {
         return ResultContext::InvalidString.into();
     };
-    let document = CHtml::parse_document(&text);
-    let node_id = document.root_element().id();
+    let document = Document::from(text);
+    let node_id = document.root().id;
+    let element = HTMLElement {
+        document: store.set_html(document),
+        node_id,
+        base_uri,
+    };
 
-    Ok(store.store_std_value(
-        Value::from(vec![HTMLElement {
-            document: Html::from(document).into(),
-            node_id,
-            base_uri,
-        }])
-        .into(),
-        None,
-    ) as i32)
+    Ok(store.store_std_value(Value::from(vec![element]).into(), None) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -126,18 +123,15 @@ pub fn parse_fragment(
         return ResultContext::InvalidString.into();
     };
 
-    let document = CHtml::parse_fragment(&text);
-    let node_id = document.root_element().id();
+    let document = Document::fragment(text);
+    let node_id = document.root().id;
+    let element = HTMLElement {
+        document: store.set_html(document),
+        node_id,
+        base_uri,
+    };
 
-    Ok(store.store_std_value(
-        Value::from(vec![HTMLElement {
-            document: Html::from(document).into(),
-            node_id,
-            base_uri,
-        }])
-        .into(),
-        None,
-    ) as i32)
+    Ok(store.store_std_value(Value::from(vec![element]).into(), None) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -189,23 +183,18 @@ fn select_first(
     let Some(selector) = selector else {
         return ResultContext::InvalidQuery.into();
     };
-    let Some(selector) = Selector::parse(&selector)
-        .map_err(|e| anyhow!(e.to_string()))
-        .with_context(|| format!("couldn't parse selector '{}'", selector))
-        .ok()
-    else {
-        return ResultContext::InvalidQuery.into();
-    };
-    let selected_element = html_elements.iter().find_map(|el| {
-        el.element_ref()
-            .select_soup(&selector)
-            .next()
-            .map(|selected_ref| HTMLElement {
-                document: el.document.clone(),
-                node_id: selected_ref.id(),
-                base_uri: el.base_uri.clone(),
-            })
-    });
+
+    let mut selected_element = None;
+    for el in html_elements.iter() {
+        // soup_first: Result<Option<HTMLElement>>
+        match el.select_soup_first(wasm_store, &selector)? {
+            Some(found) => {
+                selected_element = Some(found);
+                break;
+            }
+            None => continue,
+        }
+    }
 
     let Some(selected_element) = selected_element else {
         return ResultContext::NoResult.into();
@@ -250,8 +239,24 @@ fn outer_html(caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
     crate::source::wasm_imports::html::outer_html(caller, ptr)
 }
 #[aidoku_wasm_function]
-fn remove(_caller: Caller<'_, WasmStore>, _ptr: i32) -> Result<i32> {
-    Ok(-1)
+fn remove(mut caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+
+    let Some(elements) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.into(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    for element in elements {
+        element.remove(wasm_store);
+    }
+
+    Ok(0)
 }
 #[aidoku_wasm_function]
 pub fn set_text(caller: Caller<'_, WasmStore>, ptr: i32, text: Option<String>) -> FFIResult {
@@ -288,16 +293,7 @@ fn parent(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .parent()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.parent(wasm_store))
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -322,16 +318,7 @@ fn children(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .children()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.children(wasm_store))
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -355,16 +342,7 @@ fn siblings(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .next_siblings()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.siblings(wasm_store))
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -388,16 +366,7 @@ fn next(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .next_sibling()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.next(wasm_store))
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -422,16 +391,7 @@ fn previous(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .prev_sibling()
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-        })
+        .flat_map(|element| element.previous(wasm_store))
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -471,12 +431,48 @@ fn has_class(caller: Caller<'_, WasmStore>, ptr: i32, attr_name: Option<String>)
     crate::source::wasm_imports::html::has_class(caller, ptr, attr_name)
 }
 #[aidoku_wasm_function]
-fn add_class(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
-    Ok(-1)
+fn add_class(mut caller: Caller<'_, WasmStore>, ptr: i32, name: Option<String>) -> Result<i32> {
+    let Some(name) = name else {
+        return ResultContext::InvalidString.into();
+    };
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    first_element.add_class(wasm_store, &name);
+
+    Ok(0)
 }
 #[aidoku_wasm_function]
-fn remove_class(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
-    Ok(-1)
+fn remove_class(mut caller: Caller<'_, WasmStore>, ptr: i32, name: Option<String>) -> Result<i32> {
+    let Some(name) = name else {
+        return ResultContext::InvalidString.into();
+    };
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    first_element.remove_class(wasm_store, &name);
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]
@@ -485,16 +481,55 @@ fn has_attr(caller: Caller<'_, WasmStore>, ptr: i32, attr_name: Option<String>) 
 }
 #[aidoku_wasm_function]
 fn set_attr(
-    _caller: Caller<'_, WasmStore>,
-    _ptr: i32,
-    _name: Option<String>,
-    _value: Option<String>,
+    mut caller: Caller<'_, WasmStore>,
+    ptr: i32,
+    name: Option<String>,
+    value: Option<String>,
 ) -> Result<i32> {
-    Ok(-1)
+    let Some(name) = name else {
+        return ResultContext::InvalidString.into();
+    };
+    let Some(value) = value else {
+        return ResultContext::InvalidString.into();
+    };
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    first_element.set_attr(wasm_store, &name, &value);
+
+    Ok(0)
 }
 #[aidoku_wasm_function]
-fn remove_attr(_caller: Caller<'_, WasmStore>, _ptr: i32, _name: Option<String>) -> Result<i32> {
-    Ok(-1)
+fn remove_attr(mut caller: Caller<'_, WasmStore>, ptr: i32, name: Option<String>) -> Result<i32> {
+    let Some(name) = name else {
+        return ResultContext::InvalidString.into();
+    };
+
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    first_element.remove_attr(wasm_store, &name);
+
+    Ok(0)
 }
 
 #[aidoku_wasm_function]

@@ -1,9 +1,8 @@
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
+use dom_query::Document;
 use futures::{stream, StreamExt, TryStreamExt};
-use kuchiki::{parse_html, traits::TendrilSink};
 use reqwest::{redirect::Policy, Client, Request};
-use scraper::Html;
 use std::{
     collections::{HashMap, HashSet},
     io::{Cursor, Seek, Write},
@@ -676,13 +675,10 @@ async fn download_all_images(
 
         if let Some(text) = &page.text {
             let html = into_html(text);
-            let document = Html::parse_document(&html);
-            let img_selector = scraper::Selector::parse("img").unwrap();
+            let document = Document::fragment(html);
 
-            for img in document.select(&img_selector) {
-                if let Some(src) =
-                    get_image_src(base_url, |n| img.value().attr(n).map(|v| v.to_string()))
-                {
+            for img in document.select("img").iter() {
+                if let Some(src) = get_image_src(base_url, |n| img.attr(n).map(|t| t.to_string())) {
                     if seen.insert(src.clone()) {
                         let url = src.clone();
                         let index = page.index;
@@ -796,14 +792,13 @@ where
                     .reftype(ReferenceType::Text),
                 )?;
             } else if let Some(text) = &page.text {
-                let document = parse_html().one(text.clone());
+                let document = Document::fragment(text.to_owned());
 
                 // Apply results sequentially
-                for img in document.select("img").unwrap() {
-                    let mut attrs = img.attributes.borrow_mut();
-                    let Some(src) = get_image_src(chapter_url.as_ref(), |n| {
-                        attrs.get(n).map(|v| v.to_string())
-                    }) else {
+                for img in document.select("img").iter() {
+                    let Some(src) =
+                        get_image_src(chapter_url.as_ref(), |n| img.attr(n).map(|v| v.to_string()))
+                    else {
                         continue;
                     };
                     let Some(image_result) = images.get(&src) else {
@@ -816,7 +811,7 @@ where
 
                             epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
 
-                            attrs.insert("src", format!("../{}", filename));
+                            img.set_attr("src", &format!("../{}", filename));
                         }
                         Err(e) => {
                             eprintln!("Failed to download image for EPUB: {:?}", e);
@@ -829,15 +824,12 @@ where
 
                             epub.add_resource(&filename, Cursor::new(image_bytes), "image/jpeg")?;
 
-                            attrs.insert("src", format!("../{}", filename));
+                            img.set_attr("src", &format!("../{}", filename));
                         }
                     }
                 }
 
-                let mut buffer = Vec::new();
-                document.serialize(&mut buffer)?;
-
-                let xhtml = create_xhtml(&title, &String::from_utf8(buffer).unwrap_or_default());
+                let xhtml = create_xhtml(&title, &document.html().to_string());
 
                 epub.add_content(
                     EpubContent::new(format!("pages/page_{}.xhtml", idx + 1), Cursor::new(xhtml))

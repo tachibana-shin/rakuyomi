@@ -1,12 +1,11 @@
 use anyhow::{anyhow, Context, Result};
 
-use kuchiki::traits::TendrilSink;
-use scraper::{Element, Html as ScraperHtml, Node, Selector};
+use dom_query::Document;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
-use crate::scraper_ext::SelectSoup;
-use crate::source::wasm_store::{HTMLElement, Html, Value, WasmStore};
+use crate::source::html_element::HTMLElement;
+use crate::source::wasm_store::{Value, WasmStore};
 
 pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "parse", parse)?;
@@ -69,18 +68,17 @@ fn parse_with_uri(
     data: Option<String>,
     base_uri: Option<String>,
 ) -> Result<i32> {
-    let document =
-        ScraperHtml::parse_document(&data.context("data is required for parse_with_uri")?);
-    let node_id = document.root_element().id();
+    let store = caller.data_mut();
+    let document = Document::from(data.context("data is required for parse_with_uri")?);
+
+    let node_id = document.root().id;
     let html_element = HTMLElement {
-        document: Html::from(document).into(),
+        document: store.set_html(document),
         node_id,
         base_uri,
     };
 
-    let wasm_store = caller.data_mut();
-
-    Ok(wasm_store.store_std_value(Value::from(vec![html_element]).into(), None) as i32)
+    Ok(store.store_std_value(Value::from(vec![html_element]).into(), None) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -89,18 +87,17 @@ fn parse_fragment_with_uri(
     data: Option<String>,
     base_uri: Option<String>,
 ) -> Result<i32> {
+    let store = caller.data_mut();
     let fragment =
-        ScraperHtml::parse_fragment(&data.context("data is required for parse_fragment_with_uri")?);
-    let node_id = fragment.root_element().id();
+        Document::fragment(data.context("data is required for parse_fragment_with_uri")?);
+    let node_id = fragment.root().id;
     let html_element = HTMLElement {
-        document: Html::from(fragment).into(),
+        document: store.set_html(fragment),
         node_id,
         base_uri,
     };
 
-    let wasm_store = caller.data_mut();
-
-    Ok(wasm_store.store_std_value(Value::from(vec![html_element]).into(), None) as i32)
+    Ok(store.store_std_value(Value::from(vec![html_element]).into(), None) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -124,22 +121,13 @@ pub fn select(
 
     // TODO NAMING IS PURE GARBAGE
     let selector = selector.context("selector is required for select function")?;
-    let selector = Selector::parse(&selector)
-        .map_err(|e| anyhow!(e.to_string()))
-        .with_context(|| format!("couldn't parse selector '{}'", selector))?;
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| {
-            element
-                .element_ref()
-                .select_soup(&selector)
-                .map(|selected_element_ref| HTMLElement {
-                    document: element.document.clone(),
-                    node_id: selected_element_ref.id(),
-                    base_uri: element.base_uri.clone(),
-                })
-                .collect::<Vec<_>>()
-        })
+        .map(|element| element.select_soup(wasm_store, &selector))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .flatten()
+        .flatten()
         .collect();
 
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
@@ -166,7 +154,7 @@ pub fn attr(
 
     let has_abs_prefix = selector.starts_with("abs:");
     let selector = if has_abs_prefix {
-        selector.strip_prefix("abs:").unwrap().to_string()
+        selector.strip_prefix("abs:").unwrap().to_owned()
     } else {
         selector
     };
@@ -183,15 +171,9 @@ pub fn attr(
 
     let attr = elements
         .iter()
-        .map(|element| {
-            let element_value = element.element_ref().value();
-
-            element_value.attr(&selector)
-        })
-        .find(|element| element.is_some())
-        .flatten()
+        .find_map(|element| element.attr(wasm_store, &selector))
         .context(AttributeNotFound)?
-        .to_string();
+        .to_owned();
 
     let attr = if has_abs_prefix {
         let base_uri = elements
@@ -212,78 +194,27 @@ pub fn attr(
     Ok(wasm_store.store_std_value(Value::from(attr).into(), Some(descriptor)) as i32)
 }
 
-fn modify_dom<F>(
-    caller: &mut Caller<'_, WasmStore>,
-    descriptor_i32: i32,
-    mut callback: F,
-) -> Result<()>
-where
-    F: FnMut(&mut kuchiki::NodeRef) -> Result<()>,
-{
-    let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
-
-    let wasm_store = caller.data_mut();
-    let std_value = wasm_store
-        .get_std_value(descriptor)
-        .context("failed to get standard value")?;
-    let mut elements = match std_value.as_ref() {
-        Value::HTMLElements(elements) => Some(elements.clone()),
-        _ => None,
-    }
-    .context("expected HTMLElements value")?;
-
-    let element = elements.first_mut().context("invalid descriptor")?;
-    let base_uri = element.base_uri.clone();
-
-    let html = element.element_ref().html();
-
-    let document = kuchiki::parse_html().one(html);
-    let mut root = match document.select_first("*") {
-        Ok(v) => v,
-        Err(_) => return Err(anyhow::anyhow!("kuchiki could not select root element")),
-    }
-    .as_node()
-    .clone();
-
-    callback(&mut root)?;
-
-    let mut new_html = Vec::new();
-    root.serialize(&mut new_html)?;
-    let new_html = String::from_utf8(new_html)?;
-
-    let doc_scraper = scraper::Html::parse_fragment(&new_html);
-    let node_id = doc_scraper.root_element().id();
-
-    *element = HTMLElement {
-        document: Html::from(doc_scraper).into(),
-        node_id,
-        base_uri,
-    };
-
-    wasm_store.set_std_value(descriptor, Value::from(elements).into());
-
-    Ok(())
-}
-
 #[aidoku_wasm_function]
 pub fn set_text(
     mut caller: Caller<'_, WasmStore>,
-    descriptor_i32: i32,
+    descriptor: i32,
     text: Option<String>,
 ) -> Result<i32> {
     let text = text.unwrap_or_default();
 
-    modify_dom(
-        &mut caller,
-        descriptor_i32,
-        |root: &mut kuchiki::NodeRef| {
-            root.children().for_each(|child| child.detach());
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor as usize)
+        .context("failed to get standard value")?;
 
-            root.append(kuchiki::NodeRef::new_text(text.clone()));
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
 
-            Ok(())
-        },
-    )?;
+    first_element.set_text(wasm_store, &text);
 
     Ok(0)
 }
@@ -291,31 +222,24 @@ pub fn set_text(
 #[aidoku_wasm_function]
 pub fn set_html(
     mut caller: Caller<'_, WasmStore>,
-    descriptor_i32: i32,
+    descriptor: i32,
     html: Option<String>,
 ) -> Result<i32> {
     let html = html.unwrap_or_default();
 
-    modify_dom(
-        &mut caller,
-        descriptor_i32,
-        |root: &mut kuchiki::NodeRef| {
-            root.children().for_each(|child| child.detach());
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor as usize)
+        .context("failed to get standard value")?;
 
-            let fragment = kuchiki::parse_html().one(html.clone());
-            let frag_root = fragment
-                .select_first("*")
-                .map_err(|_| anyhow!("no root element in fragment"))?
-                .as_node()
-                .clone();
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
 
-            for child in frag_root.children() {
-                root.append(child);
-            }
-
-            Ok(())
-        },
-    )?;
+    first_element.set_html(wasm_store, &html);
 
     Ok(0)
 }
@@ -323,26 +247,24 @@ pub fn set_html(
 #[aidoku_wasm_function]
 pub fn prepend(
     mut caller: Caller<'_, WasmStore>,
-    descriptor_i32: i32,
+    descriptor: i32,
     text: Option<String>,
 ) -> Result<i32> {
     let text = text.unwrap_or_default();
 
-    modify_dom(
-        &mut caller,
-        descriptor_i32,
-        |root: &mut kuchiki::NodeRef| {
-            let new_node = kuchiki::NodeRef::new_text(text.clone());
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor as usize)
+        .context("failed to get standard value")?;
 
-            if let Some(first) = root.first_child() {
-                first.insert_before(new_node);
-            } else {
-                root.append(new_node);
-            }
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
 
-            Ok(())
-        },
-    )?;
+    first_element.prepend(wasm_store, &text);
 
     Ok(0)
 }
@@ -350,20 +272,24 @@ pub fn prepend(
 #[aidoku_wasm_function]
 pub fn append(
     mut caller: Caller<'_, WasmStore>,
-    descriptor_i32: i32,
+    descriptor: i32,
     text: Option<String>,
 ) -> Result<i32> {
     let text = text.unwrap_or_default();
 
-    modify_dom(
-        &mut caller,
-        descriptor_i32,
-        |root: &mut kuchiki::NodeRef| {
-            root.append(kuchiki::NodeRef::new_text(text.clone()));
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(descriptor as usize)
+        .context("failed to get standard value")?;
 
-            Ok(())
-        },
-    )?;
+    let Some(first_element) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => elements.first(),
+        _ => None,
+    }) else {
+        return Ok(-1);
+    };
+
+    first_element.append(wasm_store, &text);
 
     Ok(0)
 }
@@ -420,16 +346,9 @@ fn next(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> {
     }
     .context("expected a single HTMLElement")?;
 
-    let next_sibling_node_id = element
-        .element_ref()
-        .next_sibling_element()
-        .context("no next sibling element found")?
-        .id();
-    let new_element = HTMLElement {
-        document: element.document.clone(),
-        node_id: next_sibling_node_id,
-        base_uri: element.base_uri.clone(),
-    };
+    let new_element = element
+        .next(wasm_store)
+        .context("no next sibling element found")?;
 
     Ok(wasm_store.store_std_value(Value::from(vec![new_element]).into(), Some(descriptor)) as i32)
 }
@@ -451,16 +370,9 @@ fn previous(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
     }
     .context("expected a single HTMLElement")?;
 
-    let prev_sibling_node_id = element
-        .element_ref()
-        .prev_sibling_element()
-        .context("no previous sibling element found")?
-        .id();
-    let new_element = HTMLElement {
-        document: element.document.clone(),
-        node_id: prev_sibling_node_id,
-        base_uri: element.base_uri.clone(),
-    };
+    let new_element = element
+        .previous(wasm_store)
+        .context("no previous sibling element found")?;
 
     Ok(wasm_store.store_std_value(Value::from(vec![new_element]).into(), Some(descriptor)) as i32)
 }
@@ -482,7 +394,7 @@ pub fn base_uri(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Resul
     }
     .context("expected a single HTMLElement")?;
 
-    let base_uri = element.base_uri.unwrap_or("".to_string());
+    let base_uri = element.base_uri.unwrap_or("".to_owned());
 
     Ok(wasm_store.store_std_value(Value::from(base_uri).into(), Some(descriptor)) as i32)
 }
@@ -508,12 +420,11 @@ pub fn text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 
     let text = elements
         .iter()
-        .flat_map(|element| element.element_ref().text())
-        .map(|s| s.trim())
+        .filter_map(|element| element.text(wasm_store))
         .collect::<Vec<_>>()
         .join(" ")
         .trim()
-        .to_string();
+        .to_owned();
 
     Ok(wasm_store.store_std_value(Value::from(text).into(), Some(descriptor)) as i32)
 }
@@ -534,9 +445,10 @@ pub fn untrimmed_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) ->
 
     let text = elements
         .iter()
-        .flat_map(|element| element.element_ref().text())
+        .filter_map(|element| element.untrimmed_text(wasm_store))
         .collect::<Vec<_>>()
-        .join(" ");
+        .join(" ")
+        .to_owned();
 
     Ok(wasm_store.store_std_value(Value::from(text).into(), Some(descriptor)) as i32)
 }
@@ -550,21 +462,7 @@ pub fn own_text(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Resul
         .get_std_value(descriptor)
         .context("failed to get value from store")?;
     let own_text = match std_value.as_ref() {
-        Value::HTMLElements(elements) if elements.len() == 1 => {
-            let element = elements.first().unwrap();
-            let own_text = element
-                .element_ref()
-                .children()
-                .filter_map(|node_ref| match node_ref.value() {
-                    // FIXME WHAT
-                    Node::Text(text) => Some(&**text),
-                    _ => None,
-                })
-                .collect::<Vec<_>>()
-                .join("");
-            Some(own_text)
-        }
-        Value::String(s) => Some(s.to_string()),
+        Value::HTMLElements(elements) => elements.first().and_then(|n| n.own_text(wasm_store)),
         _ => None,
     }
     .context("expected single HTMLElement or String value")?;
@@ -581,10 +479,7 @@ pub fn data(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
         .get_std_value(descriptor)
         .context("failed to get value from store")?;
     let text = match std_value.as_ref() {
-        Value::HTMLElements(elements) if elements.len() == 1 => {
-            Some(elements.first().unwrap().data())
-        }
-        Value::String(s) => Some(s.to_string()),
+        Value::HTMLElements(elements) => elements.first().and_then(|n| n.data(wasm_store)),
         _ => None,
     }
     .context("expected single HTMLElement or String value")?;
@@ -630,7 +525,7 @@ pub fn html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
 
     let inner_htmls = elements
         .iter()
-        .map(|element| element.element_ref().inner_html())
+        .filter_map(|element| element.html(wasm_store))
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -653,7 +548,7 @@ pub fn outer_html(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Res
 
     let htmls = elements
         .iter()
-        .map(|element| element.element_ref().html())
+        .filter_map(|element| element.outer_html(wasm_store))
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -673,8 +568,7 @@ fn escape(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32>
         Value::HTMLElements(elements) => {
             let text = elements
                 .iter()
-                .flat_map(|element| element.element_ref().text())
-                .map(|s| s.trim())
+                .filter_map(|element| element.text(wasm_store))
                 .collect::<Vec<_>>()
                 .join(" ");
             Some(text)
@@ -702,8 +596,7 @@ fn unescape(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i3
         Value::HTMLElements(elements) => {
             let text = elements
                 .iter()
-                .flat_map(|element| element.element_ref().text())
-                .map(|s| s.trim())
+                .filter_map(|element| element.text(wasm_store))
                 .collect::<Vec<_>>()
                 .join(" ");
             Some(text)
@@ -736,11 +629,9 @@ pub fn id(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32>
     .context("expected a single HTMLElement")?;
 
     let id = element
-        .element_ref()
-        .value()
-        .id()
+        .id(wasm_store)
         .context("element has no id attribute")?
-        .to_string();
+        .to_owned();
 
     Ok(wasm_store.store_std_value(Value::from(id).into(), Some(descriptor)) as i32)
 }
@@ -762,7 +653,10 @@ pub fn tag_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Resul
     }
     .context("expected a single HTMLElement")?;
 
-    let tag_name = element.element_ref().value().name().to_string();
+    let tag_name = element
+        .tag(wasm_store)
+        .context("not exists element")?
+        .to_owned();
 
     Ok(wasm_store.store_std_value(Value::from(tag_name).into(), Some(descriptor)) as i32)
 }
@@ -785,12 +679,8 @@ pub fn class_name(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Res
     .context("expected a single HTMLElement")?;
 
     let class_name = element
-        .element_ref()
-        .value()
-        .attr("class")
-        .context("element has no class attribute")?
-        .trim()
-        .to_string();
+        .class(wasm_store)
+        .context("element has no class attribute")?;
 
     Ok(wasm_store.store_std_value(Value::from(class_name).into(), Some(descriptor)) as i32)
 }
@@ -818,10 +708,8 @@ pub fn has_class(
     .context("expected a single HTMLElement")?;
 
     let has_class = element
-        .element_ref()
-        .value()
-        .classes()
-        .any(|class| class == class_name);
+        .has_class(wasm_store, &class_name)
+        .unwrap_or_default();
 
     Ok(if has_class { 1 } else { 0 })
 }
@@ -848,11 +736,7 @@ pub fn has_attr(
     }
     .context("expected a single HTMLElement")?;
 
-    let has_attr = element
-        .element_ref()
-        .value()
-        .attrs()
-        .any(|(name, _)| name == attr_name);
+    let has_attr = element.has_attr(wasm_store, &attr_name).unwrap_or_default();
 
     Ok(if has_attr { 1 } else { 0 })
 }

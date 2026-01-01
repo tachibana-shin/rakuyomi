@@ -7,7 +7,7 @@ local function calcLastReadText(ts)
     if diff < 0 then diff = 0 end
 
     if diff < 60 then
-        return diff < 30 and _("jnow")
+        return _("jnow")
     elseif diff < 3600 then
         return string.format(_("%dm"), math.floor(diff / 60))
     elseif diff < 86400 then

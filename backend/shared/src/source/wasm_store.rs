@@ -500,7 +500,9 @@ impl WasmStore {
 
         match self.html_references.get_mut(&key) {
             Some(count) => {
-                *count -= 1;
+                if *count > 0 {
+                    *count -= 1;
+                }
 
                 if *count <= 0 {
                     self.htmls.remove(&key);

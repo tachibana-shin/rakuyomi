@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-30 00:39+0700\n"
+"POT-Creation-Date: 2026-01-02 15:02+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,37 +21,37 @@ msgstr ""
 msgid "Available sources"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:94
+#: ../AvailableSourcesListing.lua:120
 msgid "Update available!"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:98
+#: ../AvailableSourcesListing.lua:124
 msgid "Latest version installed"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:101
+#: ../AvailableSourcesListing.lua:127
 msgid "Installable"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:108 ../InstalledSourcesListing.lua:81
+#: ../AvailableSourcesListing.lua:134 ../InstalledSourcesListing.lua:81
 msgid "version"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:111 ../ChapterListing.lua:125
+#: ../AvailableSourcesListing.lua:137 ../ChapterListing.lua:125
 #: ../ChapterListing.lua:205 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid "Unknown"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:123
+#: ../AvailableSourcesListing.lua:149
 msgid "No available sources found."
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:123
+#: ../AvailableSourcesListing.lua:149
 msgid "Try adding some source lists by looking at our README!"
 msgstr ""
 
-#: ../AvailableSourcesListing.lua:141
+#: ../AvailableSourcesListing.lua:167
 msgid "Installing source..."
 msgstr ""
 
@@ -353,6 +353,10 @@ msgstr ""
 
 #: ../DownloadUnreadChaptersJobDialog.lua:62
 msgid "An error occurred while downloading chapters"
+msgstr ""
+
+#: ../InstalledSourcesListing.lua:21
+msgid "Installed sources"
 msgstr ""
 
 #: ../InstalledSourcesListing.lua:95
@@ -918,10 +922,6 @@ msgstr ""
 
 #: ../utils/calcLastReadText.lua:10
 msgid "jnow"
-msgstr ""
-
-#: ../utils/calcLastReadText.lua:10
-msgid "now"
 msgstr ""
 
 #: ../utils/calcLastReadText.lua:12

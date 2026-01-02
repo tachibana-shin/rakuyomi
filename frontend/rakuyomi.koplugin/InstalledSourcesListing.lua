@@ -18,7 +18,7 @@ local InstalledSourcesListing = Menu:extend {
   name = "installed_sources_listing",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Installed sources",
+  title = _("Installed sources"),
   with_context_menu = true,
 
   installed_sources = nil,

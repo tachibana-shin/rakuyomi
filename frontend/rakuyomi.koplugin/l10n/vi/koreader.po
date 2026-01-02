@@ -21,7 +21,7 @@ msgstr  "Cập nhật có sẵn!"
 
 #: ../AvailableSourcesListing.lua:98
 msgid   "Latest version installed"
-msgstr  "Đã cài đặt phiên bản mới nhất"
+msgstr  "Đã cài đặt mới nhất"
 
 #: ../AvailableSourcesListing.lua:101
 msgid   "Installable"

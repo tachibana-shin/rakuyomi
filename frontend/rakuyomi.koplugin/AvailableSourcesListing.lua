@@ -42,6 +42,32 @@ function AvailableSourcesListing:init()
   self:updateItems()
 end
 
+---@param available SourceInformation[]
+---@param installed SourceInformation[]
+---@return SourceInformation[]
+local sortSources = function(available, installed)
+  local sorted = {}
+
+  for _, src in ipairs(installed) do
+    table.insert(sorted, src)
+  end
+
+  for _, src in ipairs(available) do
+    local isInstalled = false
+    for _, inst in ipairs(installed) do
+      if inst.id == src.id then
+        isInstalled = true
+        break
+      end
+    end
+    if not isInstalled then
+      table.insert(sorted, src)
+    end
+  end
+
+  return sorted
+end
+
 function AvailableSourcesListing:onClose()
   UIManager:close(self)
   if self.on_return_callback then
@@ -82,7 +108,7 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
   end
 
   local item_table = {}
-  for __,source_information in ipairs(available_sources) do
+  for __, source_information in ipairs(available_sources) do
     local mandatory = ""
     local callback = nil
 
@@ -187,7 +213,7 @@ function AvailableSourcesListing:fetchAndShow(onReturnCallback)
     return
   end
 
-  local available_sources = available_sources_response.body
+  local available_sources = sortSources(available_sources_response.body, installed_sources)
 
   local ui = AvailableSourcesListing:new {
     installed_sources = installed_sources,

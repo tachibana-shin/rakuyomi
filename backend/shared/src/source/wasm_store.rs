@@ -297,7 +297,6 @@ impl WasmStore {
             };
         }
 
-        // try_remove!(self.std_descriptors);
         try_remove!(self.requests);
         try_remove!(self.canvass);
         try_remove!(self.images);

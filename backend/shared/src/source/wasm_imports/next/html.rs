@@ -156,11 +156,7 @@ fn unescape(mut caller: Caller<'_, WasmStore>, text: Option<String>) -> Result<i
 }
 #[aidoku_wasm_function]
 fn select(caller: Caller<'_, WasmStore>, ptr: i32, selector: Option<String>) -> Result<i32> {
-    Ok(
-        crate::source::wasm_imports::html::select(caller, ptr, selector)
-            .ok()
-            .unwrap_or(ResultContext::InvalidQuery.into()),
-    )
+    crate::source::wasm_imports::html::select(caller, ptr, selector)
 }
 
 #[aidoku_wasm_function]

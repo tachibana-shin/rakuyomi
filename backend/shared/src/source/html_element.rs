@@ -276,3 +276,171 @@ impl HTMLElement {
         ().into()
     }
 }
+
+fn normalize_contains(selector: &str) -> String {
+    let mut out = String::with_capacity(selector.len());
+    let chars: Vec<char> = selector.chars().collect();
+    let mut i = 0;
+
+    while i < chars.len() {
+        if chars[i..].starts_with(&[':', 'c', 'o', 'n', 't', 'a', 'i', 'n', 's', '(']) {
+            out.push_str(":contains(");
+            i += 10;
+
+            let mut inner = String::new();
+            let mut depth = 1;
+
+            while i < chars.len() && depth > 0 {
+                let c = chars[i];
+
+                if c == '(' {
+                    depth += 1;
+                } else if c == ')' {
+                    depth -= 1;
+                    if depth == 0 {
+                        i += 1;
+                        break;
+                    }
+                }
+
+                inner.push(c);
+                i += 1;
+            }
+
+            let inner_trim = inner.trim();
+            if inner_trim.starts_with('"') && inner_trim.ends_with('"') {
+                out.push_str(inner_trim);
+            } else {
+                out.push('"');
+                out.push_str(inner_trim);
+                out.push('"');
+            }
+
+            out.push(')');
+            continue;
+        }
+
+        out.push(chars[i]);
+        i += 1;
+    }
+
+    out
+}
+
+#[cfg(test)]
+    mod tests {
+        use super::normalize_contains;
+
+        #[test]
+        fn keeps_selector_without_contains_unchanged() {
+            let sel = "div.content > a[href^=\"https\"]";
+            assert_eq!(normalize_contains(sel), sel);
+        }
+
+        #[test]
+        fn adds_quotes_when_missing_simple() {
+            let sel = ":contains(hello)";
+            assert_eq!(normalize_contains(sel), ":contains(\"hello\")");
+        }
+
+        #[test]
+        fn preserves_existing_double_quotes() {
+            let sel = ":contains(\"hello world\")";
+            assert_eq!(normalize_contains(sel), ":contains(\"hello world\")");
+        }
+
+        #[test]
+        fn trims_inner_whitespace() {
+            let sel = ":contains(   hello   )";
+            assert_eq!(normalize_contains(sel), ":contains(\"hello\")");
+        }
+
+        #[test]
+        fn handles_multiple_contains_in_selector() {
+            let sel = "div:contains(hello) span:contains(world)";
+            let expected = "div:contains(\"hello\") span:contains(\"world\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn nested_parentheses_inside_contains() {
+            // Inner has parentheses that should be treated as content; algorithm tracks depth.
+            let sel = ":contains(text(with(parens)))";
+            let expected = ":contains(\"text(with(parens))\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn nested_contains_inside_not() {
+            let sel = ":not(:contains(hello world))";
+            let expected = ":not(:contains(\"hello world\"))";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn keeps_other_colon_pseudo_selectors_intact() {
+            let sel = ":first-child:contains(foo)";
+            let expected = ":first-child:contains(\"foo\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn special_characters_are_preserved() {
+            let sel = ":contains(he[llo].*+?|^$)";
+            let expected = ":contains(\"he[llo].*+?|^$\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn unicode_is_preserved() {
+            let sel = ":contains(xin chào 🌟)";
+            let expected = ":contains(\"xin chào 🌟\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn mixed_content_around_contains() {
+            let sel = "ul li.item:contains(Item 1) > a.active";
+            let expected = "ul li.item:contains(\"Item 1\") > a.active";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn inner_already_quoted_with_extra_spaces() {
+            let sel = ":contains(   \"hello world\"   )";
+            let expected = ":contains(\"hello world\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn does_not_add_quotes_twice_when_already_quoted() {
+            let sel = "div:contains(\"a(b)c\")";
+            let expected = "div:contains(\"a(b)c\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn malformed_missing_closing_paren_consumes_until_end() {
+            // Current implementation will read until EOF if no closing ')', thus inner becomes the rest.
+            // It will still wrap in quotes.
+            let sel = "div:contains(unclosed";
+            let expected = "div:contains(\"unclosed\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn handles_contains_followed_by_trailing_text() {
+            let sel = ":contains(abc)) trailing";
+            // The parser will stop at the first matching ')' that closes depth to 0.
+            // The extra ')' should be copied verbatim after processing.
+            let expected = ":contains(\"abc\")) trailing";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+
+        #[test]
+        fn long_selector_with_attributes_and_contains() {
+            let sel = "section[data-id=\"123\"] .card:contains(New (2025)) .title:contains(Đặc biệt)";
+            let expected = "section[data-id=\"123\"] .card:contains(\"New (2025)\") .title:contains(\"Đặc biệt\")";
+            assert_eq!(normalize_contains(sel), expected);
+        }
+    }

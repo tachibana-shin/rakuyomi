@@ -276,17 +276,14 @@ impl WasmStore {
 
         self.free_std_reference(descriptor);
 
-        match self.std_descriptors.remove(&descriptor) {
-            Some(value) => {
-                if let Some(elements) = value.try_unwrap_html_elements_ref().ok() {
-                    for element in elements {
-                        self.free_reference_html(element);
-                    }
+        if let Some(value) = self.std_descriptors.remove(&descriptor) {
+            if let Ok(elements) = value.try_unwrap_html_elements_ref() {
+                for element in elements {
+                    self.free_reference_html(element);
                 }
-
-                return;
             }
-            _ => {}
+
+            return;
         }
 
         macro_rules! try_remove {
@@ -314,7 +311,7 @@ impl WasmStore {
     }
 
     pub fn set_std_value(&mut self, descriptor: usize, data: ValueRef) {
-        if let Some(elements) = data.try_unwrap_html_elements_ref().ok() {
+        if let Ok(elements) = data.try_unwrap_html_elements_ref() {
             for element in elements {
                 self.link_reference_html(element);
             }
@@ -497,18 +494,15 @@ impl WasmStore {
     fn free_reference_html(&mut self, element: &HTMLElement) {
         let key = element.document;
 
-        match self.html_references.get_mut(&key) {
-            Some(count) => {
-                if *count > 0 {
-                    *count -= 1;
-                }
-
-                if *count <= 0 {
-                    self.htmls.remove(&key);
-                    self.html_references.remove(&key);
-                }
+        if let Some(count) = self.html_references.get_mut(&key) {
+            if *count > 0 {
+                *count -= 1;
             }
-            None => {}
+
+            if *count == 0 {
+                self.htmls.remove(&key);
+                self.html_references.remove(&key);
+            }
         }
     }
 }

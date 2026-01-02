@@ -43,8 +43,8 @@ use self::{
     },
 };
 
-pub mod model;
 mod html_element;
+pub mod model;
 mod next_reader;
 mod source_settings;
 mod wasm_imports;

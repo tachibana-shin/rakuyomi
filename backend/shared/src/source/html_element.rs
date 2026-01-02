@@ -13,7 +13,7 @@ impl HTMLElement {
     fn node_ref<'a>(&'a self, store: &'a mut WasmStore) -> Option<NodeRef<'a>> {
         let document = store.get_html(self.document)?;
 
-        Some(NodeRef::new(self.node_id, &document.tree).into())
+        Some(NodeRef::new(self.node_id, &document.tree))
     }
     fn to_element(&self, node_id: NodeId) -> Self {
         Self {
@@ -27,7 +27,7 @@ impl HTMLElement {
             return Ok(None);
         };
 
-        let matcher = Matcher::new(&normalize_contains(&selector))
+        let matcher = Matcher::new(&normalize_contains(selector))
             .map_err(|err| anyhow!("[{selector}]{:?}", err))?;
         let mut elements = if matcher.match_element(&node) {
             vec![self.clone()]
@@ -39,7 +39,7 @@ impl HTMLElement {
             Selection::from(node)
                 .select_matcher(&matcher)
                 .nodes()
-                .into_iter()
+                .iter()
                 .map(|node| self.to_element(node.id))
                 .collect::<Vec<_>>(),
         );
@@ -51,7 +51,7 @@ impl HTMLElement {
             return Ok(None);
         };
 
-        let matcher = Matcher::new(&normalize_contains(&selector))
+        let matcher = Matcher::new(&normalize_contains(selector))
             .map_err(|err| anyhow!("[{selector}]{:?}", err))?;
         if matcher.match_element(&node) {
             return Ok(Some(self.clone()));
@@ -127,7 +127,6 @@ impl HTMLElement {
             .children()
             .into_iter()
             .filter(|p| p.id != node.id)
-            .into_iter()
             .map(|node| self.to_element(node.id))
             .collect::<Vec<_>>()
             .into()

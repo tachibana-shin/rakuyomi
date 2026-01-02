@@ -1,3 +1,4 @@
+use dom_query::Document;
 use font_kit::{family_name::FamilyName, font::Font, properties::Properties, source::SystemSource};
 use image::ImageReader;
 use pared::sync::Parc;
@@ -11,15 +12,16 @@ use tokio_util::sync::CancellationToken;
 use anyhow::anyhow;
 use chrono::DateTime;
 use derive_more::{Deref, From, TryUnwrap};
-use ego_tree::NodeId;
 use reqwest::{
     blocking::Request as BlockingRequest,
     header::{HeaderMap, HeaderName, HeaderValue},
     Method, Request, StatusCode, Url,
 };
-use scraper::{ElementRef, Html as ScraperHtml};
 
-use crate::settings::{Settings, SourceSettingValue};
+use crate::{
+    settings::{Settings, SourceSettingValue},
+    source::html_element::HTMLElement,
+};
 
 use super::{
     model::{Chapter, DeepLink, Filter, Manga, MangaPageResult, Page},
@@ -46,36 +48,16 @@ pub enum ObjectValue {
     Filter(Filter),
 }
 
-#[derive(From, Deref, Debug)]
-pub struct Html(ScraperHtml);
-
+#[derive(From, Deref)]
+pub struct Html(Document);
+impl std::fmt::Debug for Html {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Html()")
+    }
+}
 // FIXME THIS IS BORKED AS FUCK
 unsafe impl Send for Html {}
 unsafe impl Sync for Html {}
-
-#[derive(Debug, Clone)]
-pub struct HTMLElement {
-    pub document: Parc<Html>,
-    pub node_id: NodeId,
-    pub base_uri: Option<String>,
-}
-
-impl HTMLElement {
-    pub fn element_ref(&'_ self) -> ElementRef<'_> {
-        ElementRef::wrap(self.document.tree.get(self.node_id).unwrap()).unwrap()
-    }
-    pub fn data(&'_ self) -> String {
-        let mut result = String::new();
-
-        for child in self.element_ref().children() {
-            if let scraper::Node::Text(text) = child.value() {
-                result.push_str(text)
-            }
-        }
-
-        result
-    }
-}
 
 #[derive(Debug, Clone, From, TryUnwrap)]
 #[try_unwrap(ref, ref_mut)]
@@ -222,6 +204,9 @@ pub struct WasmStore {
     fonts_online: HashMap<usize, Vec<u8>>,
     // js context
     jscontexts: HashMap<usize, JsContext>,
+    // html and gc html
+    htmls: HashMap<usize, Html>,
+    html_references: HashMap<usize, usize>,
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -265,6 +250,9 @@ impl WasmStore {
             fonts_online: HashMap::new(),
 
             jscontexts: HashMap::new(),
+
+            htmls: HashMap::new(),
+            html_references: HashMap::new(),
         }
     }
 }
@@ -288,6 +276,19 @@ impl WasmStore {
 
         self.free_std_reference(descriptor);
 
+        match self.std_descriptors.remove(&descriptor) {
+            Some(value) => {
+                if let Some(elements) = value.try_unwrap_html_elements_ref().ok() {
+                    for element in elements {
+                        self.free_reference_html(element);
+                    }
+                }
+
+                return;
+            }
+            _ => {}
+        }
+
         macro_rules! try_remove {
             ($map:expr) => {
                 if $map.remove(&descriptor).is_some() {
@@ -296,7 +297,6 @@ impl WasmStore {
             };
         }
 
-        try_remove!(self.std_descriptors);
         try_remove!(self.requests);
         try_remove!(self.canvass);
         try_remove!(self.images);
@@ -314,6 +314,12 @@ impl WasmStore {
     }
 
     pub fn set_std_value(&mut self, descriptor: usize, data: ValueRef) {
+        if let Some(elements) = data.try_unwrap_html_elements_ref().ok() {
+            for element in elements {
+                self.link_reference_html(element);
+            }
+        }
+
         self.std_descriptors.insert(descriptor, data);
     }
 
@@ -464,6 +470,46 @@ impl WasmStore {
     }
     pub fn get_js_context(&mut self, pointer: usize) -> Option<&mut JsContext> {
         self.jscontexts.get_mut(&pointer)
+    }
+    pub fn set_html(&mut self, html: Document) -> usize {
+        let idx = self.increase_and_get_std_desciptor_pointer();
+
+        self.htmls.insert(idx, Html(html));
+
+        idx
+    }
+    pub fn get_html(&mut self, idx: usize) -> Option<&Html> {
+        self.htmls.get(&idx)
+    }
+    // pub fn get_mut_html(&mut self, idx: usize) -> Option<&mut Html> {
+    //     self.htmls.get_mut(&idx)
+    // }
+    fn link_reference_html(&mut self, element: &HTMLElement) {
+        if self.htmls.contains_key(&element.document) {
+            self.html_references
+                .entry(element.document)
+                .and_modify(|f| *f += 1)
+                .or_insert(1);
+        } else {
+            log::warn!("link_reference_html called but this HTML not exists on store");
+        }
+    }
+    fn free_reference_html(&mut self, element: &HTMLElement) {
+        let key = element.document;
+
+        match self.html_references.get_mut(&key) {
+            Some(count) => {
+                if *count > 0 {
+                    *count -= 1;
+                }
+
+                if *count <= 0 {
+                    self.htmls.remove(&key);
+                    self.html_references.remove(&key);
+                }
+            }
+            None => {}
+        }
     }
 }
 

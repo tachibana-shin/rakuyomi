@@ -1,17 +1,17 @@
-use crate::{source::wasm_store::Html, util::has_internet_connection};
+use crate::{source::html_element::HTMLElement, util::has_internet_connection};
 use anyhow::{Context, Result};
+use dom_query::Document;
 use futures::executor;
 use log::warn;
 use num_enum::FromPrimitive;
 use reqwest::{Method, Request};
-use scraper::Html as ScraperHtml;
 
 use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasm_shared::{get_memory, memory_reader::write_bytes};
 use wasmi::{Caller, Linker};
 
-use crate::source::wasm_store::{HTMLElement, RequestState, ResponseData, Value, WasmStore};
+use crate::source::wasm_store::{RequestState, ResponseData, Value, WasmStore};
 
 pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "net", "init", init)?;
@@ -392,28 +392,31 @@ fn json(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Resul
 pub fn html(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
     let request_descriptor: usize = request_descriptor_i32.try_into()?;
     let wasm_store = caller.data_mut();
-    let request = wasm_store
-        .get_mut_request(request_descriptor)
-        .context("failed to get request state")?;
-    let response = match request {
-        RequestState::Sent(resp) => resp,
-        _ => anyhow::bail!("request not sent"),
+    let (html_string, url) = {
+        let request = wasm_store
+            .get_mut_request(request_descriptor)
+            .context("failed to get request state")?;
+        let response = match request {
+            RequestState::Sent(resp) => resp,
+            _ => anyhow::bail!("request not sent"),
+        };
+
+        let body = response.body.as_ref().context("no body")?;
+
+        (std::str::from_utf8(body)?, response.url.to_string())
     };
 
-    let body = response.body.as_ref().context("no body")?;
-
-    // FIXME we should consider the encoding that came on the request
-    let html_string = std::str::from_utf8(body)?.to_string(); // minimal clone for string, body is Arc
-
-    // FIXME this is duplicated from the html module. not sure it's really worth refactoring
-    // but here's a note
-    let document = ScraperHtml::parse_document(&html_string);
-    let node_id = document.root_element().id();
+    let document = Document::from(html_string);
+    let node_id = document.root().id;
     let html_element = HTMLElement {
-        document: Html::from(document).into(),
+        document: wasm_store.set_html(document),
         node_id,
-        base_uri: Some(response.url.to_string()),
+        base_uri: Some(url),
     };
 
-    Ok(wasm_store.store_std_value(Value::from(vec![html_element]).into(), Some(request_descriptor)) as i32)
+    Ok(wasm_store.store_std_value(
+        Value::from(vec![html_element]).into(),
+        // Some(request_descriptor),
+        None,
+    ) as i32)
 }

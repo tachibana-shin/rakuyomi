@@ -44,6 +44,7 @@ use self::{
 };
 
 pub mod model;
+mod html_element;
 mod next_reader;
 mod source_settings;
 mod wasm_imports;

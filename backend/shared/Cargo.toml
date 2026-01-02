@@ -25,7 +25,6 @@ url = { version = "2.5.7", features = ["serde"] }
 wasm_macros = { path = "../wasm_macros" }
 wasm_shared = { path = "../wasm_shared" }
 serde_json = "1.0.145"
-scraper = "0.24.0"
 ouroboros = "0.18.5"
 ego-tree = "0.10.0"
 html-escape = "0.2.13"
@@ -65,13 +64,13 @@ postcard = "1.1.3"
 aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default-features = false }
 raqote = "0.8.5"
 font-kit = "0.14.3"
-kuchiki = "0.8.1"
 boa_engine = "0.21.0"
 imageproc = "0.25.0"
 ab_glyph = "0.2.32"
 markdown = "1.0.0"
 unicode-normalization = "0.1.25"
 ordered-float = "5.1.0"
+dom_query = { version = "0.24.0", features = ["atomic"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

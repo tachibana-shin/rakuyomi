@@ -133,17 +133,40 @@ impl HTMLElement {
     }
 
     pub fn text(&self, store: &mut WasmStore) -> Option<String> {
-        self.untrimmed_text(store).map(|v| v.trim().to_owned())
+        let node = self.node_ref(store)?;
+
+        text_nodes(node)
+            .into_iter()
+            .map(|n| n.text().trim().to_string())
+            .collect::<Vec<_>>()
+            .join(" ")
+            .trim()
+            .to_owned()
+            .into()
     }
 
     pub fn untrimmed_text(&self, store: &mut WasmStore) -> Option<String> {
         let node = self.node_ref(store)?;
 
-        node.text().to_string().into()
+        text_nodes(node)
+            .into_iter()
+            .map(|n| n.text().to_string())
+            .collect::<Vec<_>>()
+            .join(" ")
+            .to_owned()
+            .into()
     }
 
     pub fn own_text(&self, store: &mut WasmStore) -> Option<String> {
-        self.data(store)
+        let node = self.node_ref(store)?;
+
+        text_nodes(node)
+            .into_iter()
+            .map(|n| n.text().to_string())
+            .collect::<Vec<_>>()
+            .join("")
+            .to_owned()
+            .into()
     }
 
     pub fn html(&self, store: &mut WasmStore) -> Option<String> {
@@ -326,6 +349,18 @@ fn normalize_contains(selector: &str) -> String {
     }
 
     out
+}
+
+fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
+    if node.is_text() {
+        return vec![node];
+    }
+
+    node.children()
+        .into_iter()
+        .map(|node| text_nodes(node))
+        .flatten()
+        .collect::<Vec<_>>()
 }
 
 #[cfg(test)]

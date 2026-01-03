@@ -358,8 +358,7 @@ fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
 
     node.children()
         .into_iter()
-        .map(|node| text_nodes(node))
-        .flatten()
+        .flat_map(|node| text_nodes(node))
         .collect::<Vec<_>>()
 }
 

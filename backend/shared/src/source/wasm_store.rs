@@ -320,13 +320,13 @@ impl WasmStore {
         self.std_descriptors.insert(descriptor, data);
     }
 
-    pub fn store_std_value(&mut self, data: ValueRef, from: Option<usize>) -> usize {
+    pub fn store_std_value(&mut self, data: ValueRef, _from: Option<usize>) -> usize {
         let pointer = self.increase_and_get_std_desciptor_pointer();
         self.std_descriptors.insert(pointer, data);
 
-        if let Some(from) = from {
-            self.add_std_reference(from, pointer);
-        }
+        // if let Some(from) = from {
+        //     self.add_std_reference(from, pointer);
+        // }
 
         pointer
     }
@@ -335,11 +335,11 @@ impl WasmStore {
         self.take_std_value(descriptor);
     }
 
-    pub fn add_std_reference(&mut self, descriptor: usize, reference: usize) {
-        let references_to_descriptor = self.std_references.entry(descriptor).or_default();
+    // pub fn add_std_reference(&mut self, descriptor: usize, reference: usize) {
+    //     let references_to_descriptor = self.std_references.entry(descriptor).or_default();
 
-        references_to_descriptor.push(reference);
-    }
+    //     references_to_descriptor.push(reference);
+    // }
     fn free_std_reference(&mut self, descriptor: usize) {
         if let Some(ids) = self.std_references.remove(&descriptor) {
             for id in ids {

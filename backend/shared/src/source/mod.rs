@@ -74,6 +74,7 @@ pub struct Source(
     Arc<Mutex<BlockingSource>>,
 );
 
+#[macro_export]
 macro_rules! wrap_blocking_source_fn {
     ($fn_name:ident, $return_type:ty, $($param:ident : $type:ty),*) => {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
@@ -84,6 +85,7 @@ macro_rules! wrap_blocking_source_fn {
     };
 }
 
+#[macro_export]
 macro_rules! call_cleanup {
     (
         blocking = $blocking:expr,

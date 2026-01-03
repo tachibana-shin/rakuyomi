@@ -2,14 +2,13 @@
 pub mod arima_light;
 #[cfg(feature = "all")]
 pub mod cbz_metadata;
+#[cfg(feature = "all")]
 pub mod chapter_downloader;
 #[cfg(feature = "all")]
 pub mod chapter_storage;
 #[cfg(feature = "all")]
 pub mod database;
-#[cfg(feature = "all")]
 pub mod model;
-#[cfg(feature = "all")]
 pub mod settings;
 pub mod source;
 pub mod source_collection;

@@ -160,13 +160,7 @@ impl HTMLElement {
     pub fn own_text(&self, store: &mut WasmStore) -> Option<String> {
         let node = self.node_ref(store)?;
 
-        text_nodes(node)
-            .into_iter()
-            .map(|n| n.text().to_string())
-            .collect::<Vec<_>>()
-            .join("")
-            .to_owned()
-            .into()
+        node.immediate_text().to_string().into()
     }
 
     pub fn html(&self, store: &mut WasmStore) -> Option<String> {

@@ -72,7 +72,7 @@ fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Resul
         Value::Float(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Bool(value) => postcard::to_allocvec(&value).unwrap(),
         Value::Date(value) => postcard::to_allocvec(&value).unwrap(),
-        Value::Vec(value) => postcard::to_allocvec(&value).unwrap(),
+        Value::Vec(value) => value,
         Value::Array(value) => {
             if value.is_empty() {
                 return Ok(postcard::to_allocvec(&Vec::<()>::new())?);

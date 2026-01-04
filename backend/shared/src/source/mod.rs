@@ -1258,9 +1258,24 @@ impl BlockingSource {
         let (image_id, image_ref, context_id) = {
             let store = self.store.data_mut();
 
-            let image_ref = store
-                .create_image(&bytes)
-                .context("failed create image for process_page_image")?;
+            let image_ref = store.create_image(&bytes).unwrap_or_else(|| {
+                eprintln!("failed create image for process_page_image use mode image raw");
+
+                store.set_image_data(wasm_store::ImageData {
+                    data: bytes
+                        .chunks(4)
+                        .map(|chunk| {
+                            let mut array = [0u8; 4];
+                            for (i, &byte) in chunk.iter().enumerate() {
+                                array[i] = byte;
+                            }
+                            u32::from_le_bytes(array)
+                        })
+                        .collect::<Vec<u32>>(),
+                    width: 0,
+                    height: 0,
+                })
+            });
 
             let image_response = ImageResponse {
                 code: response.0.into(),

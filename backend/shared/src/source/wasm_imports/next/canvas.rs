@@ -472,24 +472,30 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
     let width = image.width as u32;
     let height = image.height as u32;
 
-    // ARGB(u32) → RGBA(u8[4]) に変換する（PNG は alpha 対応）
-    let mut rgba_pixels: Vec<u8> = Vec::with_capacity((width * height * 4) as usize);
+    let png_data = if width == 0 && height == 0 {
+        image.data.iter().flat_map(|&b| b.to_le_bytes()).collect()
+    } else {
+        // ARGB(u32) → RGBA(u8[4]) に変換する（PNG は alpha 対応）
+        let mut rgba_pixels: Vec<u8> = Vec::with_capacity((width * height * 4) as usize);
 
-    for px in &image.data {
-        let a = ((px >> 24) & 0xFF) as u8;
-        let r = ((px >> 16) & 0xFF) as u8;
-        let g = ((px >> 8) & 0xFF) as u8;
-        let b = (px & 0xFF) as u8;
+        for px in &image.data {
+            let a = ((px >> 24) & 0xFF) as u8;
+            let r = ((px >> 16) & 0xFF) as u8;
+            let g = ((px >> 8) & 0xFF) as u8;
+            let b = (px & 0xFF) as u8;
 
-        rgba_pixels.extend_from_slice(&[r, g, b, a]);
-    }
+            rgba_pixels.extend_from_slice(&[r, g, b, a]);
+        }
 
-    let mut png_data: Vec<u8> = Vec::<u8>::new();
-    let encoder = PngEncoder::new(&mut png_data);
+        let mut png_data: Vec<u8> = Vec::<u8>::new();
+        let encoder = PngEncoder::new(&mut png_data);
 
-    encoder
-        .write_image(&rgba_pixels, width, height, ColorType::Rgba8.into())
-        .expect("PNG encode failed");
+        encoder
+            .write_image(&rgba_pixels, width, height, ColorType::Rgba8.into())
+            .expect("PNG encode failed");
+
+        png_data
+    };
 
     Ok(store.store_std_value(Value::Vec(png_data).into(), None) as i32)
 }

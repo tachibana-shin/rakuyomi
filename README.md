@@ -43,9 +43,9 @@ This fork:
     <em><small><a href="https://seotch.wordpress.com/ubunchu/">"Ubunchu!"</a> by Hiroshi Seo is licensed under <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0</a>.</small></em>
 </p>
 
-> ![TIP]
+> [!TIP]
 >
-> This fork currently supports my Light Novel sources: [tachibana-shin/aidoku-community-sources](https://github.com/tachibana-shin/aidoku-community-sources)
+> This fork currently supports my Light Novel sources please check source this [vi.hakovn](https://github.com/tachibana-shin/aidoku-sources-next/tree/main/sources/vi.hakovn)
 >
 > Now support plugin image DRM
 

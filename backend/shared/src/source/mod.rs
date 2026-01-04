@@ -167,7 +167,7 @@ impl Source {
         get_manga_list,
         Result<Vec<Manga>>,
         cancellation_token: CancellationToken,
-        listing: String
+        listing: aidoku::Listing
     );
 
     wrap_blocking_source_fn!(
@@ -215,6 +215,47 @@ impl Source {
         response: (StatusCode, HeaderMap),
         bytes: Bytes,
         ctx: Option<aidoku::PageContext>
+    );
+
+    wrap_blocking_source_fn!(
+        get_search_manga_list_next,
+        Result<NextMangaPageResult>,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        filters: Vec<aidoku::FilterValue>
+    );
+
+    wrap_blocking_source_fn!(
+        get_manga_update_next,
+        Result<aidoku::Manga>,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        needs_details: bool,
+        needs_chapters: bool
+    );
+
+    wrap_blocking_source_fn!(
+        get_page_list_next,
+        Result<Vec<aidoku::Page>>,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        chapter: aidoku::Chapter
+    );
+
+    wrap_blocking_source_fn!(
+        get_image_request_next,
+        Result<Request>,
+        url: Url,
+        ctx: Option<aidoku::PageContext>
+    );
+
+    wrap_blocking_source_fn!(
+        get_manga_list_next,
+        Result<NextMangaPageResult>,
+        cancellation_token: CancellationToken,
+        listing: aidoku::Listing,
+        page: i32
     );
 
     wrap_blocking_source_fn!(
@@ -281,6 +322,17 @@ pub struct NextMangaPageResult {
     pub has_next_page: bool,
 }
 
+#[cfg(not(feature = "all"))]
+pub struct BlockingSource {
+    pub id: String,
+    pub store: Store<WasmStore>,
+    pub instance: Instance,
+    pub manifest: SourceManifest,
+    pub setting_definitions: Vec<SettingDefinition>,
+    pub next_sdk: bool,
+    pub features: SourceFeatures,
+}
+#[cfg(feature = "all")]
 struct BlockingSource {
     id: String,
     store: Store<WasmStore>,
@@ -511,13 +563,14 @@ impl BlockingSource {
     pub fn get_manga_list(
         &mut self,
         cancellation_token: CancellationToken,
-        listing: String,
+        listing: aidoku::Listing,
     ) -> Result<Vec<Manga>> {
         if self.next_sdk {
             return self
                 .get_manga_list_next(cancellation_token, listing, 1)
                 .map(|list| {
-                    list.into_iter()
+                    list.entries
+                        .into_iter()
                         .map(|v| Manga::from(v, self.id.clone()))
                         .collect::<Vec<_>>()
                 });
@@ -536,7 +589,8 @@ impl BlockingSource {
             return self
                 .get_search_manga_list_next(cancellation_token, query, 1, [].to_vec())
                 .map(|list| {
-                    list.into_iter()
+                    list.entries
+                        .into_iter()
                         .map(|v| Manga::from(v, self.id.clone()))
                         .collect::<Vec<_>>()
                 });
@@ -957,10 +1011,10 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         query: String,
         page: i32,
-        _filters: Vec<FilterValue>,
-    ) -> Result<Vec<aidoku::Manga>> {
+        filters: Vec<aidoku::FilterValue>,
+    ) -> Result<NextMangaPageResult> {
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
-            this.get_search_manga_list_next_inner(query, page, vec![])
+            this.get_search_manga_list_next_inner(query, page, filters)
         })
     }
 
@@ -975,12 +1029,8 @@ impl BlockingSource {
         &mut self,
         keyword: String,
         page: i32,
-        filters: Vec<Filter>,
-    ) -> Result<Vec<aidoku::Manga>> {
-        if !filters.is_empty() {
-            eprintln!("The current version not support filters");
-        }
-
+        filters: Vec<FilterValue>,
+    ) -> Result<NextMangaPageResult> {
         let wasm_function = self
             .instance
             .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_search_manga_list")?;
@@ -988,22 +1038,21 @@ impl BlockingSource {
         let store = self.store.data_mut();
 
         let keyword = store.store_std_value(Value::from(keyword).into(), None);
-        let filters = store.store_std_value(Value::NextFilters([].to_vec()).into(), None);
+        let filters = store.store_std_value(Value::NextFilters(filters).into(), None);
 
-        let mangas = call_cleanup!(
+        let result = call_cleanup!(
         blocking = self,
         func = wasm_function,
         args = (keyword as i32, page, filters as i32),
         free = [keyword, filters],
-        as  Vec<aidoku::Manga>,
+        as NextMangaPageResult,
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
-            let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
 
-            Ok(mangas.entries)
+            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
         })?;
 
-        Ok(mangas)
+        Ok(result)
     }
 
     pub fn get_manga_update_next(
@@ -1323,9 +1372,9 @@ impl BlockingSource {
     pub fn get_manga_list_next(
         &mut self,
         cancellation_token: CancellationToken,
-        listing: String,
+        listing: aidoku::Listing,
         page: i32,
-    ) -> Result<Vec<aidoku::Manga>> {
+    ) -> Result<NextMangaPageResult> {
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.get_manga_list_next_inner(listing, page)
         })
@@ -1333,31 +1382,30 @@ impl BlockingSource {
 
     fn get_manga_list_next_inner(
         &mut self,
-        listing: String,
+        listing: aidoku::Listing,
         page: i32,
-    ) -> Result<Vec<aidoku::Manga>> {
+    ) -> Result<NextMangaPageResult> {
         let wasm_function = self
             .instance
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
 
         let store = self.store.data_mut();
 
-        let listing = store.store_std_value(Value::from(listing).into(), None);
+        let listing = store.store_std_value(Value::NextListing(listing).into(), None);
 
-        let mangas = call_cleanup!(
+        let result = call_cleanup!(
         blocking = self,
         func = wasm_function,
         args = (listing as i32, page),
         free = [listing],
-        as  Vec<aidoku::Manga>,
+        as NextMangaPageResult,
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
-            let mangas = read_next::<NextMangaPageResult>(&memory, &store, pointer)?;
 
-            Ok(mangas.entries)
+            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
         })?;
 
-        Ok(mangas)
+        Ok(result)
     }
 
     pub fn handle_notification_next(

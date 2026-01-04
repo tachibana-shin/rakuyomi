@@ -85,6 +85,8 @@ pub enum Value {
     NextPageContext(aidoku::PageContext),
     #[from(ignore)]
     NextImageResponse(ImageResponse),
+    #[from(ignore)]
+    NextListing(aidoku::Listing),
 }
 
 pub type ValueRef = Parc<Value>;

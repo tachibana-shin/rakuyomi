@@ -101,6 +101,7 @@ fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Resul
                     Value::NextImageResponse(_) => {
                         serialize_variant!(value, try_unwrap_next_image_response)
                     }
+                    Value::NextListing(_) => serialize_variant!(value, try_unwrap_next_listing),
                 }?;
 
                 return Ok(bytes);
@@ -114,6 +115,7 @@ fn read_buffer_data(caller: &mut Caller<'_, WasmStore>, pointer: usize) -> Resul
         Value::NextChapter(chapter) => postcard::to_allocvec(&chapter).unwrap(),
         Value::NextPageContext(ctx) => postcard::to_allocvec(&ctx).unwrap(),
         Value::NextImageResponse(res) => postcard::to_allocvec(&res).unwrap(),
+        Value::NextListing(v) => postcard::to_allocvec(&v).unwrap(),
     })
 }
 

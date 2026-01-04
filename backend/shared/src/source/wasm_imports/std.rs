@@ -168,6 +168,7 @@ fn type_of(mut caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32
         Value::NextChapter(_) => ObjectType::Object,
         Value::NextPageContext(_) => ObjectType::Object,
         Value::NextImageResponse(_) => ObjectType::Object,
+        _ => ObjectType::Object,
     };
     Ok(object_type as i32)
 }

@@ -43,11 +43,26 @@ use self::{
     },
 };
 
+#[cfg(not(feature = "all"))]
+pub mod html_element;
+#[cfg(feature = "all")]
 mod html_element;
 pub mod model;
+#[cfg(not(feature = "all"))]
+pub mod next_reader;
+#[cfg(feature = "all")]
 mod next_reader;
+#[cfg(not(feature = "all"))]
+pub mod source_settings;
+#[cfg(feature = "all")]
 mod source_settings;
+#[cfg(not(feature = "all"))]
+pub mod wasm_imports;
+#[cfg(feature = "all")]
 mod wasm_imports;
+#[cfg(not(feature = "all"))]
+pub mod wasm_store;
+#[cfg(feature = "all")]
 mod wasm_store;
 
 /**

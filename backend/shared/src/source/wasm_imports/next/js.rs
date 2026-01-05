@@ -1,3 +1,6 @@
+#![cfg_attr(feature = "all", allow(unused_variables))]
+#![cfg_attr(feature = "all", allow(unused_mut))]
+
 use anyhow::Result;
 
 use boa_engine::{JsString, Source};
@@ -38,8 +41,8 @@ impl From<ResultContext> for i32 {
             ResultContext::MissingResult => -1,
             ResultContext::InvalidContext => -2,
             ResultContext::InvalidString => -3,
-            // Result::InvalidHandler => -4,
-            // Result::InvalidRequest => -5,
+            // ResultContext::InvalidHandler => -4,
+            // ResultContext::InvalidRequest => -5,
         }
     }
 }
@@ -102,27 +105,105 @@ fn context_get(mut caller: Caller<'_, WasmStore>, ctx_id: i32, name: Option<Stri
 }
 
 #[aidoku_wasm_function]
-fn webview_create(_caller: Caller<'_, WasmStore>) -> FFIResult {
+fn webview_create(mut caller: Caller<'_, WasmStore>) -> FFIResult {
+    #[cfg(not(feature = "all"))]
+    {
+        let store = caller.data_mut();
+
+        Ok(store.create_webview() as i32)
+    }
+
+    #[cfg(feature = "all")]
     Ok(-1)
 }
 #[aidoku_wasm_function]
-fn webview_load(_caller: Caller<'_, WasmStore>, _webview: i32, _request: i32) -> FFIResult {
+fn webview_load(
+    mut caller: Caller<'_, WasmStore>,
+    webview_ptr: i32,
+    request_ptr: i32,
+) -> FFIResult {
+    #[cfg(not(feature = "all"))]
+    {
+        let store = caller.data_mut();
+
+        store.load_webview(webview_ptr as usize, request_ptr as usize)?;
+
+        Ok(0)
+    }
+
+    #[cfg(feature = "all")]
     Ok(-1)
 }
 #[aidoku_wasm_function]
 fn webview_load_html(
-    _caller: Caller<'_, WasmStore>,
-    _webview: i32,
-    _html: Option<String>,
-    _url: Option<String>,
+    mut caller: Caller<'_, WasmStore>,
+    webview_ptr: i32,
+    html: Option<String>,
+    url: Option<String>,
 ) -> FFIResult {
+    #[cfg(not(feature = "all"))]
+    {
+        let store = caller.data_mut();
+
+        let Some(webview) = store.get_webview(webview_ptr as usize) else {
+            return Ok(ResultContext::InvalidContext as i32);
+        };
+        let Some(url) = url.and_then(|s| url::Url::parse(&s).ok()) else {
+            return Ok(ResultContext::InvalidString as i32);
+        };
+
+        webview.load(html, &url)?;
+
+        Ok(0)
+    }
+
+    #[cfg(feature = "all")]
     Ok(-1)
 }
 #[aidoku_wasm_function]
-fn webview_wait_for_load(_caller: Caller<'_, WasmStore>, _webview: i32) -> FFIResult {
+fn webview_wait_for_load(mut caller: Caller<'_, WasmStore>, webview_ptr: i32) -> FFIResult {
+    #[cfg(not(feature = "all"))]
+    {
+        let store = caller.data_mut();
+
+        let Some(webview) = store.get_webview(webview_ptr as usize) else {
+            return Ok(ResultContext::InvalidContext as i32);
+        };
+
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async { webview.wait_for_load().await })
+        })?;
+
+        Ok(0)
+    }
+
+    #[cfg(feature = "all")]
     Ok(-1)
 }
 #[aidoku_wasm_function]
-fn webview_eval(_caller: Caller<'_, WasmStore>, _webview: i32, _url: Option<String>) -> FFIResult {
+fn webview_eval(
+    mut caller: Caller<'_, WasmStore>,
+    webview_ptr: i32,
+    code: Option<String>,
+) -> FFIResult {
+    #[cfg(not(feature = "all"))]
+    {
+        let store = caller.data_mut();
+
+        let Some(webview) = store.get_webview(webview_ptr as usize) else {
+            return Ok(ResultContext::InvalidContext as i32);
+        };
+        let Some(code) = code else {
+            return Ok(ResultContext::InvalidString as i32);
+        };
+
+        let value = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async { webview.eval(&code).await })
+        })?;
+
+        Ok(store.store_std_value(Value::String(value).into(), None) as i32)
+    }
+
+    #[cfg(feature = "all")]
     Ok(-1)
 }

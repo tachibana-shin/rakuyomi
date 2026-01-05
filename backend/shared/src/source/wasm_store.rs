@@ -184,6 +184,46 @@ pub struct Canvas(pub(crate) DrawTarget);
 unsafe impl Send for Canvas {}
 unsafe impl Sync for Canvas {}
 
+#[cfg(not(feature = "all"))]
+pub struct WebView {
+    pub id: usize,
+}
+#[cfg(not(feature = "all"))]
+pub static WEBVIEW_LOAD: std::sync::OnceLock<
+    fn(usize, Option<String>, &Url) -> Result<(), anyhow::Error>,
+> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
+pub static WEBVIEW_WAIT_FOR_LOAD: std::sync::OnceLock<
+    fn(usize) -> std::pin::Pin<Box<dyn futures::Future<Output = Result<(), anyhow::Error>> + Send>>,
+> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
+pub static WEBVIEW_EVAL: std::sync::OnceLock<
+    fn(
+        usize,
+        &str,
+    )
+        -> std::pin::Pin<Box<dyn futures::Future<Output = Result<String, anyhow::Error>> + Send>>,
+> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
+impl WebView {
+    pub fn load(&self, html: Option<String>, url: &Url) -> anyhow::Result<()> {
+        (WEBVIEW_LOAD.get().expect("Please set WEBVIEW_LOAD"))(self.id, html, url)
+    }
+    pub async fn wait_for_load(&self) -> anyhow::Result<()> {
+        (WEBVIEW_WAIT_FOR_LOAD
+            .get()
+            .expect("Please set WEBVIEW_WAIT_FOR_LOAD"))(self.id)
+        .await?;
+
+        Ok(())
+    }
+    pub async fn eval(&self, code: &str) -> anyhow::Result<String> {
+        let output = (WEBVIEW_EVAL.get().expect("Please set WEBVIEW_EVAL"))(self.id, code).await?;
+
+        Ok(output)
+    }
+}
+
 pub struct WasmStore {
     pub id: String,
     pub context: OperationContext,
@@ -209,6 +249,9 @@ pub struct WasmStore {
     // html and gc html
     htmls: HashMap<usize, Html>,
     html_references: HashMap<usize, usize>,
+    // webview
+    #[cfg(not(feature = "all"))]
+    webviews: HashMap<usize, WebView>,
 }
 impl std::fmt::Debug for WasmStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -255,6 +298,9 @@ impl WasmStore {
 
             htmls: HashMap::new(),
             html_references: HashMap::new(),
+
+            #[cfg(not(feature = "all"))]
+            webviews: HashMap::new(),
         }
     }
 }
@@ -507,6 +553,48 @@ impl WasmStore {
             }
         }
     }
+
+    // webview
+    #[cfg(not(feature = "all"))]
+    pub fn create_webview(&mut self) -> usize {
+        let idx = self.increase_and_get_std_desciptor_pointer();
+
+        self.webviews.insert(idx, WebView { id: idx });
+
+        idx
+    }
+    #[cfg(not(feature = "all"))]
+    pub fn get_webview(&mut self, idx: usize) -> Option<&WebView> {
+        self.webviews.get(&idx)
+    }
+    #[cfg(not(feature = "all"))]
+    pub fn load_webview(&mut self, idx: usize, req_idx: usize) -> anyhow::Result<()> {
+        use anyhow::Context;
+
+        let webview = self
+            .webviews
+            .get(&idx)
+            .context(format!("WebView {idx} not found"))?;
+        let url = {
+            let req = self
+                .requests
+                .get(&req_idx)
+                .context(format!("request {req_idx} not found"))?;
+
+            let url = match req {
+                RequestState::Building(v) => v
+                    .url
+                    .to_owned()
+                    .context(format!("request {req_idx} created but not set url"))?,
+                RequestState::Sent(v) => v.url.to_owned(),
+                RequestState::Closed => anyhow::bail!("request {req_idx} closed"),
+            };
+
+            url
+        };
+
+        webview.load(None, &url)
+    }
 }
 
 impl TryFrom<&RequestBuildingState> for BlockingRequest {
@@ -539,35 +627,46 @@ impl TryFrom<&RequestBuildingState> for BlockingRequest {
     }
 }
 
+#[cfg(not(feature = "all"))]
+pub static REQUEST_TRY_FROM: std::sync::OnceLock<
+    fn(&RequestBuildingState) -> Result<Request, anyhow::Error>,
+> = std::sync::OnceLock::new();
+
 // Duplicating here sucks, but there's no real way to avoid it (aside from macros)
 // Maybe we should give up on using the blocking reqwest APIs
 impl TryFrom<&RequestBuildingState> for Request {
     type Error = anyhow::Error;
 
     fn try_from(value: &RequestBuildingState) -> Result<Self, Self::Error> {
-        let mut request = Request::new(
-            value
-                .method
-                .clone()
-                .ok_or(anyhow!("expected to have a request method"))?,
-            value
-                .url
-                .clone()
-                .ok_or(anyhow!("expected to have an URL"))?,
-        );
+        #[cfg(not(feature = "all"))]
+        return (REQUEST_TRY_FROM.get().expect("Please set REQUEST_TRY_FROM"))(value);
 
-        for (k, v) in value.headers.iter() {
-            request.headers_mut().append(
-                HeaderName::from_bytes(k.clone().as_bytes())?,
-                HeaderValue::from_str(v.as_str())?,
+        #[cfg(feature = "all")]
+        {
+            let mut request = Request::new(
+                value
+                    .method
+                    .clone()
+                    .ok_or(anyhow!("expected to have a request method"))?,
+                value
+                    .url
+                    .clone()
+                    .ok_or(anyhow!("expected to have an URL"))?,
             );
-        }
 
-        if let Some(body) = &value.body {
-            *request.body_mut() = Some(body.clone().into());
-        }
+            for (k, v) in value.headers.iter() {
+                request.headers_mut().append(
+                    HeaderName::from_bytes(k.clone().as_bytes())?,
+                    HeaderValue::from_str(v.as_str())?,
+                );
+            }
 
-        Ok(request)
+            if let Some(body) = &value.body {
+                *request.body_mut() = Some(body.clone().into());
+            }
+
+            Ok(request)
+        }
     }
 }
 

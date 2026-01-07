@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-02 15:02+0700\n"
+"POT-Creation-Date: 2026-01-07 12:59+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,6 +53,10 @@ msgstr ""
 
 #: ../AvailableSourcesListing.lua:167
 msgid "Installing source..."
+msgstr ""
+
+#: ../ChapterListing.lua:38
+msgid "Chapter listing"
 msgstr ""
 
 #: ../ChapterListing.lua:171
@@ -431,7 +435,7 @@ msgstr ""
 msgid "Manage sources"
 msgstr ""
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677
+#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:179
 msgid "Settings"
 msgstr ""
 
@@ -805,6 +809,10 @@ msgstr ""
 msgid "Allow requisition of the back button"
 msgstr ""
 
+#: ../SourceSettings.lua:209
+msgid "Source settings"
+msgstr ""
+
 #: ../UpdateChecker.lua:24
 msgid "Cannot check for updates while offline"
 msgstr ""
@@ -976,4 +984,8 @@ msgstr ""
 
 #: ../widgets/SettingItemValue.lua:180
 msgid "Done"
+msgstr ""
+
+#: ../widgets/SettingItemValue.lua:235
+msgid "Select"
 msgstr ""

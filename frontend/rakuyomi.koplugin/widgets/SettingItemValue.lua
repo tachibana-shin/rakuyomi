@@ -232,7 +232,7 @@ function SettingItemValue:onTap()
   elseif self.value_definition.type == "multi-enum" then
     ---@diagnostic disable-next-line: redundant-parameter
     local dialog = CheckboxDialog:new {
-      title = "Select",
+      title = _("Select"),
       current = self:getCurrentValue(),
       options = self.value_definition.options,
       update_callback = function(value)

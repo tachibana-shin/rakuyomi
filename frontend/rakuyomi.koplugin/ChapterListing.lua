@@ -35,7 +35,7 @@ local ChapterListing = Menu:extend {
   name = "chapter_listing",
   is_enable_shortcut = false,
   is_popout = false,
-  title = "Chapter listing",
+  title = _("Chapter listing"),
   align_baselines = true,
 
   -- the manga we're listing

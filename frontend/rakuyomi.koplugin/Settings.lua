@@ -176,7 +176,7 @@ function Settings:init()
   })
 
   self.title_bar = TitleBar:new {
-    title = "Settings",
+    title = _("Settings"),
     fullscreen = true,
     width = self.dimen.w,
     with_bottom_line = true,

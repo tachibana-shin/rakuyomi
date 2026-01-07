@@ -18,6 +18,7 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require("widgets/SettingItem")
+local _ = require("gettext+")
 
 local FOOTER_FONT_SIZE = 14
 
@@ -206,7 +207,7 @@ function SourceSettings:init()
 
   self.title_bar = TitleBar:new {
     -- TODO add source name here
-    title = "Source settings",
+    title = _("Source settings"),
     fullscreen = true,
     width = self.dimen.w,
     with_bottom_line = true,

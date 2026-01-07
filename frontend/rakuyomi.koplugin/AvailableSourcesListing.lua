@@ -53,16 +53,7 @@ local sortSources = function(available, installed)
   end
 
   for _, src in ipairs(available) do
-    local isInstalled = false
-    for _, inst in ipairs(installed) do
-      if inst.id == src.id then
-        isInstalled = true
-        break
-      end
-    end
-    if not isInstalled then
-      table.insert(sorted, src)
-    end
+    table.insert(sorted, src)
   end
 
   return sorted

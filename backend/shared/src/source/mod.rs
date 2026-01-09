@@ -88,8 +88,7 @@ pub struct Source(
     /// `BlockingSource` itself, by placing things inside a mutex. It might be a cleaner design.
     #[cfg(feature = "all")]
     Arc<Mutex<BlockingSource>>,
-    #[cfg(not(feature = "all"))]
-    pub Arc<Mutex<BlockingSource>>,
+    #[cfg(not(feature = "all"))] pub Arc<Mutex<BlockingSource>>,
 );
 
 #[macro_export]
@@ -1052,7 +1051,7 @@ impl BlockingSource {
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
 
-            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
+            read_next::<NextMangaPageResult>(&memory, &store, pointer)
         })?;
 
         Ok(result)
@@ -1420,7 +1419,7 @@ impl BlockingSource {
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
 
-            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
+            read_next::<NextMangaPageResult>(&memory, &store, pointer)
         })?;
 
         Ok(result)

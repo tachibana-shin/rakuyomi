@@ -15,6 +15,8 @@ pub struct SourceManager {
     sources_folder: PathBuf,
     pub sources_by_id: HashMap<SourceId, Source>,
     pub settings: Settings,
+    #[cfg(not(feature = "all"))]
+    pub file_sources: HashMap<String, String>,
 }
 
 impl SourceManager {
@@ -27,6 +29,8 @@ impl SourceManager {
             sources_folder,
             sources_by_id,
             settings,
+            #[cfg(not(feature = "all"))]
+            file_sources: HashMap::new(),
         }
     }
 
@@ -37,6 +41,8 @@ impl SourceManager {
             sources_folder: path,
             sources_by_id: HashMap::new(),
             settings,
+            #[cfg(not(feature = "all"))]
+            file_sources: HashMap::new(),
         })
     }
 
@@ -54,6 +60,11 @@ impl SourceManager {
 
         let source = Source::from_aix_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
+        #[cfg(not(feature = "all"))]
+        self.file_sources.insert(
+            id.value().to_owned(),
+            target_path.to_string_lossy().to_string(),
+        );
 
         Ok(())
     }
@@ -63,6 +74,8 @@ impl SourceManager {
         fs::remove_file(&source_path)?;
 
         self.sources_by_id.remove(&id.clone());
+        #[cfg(not(feature = "all"))]
+        self.file_sources.remove(id.value());
 
         Ok(())
     }
@@ -112,8 +125,17 @@ impl SourceManager {
                 path.extension()
                     .is_some_and(|ext| ext.eq_ignore_ascii_case("aix"))
             })
-            .map(|path| Source::from_aix_file(&path, self, manager))
-            .collect::<Result<_>>()?;
+            .map(|path| -> Result<Source> {
+                let source = Source::from_aix_file(&path, self, manager)?;
+                #[cfg(not(feature = "all"))]
+                self.file_sources.insert(
+                    source.manifest().info.id,
+                    path.as_path().to_string_lossy().to_string(),
+                );
+
+                Ok(source)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
 
         let sources_by_id = sources
             .into_iter()
@@ -123,7 +145,7 @@ impl SourceManager {
         Ok(sources_by_id)
     }
 
-    fn source_path(&self, id: &SourceId) -> PathBuf {
+    pub fn source_path(&self, id: &SourceId) -> PathBuf {
         self.sources_folder.join(format!("{}.aix", id.value()))
     }
 }

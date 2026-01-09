@@ -86,7 +86,10 @@ pub struct Source(
     ///
     /// This also provides interior mutability, but we probably could also do it inside the
     /// `BlockingSource` itself, by placing things inside a mutex. It might be a cleaner design.
+    #[cfg(feature = "all")]
     Arc<Mutex<BlockingSource>>,
+    #[cfg(not(feature = "all"))]
+    pub Arc<Mutex<BlockingSource>>,
 );
 
 #[macro_export]
@@ -1448,7 +1451,7 @@ impl BlockingSource {
         Ok(())
     }
 
-    fn run_under_context<T, F>(
+    pub fn run_under_context<T, F>(
         &mut self,
         cancellation_token: CancellationToken,
         current_object: OperationContextObject,

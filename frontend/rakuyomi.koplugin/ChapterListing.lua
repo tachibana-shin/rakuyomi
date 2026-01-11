@@ -48,6 +48,8 @@ local ChapterListing = Menu:extend {
   -- scanlator filtering
   selected_scanlator = nil,
   available_scanlators = {},
+  -- keep track of preloads
+  preload_jobs = {},
 }
 
 function ChapterListing:init()
@@ -703,14 +705,27 @@ function ChapterListing:preloadChapters(chapter)
     end
 
     logger.info("Preloading chapter: ", preloadChapter.id)
-    DownloadChapter:new(
+    local preload_job = DownloadChapter:new(
       preloadChapter.source_id,
       preloadChapter.manga_id,
       preloadChapter.id,
       preloadChapter.chapter_num
-    ):start()
+    )
+
+    preload_job:start()
+    self.preload_jobs[preloadChapter.id] = preload_job
 
     chapter = preloadChapter
+  end
+end
+
+function ChapterListing:prunePreloadJobs()
+  for chapter_id, job in pairs(self.preload_jobs) do
+    local status = job:poll()
+    if status.type == 'SUCCESS' or status.type == 'ERROR' then
+      logger.info("Pruning finished preload job for chapter: ", chapter_id)
+      self.preload_jobs[chapter_id] = nil
+    end
   end
 end
 
@@ -721,6 +736,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
   self:downloadChapter(chapter, download_job, function(manga_path)
     local onReturnCallback = function()
       self:updateItems()
+      self:prunePreloadJobs()
 
       --- needed because preload may have changed download status
       self:updateChapterList()
@@ -732,17 +748,34 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
 
       self:updateChapterList()
+      self:prunePreloadJobs()
 
       local nextChapter = findNextChapter(self.chapters, chapter)
       local nextChapterDownloadJob = nil
 
       if nextChapter ~= nil then
+        if self.preload_jobs[nextChapter.id] ~= nil then
+          UIManager:show(InfoMessage:new {
+            _("Downloading chapter...")
+            .. '\nCh.' .. (nextChapter.chapter_num or _('unknown'))
+            .. ' '
+            .. (nextChapter.title or ''),
+          })
+          -- Wait until that preload job is finished
+          local preloadJob = self.preload_jobs[nextChapter.id]
+          preloadJob:runUntilCompletion()
+        end
+
+        -- at this point downloaded = true so it will just open instantly
+        -- but if preload is disabled, we need to download here.
         nextChapterDownloadJob = DownloadChapter:new(
           nextChapter.source_id,
           nextChapter.manga_id,
           nextChapter.id,
           nextChapter.chapter_num
         )
+
+
         logger.info("opening next chapter", nextChapter)
         self:openChapterOnReader(nextChapter, nextChapterDownloadJob)
       else

@@ -49,7 +49,7 @@ local ChapterListing = Menu:extend {
   selected_scanlator = nil,
   available_scanlators = {},
   -- keep track of preloads
-  preload_jobs = {},
+  preload_jobs = nil,
 }
 
 function ChapterListing:init()
@@ -73,6 +73,8 @@ function ChapterListing:init()
 
   -- we need to do this after updating
   self:updateChapterList()
+
+  self.preload_jobs = {}
 end
 
 function ChapterListing:onClose(call_return)
@@ -704,18 +706,24 @@ function ChapterListing:preloadChapters(chapter)
       break
     end
 
-    logger.info("Preloading chapter: ", preloadChapter.id)
-    local preload_job = DownloadChapter:new(
-      preloadChapter.source_id,
-      preloadChapter.manga_id,
-      preloadChapter.id,
-      preloadChapter.chapter_num
-    )
+    if self.preload_jobs[preloadChapter.id] ~= nil then
+      logger.info("Chapter already being preloaded: ", preloadChapter.id)
+      chapter = preloadChapter
+    else
+      logger.info("Preloading chapter: ", preloadChapter.id)
+      -- This is fine. If the chapter is already downloaded, it will have downloaded = true
+      local preload_job = DownloadChapter:new(
+        preloadChapter.source_id,
+        preloadChapter.manga_id,
+        preloadChapter.id,
+        preloadChapter.chapter_num
+      )
 
-    preload_job:start()
-    self.preload_jobs[preloadChapter.id] = preload_job
+      preload_job:start()
+      self.preload_jobs[preloadChapter.id] = preload_job
 
-    chapter = preloadChapter
+      chapter = preloadChapter
+    end
   end
 end
 
@@ -755,15 +763,39 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
 
       if nextChapter ~= nil then
         if self.preload_jobs[nextChapter.id] ~= nil then
-          UIManager:show(InfoMessage:new {
+          local response, cancelled = LoadingDialog:showAndRun(
             _("Downloading chapter...")
-            .. '\nCh.' .. (nextChapter.chapter_num or _('unknown'))
+            .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
             .. ' '
-            .. (nextChapter.title or ''),
-          })
-          -- Wait until that preload job is finished
-          local preloadJob = self.preload_jobs[nextChapter.id]
-          preloadJob:runUntilCompletion()
+            .. (chapter.title or ''),
+            function()
+              return self.preload_jobs[nextChapter.id]:runUntilCompletion()
+            end,
+            function()
+              if self.preload_jobs[nextChapter.id].started then
+                self.preload_jobs[nextChapter.id]:requestCancellation()
+              end
+
+              local cancelledMessage = InfoMessage:new {
+                text = _("Download cancelled."),
+              }
+              UIManager:show(cancelledMessage)
+
+              -- Return to chapter listing
+              MangaReader:closeReaderUi(function()
+                UIManager:show(self)
+              end)
+            end,
+            function(cancel)
+              local confirm = ConfirmBox:new {
+                text = _("Are you sure you want to cancel the download?"),
+                ok_callback = cancel
+              }
+              UIManager:show(confirm)
+
+              return confirm
+            end
+          )
         end
 
         -- at this point downloaded = true so it will just open instantly

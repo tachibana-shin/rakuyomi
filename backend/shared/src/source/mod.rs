@@ -273,6 +273,11 @@ impl Source {
 pub struct SourceInfo {
     pub id: String,
     pub lang: Option<String>,
+    #[cfg(not(feature = "all"))]
+    pub languages: Option<Vec<String>>,
+    #[cfg(not(feature = "all"))]
+    #[serde(rename = "contentRating")]
+    pub content_rating: Option<i32>,
     pub name: String,
     pub version: usize,
     pub url: Option<String>,

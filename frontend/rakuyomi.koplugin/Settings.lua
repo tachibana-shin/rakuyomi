@@ -108,6 +108,17 @@ Settings.setting_value_definitions = {
       title = _("Source IDs skip check update"),
       placeholder = 'com.manga,com.manga2'
     }
+  },
+  {
+    'preload_chapters',
+    {
+      type = 'integer',
+      title = _("Preload chapters on reader open"),
+      min_value = 0,
+      max_value = 10,
+      unit = 'chapters',
+      default = 0
+    }
   }
 }
 

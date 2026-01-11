@@ -32,6 +32,7 @@ pub struct UpdateableSettings {
     api_sync: Option<String>,
     enabled_cron_check_mangas_update: bool,
     source_skip_cron: Option<String>,
+    preload_chapters: usize,
 }
 
 impl UpdateableSettings {
@@ -45,6 +46,7 @@ impl UpdateableSettings {
         settings.api_sync = self.api_sync;
         settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
         settings.source_skip_cron = self.source_skip_cron;
+        settings.preload_chapters = self.preload_chapters;
     }
 }
 
@@ -61,6 +63,7 @@ impl From<&Settings> for UpdateableSettings {
             api_sync: value.api_sync.clone(),
             enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
             source_skip_cron: value.source_skip_cron.clone(),
+            preload_chapters: value.preload_chapters,
         }
     }
 }

@@ -92,6 +92,9 @@ pub struct Settings {
 
     #[serde(default)]
     pub source_skip_cron: Option<String>,
+
+    #[serde(default)]
+    pub preload_chapters: usize,
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

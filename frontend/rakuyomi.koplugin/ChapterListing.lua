@@ -679,23 +679,51 @@ end
 
 --- @private
 --- @param chapter Chapter
+function ChapterListing:preloadChapters(chapter)
+  logger.info("Begin preloading next chapters.")
+  local response = Backend.getSettings()
+
+  if response.type == 'ERROR' then
+    logger.err("Could not get settings for preloading chapters: ", response.message)
+    return
+  end
+
+  local settings = response.body
+  local amount = settings["preload_chapters"]
+
+  if amount == 0 then
+    return
+  end
+
+  for i = 1, amount do
+    local preloadChapter = findNextChapter(self.chapters, chapter)
+    if preloadChapter == nil then
+      logger.info("No more chapters to preload.")
+      break
+    end
+
+    logger.info("Preloading chapter: ", preloadChapter.id)
+    DownloadChapter:new(
+      preloadChapter.source_id,
+      preloadChapter.manga_id,
+      preloadChapter.id,
+      preloadChapter.chapter_num
+    ):start()
+
+    chapter = preloadChapter
+  end
+end
+
+--- @private
+--- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
 function ChapterListing:openChapterOnReader(chapter, download_job)
   self:downloadChapter(chapter, download_job, function(manga_path)
-    local nextChapter = findNextChapter(self.chapters, chapter)
-    local nextChapterDownloadJob = nil
-
-    if nextChapter ~= nil then
-      nextChapterDownloadJob = DownloadChapter:new(
-        nextChapter.source_id,
-        nextChapter.manga_id,
-        nextChapter.id,
-        nextChapter.chapter_num
-      )
-    end
-
     local onReturnCallback = function()
       self:updateItems()
+
+      --- needed because preload may have changed download status
+      self:updateChapterList()
 
       UIManager:show(self)
     end
@@ -705,7 +733,16 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
 
       self:updateChapterList()
 
+      local nextChapter = findNextChapter(self.chapters, chapter)
+      local nextChapterDownloadJob = nil
+
       if nextChapter ~= nil then
+        nextChapterDownloadJob = DownloadChapter:new(
+          nextChapter.source_id,
+          nextChapter.manga_id,
+          nextChapter.id,
+          nextChapter.chapter_num
+        )
         logger.info("opening next chapter", nextChapter)
         self:openChapterOnReader(nextChapter, nextChapterDownloadJob)
       else
@@ -723,6 +760,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       )
     end)
 
+    --- Manga is shown to user here.
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
@@ -738,6 +776,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end,
       on_return_callback = onReturnCallback,
     })
+
+    Trapper:wrap(function()
+      self:preloadChapters(chapter)
+    end)
 
     self:onClose(false)
   end)

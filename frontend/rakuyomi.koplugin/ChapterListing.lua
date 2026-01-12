@@ -618,7 +618,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     local time = require("ui/time")
     local start_time = time.now()
     local response, cancelled = LoadingDialog:showAndRun(
-      _("Downloading chapter...")
+      _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
       .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
       .. ' '
       .. (chapter.title or ''),
@@ -800,15 +800,17 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
               return confirm
             end
           )
-          if cancelled then
+          if cancelled or response.type == 'ERROR' then
             -- Return to chapter listing if download was cancelled
             MangaReader:closeReaderUi(function()
               UIManager:show(self)
             end)
             return
           end
-        end
 
+          nextChapter.downloaded = true
+          self.preload_jobs[nextChapter.id] = nil
+        end
 
         if not nextChapter.downloaded then
           nextChapterDownloadJob = DownloadChapter:new(

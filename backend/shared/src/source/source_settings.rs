@@ -92,9 +92,10 @@ fn default_values_for_definition(
                     .unwrap_or_else(|| values.first().cloned().unwrap_or_default()),
             ),
         )]),
-        SettingDefinition::MultiSelect { key, default, .. } => {
-            HashMap::from([(key.clone(), SourceSettingValue::Vec(default.clone()))])
-        }
+        SettingDefinition::MultiSelect { key, default, .. } => HashMap::from([(
+            key.clone(),
+            SourceSettingValue::Vec(default.clone().unwrap_or_default()),
+        )]),
         SettingDefinition::EditableList { key, default, .. } => {
             HashMap::from([(key.clone(), SourceSettingValue::Vec(default.clone()))])
         }

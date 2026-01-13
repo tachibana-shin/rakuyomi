@@ -68,8 +68,12 @@ end
 --- @private
 --- @return any
 function SettingItemValue:getCurrentValue()
-  if (self.value_definition.type == 'enum' or self.value_definition.type == 'multi-enum') and self.value == nil then
-    return self.value_definition.options[1].value
+  if self.value == nil then
+    if self.value_definition.type == 'enum' then
+      return self.value_definition.options[1].value
+    elseif self.value_definition.type == 'multi-enum' then
+      return {}
+    end
   end
   return self.value
 end
@@ -152,12 +156,15 @@ function SettingItemValue:createValueWidget()
       truncate_left = true,
     }
   elseif self.value_definition.type == "button" then
+    local confirmText = (self.value_definition.confirm_title or "") ..
+        "\n\n" .. (self.value_definition.confirm_message or "")
+
     return ButtonWidget:new {
       text = self.value_definition.title,
       callback = function()
         local confirm_dialog
         confirm_dialog = ConfirmBox:new {
-          text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
+          text = confirmText,
           ok_text = _("Ok"),
           cancel_text = _("Cancel"),
           ok_callback = function()

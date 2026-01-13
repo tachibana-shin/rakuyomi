@@ -35,7 +35,7 @@ pub enum SettingDefinition {
         key: String,
         values: Vec<String>,
         titles: Option<Vec<String>>,
-        default: Vec<String>,
+        default: Option<Vec<String>>,
     },
     #[serde(rename = "login")]
     Login { title: String, key: String },
@@ -68,6 +68,13 @@ pub enum SettingDefinition {
     },
     #[serde(rename = "link")]
     Link { title: String, url: String },
+
+    #[serde(rename = "page")]
+    Page {
+        key: String,
+        title: String,
+        items: Vec<SettingDefinition>,
+    },
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq, FromPrimitive)]

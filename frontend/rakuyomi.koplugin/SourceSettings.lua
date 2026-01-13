@@ -72,7 +72,7 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       placeholder = 'Not support login'
     }
   elseif setting_definition.type == 'button' then
-   return {
+    return {
       type = 'button',
       key = setting_definition.key,
       title = setting_definition.title,
@@ -96,6 +96,12 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       type = 'label',
       title = setting_definition.title,
       text = setting_definition.url,
+    }
+  elseif setting_definition.type == 'page' then
+    return {
+      type = 'page',
+      title = setting_definition.title,
+      items = setting_definition.items,
     }
   else
     error("unexpected setting definition type: " .. setting_definition.type)
@@ -138,72 +144,56 @@ function SourceSettings:init()
     align = "left",
   }
 
-  local should_add_separator = false
-
-  for _, setting_definition in ipairs(self.setting_definitions) do
-    -- TODO This assumes 1-level groups at maximum, which is probably true for all extensions but
-    -- multiple nested groups are technically possible...
-    local children = {}
-    if setting_definition.type == "group" then
-      if setting_definition.title ~= nil then
-        vertical_group[#vertical_group + 1] = TextWidget:new {
-          text = setting_definition.title,
-          face = Font:getFace("cfont"),
-          bold = true,
-        }
-      end
-
-      children = setting_definition.items
-    else
-      children = { setting_definition }
-    end
-
-    if should_add_separator then
-      local separator = LineWidget:new {
-        background = Blitbuffer.COLOR_LIGHT_GRAY,
-        dimen = Geom:new {
-          w = self.item_width,
-          h = Size.line.thick,
-        },
-        style = "solid",
-      }
-
-      vertical_group[#vertical_group + 1] = separator
-    end
-
-    for _, child in ipairs(children) do
-      local setting_item = SettingItem:new {
-        show_parent = self,
-        width = self.item_width,
-        -- REFACT `text` setting definitions usually have the `placeholder` field as a replacement for
-        -- `title`, however this is a implementation detail of Aidoku's extensions and it shouldn't
-        -- leak here
-        label = child.title or child.placeholder,
-        value_definition = mapSettingDefinitionToValueDefinition(child),
-        value = self.stored_settings[child.key] or child.default,
-        source_id = self.source_id,
-        on_value_changed_callback = function(new_value)
-          self:updateStoredSetting(child.key, new_value)
+  local function addSettings(definitions)
+    local should_add_separator = false
+    for _, setting_definition in ipairs(definitions) do
+      if setting_definition.type == "group" or setting_definition.type == "page" then
+        if setting_definition.title ~= nil then
+          vertical_group[#vertical_group + 1] = TextWidget:new {
+            text = setting_definition.title,
+            face = Font:getFace("cfont"),
+            bold = true,
+          }
         end
-      }
-
-      vertical_group[#vertical_group + 1] = setting_item
+        addSettings(setting_definition.items or {})
+        if setting_definition.footer ~= nil then
+          vertical_group[#vertical_group + 1] = TextBoxWidget:new {
+            text = setting_definition.footer,
+            face = Font:getFace("cfont", FOOTER_FONT_SIZE),
+            color = Blitbuffer.COLOR_LIGHT_GRAY,
+            width = self.item_width,
+          }
+        end
+        should_add_separator = true
+      else
+        if should_add_separator then
+          vertical_group[#vertical_group + 1] = LineWidget:new {
+            background = Blitbuffer.COLOR_LIGHT_GRAY,
+            dimen = Geom:new {
+              w = self.item_width,
+              h = Size.line.thick,
+            },
+            style = "solid",
+          }
+          should_add_separator = false
+        end
+        local setting_item = SettingItem:new {
+          show_parent = self,
+          width = self.item_width,
+          label = setting_definition.title or setting_definition.placeholder,
+          value_definition = mapSettingDefinitionToValueDefinition(setting_definition),
+          value = self.stored_settings[setting_definition.key] or setting_definition.default,
+          source_id = self.source_id,
+          on_value_changed_callback = function(new_value)
+            self:updateStoredSetting(setting_definition.key, new_value)
+          end
+        }
+        vertical_group[#vertical_group + 1] = setting_item
+      end
     end
-
-    if setting_definition.type == "group" and setting_definition.footer ~= nil then
-      local footer = TextBoxWidget:new {
-        text = setting_definition.footer,
-        face = Font:getFace("cfont", FOOTER_FONT_SIZE),
-        color = Blitbuffer.COLOR_LIGHT_GRAY,
-        width = self.item_width,
-      }
-
-      vertical_group[#vertical_group + 1] = footer
-    end
-
-    -- If we're inside a group, add a separator before the next setting widget
-    should_add_separator = setting_definition.type == "group"
   end
+
+  addSettings(self.setting_definitions)
 
   self.title_bar = TitleBar:new {
     -- TODO add source name here

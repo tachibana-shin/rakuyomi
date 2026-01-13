@@ -72,7 +72,7 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       placeholder = 'Not support login'
     }
   elseif setting_definition.type == 'button' then
-   return {
+    return {
       type = 'button',
       key = setting_definition.key,
       title = setting_definition.title,
@@ -134,75 +134,62 @@ function SourceSettings:init()
 
   self.item_width = self.inner_dimen.w - 2 * padding
 
-  local vertical_group = VerticalGroup:new {
-    align = "left",
-  }
+  local vertical_group = VerticalGroup:new { align = "left" }
 
-  local should_add_separator = false
+  local function renderDefinition(def, parent_group)
+    local current_group = parent_group
+    local is_group = (def.type == "group") or (def.type == "page")
 
-  for _, setting_definition in ipairs(self.setting_definitions) do
-    -- TODO This assumes 1-level groups at maximum, which is probably true for all extensions but
-    -- multiple nested groups are technically possible...
-    local children = {}
-    if setting_definition.type == "group" then
-      if setting_definition.title ~= nil then
-        vertical_group[#vertical_group + 1] = TextWidget:new {
-          text = setting_definition.title,
+    if is_group then
+      if def.title ~= nil then
+        table.insert(current_group, TextWidget:new {
+          text = def.title,
           face = Font:getFace("cfont"),
           bold = true,
-        }
+        })
       end
 
-      children = setting_definition.items
-    else
-      children = { setting_definition }
-    end
+      for _, child in ipairs(def.items or {}) do
+        renderDefinition(child, current_group)
+      end
 
-    if should_add_separator then
-      local separator = LineWidget:new {
+      if def.footer ~= nil then
+        table.insert(current_group, TextBoxWidget:new {
+          text = def.footer,
+          face = Font:getFace("cfont", FOOTER_FONT_SIZE),
+          color = Blitbuffer.COLOR_LIGHT_GRAY,
+          width = self.item_width,
+        })
+      end
+
+      table.insert(current_group, LineWidget:new {
         background = Blitbuffer.COLOR_LIGHT_GRAY,
-        dimen = Geom:new {
-          w = self.item_width,
-          h = Size.line.thick,
-        },
+        dimen = Geom:new { w = self.item_width, h = Size.line.thick },
         style = "solid",
-      }
-
-      vertical_group[#vertical_group + 1] = separator
+      })
+      return
     end
 
-    for _, child in ipairs(children) do
-      local setting_item = SettingItem:new {
-        show_parent = self,
-        width = self.item_width,
-        -- REFACT `text` setting definitions usually have the `placeholder` field as a replacement for
-        -- `title`, however this is a implementation detail of Aidoku's extensions and it shouldn't
-        -- leak here
-        label = child.title or child.placeholder,
-        value_definition = mapSettingDefinitionToValueDefinition(child),
-        value = self.stored_settings[child.key] or child.default,
-        source_id = self.source_id,
-        on_value_changed_callback = function(new_value)
-          self:updateStoredSetting(child.key, new_value)
-        end
-      }
+    local setting_item = SettingItem:new {
+      show_parent = self,
+      width = self.item_width,
+      -- REFACT `text` setting definitions usually have the `placeholder` field as a replacement for
+      -- `title`, however this is a implementation detail of Aidoku's extensions and it shouldn't
+      -- leak here
+      label = def.title or def.placeholder,
+      value_definition = mapSettingDefinitionToValueDefinition(def),
+      value = self.stored_settings[def.key] or def.default,
+      source_id = self.source_id,
+      on_value_changed_callback = function(new_value)
+        self:updateStoredSetting(def.key, new_value)
+      end
+    }
 
-      vertical_group[#vertical_group + 1] = setting_item
-    end
+    table.insert(current_group, setting_item)
+  end
 
-    if setting_definition.type == "group" and setting_definition.footer ~= nil then
-      local footer = TextBoxWidget:new {
-        text = setting_definition.footer,
-        face = Font:getFace("cfont", FOOTER_FONT_SIZE),
-        color = Blitbuffer.COLOR_LIGHT_GRAY,
-        width = self.item_width,
-      }
-
-      vertical_group[#vertical_group + 1] = footer
-    end
-
-    -- If we're inside a group, add a separator before the next setting widget
-    should_add_separator = setting_definition.type == "group"
+  for _, def in ipairs(self.setting_definitions or {}) do
+    renderDefinition(def, vertical_group)
   end
 
   self.title_bar = TitleBar:new {

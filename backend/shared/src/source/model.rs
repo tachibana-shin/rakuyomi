@@ -12,7 +12,7 @@ use url::Url;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum SettingDefinition {
-    #[serde(rename = "group")]
+    #[serde(rename = "group", alias = "page")]
     Group {
         title: Option<String>,
         items: Vec<SettingDefinition>,
@@ -35,6 +35,7 @@ pub enum SettingDefinition {
         key: String,
         values: Vec<String>,
         titles: Option<Vec<String>>,
+        #[serde(default = "empty_vector")]
         default: Vec<String>,
     },
     #[serde(rename = "login")]
@@ -44,6 +45,7 @@ pub enum SettingDefinition {
         title: String,
         key: String,
         placeholder: Option<String>,
+        #[serde(default = "empty_vector")]
         default: Vec<String>,
     },
     #[serde(rename = "button", rename_all = "camelCase")]
@@ -57,6 +59,7 @@ pub enum SettingDefinition {
     Switch {
         title: String,
         key: String,
+        #[serde(default = "return_false")]
         default: bool,
     },
     #[serde(rename = "text")]
@@ -68,6 +71,13 @@ pub enum SettingDefinition {
     },
     #[serde(rename = "link")]
     Link { title: String, url: String },
+}
+
+fn empty_vector() -> Vec<String> {
+    [].to_vec()
+}
+fn return_false() -> bool {
+    false
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq, FromPrimitive)]

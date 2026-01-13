@@ -14,7 +14,7 @@ Any source that can run on [Aidoku](https://github.com/Aidoku) can also run on [
 
 ```json,downloadable:settings.json
 {
-  "$schema": "https://github.com/tachibana-shin/rakuyomi/releases/download/main/settings.schema.json",
+  "$schema": "https://github.com/tachibana-shin/rakuyomi/releases/latest/download/settings.schema.json",
   "source_lists": [
     "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/index.min.json",
     

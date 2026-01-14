@@ -109,10 +109,7 @@ pub async fn request_with_forced_referer_from_request(
 
             // If referer existed → keep it permanently
             if let Some(ref r) = referer {
-                new_headers.insert(
-                    "Referer",
-                    HeaderValue::from_str(r).context("Invalid Referer header")?,
-                );
+                new_headers.insert("Referer", r.parse().context("Invalid Referer header")?);
             }
         }
 

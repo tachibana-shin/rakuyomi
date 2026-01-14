@@ -34,10 +34,9 @@ pub fn sleep(_caller: Caller<'_, WasmStore>, seconds: i32) {
 #[aidoku_wasm_function]
 fn send_partial_result(mut _caller: Caller<'_, WasmStore>, _i: i32) -> Result<()> {
     #[cfg(not(feature = "all"))]
-    let send_fn = SEND_PARTIAL_RESULT
+    SEND_PARTIAL_RESULT
         .get()
-        .expect("SEND_PARTIAL_RESULT not initialized");
-    send_fn(&mut _caller, _i)?;
+        .expect("SEND_PARTIAL_RESULT not initialized")(&mut _caller, _i)?;
 
     Ok(())
 }

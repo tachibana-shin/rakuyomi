@@ -187,7 +187,8 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         #[cfg(feature = "all")]
         let client = reqwest::Client::new();
         #[cfg(feature = "all")]
-        let request = Request::try_from(&*request_builder).context("failed to build request")?;
+        let request =
+            reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
         #[cfg(feature = "all")]
         let warn_cancellation = || {

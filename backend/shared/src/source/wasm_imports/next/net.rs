@@ -1,14 +1,14 @@
+#[cfg(feature = "all")]
+use crate::source::wasm_store::ResponseData;
 use crate::{
-    source::{
-        wasm_imports::net::{get_building_request, DEFAULT_USER_AGENT},
-        wasm_store::ResponseData,
-    },
+    source::wasm_imports::net::{get_building_request, DEFAULT_USER_AGENT},
     util::has_internet_connection,
 };
 use anyhow::{Context, Result};
 use futures::executor;
+#[cfg(feature = "all")]
 use log::warn;
-use reqwest::{Method, Request};
+use reqwest::Method;
 
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasm_shared::{get_memory, memory_reader::read_values};
@@ -184,9 +184,13 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             return ResultContext::InvalidDescriptor.into();
         };
         let request_builder = get_building_request(store, request_descriptor_i32)?;
+        #[cfg(feature = "all")]
         let client = reqwest::Client::new();
-        let request = Request::try_from(&*request_builder).context("failed to build request")?;
+        #[cfg(feature = "all")]
+        let request =
+            reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
+        #[cfg(feature = "all")]
         let warn_cancellation = || {
             warn!(
                 "request to {:?} was cancelled mid-flight!",
@@ -194,6 +198,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             );
         };
 
+        #[cfg(feature = "all")]
         let response = match executor::block_on(
             cancellation_token.run_until_cancelled(client.execute(request)),
         ) {
@@ -209,6 +214,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             }
         };
 
+        #[cfg(feature = "all")]
         let response_data = ResponseData {
             url: response.url().clone(),
             headers: response.headers().clone(),
@@ -226,6 +232,17 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             },
             bytes_read: 0,
         };
+
+        #[cfg(not(feature = "all"))]
+        let response_data =
+            (crate::source::wasm_imports::net::NET_SEND
+                .get()
+                .context("Please set NET_SEND")?)(&cancellation_token, &request_builder)
+            .map_err(|err| {
+                println!("request failed: {err}");
+                err
+            })
+            .context("failed to execute request")?;
 
         *store
             .get_mut_request(request_descriptor_i32)

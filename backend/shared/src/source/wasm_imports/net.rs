@@ -2,16 +2,26 @@ use crate::{source::html_element::HTMLElement, util::has_internet_connection};
 use anyhow::{Context, Result};
 use dom_query::Document;
 use futures::executor;
+#[cfg(feature = "all")]
 use log::warn;
 use num_enum::FromPrimitive;
-use reqwest::{Method, Request};
+use reqwest::Method;
 
 use url::Url;
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasm_shared::{get_memory, memory_reader::write_bytes};
 use wasmi::{Caller, Linker};
 
-use crate::source::wasm_store::{RequestState, ResponseData, Value, WasmStore};
+use crate::source::wasm_store::ResponseData;
+use crate::source::wasm_store::{RequestState, Value, WasmStore};
+
+#[cfg(not(feature = "all"))]
+pub static NET_SEND: std::sync::OnceLock<
+    fn(
+        &tokio_util::sync::CancellationToken,
+        &crate::source::wasm_store::RequestBuildingState,
+    ) -> Result<ResponseData, anyhow::Error>,
+> = std::sync::OnceLock::new();
 
 pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "net", "init", init)?;
@@ -183,9 +193,13 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         anyhow::bail!("no internet connection available");
     }
 
+    #[cfg(feature = "all")]
     let client = reqwest::Client::new();
-    let request = Request::try_from(&*request_builder).context("failed to build request")?;
+    #[cfg(feature = "all")]
+    let request =
+        reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
+    #[cfg(feature = "all")]
     let warn_cancellation = || {
         warn!(
             "request to {:?} was cancelled mid-flight!",
@@ -193,6 +207,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         );
     };
 
+    #[cfg(feature = "all")]
     let response =
         match executor::block_on(cancellation_token.run_until_cancelled(client.execute(request))) {
             Some(response) => response
@@ -206,7 +221,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                 anyhow::bail!("request was cancelled mid-flight");
             }
         };
-
+    #[cfg(feature = "all")]
     let response_data = ResponseData {
         url: response.url().clone(),
         headers: response.headers().clone(),
@@ -223,6 +238,15 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         },
         bytes_read: 0,
     };
+
+    #[cfg(not(feature = "all"))]
+    let response_data =
+        (NET_SEND.get().context("Please set NET_SEND")?)(&cancellation_token, &request_builder)
+            .map_err(|err| {
+                println!("request failed: {err}");
+                err
+            })
+            .context("failed to execute request")?;
 
     *wasm_store
         .get_mut_request(request_descriptor_i32)

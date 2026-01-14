@@ -164,15 +164,15 @@ fn webview_load_html(
 fn webview_wait_for_load(mut caller: Caller<'_, WasmStore>, webview_ptr: i32) -> FFIResult {
     #[cfg(not(feature = "all"))]
     {
+        use futures::executor;
+
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
             return Ok(ResultContext::InvalidContext as i32);
         };
 
-        tokio::task::block_in_place(|| {
-            tokio::runtime::Handle::current().block_on(async { webview.wait_for_load().await })
-        })?;
+        executor::block_on(webview.wait_for_load())?;
 
         Ok(0)
     }
@@ -188,6 +188,8 @@ fn webview_eval(
 ) -> FFIResult {
     #[cfg(not(feature = "all"))]
     {
+        use futures::executor;
+
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
@@ -197,9 +199,7 @@ fn webview_eval(
             return Ok(ResultContext::InvalidString as i32);
         };
 
-        let value = tokio::task::block_in_place(|| {
-            tokio::runtime::Handle::current().block_on(async { webview.eval(&code).await })
-        })?;
+        let value = executor::block_on(webview.eval(&code))?;
 
         Ok(store.store_std_value(Value::String(value).into(), None) as i32)
     }

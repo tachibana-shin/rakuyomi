@@ -86,7 +86,9 @@ pub struct Source(
     ///
     /// This also provides interior mutability, but we probably could also do it inside the
     /// `BlockingSource` itself, by placing things inside a mutex. It might be a cleaner design.
+    #[cfg(feature = "all")]
     Arc<Mutex<BlockingSource>>,
+    #[cfg(not(feature = "all"))] pub Arc<Mutex<BlockingSource>>,
 );
 
 #[macro_export]
@@ -271,6 +273,11 @@ impl Source {
 pub struct SourceInfo {
     pub id: String,
     pub lang: Option<String>,
+    #[cfg(not(feature = "all"))]
+    pub languages: Option<Vec<String>>,
+    #[cfg(not(feature = "all"))]
+    #[serde(rename = "contentRating")]
+    pub content_rating: Option<i32>,
     pub name: String,
     pub version: usize,
     pub url: Option<String>,
@@ -1049,7 +1056,7 @@ impl BlockingSource {
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
 
-            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
+            read_next::<NextMangaPageResult>(&memory, &store, pointer)
         })?;
 
         Ok(result)
@@ -1417,7 +1424,7 @@ impl BlockingSource {
         parse = |pointer, store: &mut Store<WasmStore>, instance| {
             let memory = get_memory(instance, store)?;
 
-            Ok(read_next::<NextMangaPageResult>(&memory, &store, pointer)?)
+            read_next::<NextMangaPageResult>(&memory, &store, pointer)
         })?;
 
         Ok(result)
@@ -1448,7 +1455,7 @@ impl BlockingSource {
         Ok(())
     }
 
-    fn run_under_context<T, F>(
+    pub fn run_under_context<T, F>(
         &mut self,
         cancellation_token: CancellationToken,
         current_object: OperationContextObject,

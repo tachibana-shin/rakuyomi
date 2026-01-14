@@ -205,6 +205,8 @@ pub static WEBVIEW_EVAL: std::sync::OnceLock<
         -> std::pin::Pin<Box<dyn futures::Future<Output = Result<String, anyhow::Error>> + Send>>,
 > = std::sync::OnceLock::new();
 #[cfg(not(feature = "all"))]
+pub static WEBVIEW_DESTROY: std::sync::OnceLock<fn(usize) -> ()> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
 impl WebView {
     pub fn load(&self, html: Option<String>, url: &Url) -> anyhow::Result<()> {
         (WEBVIEW_LOAD.get().expect("Please set WEBVIEW_LOAD"))(self.id, html, url)
@@ -221,6 +223,9 @@ impl WebView {
         let output = (WEBVIEW_EVAL.get().expect("Please set WEBVIEW_EVAL"))(self.id, code).await?;
 
         Ok(output)
+    }
+    pub fn destroy(&self) {
+        (WEBVIEW_DESTROY.get().expect("Please set WEBVIEW_DESTROY"))(self.id)
     }
 }
 
@@ -348,6 +353,10 @@ impl WasmStore {
         try_remove!(self.fonts);
         try_remove!(self.fonts_online);
         try_remove!(self.jscontexts);
+        #[cfg(not(feature = "all"))]
+        if let Some(webview) = self.webviews.remove(&descriptor) {
+            webview.destroy();
+        }
     }
 
     pub fn mark_str_encode(&mut self, pointer: usize) {

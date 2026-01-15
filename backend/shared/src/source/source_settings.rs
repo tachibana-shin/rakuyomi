@@ -10,7 +10,10 @@ use super::model::SettingDefinition;
 pub struct SourceSettings {
     source_id: String,
     defaults: HashMap<String, SourceSettingValue>,
+    #[cfg(feature = "all")]
     stored: RefCell<HashMap<String, SourceSettingValue>>,
+    #[cfg(not(feature = "all"))]
+    pub stored: RefCell<HashMap<String, SourceSettingValue>>,
     arc_manager: Arc<Mutex<SourceManager>>,
 }
 impl std::fmt::Debug for SourceSettings {

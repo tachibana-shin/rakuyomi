@@ -19,8 +19,18 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
 
     // FIXME actually implement a defaults system
     if key == "languages" {
+        #[cfg(feature = "all")]
         return Ok(wasm_store.store_std_value(
             Value::from(wasm_store.settings.languages.clone()).into(),
+            None,
+        ) as i32);
+        #[cfg(not(feature = "all"))]
+        return Ok(wasm_store.store_std_value(
+            Value::from((anyhow::Context::context(
+                super::next::defaults::DEFAULTS_GET.get(),
+                "Please set DEFAULTS_GET",
+            )?)(&key)?)
+            .into(),
             None,
         ) as i32);
     }

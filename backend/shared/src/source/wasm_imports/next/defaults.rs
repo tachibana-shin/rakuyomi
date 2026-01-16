@@ -17,8 +17,9 @@ pub static DEFAULTS_SET: std::sync::OnceLock<
 > = std::sync::OnceLock::new();
 
 #[cfg(not(feature = "all"))]
-pub static DEFAULTS_GET: std::sync::OnceLock<fn(key: &str) -> Result<SourceSettingValue>> =
-    std::sync::OnceLock::new();
+pub static DEFAULTS_GET: std::sync::OnceLock<
+    fn(source_id: &str, key: &str) -> Result<SourceSettingValue>,
+> = std::sync::OnceLock::new();
 pub fn register_defaults_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "defaults", "get", get)?;
     register_wasm_function!(linker, "defaults", "set", set)?;
@@ -66,7 +67,7 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
             Value::from((anyhow::Context::context(
                 DEFAULTS_GET.get(),
                 "Please set DEFAULTS_GET",
-            )?)(&key)?)
+            )?)(&caller.data().id, &key)?)
             .into(),
             None,
         ) as i32);

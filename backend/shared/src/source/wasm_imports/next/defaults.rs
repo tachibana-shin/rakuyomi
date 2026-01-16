@@ -18,7 +18,7 @@ pub static DEFAULTS_SET: std::sync::OnceLock<
 
 #[cfg(not(feature = "all"))]
 pub static DEFAULTS_GET: std::sync::OnceLock<
-    fn(source_id: &str, key: &str) -> Result<SourceSettingValue>,
+    fn(source_id: &str, key: &str) -> Result<Option<SourceSettingValue>>,
 > = std::sync::OnceLock::new();
 pub fn register_defaults_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "defaults", "get", get)?;
@@ -55,20 +55,25 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
 
     let wasm_store = caller.data_mut();
 
+    #[cfg(not(feature = "all"))]
+    {
+        let Some(value) = anyhow::Context::context(DEFAULTS_GET.get(), "Please set DEFAULTS_GET")?(
+            &wasm_store.id,
+            &key,
+        )?
+        else {
+            return Ok(ResultContext::InvalidValue.into());
+        };
+
+        let pointer = wasm_store.store_std_value(Parc::from(Value::from(value)), None);
+        wasm_store.mark_str_encode(pointer);
+
+        return Ok(pointer as i32);
+    }
     // FIXME actually implement a defaults system
     if key == "languages" {
-        #[cfg(feature = "all")]
         return Ok(wasm_store.store_std_value(
             Value::from(wasm_store.settings.languages.clone()).into(),
-            None,
-        ) as i32);
-        #[cfg(not(feature = "all"))]
-        return Ok(wasm_store.store_std_value(
-            Value::from((anyhow::Context::context(
-                DEFAULTS_GET.get(),
-                "Please set DEFAULTS_GET",
-            )?)(&wasm_store.id, &key)?)
-            .into(),
             None,
         ) as i32);
     }

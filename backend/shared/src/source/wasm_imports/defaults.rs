@@ -29,7 +29,7 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
             Value::from((anyhow::Context::context(
                 super::next::defaults::DEFAULTS_GET.get(),
                 "Please set DEFAULTS_GET",
-            )?)(&caller.data().id, &key)?)
+            )?)(&wasm_store.id, &key)?)
             .into(),
             None,
         ) as i32);

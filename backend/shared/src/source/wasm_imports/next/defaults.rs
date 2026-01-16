@@ -70,21 +70,25 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
 
         return Ok(pointer as i32);
     }
-    // FIXME actually implement a defaults system
-    if key == "languages" {
-        return Ok(wasm_store.store_std_value(
-            Value::from(wasm_store.settings.languages.clone()).into(),
-            None,
-        ) as i32);
+
+    #[cfg(feature = "all")]
+    {
+        // FIXME actually implement a defaults system
+        if key == "languages" {
+            return Ok(wasm_store.store_std_value(
+                Value::from(wasm_store.settings.languages.clone()).into(),
+                None,
+            ) as i32);
+        }
+
+        let Some(value) = wasm_store.source_settings.get(&key) else {
+            return Ok(ResultContext::InvalidValue.into());
+        };
+
+        let pointer = wasm_store.store_std_value(Parc::from(Value::from(value)), None);
+        wasm_store.mark_str_encode(pointer);
+        Ok(pointer as i32)
     }
-
-    let Some(value) = wasm_store.source_settings.get(&key) else {
-        return Ok(ResultContext::InvalidValue.into());
-    };
-
-    let pointer = wasm_store.store_std_value(Parc::from(Value::from(value)), None);
-    wasm_store.mark_str_encode(pointer);
-    Ok(pointer as i32)
 }
 
 #[aidoku_wasm_function]

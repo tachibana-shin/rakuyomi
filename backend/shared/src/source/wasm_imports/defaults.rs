@@ -19,12 +19,12 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
 
     #[cfg(not(feature = "all"))]
     {
-        let Some(value) = anyhow::Context::context(DEFAULTS_GET.get(), "Please set DEFAULTS_GET")?(
-            &wasm_store.id,
-            &key,
-        )?
+        let Some(value) = anyhow::Context::context(
+            super::next::defaults::DEFAULTS_GET.get(),
+            "Please set DEFAULTS_GET",
+        )?(&wasm_store.id, &key)?
         else {
-            return Ok(ResultContext::InvalidValue.into());
+            anyhow::bail!("invalid key {}", key)
         };
 
         let pointer = wasm_store.store_std_value(Parc::from(Value::from(value)), None);
@@ -32,20 +32,23 @@ fn get(mut caller: Caller<'_, WasmStore>, key: Option<String>) -> Result<i32> {
         return Ok(pointer as i32);
     }
 
-    // FIXME actually implement a defaults system
-    if key == "languages" {
-        return Ok(wasm_store.store_std_value(
-            Value::from(wasm_store.settings.languages.clone()).into(),
-            None,
-        ) as i32);
+    #[cfg(feature = "all")]
+    {
+        // FIXME actually implement a defaults system
+        if key == "languages" {
+            return Ok(wasm_store.store_std_value(
+                Value::from(wasm_store.settings.languages.clone()).into(),
+                None,
+            ) as i32);
+        }
+
+        let value = wasm_store
+            .source_settings
+            .get(&key)
+            .context("key not found in source settings")?;
+
+        Ok(wasm_store.store_std_value(Parc::from(Value::from(value)), None) as i32)
     }
-
-    let value = wasm_store
-        .source_settings
-        .get(&key)
-        .context("key not found in source settings")?;
-
-    Ok(wasm_store.store_std_value(Parc::from(Value::from(value)), None) as i32)
 }
 
 #[aidoku_wasm_function]

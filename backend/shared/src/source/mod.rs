@@ -136,11 +136,16 @@ impl Source {
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
+        #[cfg(feature = "all")]
         let mut blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
 
+        #[cfg(feature = "all")]
         if blocking_source.next_sdk {
             blocking_source.start()?;
         }
+
+        #[cfg(not(feature = "all"))]
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
 
         Ok(Self(Arc::new(Mutex::new(blocking_source))))
     }

@@ -22,6 +22,12 @@ fn print(caller: Caller<'_, WasmStore>, string: Option<String>) -> Result<()> {
     let wasm_store = caller.data();
 
     info!("{}: env.print: {string}", wasm_store.id);
+    #[cfg(not(feature = "all"))]
+    (anyhow::Context::context(
+        crate::source::wasm_imports::next::env::LOG_PRINT.get(),
+        "Please set LOG_PRINT",
+    )?)(&caller, &string)?;
+
     Ok(())
 }
 

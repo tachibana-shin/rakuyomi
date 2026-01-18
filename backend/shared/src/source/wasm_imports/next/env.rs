@@ -10,6 +10,11 @@ pub static SEND_PARTIAL_RESULT: std::sync::OnceLock<
     fn(caller: &mut Caller<'_, WasmStore>, ptr: i32) -> Result<(), anyhow::Error>,
 > = std::sync::OnceLock::new();
 
+#[cfg(not(feature = "all"))]
+pub static LOG_PRINT: std::sync::OnceLock<
+    fn(caller: &Caller<'_, WasmStore>, msg: &str) -> Result<(), anyhow::Error>,
+> = std::sync::OnceLock::new();
+
 pub fn register_env_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "env", "print", print)?; // OK
     register_wasm_function!(linker, "env", "sleep", sleep)?; // OK
@@ -25,6 +30,9 @@ fn print(caller: Caller<'_, WasmStore>, string: Option<String>) -> Result<()> {
     let wasm_store = caller.data();
 
     info!("{}: env.print: {string}", wasm_store.id);
+    #[cfg(not(feature = "all"))]
+    (anyhow::Context::context(LOG_PRINT.get(), "Please set LOG_PRINT")?)(&caller, &string)?;
+
     Ok(())
 }
 #[aidoku_wasm_function]

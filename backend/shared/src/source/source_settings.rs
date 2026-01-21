@@ -73,8 +73,8 @@ impl SourceSettings {
         Ok(())
     }
 }
-
-fn default_values_for_definition(
+// only pub use in aidoku android
+pub fn default_values_for_definition(
     setting_definition: &SettingDefinition,
 ) -> HashMap<String, SourceSettingValue> {
     match setting_definition {

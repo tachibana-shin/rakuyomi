@@ -7,6 +7,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use dom_query::Document;
+#[cfg(feature = "all")]
 use futures::{stream, StreamExt};
 use reqwest::{Client, Request};
 use tokio::net::TcpStream;
@@ -367,7 +368,6 @@ where
                 .unwrap_or(src)
         })
 }
-
 pub async fn download_all_images(
     base_url: Option<&Url>,
     pages: Vec<Page>,
@@ -378,7 +378,7 @@ pub async fn download_all_images(
     #[cfg(not(feature = "all"))]
     use std::sync::{
         atomic::{AtomicUsize, Ordering},
-        Arc, Mutex,
+        Mutex,
     };
 
     let mut seen = HashSet::<String>::new();
@@ -442,35 +442,48 @@ pub async fn download_all_images(
     }
 
     #[cfg(not(feature = "all"))]
-    let store: HashMap<_, _> = {
+    let store: HashMap<String, anyhow::Result<(Vec<u8>, String, String)>> = {
+        use std::sync::Arc;
+        use tokio::sync::{mpsc, Semaphore};
+
         let total = tasks.len() as f32;
         let progress = Arc::new(AtomicUsize::new(0));
-
         let on_progress = Arc::new(Mutex::new(on_progress));
 
-        let stream = stream::iter(tasks.into_iter().map(|(index, fut)| {
-            let progress = Arc::clone(&progress);
+        let semaphore = Arc::new(Semaphore::new(4));
+        let (tx, mut rx) = mpsc::channel(tasks.len());
 
+        for (index, fut) in tasks {
+            let tx = tx.clone();
+            let semaphore = Arc::clone(&semaphore);
+            let progress = Arc::clone(&progress);
             let on_progress = Arc::clone(&on_progress);
 
-            async move {
+            tokio::spawn(async move {
+                let _permit = semaphore.acquire().await.unwrap();
+
                 let out = fut.await;
 
                 let cur = progress.fetch_add(1, Ordering::SeqCst) + 1;
                 let cur_f = cur as f32;
-
-                #[cfg(not(feature = "all"))]
                 {
                     let mut cb = on_progress.lock().unwrap();
                     cb(index, cur_f, total);
                 }
 
-                out
-            }
-        }));
+                let _ = tx.send(out).await;
+            });
+        }
 
-        stream.buffer_unordered(4).collect().await
+        drop(tx);
+
+        let mut results = HashMap::new();
+        while let Some((url, res)) = rx.recv().await {
+            results.insert(url, res);
+        }
+        results
     };
+
     #[cfg(feature = "all")]
     let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(4).collect().await;
 

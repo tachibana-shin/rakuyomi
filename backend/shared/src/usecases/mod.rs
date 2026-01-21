@@ -29,7 +29,6 @@ pub mod set_manga_preferred_scanlator;
 pub mod set_source_stored_settings;
 pub mod sync_database;
 pub mod uninstall_source;
-pub mod unscrable_image;
 pub mod update_last_read_chapter;
 pub mod update_settings;
 
@@ -65,6 +64,5 @@ pub use set_manga_preferred_scanlator::set_manga_preferred_scanlator;
 pub use set_source_stored_settings::set_source_stored_settings;
 pub use sync_database::sync_database;
 pub use uninstall_source::uninstall_source;
-pub use unscrable_image::unscrable_image;
 pub use update_last_read_chapter::update_last_read_chapter;
 pub use update_settings::update_settings;

@@ -19,7 +19,7 @@ use crate::{
     chapter_storage::ChapterStorage,
     model::{ChapterInformation, MangaInformation},
     source::{model::Page, Source},
-    usecases::unscrable_image::{unscrable_image, Block},
+    unscrable_image::{unscrable_image, Block},
     util::{
         create_xhtml, download_all_images, generate_error_image, get_image_src, prepare_cover,
         request_with_forced_referer_from_request,

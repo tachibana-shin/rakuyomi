@@ -41,6 +41,7 @@ pub async fn ensure_chapter_is_in_storage(
     manga: &MangaInformation,
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
+    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id)? {
         return Ok((
@@ -87,10 +88,19 @@ pub async fn ensure_chapter_is_in_storage(
         // is novel
         let temp_path = temporary_file.path().to_path_buf();
 
-        download_chapter_novel_as_epub(&temporary_file, token, temp_path, source, pages, chapter)
-            .await
-            .with_context(|| "Failed to download chapter pages")
-            .map_err(Error::DownloadError)?;
+        download_chapter_novel_as_epub(
+            &temporary_file,
+            token,
+            temp_path,
+            source,
+            pages,
+            chapter,
+            #[cfg(not(feature = "all"))]
+            on_progress,
+        )
+        .await
+        .with_context(|| "Failed to download chapter pages")
+        .map_err(Error::DownloadError)?;
 
         Vec::<DownloadError>::from([])
     } else {
@@ -101,6 +111,8 @@ pub async fn ensure_chapter_is_in_storage(
             source,
             pages,
             concurrent_requests_pages,
+            #[cfg(not(feature = "all"))]
+            on_progress,
         )
         .await
         .map_err(|err| {
@@ -142,10 +154,16 @@ pub async fn download_chapter_pages_as_cbz<W>(
     source: &Source,
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
+    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
 ) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
     W: Write + Seek,
 {
+    #[cfg(not(feature = "all"))]
+    let total = pages.len() as f32;
+    #[cfg(not(feature = "all"))]
+    let mut processed = 0f32;
+
     let mut writer = ZipWriter::new(output);
     let file_options: zip::write::FileOptions<'_, ()> =
         zip::write::FileOptions::default().compression_method(CompressionMethod::Stored);
@@ -298,6 +316,11 @@ where
         }
 
         writer.start_file(filename, file_options)?;
+        #[cfg(not(feature = "all"))]
+        {
+            processed += 1.0;
+            on_progress(processed, total);
+        }
         writer.write_all(&data)?;
     }
 
@@ -311,10 +334,20 @@ pub async fn download_chapter_novel_as_epub<W>(
     source: &Source,
     pages: Vec<Page>,
     chapter: &ChapterInformation,
+    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
 ) -> anyhow::Result<()>
 where
     W: Write + Seek,
 {
+    #[cfg(not(feature = "all"))]
+    let total = pages.len() as f32;
+    #[cfg(not(feature = "all"))]
+    let stored_process_images = std::sync::Arc::new(std::sync::Mutex::new(
+        std::collections::HashMap::<usize, f32>::new(),
+    ));
+    #[cfg(not(feature = "all"))]
+    let stored_process_images_clone = stored_process_images.clone();
+
     let client = Client::builder().build()?;
 
     let cover_url = chapter.thumbnail.clone();
@@ -339,7 +372,23 @@ where
         .ok()
         .flatten();
 
-    let images = download_all_images(chapter.url.as_ref(), pages.clone(), source, token).await?;
+    let images = download_all_images(
+        chapter.url.as_ref(),
+        pages.clone(),
+        source,
+        token,
+        #[cfg(not(feature = "all"))]
+        move |idx, done, total| {
+            let percent = done / total;
+            let progress = percent * 0.8;
+
+            if let Ok(mut stored) = stored_process_images.lock() {
+                stored.insert(idx, progress);
+                on_progress(stored.values().copied().sum(), total);
+            }
+        },
+    )
+    .await?;
 
     let chapter_url = chapter.url.clone();
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
@@ -388,6 +437,12 @@ where
                     }
                 };
                 index_image += 1;
+
+                #[cfg(not(feature = "all"))]
+                if let Ok(mut stored) = stored_process_images_clone.lock() {
+                    stored.insert(idx, 1.0);
+                    on_progress(stored.values().copied().sum(), total);
+                }
 
                 epub.add_content(
                     EpubContent::new(

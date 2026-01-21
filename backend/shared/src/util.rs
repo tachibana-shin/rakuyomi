@@ -373,7 +373,14 @@ pub async fn download_all_images(
     pages: Vec<Page>,
     source: &Source,
     token: &CancellationToken,
+    #[cfg(not(feature = "all"))] on_progress: impl FnMut(usize, f32, f32) + Send + 'static,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
+    #[cfg(not(feature = "all"))]
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc, Mutex,
+    };
+
     let mut seen = HashSet::<String>::new();
     type Task = std::pin::Pin<
         Box<
@@ -381,6 +388,9 @@ pub async fn download_all_images(
                 + Send,
         >,
     >;
+    #[cfg(not(feature = "all"))]
+    let mut tasks: Vec<(usize, Task)> = Vec::new();
+    #[cfg(feature = "all")]
     let mut tasks: Vec<Task> = Vec::new();
 
     for page in &pages {
@@ -392,10 +402,16 @@ pub async fn download_all_images(
                 let url = image_url.clone();
                 let index = page.index;
                 let source = source.clone();
-                tasks.push(Box::pin(async move {
+
+                let task = Box::pin(async move {
                     let result = download_image(url.to_string(), index, &source).await;
                     (url.to_string(), result)
-                }));
+                });
+
+                #[cfg(not(feature = "all"))]
+                tasks.push((index, task));
+                #[cfg(feature = "all")]
+                tasks.push(task);
             }
         }
 
@@ -409,16 +425,53 @@ pub async fn download_all_images(
                         let url = src.clone();
                         let index = page.index;
                         let source = source.clone();
-                        tasks.push(Box::pin(async move {
+
+                        let task = Box::pin(async move {
                             let result = download_image(url.clone(), index, &source).await;
                             (url, result)
-                        }));
+                        });
+
+                        #[cfg(not(feature = "all"))]
+                        tasks.push((index, task));
+                        #[cfg(feature = "all")]
+                        tasks.push(task);
                     }
                 }
             }
         }
     }
 
+    #[cfg(not(feature = "all"))]
+    let store: HashMap<_, _> = {
+        let total = tasks.len() as f32;
+        let progress = Arc::new(AtomicUsize::new(0));
+
+        let on_progress = Arc::new(Mutex::new(on_progress));
+
+        let stream = stream::iter(tasks.into_iter().map(|(index, fut)| {
+            let progress = Arc::clone(&progress);
+
+            let on_progress = Arc::clone(&on_progress);
+
+            async move {
+                let out = fut.await;
+
+                let cur = progress.fetch_add(1, Ordering::SeqCst) + 1;
+                let cur_f = cur as f32;
+
+                #[cfg(not(feature = "all"))]
+                {
+                    let mut cb = on_progress.lock().unwrap();
+                    cb(index, cur_f, total);
+                }
+
+                out
+            }
+        }));
+
+        stream.buffer_unordered(4).collect().await
+    };
+    #[cfg(feature = "all")]
     let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(4).collect().await;
 
     Ok(store)

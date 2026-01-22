@@ -451,35 +451,37 @@ pub async fn download_all_images(
         let on_progress = Arc::new(Mutex::new(on_progress));
 
         let semaphore = Arc::new(Semaphore::new(4));
-        let (tx, mut rx) = mpsc::channel(tasks.len());
-
-        for (index, fut) in tasks {
-            let tx = tx.clone();
-            let semaphore = Arc::clone(&semaphore);
-            let progress = Arc::clone(&progress);
-            let on_progress = Arc::clone(&on_progress);
-
-            tokio::spawn(async move {
-                let _permit = semaphore.acquire().await.unwrap();
-
-                let out = fut.await;
-
-                let cur = progress.fetch_add(1, Ordering::SeqCst) + 1;
-                let cur_f = cur as f32;
-                {
-                    let mut cb = on_progress.lock().unwrap();
-                    cb(index, cur_f, total);
-                }
-
-                let _ = tx.send(out).await;
-            });
-        }
-
-        drop(tx);
-
         let mut results = HashMap::new();
-        while let Some((url, res)) = rx.recv().await {
-            results.insert(url, res);
+        if tasks.len() > 0 {
+            let (tx, mut rx) = mpsc::channel(tasks.len());
+
+            for (index, fut) in tasks {
+                let tx = tx.clone();
+                let semaphore = Arc::clone(&semaphore);
+                let progress = Arc::clone(&progress);
+                let on_progress = Arc::clone(&on_progress);
+
+                tokio::spawn(async move {
+                    let _permit = semaphore.acquire().await.unwrap();
+
+                    let out = fut.await;
+
+                    let cur = progress.fetch_add(1, Ordering::SeqCst) + 1;
+                    let cur_f = cur as f32;
+                    {
+                        let mut cb = on_progress.lock().unwrap();
+                        cb(index, cur_f, total);
+                    }
+
+                    let _ = tx.send(out).await;
+                });
+            }
+
+            drop(tx);
+
+            while let Some((url, res)) = rx.recv().await {
+                results.insert(url, res);
+            }
         }
         results
     };

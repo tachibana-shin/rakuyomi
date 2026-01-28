@@ -315,9 +315,7 @@ function GetText_mt.__index.loadMO(file)
       logger.warn(string.format("bad translation file: %s [singular / plurals mismatch]", file))
     else
       if n == 1 and #os == 0 then
-        if parse_headers(ts) == false then
-          return false
-        end
+        parse_headers(ts)
       else
         addTranslation(ctx, os, ts)
       end

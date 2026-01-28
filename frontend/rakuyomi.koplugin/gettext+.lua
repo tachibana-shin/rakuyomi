@@ -136,7 +136,6 @@ function GetText_mt.__index.changeLang(new_lang)
   new_lang = new_lang:sub(1, new_lang:find(".%."))
 
   local mo = GetText.dirname .. "/" .. new_lang .. "/" .. GetText.textdomain .. ".mo"
-  print(mo)
   if not GetText.loadMO(mo) then
     return false
   end
@@ -147,6 +146,10 @@ end
 
 local function parse_headers(headers)
   local plural_forms = headers:match("Plural%-Forms: (.*)")
+  if plural_forms == nil then
+    plural_forms = "nplurals=2; plural=(n != 1);"
+  end
+
   local nplurals = plural_forms:match("nplurals=([0-9]+);") or 2
   local plurals = plural_forms:match("plural=%((.*)%);")
 

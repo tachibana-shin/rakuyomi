@@ -147,7 +147,7 @@ end
 local function parse_headers(headers)
   local plural_forms = headers:match("Plural%-Forms: (.*)")
   if plural_forms == nil then
-    return false
+    plural_forms = "Plural-Forms: nplurals=2; plural=(n != 1);\n"
   end
 
   local nplurals = plural_forms:match("nplurals=([0-9]+);") or 2

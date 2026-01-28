@@ -48,6 +48,8 @@ local ChapterListing = Menu:extend {
   -- scanlator filtering
   selected_scanlator = nil,
   available_scanlators = {},
+  -- keep track of preloads
+  preload_jobs = nil,
 }
 
 function ChapterListing:init()
@@ -71,6 +73,8 @@ function ChapterListing:init()
 
   -- we need to do this after updating
   self:updateChapterList()
+
+  self.preload_jobs = {}
 end
 
 function ChapterListing:onClose(call_return)
@@ -614,7 +618,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     local time = require("ui/time")
     local start_time = time.now()
     local response, cancelled = LoadingDialog:showAndRun(
-      _("Downloading chapter...")
+      _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
       .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
       .. ' '
       .. (chapter.title or ''),
@@ -679,23 +683,80 @@ end
 
 --- @private
 --- @param chapter Chapter
+function ChapterListing:preloadChapters(chapter)
+  logger.info("Begin preloading next chapters.")
+  local response = Backend.getSettings()
+
+  if response.type == 'ERROR' then
+    logger.err("Could not get settings for preloading chapters: ", response.message)
+    return
+  end
+
+  local settings = response.body
+  local amount = settings["preload_chapters"]
+
+  if amount == 0 then
+    return
+  end
+
+  for i = 1, amount do
+    local preloadChapter = findNextChapter(self.chapters, chapter)
+    if preloadChapter == nil then
+      logger.info("No more chapters to preload.")
+      break
+    end
+
+    if preloadChapter.downloaded or preloadChapter.locked then
+      logger.info("Chapter already downloaded or locked, skipping preload: ", preloadChapter.id)
+      chapter = preloadChapter
+      goto continue
+    end
+
+    if self.preload_jobs[preloadChapter.id] ~= nil then
+      logger.info("Chapter already being preloaded: ", preloadChapter.id)
+    else
+      logger.info("Preloading chapter: ", preloadChapter.id)
+      local preload_job = DownloadChapter:new(
+        preloadChapter.source_id,
+        preloadChapter.manga_id,
+        preloadChapter.id,
+        preloadChapter.chapter_num
+      )
+
+      local job_status = preload_job:start()
+      if job_status.type == 'ERROR' then
+        logger.err("Could not start preload job for chapter ", preloadChapter.id, ": ", job_status.message)
+      else
+        self.preload_jobs[preloadChapter.id] = preload_job
+      end
+    end
+
+    chapter = preloadChapter
+    ::continue::
+  end
+end
+
+function ChapterListing:prunePreloadJobs()
+  for chapter_id, job in pairs(self.preload_jobs) do
+    local status = job:poll()
+    if status.type == 'SUCCESS' or status.type == 'ERROR' then
+      logger.info("Pruning finished preload job for chapter: ", chapter_id)
+      self.preload_jobs[chapter_id] = nil
+    end
+  end
+end
+
+--- @private
+--- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
 function ChapterListing:openChapterOnReader(chapter, download_job)
   self:downloadChapter(chapter, download_job, function(manga_path)
-    local nextChapter = findNextChapter(self.chapters, chapter)
-    local nextChapterDownloadJob = nil
-
-    if nextChapter ~= nil then
-      nextChapterDownloadJob = DownloadChapter:new(
-        nextChapter.source_id,
-        nextChapter.manga_id,
-        nextChapter.id,
-        nextChapter.chapter_num
-      )
-    end
-
     local onReturnCallback = function()
       self:updateItems()
+      self:prunePreloadJobs()
+
+      --- needed because preload may have changed download status
+      self:updateChapterList()
 
       UIManager:show(self)
     end
@@ -704,8 +765,62 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
 
       self:updateChapterList()
+      self:prunePreloadJobs()
+
+      local nextChapter = findNextChapter(self.chapters, chapter)
+      local nextChapterDownloadJob = nil
 
       if nextChapter ~= nil then
+        if self.preload_jobs[nextChapter.id] ~= nil then
+          local response, cancelled = LoadingDialog:showAndRun(
+            _("Downloading chapter...")
+            .. '\nCh.' .. (nextChapter.chapter_num or _('unknown'))
+            .. ' '
+            .. (nextChapter.title or ''),
+            function()
+              return self.preload_jobs[nextChapter.id]:runUntilCompletion()
+            end,
+            function()
+              if self.preload_jobs[nextChapter.id].started then
+                self.preload_jobs[nextChapter.id]:requestCancellation()
+              end
+
+              local cancelledMessage = InfoMessage:new {
+                text = _("Download cancelled."),
+              }
+              UIManager:show(cancelledMessage)
+            end,
+            function(cancel)
+              local confirm = ConfirmBox:new {
+                text = _("Are you sure you want to cancel the download?"),
+                ok_callback = cancel
+              }
+              UIManager:show(confirm)
+
+              return confirm
+            end
+          )
+          if cancelled or response.type == 'ERROR' then
+            -- Return to chapter listing if download was cancelled
+            MangaReader:closeReaderUi(function()
+              UIManager:show(self)
+            end)
+            return
+          end
+
+          nextChapter.downloaded = true
+          self.preload_jobs[nextChapter.id] = nil
+        end
+
+        if not nextChapter.downloaded then
+          nextChapterDownloadJob = DownloadChapter:new(
+            nextChapter.source_id,
+            nextChapter.manga_id,
+            nextChapter.id,
+            nextChapter.chapter_num
+          )
+        end
+
         logger.info("opening next chapter", nextChapter)
         self:openChapterOnReader(nextChapter, nextChapterDownloadJob)
       else
@@ -723,6 +838,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       )
     end)
 
+    --- Manga is shown to user here.
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
@@ -738,6 +854,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end,
       on_return_callback = onReturnCallback,
     })
+
+    Trapper:wrap(function()
+      self:preloadChapters(chapter)
+    end)
 
     self:onClose(false)
   end)

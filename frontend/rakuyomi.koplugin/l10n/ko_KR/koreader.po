@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-01-07 12:59+0700\n"
+        "POT-Creation-Date: 2026-02-02 00:05+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -15,37 +15,37 @@ msgstr  "Project-Id-Version: rakuyomi.koreader \n"
 msgid   "Available sources"
 msgstr  "사용 가능한 소스"
 
-#: ../AvailableSourcesListing.lua:120
+#: ../AvailableSourcesListing.lua:111
 msgid   "Update available!"
 msgstr  "업데이트 가능!"
 
-#: ../AvailableSourcesListing.lua:124
+#: ../AvailableSourcesListing.lua:115
 msgid   "Latest version installed"
 msgstr  "최신 버전이 설치됨"
 
-#: ../AvailableSourcesListing.lua:127
+#: ../AvailableSourcesListing.lua:118
 msgid   "Installable"
 msgstr  "설치 가능"
 
-#: ../AvailableSourcesListing.lua:134 ../InstalledSourcesListing.lua:81
+#: ../AvailableSourcesListing.lua:125 ../InstalledSourcesListing.lua:81
 msgid   "version"
 msgstr  "버전"
 
-#: ../AvailableSourcesListing.lua:137 ../ChapterListing.lua:125
-#: ../ChapterListing.lua:205 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:129
+#: ../ChapterListing.lua:209 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "알려지지 않은"
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "No available sources found."
 msgstr  "사용 가능한 소스가 없습니다."
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "Try adding some source lists by looking at our README!"
 msgstr  "README를 보고 소스 목록을 추가해 보세요!"
 
-#: ../AvailableSourcesListing.lua:167
+#: ../AvailableSourcesListing.lua:158
 msgid   "Installing source..."
 msgstr  "소스 설치 중..."
 
@@ -53,279 +53,283 @@ msgstr  "소스 설치 중..."
 msgid   "Chapter listing"
 msgstr  "장 목록"
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:175
 msgid   "No chapters found"
 msgstr  "챕터를 찾을 수 없습니다."
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:175
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "아래로 스와이프하여 챕터 목록을 새로고침해 보세요."
 
-#: ../ChapterListing.lua:233
+#: ../ChapterListing.lua:237
 msgid   "Volume"
 msgstr  "용량"
 
-#: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:241 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "장"
 
-#: ../ChapterListing.lua:261
+#: ../ChapterListing.lua:265
 msgid   "Locked"
 msgstr  "잠김"
 
-#: ../ChapterListing.lua:288 ../ChapterListing.lua:488
+#: ../ChapterListing.lua:292 ../ChapterListing.lua:492
 msgid   "Refreshing chapters..."
 msgstr  "상쾌한 챕터들..."
 
-#: ../ChapterListing.lua:296 ../ChapterListing.lua:495
-#: ../ChapterListing.lua:1124
+#: ../ChapterListing.lua:300 ../ChapterListing.lua:499
+#: ../ChapterListing.lua:1244
 msgid   "Cancelled."
 msgstr  "취소."
 
-#: ../ChapterListing.lua:308
+#: ../ChapterListing.lua:312
 msgid   "Refresh chapter error"
 msgstr  "새로 고침 장 오류"
 
-#: ../ChapterListing.lua:346
+#: ../ChapterListing.lua:350
 msgid   "Chapter is locked"
 msgstr  "챕터가 잠겨 있습니다."
 
-#: ../ChapterListing.lua:363
+#: ../ChapterListing.lua:367
 msgid   "Open"
 msgstr  "열려 있는"
 
-#: ../ChapterListing.lua:373 ../ChapterListing.lua:763 ../LibraryView.lua:336
+#: ../ChapterListing.lua:377 ../ChapterListing.lua:883 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "새로 고치다"
 
-#: ../ChapterListing.lua:379
+#: ../ChapterListing.lua:383
 msgid   "Chapter refreshed"
 msgstr  "챕터가 새로 고쳐졌습니다."
 
-#: ../ChapterListing.lua:385 ../ChapterListing.lua:534
+#: ../ChapterListing.lua:389 ../ChapterListing.lua:538
 msgid   "Mark"
 msgstr  "표시"
 
-#: ../ChapterListing.lua:397 ../ChapterListing.lua:1021
+#: ../ChapterListing.lua:401 ../ChapterListing.lua:1141
 msgid   "Download"
 msgstr  "다운로드"
 
-#: ../ChapterListing.lua:397 ../LibraryView.lua:459
+#: ../ChapterListing.lua:401 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "제거하다"
 
-#: ../ChapterListing.lua:406
+#: ../ChapterListing.lua:410
 msgid   "Chapter downloaded"
 msgstr  "챕터가 다운로드됨"
 
-#: ../ChapterListing.lua:425
+#: ../ChapterListing.lua:429
 msgid   "Revoke chapter..."
 msgstr  "챕터 취소..."
 
-#: ../ChapterListing.lua:443
+#: ../ChapterListing.lua:447
 msgid   "Removed chapter"
 msgstr  "삭제된 챕터"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:458
 msgid   "Marking"
 msgstr  "마킹"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:458
 msgid   "Un-marking"
 msgstr  "표시 해제"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:458
 msgid   "chapter..."
 msgstr  "장..."
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:789 ../LibraryView.lua:372
+#: ../ChapterListing.lua:525 ../ChapterListing.lua:909 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "읽은 것으로 표시"
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:799 ../LibraryView.lua:383
+#: ../ChapterListing.lua:525 ../ChapterListing.lua:919 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "읽지 않은 것으로 표시"
 
-#: ../ChapterListing.lua:522
+#: ../ChapterListing.lua:526
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:527
 msgid   "Leaving blank will select all"
 msgstr  "비워두면 모두 선택됩니다."
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:527
 msgid   "Mark chapters as read or unread"
 msgstr  "챕터를 읽음 또는 읽지 않음으로 표시"
 
-#: ../ChapterListing.lua:527 ../ChapterListing.lua:938
-#: ../ChapterListing.lua:1014 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:531 ../ChapterListing.lua:1058
+#: ../ChapterListing.lua:1134 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "취소"
 
-#: ../ChapterListing.lua:544
+#: ../ChapterListing.lua:548
 msgid   "Marking..."
 msgstr  "마킹..."
 
-#: ../ChapterListing.lua:554
+#: ../ChapterListing.lua:558
 msgid   "Marked"
 msgstr  "두드러진"
 
-#: ../ChapterListing.lua:573 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:577 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "오류 없음"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:586
 #, lua-format
 msgid   "Page"
 msgstr  "페이지"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:586
 #, lua-format
 msgid   "attempts"
 msgstr  "시도"
 
-#: ../ChapterListing.lua:590 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:594 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "...그리고 %d개의 추가 오류"
 
-#: ../ChapterListing.lua:609 ../ChapterListing.lua:624
+#: ../ChapterListing.lua:613 ../ChapterListing.lua:628
 msgid   "Could not download chapter."
 msgstr  "챕터를 다운로드할 수 없습니다."
 
-#: ../ChapterListing.lua:617
-msgid   "Downloading chapter..."
-msgstr  "챕터 다운로드 중..."
+#: ../ChapterListing.lua:621
+msgid   "Loading chapter..."
+msgstr  "챕터 로드 중..."
 
-#: ../ChapterListing.lua:618
+#: ../ChapterListing.lua:622 ../ChapterListing.lua:777
 msgid   "unknown"
 msgstr  "알려지지 않은"
 
-#: ../ChapterListing.lua:637
+#: ../ChapterListing.lua:641 ../ChapterListing.lua:789
 msgid   "Download cancelled."
 msgstr  "다운로드가 취소되었습니다."
 
-#: ../ChapterListing.lua:643
+#: ../ChapterListing.lua:647 ../ChapterListing.lua:795
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "다운로드를 취소하시겠습니까?"
 
-#: ../ChapterListing.lua:753 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:776
+msgid   "Downloading chapter..."
+msgstr  "챕터 다운로드 중..."
+
+#: ../ChapterListing.lua:873 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "라이브러리에 추가"
 
-#: ../ChapterListing.lua:771 ../LibraryView.lua:356
+#: ../ChapterListing.lua:891 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "세부"
 
-#: ../ChapterListing.lua:811
+#: ../ChapterListing.lua:931
 msgid   "Resume"
 msgstr  "재개하다"
 
-#: ../ChapterListing.lua:819
+#: ../ChapterListing.lua:939
 msgid   "Next Chapter"
 msgstr  "다음 장"
 
-#: ../ChapterListing.lua:829
+#: ../ChapterListing.lua:949
 msgid   "Download unread chapters…"
 msgstr  "읽지 않은 챕터 다운로드…"
 
-#: ../ChapterListing.lua:842
+#: ../ChapterListing.lua:962
 msgid   "Group"
 msgstr  "그룹"
 
-#: ../ChapterListing.lua:843 ../ChapterListing.lua:995
+#: ../ChapterListing.lua:963 ../ChapterListing.lua:1115
 msgid   "Filter by Group"
 msgstr  "그룹별로 필터링"
 
-#: ../ChapterListing.lua:866
+#: ../ChapterListing.lua:986
 msgid   "Adding to library..."
 msgstr  "라이브러리에 추가 중..."
 
-#: ../ChapterListing.lua:873
+#: ../ChapterListing.lua:993
 msgid   "Failed to add to library"
 msgstr  "라이브러리에 추가하지 못했습니다."
 
-#: ../ChapterListing.lua:878
+#: ../ChapterListing.lua:998
 msgid   "Added to library."
 msgstr  "라이브러리에 추가되었습니다."
 
-#: ../ChapterListing.lua:926
+#: ../ChapterListing.lua:1046
 msgid   "No more chapters to read!"
 msgstr  "더 이상 읽을 장이 없습니다!"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1056
 msgid   "Next"
 msgstr  "다음"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1056
 msgid   "reading with"
 msgstr  "함께 독서하다"
 
-#: ../ChapterListing.lua:937 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1057 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "읽다"
 
-#: ../ChapterListing.lua:960
+#: ../ChapterListing.lua:1080
 msgid   "Show All"
 msgstr  "모두 표시"
 
-#: ../ChapterListing.lua:968
+#: ../ChapterListing.lua:1088
 msgid   "Showing all groups"
 msgstr  "모든 그룹 표시"
 
-#: ../ChapterListing.lua:988
+#: ../ChapterListing.lua:1108
 msgid   "Filtered to"
 msgstr  "다음으로 필터링됨"
 
-#: ../ChapterListing.lua:1005
+#: ../ChapterListing.lua:1125
 msgid   "Download unread chapters..."
 msgstr  "읽지 않은 챕터 다운로드..."
 
-#: ../ChapterListing.lua:1007
+#: ../ChapterListing.lua:1127
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "읽지 않은 장의 수(기본값: 전체)"
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1129
 msgid   "Specify amount or leave empty for all."
 msgstr  "금액을 지정하거나 모두 비워 두세요."
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1129
 msgid   "Will download from"
 msgstr  "다음에서 다운로드됩니다."
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1130
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "다운로드할 읽지 않은 장의 양을 지정하세요."
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1130
 msgid   "or leave empty to download all of them."
 msgstr  "또는 모두 다운로드하려면 비워 두세요."
 
-#: ../ChapterListing.lua:1031
+#: ../ChapterListing.lua:1151
 msgid   "Invalid amount of chapters!"
 msgstr  "챕터 수가 잘못되었습니다!"
 
-#: ../ChapterListing.lua:1052
+#: ../ChapterListing.lua:1172
 msgid   "No unread chapters found for"
 msgstr  "에 대해 읽지 않은 장이 없습니다."
 
-#: ../ChapterListing.lua:1076 ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1196 ../ChapterListing.lua:1271
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "모든 챕터를 다운로드하는 데 시간이 좀 걸립니다..."
 
-#: ../ChapterListing.lua:1161
+#: ../ChapterListing.lua:1281
 msgid   "Waiting for download to be cancelled…"
 msgstr  "다운로드가 취소되기를 기다리는 중…"
 
-#: ../ChapterListing.lua:1163
+#: ../ChapterListing.lua:1283
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "모든 챕터를 다운로드하는 데 시간이 좀 걸립니다… ("
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1286
 msgid   "Tap outside this message to cancel."
 msgstr  "취소하려면 이 메시지 바깥쪽을 탭하세요."
 
@@ -429,7 +433,7 @@ msgstr  "클리너 챕터"
 msgid   "Manage sources"
 msgstr  "소스 관리"
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:179
+#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:190
 msgid   "Settings"
 msgstr  "설정"
 
@@ -799,11 +803,15 @@ msgstr  "만화 업데이트에 대한 크론 확인이 활성화되었습니다
 msgid   "Source IDs skip check update"
 msgstr  "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:168
+#: ../Settings.lua:116
+msgid   "Preload chapters on reader open"
+msgstr  "리더를 열 때 챕터를 미리 로드하세요."
+
+#: ../Settings.lua:179
 msgid   "Allow requisition of the back button"
 msgstr  "뒤로 버튼 요청 허용"
 
-#: ../SourceSettings.lua:209
+#: ../SourceSettings.lua:197
 msgid   "Source settings"
 msgstr  "소스 설정"
 

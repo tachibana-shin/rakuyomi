@@ -333,7 +333,7 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page,
-    preload_count = settings["preload_chapters"] or 0,
+    preload_count = settings.preload_chapters,
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)

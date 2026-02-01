@@ -31,8 +31,8 @@ msgstr  "Telepíthető"
 msgid   "version"
 msgstr  "változat"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:129
-#: ../ChapterListing.lua:209 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:130
+#: ../ChapterListing.lua:210 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Ismeretlen"
@@ -53,146 +53,146 @@ msgstr  "Forrás telepítése..."
 msgid   "Chapter listing"
 msgstr  "Fejezet felsorolás"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "No chapters found"
 msgstr  "Nem található fejezet"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Csúsztassa lefelé az ujját a fejezetlista frissítéséhez."
 
-#: ../ChapterListing.lua:237
+#: ../ChapterListing.lua:238
 msgid   "Volume"
 msgstr  "Kötet"
 
-#: ../ChapterListing.lua:241 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:242 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Fejezet"
 
-#: ../ChapterListing.lua:265
+#: ../ChapterListing.lua:266
 msgid   "Locked"
 msgstr  "Bezárt"
 
-#: ../ChapterListing.lua:292 ../ChapterListing.lua:492
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:495
 msgid   "Refreshing chapters..."
 msgstr  "Fejezetek frissítése..."
 
-#: ../ChapterListing.lua:300 ../ChapterListing.lua:499
-#: ../ChapterListing.lua:1244
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:502
+#: ../ChapterListing.lua:1190
 msgid   "Cancelled."
 msgstr  "Törölve."
 
-#: ../ChapterListing.lua:312
+#: ../ChapterListing.lua:313
 msgid   "Refresh chapter error"
 msgstr  "Fejezet frissítési hiba"
 
-#: ../ChapterListing.lua:350
+#: ../ChapterListing.lua:353
 msgid   "Chapter is locked"
 msgstr  "fejezet zárolva van"
 
-#: ../ChapterListing.lua:367
+#: ../ChapterListing.lua:370
 msgid   "Open"
 msgstr  "Nyitott"
 
-#: ../ChapterListing.lua:377 ../ChapterListing.lua:883 ../LibraryView.lua:336
+#: ../ChapterListing.lua:380 ../ChapterListing.lua:829 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Frissítés"
 
-#: ../ChapterListing.lua:383
+#: ../ChapterListing.lua:386
 msgid   "Chapter refreshed"
 msgstr  "Fejezet frissítve"
 
-#: ../ChapterListing.lua:389 ../ChapterListing.lua:538
+#: ../ChapterListing.lua:392 ../ChapterListing.lua:541
 msgid   "Mark"
 msgstr  "Mark"
 
-#: ../ChapterListing.lua:401 ../ChapterListing.lua:1141
+#: ../ChapterListing.lua:404 ../ChapterListing.lua:1087
 msgid   "Download"
 msgstr  "Letöltés"
 
-#: ../ChapterListing.lua:401 ../LibraryView.lua:459
+#: ../ChapterListing.lua:404 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Távolítsa el"
 
-#: ../ChapterListing.lua:410
+#: ../ChapterListing.lua:413
 msgid   "Chapter downloaded"
 msgstr  "Fejezet letöltve"
 
-#: ../ChapterListing.lua:429
+#: ../ChapterListing.lua:432
 msgid   "Revoke chapter..."
 msgstr  "Fejezet visszavonása..."
 
-#: ../ChapterListing.lua:447
+#: ../ChapterListing.lua:450
 msgid   "Removed chapter"
 msgstr  "Fejezet eltávolítva"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Marking"
 msgstr  "Jelzés"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Un-marking"
 msgstr  "Jelölés megszüntetése"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "chapter..."
 msgstr  "fejezet..."
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:909 ../LibraryView.lua:372
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:855 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Mark olvasott"
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:919 ../LibraryView.lua:383
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:865 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Megjelölés olvasatlanként"
 
-#: ../ChapterListing.lua:526
+#: ../ChapterListing.lua:529
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1-10,5, 20-100"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Leaving blank will select all"
 msgstr  "Ha üresen hagyja, az összeset kijelöli"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Mark chapters as read or unread"
 msgstr  "Fejezetek megjelölése olvasottként vagy olvasatlanként"
 
-#: ../ChapterListing.lua:531 ../ChapterListing.lua:1058
-#: ../ChapterListing.lua:1134 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:534 ../ChapterListing.lua:1004
+#: ../ChapterListing.lua:1080 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Mégse"
 
-#: ../ChapterListing.lua:548
+#: ../ChapterListing.lua:551
 msgid   "Marking..."
 msgstr  "Jelzés..."
 
-#: ../ChapterListing.lua:558
+#: ../ChapterListing.lua:561
 msgid   "Marked"
 msgstr  "Megjelölt"
 
-#: ../ChapterListing.lua:577 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:580 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Nincsenek hibák"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "Page"
 msgstr  "oldal"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "attempts"
 msgstr  "próbálkozások"
 
-#: ../ChapterListing.lua:594 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:597 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… és további %d hiba"
 
-#: ../ChapterListing.lua:613 ../ChapterListing.lua:628
+#: ../ChapterListing.lua:616 ../ChapterListing.lua:631
 msgid   "Could not download chapter."
 msgstr  "Nem sikerült letölteni a fejezetet."
 
@@ -200,136 +200,132 @@ msgstr  "Nem sikerült letölteni a fejezetet."
 msgid   "Loading chapter..."
 msgstr  "Fejezet betöltése..."
 
-#: ../ChapterListing.lua:622 ../ChapterListing.lua:777
+#: ../ChapterListing.lua:625
 msgid   "unknown"
 msgstr  "ismeretlen"
 
-#: ../ChapterListing.lua:641 ../ChapterListing.lua:789
+#: ../ChapterListing.lua:644
 msgid   "Download cancelled."
 msgstr  "Letöltés megszakítva."
 
-#: ../ChapterListing.lua:647 ../ChapterListing.lua:795
+#: ../ChapterListing.lua:650
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Biztosan megszakítja a letöltést?"
 
-#: ../ChapterListing.lua:776
-msgid   "Downloading chapter..."
-msgstr  "Fejezet letöltése..."
-
-#: ../ChapterListing.lua:873 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:819 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Hozzáadás a könyvtárhoz"
 
-#: ../ChapterListing.lua:891 ../LibraryView.lua:356
+#: ../ChapterListing.lua:837 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Részletek"
 
-#: ../ChapterListing.lua:931
+#: ../ChapterListing.lua:877
 msgid   "Resume"
 msgstr  "Folytatás"
 
-#: ../ChapterListing.lua:939
+#: ../ChapterListing.lua:885
 msgid   "Next Chapter"
 msgstr  "Következő fejezet"
 
-#: ../ChapterListing.lua:949
+#: ../ChapterListing.lua:895
 msgid   "Download unread chapters…"
 msgstr  "Olvasatlan fejezetek letöltése…"
 
-#: ../ChapterListing.lua:962
+#: ../ChapterListing.lua:908
 msgid   "Group"
 msgstr  "Csoport"
 
-#: ../ChapterListing.lua:963 ../ChapterListing.lua:1115
+#: ../ChapterListing.lua:909 ../ChapterListing.lua:1061
 msgid   "Filter by Group"
 msgstr  "Szűrés csoport szerint"
 
-#: ../ChapterListing.lua:986
+#: ../ChapterListing.lua:932
 msgid   "Adding to library..."
 msgstr  "Hozzáadás a könyvtárhoz..."
 
-#: ../ChapterListing.lua:993
+#: ../ChapterListing.lua:939
 msgid   "Failed to add to library"
 msgstr  "Nem sikerült hozzáadni a könyvtárhoz"
 
-#: ../ChapterListing.lua:998
+#: ../ChapterListing.lua:944
 msgid   "Added to library."
 msgstr  "Hozzáadva a könyvtárhoz."
 
-#: ../ChapterListing.lua:1046
+#: ../ChapterListing.lua:992
 msgid   "No more chapters to read!"
 msgstr  "Nincs több olvasnivaló fejezet!"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "Next"
 msgstr  "Következő"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "reading with"
 msgstr  "-val olvasni"
 
-#: ../ChapterListing.lua:1057 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1003 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Olvas"
 
-#: ../ChapterListing.lua:1080
+#: ../ChapterListing.lua:1026
 msgid   "Show All"
 msgstr  "Összes megjelenítése"
 
-#: ../ChapterListing.lua:1088
+#: ../ChapterListing.lua:1034
 msgid   "Showing all groups"
 msgstr  "Az összes csoport megjelenítése"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1054
 msgid   "Filtered to"
 msgstr  "Szűrve erre:"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1071
 msgid   "Download unread chapters..."
 msgstr  "Olvasatlan fejezetek letöltése..."
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1073
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Olvasatlan fejezetek száma (alapértelmezett: összes)"
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Specify amount or leave empty for all."
 msgstr  "Adja meg az összeget, vagy hagyja üresen az összeset."
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Will download from"
 msgstr  "Letölthető innen"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Adja meg a letöltendő olvasatlan fejezetek számát"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "or leave empty to download all of them."
 msgstr  "vagy hagyja üresen az összes letöltéséhez."
 
-#: ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1097
 msgid   "Invalid amount of chapters!"
 msgstr  "Érvénytelen számú fejezet!"
 
-#: ../ChapterListing.lua:1172
+#: ../ChapterListing.lua:1118
 msgid   "No unread chapters found for"
 msgstr  "Nem található olvasatlan fejezet ehhez:"
 
-#: ../ChapterListing.lua:1196 ../ChapterListing.lua:1271
+#: ../ChapterListing.lua:1142 ../ChapterListing.lua:1217
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Az összes fejezet letöltése eltart egy ideig…"
 
-#: ../ChapterListing.lua:1281
+#: ../ChapterListing.lua:1227
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Várakozás a letöltés megszakítására…"
 
-#: ../ChapterListing.lua:1283
+#: ../ChapterListing.lua:1229
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Az összes fejezet letöltése eltart egy ideig… ("
 
-#: ../ChapterListing.lua:1286
+#: ../ChapterListing.lua:1232
 msgid   "Tap outside this message to cancel."
 msgstr  "A visszavonáshoz koppintson az üzeneten kívülre."
 

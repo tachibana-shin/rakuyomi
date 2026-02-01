@@ -30,8 +30,8 @@ msgstr  "قابل نصب"
 msgid   "version"
 msgstr  "نسخه"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:129
-#: ../ChapterListing.lua:209 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:130
+#: ../ChapterListing.lua:210 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "ناشناس"
@@ -52,146 +52,146 @@ msgstr  "در حال نصب منبع..."
 msgid   "Chapter listing"
 msgstr  "فهرست فصل"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "No chapters found"
 msgstr  "هیچ فصلی یافت نشد"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "برای بازخوانی فهرست فصل، انگشت خود را به پایین بکشید."
 
-#: ../ChapterListing.lua:237
+#: ../ChapterListing.lua:238
 msgid   "Volume"
 msgstr  "حجم"
 
-#: ../ChapterListing.lua:241 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:242 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "فصل"
 
-#: ../ChapterListing.lua:265
+#: ../ChapterListing.lua:266
 msgid   "Locked"
 msgstr  "قفل شده است"
 
-#: ../ChapterListing.lua:292 ../ChapterListing.lua:492
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:495
 msgid   "Refreshing chapters..."
 msgstr  "در حال تازه کردن فصل ها..."
 
-#: ../ChapterListing.lua:300 ../ChapterListing.lua:499
-#: ../ChapterListing.lua:1244
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:502
+#: ../ChapterListing.lua:1190
 msgid   "Cancelled."
 msgstr  "لغو شد."
 
-#: ../ChapterListing.lua:312
+#: ../ChapterListing.lua:313
 msgid   "Refresh chapter error"
 msgstr  "خطای بازخوانی فصل"
 
-#: ../ChapterListing.lua:350
+#: ../ChapterListing.lua:353
 msgid   "Chapter is locked"
 msgstr  "فصل قفل شده است"
 
-#: ../ChapterListing.lua:367
+#: ../ChapterListing.lua:370
 msgid   "Open"
 msgstr  "باز کنید"
 
-#: ../ChapterListing.lua:377 ../ChapterListing.lua:883 ../LibraryView.lua:336
+#: ../ChapterListing.lua:380 ../ChapterListing.lua:829 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "تازه کردن"
 
-#: ../ChapterListing.lua:383
+#: ../ChapterListing.lua:386
 msgid   "Chapter refreshed"
 msgstr  "فصل به روز شد"
 
-#: ../ChapterListing.lua:389 ../ChapterListing.lua:538
+#: ../ChapterListing.lua:392 ../ChapterListing.lua:541
 msgid   "Mark"
 msgstr  "علامت گذاری کنید"
 
-#: ../ChapterListing.lua:401 ../ChapterListing.lua:1141
+#: ../ChapterListing.lua:404 ../ChapterListing.lua:1087
 msgid   "Download"
 msgstr  "دانلود کنید"
 
-#: ../ChapterListing.lua:401 ../LibraryView.lua:459
+#: ../ChapterListing.lua:404 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "حذف کنید"
 
-#: ../ChapterListing.lua:410
+#: ../ChapterListing.lua:413
 msgid   "Chapter downloaded"
 msgstr  "فصل دانلود شد"
 
-#: ../ChapterListing.lua:429
+#: ../ChapterListing.lua:432
 msgid   "Revoke chapter..."
 msgstr  "لغو فصل ..."
 
-#: ../ChapterListing.lua:447
+#: ../ChapterListing.lua:450
 msgid   "Removed chapter"
 msgstr  "فصل حذف شد"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Marking"
 msgstr  "علامت گذاری"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Un-marking"
 msgstr  "علامت گذاری کردن"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "chapter..."
 msgstr  "فصل..."
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:909 ../LibraryView.lua:372
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:855 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "علامت گذاری به عنوان خوانده شده"
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:919 ../LibraryView.lua:383
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:865 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "علامت گذاری به عنوان خوانده نشده"
 
-#: ../ChapterListing.lua:526
+#: ../ChapterListing.lua:529
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10.5، 20 - 100"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Leaving blank will select all"
 msgstr  "خالی گذاشتن همه را انتخاب می کند"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Mark chapters as read or unread"
 msgstr  "فصل ها را به عنوان خوانده شده یا خوانده نشده علامت گذاری کنید"
 
-#: ../ChapterListing.lua:531 ../ChapterListing.lua:1058
-#: ../ChapterListing.lua:1134 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:534 ../ChapterListing.lua:1004
+#: ../ChapterListing.lua:1080 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "لغو کنید"
 
-#: ../ChapterListing.lua:548
+#: ../ChapterListing.lua:551
 msgid   "Marking..."
 msgstr  "علامت گذاری..."
 
-#: ../ChapterListing.lua:558
+#: ../ChapterListing.lua:561
 msgid   "Marked"
 msgstr  "علامت گذاری شده است"
 
-#: ../ChapterListing.lua:577 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:580 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "بدون خطا"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "Page"
 msgstr  "صفحه"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "attempts"
 msgstr  "تلاش می کند"
 
-#: ../ChapterListing.lua:594 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:597 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… و %d خطای دیگر"
 
-#: ../ChapterListing.lua:613 ../ChapterListing.lua:628
+#: ../ChapterListing.lua:616 ../ChapterListing.lua:631
 msgid   "Could not download chapter."
 msgstr  "فصل دانلود نشد."
 
@@ -199,136 +199,132 @@ msgstr  "فصل دانلود نشد."
 msgid   "Loading chapter..."
 msgstr  "در حال بارگیری فصل..."
 
-#: ../ChapterListing.lua:622 ../ChapterListing.lua:777
+#: ../ChapterListing.lua:625
 msgid   "unknown"
 msgstr  "ناشناخته"
 
-#: ../ChapterListing.lua:641 ../ChapterListing.lua:789
+#: ../ChapterListing.lua:644
 msgid   "Download cancelled."
 msgstr  "دانلود لغو شد."
 
-#: ../ChapterListing.lua:647 ../ChapterListing.lua:795
+#: ../ChapterListing.lua:650
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "آیا مطمئنید که می خواهید دانلود را لغو کنید؟"
 
-#: ../ChapterListing.lua:776
-msgid   "Downloading chapter..."
-msgstr  "در حال دانلود فصل..."
-
-#: ../ChapterListing.lua:873 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:819 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "افزودن به کتابخانه"
 
-#: ../ChapterListing.lua:891 ../LibraryView.lua:356
+#: ../ChapterListing.lua:837 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "جزئیات"
 
-#: ../ChapterListing.lua:931
+#: ../ChapterListing.lua:877
 msgid   "Resume"
 msgstr  "رزومه"
 
-#: ../ChapterListing.lua:939
+#: ../ChapterListing.lua:885
 msgid   "Next Chapter"
 msgstr  "فصل بعدی"
 
-#: ../ChapterListing.lua:949
+#: ../ChapterListing.lua:895
 msgid   "Download unread chapters…"
 msgstr  "دانلود فصل های خوانده نشده …"
 
-#: ../ChapterListing.lua:962
+#: ../ChapterListing.lua:908
 msgid   "Group"
 msgstr  "گروه"
 
-#: ../ChapterListing.lua:963 ../ChapterListing.lua:1115
+#: ../ChapterListing.lua:909 ../ChapterListing.lua:1061
 msgid   "Filter by Group"
 msgstr  "فیلتر بر اساس گروه"
 
-#: ../ChapterListing.lua:986
+#: ../ChapterListing.lua:932
 msgid   "Adding to library..."
 msgstr  "در حال افزودن به کتابخانه..."
 
-#: ../ChapterListing.lua:993
+#: ../ChapterListing.lua:939
 msgid   "Failed to add to library"
 msgstr  "افزودن به کتابخانه انجام نشد"
 
-#: ../ChapterListing.lua:998
+#: ../ChapterListing.lua:944
 msgid   "Added to library."
 msgstr  "به کتابخانه اضافه شد"
 
-#: ../ChapterListing.lua:1046
+#: ../ChapterListing.lua:992
 msgid   "No more chapters to read!"
 msgstr  "دیگر فصلی برای خواندن وجود ندارد!"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "Next"
 msgstr  "بعدی"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "reading with"
 msgstr  "خواندن با"
 
-#: ../ChapterListing.lua:1057 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1003 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "بخوانید"
 
-#: ../ChapterListing.lua:1080
+#: ../ChapterListing.lua:1026
 msgid   "Show All"
 msgstr  "نمایش همه"
 
-#: ../ChapterListing.lua:1088
+#: ../ChapterListing.lua:1034
 msgid   "Showing all groups"
 msgstr  "نمایش همه گروه ها"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1054
 msgid   "Filtered to"
 msgstr  "فیلتر شده به"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1071
 msgid   "Download unread chapters..."
 msgstr  "دانلود فصل های خوانده نشده..."
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1073
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "تعداد فصل های خوانده نشده (پیش فرض: همه)"
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Specify amount or leave empty for all."
 msgstr  "مقدار را مشخص کنید یا برای همه خالی بگذارید."
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Will download from"
 msgstr  "دانلود خواهد شد از"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "مقدار فصل های خوانده نشده را برای دانلود مشخص کنید"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "or leave empty to download all of them."
 msgstr  "یا خالی بگذارید تا همه آنها را دانلود کنید."
 
-#: ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1097
 msgid   "Invalid amount of chapters!"
 msgstr  "تعداد فصل نامعتبر است!"
 
-#: ../ChapterListing.lua:1172
+#: ../ChapterListing.lua:1118
 msgid   "No unread chapters found for"
 msgstr  "هیچ فصل خوانده نشده ای برای"
 
-#: ../ChapterListing.lua:1196 ../ChapterListing.lua:1271
+#: ../ChapterListing.lua:1142 ../ChapterListing.lua:1217
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "دانلود همه فصل‌ها، مدتی طول می‌کشد…"
 
-#: ../ChapterListing.lua:1281
+#: ../ChapterListing.lua:1227
 msgid   "Waiting for download to be cancelled…"
 msgstr  "در انتظار لغو دانلود…"
 
-#: ../ChapterListing.lua:1283
+#: ../ChapterListing.lua:1229
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "دانلود همه فصل‌ها، مدتی طول می‌کشد… ("
 
-#: ../ChapterListing.lua:1286
+#: ../ChapterListing.lua:1232
 msgid   "Tap outside this message to cancel."
 msgstr  "برای لغو، خارج از این پیام ضربه بزنید."
 

@@ -30,8 +30,8 @@ msgstr  "स्थापना योग्य"
 msgid   "version"
 msgstr  "संस्करण"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:129
-#: ../ChapterListing.lua:209 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:130
+#: ../ChapterListing.lua:210 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "अज्ञात"
@@ -52,146 +52,146 @@ msgstr  "स्रोत स्थापित किया जा रहा ह
 msgid   "Chapter listing"
 msgstr  "अध्याय सूचीकरण"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "No chapters found"
 msgstr  "कोई अध्याय नहीं मिला"
 
-#: ../ChapterListing.lua:175
+#: ../ChapterListing.lua:176
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "अध्याय सूची को ताज़ा करने के लिए नीचे स्वाइप करने का प्रयास करें।"
 
-#: ../ChapterListing.lua:237
+#: ../ChapterListing.lua:238
 msgid   "Volume"
 msgstr  "आयतन"
 
-#: ../ChapterListing.lua:241 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:242 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "अध्याय"
 
-#: ../ChapterListing.lua:265
+#: ../ChapterListing.lua:266
 msgid   "Locked"
 msgstr  "बंद"
 
-#: ../ChapterListing.lua:292 ../ChapterListing.lua:492
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:495
 msgid   "Refreshing chapters..."
 msgstr  "ताज़ा अध्याय..."
 
-#: ../ChapterListing.lua:300 ../ChapterListing.lua:499
-#: ../ChapterListing.lua:1244
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:502
+#: ../ChapterListing.lua:1190
 msgid   "Cancelled."
 msgstr  "रद्द कर दिया गया."
 
-#: ../ChapterListing.lua:312
+#: ../ChapterListing.lua:313
 msgid   "Refresh chapter error"
 msgstr  "अध्याय त्रुटि ताज़ा करें"
 
-#: ../ChapterListing.lua:350
+#: ../ChapterListing.lua:353
 msgid   "Chapter is locked"
 msgstr  "चैप्टर लॉक है"
 
-#: ../ChapterListing.lua:367
+#: ../ChapterListing.lua:370
 msgid   "Open"
 msgstr  "खुला"
 
-#: ../ChapterListing.lua:377 ../ChapterListing.lua:883 ../LibraryView.lua:336
+#: ../ChapterListing.lua:380 ../ChapterListing.lua:829 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "ताज़ा करना"
 
-#: ../ChapterListing.lua:383
+#: ../ChapterListing.lua:386
 msgid   "Chapter refreshed"
 msgstr  "अध्याय ताज़ा किया गया"
 
-#: ../ChapterListing.lua:389 ../ChapterListing.lua:538
+#: ../ChapterListing.lua:392 ../ChapterListing.lua:541
 msgid   "Mark"
 msgstr  "निशान"
 
-#: ../ChapterListing.lua:401 ../ChapterListing.lua:1141
+#: ../ChapterListing.lua:404 ../ChapterListing.lua:1087
 msgid   "Download"
 msgstr  "डाउनलोड करना"
 
-#: ../ChapterListing.lua:401 ../LibraryView.lua:459
+#: ../ChapterListing.lua:404 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "निकालना"
 
-#: ../ChapterListing.lua:410
+#: ../ChapterListing.lua:413
 msgid   "Chapter downloaded"
 msgstr  "अध्याय डाउनलोड किया गया"
 
-#: ../ChapterListing.lua:429
+#: ../ChapterListing.lua:432
 msgid   "Revoke chapter..."
 msgstr  "अध्याय निरस्त करें..."
 
-#: ../ChapterListing.lua:447
+#: ../ChapterListing.lua:450
 msgid   "Removed chapter"
 msgstr  "अध्याय हटा दिया गया"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Marking"
 msgstr  "अंकन"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "Un-marking"
 msgstr  "अंकन हटाना"
 
-#: ../ChapterListing.lua:458
+#: ../ChapterListing.lua:461
 msgid   "chapter..."
 msgstr  "अध्याय..."
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:909 ../LibraryView.lua:372
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:855 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "पढ़ा हुआ चिह्नित करें"
 
-#: ../ChapterListing.lua:525 ../ChapterListing.lua:919 ../LibraryView.lua:383
+#: ../ChapterListing.lua:528 ../ChapterListing.lua:865 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "अपठित चिन्हित करो"
 
-#: ../ChapterListing.lua:526
+#: ../ChapterListing.lua:529
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Leaving blank will select all"
 msgstr  "खाली छोड़ने पर सभी का चयन हो जाएगा"
 
-#: ../ChapterListing.lua:527
+#: ../ChapterListing.lua:530
 msgid   "Mark chapters as read or unread"
 msgstr  "अध्यायों को पठित या अपठित के रूप में चिह्नित करें"
 
-#: ../ChapterListing.lua:531 ../ChapterListing.lua:1058
-#: ../ChapterListing.lua:1134 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:534 ../ChapterListing.lua:1004
+#: ../ChapterListing.lua:1080 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "रद्द करना"
 
-#: ../ChapterListing.lua:548
+#: ../ChapterListing.lua:551
 msgid   "Marking..."
 msgstr  "चिन्हित कर रहा हूँ..."
 
-#: ../ChapterListing.lua:558
+#: ../ChapterListing.lua:561
 msgid   "Marked"
 msgstr  "चिन्हित"
 
-#: ../ChapterListing.lua:577 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:580 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "त्रुटियाँ नहीं"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "Page"
 msgstr  "पेज"
 
-#: ../ChapterListing.lua:586
+#: ../ChapterListing.lua:589
 #, lua-format
 msgid   "attempts"
 msgstr  "प्रयास"
 
-#: ../ChapterListing.lua:594 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:597 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "...और %d अधिक त्रुटियाँ"
 
-#: ../ChapterListing.lua:613 ../ChapterListing.lua:628
+#: ../ChapterListing.lua:616 ../ChapterListing.lua:631
 msgid   "Could not download chapter."
 msgstr  "अध्याय डाउनलोड नहीं किया जा सका."
 
@@ -199,136 +199,132 @@ msgstr  "अध्याय डाउनलोड नहीं किया ज�
 msgid   "Loading chapter..."
 msgstr  "अध्याय लोड हो रहा है..."
 
-#: ../ChapterListing.lua:622 ../ChapterListing.lua:777
+#: ../ChapterListing.lua:625
 msgid   "unknown"
 msgstr  "अज्ञात"
 
-#: ../ChapterListing.lua:641 ../ChapterListing.lua:789
+#: ../ChapterListing.lua:644
 msgid   "Download cancelled."
 msgstr  "डाउनलोड रद्द किया गया."
 
-#: ../ChapterListing.lua:647 ../ChapterListing.lua:795
+#: ../ChapterListing.lua:650
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "क्या आप वाकई डाउनलोड रद्द करना चाहते हैं?"
 
-#: ../ChapterListing.lua:776
-msgid   "Downloading chapter..."
-msgstr  "अध्याय डाउनलोड हो रहा है..."
-
-#: ../ChapterListing.lua:873 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:819 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "लाइब्रेरी में जोड़ें"
 
-#: ../ChapterListing.lua:891 ../LibraryView.lua:356
+#: ../ChapterListing.lua:837 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "विवरण"
 
-#: ../ChapterListing.lua:931
+#: ../ChapterListing.lua:877
 msgid   "Resume"
 msgstr  "फिर शुरू करना"
 
-#: ../ChapterListing.lua:939
+#: ../ChapterListing.lua:885
 msgid   "Next Chapter"
 msgstr  "अगला अध्याय"
 
-#: ../ChapterListing.lua:949
+#: ../ChapterListing.lua:895
 msgid   "Download unread chapters…"
 msgstr  "अपठित अध्याय डाउनलोड करें..."
 
-#: ../ChapterListing.lua:962
+#: ../ChapterListing.lua:908
 msgid   "Group"
 msgstr  "समूह"
 
-#: ../ChapterListing.lua:963 ../ChapterListing.lua:1115
+#: ../ChapterListing.lua:909 ../ChapterListing.lua:1061
 msgid   "Filter by Group"
 msgstr  "समूह द्वारा फ़िल्टर करें"
 
-#: ../ChapterListing.lua:986
+#: ../ChapterListing.lua:932
 msgid   "Adding to library..."
 msgstr  "लाइब्रेरी में जोड़ा जा रहा है..."
 
-#: ../ChapterListing.lua:993
+#: ../ChapterListing.lua:939
 msgid   "Failed to add to library"
 msgstr  "लाइब्रेरी में जोड़ने में विफल"
 
-#: ../ChapterListing.lua:998
+#: ../ChapterListing.lua:944
 msgid   "Added to library."
 msgstr  "लाइब्रेरी में जोड़ा गया."
 
-#: ../ChapterListing.lua:1046
+#: ../ChapterListing.lua:992
 msgid   "No more chapters to read!"
 msgstr  "पढ़ने के लिए और कोई अध्याय नहीं!"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "Next"
 msgstr  "अगला"
 
-#: ../ChapterListing.lua:1056
+#: ../ChapterListing.lua:1002
 msgid   "reading with"
 msgstr  "के साथ पढ़ना"
 
-#: ../ChapterListing.lua:1057 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1003 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "पढ़ना"
 
-#: ../ChapterListing.lua:1080
+#: ../ChapterListing.lua:1026
 msgid   "Show All"
 msgstr  "सब दिखाएं"
 
-#: ../ChapterListing.lua:1088
+#: ../ChapterListing.lua:1034
 msgid   "Showing all groups"
 msgstr  "सभी समूह दिखाए जा रहे हैं"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1054
 msgid   "Filtered to"
 msgstr  "को फ़िल्टर किया गया"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1071
 msgid   "Download unread chapters..."
 msgstr  "अपठित अध्याय डाउनलोड करें..."
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1073
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "अपठित अध्यायों की मात्रा (डिफ़ॉल्ट: सभी)"
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Specify amount or leave empty for all."
 msgstr  "राशि निर्दिष्ट करें या सभी के लिए खाली छोड़ दें।"
 
-#: ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1075
 msgid   "Will download from"
 msgstr  "से डाउनलोड होगा"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "डाउनलोड करने के लिए अपठित अध्यायों की मात्रा निर्दिष्ट करें"
 
-#: ../ChapterListing.lua:1130
+#: ../ChapterListing.lua:1076
 msgid   "or leave empty to download all of them."
 msgstr  "या उन सभी को डाउनलोड करने के लिए खाली छोड़ दें।"
 
-#: ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1097
 msgid   "Invalid amount of chapters!"
 msgstr  "अध्यायों की अमान्य संख्या!"
 
-#: ../ChapterListing.lua:1172
+#: ../ChapterListing.lua:1118
 msgid   "No unread chapters found for"
 msgstr  "इसके लिए कोई अपठित अध्याय नहीं मिला"
 
-#: ../ChapterListing.lua:1196 ../ChapterListing.lua:1271
+#: ../ChapterListing.lua:1142 ../ChapterListing.lua:1217
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "सभी अध्याय डाउनलोड करने में कुछ समय लगेगा..."
 
-#: ../ChapterListing.lua:1281
+#: ../ChapterListing.lua:1227
 msgid   "Waiting for download to be cancelled…"
 msgstr  "डाउनलोड रद्द होने की प्रतीक्षा की जा रही है..."
 
-#: ../ChapterListing.lua:1283
+#: ../ChapterListing.lua:1229
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "सभी अध्यायों को डाउनलोड करने में कुछ समय लगेगा... ("
 
-#: ../ChapterListing.lua:1286
+#: ../ChapterListing.lua:1232
 msgid   "Tap outside this message to cancel."
 msgstr  "रद्द करने के लिए इस संदेश के बाहर टैप करें."
 

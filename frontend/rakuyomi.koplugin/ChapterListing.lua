@@ -730,6 +730,15 @@ function ChapterListing:prunePreloadJobs()
     if status.type == 'SUCCESS' or status.type == 'ERROR' then
       logger.info("Pruning finished preload job for chapter: ", chapter_id)
       self.preload_jobs[chapter_id] = nil
+
+      if status.type == 'SUCCESS' then
+        for __, chapter in ipairs(self.chapters) do
+          if chapter.id == chapter_id then
+            chapter.downloaded = true
+            break
+          end
+        end
+      end
     end
   end
 end

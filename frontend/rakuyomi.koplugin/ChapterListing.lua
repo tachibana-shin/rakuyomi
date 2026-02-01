@@ -266,6 +266,7 @@ function ChapterListing:showSelectLanguage()
       self:updateItems()
 
       self:patchTitleBar(#self.langs_selected)
+      UIManager:setDirty(self.show_parent, "ui", self.dimen)
     end
   }
 

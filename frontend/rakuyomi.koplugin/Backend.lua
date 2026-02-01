@@ -171,6 +171,7 @@ end
 --- @field downloaded boolean If this chapter was already downloaded to the storage.
 --- @field title string? The title of this chapter, if any.
 --- @field locked boolean The locked
+--- @field lang string? The language code
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.

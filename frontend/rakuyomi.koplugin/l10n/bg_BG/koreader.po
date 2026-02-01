@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-01-07 12:59+0700\n"
+        "POT-Creation-Date: 2026-02-02 02:22+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -15,317 +15,321 @@ msgstr  "Project-Id-Version: rakuyomi.koreader \n"
 msgid   "Available sources"
 msgstr  "Налични източници"
 
-#: ../AvailableSourcesListing.lua:120
+#: ../AvailableSourcesListing.lua:111
 msgid   "Update available!"
 msgstr  "Налична актуализация!"
 
-#: ../AvailableSourcesListing.lua:124
+#: ../AvailableSourcesListing.lua:115
 msgid   "Latest version installed"
 msgstr  "Инсталирана последна версия"
 
-#: ../AvailableSourcesListing.lua:127
+#: ../AvailableSourcesListing.lua:118
 msgid   "Installable"
 msgstr  "Може да се инсталира"
 
-#: ../AvailableSourcesListing.lua:134 ../InstalledSourcesListing.lua:81
+#: ../AvailableSourcesListing.lua:125 ../InstalledSourcesListing.lua:81
 msgid   "version"
 msgstr  "версия"
 
-#: ../AvailableSourcesListing.lua:137 ../ChapterListing.lua:125
-#: ../ChapterListing.lua:205 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:294
+#: ../ChapterListing.lua:374 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Неизвестен"
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "No available sources found."
 msgstr  "Няма намерени налични източници."
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "Try adding some source lists by looking at our README!"
 msgstr  "Опитайте да добавите някои списъци с източници, като погледнете нашия README!"
 
-#: ../AvailableSourcesListing.lua:167
+#: ../AvailableSourcesListing.lua:158
 msgid   "Installing source..."
 msgstr  "Източникът се инсталира..."
 
-#: ../ChapterListing.lua:38
+#: ../ChapterListing.lua:53
 msgid   "Chapter listing"
 msgstr  "Списък на глави"
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:252 ../ChapterListing.lua:1020
+msgid   "Languages"
+msgstr  "Езици"
+
+#: ../ChapterListing.lua:340
 msgid   "No chapters found"
 msgstr  "Няма намерени глави"
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:340
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Опитайте да плъзнете надолу, за да опресните списъка с глави."
 
-#: ../ChapterListing.lua:233
+#: ../ChapterListing.lua:402
 msgid   "Volume"
 msgstr  "Обем"
 
-#: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:406 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Глава"
 
-#: ../ChapterListing.lua:261
+#: ../ChapterListing.lua:429
 msgid   "Locked"
 msgstr  "Заключено"
 
-#: ../ChapterListing.lua:288 ../ChapterListing.lua:488
+#: ../ChapterListing.lua:465 ../ChapterListing.lua:665
 msgid   "Refreshing chapters..."
 msgstr  "Главите се опресняват..."
 
-#: ../ChapterListing.lua:296 ../ChapterListing.lua:495
-#: ../ChapterListing.lua:1124
+#: ../ChapterListing.lua:473 ../ChapterListing.lua:672
+#: ../ChapterListing.lua:1315
 msgid   "Cancelled."
 msgstr  "Отменено."
 
-#: ../ChapterListing.lua:308
+#: ../ChapterListing.lua:485
 msgid   "Refresh chapter error"
 msgstr  "Грешка при опресняване на глава"
 
-#: ../ChapterListing.lua:346
+#: ../ChapterListing.lua:523
 msgid   "Chapter is locked"
 msgstr  "Главата е заключена"
 
-#: ../ChapterListing.lua:363
+#: ../ChapterListing.lua:540
 msgid   "Open"
 msgstr  "Отворете"
 
-#: ../ChapterListing.lua:373 ../ChapterListing.lua:763 ../LibraryView.lua:336
+#: ../ChapterListing.lua:550 ../ChapterListing.lua:940 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Опресняване"
 
-#: ../ChapterListing.lua:379
+#: ../ChapterListing.lua:556
 msgid   "Chapter refreshed"
 msgstr  "Главата е опреснена"
 
-#: ../ChapterListing.lua:385 ../ChapterListing.lua:534
+#: ../ChapterListing.lua:562 ../ChapterListing.lua:711
 msgid   "Mark"
 msgstr  "Марк"
 
-#: ../ChapterListing.lua:397 ../ChapterListing.lua:1021
+#: ../ChapterListing.lua:574 ../ChapterListing.lua:1212
 msgid   "Download"
 msgstr  "Изтегляне"
 
-#: ../ChapterListing.lua:397 ../LibraryView.lua:459
+#: ../ChapterListing.lua:574 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Премахнете"
 
-#: ../ChapterListing.lua:406
+#: ../ChapterListing.lua:583
 msgid   "Chapter downloaded"
 msgstr  "Главата е изтеглена"
 
-#: ../ChapterListing.lua:425
+#: ../ChapterListing.lua:602
 msgid   "Revoke chapter..."
 msgstr  "Отмяна на глава..."
 
-#: ../ChapterListing.lua:443
+#: ../ChapterListing.lua:620
 msgid   "Removed chapter"
 msgstr  "Премахната глава"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:631
 msgid   "Marking"
 msgstr  "Маркиране"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:631
 msgid   "Un-marking"
 msgstr  "Демаркиране"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:631
 msgid   "chapter..."
 msgstr  "глава..."
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:789 ../LibraryView.lua:372
+#: ../ChapterListing.lua:698 ../ChapterListing.lua:966 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Маркирайте прочетено"
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:799 ../LibraryView.lua:383
+#: ../ChapterListing.lua:698 ../ChapterListing.lua:976 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Отбележете като непрочетено"
 
-#: ../ChapterListing.lua:522
+#: ../ChapterListing.lua:699
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:700
 msgid   "Leaving blank will select all"
 msgstr  "Ако оставите празно, ще изберете всички"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:700
 msgid   "Mark chapters as read or unread"
 msgstr  "Маркирайте главите като прочетени или непрочетени"
 
-#: ../ChapterListing.lua:527 ../ChapterListing.lua:938
-#: ../ChapterListing.lua:1014 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:704 ../ChapterListing.lua:1129
+#: ../ChapterListing.lua:1205 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Отказ"
 
-#: ../ChapterListing.lua:544
+#: ../ChapterListing.lua:721
 msgid   "Marking..."
 msgstr  "Маркиране..."
 
-#: ../ChapterListing.lua:554
+#: ../ChapterListing.lua:731
 msgid   "Marked"
 msgstr  "Маркирани"
 
-#: ../ChapterListing.lua:573 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Без грешки"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:759
 #, lua-format
 msgid   "Page"
 msgstr  "Страница"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:759
 #, lua-format
 msgid   "attempts"
 msgstr  "опити"
 
-#: ../ChapterListing.lua:590 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… и още %d грешки"
 
-#: ../ChapterListing.lua:609 ../ChapterListing.lua:624
+#: ../ChapterListing.lua:786 ../ChapterListing.lua:801
 msgid   "Could not download chapter."
 msgstr  "Неуспешно изтегляне на глава."
 
-#: ../ChapterListing.lua:617
+#: ../ChapterListing.lua:794
 msgid   "Downloading chapter..."
 msgstr  "Главата се изтегля..."
 
-#: ../ChapterListing.lua:618
+#: ../ChapterListing.lua:795
 msgid   "unknown"
 msgstr  "неизвестен"
 
-#: ../ChapterListing.lua:637
+#: ../ChapterListing.lua:814
 msgid   "Download cancelled."
 msgstr  "Изтеглянето е отменено."
 
-#: ../ChapterListing.lua:643
+#: ../ChapterListing.lua:820
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Сигурни ли сте, че искате да отмените изтеглянето?"
 
-#: ../ChapterListing.lua:753 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:930 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Добавяне към библиотеката"
 
-#: ../ChapterListing.lua:771 ../LibraryView.lua:356
+#: ../ChapterListing.lua:948 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Подробности"
 
-#: ../ChapterListing.lua:811
+#: ../ChapterListing.lua:988
 msgid   "Resume"
 msgstr  "Резюме"
 
-#: ../ChapterListing.lua:819
+#: ../ChapterListing.lua:996
 msgid   "Next Chapter"
 msgstr  "Следваща глава"
 
-#: ../ChapterListing.lua:829
+#: ../ChapterListing.lua:1006
 msgid   "Download unread chapters…"
 msgstr  "Изтегляне на непрочетени глави..."
 
-#: ../ChapterListing.lua:842
+#: ../ChapterListing.lua:1033
 msgid   "Group"
 msgstr  "Група"
 
-#: ../ChapterListing.lua:843 ../ChapterListing.lua:995
+#: ../ChapterListing.lua:1034 ../ChapterListing.lua:1186
 msgid   "Filter by Group"
 msgstr  "Филтриране по група"
 
-#: ../ChapterListing.lua:866
+#: ../ChapterListing.lua:1057
 msgid   "Adding to library..."
 msgstr  "Добавяне към библиотеката..."
 
-#: ../ChapterListing.lua:873
+#: ../ChapterListing.lua:1064
 msgid   "Failed to add to library"
 msgstr  "Неуспешно добавяне към библиотеката"
 
-#: ../ChapterListing.lua:878
+#: ../ChapterListing.lua:1069
 msgid   "Added to library."
 msgstr  "Добавено към библиотеката."
 
-#: ../ChapterListing.lua:926
+#: ../ChapterListing.lua:1117
 msgid   "No more chapters to read!"
 msgstr  "Няма повече глави за четене!"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1127
 msgid   "Next"
 msgstr  "Следваща"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1127
 msgid   "reading with"
 msgstr  "четене със"
 
-#: ../ChapterListing.lua:937 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1128 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Прочетете"
 
-#: ../ChapterListing.lua:960
+#: ../ChapterListing.lua:1151
 msgid   "Show All"
 msgstr  "Покажи всички"
 
-#: ../ChapterListing.lua:968
+#: ../ChapterListing.lua:1159
 msgid   "Showing all groups"
 msgstr  "Показване на всички групи"
 
-#: ../ChapterListing.lua:988
+#: ../ChapterListing.lua:1179
 msgid   "Filtered to"
 msgstr  "Филтриран до"
 
-#: ../ChapterListing.lua:1005
+#: ../ChapterListing.lua:1196
 msgid   "Download unread chapters..."
 msgstr  "Изтегляне на непрочетени глави..."
 
-#: ../ChapterListing.lua:1007
+#: ../ChapterListing.lua:1198
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Брой непрочетени глави (по подразбиране: всички)"
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1200
 msgid   "Specify amount or leave empty for all."
 msgstr  "Посочете сумата или оставете празно за всички."
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1200
 msgid   "Will download from"
 msgstr  "Ще се изтегли от"
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1201
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Посочете количеството непрочетени глави за изтегляне"
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1201
 msgid   "or leave empty to download all of them."
 msgstr  "или оставете празно, за да изтеглите всички."
 
-#: ../ChapterListing.lua:1031
+#: ../ChapterListing.lua:1222
 msgid   "Invalid amount of chapters!"
 msgstr  "Невалиден брой глави!"
 
-#: ../ChapterListing.lua:1052
+#: ../ChapterListing.lua:1243
 msgid   "No unread chapters found for"
 msgstr  "Няма намерени непрочетени глави за"
 
-#: ../ChapterListing.lua:1076 ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1267 ../ChapterListing.lua:1342
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Изтегляне на всички глави, това ще отнеме известно време..."
 
-#: ../ChapterListing.lua:1161
+#: ../ChapterListing.lua:1352
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Изчаква се анулиране на изтеглянето..."
 
-#: ../ChapterListing.lua:1163
+#: ../ChapterListing.lua:1354
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Изтегляне на всички глави, това ще отнеме известно време... ("
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1357
 msgid   "Tap outside this message to cancel."
 msgstr  "Докоснете извън това съобщение, за да отмените."
 
@@ -803,7 +807,7 @@ msgstr  "Идентификаторите на източниците пропу
 msgid   "Allow requisition of the back button"
 msgstr  "Разрешете искане на бутона за връщане назад"
 
-#: ../SourceSettings.lua:209
+#: ../SourceSettings.lua:197
 msgid   "Source settings"
 msgstr  "Настройки на източника"
 

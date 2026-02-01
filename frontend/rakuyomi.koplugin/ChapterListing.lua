@@ -12,6 +12,14 @@ local LoadingDialog = require("LoadingDialog")
 local util = require("util")
 local ffiutil = require("ffi/util")
 local _ = require("gettext+")
+local IconButton = require("ui/widget/iconbutton")
+local HorizontalGroup = require("ui/widget/horizontalgroup")
+local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
+local Button = require("ui/widget/button")
+local md5 = require("ffi/sha2").md5
+local DataStorage = require("datastorage")
+local LuaSettings = require("luasettings")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -22,14 +30,21 @@ local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
 local MangaReader = require("MangaReader")
 local MangaInfoWidget = require("MangaInfoWidget")
+local CheckboxDialog = require("CheckboxDialog")
 local Testing = require("testing")
 local calcLastReadText = require("utils/calcLastReadText")
 
 local findNextChapter = require("chapters/findNextChapter")
 
+local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
+local Font = require("ui/font")
+local SMALL_FONT_FACE = Font:getFace("smallffont")
+
 --- @class ChapterListing : { [any]: any }
 --- @field manga Manga
+--- @field raw_chapters Chapter[]
 --- @field chapters Chapter[]
+--- @field langs BaseOption[]
 --- @field chapter_sorting_mode ChapterSortingMode
 local ChapterListing = Menu:extend {
   name = "chapter_listing",
@@ -41,7 +56,10 @@ local ChapterListing = Menu:extend {
   -- the manga we're listing
   manga = nil,
   -- list of chapters
+  raw_chapters = {},
   chapters = {},
+  langs = {},
+  langs_selected = {},
   chapter_sorting_mode = nil,
   -- callback to be called when pressing the back button
   on_return_callback = nil,
@@ -80,6 +98,44 @@ function ChapterListing:onClose(call_return)
   end
 end
 
+function ChapterListing:readSettings()
+  if self.r_settings == nil then
+    self.r_settings = LuaSettings:open(DataStorage:getSettingsDir() .. "/rakuyomi_lang.lua")
+  end
+
+  return self.r_settings
+end
+
+-- Filter chapter list by selected languages
+---@param raw_chapters Chapter[]
+---@param langs_selected string[]
+---@return Chapter[]
+local function filterChaptersByLang(raw_chapters, langs_selected)
+  -- If 0 languages selected, no need to filter
+  if not langs_selected or #langs_selected < 1 then
+    return raw_chapters
+  end
+
+  -- Build fast lookup table for langs
+  -- { en = true, jp = true, ... }
+  local lang_map = {}
+  for _, lang in ipairs(langs_selected) do
+    lang_map[lang] = true
+  end
+
+  -- Filter chapters
+  local result = {}
+  for _, chapter in ipairs(raw_chapters) do
+    local lang = chapter.lang or "unknown"
+    -- chapter.lang may be nil → safe check
+    if lang_map[lang] then
+      table.insert(result, chapter)
+    end
+  end
+
+  return result
+end
+
 --- Fetches the cached chapter list from the backend and updates the menu items.
 function ChapterListing:updateChapterList()
   local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
@@ -90,14 +146,127 @@ function ChapterListing:updateChapterList()
     return
   end
 
+  local key = self:hashMangaId() .. "_lang"
+  self.langs_selected = self:readSettings():readSetting(key, {})
+
   local chapter_results = response.body
-  self.chapters = chapter_results
+  self.raw_chapters = chapter_results
+  self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
+
+  local langs = {}
+  local count_langs = 0
+  for _, chapter in ipairs(chapter_results) do
+    local lang = chapter.lang or "unknown"
+    if not langs[lang] then
+      langs[lang] = true
+      count_langs = count_langs + 1
+    end
+  end
+
+  if count_langs >= 2 then
+    self.langs = {}
+
+    local has_settings = #self.langs_selected > 0
+    for lang, _ in pairs(langs) do
+      table.insert(self.langs, { id = lang, name = lang })
+      -- default select all language
+      if not has_settings then
+        table.insert(self.langs_selected, lang)
+      end
+    end
+
+    self:patchTitleBar(#self.langs_selected)
+    UIManager:setDirty(self.show_parent, "ui", self.dimen)
+  end
 
   self:extractAvailableScanlators()
 
   self:loadSavedScanlatorPreference()
 
   self:updateItems()
+end
+
+--- @private
+--- @param count_lang number
+function ChapterListing:patchTitleBar(count_lang)
+  -- custom
+  local left_icon_size_ratio = self.title_bar.left_icon_size_ratio
+
+  local left_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * left_icon_size_ratio)
+  local button_padding = Screen:scaleBySize(11)
+
+  self.title_bar.left_button = HorizontalGroup:new {
+    IconButton:new {
+      icon = "appbar.menu",
+      icon_rotation_angle = self.left_icon_rotation_angle,
+      width = left_icon_size,
+      height = left_icon_size,
+      padding = button_padding,
+      padding_bottom = left_icon_size,
+      callback = self.title_bar.left_icon_tap_callback,
+      hold_callback = self.title_bar.left_icon_hold_callback,
+      allow_flash = self.title_bar.left_icon_allow_flash,
+      show_parent = self.title_bar.show_parent,
+    },
+
+    VerticalGroup:new {
+      Button:new {
+        text = Icons.LANG .. " " .. count_lang,
+        face = SMALL_FONT_FACE,
+        bordersize = 0,
+        enabled = true,
+        text_font_size = left_icon_size,
+        text_font_bold = false,
+        callback = function()
+          self:showSelectLanguage()
+        end
+      },
+      VerticalSpan:new {
+        width = left_icon_size / 2
+      }
+    },
+  }
+
+  --- [1] title
+  --- [2] left button
+  --- [3] right button
+  if self.title_bar[2] ~= nil then
+    self.title_bar[2] = self.title_bar.left_button
+  end
+end
+
+--- @private
+function ChapterListing:hashMangaId()
+  ---@type Manga
+  local manga = self.manga
+  local key = md5(manga.source.id .. "/" .. manga.id)
+
+  return key
+end
+
+--- @private
+function ChapterListing:showSelectLanguage()
+  local key = self:hashMangaId() .. "_lang"
+  ---@diagnostic disable-next-line: redundant-parameter
+  local dialog = CheckboxDialog:new {
+    title = _("Languages"),
+    current = self.langs_selected,
+    options = self.langs,
+    update_callback = function(value)
+      self.langs_selected = value
+      self:readSettings():saveSetting(key, value)
+      self:readSettings():flush()
+
+      self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
+      self:extractAvailableScanlators()
+      self:loadSavedScanlatorPreference()
+      self:updateItems()
+
+      self:patchTitleBar(#self.langs_selected)
+    end
+  }
+
+  UIManager:show(dialog)
 end
 
 -- Load saved scanlator preference from backend
@@ -255,10 +424,18 @@ function ChapterListing:generateItemTableFromChapters(chapters)
           mandatory .. Icons.FA_DOWNLOAD
     end
 
+    local post_text = nil
+    if chapter.locked then
+      post_text = _("Locked")
+    end
+    if #self.langs >= 2 and chapter.lang then
+      post_text = (post_text and post_text .. " " or "") .. "(" .. chapter.lang .. ")"
+    end
+
     table.insert(item_table, {
       chapter = chapter,
       text = text,
-      post_text = chapter.locked and _("Locked") or nil,
+      post_text = post_text,
       dim = chapter.locked,
       mandatory = chapter.locked and Icons.FA_LOCKED or mandatory,
     })
@@ -835,6 +1012,20 @@ function ChapterListing:openMenu()
       }
     }
   }
+
+  if #self.langs >= 2 then
+    table.insert(buttons, 2,
+      {
+        {
+          text = Icons.LANG .. " " .. _("Languages"),
+          callback = function()
+            UIManager:close(dialog)
+
+            self:showSelectLanguage()
+          end
+        }
+      })
+  end
 
   -- Add scanlator filter button if multiple scanlators exist
   if #self.available_scanlators > 1 then

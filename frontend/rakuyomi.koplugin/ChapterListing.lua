@@ -332,10 +332,9 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     chapter_sorting_mode = settings.chapter_sorting_mode,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
-    page = self.page
+    page = self.page,
+    preload_count = settings["preload_chapters"] or 0,
   }
-
-  self.preload_count = settings["preload_chapters"]
 
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)
@@ -754,7 +753,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       self:prunePreloadJobs()
 
       local nextChapter = findNextChapter(self.chapters, chapter)
-      local nextChapterDownloadJob = nil
+      local nextChapterDownloadJob = nextChapter and self.preload_jobs[nextChapter.id] or nil
 
       if nextChapter ~= nil then
         logger.info("opening next chapter", nextChapter)

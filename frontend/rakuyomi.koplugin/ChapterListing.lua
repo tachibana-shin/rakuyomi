@@ -335,7 +335,6 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
     page = self.page,
     preload_count = settings["preload_chapters"] or 0,
   }
-
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)
 

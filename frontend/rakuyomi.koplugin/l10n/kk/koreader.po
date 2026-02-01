@@ -72,12 +72,12 @@ msgstr  "тарау"
 msgid   "Locked"
 msgstr  "Құлыпталған"
 
-#: ../ChapterListing.lua:293 ../ChapterListing.lua:495
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:494
 msgid   "Refreshing chapters..."
 msgstr  "Тараулар жаңартылуда..."
 
-#: ../ChapterListing.lua:301 ../ChapterListing.lua:502
-#: ../ChapterListing.lua:1190
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:501
+#: ../ChapterListing.lua:1189
 msgid   "Cancelled."
 msgstr  "Бас тартылды."
 
@@ -85,113 +85,113 @@ msgstr  "Бас тартылды."
 msgid   "Refresh chapter error"
 msgstr  "Жаңарту тарау қатесі"
 
-#: ../ChapterListing.lua:353
+#: ../ChapterListing.lua:352
 msgid   "Chapter is locked"
 msgstr  "Бөлім құлыпталған"
 
-#: ../ChapterListing.lua:370
+#: ../ChapterListing.lua:369
 msgid   "Open"
 msgstr  "Ашық"
 
-#: ../ChapterListing.lua:380 ../ChapterListing.lua:829 ../LibraryView.lua:336
+#: ../ChapterListing.lua:379 ../ChapterListing.lua:828 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Жаңарту"
 
-#: ../ChapterListing.lua:386
+#: ../ChapterListing.lua:385
 msgid   "Chapter refreshed"
 msgstr  "Бөлім жаңартылды"
 
-#: ../ChapterListing.lua:392 ../ChapterListing.lua:541
+#: ../ChapterListing.lua:391 ../ChapterListing.lua:540
 msgid   "Mark"
 msgstr  "Белгілеу"
 
-#: ../ChapterListing.lua:404 ../ChapterListing.lua:1087
+#: ../ChapterListing.lua:403 ../ChapterListing.lua:1086
 msgid   "Download"
 msgstr  "Жүктеп алу"
 
-#: ../ChapterListing.lua:404 ../LibraryView.lua:459
+#: ../ChapterListing.lua:403 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Жою"
 
-#: ../ChapterListing.lua:413
+#: ../ChapterListing.lua:412
 msgid   "Chapter downloaded"
 msgstr  "Бөлім жүктелді"
 
-#: ../ChapterListing.lua:432
+#: ../ChapterListing.lua:431
 msgid   "Revoke chapter..."
 msgstr  "Тарауды жою..."
 
-#: ../ChapterListing.lua:450
+#: ../ChapterListing.lua:449
 msgid   "Removed chapter"
 msgstr  "Жойылған тарау"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "Marking"
 msgstr  "Белгілеу"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "Un-marking"
 msgstr  "Белгіні алып тастау"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "chapter..."
 msgstr  "тарау..."
 
-#: ../ChapterListing.lua:528 ../ChapterListing.lua:855 ../LibraryView.lua:372
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:854 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Оқылған деп белгілеңіз"
 
-#: ../ChapterListing.lua:528 ../ChapterListing.lua:865 ../LibraryView.lua:383
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:864 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Оқылмаған деп белгілеңіз"
 
-#: ../ChapterListing.lua:529
+#: ../ChapterListing.lua:528
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:530
+#: ../ChapterListing.lua:529
 msgid   "Leaving blank will select all"
 msgstr  "Бос қалдырсаңыз, барлығы таңдалады"
 
-#: ../ChapterListing.lua:530
+#: ../ChapterListing.lua:529
 msgid   "Mark chapters as read or unread"
 msgstr  "Тарауларды оқылған немесе оқылмаған деп белгілеңіз"
 
-#: ../ChapterListing.lua:534 ../ChapterListing.lua:1004
-#: ../ChapterListing.lua:1080 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:533 ../ChapterListing.lua:1003
+#: ../ChapterListing.lua:1079 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Болдырмау"
 
-#: ../ChapterListing.lua:551
+#: ../ChapterListing.lua:550
 msgid   "Marking..."
 msgstr  "Белгіленуде..."
 
-#: ../ChapterListing.lua:561
+#: ../ChapterListing.lua:560
 msgid   "Marked"
 msgstr  "Белгіленген"
 
-#: ../ChapterListing.lua:580 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:579 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Қателер жоқ"
 
-#: ../ChapterListing.lua:589
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "Page"
 msgstr  "Бет"
 
-#: ../ChapterListing.lua:589
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "attempts"
 msgstr  "әрекеттері"
 
-#: ../ChapterListing.lua:597 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:596 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… және тағы %d қате"
 
-#: ../ChapterListing.lua:616 ../ChapterListing.lua:631
+#: ../ChapterListing.lua:615 ../ChapterListing.lua:630
 msgid   "Could not download chapter."
 msgstr  "Бөлімді жүктеп алу мүмкін болмады."
 
@@ -199,132 +199,132 @@ msgstr  "Бөлімді жүктеп алу мүмкін болмады."
 msgid   "Loading chapter..."
 msgstr  "Бөлім жүктелуде..."
 
-#: ../ChapterListing.lua:625
+#: ../ChapterListing.lua:624
 msgid   "unknown"
 msgstr  "белгісіз"
 
-#: ../ChapterListing.lua:644
+#: ../ChapterListing.lua:643
 msgid   "Download cancelled."
 msgstr  "Жүктеп алу тоқтатылды."
 
-#: ../ChapterListing.lua:650
+#: ../ChapterListing.lua:649
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Жүктеп алудан бас тартқыңыз келетініне сенімдісіз бе?"
 
-#: ../ChapterListing.lua:819 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:818 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Кітапханаға қосу"
 
-#: ../ChapterListing.lua:837 ../LibraryView.lua:356
+#: ../ChapterListing.lua:836 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Мәліметтер"
 
-#: ../ChapterListing.lua:877
+#: ../ChapterListing.lua:876
 msgid   "Resume"
 msgstr  "Резюме"
 
-#: ../ChapterListing.lua:885
+#: ../ChapterListing.lua:884
 msgid   "Next Chapter"
 msgstr  "Келесі тарау"
 
-#: ../ChapterListing.lua:895
+#: ../ChapterListing.lua:894
 msgid   "Download unread chapters…"
 msgstr  "Оқылмаған тарауларды жүктеп алу…"
 
-#: ../ChapterListing.lua:908
+#: ../ChapterListing.lua:907
 msgid   "Group"
 msgstr  "Топ"
 
-#: ../ChapterListing.lua:909 ../ChapterListing.lua:1061
+#: ../ChapterListing.lua:908 ../ChapterListing.lua:1060
 msgid   "Filter by Group"
 msgstr  "Топ бойынша сүзу"
 
-#: ../ChapterListing.lua:932
+#: ../ChapterListing.lua:931
 msgid   "Adding to library..."
 msgstr  "Кітапханаға қосылуда..."
 
-#: ../ChapterListing.lua:939
+#: ../ChapterListing.lua:938
 msgid   "Failed to add to library"
 msgstr  "Кітапханаға қосу мүмкін болмады"
 
-#: ../ChapterListing.lua:944
+#: ../ChapterListing.lua:943
 msgid   "Added to library."
 msgstr  "Кітапханаға қосылды."
 
-#: ../ChapterListing.lua:992
+#: ../ChapterListing.lua:991
 msgid   "No more chapters to read!"
 msgstr  "Оқылатын тараулар жоқ!"
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1001
 msgid   "Next"
 msgstr  "Келесі"
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1001
 msgid   "reading with"
 msgstr  "бірге оқу"
 
-#: ../ChapterListing.lua:1003 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1002 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Оқыңыз"
 
-#: ../ChapterListing.lua:1026
+#: ../ChapterListing.lua:1025
 msgid   "Show All"
 msgstr  "Барлығын көрсету"
 
-#: ../ChapterListing.lua:1034
+#: ../ChapterListing.lua:1033
 msgid   "Showing all groups"
 msgstr  "Барлық топтарды көрсету"
 
-#: ../ChapterListing.lua:1054
+#: ../ChapterListing.lua:1053
 msgid   "Filtered to"
 msgstr  "сүзгіден өткен"
 
-#: ../ChapterListing.lua:1071
+#: ../ChapterListing.lua:1070
 msgid   "Download unread chapters..."
 msgstr  "Оқылмаған тарауларды жүктеп алу..."
 
-#: ../ChapterListing.lua:1073
+#: ../ChapterListing.lua:1072
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Оқылмаған тараулар саны (әдепкі: барлығы)"
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1074
 msgid   "Specify amount or leave empty for all."
 msgstr  "соманы көрсетіңіз немесе барлығы үшін бос қалдырыңыз."
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1074
 msgid   "Will download from"
 msgstr  "бастап жүктеп алады"
 
-#: ../ChapterListing.lua:1076
+#: ../ChapterListing.lua:1075
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Жүктеп алынатын оқылмаған тараулар санын көрсетіңіз"
 
-#: ../ChapterListing.lua:1076
+#: ../ChapterListing.lua:1075
 msgid   "or leave empty to download all of them."
 msgstr  "немесе олардың барлығын жүктеп алу үшін бос қалдырыңыз."
 
-#: ../ChapterListing.lua:1097
+#: ../ChapterListing.lua:1096
 msgid   "Invalid amount of chapters!"
 msgstr  "Тараулардың саны жарамсыз!"
 
-#: ../ChapterListing.lua:1118
+#: ../ChapterListing.lua:1117
 msgid   "No unread chapters found for"
 msgstr  "үшін оқылмаған тараулар табылмады"
 
-#: ../ChapterListing.lua:1142 ../ChapterListing.lua:1217
+#: ../ChapterListing.lua:1141 ../ChapterListing.lua:1216
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Барлық тараулар жүктелуде, бұл біраз уақыт алады…"
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1226
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Жүктеп алудан бас тарту күтілуде…"
 
-#: ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1228
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Барлық тарауларды жүктеп алу, бұл біраз уақыт алады… ("
 
-#: ../ChapterListing.lua:1232
+#: ../ChapterListing.lua:1231
 msgid   "Tap outside this message to cancel."
 msgstr  "Бас тарту үшін осы хабардың сыртын түртіңіз."
 

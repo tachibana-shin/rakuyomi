@@ -73,12 +73,12 @@ msgstr  "Hoofdstuk"
 msgid   "Locked"
 msgstr  "Vergrendeld"
 
-#: ../ChapterListing.lua:293 ../ChapterListing.lua:495
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:494
 msgid   "Refreshing chapters..."
 msgstr  "Verfrissende hoofdstukken..."
 
-#: ../ChapterListing.lua:301 ../ChapterListing.lua:502
-#: ../ChapterListing.lua:1190
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:501
+#: ../ChapterListing.lua:1189
 msgid   "Cancelled."
 msgstr  "Geannuleerd."
 
@@ -86,113 +86,113 @@ msgstr  "Geannuleerd."
 msgid   "Refresh chapter error"
 msgstr  "Fout bij het vernieuwen van het hoofdstuk"
 
-#: ../ChapterListing.lua:353
+#: ../ChapterListing.lua:352
 msgid   "Chapter is locked"
 msgstr  "Hoofdstuk is vergrendeld"
 
-#: ../ChapterListing.lua:370
+#: ../ChapterListing.lua:369
 msgid   "Open"
 msgstr  "Open"
 
-#: ../ChapterListing.lua:380 ../ChapterListing.lua:829 ../LibraryView.lua:336
+#: ../ChapterListing.lua:379 ../ChapterListing.lua:828 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Vernieuwen"
 
-#: ../ChapterListing.lua:386
+#: ../ChapterListing.lua:385
 msgid   "Chapter refreshed"
 msgstr  "Hoofdstuk vernieuwd"
 
-#: ../ChapterListing.lua:392 ../ChapterListing.lua:541
+#: ../ChapterListing.lua:391 ../ChapterListing.lua:540
 msgid   "Mark"
 msgstr  "Markering"
 
-#: ../ChapterListing.lua:404 ../ChapterListing.lua:1087
+#: ../ChapterListing.lua:403 ../ChapterListing.lua:1086
 msgid   "Download"
 msgstr  "Downloaden"
 
-#: ../ChapterListing.lua:404 ../LibraryView.lua:459
+#: ../ChapterListing.lua:403 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Verwijderen"
 
-#: ../ChapterListing.lua:413
+#: ../ChapterListing.lua:412
 msgid   "Chapter downloaded"
 msgstr  "Hoofdstuk gedownload"
 
-#: ../ChapterListing.lua:432
+#: ../ChapterListing.lua:431
 msgid   "Revoke chapter..."
 msgstr  "Hoofdstuk intrekken..."
 
-#: ../ChapterListing.lua:450
+#: ../ChapterListing.lua:449
 msgid   "Removed chapter"
 msgstr  "Hoofdstuk verwijderd"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "Marking"
 msgstr  "Markering"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "Un-marking"
 msgstr  "Ontmarkering"
 
-#: ../ChapterListing.lua:461
+#: ../ChapterListing.lua:460
 msgid   "chapter..."
 msgstr  "hoofdstuk..."
 
-#: ../ChapterListing.lua:528 ../ChapterListing.lua:855 ../LibraryView.lua:372
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:854 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Markeer gelezen"
 
-#: ../ChapterListing.lua:528 ../ChapterListing.lua:865 ../LibraryView.lua:383
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:864 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Markeer als ongelezen"
 
-#: ../ChapterListing.lua:529
+#: ../ChapterListing.lua:528
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:530
+#: ../ChapterListing.lua:529
 msgid   "Leaving blank will select all"
 msgstr  "Als u dit leeg laat, wordt alles geselecteerd"
 
-#: ../ChapterListing.lua:530
+#: ../ChapterListing.lua:529
 msgid   "Mark chapters as read or unread"
 msgstr  "Markeer hoofdstukken als gelezen of ongelezen"
 
-#: ../ChapterListing.lua:534 ../ChapterListing.lua:1004
-#: ../ChapterListing.lua:1080 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:533 ../ChapterListing.lua:1003
+#: ../ChapterListing.lua:1079 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Annuleren"
 
-#: ../ChapterListing.lua:551
+#: ../ChapterListing.lua:550
 msgid   "Marking..."
 msgstr  "Markering..."
 
-#: ../ChapterListing.lua:561
+#: ../ChapterListing.lua:560
 msgid   "Marked"
 msgstr  "Gemarkeerd"
 
-#: ../ChapterListing.lua:580 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:579 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Geen fouten"
 
-#: ../ChapterListing.lua:589
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "Page"
 msgstr  "Pagina"
 
-#: ../ChapterListing.lua:589
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "attempts"
 msgstr  "pogingen"
 
-#: ../ChapterListing.lua:597 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:596 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… en %d meer fouten"
 
-#: ../ChapterListing.lua:616 ../ChapterListing.lua:631
+#: ../ChapterListing.lua:615 ../ChapterListing.lua:630
 msgid   "Could not download chapter."
 msgstr  "Kan hoofdstuk niet downloaden."
 
@@ -200,132 +200,132 @@ msgstr  "Kan hoofdstuk niet downloaden."
 msgid   "Loading chapter..."
 msgstr  "Hoofdstuk laden..."
 
-#: ../ChapterListing.lua:625
+#: ../ChapterListing.lua:624
 msgid   "unknown"
 msgstr  "onbekend"
 
-#: ../ChapterListing.lua:644
+#: ../ChapterListing.lua:643
 msgid   "Download cancelled."
 msgstr  "Downloaden geannuleerd."
 
-#: ../ChapterListing.lua:650
+#: ../ChapterListing.lua:649
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Weet u zeker dat u de download wilt annuleren?"
 
-#: ../ChapterListing.lua:819 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:818 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Toevoegen aan bibliotheek"
 
-#: ../ChapterListing.lua:837 ../LibraryView.lua:356
+#: ../ChapterListing.lua:836 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Details"
 
-#: ../ChapterListing.lua:877
+#: ../ChapterListing.lua:876
 msgid   "Resume"
 msgstr  "Cv"
 
-#: ../ChapterListing.lua:885
+#: ../ChapterListing.lua:884
 msgid   "Next Chapter"
 msgstr  "Volgend hoofdstuk"
 
-#: ../ChapterListing.lua:895
+#: ../ChapterListing.lua:894
 msgid   "Download unread chapters…"
 msgstr  "Ongelezen hoofdstukken downloaden…"
 
-#: ../ChapterListing.lua:908
+#: ../ChapterListing.lua:907
 msgid   "Group"
 msgstr  "Groep"
 
-#: ../ChapterListing.lua:909 ../ChapterListing.lua:1061
+#: ../ChapterListing.lua:908 ../ChapterListing.lua:1060
 msgid   "Filter by Group"
 msgstr  "Filter op groep"
 
-#: ../ChapterListing.lua:932
+#: ../ChapterListing.lua:931
 msgid   "Adding to library..."
 msgstr  "Toevoegen aan bibliotheek..."
 
-#: ../ChapterListing.lua:939
+#: ../ChapterListing.lua:938
 msgid   "Failed to add to library"
 msgstr  "Kan niet toevoegen aan bibliotheek"
 
-#: ../ChapterListing.lua:944
+#: ../ChapterListing.lua:943
 msgid   "Added to library."
 msgstr  "Toegevoegd aan bibliotheek."
 
-#: ../ChapterListing.lua:992
+#: ../ChapterListing.lua:991
 msgid   "No more chapters to read!"
 msgstr  "Geen hoofdstukken meer om te lezen!"
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1001
 msgid   "Next"
 msgstr  "Volgende"
 
-#: ../ChapterListing.lua:1002
+#: ../ChapterListing.lua:1001
 msgid   "reading with"
 msgstr  "lezen met"
 
-#: ../ChapterListing.lua:1003 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1002 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Lezen"
 
-#: ../ChapterListing.lua:1026
+#: ../ChapterListing.lua:1025
 msgid   "Show All"
 msgstr  "Toon alles"
 
-#: ../ChapterListing.lua:1034
+#: ../ChapterListing.lua:1033
 msgid   "Showing all groups"
 msgstr  "Alle groepen weergeven"
 
-#: ../ChapterListing.lua:1054
+#: ../ChapterListing.lua:1053
 msgid   "Filtered to"
 msgstr  "Gefilterd naar"
 
-#: ../ChapterListing.lua:1071
+#: ../ChapterListing.lua:1070
 msgid   "Download unread chapters..."
 msgstr  "Ongelezen hoofdstukken downloaden..."
 
-#: ../ChapterListing.lua:1073
+#: ../ChapterListing.lua:1072
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Aantal ongelezen hoofdstukken (standaard: alles)"
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1074
 msgid   "Specify amount or leave empty for all."
 msgstr  "Geef het bedrag op of laat het voor iedereen leeg."
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1074
 msgid   "Will download from"
 msgstr  "Zal downloaden van"
 
-#: ../ChapterListing.lua:1076
+#: ../ChapterListing.lua:1075
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Geef het aantal ongelezen hoofdstukken op dat u wilt downloaden"
 
-#: ../ChapterListing.lua:1076
+#: ../ChapterListing.lua:1075
 msgid   "or leave empty to download all of them."
 msgstr  "of laat leeg om ze allemaal te downloaden."
 
-#: ../ChapterListing.lua:1097
+#: ../ChapterListing.lua:1096
 msgid   "Invalid amount of chapters!"
 msgstr  "Ongeldig aantal hoofdstukken!"
 
-#: ../ChapterListing.lua:1118
+#: ../ChapterListing.lua:1117
 msgid   "No unread chapters found for"
 msgstr  "Er zijn geen ongelezen hoofdstukken gevonden"
 
-#: ../ChapterListing.lua:1142 ../ChapterListing.lua:1217
+#: ../ChapterListing.lua:1141 ../ChapterListing.lua:1216
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Alle hoofdstukken downloaden, dit zal even duren..."
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1226
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Wachten tot de download wordt geannuleerd..."
 
-#: ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1228
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Alle hoofdstukken downloaden, dit zal even duren... ("
 
-#: ../ChapterListing.lua:1232
+#: ../ChapterListing.lua:1231
 msgid   "Tap outside this message to cancel."
 msgstr  "Tik buiten dit bericht om te annuleren."
 

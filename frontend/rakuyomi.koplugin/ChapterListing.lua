@@ -146,37 +146,40 @@ function ChapterListing:updateChapterList()
     return
   end
 
-  local key = self:hashMangaId() .. "_lang"
-  self.langs_selected = self:readSettings():readSetting(key, {})
-
   local chapter_results = response.body
   self.raw_chapters = chapter_results
-  self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
 
-  local langs = {}
-  local count_langs = 0
+  local langs_set = {}
+  local langs_list = {}
   for _, chapter in ipairs(chapter_results) do
     local lang = chapter.lang or "unknown"
-    if not langs[lang] then
-      langs[lang] = true
-      count_langs = count_langs + 1
+    if not langs_set[lang] then
+      langs_set[lang] = true
+      table.insert(langs_list, lang)
     end
   end
 
-  if count_langs >= 2 then
+  -- Load / initialize language preferences only when it matters (2+ langs)
+  if #langs_list >= 2 then
+    table.sort(langs_list)
     self.langs = {}
-
-    local has_settings = #self.langs_selected > 0
-    for lang, _ in pairs(langs) do
+    for _, lang in ipairs(langs_list) do
       table.insert(self.langs, { id = lang, name = lang })
-      -- default select all language
-      if not has_settings then
-        table.insert(self.langs_selected, lang)
-      end
     end
-
+    local key = self:hashMangaId() .. "_lang"
+    self.langs_selected = self:readSettings():readSetting(key, {})
+    -- If no preferences are set, default to selecting all available languages
+    if not self.langs_selected or #self.langs_selected == 0 then
+      self.langs_selected = langs_list
+    end
     self:patchTitleBar(#self.langs_selected)
     UIManager:setDirty(self.show_parent, "ui", self.dimen)
+    self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
+  else
+    -- Single-language manga: no language UI/filtering needed
+    self.langs = {}
+    self.langs_selected = {}
+    self.chapters = self.raw_chapters
   end
 
   self:extractAvailableScanlators()

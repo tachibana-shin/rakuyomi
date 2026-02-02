@@ -689,6 +689,7 @@ end
 function Backend.cleanup()
   if Backend.server ~= nil then
     Backend.server:stop()
+    Backend.server = nil
   end
 end
 

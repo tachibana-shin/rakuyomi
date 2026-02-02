@@ -34,8 +34,8 @@ function Rakuyomi:init()
 
   CbzDocument:register(DocumentRegistry)
   Dispatcher:registerAction("start_library_view", {
-    category = "none", 
-    event = "StartLibraryView", 
+    category = "none",
+    event = "StartLibraryView",
     title = _("Rakuyomi"),
     general = true
   })
@@ -78,7 +78,11 @@ function Rakuyomi:showErrorDialog()
   ErrorDialog:show(
     _("Oops!") .. _("Rakuyomi encountered an issue while starting up!") .. "\n" ..
     _("Here are some messages that might help identify the problem:") .. "\n\n" ..
-    logs
+    logs,
+    function()
+      Backend.cleanup()
+      backendInitialized, logs = Backend.initialize()
+    end
   )
 end
 

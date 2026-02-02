@@ -292,7 +292,10 @@ end
 function LibraryView:fetchAndShow()
   local response = Backend.getMangasInLibrary()
   if response.type == 'ERROR' then
-    ErrorDialog:show(response.message)
+    ErrorDialog:show(response.message, function()
+      Backend.cleanup()
+      Backend.initialize()
+    end)
 
     return
   end
@@ -747,7 +750,7 @@ function LibraryView:openSearchFavoritesDialog()
             local mangas = {}
 
             if query and query ~= "" then
-              for __,manga in ipairs(self.mangas_raw) do
+              for __, manga in ipairs(self.mangas_raw) do
                 -- convert manga title to lowercase for comparison
                 local title = (manga.title or ""):lower()
                 if title:find(query, 1, true) then
@@ -872,7 +875,7 @@ function LibraryView:refreshAllChapters()
 
     if #errors > 0 then
       local msg = _("Some manga updates fail:") .. "\n\n"
-      for __,err in ipairs(errors) do
+      for __, err in ipairs(errors) do
         msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
       end
       ErrorDialog:show(msg)

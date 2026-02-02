@@ -42,23 +42,6 @@ function AvailableSourcesListing:init()
   self:updateItems()
 end
 
----@param available SourceInformation[]
----@param installed SourceInformation[]
----@return SourceInformation[]
-local sortSources = function(available, installed)
-  local sorted = {}
-
-  for _, src in ipairs(installed) do
-    table.insert(sorted, src)
-  end
-
-  for _, src in ipairs(available) do
-    table.insert(sorted, src)
-  end
-
-  return sorted
-end
-
 function AvailableSourcesListing:onClose()
   UIManager:close(self)
   if self.on_return_callback then
@@ -85,52 +68,73 @@ function AvailableSourcesListing:updateItems()
   Menu.updateItems(self)
 end
 
+---@private
+---@param source_information SourceInformation
+---@param installed_info SourceInformation
+function AvailableSourcesListing:makeItem(source_information, installed_info)
+  local mandatory = ""
+  local callback = nil
+
+  if installed_info then
+    -- Installed
+    if installed_info.version < source_information.version then
+      mandatory = Icons.FA_ARROW_UP .. " " .. _("Update available!")
+      callback = function() self:installSource(source_information) end
+    else
+      mandatory = Icons.FA_CHECK .. " " .. _("Latest version installed")
+    end
+  else
+    -- Not installed
+    mandatory = Icons.FA_DOWNLOAD .. " " .. _("Installable")
+    callback = function() self:installSource(source_information) end
+  end
+
+  return {
+    source_information = source_information,
+    text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
+    mandatory = mandatory,
+    post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 1, 6) .. "..." or
+        _("Unknown"),
+    callback = callback,
+  }
+end
+
 --- Generates the item table for displaying the search results.
 --- @private
 --- @param installed_sources SourceInformation[]
 --- @param available_sources SourceInformation[]
 --- @return table
 function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSources(installed_sources, available_sources)
-  --- @type table<string, SourceInformation>
-  local installed_sources_by_id = {}
-
-  for _, source_information in ipairs(installed_sources) do
-    installed_sources_by_id[source_information.id] = source_information
+  --- Map installed by unique key (id@source)
+  local installed_sources_by_key = {}
+  for _, src in ipairs(installed_sources) do
+    local key = src.id .. "@" .. (src.source_of_source or "")
+    installed_sources_by_key[key] = src
   end
 
-  local item_table = {}
-  for __, source_information in ipairs(available_sources) do
-    local mandatory = ""
-    local callback = nil
+  local items_installed = {}
+  local items_available = {}
 
-    local installed_info = installed_sources_by_id[source_information.id]
-    if installed_info ~= nil and installed_info.source_of_source == source_information.source_of_source then
-      local installed_source_info = installed_sources_by_id[source_information.id]
+  --- Generate two lists: installed-first & available-after
+  for _, source_information in ipairs(available_sources) do
+    local key = source_information.id .. "@" .. (source_information.source_of_source or "")
+    local installed_info = installed_sources_by_key[key]
 
-      if installed_source_info.version < source_information.version then
-        mandatory = mandatory .. Icons.FA_ARROW_UP .. " " .. _("Update available!")
+    local item = self:makeItem(source_information, installed_info)
 
-        callback = function() self:installSource(source_information) end
-      else
-        mandatory = mandatory .. Icons.FA_CHECK .. " " .. _("Latest version installed")
-      end
+    if installed_info then
+      table.insert(items_installed, item)
     else
-      mandatory = mandatory .. Icons.FA_DOWNLOAD .. " " .. _("Installable")
-
-      callback = function() self:installSource(source_information) end
+      table.insert(items_available, item)
     end
-
-    table.insert(item_table, {
-      source_information = source_information,
-      text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
-      mandatory = mandatory,
-      post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
-          _("Unknown"),
-      callback = callback,
-    })
   end
 
-  return item_table
+  --- Merge: installed first, available later
+  local final = {}
+  for _, v in ipairs(items_installed) do table.insert(final, v) end
+  for _, v in ipairs(items_available) do table.insert(final, v) end
+
+  return final
 end
 
 --- @private
@@ -204,7 +208,7 @@ function AvailableSourcesListing:fetchAndShow(onReturnCallback)
     return
   end
 
-  local available_sources = sortSources(available_sources_response.body, installed_sources)
+  local available_sources = available_sources_response.body
 
   local ui = AvailableSourcesListing:new {
     installed_sources = installed_sources,

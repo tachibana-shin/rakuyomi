@@ -9,6 +9,7 @@ local Job = require('jobs/Job')
 --- @field private amount number|nil
 --- @field private scanlator string|nil
 --- @field private job_id string
+--- @field private langs string[]
 local DownloadUnreadChapters = Job:extend()
 
 --- Creates a new `DownloadUnreadChapters` job.
@@ -17,6 +18,7 @@ local DownloadUnreadChapters = Job:extend()
 --- @field manga_id string
 --- @field amount number|nil
 --- @field scanlator string|nil NEW: Optional scanlator filt
+--- @field langs string[]
 
 --- @param params  DownloadUnreadChaptersParams
 --- @return self|nil job A new job, or `nil`, if the job could not be created.
@@ -26,14 +28,15 @@ function DownloadUnreadChapters:new(params)
     manga_id = params.manga_id,
     amount = params.amount,
     scanlator = params.scanlator,
+    langs = params.langs,
   }
   setmetatable(o, self)
   self.__index = self
-  
+
   if not o:start() then
     return nil
   end
-  
+
   return o
 end
 
@@ -43,23 +46,25 @@ end
 --- @return boolean success Whether the job started successfully.
 function DownloadUnreadChapters:start()
   local response
-  
+
   -- Use scanlator-specific endpoint if scanlator is provided
   if self.scanlator then
     response = Backend.createDownloadScanlatorChaptersJob(
-      self.source_id, 
-      self.manga_id, 
-      self.scanlator, 
-      self.amount
+      self.source_id,
+      self.manga_id,
+      self.scanlator,
+      self.amount,
+      self.langs
     )
   else
     response = Backend.createDownloadUnreadChaptersJob(
-      self.source_id, 
-      self.manga_id, 
-      self.amount
+      self.source_id,
+      self.manga_id,
+      self.amount,
+      self.langs
     )
   end
-  
+
   if response.type == 'ERROR' then
     logger.error('could not create download job', response.message)
 

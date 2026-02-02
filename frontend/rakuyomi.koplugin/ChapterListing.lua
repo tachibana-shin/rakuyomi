@@ -1327,7 +1327,8 @@ function ChapterListing:createDownloadJob(amount)
     source_id = self.manga.source.id,
     manga_id = self.manga.id,
     amount = amount,
-    scanlator = self.selected_scanlator
+    scanlator = self.selected_scanlator,
+    langs = self.langs_selected,
   })
 end
 

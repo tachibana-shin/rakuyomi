@@ -20,6 +20,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     chapter_storage: &'a ChapterStorage,
     id: MangaId,
     filter: Filter,
+    langs: &'a [&'a str],
     concurrent_requests_pages: usize,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
@@ -42,7 +43,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                 return;
             }
         };
-        let chapters_to_download = apply_chapter_filter(db, all_chapters, filter).await;
+        let chapters_to_download = apply_chapter_filter(db, all_chapters, filter, langs).await;
 
         let total = chapters_to_download.len();
         yield ProgressReport::Progressing { downloaded: 0, total };
@@ -86,6 +87,7 @@ async fn apply_chapter_filter(
     db: &Database,
     all_chapters: Vec<ChapterInformation>,
     filter: Filter,
+    langs: &[&str],
 ) -> Vec<ChapterInformation> {
     let mut last_read_chapter = None;
     let target_scanlator = match &filter {
@@ -93,8 +95,18 @@ async fn apply_chapter_filter(
         _ => None,
     };
 
+    let use_lang_filter = !langs.is_empty();
+
     // Starting from the newest chapter (in source order), find out the first one marked as read.
     for chapter in all_chapters.iter() {
+        // Filter: language
+        if use_lang_filter {
+            let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
+            if !langs.contains(&ch_lang) {
+                continue;
+            }
+        }
+
         // Skip chapters that don't match our target scanlator (if filtering by scanlator)
         if let Some(ref target_scanlator) = target_scanlator {
             let chapter_scanlator = chapter.scanlator.as_deref().unwrap_or("Unknown");
@@ -117,12 +129,24 @@ async fn apply_chapter_filter(
     }
 
     // In reverse source order (oldest-to-newest), find out which unread chapters to download.
-    let unread_chapters = all_chapters.into_iter().rev().skip_while(|chapter| {
-        last_read_chapter.as_ref().is_some_and(|last_read_chapter| {
-            last_read_chapter.chapter_number.unwrap_or_default()
-                >= chapter.chapter_number.unwrap_or_default()
+    let unread_chapters = all_chapters
+        .into_iter()
+        .rev()
+        .filter(move |chapter| {
+            if use_lang_filter {
+                let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
+                if !langs.contains(&ch_lang) {
+                    return false;
+                }
+            }
+            true
         })
-    });
+        .skip_while(|chapter| {
+            last_read_chapter.as_ref().is_some_and(|last_read_chapter| {
+                last_read_chapter.chapter_number.unwrap_or_default()
+                    >= chapter.chapter_number.unwrap_or_default()
+            })
+        });
 
     let filtered_chapters: Vec<_> = match filter {
         Filter::AllUnreadChapters => unread_chapters.collect(),

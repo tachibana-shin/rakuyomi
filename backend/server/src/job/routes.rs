@@ -170,7 +170,7 @@ async fn create_download_scanlator_chapters_job(
     StateExtractor(State { job_registry }): StateExtractor<State>,
     Json(body): Json<CreateDownloadScanlatorChaptersJobBody>,
 ) -> Result<Json<Uuid>, AppError> {
-    let langs = { body.langs.to_owned() };
+    let langs = body.langs.clone();
     let manga_id = MangaId::from(body.clone());
 
     let source_manager = source_manager.lock().await;

@@ -35,15 +35,15 @@ Any source that can run on [Aidoku](https://github.com/Aidoku) can also run on [
    - **PocketBook:** `applications/koreader/`
 
 4. Locate the `plugins` folder:
-![koreader folder](./images/koreader-folder.png)
+![koreader folder](./user-guide/installation/images/koreader-folder.png)
 
 5. Copy the entire `rakuyomi.koplugin` folder into the `plugins` folder:
-![plugins folder](./images/plugins-folder.png)
+![plugins folder](./user-guide/installation/images/plugins-folder.png)
 
 6. Return to the KOReader folder and create a new `rakuyomi` folder:
-![rakuyomi folder](./images/rakuyomi-folder.png)
+![rakuyomi folder](./user-guide/installation/images/rakuyomi-folder.png)
 
 7. Copy your `settings.json` file into the new `rakuyomi` folder:
-![settings file](./images/settings-file.png)
+![settings file](./user-guide/installation/images/settings-file.png)
 
 rakuyomi is now installed on your device! Ready to get started? Check out the [Quickstart Guide](../quickstart.md) to learn how to use it effectively.

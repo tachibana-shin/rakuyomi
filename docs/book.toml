@@ -16,4 +16,4 @@ assets_version = "3.0.2" # do not edit: managed by `mdbook-admonish install`
 additional-css = ["./mdbook-admonish.css"]
 git-repository-url = "https://github.com/tachibana-shin/rakuyomi"
 edit-url-template = "https://github.com/tachibana-shin/rakuyomi/edit/main/docs/{path}"
-site-url = "/rakuyomi/"
+# site-url = "/rakuyomi/"

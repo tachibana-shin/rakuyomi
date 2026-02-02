@@ -8,7 +8,7 @@ When you don't have an internet connection, rakuyomi automatically enters offlin
 
 <div align="center">
 
-<img src="./images/offline-mode-indicator.png" alt="Offline mode indicator" style="max-width: 70%" />
+<img src="./user-guide/images/offline-mode-indicator.png" alt="Offline mode indicator" style="max-width: 70%" />
 
 </div>
 
@@ -32,7 +32,7 @@ To download multiple unread chapters at once:
 
 <div align="center">
 
-<img src="./images/download-unread-chapters.png" alt="Download unread chapters dialog" style="max-width: 70%" />
+<img src="./user-guide/images/download-unread-chapters.png" alt="Download unread chapters dialog" style="max-width: 70%" />
 
 </div>
 

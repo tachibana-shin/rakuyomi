@@ -26,6 +26,11 @@ local AvailableSourcesListing = Menu:extend {
   on_return_callback = nil,
 }
 
+-- Initialize the AvailableSourcesListing instance and build its initial item list.
+-- 
+-- Sets up default empty lists for available and installed sources, captures screen
+-- dimensions, initializes the base Menu, resets navigation path and return callback,
+-- and populates the menu items by calling updateItems().
 function AvailableSourcesListing:init()
   self.available_sources = self.available_sources or {}
   self.installed_sources = self.installed_sources or {}
@@ -42,6 +47,8 @@ function AvailableSourcesListing:init()
   self:updateItems()
 end
 
+-- Closes the available sources UI and invokes the configured return callback if present.
+-- Calls `self.on_return_callback()` after closing the UI when `on_return_callback` is set.
 function AvailableSourcesListing:onClose()
   UIManager:close(self)
   if self.on_return_callback then
@@ -50,7 +57,14 @@ function AvailableSourcesListing:onClose()
 end
 
 --- Updates the menu item contents with the sources information.
---- @private
+-- Refreshes the menu items and display settings based on available sources.
+-- 
+-- If there are available sources, builds the item table from installed and available
+-- sources and configures the listing for single-line, multi-item display. If there
+-- are no available sources, builds an empty view item and configures the listing for
+-- a single-item, multi-line display. Always updates the base Menu's items after
+-- adjusting the table and flags.
+-- @private
 function AvailableSourcesListing:updateItems()
   if #self.available_sources > 0 then
     self.item_table = self:generateItemTableFromInstalledAndAvailableSources(self.installed_sources, self
@@ -70,7 +84,15 @@ end
 
 ---@private
 ---@param source_information SourceInformation
----@param installed_info SourceInformation
+-- Build a menu item table representing a source, including its display text, status, hint, and install/update action.
+-- @param source_information SourceInformation The available source's metadata.
+-- @param installed_info SourceInformation|nil The installed source metadata for the same source, or nil if not installed.
+-- @return table A table containing:
+--   source_information: the provided SourceInformation,
+--   text: display label combining name and version,
+--   mandatory: short status text with an icon ("Installable", "Update available!", or "Latest version installed"),
+--   post_text: first six characters of `source_of_source` followed by "..." or "Unknown",
+--   callback: function to install or update the source, or nil if no action is available.
 function AvailableSourcesListing:makeItem(source_information, installed_info)
   local mandatory = ""
   local callback = nil
@@ -103,7 +125,10 @@ end
 --- @private
 --- @param installed_sources SourceInformation[]
 --- @param available_sources SourceInformation[]
---- @return table
+-- Builds a list of menu item tables by matching available sources against installed sources, placing installed items first and available (not-yet-installed) items after.
+-- @param installed_sources Array of SourceInformation tables representing currently installed sources; keyed by `id` and `source_of_source`.
+-- @param available_sources Array of SourceInformation tables representing sources available from remote listings.
+-- @return Array of item tables suitable for the menu, with installed-source items first followed by available-source items.
 function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSources(installed_sources, available_sources)
   --- Map installed by unique key (id@source)
   local installed_sources_by_key = {}
@@ -187,7 +212,9 @@ function AvailableSourcesListing:installSource(source_information)
 end
 
 --- Fetches and shows the available sources. Must be called from a function wrapped with `Trapper:wrap()`.
---- @param onReturnCallback any
+-- Fetches installed and available source lists and opens the AvailableSourcesListing UI populated with them.
+-- If fetching either list fails, an error dialog is shown and the UI is not displayed.
+-- @param onReturnCallback function|nil Callback invoked when the listing is closed or returns.
 function AvailableSourcesListing:fetchAndShow(onReturnCallback)
   local installed_sources_response = Backend.listInstalledSources()
   if installed_sources_response.type == 'ERROR' then

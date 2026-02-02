@@ -109,7 +109,7 @@ async fn create_download_unread_chapters_job(
     StateExtractor(State { job_registry }): StateExtractor<State>,
     Json(body): Json<CreateDownloadUnreadChaptersJobBody>,
 ) -> Result<Json<Uuid>, AppError> {
-    let langs = { body.langs.to_owned() };
+    let langs = body.langs.clone();
 
     let filter = match body.amount {
         Some(amount) => ChaptersToDownloadFilter::NextUnreadChapters(amount),

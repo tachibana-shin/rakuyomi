@@ -54,7 +54,7 @@ msgstr  "अध्याय सूचीकरण"
 
 #: ../ChapterListing.lua:260 ../ChapterListing.lua:1089
 msgid   "Languages"
-msgstr  "बोली"
+msgstr  "भाषाएं"
 
 #: ../ChapterListing.lua:349
 msgid   "No chapters found"

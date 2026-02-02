@@ -503,7 +503,7 @@ function LibraryView:_handleContinueReading(manga)
         if response.type == 'ERROR' then
           ErrorDialog:show(response.message)
 
-          return false
+          return
         end
 
         local settings = response.body

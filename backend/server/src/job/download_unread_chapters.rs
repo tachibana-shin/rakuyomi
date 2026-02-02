@@ -45,6 +45,7 @@ impl DownloadUnreadChaptersJob {
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         filter: ChapterToDownloadFilter,
+        langs: Vec<String>,
         concurrent_requests_pages: usize,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
@@ -57,6 +58,7 @@ impl DownloadUnreadChaptersJob {
             let status = status_clone;
             let cancellation_token = cancellation_token_clone;
             let database = { database.lock().await };
+            let lang_refs: Vec<&str> = langs.iter().map(|s| s.as_str()).collect();
 
             let progress_report_stream = usecases::fetch_manga_chapters_in_batch(
                 cancellation_token.clone(),
@@ -65,6 +67,7 @@ impl DownloadUnreadChaptersJob {
                 &chapter_storage,
                 manga_id,
                 filter,
+                &lang_refs,
                 concurrent_requests_pages,
             );
 

@@ -40,6 +40,7 @@ impl DownloadScanlatorChaptersJob {
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         scanlator_filter: ScanlatorFilter,
+        langs: Vec<String>,
         concurrent_requests_pages: usize,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
@@ -58,6 +59,7 @@ impl DownloadScanlatorChaptersJob {
                 amount: scanlator_filter.amount,
             };
             let database = { database.lock().await };
+            let lang_refs: Vec<&str> = langs.iter().map(|s| s.as_str()).collect();
 
             let stream =
                 shared::usecases::fetch_manga_chapters_in_batch::fetch_manga_chapters_in_batch(
@@ -67,6 +69,7 @@ impl DownloadScanlatorChaptersJob {
                     &chapter_storage,
                     manga_id,
                     filter,
+                    &lang_refs,
                     concurrent_requests_pages,
                 );
 

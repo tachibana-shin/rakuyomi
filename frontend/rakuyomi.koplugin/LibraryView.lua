@@ -25,9 +25,14 @@ local Menu = require("widgets/Menu")
 local Settings = require("Settings")
 local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
-local ContinueReadingHandler = require("handlers/ContinueReadingHandler")
 local calcLastReadText = require("utils/calcLastReadText")
 local findEntries = require("utils/findEntries")
+local findLastRead = require("utils/findLastRead")
+local getChapterDisplayName = require("utils/getChapterDisplayName")
+local filterChaptersByLang = require("utils/filterChaptersByLang")
+local md5 = require("ffi/sha2").md5
+local DataStorage = require("datastorage")
+local LuaSettings = require("luasettings")
 local NotificationView = require("NotificationView")
 local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 
@@ -435,24 +440,94 @@ end
 
 --- Handles "Continue Reading" action
 --- @private
+--- @param manga Manga
 function LibraryView:_handleContinueReading(manga)
-  local callbacks = {
-    onReturn = function()
-      self:fetchAndShow()
-    end,
-    onError = function(error_msg)
-      ErrorDialog:show(error_msg)
-    end,
-    onChapterRead = function(chapter)
-      Testing:emitEvent('chapter_read_from_library', {
-        manga_id = manga.id,
-        chapter_id = chapter.id
-      })
-    end
-  }
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(_("Finding next chapter..."), function()
+      return Backend.listCachedChapters(manga.source.id, manga.id)
+    end)
 
-  ContinueReadingHandler.handle(manga, self, callbacks)
-  self:onClose()
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    local chapter_results = response.body
+    if #chapter_results == 0 then
+      ErrorDialog:show(_("No chapters found for this manga."))
+      return
+    end
+
+    local langs_set = {}
+    local langs_list = {}
+    for _, chapter in ipairs(chapter_results) do
+      local lang = chapter.lang or "unknown"
+      if not langs_set[lang] then
+        langs_set[lang] = true
+        table.insert(langs_list, lang)
+      end
+    end
+
+    local chapters
+    -- Load / initialize language preferences only when it matters (2+ langs)
+    if #langs_list >= 2 then
+      table.sort(langs_list)
+
+      local key = md5(manga.source.id .. "/" .. manga.id) .. "_lang"
+      local langs_selected = LuaSettings:open(DataStorage:getSettingsDir() .. "/rakuyomi_lang.lua"):readSetting(key, {})
+      -- If no preferences are set, default to selecting all available languages
+      if not langs_selected or #langs_selected == 0 then
+        langs_selected = langs_list
+      end
+
+      chapters = filterChaptersByLang(chapter_results, langs_selected)
+    else
+      chapters = chapter_results
+    end
+
+    local chapter_to_open = findLastRead(chapters)
+    if not chapter_to_open then
+      UIManager:show(InfoMessage:new { text = _("Sadly, no next chapter available! :c") })
+      return
+    end
+
+    local confirm_dialog
+    confirm_dialog = ConfirmBox:new {
+      text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter_to_open) .. "?",
+      ok_text = _("Read"),
+      cancel_text = _("Cancel"),
+      ok_callback = function()
+        UIManager:close(confirm_dialog)
+
+        local response = Backend.getSettings()
+        if response.type == 'ERROR' then
+          ErrorDialog:show(response.message)
+
+          return
+        end
+
+        local settings = response.body
+
+        local temp_listing = ChapterListing:new {
+          manga = manga,
+          chapter_sorting_mode = settings.chapter_sorting_mode,
+          on_return_callback = function()
+            self:fetchAndShow()
+          end,
+          covers_fullscreen = true, -- hint for UIManager:_repaint()
+          page = self.page,
+          preload_count = settings.preload_chapters
+        }
+        temp_listing.chapters = chapters
+        temp_listing:openChapterOnReader(chapter_to_open)
+        self:onClose()
+      end,
+      cancel_callback = function()
+        UIManager:close(confirm_dialog)
+      end
+    }
+    UIManager:show(confirm_dialog)
+  end)
 end
 
 --- @private

@@ -33,6 +33,10 @@ local MangaInfoWidget = require("MangaInfoWidget")
 local CheckboxDialog = require("CheckboxDialog")
 local Testing = require("testing")
 local calcLastReadText = require("utils/calcLastReadText")
+local isBeforeChapter = require("utils/isBeforeChapter")
+local filterChaptersByLang = require("utils/filterChaptersByLang")
+local findLastRead = require("utils/findLastRead")
+local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local findNextChapter = require("chapters/findNextChapter")
 
@@ -109,36 +113,6 @@ function ChapterListing:readSettings()
   end
 
   return self.r_settings
-end
-
--- Filter chapter list by selected languages
----@param raw_chapters Chapter[]
----@param langs_selected string[]
----@return Chapter[]
-local function filterChaptersByLang(raw_chapters, langs_selected)
-  -- If 0 languages selected, no need to filter
-  if not langs_selected or #langs_selected < 1 then
-    return raw_chapters
-  end
-
-  -- Build fast lookup table for langs
-  -- { en = true, jp = true, ... }
-  local lang_map = {}
-  for _, lang in ipairs(langs_selected) do
-    lang_map[lang] = true
-  end
-
-  -- Filter chapters
-  local result = {}
-  for _, chapter in ipairs(raw_chapters) do
-    local lang = chapter.lang or "unknown"
-    -- chapter.lang may be nil → safe check
-    if lang_map[lang] then
-      table.insert(result, chapter)
-    end
-  end
-
-  return result
 end
 
 --- Fetches the cached chapter list from the backend and updates the menu items.
@@ -353,26 +327,6 @@ function ChapterListing:generateEmptyViewItemTable()
   }
 end
 
---- Compares whether chapter `a` is before `b`. Expects the `index` of the chapter in the
---- chapter array to be present inside the chapter object.
----
---- @param a Chapter|{ index: number }
---- @param b Chapter|{ index: number }
---- @return boolean `true` if chapter `a` should be displayed before `b`, otherwise `false`.
-local function isBeforeChapter(a, b)
-  if a.volume_num ~= nil and b.volume_num ~= nil and a.volume_num ~= b.volume_num then
-    return a.volume_num < b.volume_num
-  end
-
-  if a.chapter_num ~= nil and b.chapter_num ~= nil and a.chapter_num ~= b.chapter_num then
-    return a.chapter_num < b.chapter_num
-  end
-
-  -- This is _very_ flaky, but we assume that source order is _always_ from newer chapters -> older chapters.
-  -- Unfortunately we need to make some kind of assumptions here to handle edgecases (e.g. chapters without a chapter number)
-  return a.index > b.index
-end
-
 --- @private
 function ChapterListing:generateItemTableFromChapters(chapters)
   -- Filter chapters by selected scanlator
@@ -428,9 +382,12 @@ function ChapterListing:generateItemTableFromChapters(chapters)
       mandatory = mandatory .. Icons.FA_BOOK
     end
 
+    if chapter.last_read then
+      mandatory = (calcLastReadText(chapter.last_read) .. " ") .. mandatory
+    end
+
     if chapter.downloaded then
-      mandatory = (chapter.last_read and calcLastReadText(chapter.last_read) .. " " or "") ..
-          mandatory .. Icons.FA_DOWNLOAD
+      mandatory = mandatory .. Icons.FA_DOWNLOAD
     end
 
     local post_text = nil
@@ -1141,71 +1098,30 @@ function ChapterListing:addToLibrary()
 end
 
 function ChapterListing:readContinue(nextChapter)
-  local last_read_chapter = nil
-  local last_read_chapter_num = -math.huge
-  local next_chapter = nil
-  local next_chapter_num = math.huge
-  local first_chapter = nil
-  local first_chapter_num = math.huge
+  local chapter_to_open = findLastRead(self.chapters)
 
-  for __, chapter in ipairs(self.chapters) do
-    local num = chapter.chapter_num
-    if num then
-      if num < first_chapter_num then
-        first_chapter = chapter
-        first_chapter_num = num
-      end
-
-      if chapter.read and num > last_read_chapter_num then
-        last_read_chapter = chapter
-        last_read_chapter_num = num
-      end
-    end
+  if nextChapter and chapter_to_open ~= nil then
+    chapter_to_open = findNextChapter(self.chapters, chapter_to_open)
   end
-
-  if not last_read_chapter then
-    next_chapter = first_chapter
-  else
-    if nextChapter then
-      for __, chapter in ipairs(self.chapters) do
-        local num = chapter.chapter_num
-        if num and not chapter.read and num > last_read_chapter_num and num < next_chapter_num then
-          next_chapter = chapter
-          next_chapter_num = num
-        end
-      end
-    else
-      next_chapter = last_read_chapter
-    end
-  end
-
-  next_chapter = next_chapter or first_chapter
-
-  if next_chapter == nil then
-    UIManager:show(InfoMessage:new {
-      text = _("No more chapters to read!"),
-      timeout = 2,
-    })
+  if not chapter_to_open then
+    UIManager:show(InfoMessage:new { text = _("Sadly, no next chapter available! :c") })
     return
   end
 
-  local getChapterDisplayName = require("utils/getChapterDisplayName")
-
   local confirm_dialog
   confirm_dialog = ConfirmBox:new {
-    text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(next_chapter) .. "?",
+    text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(chapter_to_open) .. "?",
     ok_text = _("Read"),
     cancel_text = _("Cancel"),
     ok_callback = function()
       UIManager:close(confirm_dialog)
 
-      self:openChapterOnReader(next_chapter)
+      self:openChapterOnReader(chapter_to_open)
     end,
     cancel_callback = function()
       UIManager:close(confirm_dialog)
     end
   }
-
   UIManager:show(confirm_dialog)
 end
 

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-02 02:22+0700\n"
+        "POT-Creation-Date: 2026-02-02 10:05+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -31,8 +31,8 @@ msgstr  "Installerbar"
 msgid   "version"
 msgstr  "version"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:294
-#: ../ChapterListing.lua:374 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:303
+#: ../ChapterListing.lua:383 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Okänd"
@@ -53,283 +53,283 @@ msgstr  "Installerar källa..."
 msgid   "Chapter listing"
 msgstr  "Kapitelförteckning"
 
-#: ../ChapterListing.lua:252 ../ChapterListing.lua:1020
+#: ../ChapterListing.lua:260 ../ChapterListing.lua:1089
 msgid   "Languages"
 msgstr  "Språk"
 
-#: ../ChapterListing.lua:340
+#: ../ChapterListing.lua:349
 msgid   "No chapters found"
 msgstr  "Inga kapitel hittades"
 
-#: ../ChapterListing.lua:340
+#: ../ChapterListing.lua:349
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Försök att svepa nedåt för att uppdatera kapitellistan."
 
-#: ../ChapterListing.lua:402
+#: ../ChapterListing.lua:411
 msgid   "Volume"
 msgstr  "Volym"
 
-#: ../ChapterListing.lua:406 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:415 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Kapitel"
 
-#: ../ChapterListing.lua:429
+#: ../ChapterListing.lua:438
 msgid   "Locked"
 msgstr  "Låst"
 
-#: ../ChapterListing.lua:465 ../ChapterListing.lua:665
+#: ../ChapterListing.lua:474 ../ChapterListing.lua:675
 msgid   "Refreshing chapters..."
 msgstr  "Uppdaterar kapitel..."
 
-#: ../ChapterListing.lua:473 ../ChapterListing.lua:672
-#: ../ChapterListing.lua:1315
+#: ../ChapterListing.lua:482 ../ChapterListing.lua:682
+#: ../ChapterListing.lua:1384
 msgid   "Cancelled."
 msgstr  "Avbruten."
 
-#: ../ChapterListing.lua:485
+#: ../ChapterListing.lua:494
 msgid   "Refresh chapter error"
 msgstr  "Uppdatera kapitelfel"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:533
 msgid   "Chapter is locked"
 msgstr  "Kapitel är låst"
 
-#: ../ChapterListing.lua:540
+#: ../ChapterListing.lua:550
 msgid   "Open"
 msgstr  "Öppna"
 
-#: ../ChapterListing.lua:550 ../ChapterListing.lua:940 ../LibraryView.lua:336
+#: ../ChapterListing.lua:560 ../ChapterListing.lua:1009 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Uppdatera"
 
-#: ../ChapterListing.lua:556
+#: ../ChapterListing.lua:566
 msgid   "Chapter refreshed"
 msgstr  "Kapitel uppdaterat"
 
-#: ../ChapterListing.lua:562 ../ChapterListing.lua:711
+#: ../ChapterListing.lua:572 ../ChapterListing.lua:721
 msgid   "Mark"
 msgstr  "Mark"
 
-#: ../ChapterListing.lua:574 ../ChapterListing.lua:1212
+#: ../ChapterListing.lua:584 ../ChapterListing.lua:1281
 msgid   "Download"
 msgstr  "Ladda ner"
 
-#: ../ChapterListing.lua:574 ../LibraryView.lua:459
+#: ../ChapterListing.lua:584 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Ta bort"
 
-#: ../ChapterListing.lua:583
+#: ../ChapterListing.lua:593
 msgid   "Chapter downloaded"
 msgstr  "Kapitel nedladdat"
 
-#: ../ChapterListing.lua:602
+#: ../ChapterListing.lua:612
 msgid   "Revoke chapter..."
 msgstr  "Återkalla kapitel..."
 
-#: ../ChapterListing.lua:620
+#: ../ChapterListing.lua:630
 msgid   "Removed chapter"
 msgstr  "Borttaget kapitel"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "Marking"
 msgstr  "Märkning"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "Un-marking"
 msgstr  "Avmarkering"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "chapter..."
 msgstr  "kapitel..."
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:966 ../LibraryView.lua:372
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1035 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Markera läst"
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:976 ../LibraryView.lua:383
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1045 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Markera oläst"
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:709
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:710
 msgid   "Leaving blank will select all"
 msgstr  "Om du lämnar tomt markeras alla"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:710
 msgid   "Mark chapters as read or unread"
 msgstr  "Markera kapitel som lästa eller olästa"
 
-#: ../ChapterListing.lua:704 ../ChapterListing.lua:1129
-#: ../ChapterListing.lua:1205 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:714 ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1274 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Avboka"
 
-#: ../ChapterListing.lua:721
+#: ../ChapterListing.lua:731
 msgid   "Marking..."
 msgstr  "Märkning..."
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:741
 msgid   "Marked"
 msgstr  "Markant"
 
-#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:760 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Inga fel"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "Page"
 msgstr  "Sida"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "attempts"
 msgstr  "försök"
 
-#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:777 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… och %d fler fel"
 
-#: ../ChapterListing.lua:786 ../ChapterListing.lua:801
+#: ../ChapterListing.lua:796 ../ChapterListing.lua:811
 msgid   "Could not download chapter."
 msgstr  "Det gick inte att ladda ner kapitlet."
 
-#: ../ChapterListing.lua:794
-msgid   "Downloading chapter..."
-msgstr  "Laddar ned kapitel..."
+#: ../ChapterListing.lua:804
+msgid   "Loading chapter..."
+msgstr  "Laddar kapitel..."
 
-#: ../ChapterListing.lua:795
+#: ../ChapterListing.lua:805
 msgid   "unknown"
 msgstr  "okänd"
 
-#: ../ChapterListing.lua:814
+#: ../ChapterListing.lua:824
 msgid   "Download cancelled."
 msgstr  "Nedladdningen avbröts."
 
-#: ../ChapterListing.lua:820
+#: ../ChapterListing.lua:830
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Är du säker på att du vill avbryta nedladdningen?"
 
-#: ../ChapterListing.lua:930 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:999 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Lägg till i biblioteket"
 
-#: ../ChapterListing.lua:948 ../LibraryView.lua:356
+#: ../ChapterListing.lua:1017 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Detaljer"
 
-#: ../ChapterListing.lua:988
+#: ../ChapterListing.lua:1057
 msgid   "Resume"
 msgstr  "Resume"
 
-#: ../ChapterListing.lua:996
+#: ../ChapterListing.lua:1065
 msgid   "Next Chapter"
 msgstr  "Nästa kapitel"
 
-#: ../ChapterListing.lua:1006
+#: ../ChapterListing.lua:1075
 msgid   "Download unread chapters…"
 msgstr  "Ladda ner olästa kapitel..."
 
-#: ../ChapterListing.lua:1033
+#: ../ChapterListing.lua:1102
 msgid   "Group"
 msgstr  "Grupp"
 
-#: ../ChapterListing.lua:1034 ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1103 ../ChapterListing.lua:1255
 msgid   "Filter by Group"
 msgstr  "Filtrera efter grupp"
 
-#: ../ChapterListing.lua:1057
+#: ../ChapterListing.lua:1126
 msgid   "Adding to library..."
 msgstr  "Lägger till i bibliotek..."
 
-#: ../ChapterListing.lua:1064
+#: ../ChapterListing.lua:1133
 msgid   "Failed to add to library"
 msgstr  "Det gick inte att lägga till i biblioteket"
 
-#: ../ChapterListing.lua:1069
+#: ../ChapterListing.lua:1138
 msgid   "Added to library."
 msgstr  "Lades till i biblioteket."
 
-#: ../ChapterListing.lua:1117
+#: ../ChapterListing.lua:1186
 msgid   "No more chapters to read!"
 msgstr  "Inga fler kapitel att läsa!"
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1196
 msgid   "Next"
 msgstr  "Nästa"
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1196
 msgid   "reading with"
 msgstr  "läsa med"
 
-#: ../ChapterListing.lua:1128 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1197 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Läsa"
 
-#: ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1220
 msgid   "Show All"
 msgstr  "Visa alla"
 
-#: ../ChapterListing.lua:1159
+#: ../ChapterListing.lua:1228
 msgid   "Showing all groups"
 msgstr  "Visar alla grupper"
 
-#: ../ChapterListing.lua:1179
+#: ../ChapterListing.lua:1248
 msgid   "Filtered to"
 msgstr  "Filtrerat till"
 
-#: ../ChapterListing.lua:1196
+#: ../ChapterListing.lua:1265
 msgid   "Download unread chapters..."
 msgstr  "Ladda ner olästa kapitel..."
 
-#: ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1267
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Antal olästa kapitel (standard: alla)"
 
-#: ../ChapterListing.lua:1200
+#: ../ChapterListing.lua:1269
 msgid   "Specify amount or leave empty for all."
 msgstr  "Ange belopp eller lämna tomt för alla."
 
-#: ../ChapterListing.lua:1200
+#: ../ChapterListing.lua:1269
 msgid   "Will download from"
 msgstr  "Kommer att ladda ner från"
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1270
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Ange antalet olästa kapitel som ska laddas ned"
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1270
 msgid   "or leave empty to download all of them."
 msgstr  "eller lämna tomt för att ladda ner alla."
 
-#: ../ChapterListing.lua:1222
+#: ../ChapterListing.lua:1291
 msgid   "Invalid amount of chapters!"
 msgstr  "Ogiltigt antal kapitel!"
 
-#: ../ChapterListing.lua:1243
+#: ../ChapterListing.lua:1312
 msgid   "No unread chapters found for"
 msgstr  "Inga olästa kapitel hittades för"
 
-#: ../ChapterListing.lua:1267 ../ChapterListing.lua:1342
+#: ../ChapterListing.lua:1336 ../ChapterListing.lua:1411
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Laddar ner alla kapitel, det tar ett tag..."
 
-#: ../ChapterListing.lua:1352
+#: ../ChapterListing.lua:1421
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Väntar på att nedladdningen ska avbrytas..."
 
-#: ../ChapterListing.lua:1354
+#: ../ChapterListing.lua:1423
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Laddar ner alla kapitel, det tar ett tag... ("
 
-#: ../ChapterListing.lua:1357
+#: ../ChapterListing.lua:1426
 msgid   "Tap outside this message to cancel."
 msgstr  "Tryck utanför detta meddelande för att avbryta."
 
@@ -433,7 +433,7 @@ msgstr  "Renare kapitel"
 msgid   "Manage sources"
 msgstr  "Hantera källor"
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:179
+#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:190
 msgid   "Settings"
 msgstr  "Inställningar"
 
@@ -803,7 +803,11 @@ msgstr  "Aktiverad cron-kontroll efter mangauppdateringar"
 msgid   "Source IDs skip check update"
 msgstr  "Käll-ID:n hoppar över kontrolluppdatering"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:116
+msgid   "Preload chapters on reader open"
+msgstr  "Förladda kapitel på läsaren öppen"
+
+#: ../Settings.lua:179
 msgid   "Allow requisition of the back button"
 msgstr  "Tillåt rekvisition av bakåtknappen"
 

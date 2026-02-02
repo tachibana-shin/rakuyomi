@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-02 02:22+0700\n"
+        "POT-Creation-Date: 2026-02-02 10:05+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -31,8 +31,8 @@ msgstr  "ניתן להתקנה"
 msgid   "version"
 msgstr  "גִרְסָה"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:294
-#: ../ChapterListing.lua:374 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:303
+#: ../ChapterListing.lua:383 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "לֹא יְדוּעַ"
@@ -53,283 +53,283 @@ msgstr  "מתקין מקור..."
 msgid   "Chapter listing"
 msgstr  "רישום פרקים"
 
-#: ../ChapterListing.lua:252 ../ChapterListing.lua:1020
+#: ../ChapterListing.lua:260 ../ChapterListing.lua:1089
 msgid   "Languages"
 msgstr  "שפות"
 
-#: ../ChapterListing.lua:340
+#: ../ChapterListing.lua:349
 msgid   "No chapters found"
 msgstr  "לא נמצאו פרקים"
 
-#: ../ChapterListing.lua:340
+#: ../ChapterListing.lua:349
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "נסה להחליק מטה כדי לרענן את רשימת הפרקים."
 
-#: ../ChapterListing.lua:402
+#: ../ChapterListing.lua:411
 msgid   "Volume"
 msgstr  "כֶּרֶך"
 
-#: ../ChapterListing.lua:406 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:415 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "פֶּרֶק"
 
-#: ../ChapterListing.lua:429
+#: ../ChapterListing.lua:438
 msgid   "Locked"
 msgstr  "נָעוּל"
 
-#: ../ChapterListing.lua:465 ../ChapterListing.lua:665
+#: ../ChapterListing.lua:474 ../ChapterListing.lua:675
 msgid   "Refreshing chapters..."
 msgstr  "מרענן פרקים..."
 
-#: ../ChapterListing.lua:473 ../ChapterListing.lua:672
-#: ../ChapterListing.lua:1315
+#: ../ChapterListing.lua:482 ../ChapterListing.lua:682
+#: ../ChapterListing.lua:1384
 msgid   "Cancelled."
 msgstr  "בּוּטלָה."
 
-#: ../ChapterListing.lua:485
+#: ../ChapterListing.lua:494
 msgid   "Refresh chapter error"
 msgstr  "שגיאת רענון פרק"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:533
 msgid   "Chapter is locked"
 msgstr  "הפרק נעול"
 
-#: ../ChapterListing.lua:540
+#: ../ChapterListing.lua:550
 msgid   "Open"
 msgstr  "לִפְתוֹחַ"
 
-#: ../ChapterListing.lua:550 ../ChapterListing.lua:940 ../LibraryView.lua:336
+#: ../ChapterListing.lua:560 ../ChapterListing.lua:1009 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "לְרַעֲנֵן"
 
-#: ../ChapterListing.lua:556
+#: ../ChapterListing.lua:566
 msgid   "Chapter refreshed"
 msgstr  "הפרק רענן"
 
-#: ../ChapterListing.lua:562 ../ChapterListing.lua:711
+#: ../ChapterListing.lua:572 ../ChapterListing.lua:721
 msgid   "Mark"
 msgstr  "סִימָן"
 
-#: ../ChapterListing.lua:574 ../ChapterListing.lua:1212
+#: ../ChapterListing.lua:584 ../ChapterListing.lua:1281
 msgid   "Download"
 msgstr  "הורד"
 
-#: ../ChapterListing.lua:574 ../LibraryView.lua:459
+#: ../ChapterListing.lua:584 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "לְהַסִיר"
 
-#: ../ChapterListing.lua:583
+#: ../ChapterListing.lua:593
 msgid   "Chapter downloaded"
 msgstr  "פרק הורד"
 
-#: ../ChapterListing.lua:602
+#: ../ChapterListing.lua:612
 msgid   "Revoke chapter..."
 msgstr  "בטל פרק..."
 
-#: ../ChapterListing.lua:620
+#: ../ChapterListing.lua:630
 msgid   "Removed chapter"
 msgstr  "הפרק הוסר"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "Marking"
 msgstr  "צִיוּן"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "Un-marking"
 msgstr  "ביטול סימון"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:641
 msgid   "chapter..."
 msgstr  "פֶּרֶק..."
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:966 ../LibraryView.lua:372
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1035 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "סמן שנקרא"
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:976 ../LibraryView.lua:383
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1045 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "סמן שלא נקרא"
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:709
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:710
 msgid   "Leaving blank will select all"
 msgstr  "השארת ריק תבחר הכל"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:710
 msgid   "Mark chapters as read or unread"
 msgstr  "סמן פרקים כקראו או שלא נקראו"
 
-#: ../ChapterListing.lua:704 ../ChapterListing.lua:1129
-#: ../ChapterListing.lua:1205 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:714 ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1274 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "לְבַטֵל"
 
-#: ../ChapterListing.lua:721
+#: ../ChapterListing.lua:731
 msgid   "Marking..."
 msgstr  "צִיוּן..."
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:741
 msgid   "Marked"
 msgstr  "מְסוּמָן"
 
-#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:760 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "אין שגיאות"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "Page"
 msgstr  "עַמוּד"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "attempts"
 msgstr  "ניסיונות"
 
-#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:777 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… ועוד %d שגיאות"
 
-#: ../ChapterListing.lua:786 ../ChapterListing.lua:801
+#: ../ChapterListing.lua:796 ../ChapterListing.lua:811
 msgid   "Could not download chapter."
 msgstr  "לא ניתן להוריד את הפרק."
 
-#: ../ChapterListing.lua:794
-msgid   "Downloading chapter..."
-msgstr  "מוריד פרק..."
+#: ../ChapterListing.lua:804
+msgid   "Loading chapter..."
+msgstr  "טוען פרק..."
 
-#: ../ChapterListing.lua:795
+#: ../ChapterListing.lua:805
 msgid   "unknown"
 msgstr  "לֹא יְדוּעַ"
 
-#: ../ChapterListing.lua:814
+#: ../ChapterListing.lua:824
 msgid   "Download cancelled."
 msgstr  "ההורדה בוטלה."
 
-#: ../ChapterListing.lua:820
+#: ../ChapterListing.lua:830
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "האם אתה בטוח שברצונך לבטל את ההורדה?"
 
-#: ../ChapterListing.lua:930 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:999 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "הוסף לספרייה"
 
-#: ../ChapterListing.lua:948 ../LibraryView.lua:356
+#: ../ChapterListing.lua:1017 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "פרטים"
 
-#: ../ChapterListing.lua:988
+#: ../ChapterListing.lua:1057
 msgid   "Resume"
 msgstr  "קוֹרוֹת חַיִים"
 
-#: ../ChapterListing.lua:996
+#: ../ChapterListing.lua:1065
 msgid   "Next Chapter"
 msgstr  "הפרק הבא"
 
-#: ../ChapterListing.lua:1006
+#: ../ChapterListing.lua:1075
 msgid   "Download unread chapters…"
 msgstr  "הורד פרקים שלא נקראו..."
 
-#: ../ChapterListing.lua:1033
+#: ../ChapterListing.lua:1102
 msgid   "Group"
 msgstr  "קְבוּצָה"
 
-#: ../ChapterListing.lua:1034 ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1103 ../ChapterListing.lua:1255
 msgid   "Filter by Group"
 msgstr  "סנן לפי קבוצה"
 
-#: ../ChapterListing.lua:1057
+#: ../ChapterListing.lua:1126
 msgid   "Adding to library..."
 msgstr  "מוסיף לספרייה..."
 
-#: ../ChapterListing.lua:1064
+#: ../ChapterListing.lua:1133
 msgid   "Failed to add to library"
 msgstr  "ההוספה לספרייה נכשלה"
 
-#: ../ChapterListing.lua:1069
+#: ../ChapterListing.lua:1138
 msgid   "Added to library."
 msgstr  "נוסף לספרייה."
 
-#: ../ChapterListing.lua:1117
+#: ../ChapterListing.lua:1186
 msgid   "No more chapters to read!"
 msgstr  "אין יותר פרקים לקרוא!"
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1196
 msgid   "Next"
 msgstr  "הַבָּא"
 
-#: ../ChapterListing.lua:1127
+#: ../ChapterListing.lua:1196
 msgid   "reading with"
 msgstr  "לקרוא עם"
 
-#: ../ChapterListing.lua:1128 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1197 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "לִקְרוֹא"
 
-#: ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1220
 msgid   "Show All"
 msgstr  "הצג הכל"
 
-#: ../ChapterListing.lua:1159
+#: ../ChapterListing.lua:1228
 msgid   "Showing all groups"
 msgstr  "מציג את כל הקבוצות"
 
-#: ../ChapterListing.lua:1179
+#: ../ChapterListing.lua:1248
 msgid   "Filtered to"
 msgstr  "מסונן ל"
 
-#: ../ChapterListing.lua:1196
+#: ../ChapterListing.lua:1265
 msgid   "Download unread chapters..."
 msgstr  "הורד פרקים שלא נקראו..."
 
-#: ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1267
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "כמות הפרקים שלא נקראו (ברירת מחדל: הכל)"
 
-#: ../ChapterListing.lua:1200
+#: ../ChapterListing.lua:1269
 msgid   "Specify amount or leave empty for all."
 msgstr  "ציין כמות או השאר ריק עבור כולם."
 
-#: ../ChapterListing.lua:1200
+#: ../ChapterListing.lua:1269
 msgid   "Will download from"
 msgstr  "יוריד מ"
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1270
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "ציין את כמות הפרקים שלא נקראו להורדה"
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1270
 msgid   "or leave empty to download all of them."
 msgstr  "או השאר ריק כדי להוריד את כולם."
 
-#: ../ChapterListing.lua:1222
+#: ../ChapterListing.lua:1291
 msgid   "Invalid amount of chapters!"
 msgstr  "כמות פרקים לא חוקית!"
 
-#: ../ChapterListing.lua:1243
+#: ../ChapterListing.lua:1312
 msgid   "No unread chapters found for"
 msgstr  "לא נמצאו פרקים שלא נקראו עבור"
 
-#: ../ChapterListing.lua:1267 ../ChapterListing.lua:1342
+#: ../ChapterListing.lua:1336 ../ChapterListing.lua:1411
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "מוריד את כל הפרקים, זה ייקח זמן מה..."
 
-#: ../ChapterListing.lua:1352
+#: ../ChapterListing.lua:1421
 msgid   "Waiting for download to be cancelled…"
 msgstr  "ממתין לביטול ההורדה..."
 
-#: ../ChapterListing.lua:1354
+#: ../ChapterListing.lua:1423
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "מוריד את כל הפרקים, זה ייקח זמן... ("
 
-#: ../ChapterListing.lua:1357
+#: ../ChapterListing.lua:1426
 msgid   "Tap outside this message to cancel."
 msgstr  "הקש מחוץ להודעה זו כדי לבטל."
 
@@ -433,7 +433,7 @@ msgstr  "פרקים נקיים יותר"
 msgid   "Manage sources"
 msgstr  "נהל מקורות"
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:179
+#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:190
 msgid   "Settings"
 msgstr  "הגדרות"
 
@@ -803,7 +803,11 @@ msgstr  "הפעלת cron check עבור עדכוני מנגה"
 msgid   "Source IDs skip check update"
 msgstr  "מזהי מקור מדלגים על עדכון בדיקת"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:116
+msgid   "Preload chapters on reader open"
+msgstr  "טען מראש פרקים על קורא פתוח"
+
+#: ../Settings.lua:179
 msgid   "Allow requisition of the back button"
 msgstr  "אפשר דרישה של כפתור החזרה"
 

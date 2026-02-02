@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-02 00:05+0700\n"
+        "POT-Creation-Date: 2026-02-02 10:05+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -31,8 +31,8 @@ msgstr  "Có thể cài đặt"
 msgid   "version"
 msgstr  "phiên bản"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:130
-#: ../ChapterListing.lua:210 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:303
+#: ../ChapterListing.lua:383 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Không xác định"
@@ -49,283 +49,287 @@ msgstr  "Hãy thử thêm một số danh sách nguồn bằng cách xem README 
 msgid   "Installing source..."
 msgstr  "Đang cài đặt nguồn..."
 
-#: ../ChapterListing.lua:38
+#: ../ChapterListing.lua:53
 msgid   "Chapter listing"
 msgstr  "Danh sách chương"
 
-#: ../ChapterListing.lua:176
+#: ../ChapterListing.lua:260 ../ChapterListing.lua:1089
+msgid   "Languages"
+msgstr  "Ngôn ngữ"
+
+#: ../ChapterListing.lua:349
 msgid   "No chapters found"
 msgstr  "Không tìm thấy chương nào"
 
-#: ../ChapterListing.lua:176
+#: ../ChapterListing.lua:349
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Hãy thử vuốt xuống để làm mới danh sách chương."
 
-#: ../ChapterListing.lua:238
+#: ../ChapterListing.lua:411
 msgid   "Volume"
 msgstr  "Tập"
 
-#: ../ChapterListing.lua:242 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:415 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Chương"
 
-#: ../ChapterListing.lua:266
+#: ../ChapterListing.lua:438
 msgid   "Locked"
 msgstr  "Đã khóa"
 
-#: ../ChapterListing.lua:293 ../ChapterListing.lua:494
+#: ../ChapterListing.lua:474 ../ChapterListing.lua:675
 msgid   "Refreshing chapters..."
 msgstr  "Đang làm mới các chương..."
 
-#: ../ChapterListing.lua:301 ../ChapterListing.lua:501
-#: ../ChapterListing.lua:1189
+#: ../ChapterListing.lua:482 ../ChapterListing.lua:682
+#: ../ChapterListing.lua:1384
 msgid   "Cancelled."
 msgstr  "Đã hủy."
 
-#: ../ChapterListing.lua:313
+#: ../ChapterListing.lua:494
 msgid   "Refresh chapter error"
 msgstr  "Lỗi làm mới chương"
 
-#: ../ChapterListing.lua:352
+#: ../ChapterListing.lua:533
 msgid   "Chapter is locked"
 msgstr  "Chương bị khóa"
 
-#: ../ChapterListing.lua:369
+#: ../ChapterListing.lua:550
 msgid   "Open"
 msgstr  "Mở"
 
-#: ../ChapterListing.lua:379 ../ChapterListing.lua:828 ../LibraryView.lua:336
+#: ../ChapterListing.lua:560 ../ChapterListing.lua:1009 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Làm mới"
 
-#: ../ChapterListing.lua:385
+#: ../ChapterListing.lua:566
 msgid   "Chapter refreshed"
 msgstr  "Chương được làm mới"
 
-#: ../ChapterListing.lua:391 ../ChapterListing.lua:540
+#: ../ChapterListing.lua:572 ../ChapterListing.lua:721
 msgid   "Mark"
 msgstr  "Đánh dấu"
 
-#: ../ChapterListing.lua:403 ../ChapterListing.lua:1086
+#: ../ChapterListing.lua:584 ../ChapterListing.lua:1281
 msgid   "Download"
 msgstr  "Tải xuống"
 
-#: ../ChapterListing.lua:403 ../LibraryView.lua:459
+#: ../ChapterListing.lua:584 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Di dời"
 
-#: ../ChapterListing.lua:412
+#: ../ChapterListing.lua:593
 msgid   "Chapter downloaded"
 msgstr  "Đã tải chương xuống"
 
-#: ../ChapterListing.lua:431
+#: ../ChapterListing.lua:612
 msgid   "Revoke chapter..."
 msgstr  "Thu hồi chương..."
 
-#: ../ChapterListing.lua:449
+#: ../ChapterListing.lua:630
 msgid   "Removed chapter"
 msgstr  "Chương đã bị xóa"
 
-#: ../ChapterListing.lua:460
+#: ../ChapterListing.lua:641
 msgid   "Marking"
 msgstr  "Đánh dấu"
 
-#: ../ChapterListing.lua:460
+#: ../ChapterListing.lua:641
 msgid   "Un-marking"
 msgstr  "Bỏ đánh dấu"
 
-#: ../ChapterListing.lua:460
+#: ../ChapterListing.lua:641
 msgid   "chapter..."
 msgstr  "chương..."
 
-#: ../ChapterListing.lua:527 ../ChapterListing.lua:854 ../LibraryView.lua:372
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1035 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Đánh dấu đã đọc"
 
-#: ../ChapterListing.lua:527 ../ChapterListing.lua:864 ../LibraryView.lua:383
+#: ../ChapterListing.lua:708 ../ChapterListing.lua:1045 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Đánh dấu là chưa đọc"
 
-#: ../ChapterListing.lua:528
+#: ../ChapterListing.lua:709
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:529
+#: ../ChapterListing.lua:710
 msgid   "Leaving blank will select all"
 msgstr  "Để trống sẽ chọn tất cả"
 
-#: ../ChapterListing.lua:529
+#: ../ChapterListing.lua:710
 msgid   "Mark chapters as read or unread"
 msgstr  "Đánh dấu các chương là đã đọc hoặc chưa đọc"
 
-#: ../ChapterListing.lua:533 ../ChapterListing.lua:1003
-#: ../ChapterListing.lua:1079 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:714 ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1274 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Hủy bỏ"
 
-#: ../ChapterListing.lua:550
+#: ../ChapterListing.lua:731
 msgid   "Marking..."
 msgstr  "Đánh dấu..."
 
-#: ../ChapterListing.lua:560
+#: ../ChapterListing.lua:741
 msgid   "Marked"
 msgstr  "Đã đánh dấu"
 
-#: ../ChapterListing.lua:579 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:760 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Không có lỗi"
 
-#: ../ChapterListing.lua:588
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "Page"
 msgstr  "Trang"
 
-#: ../ChapterListing.lua:588
+#: ../ChapterListing.lua:769
 #, lua-format
 msgid   "attempts"
 msgstr  "nỗ lực"
 
-#: ../ChapterListing.lua:596 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:777 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… và %d lỗi khác"
 
-#: ../ChapterListing.lua:615 ../ChapterListing.lua:630
+#: ../ChapterListing.lua:796 ../ChapterListing.lua:811
 msgid   "Could not download chapter."
 msgstr  "Không thể tải xuống chương."
 
-#: ../ChapterListing.lua:621
+#: ../ChapterListing.lua:804
 msgid   "Loading chapter..."
 msgstr  "Đang tải chương..."
 
-#: ../ChapterListing.lua:624
+#: ../ChapterListing.lua:805
 msgid   "unknown"
 msgstr  "không rõ"
 
-#: ../ChapterListing.lua:643
+#: ../ChapterListing.lua:824
 msgid   "Download cancelled."
 msgstr  "Đã hủy tải xuống."
 
-#: ../ChapterListing.lua:649
+#: ../ChapterListing.lua:830
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Bạn có chắc chắn muốn hủy tải xuống không?"
 
-#: ../ChapterListing.lua:818 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:999 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Thêm vào thư viện"
 
-#: ../ChapterListing.lua:836 ../LibraryView.lua:356
+#: ../ChapterListing.lua:1017 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Chi tiết"
 
-#: ../ChapterListing.lua:876
+#: ../ChapterListing.lua:1057
 msgid   "Resume"
-msgstr  "Bản tóm tắt"
+msgstr  "Đọc tiếp"
 
-#: ../ChapterListing.lua:884
+#: ../ChapterListing.lua:1065
 msgid   "Next Chapter"
 msgstr  "Chương tiếp theo"
 
-#: ../ChapterListing.lua:894
+#: ../ChapterListing.lua:1075
 msgid   "Download unread chapters…"
 msgstr  "Tải xuống các chương chưa đọc…"
 
-#: ../ChapterListing.lua:907
+#: ../ChapterListing.lua:1102
 msgid   "Group"
 msgstr  "Nhóm"
 
-#: ../ChapterListing.lua:908 ../ChapterListing.lua:1060
+#: ../ChapterListing.lua:1103 ../ChapterListing.lua:1255
 msgid   "Filter by Group"
 msgstr  "Lọc theo nhóm"
 
-#: ../ChapterListing.lua:931
+#: ../ChapterListing.lua:1126
 msgid   "Adding to library..."
 msgstr  "Đang thêm vào thư viện..."
 
-#: ../ChapterListing.lua:938
+#: ../ChapterListing.lua:1133
 msgid   "Failed to add to library"
 msgstr  "Không thể thêm vào thư viện"
 
-#: ../ChapterListing.lua:943
+#: ../ChapterListing.lua:1138
 msgid   "Added to library."
 msgstr  "Đã thêm vào thư viện."
 
-#: ../ChapterListing.lua:991
+#: ../ChapterListing.lua:1186
 msgid   "No more chapters to read!"
 msgstr  "Không còn chương nào để đọc nữa!"
 
-#: ../ChapterListing.lua:1001
+#: ../ChapterListing.lua:1196
 msgid   "Next"
 msgstr  "Kế tiếp"
 
-#: ../ChapterListing.lua:1001
+#: ../ChapterListing.lua:1196
 msgid   "reading with"
 msgstr  "đọc với"
 
-#: ../ChapterListing.lua:1002 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1197 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Đọc"
 
-#: ../ChapterListing.lua:1025
+#: ../ChapterListing.lua:1220
 msgid   "Show All"
 msgstr  "Hiển thị tất cả"
 
-#: ../ChapterListing.lua:1033
+#: ../ChapterListing.lua:1228
 msgid   "Showing all groups"
 msgstr  "Hiển thị tất cả các nhóm"
 
-#: ../ChapterListing.lua:1053
+#: ../ChapterListing.lua:1248
 msgid   "Filtered to"
 msgstr  "Đã lọc thành"
 
-#: ../ChapterListing.lua:1070
+#: ../ChapterListing.lua:1265
 msgid   "Download unread chapters..."
 msgstr  "Tải xuống các chương chưa đọc..."
 
-#: ../ChapterListing.lua:1072
+#: ../ChapterListing.lua:1267
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Số lượng chương chưa đọc (mặc định: tất cả)"
 
-#: ../ChapterListing.lua:1074
+#: ../ChapterListing.lua:1269
 msgid   "Specify amount or leave empty for all."
 msgstr  "Chỉ định số tiền hoặc để trống cho tất cả."
 
-#: ../ChapterListing.lua:1074
+#: ../ChapterListing.lua:1269
 msgid   "Will download from"
 msgstr  "Sẽ tải xuống từ"
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1270
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Chỉ định số lượng chương chưa đọc để tải xuống"
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1270
 msgid   "or leave empty to download all of them."
 msgstr  "hoặc để trống để tải xuống tất cả chúng."
 
-#: ../ChapterListing.lua:1096
+#: ../ChapterListing.lua:1291
 msgid   "Invalid amount of chapters!"
 msgstr  "Số lượng chương không hợp lệ!"
 
-#: ../ChapterListing.lua:1117
+#: ../ChapterListing.lua:1312
 msgid   "No unread chapters found for"
 msgstr  "Không tìm thấy chương chưa đọc cho"
 
-#: ../ChapterListing.lua:1141 ../ChapterListing.lua:1216
+#: ../ChapterListing.lua:1336 ../ChapterListing.lua:1411
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Đang tải xuống tất cả các chương, việc này sẽ mất một lúc…"
 
-#: ../ChapterListing.lua:1226
+#: ../ChapterListing.lua:1421
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Đang chờ quá trình tải xuống bị hủy…"
 
-#: ../ChapterListing.lua:1228
+#: ../ChapterListing.lua:1423
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Đang tải xuống tất cả các chương, việc này sẽ mất một lúc… ("
 
-#: ../ChapterListing.lua:1231
+#: ../ChapterListing.lua:1426
 msgid   "Tap outside this message to cancel."
 msgstr  "Nhấn vào bên ngoài tin nhắn này để hủy."
 

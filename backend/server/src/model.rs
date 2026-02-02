@@ -61,6 +61,7 @@ pub struct Chapter {
     last_read: Option<i64>,
     downloaded: bool,
     locked: bool,
+    lang: Option<String>,
 }
 
 impl From<DomainChapter> for Chapter {
@@ -84,6 +85,7 @@ impl From<DomainChapter> for Chapter {
             last_read: state.last_read,
             downloaded,
             locked: chapter_information.locked.unwrap_or_default(),
+            lang: chapter_information.lang,
         }
     }
 }

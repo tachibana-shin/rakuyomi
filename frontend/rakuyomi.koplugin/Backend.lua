@@ -564,7 +564,7 @@ function Backend.setPreferredScanlator(source_id, manga_id, preferred_scanlator)
 end
 
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode }
+--- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number }
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse

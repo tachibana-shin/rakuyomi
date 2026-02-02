@@ -38,6 +38,10 @@ end
 --- @publish
 --- @return SuccessfulResponse<string>|ErrorResponse
 function DownloadChapter:start()
+  if self.started == true then
+    return self.start_result
+  end
+
   self.started = true
 
   local response = Backend.createDownloadChapterJob(self.source_id, self.manga_id, self.chapter_id, self.chapter_num)
@@ -46,6 +50,8 @@ function DownloadChapter:start()
   else
     self.job_id = response.body
   end
+
+  self.start_result = response
 
   return response
 end

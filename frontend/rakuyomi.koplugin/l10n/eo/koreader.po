@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-01-07 12:59+0700\n"
+        "POT-Creation-Date: 2026-02-02 00:05+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -15,37 +15,37 @@ msgstr  "Project-Id-Version: rakuyomi.koreader \n"
 msgid   "Available sources"
 msgstr  "Disponeblaj fontoj"
 
-#: ../AvailableSourcesListing.lua:120
+#: ../AvailableSourcesListing.lua:111
 msgid   "Update available!"
 msgstr  "Ĝisdatigo disponebla!"
 
-#: ../AvailableSourcesListing.lua:124
+#: ../AvailableSourcesListing.lua:115
 msgid   "Latest version installed"
 msgstr  "Plej nova versio instalita"
 
-#: ../AvailableSourcesListing.lua:127
+#: ../AvailableSourcesListing.lua:118
 msgid   "Installable"
 msgstr  "Instalebla"
 
-#: ../AvailableSourcesListing.lua:134 ../InstalledSourcesListing.lua:81
+#: ../AvailableSourcesListing.lua:125 ../InstalledSourcesListing.lua:81
 msgid   "version"
 msgstr  "versio"
 
-#: ../AvailableSourcesListing.lua:137 ../ChapterListing.lua:125
-#: ../ChapterListing.lua:205 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:130
+#: ../ChapterListing.lua:210 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Nekonata"
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "No available sources found."
 msgstr  "Neniuj disponeblaj fontoj trovitaj."
 
-#: ../AvailableSourcesListing.lua:149
+#: ../AvailableSourcesListing.lua:140
 msgid   "Try adding some source lists by looking at our README!"
 msgstr  "Provu aldoni kelkajn fontlistojn rigardante nian README!"
 
-#: ../AvailableSourcesListing.lua:167
+#: ../AvailableSourcesListing.lua:158
 msgid   "Installing source..."
 msgstr  "Instalante fonton..."
 
@@ -53,279 +53,279 @@ msgstr  "Instalante fonton..."
 msgid   "Chapter listing"
 msgstr  "Ĉapitro listo"
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:176
 msgid   "No chapters found"
 msgstr  "Neniuj ĉapitroj trovitaj"
 
-#: ../ChapterListing.lua:171
+#: ../ChapterListing.lua:176
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Provu gliti malsupren por refreŝigi la ĉapitran liston."
 
-#: ../ChapterListing.lua:233
+#: ../ChapterListing.lua:238
 msgid   "Volume"
 msgstr  "Volumo"
 
-#: ../ChapterListing.lua:237 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:242 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Ĉapitro"
 
-#: ../ChapterListing.lua:261
+#: ../ChapterListing.lua:266
 msgid   "Locked"
 msgstr  "Ŝlosita"
 
-#: ../ChapterListing.lua:288 ../ChapterListing.lua:488
+#: ../ChapterListing.lua:293 ../ChapterListing.lua:494
 msgid   "Refreshing chapters..."
 msgstr  "Refreŝigante ĉapitrojn..."
 
-#: ../ChapterListing.lua:296 ../ChapterListing.lua:495
-#: ../ChapterListing.lua:1124
+#: ../ChapterListing.lua:301 ../ChapterListing.lua:501
+#: ../ChapterListing.lua:1189
 msgid   "Cancelled."
 msgstr  "Nuligite."
 
-#: ../ChapterListing.lua:308
+#: ../ChapterListing.lua:313
 msgid   "Refresh chapter error"
 msgstr  "Refreŝigi ĉapitran eraron"
 
-#: ../ChapterListing.lua:346
+#: ../ChapterListing.lua:352
 msgid   "Chapter is locked"
 msgstr  "Ĉapitro estas ŝlosita"
 
-#: ../ChapterListing.lua:363
+#: ../ChapterListing.lua:369
 msgid   "Open"
 msgstr  "Malfermu"
 
-#: ../ChapterListing.lua:373 ../ChapterListing.lua:763 ../LibraryView.lua:336
+#: ../ChapterListing.lua:379 ../ChapterListing.lua:828 ../LibraryView.lua:336
 msgid   "Refresh"
 msgstr  "Refreŝigi"
 
-#: ../ChapterListing.lua:379
+#: ../ChapterListing.lua:385
 msgid   "Chapter refreshed"
 msgstr  "Ĉapitro refreŝigita"
 
-#: ../ChapterListing.lua:385 ../ChapterListing.lua:534
+#: ../ChapterListing.lua:391 ../ChapterListing.lua:540
 msgid   "Mark"
 msgstr  "Mark"
 
-#: ../ChapterListing.lua:397 ../ChapterListing.lua:1021
+#: ../ChapterListing.lua:403 ../ChapterListing.lua:1086
 msgid   "Download"
 msgstr  "Elŝutu"
 
-#: ../ChapterListing.lua:397 ../LibraryView.lua:459
+#: ../ChapterListing.lua:403 ../LibraryView.lua:459
 msgid   "Remove"
 msgstr  "Forigi"
 
-#: ../ChapterListing.lua:406
+#: ../ChapterListing.lua:412
 msgid   "Chapter downloaded"
 msgstr  "Ĉapitro elŝutita"
 
-#: ../ChapterListing.lua:425
+#: ../ChapterListing.lua:431
 msgid   "Revoke chapter..."
 msgstr  "Nuligi ĉapitron..."
 
-#: ../ChapterListing.lua:443
+#: ../ChapterListing.lua:449
 msgid   "Removed chapter"
 msgstr  "Forigita ĉapitro"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:460
 msgid   "Marking"
 msgstr  "Markado"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:460
 msgid   "Un-marking"
 msgstr  "Malmarkado"
 
-#: ../ChapterListing.lua:454
+#: ../ChapterListing.lua:460
 msgid   "chapter..."
 msgstr  "ĉapitro..."
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:789 ../LibraryView.lua:372
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:854 ../LibraryView.lua:372
 msgid   "Mark read"
 msgstr  "Mark legis"
 
-#: ../ChapterListing.lua:521 ../ChapterListing.lua:799 ../LibraryView.lua:383
+#: ../ChapterListing.lua:527 ../ChapterListing.lua:864 ../LibraryView.lua:383
 msgid   "Mark unread"
 msgstr  "Marki nelegita"
 
-#: ../ChapterListing.lua:522
+#: ../ChapterListing.lua:528
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:529
 msgid   "Leaving blank will select all"
 msgstr  "Lasi malplena elektos ĉiujn"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:529
 msgid   "Mark chapters as read or unread"
 msgstr  "Marku ĉapitrojn kiel legitajn aŭ nelegitajn"
 
-#: ../ChapterListing.lua:527 ../ChapterListing.lua:938
-#: ../ChapterListing.lua:1014 ../LibraryView.lua:683 ../LibraryView.lua:731
+#: ../ChapterListing.lua:533 ../ChapterListing.lua:1003
+#: ../ChapterListing.lua:1079 ../LibraryView.lua:683 ../LibraryView.lua:731
 #: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Nuligi"
 
-#: ../ChapterListing.lua:544
+#: ../ChapterListing.lua:550
 msgid   "Marking..."
 msgstr  "Markado..."
 
-#: ../ChapterListing.lua:554
+#: ../ChapterListing.lua:560
 msgid   "Marked"
 msgstr  "Markita"
 
-#: ../ChapterListing.lua:573 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:579 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Neniuj eraroj"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "Page"
 msgstr  "Paĝo"
 
-#: ../ChapterListing.lua:582
+#: ../ChapterListing.lua:588
 #, lua-format
 msgid   "attempts"
 msgstr  "provoj"
 
-#: ../ChapterListing.lua:590 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:596 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… kaj %d pli da eraroj"
 
-#: ../ChapterListing.lua:609 ../ChapterListing.lua:624
+#: ../ChapterListing.lua:615 ../ChapterListing.lua:630
 msgid   "Could not download chapter."
 msgstr  "Ne eblis elŝuti ĉapitron."
 
-#: ../ChapterListing.lua:617
-msgid   "Downloading chapter..."
-msgstr  "Elŝutante ĉapitron..."
+#: ../ChapterListing.lua:621
+msgid   "Loading chapter..."
+msgstr  "Ŝarĝante ĉapitron..."
 
-#: ../ChapterListing.lua:618
+#: ../ChapterListing.lua:624
 msgid   "unknown"
 msgstr  "nekonata"
 
-#: ../ChapterListing.lua:637
+#: ../ChapterListing.lua:643
 msgid   "Download cancelled."
 msgstr  "Elŝuto nuligita."
 
-#: ../ChapterListing.lua:643
+#: ../ChapterListing.lua:649
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Ĉu vi certas, ke vi volas nuligi la elŝuton?"
 
-#: ../ChapterListing.lua:753 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:818 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Aldoni al Biblioteko"
 
-#: ../ChapterListing.lua:771 ../LibraryView.lua:356
+#: ../ChapterListing.lua:836 ../LibraryView.lua:356
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Detaloj"
 
-#: ../ChapterListing.lua:811
+#: ../ChapterListing.lua:876
 msgid   "Resume"
 msgstr  "Rekomenci"
 
-#: ../ChapterListing.lua:819
+#: ../ChapterListing.lua:884
 msgid   "Next Chapter"
 msgstr  "Sekva Ĉapitro"
 
-#: ../ChapterListing.lua:829
+#: ../ChapterListing.lua:894
 msgid   "Download unread chapters…"
 msgstr  "Elŝutu nelegitajn ĉapitrojn..."
 
-#: ../ChapterListing.lua:842
+#: ../ChapterListing.lua:907
 msgid   "Group"
 msgstr  "Grupo"
 
-#: ../ChapterListing.lua:843 ../ChapterListing.lua:995
+#: ../ChapterListing.lua:908 ../ChapterListing.lua:1060
 msgid   "Filter by Group"
 msgstr  "Filtrilo laŭ Grupo"
 
-#: ../ChapterListing.lua:866
+#: ../ChapterListing.lua:931
 msgid   "Adding to library..."
 msgstr  "Aldono al biblioteko..."
 
-#: ../ChapterListing.lua:873
+#: ../ChapterListing.lua:938
 msgid   "Failed to add to library"
 msgstr  "Malsukcesis aldoni al biblioteko"
 
-#: ../ChapterListing.lua:878
+#: ../ChapterListing.lua:943
 msgid   "Added to library."
 msgstr  "Aldonita al biblioteko."
 
-#: ../ChapterListing.lua:926
+#: ../ChapterListing.lua:991
 msgid   "No more chapters to read!"
 msgstr  "Ne plu ĉapitroj por legi!"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1001
 msgid   "Next"
 msgstr  "Poste"
 
-#: ../ChapterListing.lua:936
+#: ../ChapterListing.lua:1001
 msgid   "reading with"
 msgstr  "legante kun"
 
-#: ../ChapterListing.lua:937 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1002 ../handlers/ContinueReadingHandler.lua:26
 msgid   "Read"
 msgstr  "Legu"
 
-#: ../ChapterListing.lua:960
+#: ../ChapterListing.lua:1025
 msgid   "Show All"
 msgstr  "Montri Ĉion"
 
-#: ../ChapterListing.lua:968
+#: ../ChapterListing.lua:1033
 msgid   "Showing all groups"
 msgstr  "Montrante ĉiujn grupojn"
 
-#: ../ChapterListing.lua:988
+#: ../ChapterListing.lua:1053
 msgid   "Filtered to"
 msgstr  "Filtrita al"
 
-#: ../ChapterListing.lua:1005
+#: ../ChapterListing.lua:1070
 msgid   "Download unread chapters..."
 msgstr  "Elŝutu nelegitajn ĉapitrojn..."
 
-#: ../ChapterListing.lua:1007
+#: ../ChapterListing.lua:1072
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Kvanto da nelegitaj ĉapitroj (defaŭlte: ĉiuj)"
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1074
 msgid   "Specify amount or leave empty for all."
 msgstr  "Indiku kvanton aŭ lasu malplena por ĉiuj."
 
-#: ../ChapterListing.lua:1009
+#: ../ChapterListing.lua:1074
 msgid   "Will download from"
 msgstr  "Elŝutos de"
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1075
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Indiku la kvanton da nelegitaj ĉapitroj por elŝuti"
 
-#: ../ChapterListing.lua:1010
+#: ../ChapterListing.lua:1075
 msgid   "or leave empty to download all of them."
 msgstr  "aŭ lasu malplena por elŝuti ĉiujn."
 
-#: ../ChapterListing.lua:1031
+#: ../ChapterListing.lua:1096
 msgid   "Invalid amount of chapters!"
 msgstr  "Nevalida kvanto da ĉapitroj!"
 
-#: ../ChapterListing.lua:1052
+#: ../ChapterListing.lua:1117
 msgid   "No unread chapters found for"
 msgstr  "Neniuj nelegitaj ĉapitroj trovitaj por"
 
-#: ../ChapterListing.lua:1076 ../ChapterListing.lua:1151
+#: ../ChapterListing.lua:1141 ../ChapterListing.lua:1216
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Elŝutante ĉiujn ĉapitrojn, ĉi tio daŭros iom da tempo..."
 
-#: ../ChapterListing.lua:1161
+#: ../ChapterListing.lua:1226
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Atendante la nuligo de elŝuto..."
 
-#: ../ChapterListing.lua:1163
+#: ../ChapterListing.lua:1228
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Elŝutante ĉiujn ĉapitrojn, ĉi tio daŭros iom da tempo... ("
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1231
 msgid   "Tap outside this message to cancel."
 msgstr  "Frapu ekster ĉi tiu mesaĝo por nuligi."
 
@@ -429,7 +429,7 @@ msgstr  "Pli puraj ĉapitroj"
 msgid   "Manage sources"
 msgstr  "Administri fontojn"
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:179
+#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:190
 msgid   "Settings"
 msgstr  "Agordoj"
 
@@ -799,11 +799,15 @@ msgstr  "Ebligita kronkontrolo por mangaaj ĝisdatigoj"
 msgid   "Source IDs skip check update"
 msgstr  "Font-IDoj preterpasas kontroli ĝisdatigon"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:116
+msgid   "Preload chapters on reader open"
+msgstr  "Antaŭŝargi ĉapitrojn sur leganto malfermiĝas"
+
+#: ../Settings.lua:179
 msgid   "Allow requisition of the back button"
 msgstr  "Permesu rekvizicion de la malantaŭa butono"
 
-#: ../SourceSettings.lua:209
+#: ../SourceSettings.lua:197
 msgid   "Source settings"
 msgstr  "Fontaj agordoj"
 

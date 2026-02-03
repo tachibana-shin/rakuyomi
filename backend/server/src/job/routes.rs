@@ -89,7 +89,7 @@ struct CreateDownloadUnreadChaptersJobBody {
     source_id: String,
     manga_id: String,
     amount: Option<usize>,
-    langs: Vec<String>,
+    langs: Option<Vec<String>>,
 }
 
 impl From<CreateDownloadUnreadChaptersJobBody> for MangaId {
@@ -109,7 +109,7 @@ async fn create_download_unread_chapters_job(
     StateExtractor(State { job_registry }): StateExtractor<State>,
     Json(body): Json<CreateDownloadUnreadChaptersJobBody>,
 ) -> Result<Json<Uuid>, AppError> {
-    let langs = body.langs.clone();
+    let langs = body.langs.clone().unwrap_or_default();
 
     let filter = match body.amount {
         Some(amount) => ChaptersToDownloadFilter::NextUnreadChapters(amount),
@@ -150,7 +150,7 @@ struct CreateDownloadScanlatorChaptersJobBody {
     manga_id: String,
     scanlator: String,
     amount: Option<usize>,
-    langs: Vec<String>,
+    langs: Option<Vec<String>>,
 }
 
 impl From<CreateDownloadScanlatorChaptersJobBody> for MangaId {
@@ -170,7 +170,7 @@ async fn create_download_scanlator_chapters_job(
     StateExtractor(State { job_registry }): StateExtractor<State>,
     Json(body): Json<CreateDownloadScanlatorChaptersJobBody>,
 ) -> Result<Json<Uuid>, AppError> {
-    let langs = body.langs.clone();
+    let langs = body.langs.clone().unwrap_or_default();
     let manga_id = MangaId::from(body.clone());
 
     let source_manager = source_manager.lock().await;

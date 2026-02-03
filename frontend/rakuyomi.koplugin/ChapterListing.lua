@@ -1239,6 +1239,11 @@ function ChapterListing:onDownloadUnreadChapters()
 end
 
 function ChapterListing:createDownloadJob(amount)
+  if #self.langs_selected == 0 then
+    self.langs_selected[1] = false
+    self.langs_selected[1] = nil
+  end
+
   return DownloadUnreadChapters:new({
     source_id = self.manga.source.id,
     manga_id = self.manga.id,

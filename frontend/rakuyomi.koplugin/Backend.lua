@@ -610,7 +610,7 @@ function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, la
       source_id = source_id,
       manga_id = manga_id,
       amount = amount,
-      langs = langs,
+      langs = #langs > 0 and langs or nil,
     }
   })
 end
@@ -623,7 +623,7 @@ function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlat
     manga_id = manga_id,
     scanlator = scanlator,
     amount = amount,
-    langs = langs,
+    langs = #langs > 0 and langs or nil,
   }
 
   return Backend.requestJson({

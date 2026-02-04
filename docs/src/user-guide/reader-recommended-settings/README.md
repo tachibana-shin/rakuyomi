@@ -10,7 +10,7 @@ In the bottom menu, go to the next-to-last submenu, and then set **Dithering** t
 
 <div align="center">
 
-![Dithering](./images/dithering.png)
+![Dithering](./user-guide/reader-recommended-settings/images/dithering.png)
 
 </div>
 
@@ -20,9 +20,9 @@ Also in the bottom menu, go to the fourth submenu and set the **View Mode** to "
 
 <div align="center">
 
-![View mode](./images/view-mode.png)
+![View mode](./user-guide/reader-recommended-settings/images/view-mode.png)
 
-![Page crop](./images/page-crop.png)
+![Page crop](./user-guide/reader-recommended-settings/images/page-crop.png)
 
 </div>
 
@@ -32,6 +32,6 @@ Go to the third submenu on the bottom menu, then set **Fit** to "full". This wil
 
 <div align="center">
 
-![Fit](./images/fit.png)
+![Fit](./user-guide/reader-recommended-settings/images/fit.png)
 
 </div>

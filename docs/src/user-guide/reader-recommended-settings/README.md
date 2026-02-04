@@ -9,9 +9,7 @@ For all of the following settings, tap-and-holding on them will make it the defa
 In the bottom menu, go to the next-to-last submenu, and then set **Dithering** to "on". This might also fix washed out colors on e-ink devices that support them.
 
 <div align="center">
-
-![Dithering](./images/dithering.png)
-
+    <img src="https://raw.githubusercontent.com/tachibana-shin/rakuyomi/main/docs/src/user-guide/reader-recommended-settings/images/dithering.png" alt="Dithering"/>
 </div>
 
 ## Use the "page" view mode and enable automatic page cropping
@@ -19,19 +17,14 @@ In the bottom menu, go to the next-to-last submenu, and then set **Dithering** t
 Also in the bottom menu, go to the fourth submenu and set the **View Mode** to "page"; then go to the second submenu and set **Page Crop** to "auto".
 
 <div align="center">
-
-![View mode](./images/view-mode.png)
-
-![Page crop](./images/page-crop.png)
-
+    <img src="https://raw.githubusercontent.com/tachibana-shin/rakuyomi/main/docs/src/user-guide/reader-recommended-settings/images/view-mode.png" alt="View mode"/>
+    <img src="https://raw.githubusercontent.com/tachibana-shin/rakuyomi/main/docs/src/user-guide/reader-recommended-settings/images/page-crop.png" alt="Page crop"/>
 </div>
 
 ## Fit the entire page on the screen
 
-Go to the third submenu on the bottom menu, then set **Fit** to "full". This will resize the pages so that they fit completely inside your screen. 
+Go to the third submenu on the bottom menu, then set **Fit** to "full". This will resize the pages so that they fit completely inside your screen.
 
 <div align="center">
-
-![Fit](./images/fit.png)
-
+    <img src="https://raw.githubusercontent.com/tachibana-shin/rakuyomi/main/docs/src/user-guide/reader-recommended-settings/images/fit.png" alt="Fit"/>
 </div>

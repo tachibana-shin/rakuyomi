@@ -6,6 +6,9 @@ use raqote::DrawTarget;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     io::Cursor,
+    thread::sleep,
+    time::{Duration, Instant},
+    usize,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -115,6 +118,14 @@ pub enum RequestState {
     Building(RequestBuildingState),
     Sent(ResponseData),
     Closed,
+}
+
+#[derive(Debug)]
+pub struct RateLimit {
+    pub permits: usize,
+    pub period: Duration,
+    pub last_reset: Instant,
+    pub available: usize,
 }
 
 // Determines the current object in which operations are being done.
@@ -243,6 +254,8 @@ pub struct WasmStore {
     std_strs_encode: HashSet<usize>,
 
     requests: HashMap<usize, RequestState>,
+    // net rate limit
+    rate_limit: Option<RateLimit>,
     // canvas
     canvass: HashMap<usize, Canvas>,
     // image
@@ -292,6 +305,7 @@ impl WasmStore {
             std_references: HashMap::new(),
             std_strs_encode: HashSet::new(),
             requests: HashMap::new(),
+            rate_limit: None,
 
             canvass: HashMap::new(),
 
@@ -422,6 +436,48 @@ impl WasmStore {
 
     pub fn remove_request(&mut self, descriptor: usize) -> Option<RequestState> {
         self.requests.remove(&descriptor)
+    }
+
+    pub fn set_rate_limit(&mut self, permits: Option<usize>, period_secs: Option<usize>) {
+        let permits = permits.unwrap_or_else(|| {
+            self.rate_limit
+                .as_ref()
+                .map(|v| v.permits)
+                .unwrap_or(usize::MAX)
+        });
+        self.rate_limit = Some(RateLimit {
+            permits: permits.clone(),
+            period: Duration::from_secs(period_secs.unwrap_or_else(|| {
+                self.rate_limit
+                    .as_ref()
+                    .map(|v| v.period.as_secs() as usize)
+                    .unwrap_or(1)
+            }) as u64),
+            available: permits,
+            last_reset: Instant::now(),
+        });
+    }
+    pub fn rate_limit_acquire(&mut self) {
+        if let Some(inner) = &mut self.rate_limit {
+            loop {
+                // リセット必要チェック
+                let now = Instant::now();
+                if now.duration_since(inner.last_reset) >= inner.period {
+                    inner.available = inner.permits;
+                    inner.last_reset = now;
+                }
+
+                // トークンがあれば消費して終了
+                if inner.available > 0 {
+                    inner.available -= 1;
+                    return;
+                }
+
+                // トークン無し → 次回リセット時間まで正確に待機
+                let next_reset = inner.last_reset + inner.period;
+                sleep(next_reset.saturating_duration_since(now));
+            }
+        }
     }
 
     fn increase_and_get_std_desciptor_pointer(&mut self) -> usize {

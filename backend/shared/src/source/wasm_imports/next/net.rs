@@ -168,7 +168,6 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         };
         v
     };
-    println!("Send all {:?}", ids);
 
     let store = caller.data_mut();
     let cancellation_token = store.context.cancellation_token.clone();
@@ -184,6 +183,8 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         let Some(request_descriptor_i32) = usize::try_from(request_descriptor_i32).ok() else {
             return ResultContext::InvalidDescriptor.into();
         };
+        store.rate_limit_acquire();
+
         let request_builder = get_building_request(store, request_descriptor_i32)?;
         #[cfg(feature = "all")]
         let client = reqwest::Client::new();
@@ -346,11 +347,24 @@ fn html(caller: Caller<'_, WasmStore>, request_ptr: i32) -> Result<i32> {
 }
 #[aidoku_wasm_function]
 fn set_rate_limit(
-    _caller: Caller<'_, WasmStore>,
-    _permits: i32,
-    _period: i32,
-    _unit: i32,
+    mut caller: Caller<'_, WasmStore>,
+    permits: i32,
+    period: i32,
+    unit: i32,
 ) -> Result<()> {
-    // leaving this function unimplemented for now
+    let store = caller.data_mut();
+
+    let time_unit = match unit {
+        0 => 1,    // seconds
+        1 => 60,   // minutes
+        2 => 3600, // hours
+        _ => 0,
+    };
+
+    store.set_rate_limit(
+        Some(permits.try_into()?),
+        Some((period * time_unit).try_into()?),
+    );
+
     Ok(())
 }

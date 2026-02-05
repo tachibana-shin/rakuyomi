@@ -163,13 +163,21 @@ pub fn set_body(
 }
 
 #[aidoku_wasm_function]
-fn set_rate_limit(_caller: Caller<'_, WasmStore>, _rate_limit: i32) -> Result<()> {
-    todo!("rate-limit functions are not supported at the moment")
+fn set_rate_limit(mut caller: Caller<'_, WasmStore>, rate_limit: i32) -> Result<()> {
+    let store = caller.data_mut();
+
+    store.set_rate_limit(None, Some(rate_limit.try_into()?));
+
+    Ok(())
 }
 
 #[aidoku_wasm_function]
-fn set_rate_limit_period(_caller: Caller<'_, WasmStore>, _rate_limit_period: i32) -> Result<()> {
-    todo!("rate-limit functions are not supported at the moment")
+fn set_rate_limit_period(mut caller: Caller<'_, WasmStore>, rate_limit_period: i32) -> Result<()> {
+    let store = caller.data_mut();
+
+    store.set_rate_limit(Some(rate_limit_period.try_into()?), None);
+
+    Ok(())
 }
 
 #[aidoku_wasm_function]
@@ -178,6 +186,8 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         .try_into()
         .context("invalid descriptor")?;
     let wasm_store = caller.data_mut();
+    wasm_store.rate_limit_acquire();
+
     let cancellation_token = wasm_store.context.cancellation_token.clone();
     let request_builder = get_building_request(wasm_store, request_descriptor_i32)?;
 

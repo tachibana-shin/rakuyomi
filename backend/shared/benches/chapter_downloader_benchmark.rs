@@ -35,7 +35,7 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
         CancellationToken::new(),
         manga_id,
         chapter_id,
-        Some(0),
+        Some(0.0),
     ))
     .unwrap();
 

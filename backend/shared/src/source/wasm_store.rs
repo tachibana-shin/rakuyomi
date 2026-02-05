@@ -97,6 +97,7 @@ pub struct RequestBuildingState {
     pub method: Option<Method>,
     pub body: Option<Vec<u8>>,
     pub headers: HashMap<String, String>,
+    pub timeout: Option<f64>,
 }
 
 #[derive(Debug)]
@@ -632,6 +633,12 @@ impl TryFrom<&RequestBuildingState> for BlockingRequest {
             *request.body_mut() = Some(body.clone().into());
         }
 
+        if let Some(timeout) = &value.timeout {
+            let secs = timeout.trunc() as u64;
+            let nanos = ((timeout.fract()) * 1_000_000_000.0).round() as u32;
+            *request.timeout_mut() = Some(std::time::Duration::new(secs, nanos));
+        }
+
         Ok(request)
     }
 }
@@ -672,6 +679,12 @@ impl TryFrom<&RequestBuildingState> for Request {
 
             if let Some(body) = &value.body {
                 *request.body_mut() = Some(body.clone().into());
+            }
+
+            if let Some(timeout) = &value.timeout {
+                let secs = timeout.trunc() as u64;
+                let nanos = ((timeout.fract()) * 1_000_000_000.0).round() as u32;
+                *request.timeout_mut() = Some(std::time::Duration::new(secs, nanos));
             }
 
             Ok(request)

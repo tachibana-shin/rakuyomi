@@ -37,6 +37,7 @@ pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "net", "set_url", set_url)?; // OK
     register_wasm_function!(linker, "net", "set_header", set_header)?; // OK
     register_wasm_function!(linker, "net", "set_body", set_body)?; // OK
+    register_wasm_function!(linker, "net", "set_timeout", set_timeout)?; // OK
     register_wasm_function!(linker, "net", "data_len", data_len)?; // OK
     register_wasm_function!(linker, "net", "read_data", read_data)?; // OK
     register_wasm_function!(linker, "net", "get_image", get_image)?; // OK
@@ -272,6 +273,14 @@ fn set_header(
 #[aidoku_wasm_function]
 fn set_body(caller: Caller<'_, WasmStore>, request_ptr: i32, bytes: Option<Vec<u8>>) -> FFIResult {
     crate::source::wasm_imports::net::set_body(caller, request_ptr, bytes)?;
+    ResultContext::Success.into()
+}
+
+#[aidoku_wasm_function]
+fn set_timeout(mut caller: Caller<'_, WasmStore>, request_ptr: i32, value: f64) -> FFIResult {
+    let builder = get_building_request(caller.data_mut(), request_ptr.try_into()?)?;
+    builder.timeout = Some(value);
+
     ResultContext::Success.into()
 }
 

@@ -123,7 +123,7 @@ pub fn parse_fragment(
         return ResultContext::InvalidString.into();
     };
 
-    let document = Document::fragment(text);
+    let document = Document::from(format!("<html><head></head><body>{}</body></html>", text));
     let node_id = document.root().id;
     let element = HTMLElement {
         document: store.set_html(document),

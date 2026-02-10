@@ -352,7 +352,14 @@ fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
 
     node.children()
         .into_iter()
-        .flat_map(|node| text_nodes(node))
+        .flat_map(|node| {
+            let tag = node.node_name().unwrap_or_default().to_string();
+            if tag == "script" || tag == "style" {
+                return vec![];
+            }
+
+            text_nodes(node)
+        })
         .collect::<Vec<_>>()
 }
 

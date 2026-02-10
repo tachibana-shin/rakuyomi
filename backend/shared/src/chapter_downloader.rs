@@ -21,8 +21,8 @@ use crate::{
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
-        create_xhtml, download_all_images, generate_error_image, get_image_src, prepare_cover,
-        request_with_forced_referer_from_request,
+        create_xhtml, download_all_images, generate_error_image, get_image_src, into_html,
+        prepare_cover, request_with_forced_referer_from_request,
     },
 };
 
@@ -453,7 +453,10 @@ where
                     .reftype(ReferenceType::Text),
                 )?;
             } else if let Some(text) = &page.text {
-                let document = Document::fragment(text.to_owned());
+                let document = Document::from(format!(
+                    "<html><body>{}</body></html>",
+                    into_html(text).to_owned()
+                ));
 
                 // Apply results sequentially
                 for img in document.select("img").iter() {
@@ -490,7 +493,7 @@ where
                     }
                 }
 
-                let xhtml = create_xhtml(&title, document.html().as_ref());
+                let xhtml = create_xhtml(&title, document.select_single("body").html().as_ref());
 
                 epub.add_content(
                     EpubContent::new(format!("pages/page_{}.xhtml", idx + 1), Cursor::new(xhtml))

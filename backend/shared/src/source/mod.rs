@@ -1,6 +1,5 @@
 use aidoku::FilterValue;
 use anyhow::{anyhow, bail, Context, Result};
-use image::{codecs::jpeg::JpegEncoder, ColorType, ImageEncoder};
 use reqwest::{header::HeaderMap, Method, Request, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -42,6 +41,8 @@ use self::{
         Value, ValueMap, WasmStore,
     },
 };
+
+pub(crate) mod decode_image;
 
 #[cfg(not(feature = "all"))]
 pub mod html_element;
@@ -1335,63 +1336,60 @@ impl BlockingSource {
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "process_page_image")?;
 
         let image_data = call_cleanup!(
-        blocking = self,
-        func = wasm_function,
-        args = (image_id, context_id),
-        free = [image_id, context_id, image_ref],
-        as  Vec<u8>,
-        parse = |pointer, store: &mut Store<WasmStore>, instance| {
-            let memory = get_memory(instance, store)?;
+            blocking = self,
+            func = wasm_function,
+            args = (image_id, context_id),
+            free = [image_id, context_id, image_ref],
+            as  Vec<u8>,
+            parse = |pointer, store: &mut Store<WasmStore>, instance| {
+                let memory = get_memory(instance, store)?;
 
-            let Some(image_pointer) = read_next::<i32>(&memory, &store, pointer).ok() else {
-                return Err(anyhow::anyhow!("pointer image error {pointer}"));
-            };
-
-            let image_data = {
-                let store =store.data_mut();
-                let (width, height, pixels) = {
-                    let Some(image) = store.get_image(image_pointer as usize) else {
-                        return Err(anyhow::anyhow!(
-                            "failed to get image for process_page_image point = {image_pointer}"
-                        ));
-                    };
-
-                    // image.data は Vec<u32> の参照なので、clone して borrow を即終了する
-                    (image.width as u32, image.height as u32, image.data.clone())
+                let Some(image_pointer) = read_next::<i32>(&memory, &store, pointer).ok() else {
+                    return Err(anyhow::anyhow!("pointer image error {pointer}"));
                 };
 
-                let pointer = usize::try_from(image_pointer)
-                    .context(format!("process_page_image failed {image_pointer}"))?;
-                store.take_std_value(pointer);
+                let image_data = {
+                    let store =store.data_mut();
+                    let (width, height, pixels) = {
+                        let Some(image) = store.get_image(image_pointer as usize) else {
+                            return Err(anyhow::anyhow!(
+                                "failed to get image for process_page_image point = {image_pointer}"
+                            ));
+                        };
 
-                // RGBA に変換（元は ARGB）
-                let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
+                        // image.data は Vec<u32> の参照なので、clone して borrow を即終了する
+                        (image.width as u32, image.height as u32, image.data.clone())
+                    };
 
-                for px in &pixels {
-                    let _a = ((px >> 24) & 0xFF) as u8;
-                    let r = ((px >> 16) & 0xFF) as u8;
-                    let g = ((px >> 8) & 0xFF) as u8;
-                    let b = (px & 0xFF) as u8;
+                    let pointer = usize::try_from(image_pointer)
+                        .context(format!("process_page_image failed {image_pointer}"))?;
+                    store.take_std_value(pointer);
 
-                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                    rgb_pixels.extend_from_slice(&[r, g, b]);
-                }
+                    // RGBA に変換（元は ARGB）
+                    let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
 
-                let mut out = Vec::<u8>::new();
+                    for px in &pixels {
+                        let _a = ((px >> 24) & 0xFF) as u8;
+                        let r = ((px >> 16) & 0xFF) as u8;
+                        let g = ((px >> 8) & 0xFF) as u8;
+                        let b = (px & 0xFF) as u8;
 
-                // JPEG エンコーダ（Seek 不要）
-                let encoder = JpegEncoder::new_with_quality(&mut out, 100);
+                        // JPEG は alpha に対応しないため RGB のみ書き込む
+                        rgb_pixels.extend_from_slice(&[r, g, b]);
+                    }
+                    let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+                    comp.set_size(width as usize, height as usize);
+                    comp.set_fastest_defaults();
 
-                // RGB24 としてエンコード
-                encoder
-                    .write_image(&rgb_pixels, width, height, ColorType::Rgb8.into())
-                    .context("JPEG encode failed")?;
+                    let mut comp =  comp.start_compress(Vec::new())?;
+                    comp.write_scanlines(&rgb_pixels)?;
+                    let out = comp.finish()?;
 
-                out
-            };
+                    out
+                };
 
-            Ok(image_data)
-        })?;
+                Ok(image_data)
+            })?;
 
         Ok(image_data)
     }

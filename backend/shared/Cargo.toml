@@ -75,6 +75,10 @@ markdown = "1.0.0"
 unicode-normalization = "0.1.25"
 ordered-float = "5.1.0"
 dom_query = { version = "0.24.0", features = ["atomic"] }
+zune-png = "0.5.1"
+zune-jpeg = "0.5.5"
+zune-core = "0.5.1"
+mozjpeg = "0.10.13"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

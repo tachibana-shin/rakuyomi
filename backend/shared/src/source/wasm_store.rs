@@ -500,6 +500,18 @@ impl WasmStore {
         self.canvass.get_mut(&descriptor)
     }
     pub fn create_image(&mut self, data: &[u8]) -> Option<usize> {
+        if let Some(data) = super::decode_image::decode_image_fast(data) {
+            let Some(data) = data
+                .map_err(|err| eprintln!("failed to load image with faster {err}"))
+                .ok()
+            else {
+                return None;
+            };
+
+            return Some(self.set_image_data(data));
+        }
+        // fallback with image
+
         let cursor = Cursor::new(data);
         let rgba_img = ImageReader::new(cursor)
             .with_guessed_format()

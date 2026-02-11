@@ -14,3 +14,6 @@ wasmi = "0.51.5"
 
 [profile.dev]
 incremental = true
+
+[patch.crates-io]
+tiff = { git = "https://github.com/image-rs/image-tiff", version = "0.11.3" }

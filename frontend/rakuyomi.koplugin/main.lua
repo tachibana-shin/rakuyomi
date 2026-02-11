@@ -2,6 +2,7 @@ local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local FileManager = require("apps/filemanager/filemanager")
 local UIManager = require("ui/uimanager")
+local InfoMessage = require("ui/widget/infomessage")
 local Dispatcher = require("dispatcher")
 local logger = require("logger")
 local _ = require("gettext+")
@@ -21,13 +22,18 @@ local Rakuyomi = InputContainer:extend({
   name = "rakuyomi"
 })
 
+Rakuyomi.instance = nil
+
 -- We can get initialized from two contexts:
 -- - when the `FileManager` is initialized, we're called
 -- - when the `ReaderUI` is initialized, we're also called
 -- so we should register to the menu accordingly
 function Rakuyomi:init()
+  Rakuyomi.instance = self
+
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
+    self._readerui_patched = self.ui
   else
     self.ui.menu:registerToMainMenu(self)
   end
@@ -37,7 +43,7 @@ function Rakuyomi:init()
     category = "none",
     event = "StartLibraryView",
     title = _("Rakuyomi"),
-    general = true
+    general = true,
   })
 
   Testing:init()
@@ -45,17 +51,16 @@ function Rakuyomi:init()
 end
 
 function Rakuyomi:onStartLibraryView()
-  if self.ui.name == "ReaderUI" then
-    MangaReader:initializeFromReaderUI(self.ui)
-  else
-    if not backendInitialized then
-      self:showErrorDialog()
-
-      return
-    end
-
-    self:openLibraryView()
+  if not Rakuyomi.instance then
+    logger.warn("Rakuyomi:onStartLibraryView(): no instance available")
+    UIManager:show(InfoMessage:new{
+      text = _("Rakuyomi plugin is not ready yet."),
+      timeout = 2,
+    })
+    return
   end
+
+  Rakuyomi.instance:openFromToolbar()
 end
 
 function Rakuyomi:addToMainMenu(menu_items)
@@ -92,7 +97,38 @@ function Rakuyomi:openLibraryView()
 end
 
 function Rakuyomi:openFromToolbar()
-  self:openLibraryView()
+  -- Prevent re-entrancy (rapid taps / gestures / toolbar)
+  if self._otb_busy then
+    return
+  end
+  self._otb_busy = true
+
+  local function done()
+    self._otb_busy = false
+  end
+
+  if not backendInitialized then
+    self:showErrorDialog()
+    done()
+    return
+  end
+
+  if self.ui and self.ui.name == "ReaderUI" then
+    -- Initialize ReaderUI hooks once per ReaderUI instance
+    if self._readerui_patched ~= self.ui then
+      MangaReader:initializeFromReaderUI(self.ui)
+      self._readerui_patched = self.ui
+    end
+
+    MangaReader:closeReaderUi(function()
+      self:openLibraryView()
+      done()
+    end)
+  else
+    self:openLibraryView()
+    done()
+  end
 end
 
+package.loaded["rakuyomi"] = Rakuyomi
 return Rakuyomi

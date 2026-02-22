@@ -48,6 +48,7 @@ impl UpdateableSettings {
         settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
         settings.source_skip_cron = self.source_skip_cron;
         settings.preload_chapters = self.preload_chapters;
+        settings.optimize_image = self.optimize_image;
     }
 }
 

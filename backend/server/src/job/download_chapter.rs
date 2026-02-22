@@ -29,6 +29,7 @@ impl DownloadChapterJob {
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
+        optimize_image: bool,
     ) -> Self {
         let (tx, rx) = watch::channel::<
             Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>,
@@ -45,6 +46,7 @@ impl DownloadChapterJob {
                 chapter_storage,
                 chapter_id,
                 concurrent_requests_pages,
+                optimize_image,
             )
             .await
             .map(Arc::new);
@@ -67,6 +69,7 @@ impl DownloadChapterJob {
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
+        optimize_image: bool,
     ) -> Result<(PathBuf, Vec<DownloadError>), ErrorResponse> {
         let source = {
             let mgr = source_manager.lock().await;
@@ -83,6 +86,7 @@ impl DownloadChapterJob {
             &chapter_storage,
             &chapter_id,
             concurrent_requests_pages,
+            optimize_image,
         )
         .await
         .map_err(AppError::from)?)

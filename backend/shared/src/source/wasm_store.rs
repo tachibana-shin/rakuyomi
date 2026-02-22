@@ -8,7 +8,6 @@ use std::{
     io::Cursor,
     thread::sleep,
     time::{Duration, Instant},
-    usize,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -446,7 +445,7 @@ impl WasmStore {
                 .unwrap_or(usize::MAX)
         });
         self.rate_limit = Some(RateLimit {
-            permits: permits.clone(),
+            permits,
             period: Duration::from_secs(period_secs.unwrap_or_else(|| {
                 self.rate_limit
                     .as_ref()
@@ -501,12 +500,9 @@ impl WasmStore {
     }
     pub fn create_image(&mut self, data: &[u8]) -> Option<usize> {
         if let Some(data) = super::decode_image::decode_image_fast(data) {
-            let Some(data) = data
+            let data = data
                 .map_err(|err| eprintln!("failed to load image with faster {err}"))
-                .ok()
-            else {
-                return None;
-            };
+                .ok()?;
 
             return Some(self.set_image_data(data));
         }

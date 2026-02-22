@@ -74,6 +74,7 @@ async fn create_download_chapter_job(
         chapter_storage,
         body.into(),
         settings.concurrent_requests_pages.unwrap_or(4),
+        settings.optimize_image,
     );
 
     job_registry
@@ -134,6 +135,7 @@ async fn create_download_unread_chapters_job(
         filter,
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
+        settings.optimize_image,
     );
 
     job_registry
@@ -195,6 +197,7 @@ async fn create_download_scanlator_chapters_job(
         scanlator_filter,
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
+        settings.optimize_image,
     );
 
     job_registry

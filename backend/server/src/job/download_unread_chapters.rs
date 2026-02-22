@@ -47,6 +47,7 @@ impl DownloadUnreadChaptersJob {
         filter: ChapterToDownloadFilter,
         langs: Vec<String>,
         concurrent_requests_pages: usize,
+        optimize_image: bool,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let cancellation_token_clone = cancellation_token.clone();
@@ -69,6 +70,7 @@ impl DownloadUnreadChaptersJob {
                 filter,
                 &lang_refs,
                 concurrent_requests_pages,
+                optimize_image,
             );
 
             pin_mut!(progress_report_stream);

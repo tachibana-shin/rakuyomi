@@ -34,6 +34,7 @@ pub struct ScanlatorFilter {
 }
 
 impl DownloadScanlatorChaptersJob {
+    #[allow(clippy::too_many_arguments)]
     pub fn spawn_new(
         source: Source,
         database: Arc<tokio::sync::Mutex<Database>>,
@@ -42,6 +43,7 @@ impl DownloadScanlatorChaptersJob {
         scanlator_filter: ScanlatorFilter,
         langs: Vec<String>,
         concurrent_requests_pages: usize,
+        optimize_image: bool,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let output: Arc<Mutex<Option<Result<(), ErrorResponse>>>> = Default::default();
@@ -71,6 +73,7 @@ impl DownloadScanlatorChaptersJob {
                     filter,
                     &lang_refs,
                     concurrent_requests_pages,
+                    optimize_image,
                 );
 
             use futures::StreamExt;

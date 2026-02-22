@@ -20,6 +20,7 @@ pub async fn fetch_manga_chapter(
     chapter_storage: &ChapterStorage,
     chapter_id: &ChapterId,
     concurrent_requests_pages: usize,
+    optimize_image: bool,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
@@ -38,6 +39,7 @@ pub async fn fetch_manga_chapter(
         &manga,
         &chapter,
         concurrent_requests_pages,
+        optimize_image,
     )
     .await
     .map_err(|e| match e {

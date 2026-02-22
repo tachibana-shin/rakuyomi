@@ -33,6 +33,7 @@ pub struct UpdateableSettings {
     enabled_cron_check_mangas_update: bool,
     source_skip_cron: Option<String>,
     preload_chapters: usize,
+    optimize_image: bool,
 }
 
 impl UpdateableSettings {
@@ -64,6 +65,7 @@ impl From<&Settings> for UpdateableSettings {
             enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
             source_skip_cron: value.source_skip_cron.clone(),
             preload_chapters: value.preload_chapters,
+            optimize_image: value.optimize_image,
         }
     }
 }

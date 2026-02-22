@@ -95,6 +95,9 @@ pub struct Settings {
 
     #[serde(default)]
     pub preload_chapters: usize,
+
+    #[serde(default)]
+    pub optimize_image: bool,
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

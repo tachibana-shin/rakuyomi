@@ -41,6 +41,7 @@ pub async fn ensure_chapter_is_in_storage(
     manga: &MangaInformation,
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
+    optimize_image: bool,
     #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id)? {
@@ -111,6 +112,7 @@ pub async fn ensure_chapter_is_in_storage(
             source,
             pages,
             concurrent_requests_pages,
+            optimize_image,
             #[cfg(not(feature = "all"))]
             on_progress,
         )
@@ -154,6 +156,7 @@ pub async fn download_chapter_pages_as_cbz<W>(
     source: &Source,
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
+    optimize_image: bool,
     #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
 ) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
@@ -256,19 +259,71 @@ where
 
                                 let response_bytes = response.bytes().await?;
 
-                                let response_bytes = source
-                                    .process_page_image(
-                                        cancel_token.clone(),
-                                        (req_url, req_headers),
-                                        (status, headers),
-                                        response_bytes,
-                                        page.ctx.clone(),
-                                    )
-                                    .await
-                                    .map_err(|err| {
-                                        eprintln!("Error = {err}");
-                                        err
-                                    })?;
+                                let response_bytes = if source.1.process_page_image {
+                                    source
+                                        .process_page_image(
+                                            cancel_token.clone(),
+                                            (req_url, req_headers),
+                                            (status, headers),
+                                            response_bytes,
+                                            page.ctx.clone(),
+                                        )
+                                        .await
+                                        .map_err(|err| {
+                                            eprintln!("Error = {err}");
+                                            err
+                                        })?
+                                } else {
+                                    let data = response_bytes.to_vec();
+
+                                    if optimize_image {
+                                        if let Some(image) =
+                                            crate::source::decode_image::decode_image_fast(&data)
+                                        {
+                                            if let Ok(image) = image
+                                                .map_err(|err| {
+                                                    eprintln!(
+                                                        "failed to load image with faster {err}"
+                                                    )
+                                                })
+                                            {
+                                                // RGBA に変換（元は ARGB）
+                                                let mut rgb_pixels: Vec<u8> = Vec::with_capacity(
+                                                    (image.width * image.height * 3) as usize,
+                                                );
+
+                                                for px in &image.data {
+                                                    let _a = ((px >> 24) & 0xFF) as u8;
+                                                    let r = ((px >> 16) & 0xFF) as u8;
+                                                    let g = ((px >> 8) & 0xFF) as u8;
+                                                    let b = (px & 0xFF) as u8;
+
+                                                    // JPEG は alpha に対応しないため RGB のみ書き込む
+                                                    rgb_pixels.extend_from_slice(&[r, g, b]);
+                                                }
+                                                let mut comp = mozjpeg::Compress::new(
+                                                    mozjpeg::ColorSpace::JCS_RGB,
+                                                );
+                                                comp.set_size(
+                                                    image.width as usize,
+                                                    image.height as usize,
+                                                );
+                                                comp.set_fastest_defaults();
+
+                                                let mut comp = comp.start_compress(Vec::new())?;
+                                                comp.write_scanlines(&rgb_pixels)?;
+
+                                                comp.finish()?
+                                            } else {
+                                                data
+                                            }
+                                        } else {
+                                            data
+                                        }
+                                    } else {
+                                        data
+                                    }
+                                };
 
                                 let final_image = if let Some(blocks_json) = page.base64.as_ref() {
                                     let blocks: Vec<Block> = serde_json::from_str(blocks_json)

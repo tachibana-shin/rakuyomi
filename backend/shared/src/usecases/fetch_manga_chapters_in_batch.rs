@@ -22,6 +22,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     filter: Filter,
     langs: &'a [&'a str],
     concurrent_requests_pages: usize,
+    optimize_image: bool,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
         let manga = match db.find_cached_manga_information(&id).await {
@@ -62,6 +63,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     &manga,
                     &information,
                     concurrent_requests_pages,
+                    optimize_image,
                 ) => result
             };
 

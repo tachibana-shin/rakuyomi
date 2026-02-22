@@ -119,6 +119,14 @@ Settings.setting_value_definitions = {
       unit = 'chapters',
       default = 0
     }
+  },
+  {
+    'optimize_image',
+    {
+      type = 'boolean',
+      title = _("Optimize page images (experimental)"),
+      default = false,
+    }
   }
 }
 

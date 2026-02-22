@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-02 10:05+0700\n"
+        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -15,321 +15,321 @@ msgstr  "Project-Id-Version: rakuyomi.koreader \n"
 msgid   "Available sources"
 msgstr  "Διαθέσιμες πηγές"
 
-#: ../AvailableSourcesListing.lua:111
+#: ../AvailableSourcesListing.lua:81
 msgid   "Update available!"
 msgstr  "Διαθέσιμη ενημέρωση!"
 
-#: ../AvailableSourcesListing.lua:115
+#: ../AvailableSourcesListing.lua:84
 msgid   "Latest version installed"
 msgstr  "Εγκαταστάθηκε η τελευταία έκδοση"
 
-#: ../AvailableSourcesListing.lua:118
+#: ../AvailableSourcesListing.lua:88
 msgid   "Installable"
 msgstr  "Με δυνατότητα εγκατάστασης"
 
-#: ../AvailableSourcesListing.lua:125 ../InstalledSourcesListing.lua:81
+#: ../AvailableSourcesListing.lua:94 ../InstalledSourcesListing.lua:81
 msgid   "version"
 msgstr  "εκδοχή"
 
-#: ../AvailableSourcesListing.lua:128 ../ChapterListing.lua:303
-#: ../ChapterListing.lua:383 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
+#: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
 msgid   "Unknown"
 msgstr  "Αγνωστος"
 
-#: ../AvailableSourcesListing.lua:140
+#: ../AvailableSourcesListing.lua:144
 msgid   "No available sources found."
 msgstr  "Δεν βρέθηκαν διαθέσιμες πηγές."
 
-#: ../AvailableSourcesListing.lua:140
+#: ../AvailableSourcesListing.lua:144
 msgid   "Try adding some source lists by looking at our README!"
 msgstr  "Δοκιμάστε να προσθέσετε μερικές λίστες πηγών κοιτάζοντας το README!"
 
-#: ../AvailableSourcesListing.lua:158
+#: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "Εγκατάσταση πηγής..."
 
-#: ../ChapterListing.lua:53
+#: ../ChapterListing.lua:57
 msgid   "Chapter listing"
 msgstr  "Καταχώριση κεφαλαίων"
 
-#: ../ChapterListing.lua:260 ../ChapterListing.lua:1089
+#: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
 msgid   "Languages"
 msgstr  "Γλώσσες"
 
-#: ../ChapterListing.lua:349
+#: ../ChapterListing.lua:323
 msgid   "No chapters found"
 msgstr  "Δεν βρέθηκαν κεφάλαια"
 
-#: ../ChapterListing.lua:349
+#: ../ChapterListing.lua:323
 msgid   "Try swiping down to refresh the chapter list."
 msgstr  "Δοκιμάστε να σύρετε προς τα κάτω για να ανανεώσετε τη λίστα κεφαλαίων."
 
-#: ../ChapterListing.lua:411
+#: ../ChapterListing.lua:365
 msgid   "Volume"
 msgstr  "Τόμος"
 
-#: ../ChapterListing.lua:415 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
 msgid   "Chapter"
 msgstr  "Κεφάλαιο"
 
-#: ../ChapterListing.lua:438
+#: ../ChapterListing.lua:395
 msgid   "Locked"
 msgstr  "Κλειδωμένο"
 
-#: ../ChapterListing.lua:474 ../ChapterListing.lua:675
+#: ../ChapterListing.lua:431 ../ChapterListing.lua:632
 msgid   "Refreshing chapters..."
 msgstr  "Ανανέωση κεφαλαίων..."
 
-#: ../ChapterListing.lua:482 ../ChapterListing.lua:682
-#: ../ChapterListing.lua:1384
+#: ../ChapterListing.lua:439 ../ChapterListing.lua:639
+#: ../ChapterListing.lua:1301
 msgid   "Cancelled."
 msgstr  "Ακυρώθηκε."
 
-#: ../ChapterListing.lua:494
+#: ../ChapterListing.lua:451
 msgid   "Refresh chapter error"
 msgstr  "Σφάλμα ανανέωσης κεφαλαίου"
 
-#: ../ChapterListing.lua:533
+#: ../ChapterListing.lua:490
 msgid   "Chapter is locked"
 msgstr  "Το κεφάλαιο είναι κλειδωμένο"
 
-#: ../ChapterListing.lua:550
+#: ../ChapterListing.lua:507
 msgid   "Open"
 msgstr  "Ανοιχτό"
 
-#: ../ChapterListing.lua:560 ../ChapterListing.lua:1009 ../LibraryView.lua:336
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
 msgid   "Refresh"
 msgstr  "Φρεσκάρω"
 
-#: ../ChapterListing.lua:566
+#: ../ChapterListing.lua:523
 msgid   "Chapter refreshed"
 msgstr  "Το κεφάλαιο ανανεώθηκε"
 
-#: ../ChapterListing.lua:572 ../ChapterListing.lua:721
+#: ../ChapterListing.lua:529 ../ChapterListing.lua:678
 msgid   "Mark"
 msgstr  "Σημάδι"
 
-#: ../ChapterListing.lua:584 ../ChapterListing.lua:1281
+#: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
 msgid   "Download"
 msgstr  "Λήψη"
 
-#: ../ChapterListing.lua:584 ../LibraryView.lua:459
+#: ../ChapterListing.lua:541 ../LibraryView.lua:537
 msgid   "Remove"
 msgstr  "Αφαιρώ"
 
-#: ../ChapterListing.lua:593
+#: ../ChapterListing.lua:550
 msgid   "Chapter downloaded"
 msgstr  "Κατέβασε το κεφάλαιο"
 
-#: ../ChapterListing.lua:612
+#: ../ChapterListing.lua:569
 msgid   "Revoke chapter..."
 msgstr  "Ανάκληση κεφαλαίου..."
 
-#: ../ChapterListing.lua:630
+#: ../ChapterListing.lua:587
 msgid   "Removed chapter"
 msgstr  "Καταργήθηκε το κεφάλαιο"
 
-#: ../ChapterListing.lua:641
+#: ../ChapterListing.lua:598
 msgid   "Marking"
 msgstr  "Βαθμολόγηση"
 
-#: ../ChapterListing.lua:641
+#: ../ChapterListing.lua:598
 msgid   "Un-marking"
 msgstr  "Αφαίρεση σήμανσης"
 
-#: ../ChapterListing.lua:641
+#: ../ChapterListing.lua:598
 msgid   "chapter..."
 msgstr  "κεφάλαιο..."
 
-#: ../ChapterListing.lua:708 ../ChapterListing.lua:1035 ../LibraryView.lua:372
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
 msgid   "Mark read"
 msgstr  "Σημάδι διαβάστε"
 
-#: ../ChapterListing.lua:708 ../ChapterListing.lua:1045 ../LibraryView.lua:383
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
 msgid   "Mark unread"
 msgstr  "Επισήμανση ως μη αναγνωσμένο"
 
-#: ../ChapterListing.lua:709
+#: ../ChapterListing.lua:666
 msgid   "1 - 10.5, 20 - 100"
 msgstr  "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:710
+#: ../ChapterListing.lua:667
 msgid   "Leaving blank will select all"
 msgstr  "Αν αφήσετε κενό, θα επιλέξετε όλα"
 
-#: ../ChapterListing.lua:710
+#: ../ChapterListing.lua:667
 msgid   "Mark chapters as read or unread"
 msgstr  "Επισημάνετε τα κεφάλαια ως αναγνωσμένα ή μη"
 
-#: ../ChapterListing.lua:714 ../ChapterListing.lua:1198
-#: ../ChapterListing.lua:1274 ../LibraryView.lua:683 ../LibraryView.lua:731
-#: ../NotificationView.lua:543 ../handlers/ContinueReadingHandler.lua:27
+#: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
+#: ../LibraryView.lua:809 ../NotificationView.lua:543
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Ματαίωση"
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:688
 msgid   "Marking..."
 msgstr  "Βαθμολόγηση..."
 
-#: ../ChapterListing.lua:741
+#: ../ChapterListing.lua:698
 msgid   "Marked"
 msgstr  "Μαρκαρισμένος"
 
-#: ../ChapterListing.lua:760 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:103
 msgid   "No errors"
 msgstr  "Χωρίς σφάλματα"
 
-#: ../ChapterListing.lua:769
+#: ../ChapterListing.lua:726
 #, lua-format
 msgid   "Page"
 msgstr  "Σελίδα"
 
-#: ../ChapterListing.lua:769
+#: ../ChapterListing.lua:726
 #, lua-format
 msgid   "attempts"
 msgstr  "προσπάθειες"
 
-#: ../ChapterListing.lua:777 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:119
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… και %d περισσότερα σφάλματα"
 
-#: ../ChapterListing.lua:796 ../ChapterListing.lua:811
+#: ../ChapterListing.lua:753 ../ChapterListing.lua:768
 msgid   "Could not download chapter."
 msgstr  "Δεν ήταν δυνατή η λήψη του κεφαλαίου."
 
-#: ../ChapterListing.lua:804
+#: ../ChapterListing.lua:761
 msgid   "Loading chapter..."
 msgstr  "Φόρτωση κεφαλαίου..."
 
-#: ../ChapterListing.lua:805
+#: ../ChapterListing.lua:762
 msgid   "unknown"
 msgstr  "άγνωστος"
 
-#: ../ChapterListing.lua:824
+#: ../ChapterListing.lua:781
 msgid   "Download cancelled."
 msgstr  "Η λήψη ακυρώθηκε."
 
-#: ../ChapterListing.lua:830
+#: ../ChapterListing.lua:787
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Είστε βέβαιοι ότι θέλετε να ακυρώσετε τη λήψη;"
 
-#: ../ChapterListing.lua:999 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:207
 msgid   "Add to Library"
 msgstr  "Προσθήκη στη Βιβλιοθήκη"
 
-#: ../ChapterListing.lua:1017 ../LibraryView.lua:356
+#: ../ChapterListing.lua:974 ../LibraryView.lua:364
 #: ../MangaSearchResults.lua:239
 msgid   "Details"
 msgstr  "Καθέκαστα"
 
-#: ../ChapterListing.lua:1057
+#: ../ChapterListing.lua:1014
 msgid   "Resume"
 msgstr  "Περίληψη"
 
-#: ../ChapterListing.lua:1065
+#: ../ChapterListing.lua:1022
 msgid   "Next Chapter"
 msgstr  "Επόμενο Κεφάλαιο"
 
-#: ../ChapterListing.lua:1075
+#: ../ChapterListing.lua:1032
 msgid   "Download unread chapters…"
 msgstr  "Λήψη μη αναγνωσμένων κεφαλαίων…"
 
-#: ../ChapterListing.lua:1102
+#: ../ChapterListing.lua:1059
 msgid   "Group"
 msgstr  "Ομάδα"
 
-#: ../ChapterListing.lua:1103 ../ChapterListing.lua:1255
+#: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
 msgid   "Filter by Group"
 msgstr  "Φιλτράρισμα ανά ομάδα"
 
-#: ../ChapterListing.lua:1126
+#: ../ChapterListing.lua:1083
 msgid   "Adding to library..."
 msgstr  "Προσθήκη στη βιβλιοθήκη..."
 
-#: ../ChapterListing.lua:1133
+#: ../ChapterListing.lua:1090
 msgid   "Failed to add to library"
 msgstr  "Αποτυχία προσθήκης στη βιβλιοθήκη"
 
-#: ../ChapterListing.lua:1138
+#: ../ChapterListing.lua:1095
 msgid   "Added to library."
 msgstr  "Προστέθηκε στη βιβλιοθήκη."
 
-#: ../ChapterListing.lua:1186
-msgid   "No more chapters to read!"
-msgstr  "Δεν υπάρχουν άλλα κεφάλαια για ανάγνωση!"
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+msgid   "Sadly, no next chapter available! :c"
+msgstr  "Δυστυχώς, δεν υπάρχει επόμενο κεφάλαιο! "
 
-#: ../ChapterListing.lua:1196
+#: ../ChapterListing.lua:1113
 msgid   "Next"
 msgstr  "Επόμενος"
 
-#: ../ChapterListing.lua:1196
+#: ../ChapterListing.lua:1113
 msgid   "reading with"
 msgstr  "ανάγνωση με"
 
-#: ../ChapterListing.lua:1197 ../handlers/ContinueReadingHandler.lua:26
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
 msgid   "Read"
 msgstr  "Ανάγνωση"
 
-#: ../ChapterListing.lua:1220
+#: ../ChapterListing.lua:1136
 msgid   "Show All"
 msgstr  "Εμφάνιση όλων"
 
-#: ../ChapterListing.lua:1228
+#: ../ChapterListing.lua:1144
 msgid   "Showing all groups"
 msgstr  "Εμφάνιση όλων των ομάδων"
 
-#: ../ChapterListing.lua:1248
+#: ../ChapterListing.lua:1164
 msgid   "Filtered to"
 msgstr  "Φιλτράρεται σε"
 
-#: ../ChapterListing.lua:1265
+#: ../ChapterListing.lua:1181
 msgid   "Download unread chapters..."
 msgstr  "Λήψη μη αναγνωσμένων κεφαλαίων..."
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1183
 msgid   "Amount of unread chapters (default: all)"
 msgstr  "Ποσότητα μη αναγνωσμένων κεφαλαίων (προεπιλογή: όλα)"
 
-#: ../ChapterListing.lua:1269
+#: ../ChapterListing.lua:1185
 msgid   "Specify amount or leave empty for all."
 msgstr  "Προσδιορίστε το ποσό ή αφήστε κενό για όλους."
 
-#: ../ChapterListing.lua:1269
+#: ../ChapterListing.lua:1185
 msgid   "Will download from"
 msgstr  "Θα γίνει λήψη από"
 
-#: ../ChapterListing.lua:1270
+#: ../ChapterListing.lua:1186
 msgid   "Specify the amount of unread chapters to download"
 msgstr  "Καθορίστε τον αριθμό των μη αναγνωσμένων κεφαλαίων προς λήψη"
 
-#: ../ChapterListing.lua:1270
+#: ../ChapterListing.lua:1186
 msgid   "or leave empty to download all of them."
 msgstr  "ή αφήστε το κενό για να τα κατεβάσετε όλα."
 
-#: ../ChapterListing.lua:1291
+#: ../ChapterListing.lua:1207
 msgid   "Invalid amount of chapters!"
 msgstr  "Μη έγκυρος αριθμός κεφαλαίων!"
 
-#: ../ChapterListing.lua:1312
+#: ../ChapterListing.lua:1228
 msgid   "No unread chapters found for"
 msgstr  "Δεν βρέθηκαν μη αναγνωσμένα κεφάλαια για"
 
-#: ../ChapterListing.lua:1336 ../ChapterListing.lua:1411
+#: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
 msgid   "Downloading all chapters, this will take a while…"
 msgstr  "Η λήψη όλων των κεφαλαίων, θα διαρκέσει λίγο…"
 
-#: ../ChapterListing.lua:1421
+#: ../ChapterListing.lua:1338
 msgid   "Waiting for download to be cancelled…"
 msgstr  "Αναμονή για ακύρωση λήψης…"
 
-#: ../ChapterListing.lua:1423
+#: ../ChapterListing.lua:1340
 msgid   "Downloading all chapters, this will take a while… ("
 msgstr  "Η λήψη όλων των κεφαλαίων, θα διαρκέσει λίγο… ("
 
-#: ../ChapterListing.lua:1426
+#: ../ChapterListing.lua:1343
 msgid   "Tap outside this message to cancel."
 msgstr  "Πατήστε έξω από αυτό το μήνυμα για ακύρωση."
 
@@ -357,6 +357,10 @@ msgstr  "Λήψη κεφαλαίων, θα διαρκέσει λίγο… ("
 msgid   "An error occurred while downloading chapters"
 msgstr  "Παρουσιάστηκε σφάλμα κατά τη λήψη κεφαλαίων"
 
+#: ../ErrorDialog.lua:15
+msgid   "Retry"
+msgstr  "Δοκιμάζω πάλι"
+
 #: ../InstalledSourcesListing.lua:21
 msgid   "Installed sources"
 msgstr  "Εγκατεστημένες πηγές"
@@ -381,212 +385,224 @@ msgstr  "Θέλετε να αφαιρέσετε το"
 msgid   "source?"
 msgstr  "πηγή;"
 
-#: ../LibraryView.lua:44
+#: ../LibraryView.lua:49
 msgid   "Library"
 msgstr  "Βιβλιοθήκη"
 
-#: ../LibraryView.lua:285
+#: ../LibraryView.lua:290
 msgid   "No mangas found in library"
 msgstr  "Δεν βρέθηκαν mangas στη βιβλιοθήκη"
 
-#: ../LibraryView.lua:285
+#: ../LibraryView.lua:290
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Δοκιμάστε να προσθέσετε μερικά κρατώντας το όνομά τους στα αποτελέσματα αναζήτησης!"
 
-#: ../LibraryView.lua:347
+#: ../LibraryView.lua:355
 msgid   "Refreshed manga"
 msgstr  "Ανανεωμένο manga"
 
-#: ../LibraryView.lua:396
+#: ../LibraryView.lua:404
 msgid   "Continue Reading"
 msgstr  "Συνεχίστε την ανάγνωση"
 
-#: ../LibraryView.lua:405 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Κατάργηση από τη Βιβλιοθήκη"
 
-#: ../LibraryView.lua:458
+#: ../LibraryView.lua:446
+msgid   "Finding next chapter..."
+msgstr  "Εύρεση του επόμενου κεφαλαίου..."
+
+#: ../LibraryView.lua:457
+msgid   "No chapters found for this manga."
+msgstr  "Δεν βρέθηκαν κεφάλαια για αυτό το manga."
+
+#: ../LibraryView.lua:496
+msgid   "Resume reading with:"
+msgstr  "Συνέχιση της ανάγνωσης με:"
+
+#: ../LibraryView.lua:536
 msgid   "Do you want to remove"
 msgstr  "Θέλετε να αφαιρέσετε"
 
-#: ../LibraryView.lua:458
+#: ../LibraryView.lua:536
 msgid   "from your library?"
 msgstr  "από τη βιβλιοθήκη σας;"
 
-#: ../LibraryView.lua:481
+#: ../LibraryView.lua:559
 msgid   "Search for mangas"
 msgstr  "Αναζήτηση για mangas"
 
-#: ../LibraryView.lua:491
+#: ../LibraryView.lua:569
 msgid   "Refresh mangas"
 msgstr  "Ανανεώστε τα mangas"
 
-#: ../LibraryView.lua:499
+#: ../LibraryView.lua:577
 msgid   "Search favorites"
 msgstr  "Αναζήτηση αγαπημένων"
 
-#: ../LibraryView.lua:509
+#: ../LibraryView.lua:587
 msgid   "Cleaner chapters"
 msgstr  "Πιο καθαρά κεφάλαια"
 
-#: ../LibraryView.lua:517
+#: ../LibraryView.lua:595
 msgid   "Manage sources"
 msgstr  "Διαχείριση πηγών"
 
-#: ../LibraryView.lua:527 ../LibraryView.lua:677 ../Settings.lua:190
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
 msgid   "Settings"
 msgstr  "Ρυθμίσεις"
 
-#: ../LibraryView.lua:535
+#: ../LibraryView.lua:613
 msgid   "Check for updates"
 msgstr  "Ελέγξτε για ενημερώσεις"
 
-#: ../LibraryView.lua:544
+#: ../LibraryView.lua:622
 msgid   "Sync Database (Beta)"
 msgstr  "Συγχρονισμός βάσης δεδομένων (Beta)"
 
-#: ../LibraryView.lua:548
+#: ../LibraryView.lua:626
 msgid   "Sync to WebDAV..."
 msgstr  "Συγχρονισμός στο WebDAV..."
 
-#: ../LibraryView.lua:560
+#: ../LibraryView.lua:638
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Θέλετε να μετεγκαταστήσετε την τοπική σας βάση δεδομένων από τον διακομιστή;"
 
-#: ../LibraryView.lua:560
+#: ../LibraryView.lua:638
 msgid   "The remote database is newer than the local one."
 msgstr  "Η απομακρυσμένη βάση δεδομένων είναι νεότερη από την τοπική."
 
-#: ../LibraryView.lua:560
+#: ../LibraryView.lua:638
 msgid   "This action cannot be undone."
 msgstr  "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
 
-#: ../LibraryView.lua:561
+#: ../LibraryView.lua:639
 msgid   "Migrate"
 msgstr  "Αποδημώ"
 
-#: ../LibraryView.lua:565
+#: ../LibraryView.lua:643
 msgid   "Migrating database..."
 msgstr  "Μετεγκατάσταση βάσης δεδομένων..."
 
-#: ../LibraryView.lua:576 ../LibraryView.lua:623
+#: ../LibraryView.lua:654 ../LibraryView.lua:701
 msgid   "Local database has been migrated from the server!"
 msgstr  "Η τοπική βάση δεδομένων έχει μετεγκατασταθεί από τον διακομιστή!"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:665
 msgid   "Replace Cloud"
 msgstr  "Αντικαταστήστε το Cloud"
 
-#: ../LibraryView.lua:591
+#: ../LibraryView.lua:669
 msgid   "Replacing cloud..."
 msgstr  "Αντικατάσταση cloud..."
 
-#: ../LibraryView.lua:601
+#: ../LibraryView.lua:679
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Η βάση δεδομένων Cloud έχει αντικατασταθεί αναγκαστικά με τοπική!"
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:697
 msgid   "Database is already up to date!"
 msgstr  "Η βάση δεδομένων είναι ήδη ενημερωμένη!"
 
-#: ../LibraryView.lua:621
+#: ../LibraryView.lua:699
 msgid   "Database has been synced to the server!"
 msgstr  "Η βάση δεδομένων έχει συγχρονιστεί με τον διακομιστή!"
 
-#: ../LibraryView.lua:625
+#: ../LibraryView.lua:703
 msgid   "Sync completed!"
 msgstr  "Ο συγχρονισμός ολοκληρώθηκε!"
 
-#: ../LibraryView.lua:649
+#: ../LibraryView.lua:727
 msgid   "Manga search..."
 msgstr  "Αναζήτηση Manga..."
 
-#: ../LibraryView.lua:650
+#: ../LibraryView.lua:728
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:651 ../LibraryView.lua:727
+#: ../LibraryView.lua:729 ../LibraryView.lua:805
 msgid   "Type the manga name to search for"
 msgstr  "Πληκτρολογήστε το όνομα manga για αναζήτηση"
 
-#: ../LibraryView.lua:655 ../LibraryView.lua:664 ../LibraryView.lua:709
-#: ../LibraryView.lua:738
+#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
+#: ../LibraryView.lua:816
 msgid   "Search"
 msgstr  "Ερευνα"
 
-#: ../LibraryView.lua:709
+#: ../LibraryView.lua:787
 msgid   "Exclude source search for"
 msgstr  "Εξαίρεση αναζήτησης πηγής για"
 
-#: ../LibraryView.lua:724
+#: ../LibraryView.lua:802
 msgid   "Favorite search..."
 msgstr  "Αγαπημένη αναζήτηση..."
 
-#: ../LibraryView.lua:726
+#: ../LibraryView.lua:804
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:856
 msgid   "Scaning files..."
 msgstr  "Σάρωση αρχείων..."
 
-#: ../LibraryView.lua:793
+#: ../LibraryView.lua:871
 #, lua-format
 msgid   "Found %d files."
 msgstr  "Βρέθηκαν %d αρχεία."
 
-#: ../LibraryView.lua:794
+#: ../LibraryView.lua:872
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Συνολικό μέγεθος %s."
 
-#: ../LibraryView.lua:795
+#: ../LibraryView.lua:873
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly αρχείο .cbz και .epub scan."
 
-#: ../LibraryView.lua:799
+#: ../LibraryView.lua:877
 msgid   "Clean"
 msgstr  "Καθαρός"
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:882
 msgid   "Deleting..."
 msgstr  "Διαγραφή..."
 
-#: ../LibraryView.lua:822
+#: ../LibraryView.lua:900
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Καθαρίστηκε ο δωρεάν αποθηκευτικός χώρος %s"
 
-#: ../LibraryView.lua:846
+#: ../LibraryView.lua:924
 msgid   "Refresh mangas..."
 msgstr  "Ανανεώστε τα mangas..."
 
-#: ../LibraryView.lua:874
+#: ../LibraryView.lua:952
 msgid   "Some manga updates fail:"
 msgstr  "Ορισμένες ενημερώσεις manga αποτυγχάνουν:"
 
-#: ../LibraryView.lua:881
+#: ../LibraryView.lua:959
 msgid   "All chapters manga updated!"
 msgstr  "Όλα τα κεφάλαια manga ενημερώθηκαν!"
 
-#: ../LibraryView.lua:892
+#: ../LibraryView.lua:970
 msgid   "Cleaner"
 msgstr  "Καθαριστής"
 
-#: ../LibraryView.lua:893
+#: ../LibraryView.lua:971
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Βρείτε και διαγράψτε μη έγκυρα αρχεία, συμπεριλαμβανομένων αρχείων από διαγραμμένες πηγές"
 
-#: ../LibraryView.lua:893 ../LibraryView.lua:896
+#: ../LibraryView.lua:971 ../LibraryView.lua:974
 msgid   "Normal"
 msgstr  "Κανονικός"
 
-#: ../LibraryView.lua:895
+#: ../LibraryView.lua:973
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "ΣΗΜΑΝΤΙΚΟ: Τα αρχεία meta (σελιδοδείκτης, ιστορικό) δεν διατηρούνται!"
 
-#: ../LibraryView.lua:902
+#: ../LibraryView.lua:980
 msgid   "Chapter read done"
 msgstr  "Το κεφάλαιο που διαβάστηκε έγινε"
 
@@ -807,7 +823,11 @@ msgstr  "Ενημέρωση ελέγχου παράβλεψης αναγνωρι
 msgid   "Preload chapters on reader open"
 msgstr  "Προφόρτωση κεφαλαίων στον αναγνώστη ανοιχτά"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:127
+msgid   "Optimize page images (experimental)"
+msgstr  "Βελτιστοποίηση εικόνων σελίδας (πειραματική)"
+
+#: ../Settings.lua:187
 msgid   "Allow requisition of the back button"
 msgstr  "Επιτρέψτε την απαίτηση του κουμπιού πίσω"
 
@@ -897,22 +917,6 @@ msgstr  "rakuyomi"
 #: ../_meta.lua:6
 msgid   "Download mangas on your e-book reader!"
 msgstr  "Κατεβάστε manga στο πρόγραμμα ανάγνωσης ηλεκτρονικών βιβλίων σας!"
-
-#: ../handlers/ContinueReadingHandler.lua:17
-msgid   "Finding next chapter..."
-msgstr  "Εύρεση του επόμενου κεφαλαίου..."
-
-#: ../handlers/ContinueReadingHandler.lua:18
-msgid   "No chapters found for this manga."
-msgstr  "Δεν βρέθηκαν κεφάλαια για αυτό το manga."
-
-#: ../handlers/ContinueReadingHandler.lua:19
-msgid   "Sadly, no next chapter available! :c"
-msgstr  "Δυστυχώς, δεν υπάρχει επόμενο κεφάλαιο! "
-
-#: ../handlers/ContinueReadingHandler.lua:25
-msgid   "Resume reading with:"
-msgstr  "Συνέχιση της ανάγνωσης με:"
 
 #: ../main.lua:39 ../main.lua:63
 msgid   "Rakuyomi"

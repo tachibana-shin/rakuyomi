@@ -111,8 +111,10 @@ function MangaReader:closeReaderUi(done_callback)
     -- apparently this is the only way to get out of the `ReaderUI` without shit
     -- completely breaking (koreader really does not like when there's no `ReaderUI`
     -- nor `FileManager`)
-    ReaderUI.instance:onClose()
-    if FileManager.instance then
+    if ReaderUI.instance ~= nil then
+      ReaderUI.instance:onClose()
+    end
+    if FileManager.instance ~= nil then
       FileManager.instance:reinit()
     else
       FileManager:showFiles()

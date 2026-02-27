@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -448,7 +448,7 @@ msgstr  "स्वच्छ अध्याय"
 msgid   "Manage sources"
 msgstr  "स्रोत प्रबंधित करें"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "सेटिंग्स"
 
@@ -678,19 +678,19 @@ msgstr  "ताज़ा विवरण रद्द कर दिया गय
 msgid   "Go back to Rakuyomi..."
 msgstr  "रकुयोमी वापस जाएँ..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "क्या आप चाहते हैं कि जब आप इस बटन को खोलें तो राकुयोमी इस बटन पर नियंत्रण रखे?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "यह सेटिंग केवल तभी प्रभावित होती है जब आप इसे राकुयोमी के साथ खोलते हैं।"
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "हाँ"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "नहीं"
 
@@ -771,62 +771,70 @@ msgid   "Library sorting mode"
 msgstr  "लाइब्रेरी सॉर्टिंग मोड"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "आरोही (डिफ़ॉल्ट)"
+msgid   "Order added ascending (Default)"
+msgstr  "क्रम आरोही रूप में जोड़ा गया (डिफ़ॉल्ट)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "अवरोही"
+msgid   "Order added descending"
+msgstr  "क्रम अवरोही रूप से जोड़ा गया"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "शीर्षक Asc"
+msgid   "Title manga ascending"
+msgstr  "शीर्षक मंगा आरोही"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "शीर्षक विवरण"
+msgid   "Title manga descending"
+msgstr  "शीर्षक मंगा अवरोही"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "अपठित Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "अपठित अध्यायों को बढ़ते हुए गिनें"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "अपठित विवरण"
+msgid   "Count unread chapters descending"
+msgstr  "अपठित अध्यायों को घटते क्रम में गिनें"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "अंतिम पाठ आरोही है"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "अंतिम पाठ अवरोही है"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "अध्याय भंडारण पथ"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "भंडारण आकार सीमा"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "समवर्ती पृष्ठ अनुरोध"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "वेबडीएवी सिंक"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "मंगा अपडेट के लिए सक्षम क्रॉन चेक"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "स्रोत आईडी चेक अपडेट छोड़ें"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "रीडर पर प्रीलोड अध्याय खुले"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "पृष्ठ छवियों को अनुकूलित करें (प्रयोगात्मक)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "बैक बटन की मांग की अनुमति दें"
 

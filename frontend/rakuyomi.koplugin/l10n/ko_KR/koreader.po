@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "클리너 챕터"
 msgid   "Manage sources"
 msgstr  "소스 관리"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "설정"
 
@@ -679,19 +679,19 @@ msgstr  "세부정보 새로고침이 취소되었습니다."
 msgid   "Go back to Rakuyomi..."
 msgstr  "라쿠요미에게 돌아가라..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "라쿠요미가 이 버튼을 열 때 이 버튼을 차지하게 하시겠습니까?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "이 설정은 Rakuyomi로 열 때만 영향을 미칩니다."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "예"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "아니요"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "라이브러리 정렬 모드"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "오름차순(기본값)"
+msgid   "Order added ascending (Default)"
+msgstr  "오름차순으로 추가됨(기본값)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "내림차순"
+msgid   "Order added descending"
+msgstr  "내림차순으로 추가됨"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "제목 오름차순"
+msgid   "Title manga ascending"
+msgstr  "제목 만화 오름차순"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "제목 설명"
+msgid   "Title manga descending"
+msgstr  "제목 만화 내림차순"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "읽지 않은 오름차순"
+msgid   "Count unread chapters ascending"
+msgstr  "읽지 않은 장을 오름차순으로 계산"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "읽지 않은 설명"
+msgid   "Count unread chapters descending"
+msgstr  "읽지 않은 장 수를 내림차순으로 계산"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "마지막 읽기 오름차순"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "마지막 읽기 내림차순"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "챕터 저장 경로"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "저장소 크기 제한"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "동시 페이지 요청"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV 동기화"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "뒤로 버튼 요청 허용"
 

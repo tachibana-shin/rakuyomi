@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Renere kapitler"
 msgid   "Manage sources"
 msgstr  "Administrer kilder"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Indstillinger"
 
@@ -679,19 +679,19 @@ msgstr  "Opdater detaljer annulleret."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Gå tilbage til Rakuyomi..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Vil du have Rakuyomi til at styre denne knap, når du åbner den?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Denne indstilling påvirker kun, når du åbner den med Rakuyomi."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "Ja"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "Ingen"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Bibliotekssorteringstilstand"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "Stigende (standard)"
+msgid   "Order added ascending (Default)"
+msgstr  "Ordre tilføjet stigende (standard)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Faldende"
+msgid   "Order added descending"
+msgstr  "Ordren tilføjet faldende"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Titel Asc"
+msgid   "Title manga ascending"
+msgstr  "Titel manga stigende"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Titel Desc"
+msgid   "Title manga descending"
+msgstr  "Titel manga faldende"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "Ulæst Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "Tæl ulæste kapitler stigende"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Ulæst Besk"
+msgid   "Count unread chapters descending"
+msgstr  "Tæl ulæste kapitler faldende"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Sidst læst stigende"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Sidst læst faldende"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Kapitellagringssti"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "Grænse for lagerstørrelse"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Samtidig sideanmodninger"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV-synkronisering"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Aktiveret cron-tjek for manga-opdateringer"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "Kilde-id'er springer tjekopdatering over"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Forudindlæs kapitler på læseren åben"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimer sidebilleder (eksperimentel)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Tillad rekvisition af tilbage-knappen"
 

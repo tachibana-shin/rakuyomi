@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Чистіші глави"
 msgid   "Manage sources"
 msgstr  "Керуйте джерелами"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Налаштування"
 
@@ -679,19 +679,19 @@ msgstr  "Оновлення деталей скасовано."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Повернись до Ракуйомі..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Ви хочете, щоб Ракуйомі заволодів цією кнопкою, коли ви її відкриваєте?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Цей параметр діє лише тоді, коли ви відкриваєте його за допомогою Rakuyomi."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "так"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "немає"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Режим сортування бібліотеки"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "За зростанням (за замовчуванням)"
+msgid   "Order added ascending (Default)"
+msgstr  "Порядок додавання за зростанням (за замовчуванням)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Спадання"
+msgid   "Order added descending"
+msgstr  "Порядок додано за спаданням"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Звання Asc"
+msgid   "Title manga ascending"
+msgstr  "Назва манги за зростанням"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Назва опису"
+msgid   "Title manga descending"
+msgstr  "Назва манги за спаданням"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "Непрочитаний Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "Лічити непрочитані розділи за зростанням"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Непрочитане опис"
+msgid   "Count unread chapters descending"
+msgstr  "Лічити непрочитані розділи за спаданням"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Останнє читання за зростанням"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Останнє прочитане за спаданням"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Шлях зберігання глави"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "Обмеження розміру сховища"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Одночасні запити сторінок"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "Синхронізація WebDAV"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Увімкнено перевірку cron на наявність оновлень манги"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "Ідентифікатори джерел пропускають перевірку оновлення"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Попереднє завантаження розділів у програмі Reader відкрито"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Оптимізувати зображення сторінок (експериментально)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Дозволити запит кнопки Назад"
 

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -448,7 +448,7 @@ msgstr  "更干净的章节"
 msgid   "Manage sources"
 msgstr  "管理来源"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "设置"
 
@@ -678,19 +678,19 @@ msgstr  "刷新详细信息已取消。"
 msgid   "Go back to Rakuyomi..."
 msgstr  "回到乐读……"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "你想让 Rakuyomi 在你打开这个按钮时霸占它吗？"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "此设置仅在您使用 Rakuyomi 打开它时生效。"
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "是的"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "不"
 
@@ -771,62 +771,70 @@ msgid   "Library sorting mode"
 msgstr  "图书馆排序模式"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "升序（默认）"
+msgid   "Order added ascending (Default)"
+msgstr  "添加升序顺序（默认）"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "降序"
+msgid   "Order added descending"
+msgstr  "添加顺序降序"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "标题升序"
+msgid   "Title manga ascending"
+msgstr  "标题漫画升序"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "标题描述"
+msgid   "Title manga descending"
+msgstr  "标题漫画降序"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "未读升序"
+msgid   "Count unread chapters ascending"
+msgstr  "未读章节升序计数"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "未读描述"
+msgid   "Count unread chapters descending"
+msgstr  "按降序计数未读章节"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "上次阅读升序"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "上次读取降序"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "章节存储路径"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "存储大小限制"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "并发页面请求"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "网络DAV同步"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "启用 cron 检查漫画更新"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "源 ID 跳过检查更新"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "在读者打开时预加载章节"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "优化页面图像（实验）"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "允许请求后退按钮"
 

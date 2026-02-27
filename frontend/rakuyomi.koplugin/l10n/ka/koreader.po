@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -448,7 +448,7 @@ msgstr  "უფრო სუფთა თავები"
 msgid   "Manage sources"
 msgstr  "მართეთ წყაროები"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "პარამეტრები"
 
@@ -678,19 +678,19 @@ msgstr  "დეტალების განახლება გაუქმ
 msgid   "Go back to Rakuyomi..."
 msgstr  "დაბრუნდი რაკუიომიში..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "გნებავთ რაკუიომი ამ ღილაკს მართოს როცა გახსნით?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "ეს პარამეტრი მოქმედებს მხოლოდ Rakuyomi-ით გახსნისას."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "დიახ"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "არა"
 
@@ -771,62 +771,70 @@ msgid   "Library sorting mode"
 msgstr  "ბიბლიოთეკის დახარისხების რეჟიმი"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "აღმავალი (ნაგულისხმევი)"
+msgid   "Order added ascending (Default)"
+msgstr  "შეკვეთა დამატებულია ზრდადობით (ნაგულისხმევი)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "დაღმავალი"
+msgid   "Order added descending"
+msgstr  "შეკვეთა დამატებულია კლებადობით"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "სათაური აღმ"
+msgid   "Title manga ascending"
+msgstr  "სათაური მანგა აღმავალი"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "სათაური Desc"
+msgid   "Title manga descending"
+msgstr  "სათაური მანგა დაღმავალი"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "წაუკითხავი აღმ"
+msgid   "Count unread chapters ascending"
+msgstr  "დაითვალეთ წაუკითხავი თავები აღმავალზე"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "წაუკითხავი Desc"
+msgid   "Count unread chapters descending"
+msgstr  "დათვალეთ წაუკითხავი თავები კლებად"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "ბოლო წაკითხვა აღმავალი"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "ბოლო წაკითხვა კლებადობით"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "თავის შენახვის გზა"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "შენახვის ზომის ლიმიტი"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "თანმხლები გვერდის მოთხოვნები"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV სინქრონიზაცია"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "ჩართულია cron შემოწმება მანგას განახლებისთვის"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "წყაროს ID-ების გამოტოვება შემოწმების განახლება"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "მკითხველზე თავების წინასწარ ჩატვირთვა ღიაა"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "გვერდის სურათების ოპტიმიზაცია (ექსპერიმენტული)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "დაუშვით უკანა ღილაკის მოთხოვნა"
 

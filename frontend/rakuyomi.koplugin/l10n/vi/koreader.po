@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Trình dọn rác"
 msgid   "Manage sources"
 msgstr  "Quản lý nguồn"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Cài đặt"
 
@@ -679,19 +679,19 @@ msgstr  "Làm mới chi tiết đã bị hủy."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Quay lại với Rakuyomi..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Bạn có muốn Rakuyomi trưng dụng nút này khi bạn mở nó không?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Cài đặt này chỉ ảnh hưởng khi bạn mở nó bằng Rakuyomi."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "Đúng"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "KHÔNG"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Chế độ sắp xếp thư viện"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "Tăng dần (Mặc định)"
+msgid   "Order added ascending (Default)"
+msgstr  "Thứ tự được thêm tăng dần (Mặc định)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Giảm dần"
+msgid   "Order added descending"
+msgstr  "Thứ tự được thêm giảm dần"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Tiêu đề tăng dần"
+msgid   "Title manga ascending"
+msgstr  "Tiêu đề manga tăng dần"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Mô tả tiêu đề"
+msgid   "Title manga descending"
+msgstr  "Tiêu đề manga giảm dần"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "tăng chưa đọc"
+msgid   "Count unread chapters ascending"
+msgstr  "Đếm số chương chưa đọc tăng dần"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Mô tả chưa đọc"
+msgid   "Count unread chapters descending"
+msgstr  "Đếm số chương chưa đọc giảm dần"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Lần đọc cuối cùng tăng dần"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Lần đọc cuối cùng giảm dần"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Đường dẫn lưu trữ chương"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "Giới hạn kích thước lưu trữ"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Yêu cầu trang đồng thời"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "Đồng bộ hóa WebDAV"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Đã bật kiểm tra cron để cập nhật manga"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "ID nguồn bỏ qua cập nhật kiểm tra"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Tải trước các chương khi mở trình đọc"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Tối ưu hóa hình ảnh trang (thử nghiệm)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Cho phép trưng dụng nút quay lại"
 

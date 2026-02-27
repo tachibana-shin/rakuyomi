@@ -42,6 +42,8 @@ pub enum LibrarySortingMode {
     TitleDesc,
     UnreadAsc,
     UnreadDesc,
+    LastReadAsc,
+    LastReadDesc,
 }
 
 /// Settings used to configure rakuyomi's behavior.

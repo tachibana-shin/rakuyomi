@@ -46,12 +46,14 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Library sorting mode"),
       options = {
-        { label = _("Ascending (Default)"), value = 'ascending' },
-        { label = _("Descending"),          value = 'descending' },
-        { label = _("Title Asc"),           value = 'title_asc' },
-        { label = _("Title Desc"),          value = 'title_desc' },
-        { label = _("Unread Asc"),          value = 'unread_asc' },
-        { label = _("Unread Desc"),         value = 'unread_desc' },
+        { label = _("Order added ascending (Default)"), value = 'ascending' },
+        { label = _("Order added descending"),          value = 'descending' },
+        { label = _("Title manga ascending"),           value = 'title_asc' },
+        { label = _("Title manga descending"),          value = 'title_desc' },
+        { label = _("Count unread chapters ascending"), value = 'unread_asc' },
+        { label = _("Count unread chapters descending"), value = 'unread_desc' },
+        { label = _("Last read ascending"), value = 'last_read_asc' },
+        { label = _("Last read descending"), value = 'last_read_desc' },
       }
     }
   },

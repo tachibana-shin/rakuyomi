@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Tisztább fejezetek"
 msgid   "Manage sources"
 msgstr  "Források kezelése"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Beállítások elemre"
 
@@ -679,19 +679,19 @@ msgstr  "A részletek frissítése megszakítva."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Menj vissza Rakuyomihoz..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Azt akarod, hogy Rakuyomi vezesse ezt a gombot, amikor kinyitod?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Ez a beállítás csak akkor van hatással, ha a Rakuyomival nyitja meg."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "Igen"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "Nem"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Könyvtári rendezési mód"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "Növekvő (alapértelmezett)"
+msgid   "Order added ascending (Default)"
+msgstr  "Rendelés hozzáadva növekvő sorrendben (alapértelmezett)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Csökkenő"
+msgid   "Order added descending"
+msgstr  "Megrendelés hozzáadva csökkenő sorrendben"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Cím Asc"
+msgid   "Title manga ascending"
+msgstr  "Cím manga növekvő"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Cím Leírás"
+msgid   "Title manga descending"
+msgstr  "Cím manga csökkenő"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "Olvasatlan Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "Az olvasatlan fejezetek számlálása növekvő sorrendben"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Olvasatlan leírás"
+msgid   "Count unread chapters descending"
+msgstr  "Az olvasatlan fejezetek számolása csökkenő sorrendben"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Utolsó olvasás növekvő sorrendben"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Utolsó olvasás csökkenő sorrendben"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Fejezet tárolási útvonala"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "A tárhely méretének korlátja"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Egyidejű oldalkérések"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV szinkronizálás"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Engedélyezte a cron ellenőrzését a manga frissítésekért"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "A forrásazonosítók kihagyják az ellenőrzési frissítést"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Fejezetek előtöltése az olvasóban nyitva"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Oldalképek optimalizálása (kísérleti)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Engedélyezze a vissza gomb igénylését"
 

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Čistejšie kapitoly"
 msgid   "Manage sources"
 msgstr  "Spravujte zdroje"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Nastavenia"
 
@@ -679,19 +679,19 @@ msgstr  "Podrobnosti obnovenia boli zrušené."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Vráťte sa do Rakuyomi..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Chcete, aby sa Rakuyomi zmocnil tohto tlačidla, keď ho otvoríte?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Toto nastavenie sa prejaví iba vtedy, keď ho otvoríte pomocou Rakuyomi."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "áno"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "Nie"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Režim triedenia knižnice"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "Vzostupne (predvolené)"
+msgid   "Order added ascending (Default)"
+msgstr  "Poradie pridané vzostupne (predvolené)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Zostupne"
+msgid   "Order added descending"
+msgstr  "Poradie pridané zostupne"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Titul Asc"
+msgid   "Title manga ascending"
+msgstr  "Názov manga vzostupne"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Názov Popis"
+msgid   "Title manga descending"
+msgstr  "Názov manga zostupne"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "Neprečítané Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "Počítajte neprečítané kapitoly vzostupne"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Neprečítaný popis"
+msgid   "Count unread chapters descending"
+msgstr  "Počítajte neprečítané kapitoly zostupne"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Posledné čítanie vzostupne"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Posledné prečítanie zostupne"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Cesta k ukladaniu kapitol"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "Limit veľkosti úložiska"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Súbežné požiadavky na stránku"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV synchronizácia"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Povolená kontrola cronu pre aktualizácie manga"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "Aktualizácia kontroly preskočenia identifikátorov zdrojov"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Vopred načítajte kapitoly na čítačke otvorené"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimalizácia obrázkov stránok (experimentálne)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Povoliť požiadavku na tlačidlo Späť"
 

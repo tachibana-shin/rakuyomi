@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-22 14:24+0700\n"
+        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -449,7 +449,7 @@ msgstr  "Pli puraj ĉapitroj"
 msgid   "Manage sources"
 msgstr  "Administri fontojn"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:198
+#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
 msgid   "Settings"
 msgstr  "Agordoj"
 
@@ -679,19 +679,19 @@ msgstr  "Refreŝigi detalojn nuligitaj."
 msgid   "Go back to Rakuyomi..."
 msgstr  "Reiru al Rakuyomi..."
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr  "Ĉu vi volas, ke Rakuyomi komandu ĉi tiun butonon kiam vi malfermas ĝin?"
 
-#: ../MangaReader.lua:154
+#: ../MangaReader.lua:156
 msgid   "This setting only affects when you open it with Rakuyomi."
 msgstr  "Ĉi tiu agordo influas nur kiam vi malfermas ĝin per Rakuyomi."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:158
 msgid   "Yes"
 msgstr  "Jes"
 
-#: ../MangaReader.lua:157
+#: ../MangaReader.lua:159
 msgid   "No"
 msgstr  "Ne"
 
@@ -772,62 +772,70 @@ msgid   "Library sorting mode"
 msgstr  "Biblioteko-ordiga reĝimo"
 
 #: ../Settings.lua:49
-msgid   "Ascending (Default)"
-msgstr  "Ascendenta (Defaŭlte)"
+msgid   "Order added ascending (Default)"
+msgstr  "Ordo aldonita suprenirante (Defaŭlte)"
 
 #: ../Settings.lua:50
-msgid   "Descending"
-msgstr  "Malkreskanta"
+msgid   "Order added descending"
+msgstr  "Ordo aldonis malsupren"
 
 #: ../Settings.lua:51
-msgid   "Title Asc"
-msgstr  "Titolo Asc"
+msgid   "Title manga ascending"
+msgstr  "Titolo Mangao ascendanta"
 
 #: ../Settings.lua:52
-msgid   "Title Desc"
-msgstr  "Titolo Desk"
+msgid   "Title manga descending"
+msgstr  "Titolo Mangao malkreskanta"
 
 #: ../Settings.lua:53
-msgid   "Unread Asc"
-msgstr  "Nelegita Asc"
+msgid   "Count unread chapters ascending"
+msgstr  "Nombri nelegitajn ĉapitrojn suprenirante"
 
 #: ../Settings.lua:54
-msgid   "Unread Desc"
-msgstr  "Nelegita Desk"
+msgid   "Count unread chapters descending"
+msgstr  "Kalkulu nelegitajn ĉapitrojn malsuprenirantajn"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:55
+msgid   "Last read ascending"
+msgstr  "Lasta legado suprenirante"
+
+#: ../Settings.lua:56
+msgid   "Last read descending"
+msgstr  "Lasta legado malsupreniranta"
+
+#: ../Settings.lua:64
 msgid   "Chapter storage path"
 msgstr  "Ĉapitro-stoka vojo"
 
-#: ../Settings.lua:71
+#: ../Settings.lua:73
 msgid   "Storage size limit"
 msgstr  "Limo de stokado"
 
-#: ../Settings.lua:81
+#: ../Settings.lua:83
 msgid   "Concurrent page requests"
 msgstr  "Samtempaj paĝaj petoj"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:94
 msgid   "WebDAV Sync"
 msgstr  "WebDAV Sync"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:102
 msgid   "Enabled cron check for manga updates"
 msgstr  "Ebligita kronkontrolo por mangaaj ĝisdatigoj"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:110
 msgid   "Source IDs skip check update"
 msgstr  "Font-IDoj preterpasas kontroli ĝisdatigon"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:118
 msgid   "Preload chapters on reader open"
 msgstr  "Antaŭŝargi ĉapitrojn sur leganto malfermiĝas"
 
-#: ../Settings.lua:127
+#: ../Settings.lua:129
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimumigu paĝajn bildojn (eksperimentaj)"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Allow requisition of the back button"
 msgstr  "Permesu rekvizicion de la malantaŭa butono"
 

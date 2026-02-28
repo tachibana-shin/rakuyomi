@@ -7,57 +7,36 @@ local Menu = require("widgets/Menu")
 local ConfirmBox = require("ui/widget/confirmbox")
 local Device = require("device")
 local UIManager = require("ui/uimanager")
-local ffiUtil = require("ffi/util")
 local _ = require("gettext+")
 local ChapterListing = require("ChapterListing")
 local InfoMessage = require("ui/widget/infomessage")
 
-local MenuUpdateItems = require("patch/MenuUpdateItems")
 local MenuItemCover = require("patch/MenuItemCover")
+local MenuCustom = require("patch/MenuCustom")
 
 local Screen = Device.screen
-local T = ffiUtil.template
 
 --- @class Menu
 --- @field new fun(self: Menu): Menu
---- @field dimen any
---- @field item_group any
---- @field page_info any
---- @field return_button any
---- @field content_group any
---- @field _recalculateDimen fun(bool)
---- @field items_max_lines number
---- @field page_items any[]
---- @field perpage number
---- @field items_font_size number|nil
---- @field title_bar any
---- @field no_title boolean|nil
---- @field page_return_arrow any
---- @field page_info_text string|nil
---- @field inner_dimen any
---- @field setupItemHeights fun()
---- @field getPageNumber fun()
---- @field itemnumber number
---- @field is_enable_shortcut boolean
---- @field item_shortcuts any[]
---- @field item_dimen any
---- @field updatePageInfo fun(any)
---- @field mergeTitleBarIntoLayout fun()
---- @field show_parent any
---- @field onClose fun()
---- @field openMenu fun()
 
 --- @class NotificationView : Menu
 --- @field notifications Notification[]
+--- @field title_bar any
+--- @field is_borderless boolean
+--- @field no_title boolean
+--- @field page_info any
+--- @field path_items any
+--- @field path any
+--- @field focused_path any
+--- @field inner_dimen any
 --- @field on_return_callback fun()|nil
-local NotificationView = Menu:extend {
+local NotificationView = MenuCustom:extend {
   name = "notification_view",
   is_enable_shortcut = false,
   is_popout = false,
   title = _("Notification"),
   with_context_menu = true,
 
-  items_per_page = 10,
   notifications = nil,
   on_return_callback = nil
 }
@@ -102,6 +81,7 @@ function NotificationView:updateItems(select_number, no_recalculate_dimen)
         notify = notify,
         text = notify.manga_title,
         post_text = "Ch." .. (notify.chapter_number or "unknown") .. ": " .. notify.chapter_title,
+        manga_cover = notify.manga_cover,
       })
     end
     self.item_table = item_table
@@ -113,8 +93,7 @@ function NotificationView:updateItems(select_number, no_recalculate_dimen)
     self.items_per_page = 1
   end
 
-  MenuUpdateItems(self, MenuItemCover, select_number, no_recalculate_dimen)
-  print(#self.notifications)
+  MenuCustom.updateItems(self, MenuItemCover, select_number, no_recalculate_dimen)
 end
 
 --- @private

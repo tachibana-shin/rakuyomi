@@ -2,6 +2,8 @@ local GestureRange = require("ui/gesturerange")
 local RightContainer = require("ui/widget/container/rightcontainer")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
+local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
 local Size = require("ui/size")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local TextWidget = require("ui/widget/textwidget")
@@ -59,9 +61,9 @@ function MenuItemCover:init()
   --- @patch
   local img_width, img_height
   if Screen:getScreenMode() == "landscape" then
-    img_height = math.min(Screen:scaleBySize(184), max_item_height)
+    img_height = math.min(Screen:scaleBySize(184), max_item_height) - 4
   else
-    img_height = math.min(Screen:scaleBySize(184 * 1.5), max_item_height)
+    img_height = math.min(Screen:scaleBySize(184 * 1.5), max_item_height) - 4
   end
   img_width = 132 / 184 * img_height
   --- @end patch
@@ -167,7 +169,7 @@ function MenuItemCover:init()
       post_text_widget = TextWidget:new {
         text = self.post_text,
         face = self.post_text_face,
-        max_width = math.floor(available_width / 2),         -- keep some space for the other stuff
+        max_width = math.floor(available_width / 2), -- keep some space for the other stuff
         bold = self.bold,
         fgcolor = text_fgcolor,
       }
@@ -201,7 +203,7 @@ function MenuItemCover:init()
           if dots_width >= dots_min_width then
             dots_widget = TextWidget:new {
               text = dots_text,
-              face = self.info_face,               -- same as mandatory widget, to keep their baseline adjusted
+              face = self.info_face, -- same as mandatory widget, to keep their baseline adjusted
               max_width = dots_width,
               truncate_with_ellipsis = false,
             }
@@ -209,7 +211,7 @@ function MenuItemCover:init()
         end
       end
     end
-    if self.align_baselines then     -- Align baselines of text and mandatory
+    if self.align_baselines then -- Align baselines of text and mandatory
       -- The container widgets would additionally center these widgets,
       -- so make sure they all get a height=self.dimen.h so they don't
       -- risk being shifted later and becoming misaligned
@@ -250,7 +252,7 @@ function MenuItemCover:init()
     end
     if text_bgcolor then
       item_name = FrameContainer:new {
-        width = math.max(item_name:getWidth(), available_width),         -- if the ellipsis doesn't fit
+        width = math.max(item_name:getWidth(), available_width), -- if the ellipsis doesn't fit
         background = text_bgcolor,
         bordersize = 0,
         padding = 0,
@@ -303,7 +305,7 @@ function MenuItemCover:init()
         local item_name_is_good = true
         while true do
           local test_font_size = math.floor((good_font_size + bad_font_size) / 2)
-          if test_font_size == good_font_size then           -- +1 would be bad_font_size
+          if test_font_size == good_font_size then -- +1 would be bad_font_size
             if not item_name_is_good then
               make_item_name(good_font_size)
             end
@@ -342,7 +344,13 @@ function MenuItemCover:init()
         width = state_width,
       },
       --- @patch
-      self:genCover(img_width, img_height),
+      VerticalGroup:new {
+        VerticalSpan:new { height = 2 },
+
+        self:genCover(img_width, img_height),
+
+        VerticalSpan:new { height = 2 },
+      },
       HorizontalSpan:new {
         width = 12,
       },
@@ -432,7 +440,7 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
       -- scale_factor = 0.5
     }
     wimage:_loadfile()
-    local image_size = wimage:getSize()     -- get final widget size
+    local image_size = wimage:getSize() -- get final widget size
     local _, _, scale_factor = getCachedCoverSize(image_size.w, image_size.h, wleft_width, wleft_height)
 
     wimage = ImageWidget:new {
@@ -452,6 +460,7 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
         padding = 0,
         bordersize = border_size,
         dim = self.file_deleted,
+        color = Blitbuffer.COLOR_GRAY_9,
         wimage,
       }
     }
@@ -482,6 +491,7 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
         padding = 0,
         bordersize = border_size,
         dim = self.file_deleted,
+        color = Blitbuffer.COLOR_GRAY_9,
         CenterContainer:new {
           dimen = Geom:new { w = fake_cover_w, h = fake_cover_h },
           TextWidget:new {

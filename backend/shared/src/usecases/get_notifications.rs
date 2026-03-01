@@ -18,7 +18,13 @@ pub async fn get_notifications(
         notify.manga_cover = if let Some(path) = output {
             match url::Url::from_file_path(&path) {
                 Ok(url) => Some(url),
-                Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
+                Err(_) => match path.canonicalize() {
+                    Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
+                    Err(e) => {
+                        println!("Error canonicalizing path {:?}: {}", path, e);
+                        None
+                    }
+                },
                     Ok(url) => Some(url),
                     Err(_) => {
                         println!("Error converting path to URL");

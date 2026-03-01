@@ -138,7 +138,7 @@ function MenuItemCover:init()
   }
   local mandatory_w = mandatory_widget:getWidth()
 
-  local available_width = self.content_width - state_width - text_mandatory_padding - mandatory_w - img_width
+  local available_width = self.content_width - state_width - text_mandatory_padding - mandatory_w - img_width - 12
   local text_fgcolor = self.dim and Blitbuffer.COLOR_DARK_GRAY or nil
   local text_bgcolor = self.text_bgcolor
   local item_name

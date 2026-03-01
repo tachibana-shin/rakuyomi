@@ -46,6 +46,7 @@ local RefreshLibraryDetails = require("jobs/RefreshLibraryDetails")
 local BasicJobDialog = require("BasicJobDialog")
 
 local MenuItemCover = require("patch/MenuItemCover")
+local MenuItemGrid = require("patch/MenuItemGrid")
 local MenuCustom = require("patch/MenuCustom")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
@@ -271,10 +272,19 @@ function LibraryView:updateItems()
     self.items_per_page = 1
   end
 
-  if self:getLibraryViewMode() ~= "base" then
-    MenuCustom.updateItems(self, MenuItemCover)
+  local mode = self:getLibraryViewMode()
+  local MenuItemChoice = MenuItemCover
+  if mode == "grid" then
+    MenuItemChoice = MenuItemGrid
+    self.grid_columns = G_reader_settings:readSetting("rakuyomi_grid_columns") or 3
   else
-    Menu.updateItems(self, MenuItemCover)
+    self.grid_columns = nil
+  end
+
+  if mode ~= "base" then
+    MenuCustom.updateItems(self, MenuItemChoice)
+  else
+    Menu.updateItems(self, MenuItemChoice)
   end
 end
 

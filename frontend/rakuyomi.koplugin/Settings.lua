@@ -222,6 +222,34 @@ function Settings:init()
       G_reader_settings:saveSetting("rakuyomi_items_per_page", new_value)
     end
   })
+  table.insert(vertical_group, SettingItem:new {
+    show_parent = self,
+    width = self.item_width,
+    label = _("Grid columns"),
+    value_definition = {
+      type = 'integer',
+      min_value = 2,
+      max_value = 6,
+    },
+    value = G_reader_settings:readSetting("rakuyomi_grid_columns", 3),
+    on_value_changed_callback = function(new_value)
+      G_reader_settings:saveSetting("rakuyomi_grid_columns", new_value)
+    end
+  })
+  table.insert(vertical_group, SettingItem:new {
+    show_parent = self,
+    width = self.item_width,
+    label = _("Grid rows"),
+    value_definition = {
+      type = 'integer',
+      min_value = 0,
+      max_value = 6,
+    },
+    value = G_reader_settings:readSetting("rakuyomi_grid_rows", 0), -- 0 = auto
+    on_value_changed_callback = function(new_value)
+      G_reader_settings:saveSetting("rakuyomi_grid_rows", new_value)
+    end
+  })
 
   self.title_bar = TitleBar:new {
     title = _("Settings"),

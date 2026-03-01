@@ -142,6 +142,48 @@ Settings.setting_value_definitions = {
       },
       default = "cover",
     }
+  },
+  {
+    'allow_commaneer_filemanager',
+    {
+      type = 'boolean',
+      title = _("Allow requisition of the back button"),
+      is_local = true,
+      default = true
+    }
+  },
+  {
+    'rakuyomi_items_per_page',
+    {
+      type = 'integer',
+      title = _("Items per page (0 = auto)"),
+      min_value = 0,
+      max_value = 100,
+      is_local = true,
+      default = 0
+    }
+  },
+  {
+    'rakuyomi_grid_columns',
+    {
+      type = 'integer',
+      title = _("Grid columns"),
+      min_value = 2,
+      max_value = 6,
+      is_local = true,
+      default = 3
+    }
+  },
+  {
+    'rakuyomi_grid_rows',
+    {
+      type = 'integer',
+      title = _("Grid rows"),
+      min_value = 0,
+      max_value = 6,
+      is_local = true,
+      default = 0
+    }
   }
 }
 
@@ -177,79 +219,36 @@ function Settings:init()
     local key = tuple[1]
     local definition = tuple[2]
 
-    -- FIXME shouldn't the backend return the default value when unset?
-    local value = self.settings[key]
-    if key == 'storage_path' and value == nil then
-      value = Paths.getHomeDirectory() .. '/downloads'
-    end
-
-    table.insert(vertical_group, SettingItem:new {
-      show_parent = self,
-      width = self.item_width,
-      label = definition.title,
-      value_definition = definition,
-      value = value,
-      on_value_changed_callback = function(new_value)
-        self:updateSetting(key, new_value)
+    if definition.is_local then
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = definition,
+        value = G_reader_settings:readSetting(key, definition.default),
+        on_value_changed_callback = function(new_value)
+          G_reader_settings:saveSetting(key, new_value)
+        end
+      })
+    else
+      -- FIXME shouldn't the backend return the default value when unset?
+      local value = self.settings[key]
+      if key == 'storage_path' and value == nil then
+        value = Paths.getHomeDirectory() .. '/downloads'
       end
-    })
+
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = definition,
+        value = value,
+        on_value_changed_callback = function(new_value)
+          self:updateSetting(key, new_value)
+        end
+      })
+    end
   end
-
-
-  table.insert(vertical_group, SettingItem:new {
-    show_parent = self,
-    width = self.item_width,
-    label = _("Allow requisition of the back button"),
-    value_definition = {
-      type = 'boolean',
-    },
-    value = G_reader_settings:nilOrFalse("allow_commaneer_filemanager") and false or true,
-    on_value_changed_callback = function(new_value)
-      G_reader_settings:saveSetting("allow_commaneer_filemanager", new_value)
-    end
-  })
-  table.insert(vertical_group, SettingItem:new {
-    show_parent = self,
-    width = self.item_width,
-    label = _("Items per page (0 = auto)"),
-    value_definition = {
-      type = 'integer',
-      min_value = 0,
-      max_value = 100,
-    },
-    value = G_reader_settings:readSetting("rakuyomi_items_per_page", 0),
-    on_value_changed_callback = function(new_value)
-      G_reader_settings:saveSetting("rakuyomi_items_per_page", new_value)
-    end
-  })
-  table.insert(vertical_group, SettingItem:new {
-    show_parent = self,
-    width = self.item_width,
-    label = _("Grid columns"),
-    value_definition = {
-      type = 'integer',
-      min_value = 2,
-      max_value = 6,
-    },
-    value = G_reader_settings:readSetting("rakuyomi_grid_columns", 3),
-    on_value_changed_callback = function(new_value)
-      G_reader_settings:saveSetting("rakuyomi_grid_columns", new_value)
-    end
-  })
-  table.insert(vertical_group, SettingItem:new {
-    show_parent = self,
-    width = self.item_width,
-    label = _("Grid rows"),
-    value_definition = {
-      type = 'integer',
-      min_value = 0,
-      max_value = 6,
-    },
-    value = G_reader_settings:readSetting("rakuyomi_grid_rows", 0), -- 0 = auto
-    on_value_changed_callback = function(new_value)
-      G_reader_settings:saveSetting("rakuyomi_grid_rows", new_value)
-    end
-  })
 
   self.title_bar = TitleBar:new {
     title = _("Settings"),

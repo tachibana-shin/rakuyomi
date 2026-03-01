@@ -23,18 +23,19 @@ local Icons = require("Icons")
 
 local SETTING_ITEM_FONT_SIZE = 18
 
---- @class BooleanValueDefinition: { type: 'boolean' }
+--- @class DividerDefinition: { type: 'divider', title: string }
+--- @class BooleanValueDefinition: { type: 'boolean', is_local: boolean|nil, default: boolean|nil }
 --- @class EnumValueDefinitionOption: { label: string, value: string }
---- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[] }
+--- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[], default: string|nil }
 --- @class MultiEnumValueDefinition: { type: 'multi-enum', title: string, options: EnumValueDefinitionOption[] }
---- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string }
+--- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
 --- @class StringValueDefinition: { type: 'string', title: string, placeholder: string }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 --- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
 
---- @alias ValueDefinition BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
+--- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
 
 --- @class SettingItemValue: { [any]: any }
 --- @field value_definition ValueDefinition

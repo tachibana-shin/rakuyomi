@@ -21,13 +21,7 @@ pub async fn get_notifications(
                 Err(_) => match path.canonicalize() {
                     Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
                     Err(e) => {
-                        println!("Error canonicalizing path {:?}: {}", path, e);
-                        None
-                    }
-                },
-                    Ok(url) => Some(url),
-                    Err(_) => {
-                        println!("Error converting path to URL");
+                        eprintln!("Error canonicalizing path {:?}: {}", path, e);
                         None
                     }
                 },

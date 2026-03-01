@@ -216,6 +216,14 @@ impl ToWasmValue for F64 {
     }
 }
 
+impl ToWasmValue for f32 {
+    const WASM_VALUE_TYPE: ValType = ValType::F32;
+
+    fn to_wasm_value(&self) -> Val {
+        Val::F32((*self).into())
+    }
+}
+
 pub trait WasmFunctionReturnType {
     const WASM_TYPES: &'static [ValType];
 
@@ -272,6 +280,24 @@ impl WasmFunctionReturnType for Result<i64> {
             Err(err) => {
                 log::warn!("error while calling {}: {}", function_name, err);
                 results[0] = Val::I64(-1); // Indicate error with -1
+            }
+        }
+    }
+}
+
+impl WasmFunctionReturnType for Result<f32> {
+    const WASM_TYPES: &'static [ValType] = &[ValType::F32];
+
+    fn write_return_values(self, function_name: &str, results: &mut [wasmi::Val]) {
+        use std::result::Result::Ok;
+
+        match self {
+            Ok(value) => {
+                results[0] = Val::F32(value.into());
+            }
+            Err(err) => {
+                log::warn!("error while calling {}: {}", function_name, err);
+                results[0] = Val::F32((-1.0).into()); // Indicate error with -1.0
             }
         }
     }

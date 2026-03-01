@@ -500,21 +500,21 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
     Ok(store.store_std_value(Value::Vec(png_data).into(), None) as i32)
 }
 #[aidoku_wasm_function]
-fn get_image_width(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32> {
+fn get_image_width(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<f32> {
     let store = caller.data_mut();
     let Some(image) = store.get_image(img_id as usize) else {
-        return Ok(ResultContext::InvalidImagePointer.into());
+        return Ok(-2.0);
     };
 
-    Ok(image.width)
+    Ok(image.width as f32)
 }
 
 #[aidoku_wasm_function]
-fn get_image_height(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32> {
+fn get_image_height(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<f32> {
     let store = caller.data_mut();
     let Some(image) = store.get_image(img_id as usize) else {
-        return Ok(ResultContext::InvalidImagePointer.into());
+        return Ok(-2.0);
     };
 
-    Ok(image.height)
+    Ok(image.height as f32)
 }

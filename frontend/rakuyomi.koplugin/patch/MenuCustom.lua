@@ -40,47 +40,46 @@ function MenuCustom:updateItems(MenuItem, select_number, no_recalculate_dimen)
 
   local columns = self.grid_columns or 1
   if columns > 1 then
-    local rows = math.ceil(items_nb / columns)
+    local rows = math.ceil(self.perpage / columns)
     for r = 1, rows do
       local row_group = HorizontalGroup:new { align = "center" }
       for c = 1, columns do
         local idx_in_page = (r - 1) * columns + c
-        if idx_in_page <= items_nb then
-          local index = self.items_max_lines and self.page_items[self.page][idx_in_page] or idx_offset + idx_in_page
-          local item = self.item_table[index]
-          if item then
-            item.idx = index
-            if index == self.itemnumber then
-              select_number = idx_in_page
-            end
 
-            local item_tmp = MenuItem:new {
-              idx = index,
-              show_parent = self.show_parent,
-              state_w = self.state_w,
-              text = Menu.getMenuText(item),
-              manga_cover = item.manga_cover,
-              text_bgcolor = item.text_bgcolor,
-              bidi_wrap_func = item.bidi_wrap_func,
-              post_text = item.post_text,
-              mandatory = item.mandatory,
-              mandatory_func = item.mandatory_func,
-              mandatory_dim = item.mandatory_dim or item.dim,
-              mandatory_dim_func = item.mandatory_dim_func,
-              bold = self.item_table.current == index or item.bold == true,
-              dim = item.dim,
-              font_size = self.font_size,
-              infont_size = self.items_mandatory_font_size or (self.font_size - 4),
-              dimen = self.item_dimen:copy(),
-              entry = item,
-              menu = self,
-              linesize = self.linesize,
-              single_line = self.single_line,
-              line_color = self.line_color,
-              handle_hold_on_hold_release = self.handle_hold_on_hold_release,
-            }
-            table.insert(row_group, item_tmp)
+        local index = self.items_max_lines and self.page_items[self.page][idx_in_page] or idx_offset + idx_in_page
+        local item = self.item_table[index]
+        if item then
+          item.idx = index
+          if index == self.itemnumber then
+            select_number = idx_in_page
           end
+
+          local item_tmp = MenuItem:new {
+            idx = index,
+            show_parent = self.show_parent,
+            state_w = self.state_w,
+            text = Menu.getMenuText(item),
+            manga_cover = item.manga_cover,
+            text_bgcolor = item.text_bgcolor,
+            bidi_wrap_func = item.bidi_wrap_func,
+            post_text = item.post_text,
+            mandatory = item.mandatory,
+            mandatory_func = item.mandatory_func,
+            mandatory_dim = item.mandatory_dim or item.dim,
+            mandatory_dim_func = item.mandatory_dim_func,
+            bold = self.item_table.current == index or item.bold == true,
+            dim = item.dim,
+            font_size = self.font_size,
+            infont_size = self.items_mandatory_font_size or (self.font_size - 4),
+            dimen = self.item_dimen:copy(),
+            entry = item,
+            menu = self,
+            linesize = self.linesize,
+            single_line = self.single_line,
+            line_color = self.line_color,
+            handle_hold_on_hold_release = self.handle_hold_on_hold_release,
+          }
+          table.insert(row_group, item_tmp)
         end
       end
       table.insert(self.item_group, row_group)

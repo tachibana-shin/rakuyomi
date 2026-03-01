@@ -43,7 +43,7 @@ function InstalledSourcesListing:init()
   -- FIXME we could refactor this into a single class
   self.paths = { 0 }
 
-  self:updateItems()
+  -- self:updateItems()
 end
 
 function InstalledSourcesListing:onClose()

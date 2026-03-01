@@ -81,7 +81,8 @@ function LibraryView:init()
   self:patchTitleBar(0)
   self:fetchCountNotification()
 
-  self:updateItems()
+  -- disable because auto call
+  -- self:updateItems()
 end
 
 --- @private

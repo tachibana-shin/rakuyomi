@@ -68,7 +68,7 @@ function NotificationView:init()
   Menu.init(self)
   self.page = page
 
-  self:updateItems()
+  -- self:updateItems()
 end
 
 --- @param select_number number|nil

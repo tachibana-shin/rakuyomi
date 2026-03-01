@@ -44,7 +44,7 @@ function MangaSearchResults:init()
   self.paths = { 0 }
   self.on_return_callback = nil
 
-  self:updateItems()
+  -- self:updateItems()
 end
 
 function MangaSearchResults:onClose()

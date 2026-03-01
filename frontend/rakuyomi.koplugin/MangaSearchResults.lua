@@ -209,28 +209,58 @@ function MangaSearchResults:onContextMenuChoice(item)
         callback = function()
           UIManager:close(dialog)
 
-          --- @type ErrorResponse
-          local err = nil
-          if manga.in_library then
-            err = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
-          else
-            err = Backend.addMangaToLibrary(manga.source.id, manga.id)
-          end
+          Trapper:wrap(function()
+            --- @type ErrorResponse
+            local err = nil
+            if manga.in_library then
+              err = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
+            else
+              err = Backend.addMangaToLibrary(manga.source.id, manga.id)
+            end
 
-          if err.type == 'ERROR' then
-            ErrorDialog:show(err)
+            if err.type == 'ERROR' then
+              ErrorDialog:show(err.message)
 
-            return
-          end
+              return
+            end
 
-          local added = manga.in_library
-          manga.in_library = not added
-          self:updateItems()
+            local added = manga.in_library
+            manga.in_library = not added
 
-          Testing:emitEvent(added and "manga_removed_from_library" or "manga_added_to_library", {
-            source_id = manga.source.id,
-            manga_id = manga.id,
-          })
+            if manga.in_library and Backend.getSettings().body.library_view_mode ~= 'base' then
+              local cancel_id = Backend.createCancelId()
+              local response, cancelled = LoadingDialog:showAndRun(
+                _("Refreshing details..."),
+                function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
+                function()
+                  Backend.cancel(cancel_id)
+                  local InfoMessage = require("ui/widget/infomessage")
+
+                  local cancelledMessage = InfoMessage:new {
+                    text = _("Refresh details cancelled."),
+                  }
+                  UIManager:show(cancelledMessage)
+                end
+              )
+
+              if cancelled then
+                return false
+              end
+
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+
+                return false
+              end
+            end
+
+            self:updateItems()
+
+            Testing:emitEvent(added and "manga_removed_from_library" or "manga_added_to_library", {
+              source_id = manga.source.id,
+              manga_id = manga.id,
+            })
+          end)
         end
       },
     },

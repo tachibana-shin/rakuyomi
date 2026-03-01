@@ -123,7 +123,11 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
 
   local available_height = self.inner_dimen.h - self.others_height - Size.line.thin
 
-  self.items_per_page = math.floor(available_height / scale_by_size / 88) -- 64
+  self.items_per_page = G_reader_settings:readSetting("rakuyomi_items_per_page")
+  if self.items_per_page == nil or self.items_per_page < 1 then
+    self.items_per_page = math.floor(available_height / scale_by_size / 88) -- 64
+  end
+
   if not self.portrait_mode then
     local portrait_available_height = Screen:getWidth() - self.others_height - Size.line.thin
     local portrait_item_height = math.floor(portrait_available_height / self.items_per_page) - Size.line.thin

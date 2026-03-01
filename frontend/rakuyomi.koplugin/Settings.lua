@@ -46,14 +46,14 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Library sorting mode"),
       options = {
-        { label = _("Order added ascending (Default)"), value = 'ascending' },
-        { label = _("Order added descending"),          value = 'descending' },
-        { label = _("Title manga ascending"),           value = 'title_asc' },
-        { label = _("Title manga descending"),          value = 'title_desc' },
-        { label = _("Count unread chapters ascending"), value = 'unread_asc' },
+        { label = _("Order added ascending (Default)"),  value = 'ascending' },
+        { label = _("Order added descending"),           value = 'descending' },
+        { label = _("Title manga ascending"),            value = 'title_asc' },
+        { label = _("Title manga descending"),           value = 'title_desc' },
+        { label = _("Count unread chapters ascending"),  value = 'unread_asc' },
         { label = _("Count unread chapters descending"), value = 'unread_desc' },
-        { label = _("Last read ascending"), value = 'last_read_asc' },
-        { label = _("Last read descending"), value = 'last_read_desc' },
+        { label = _("Last read ascending"),              value = 'last_read_asc' },
+        { label = _("Last read descending"),             value = 'last_read_desc' },
       }
     }
   },
@@ -129,6 +129,19 @@ Settings.setting_value_definitions = {
       title = _("Optimize page images (experimental)"),
       default = false,
     }
+  },
+  {
+    'library_view_mode',
+    {
+      type = 'enum',
+      title = _("Library view mode"),
+      options = {
+        { label = _("Base"),  value = "base" },
+        { label = _("Cover"), value = "cover" },
+        { label = _("Grid"),  value = "grid" },
+      },
+      default = "cover",
+    }
   }
 }
 
@@ -193,6 +206,20 @@ function Settings:init()
     value = G_reader_settings:nilOrFalse("allow_commaneer_filemanager") and false or true,
     on_value_changed_callback = function(new_value)
       G_reader_settings:saveSetting("allow_commaneer_filemanager", new_value)
+    end
+  })
+  table.insert(vertical_group, SettingItem:new {
+    show_parent = self,
+    width = self.item_width,
+    label = _("Items per page (0 = auto)"),
+    value_definition = {
+      type = 'integer',
+      min_value = 0,
+      max_value = 100,
+    },
+    value = G_reader_settings:readSetting("rakuyomi_items_per_page", 0),
+    on_value_changed_callback = function(new_value)
+      G_reader_settings:saveSetting("rakuyomi_items_per_page", new_value)
     end
   })
 

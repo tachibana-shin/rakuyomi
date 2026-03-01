@@ -155,6 +155,7 @@ end
 --- @field id string The ID of the manga.
 --- @field source SourceInformation The source information for this manga.
 --- @field title string The title of this manga.
+--- @field manga_cover string|nil The cover of this manga.
 --- @field unread_chapters_count number|nil The number of unread chapters for this manga, or `nil` if we do not know how many chapters this manga has.
 --- @field last_read number|nil The timestamp (in seconds since epoch) of when this manga was last read, or `nil` if we don't know.
 --- @field in_library boolean Whether this manga is in the user's library.
@@ -565,7 +566,8 @@ function Backend.setPreferredScanlator(source_id, manga_id, preferred_scanlator)
 end
 
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number }
+--- @alias LibraryViewMode 'base' | 'cover' | 'grid'
+--- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode }
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse

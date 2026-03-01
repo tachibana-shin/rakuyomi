@@ -157,8 +157,6 @@ function MenuItemCover:init()
 
   -- Note: support for post_text is currently implemented only when single_line=true
   local post_text_widget
-  local post_text_left_padding = Size.padding.large
-  local post_text_right_padding = self.with_dots and 0 or Size.padding.large
   local dots_widget
   local dots_left_padding = Size.padding.small
   local dots_right_padding = Size.padding.small
@@ -169,7 +167,6 @@ function MenuItemCover:init()
       post_text_widget = TextWidget:new {
         text = self.post_text,
         face = self.post_text_face,
-        max_width = math.floor(available_width / 2), -- keep some space for the other stuff
         bold = self.bold,
         fgcolor = text_fgcolor,
         padding = 0,

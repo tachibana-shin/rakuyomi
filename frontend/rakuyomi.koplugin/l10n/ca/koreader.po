@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
+        "POT-Creation-Date: 2026-03-02 03:25+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -126,7 +126,7 @@ msgstr  "El capítol està bloquejat"
 msgid   "Open"
 msgstr  "Obert"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:410
 msgid   "Refresh"
 msgstr  "Actualitzar"
 
@@ -142,7 +142,7 @@ msgstr  "Marc"
 msgid   "Download"
 msgstr  "Descarregar"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:588
+#: ../ChapterListing.lua:541 ../LibraryView.lua:603
 msgid   "Remove"
 msgstr  "Eliminar"
 
@@ -170,11 +170,11 @@ msgstr  "Desmarcació"
 msgid   "chapter..."
 msgstr  "capítol..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:446
 msgid   "Mark read"
 msgstr  "Mark va llegir"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:457
 msgid   "Mark unread"
 msgstr  "Marca com no llegit"
 
@@ -191,8 +191,8 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Marca els capítols com a llegits o no llegits"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
-#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:564 ../LibraryView.lua:837
+#: ../LibraryView.lua:885 ../NotificationView.lua:162
 #: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Cancel·la"
@@ -248,7 +248,7 @@ msgstr  "Esteu segur que voleu cancel·lar la baixada?"
 msgid   "Add to Library"
 msgstr  "Afegeix a la biblioteca"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../ChapterListing.lua:974 ../LibraryView.lua:430
 #: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Detalls"
@@ -285,7 +285,7 @@ msgstr  "No s'ha pogut afegir a la biblioteca"
 msgid   "Added to library."
 msgstr  "S'ha afegit a la biblioteca."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:556
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Malauradament, no hi ha cap capítol següent disponible! "
 
@@ -297,7 +297,7 @@ msgstr  "A continuació"
 msgid   "reading with"
 msgstr  "llegint amb"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:563
 msgid   "Read"
 msgstr  "Llegeix"
 
@@ -409,240 +409,240 @@ msgstr  "font?"
 msgid   "Library"
 msgstr  "Biblioteca"
 
-#: ../LibraryView.lua:329
+#: ../LibraryView.lua:344
 msgid   "No mangas found in library"
 msgstr  "No s'han trobat mangas a la biblioteca"
 
-#: ../LibraryView.lua:329
+#: ../LibraryView.lua:344
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Proveu d'afegir-ne alguns mantenint el seu nom als resultats de la cerca!"
 
-#: ../LibraryView.lua:406
+#: ../LibraryView.lua:421
 msgid   "Refreshed manga"
 msgstr  "Manga renovat"
 
-#: ../LibraryView.lua:455
+#: ../LibraryView.lua:470
 msgid   "Continue Reading"
 msgstr  "Continuar llegint"
 
-#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:479 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Elimina de la biblioteca"
 
-#: ../LibraryView.lua:497
+#: ../LibraryView.lua:512
 msgid   "Finding next chapter..."
 msgstr  "Buscant el següent capítol..."
 
-#: ../LibraryView.lua:508
+#: ../LibraryView.lua:523
 msgid   "No chapters found for this manga."
 msgstr  "No s'han trobat capítols per a aquest manga."
 
-#: ../LibraryView.lua:547
+#: ../LibraryView.lua:562
 msgid   "Resume reading with:"
 msgstr  "Reprèn la lectura amb:"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:602
 msgid   "Do you want to remove"
 msgstr  "Voleu eliminar"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:602
 msgid   "from your library?"
 msgstr  "de la teva biblioteca?"
 
-#: ../LibraryView.lua:610
+#: ../LibraryView.lua:625
 msgid   "Search for mangas"
 msgstr  "Busca mangas"
 
-#: ../LibraryView.lua:620
+#: ../LibraryView.lua:635
 msgid   "Search favorites"
 msgstr  "Cerca els preferits"
 
-#: ../LibraryView.lua:630
+#: ../LibraryView.lua:645
 msgid   "Refresh mangas"
 msgstr  "Actualitzar mangas"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:653
 msgid   "Refresh details"
 msgstr  "Actualitza els detalls"
 
-#: ../LibraryView.lua:648
+#: ../LibraryView.lua:663
 msgid   "Cleaner chapters"
 msgstr  "Capítols més nets"
 
-#: ../LibraryView.lua:656
+#: ../LibraryView.lua:671
 msgid   "Manage sources"
 msgstr  "Gestionar les fonts"
 
-#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Configuració"
 
-#: ../LibraryView.lua:674
+#: ../LibraryView.lua:689
 msgid   "Check for updates"
 msgstr  "Comproveu si hi ha actualitzacions"
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:698
 msgid   "Sync Database (Beta)"
 msgstr  "Sincronitza la base de dades (beta)"
 
-#: ../LibraryView.lua:687
+#: ../LibraryView.lua:702
 msgid   "Sync to WebDAV..."
 msgstr  "Sincronitza amb WebDAV..."
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Voleu migrar la vostra base de dades local des del servidor?"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "The remote database is newer than the local one."
 msgstr  "La base de dades remota és més nova que la local."
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "This action cannot be undone."
 msgstr  "Aquesta acció no es pot desfer."
 
-#: ../LibraryView.lua:700
+#: ../LibraryView.lua:715
 msgid   "Migrate"
 msgstr  "Migrar"
 
-#: ../LibraryView.lua:704
+#: ../LibraryView.lua:719
 msgid   "Migrating database..."
 msgstr  "S'està migrant la base de dades..."
 
-#: ../LibraryView.lua:715 ../LibraryView.lua:762
+#: ../LibraryView.lua:730 ../LibraryView.lua:777
 msgid   "Local database has been migrated from the server!"
 msgstr  "La base de dades local s'ha migrat des del servidor!"
 
-#: ../LibraryView.lua:726
+#: ../LibraryView.lua:741
 msgid   "Replace Cloud"
 msgstr  "Substitueix el núvol"
 
-#: ../LibraryView.lua:730
+#: ../LibraryView.lua:745
 msgid   "Replacing cloud..."
 msgstr  "Substituint el núvol..."
 
-#: ../LibraryView.lua:740
+#: ../LibraryView.lua:755
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "La base de dades del núvol s'ha substituït forçadament per una de local!"
 
-#: ../LibraryView.lua:758
+#: ../LibraryView.lua:773
 msgid   "Database is already up to date!"
 msgstr  "La base de dades ja està actualitzada!"
 
-#: ../LibraryView.lua:760
+#: ../LibraryView.lua:775
 msgid   "Database has been synced to the server!"
 msgstr  "La base de dades s'ha sincronitzat amb el servidor!"
 
-#: ../LibraryView.lua:764
+#: ../LibraryView.lua:779
 msgid   "Sync completed!"
 msgstr  "Sincronització completada!"
 
-#: ../LibraryView.lua:788
+#: ../LibraryView.lua:803
 msgid   "Manga search..."
 msgstr  "Cerca manga..."
 
-#: ../LibraryView.lua:789
+#: ../LibraryView.lua:804
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:790 ../LibraryView.lua:866
+#: ../LibraryView.lua:805 ../LibraryView.lua:881
 msgid   "Type the manga name to search for"
 msgstr  "Escriu el nom del manga per cercar"
 
-#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:809 ../LibraryView.lua:818 ../LibraryView.lua:863
+#: ../LibraryView.lua:892
 msgid   "Search"
 msgstr  "Cerca"
 
-#: ../LibraryView.lua:848
+#: ../LibraryView.lua:863
 msgid   "Exclude source search for"
 msgstr  "Exclou la cerca d'origen"
 
-#: ../LibraryView.lua:863
+#: ../LibraryView.lua:878
 msgid   "Favorite search..."
 msgstr  "Cerca preferida..."
 
-#: ../LibraryView.lua:865
+#: ../LibraryView.lua:880
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:917
+#: ../LibraryView.lua:932
 msgid   "Scaning files..."
 msgstr  "S'estan escanejant fitxers..."
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:947
 #, lua-format
 msgid   "Found %d files."
 msgstr  "S'han trobat %d fitxers."
 
-#: ../LibraryView.lua:933
+#: ../LibraryView.lua:948
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Mida total %s."
 
-#: ../LibraryView.lua:934
+#: ../LibraryView.lua:949
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "Escaneig de fitxers RendOnly .cbz i .epub."
 
-#: ../LibraryView.lua:938
+#: ../LibraryView.lua:953
 msgid   "Clean"
 msgstr  "Neteja"
 
-#: ../LibraryView.lua:943
+#: ../LibraryView.lua:958
 msgid   "Deleting..."
 msgstr  "S'està suprimint..."
 
-#: ../LibraryView.lua:961
+#: ../LibraryView.lua:976
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "S'ha netejat l'emmagatzematge gratuït de %s"
 
-#: ../LibraryView.lua:986
+#: ../LibraryView.lua:1001
 msgid   "Refresh mangas..."
 msgstr  "Actualitza mangas..."
 
-#: ../LibraryView.lua:987
+#: ../LibraryView.lua:1002
 msgid   "All chapters manga updated!"
 msgstr  "Tots els capítols manga actualitzats!"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:1003
 msgid   "Some manga updates fail:"
 msgstr  "Algunes actualitzacions del manga fallen:"
 
-#: ../LibraryView.lua:999
+#: ../LibraryView.lua:1014
 msgid   "Refresh manga details..."
 msgstr  "Actualitza els detalls del manga..."
 
-#: ../LibraryView.lua:1000
+#: ../LibraryView.lua:1015
 msgid   "All manga details refresh!"
 msgstr  "Tots els detalls del manga s'actualitzen!"
 
-#: ../LibraryView.lua:1001
+#: ../LibraryView.lua:1016
 msgid   "Some manga details refresh fail:"
 msgstr  "Error d'actualització d'alguns detalls del manga:"
 
-#: ../LibraryView.lua:1017
+#: ../LibraryView.lua:1032
 msgid   "Progress"
 msgstr  "Progrés"
 
-#: ../LibraryView.lua:1035
+#: ../LibraryView.lua:1050
 msgid   "Cleaner"
 msgstr  "Netejador"
 
-#: ../LibraryView.lua:1036
+#: ../LibraryView.lua:1051
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Cerqueu i suprimiu fitxers no vàlids, inclosos els fitxers de fonts suprimides"
 
-#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
+#: ../LibraryView.lua:1051 ../LibraryView.lua:1054
 msgid   "Normal"
 msgstr  "Normal"
 
-#: ../LibraryView.lua:1038
+#: ../LibraryView.lua:1053
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "IMPORTANT: els metafitxers (adreces d'interès, historial) no es conserven!"
 
-#: ../LibraryView.lua:1045
+#: ../LibraryView.lua:1060
 msgid   "Chapter read done"
 msgstr  "Capítol llegit fet"
 
@@ -755,15 +755,15 @@ msgstr  "Notificació"
 msgid   "Cleared all notifications!"
 msgstr  "S'han esborrat totes les notificacions!"
 
-#: ../NotificationView.lua:103
+#: ../NotificationView.lua:104
 msgid   "No notification"
 msgstr  "Cap notificació"
 
-#: ../NotificationView.lua:159
+#: ../NotificationView.lua:160
 msgid   "Delete this notification?"
 msgstr  "Vols suprimir aquesta notificació?"
 
-#: ../NotificationView.lua:160
+#: ../NotificationView.lua:161
 msgid   "Delete"
 msgstr  "Suprimeix"
 
@@ -1026,39 +1026,67 @@ msgstr  "En Rakuyomi s'ha trobat un problema durant l'inici!"
 msgid   "Here are some messages that might help identify the problem:"
 msgstr  "Aquests són alguns missatges que poden ajudar a identificar el problema:"
 
-#: ../utils/calcLastReadText.lua:10
+#: ../utils/calcLastReadText.lua:13
 msgid   "jnow"
 msgstr  "ara"
 
-#: ../utils/calcLastReadText.lua:12
+#: ../utils/calcLastReadText.lua:13
+msgid   "just now"
+msgstr  "just ara"
+
+#: ../utils/calcLastReadText.lua:15
 #, lua-format
 msgid   "%dm"
 msgstr  "%dm"
 
-#: ../utils/calcLastReadText.lua:14
+#: ../utils/calcLastReadText.lua:15
+msgid   "minutes"
+msgstr  "minuts"
+
+#: ../utils/calcLastReadText.lua:17
 #, lua-format
 msgid   "%dh"
 msgstr  "%dh"
 
-#: ../utils/calcLastReadText.lua:16
+#: ../utils/calcLastReadText.lua:17
+msgid   "hours"
+msgstr  "hores"
+
+#: ../utils/calcLastReadText.lua:19
 #, lua-format
 msgid   "%dd"
 msgstr  "%dd"
 
-#: ../utils/calcLastReadText.lua:18
+#: ../utils/calcLastReadText.lua:19
+msgid   "days"
+msgstr  "dies"
+
+#: ../utils/calcLastReadText.lua:21
 #, lua-format
 msgid   "%dw"
 msgstr  "%dw"
 
-#: ../utils/calcLastReadText.lua:20
+#: ../utils/calcLastReadText.lua:21
+msgid   "weeks"
+msgstr  "setmanes"
+
+#: ../utils/calcLastReadText.lua:23
 #, lua-format
 msgid   "%dM"
 msgstr  "%dM"
 
-#: ../utils/calcLastReadText.lua:22
+#: ../utils/calcLastReadText.lua:23
+msgid   "months"
+msgstr  "mesos"
+
+#: ../utils/calcLastReadText.lua:25
 #, lua-format
 msgid   "%dy"
 msgstr  "%dy"
+
+#: ../utils/calcLastReadText.lua:25
+msgid   "years"
+msgstr  "anys"
 
 #: ../utils/getChapterDisplayName.lua:5
 msgid   "Vol."

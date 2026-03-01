@@ -28,5 +28,6 @@ return {
   CHECK_ALL            = "\u{ee29}",
   FA_CLEANER           = "\u{e000}",
   FA_LOCKED            = "\u{f023}",
-  LANG                 = "\u{f1ab}"
+  LANG                 = "\u{f1ab}",
+  DOT                  = "\u{f444}"
 }

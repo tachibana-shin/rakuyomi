@@ -73,6 +73,7 @@ function LibraryView:init()
 
   local page = self.page
   Menu.init(self)
+  MenuCustom.init(self)
   self.page = page
 
   self.mangas_raw = self.mangas
@@ -302,14 +303,25 @@ end
 --- @param mangas Manga[]
 function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
+  local is_cover = self:getLibraryViewMode() == "cover"
+
   for _, manga in ipairs(mangas) do
-    local mandatory = (manga.last_read and calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base") .. (self:getLibraryViewMode() == "cover" and "" or " ") or "")
+    local mandatory = ""
+
+    if is_cover then
+      mandatory = manga.source.name
+    end
+
+    local space = is_cover and "  " .. Icons.DOT .. "  " or ""
+
+    mandatory = mandatory .. (manga.last_read and space
+      .. calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base") .. (is_cover and "" or " ") or "")
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      if self:getLibraryViewMode() == "cover" then
-        mandatory = Icons.FA_BELL .. " " .. manga.unread_chapters_count .. (mandatory ~= "" and " - " or "") .. mandatory
+      if is_cover then
+        mandatory = mandatory .. space .. Icons.FA_BELL .. " " .. manga.unread_chapters_count
       else
-        mandatory = (mandatory or "") .. Icons.FA_BELL .. manga.unread_chapters_count
+        mandatory = mandatory .. Icons.FA_BELL .. manga.unread_chapters_count
       end
     end
 
@@ -318,7 +330,7 @@ function LibraryView:generateItemTableFromMangas(mangas)
       text = manga.title,
       post_text = self:getLibraryViewMode() == "cover" and mandatory or manga.source.name,
       manga_cover = manga.manga_cover,
-      mandatory = self:getLibraryViewMode() == "cover" and manga.source.name or mandatory,
+      mandatory = self:getLibraryViewMode() ~= "cover" and mandatory or nil,
     })
   end
 
@@ -473,7 +485,7 @@ function LibraryView:onContextMenuChoice(item)
     },
   }
   dialog_context_menu = ButtonDialog:new {
-    title = manga.title,
+    title = manga.title .. "\n\n" .. manga.source.name,
     buttons = context_menu_buttons,
   }
   UIManager:show(dialog_context_menu)

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
+        "POT-Creation-Date: 2026-03-02 03:25+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr  "Capitolul este blocat"
 msgid   "Open"
 msgstr  "Deschide"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:410
 msgid   "Refresh"
 msgstr  "Reîmprospăta"
 
@@ -143,7 +143,7 @@ msgstr  "Marca"
 msgid   "Download"
 msgstr  "Descărcați"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:588
+#: ../ChapterListing.lua:541 ../LibraryView.lua:603
 msgid   "Remove"
 msgstr  "Elimina"
 
@@ -171,11 +171,11 @@ msgstr  "Anularea marcajului"
 msgid   "chapter..."
 msgstr  "capitol..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:446
 msgid   "Mark read"
 msgstr  "Mark a citit"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:457
 msgid   "Mark unread"
 msgstr  "Marcați necitit"
 
@@ -192,8 +192,8 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Marcați capitolele ca citite sau necitite"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
-#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:564 ../LibraryView.lua:837
+#: ../LibraryView.lua:885 ../NotificationView.lua:162
 #: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Anula"
@@ -249,7 +249,7 @@ msgstr  "Sigur doriți să anulați descărcarea?"
 msgid   "Add to Library"
 msgstr  "Adăugați la bibliotecă"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../ChapterListing.lua:974 ../LibraryView.lua:430
 #: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Detalii"
@@ -286,7 +286,7 @@ msgstr  "Nu s-a putut adăuga în bibliotecă"
 msgid   "Added to library."
 msgstr  "Adăugat la bibliotecă."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:556
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Din păcate, nu este disponibil niciun capitol următor! "
 
@@ -298,7 +298,7 @@ msgstr  "Următorul"
 msgid   "reading with"
 msgstr  "citind cu"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:563
 msgid   "Read"
 msgstr  "Citire"
 
@@ -410,240 +410,240 @@ msgstr  "sursă?"
 msgid   "Library"
 msgstr  "Bibliotecă"
 
-#: ../LibraryView.lua:329
+#: ../LibraryView.lua:344
 msgid   "No mangas found in library"
 msgstr  "Nu s-au găsit manga în bibliotecă"
 
-#: ../LibraryView.lua:329
+#: ../LibraryView.lua:344
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Încercați să adăugați câteva ținând numele lor în rezultatele căutării!"
 
-#: ../LibraryView.lua:406
+#: ../LibraryView.lua:421
 msgid   "Refreshed manga"
 msgstr  "Manga reîmprospătată"
 
-#: ../LibraryView.lua:455
+#: ../LibraryView.lua:470
 msgid   "Continue Reading"
 msgstr  "Continuă să citești"
 
-#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:479 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Eliminați din Bibliotecă"
 
-#: ../LibraryView.lua:497
+#: ../LibraryView.lua:512
 msgid   "Finding next chapter..."
 msgstr  "Găsesc următorul capitol..."
 
-#: ../LibraryView.lua:508
+#: ../LibraryView.lua:523
 msgid   "No chapters found for this manga."
 msgstr  "Nu s-au găsit capitole pentru această manga."
 
-#: ../LibraryView.lua:547
+#: ../LibraryView.lua:562
 msgid   "Resume reading with:"
 msgstr  "Reluați lectura cu:"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:602
 msgid   "Do you want to remove"
 msgstr  "Doriți să eliminați"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:602
 msgid   "from your library?"
 msgstr  "din biblioteca ta?"
 
-#: ../LibraryView.lua:610
+#: ../LibraryView.lua:625
 msgid   "Search for mangas"
 msgstr  "Caută manga"
 
-#: ../LibraryView.lua:620
+#: ../LibraryView.lua:635
 msgid   "Search favorites"
 msgstr  "Căutați favorite"
 
-#: ../LibraryView.lua:630
+#: ../LibraryView.lua:645
 msgid   "Refresh mangas"
 msgstr  "Reîmprospătați manga"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:653
 msgid   "Refresh details"
 msgstr  "Actualizează detaliile"
 
-#: ../LibraryView.lua:648
+#: ../LibraryView.lua:663
 msgid   "Cleaner chapters"
 msgstr  "Capitole mai curate"
 
-#: ../LibraryView.lua:656
+#: ../LibraryView.lua:671
 msgid   "Manage sources"
 msgstr  "Gestionați sursele"
 
-#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Setări"
 
-#: ../LibraryView.lua:674
+#: ../LibraryView.lua:689
 msgid   "Check for updates"
 msgstr  "Verificați actualizările"
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:698
 msgid   "Sync Database (Beta)"
 msgstr  "Sincronizare baza de date (beta)"
 
-#: ../LibraryView.lua:687
+#: ../LibraryView.lua:702
 msgid   "Sync to WebDAV..."
 msgstr  "Sincronizare cu WebDAV..."
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Doriți să migrați baza de date locală de pe server?"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "The remote database is newer than the local one."
 msgstr  "Baza de date la distanță este mai nouă decât cea locală."
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:714
 msgid   "This action cannot be undone."
 msgstr  "Această acțiune nu poate fi anulată."
 
-#: ../LibraryView.lua:700
+#: ../LibraryView.lua:715
 msgid   "Migrate"
 msgstr  "Migra"
 
-#: ../LibraryView.lua:704
+#: ../LibraryView.lua:719
 msgid   "Migrating database..."
 msgstr  "Se migrează baza de date..."
 
-#: ../LibraryView.lua:715 ../LibraryView.lua:762
+#: ../LibraryView.lua:730 ../LibraryView.lua:777
 msgid   "Local database has been migrated from the server!"
 msgstr  "Baza de date locală a fost migrată de pe server!"
 
-#: ../LibraryView.lua:726
+#: ../LibraryView.lua:741
 msgid   "Replace Cloud"
 msgstr  "Înlocuiește Cloud"
 
-#: ../LibraryView.lua:730
+#: ../LibraryView.lua:745
 msgid   "Replacing cloud..."
 msgstr  "Se înlocuiește cloud..."
 
-#: ../LibraryView.lua:740
+#: ../LibraryView.lua:755
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Baza de date în cloud a fost înlocuită forțat cu una locală!"
 
-#: ../LibraryView.lua:758
+#: ../LibraryView.lua:773
 msgid   "Database is already up to date!"
 msgstr  "Baza de date este deja actualizată!"
 
-#: ../LibraryView.lua:760
+#: ../LibraryView.lua:775
 msgid   "Database has been synced to the server!"
 msgstr  "Baza de date a fost sincronizată cu serverul!"
 
-#: ../LibraryView.lua:764
+#: ../LibraryView.lua:779
 msgid   "Sync completed!"
 msgstr  "Sincronizare finalizată!"
 
-#: ../LibraryView.lua:788
+#: ../LibraryView.lua:803
 msgid   "Manga search..."
 msgstr  "Cautare manga..."
 
-#: ../LibraryView.lua:789
+#: ../LibraryView.lua:804
 msgid   "Houseki no Kuni"
 msgstr  "Houseki nu Kuni"
 
-#: ../LibraryView.lua:790 ../LibraryView.lua:866
+#: ../LibraryView.lua:805 ../LibraryView.lua:881
 msgid   "Type the manga name to search for"
 msgstr  "Tastați numele manga de căutat"
 
-#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:809 ../LibraryView.lua:818 ../LibraryView.lua:863
+#: ../LibraryView.lua:892
 msgid   "Search"
 msgstr  "Căutare"
 
-#: ../LibraryView.lua:848
+#: ../LibraryView.lua:863
 msgid   "Exclude source search for"
 msgstr  "Exclude căutarea sursă pentru"
 
-#: ../LibraryView.lua:863
+#: ../LibraryView.lua:878
 msgid   "Favorite search..."
 msgstr  "Căutare preferată..."
 
-#: ../LibraryView.lua:865
+#: ../LibraryView.lua:880
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:917
+#: ../LibraryView.lua:932
 msgid   "Scaning files..."
 msgstr  "Se scanează fișierele..."
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:947
 #, lua-format
 msgid   "Found %d files."
 msgstr  "S-au găsit %d fișiere."
 
-#: ../LibraryView.lua:933
+#: ../LibraryView.lua:948
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Dimensiunea totală %s."
 
-#: ../LibraryView.lua:934
+#: ../LibraryView.lua:949
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "Scanarea fișierelor RendOnly .cbz și .epub."
 
-#: ../LibraryView.lua:938
+#: ../LibraryView.lua:953
 msgid   "Clean"
 msgstr  "Curat"
 
-#: ../LibraryView.lua:943
+#: ../LibraryView.lua:958
 msgid   "Deleting..."
 msgstr  "Se șterge..."
 
-#: ../LibraryView.lua:961
+#: ../LibraryView.lua:976
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Spațiul de stocare %s gratuit a fost curățat"
 
-#: ../LibraryView.lua:986
+#: ../LibraryView.lua:1001
 msgid   "Refresh mangas..."
 msgstr  "Reîmprospătează manga..."
 
-#: ../LibraryView.lua:987
+#: ../LibraryView.lua:1002
 msgid   "All chapters manga updated!"
 msgstr  "Toate capitolele manga actualizate!"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:1003
 msgid   "Some manga updates fail:"
 msgstr  "Unele actualizări ale manga eșuează:"
 
-#: ../LibraryView.lua:999
+#: ../LibraryView.lua:1014
 msgid   "Refresh manga details..."
 msgstr  "Actualizează detaliile manga..."
 
-#: ../LibraryView.lua:1000
+#: ../LibraryView.lua:1015
 msgid   "All manga details refresh!"
 msgstr  "Toate detaliile manga se reîmprospătează!"
 
-#: ../LibraryView.lua:1001
+#: ../LibraryView.lua:1016
 msgid   "Some manga details refresh fail:"
 msgstr  "Unele detalii manga eșuează reîmprospătarea:"
 
-#: ../LibraryView.lua:1017
+#: ../LibraryView.lua:1032
 msgid   "Progress"
 msgstr  "Progres"
 
-#: ../LibraryView.lua:1035
+#: ../LibraryView.lua:1050
 msgid   "Cleaner"
 msgstr  "Mai curat"
 
-#: ../LibraryView.lua:1036
+#: ../LibraryView.lua:1051
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Găsiți și ștergeți fișiere nevalide, inclusiv fișiere din surse șterse"
 
-#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
+#: ../LibraryView.lua:1051 ../LibraryView.lua:1054
 msgid   "Normal"
 msgstr  "Normal"
 
-#: ../LibraryView.lua:1038
+#: ../LibraryView.lua:1053
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "IMPORTANT: Meta fișierele (marcaj, istoric) nu se păstrează!"
 
-#: ../LibraryView.lua:1045
+#: ../LibraryView.lua:1060
 msgid   "Chapter read done"
 msgstr  "Capitolul citit gata"
 
@@ -756,15 +756,15 @@ msgstr  "Notificare"
 msgid   "Cleared all notifications!"
 msgstr  "S-au șters toate notificările!"
 
-#: ../NotificationView.lua:103
+#: ../NotificationView.lua:104
 msgid   "No notification"
 msgstr  "Nicio notificare"
 
-#: ../NotificationView.lua:159
+#: ../NotificationView.lua:160
 msgid   "Delete this notification?"
 msgstr  "Ștergeți această notificare?"
 
-#: ../NotificationView.lua:160
+#: ../NotificationView.lua:161
 msgid   "Delete"
 msgstr  "Şterge"
 
@@ -1027,39 +1027,67 @@ msgstr  "Rakuyomi a întâmpinat o problemă la pornire!"
 msgid   "Here are some messages that might help identify the problem:"
 msgstr  "Iată câteva mesaje care ar putea ajuta la identificarea problemei:"
 
-#: ../utils/calcLastReadText.lua:10
+#: ../utils/calcLastReadText.lua:13
 msgid   "jnow"
 msgstr  "acum"
 
-#: ../utils/calcLastReadText.lua:12
+#: ../utils/calcLastReadText.lua:13
+msgid   "just now"
+msgstr  "tocmai acum"
+
+#: ../utils/calcLastReadText.lua:15
 #, lua-format
 msgid   "%dm"
 msgstr  "%dm"
 
-#: ../utils/calcLastReadText.lua:14
+#: ../utils/calcLastReadText.lua:15
+msgid   "minutes"
+msgstr  "minute"
+
+#: ../utils/calcLastReadText.lua:17
 #, lua-format
 msgid   "%dh"
 msgstr  "%dh"
 
-#: ../utils/calcLastReadText.lua:16
+#: ../utils/calcLastReadText.lua:17
+msgid   "hours"
+msgstr  "ore"
+
+#: ../utils/calcLastReadText.lua:19
 #, lua-format
 msgid   "%dd"
 msgstr  "%dd"
 
-#: ../utils/calcLastReadText.lua:18
+#: ../utils/calcLastReadText.lua:19
+msgid   "days"
+msgstr  "zile"
+
+#: ../utils/calcLastReadText.lua:21
 #, lua-format
 msgid   "%dw"
 msgstr  "%dw"
 
-#: ../utils/calcLastReadText.lua:20
+#: ../utils/calcLastReadText.lua:21
+msgid   "weeks"
+msgstr  "săptămâni"
+
+#: ../utils/calcLastReadText.lua:23
 #, lua-format
 msgid   "%dM"
 msgstr  "%dM"
 
-#: ../utils/calcLastReadText.lua:22
+#: ../utils/calcLastReadText.lua:23
+msgid   "months"
+msgstr  "luni"
+
+#: ../utils/calcLastReadText.lua:25
 #, lua-format
 msgid   "%dy"
 msgstr  "%dy"
+
+#: ../utils/calcLastReadText.lua:25
+msgid   "years"
+msgstr  "ani"
 
 #: ../utils/getChapterDisplayName.lua:5
 msgid   "Vol."

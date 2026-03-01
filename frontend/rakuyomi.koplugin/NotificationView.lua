@@ -66,6 +66,7 @@ function NotificationView:init()
 
   local page = self.page
   Menu.init(self)
+  MenuCustom.init(self)
   self.page = page
 
   -- self:updateItems()

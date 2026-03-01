@@ -40,7 +40,7 @@ function MenuCustom:updateItems(MenuItem, select_number, no_recalculate_dimen)
 
   local columns = self.grid_columns or 1
   if columns > 1 then
-    local rows = math.ceil(self.perpage / columns)
+    local rows = math.floor(items_nb / columns)
     for r = 1, rows do
       local row_group = HorizontalGroup:new { align = "center" }
       for c = 1, columns do
@@ -180,21 +180,24 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
   end
 
   local item_dimen
+  local perpage
   local columns = self.grid_columns or 1
   if columns > 1 then
     local rows = G_reader_settings:readSetting("rakuyomi_grid_rows")
     if rows == nil or rows < 1 then
-      rows = math.floor(available_height / scale_by_size / 240)
+      rows = math.floor(available_height / ((self.inner_dimen.w / columns) * 4 / 3 + Screen:scaleBySize(44)))
       if rows < 2 then rows = 2 end
     end
 
     if not self.portrait_mode then
       local portrait_available_height = Screen:getWidth() - self.others_height - Size.line.thin
-      local portrait_rows = math.floor(portrait_available_height / scale_by_size / 240)
+      local portrait_rows = math.floor(portrait_available_height /
+        ((self.inner_dimen.w / columns) * 4 / 3 + Screen:scaleBySize(44)))
       if portrait_rows < 2 then portrait_rows = 2 end
-      rows = Math.round(available_height / (portrait_available_height / portrait_rows))
+      rows = Math.floor(available_height / (portrait_available_height / portrait_rows))
     end
     self.perpage = rows * columns
+    perpage = self.perpage
     item_dimen = Geom:new {
       w = math.floor(self.inner_dimen.w / columns),
       h = math.floor(available_height / rows)
@@ -209,8 +212,16 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
 
   Menu._recalculateDimen(self, no_recalculate_dimen)
 
+  local perpagex = G_reader_settings:readSetting("items_per_page") or self
+      .items_per_page_default
+  self.font_size = self.items_font_size or G_reader_settings:readSetting("items_font_size") or
+      Menu.getItemFontSize(perpagex)
+
   if item_dimen ~= nil then
     self.item_dimen = item_dimen
+  end
+  if perpage ~= nil then
+    self.perpage = perpage
   end
 end
 

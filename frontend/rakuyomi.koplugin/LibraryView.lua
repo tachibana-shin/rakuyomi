@@ -303,11 +303,14 @@ end
 function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   for _, manga in ipairs(mangas) do
-    local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
+    local mandatory = (manga.last_read and calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base") .. (self:getLibraryViewMode() == "cover" and "" or " ") or "")
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = (mandatory or "")
-          .. Icons.FA_BELL .. manga.unread_chapters_count
+      if self:getLibraryViewMode() == "cover" then
+        mandatory = Icons.FA_BELL .. " " .. manga.unread_chapters_count .. (mandatory ~= "" and " - " or "") .. mandatory
+      else
+        mandatory = (mandatory or "") .. Icons.FA_BELL .. manga.unread_chapters_count
+      end
     end
 
     table.insert(item_table, {

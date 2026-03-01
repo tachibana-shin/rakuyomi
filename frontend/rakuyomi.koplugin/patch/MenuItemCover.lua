@@ -138,7 +138,7 @@ function MenuItemCover:init()
   }
   local mandatory_w = mandatory_widget:getWidth()
 
-  local available_width = self.content_width - state_width - text_mandatory_padding - mandatory_w
+  local available_width = self.content_width - state_width - text_mandatory_padding - mandatory_w - img_width
   local text_fgcolor = self.dim and Blitbuffer.COLOR_DARK_GRAY or nil
   local text_bgcolor = self.text_bgcolor
   local item_name
@@ -172,9 +172,8 @@ function MenuItemCover:init()
         max_width = math.floor(available_width / 2), -- keep some space for the other stuff
         bold = self.bold,
         fgcolor = text_fgcolor,
+        padding = 0,
       }
-      available_width = available_width - post_text_widget:getWidth() - post_text_left_padding -
-          post_text_right_padding
     end
     -- No font size change: text will be truncated if it overflows
     item_name = TextWidget:new {
@@ -211,22 +210,24 @@ function MenuItemCover:init()
         end
       end
     end
+    item_name = VerticalGroup:new {
+      item_name,
+      post_text_widget,
+      align = "left",
+    }
     if self.align_baselines then -- Align baselines of text and mandatory
       -- The container widgets would additionally center these widgets,
       -- so make sure they all get a height=self.dimen.h so they don't
       -- risk being shifted later and becoming misaligned
-      local name_baseline = item_name:getBaseline()
+      local name_baseline = item_name[1]:getBaseline()
       local mdtr_baseline = mandatory_widget:getBaseline()
-      local name_height = item_name:getSize().h
+      local name_height = item_name[1]:getSize().h
       local mdtr_height = mandatory_widget:getSize().h
       -- Make all the TextWidgets be self.dimen.h
       item_name.forced_height = self.dimen.h
       mandatory_widget.forced_height = self.dimen.h
       if dots_widget then
         dots_widget.forced_height = self.dimen.h
-      end
-      if post_text_widget then
-        post_text_widget.forced_height = self.dimen.h
       end
       -- And adjust their baselines for proper centering and alignment
       -- (We made sure the font sizes wouldn't exceed self.dimen.h, so we
@@ -241,21 +242,19 @@ function MenuItemCover:init()
       else
         name_baseline = name_baseline - baselines_diff
       end
-      item_name.forced_baseline = name_baseline
+      -- item_name[1].forced_baseline = name_baseline
       mandatory_widget.forced_baseline = mdtr_baseline
       if dots_widget then
         dots_widget.forced_baseline = mdtr_baseline
       end
-      if post_text_widget then
-        post_text_widget.forced_baseline = mdtr_baseline
-      end
     end
     if text_bgcolor then
       item_name = FrameContainer:new {
-        width = math.max(item_name:getWidth(), available_width), -- if the ellipsis doesn't fit
+        width = math.max(item_name[1]:getWidth(), available_width), -- if the ellipsis doesn't fit
         background = text_bgcolor,
         bordersize = 0,
         padding = 0,
+        margin = 0,
         item_name,
       }
     end
@@ -356,8 +355,6 @@ function MenuItemCover:init()
       },
       --- @end patch
       item_name,
-      post_text_widget and HorizontalSpan:new { width = post_text_left_padding },
-      post_text_widget,
     }
   }
 

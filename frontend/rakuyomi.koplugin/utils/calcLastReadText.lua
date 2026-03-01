@@ -1,25 +1,28 @@
 local _ = require("gettext+")
 
-local function calcLastReadText(ts)
+--- @param ts number
+--- @param full_text boolean|nil
+--- @return string
+local function calcLastReadText(ts, full_text)
     -- 現在のUNIXタイムを取得する
     local now = os.time()
     local diff = now - ts
     if diff < 0 then diff = 0 end
 
     if diff < 60 then
-        return _("jnow")
+        return full_text and _("just now") or _("jnow")
     elseif diff < 3600 then
-        return string.format(_("%dm"), math.floor(diff / 60))
+        return string.format(full_text and ("%d " .. _("minutes")) or _("%dm"), math.floor(diff / 60))
     elseif diff < 86400 then
-        return string.format(_("%dh"), math.floor(diff / 3600))
+        return string.format(full_text and ("%d " .. _("hours")) or _("%dh"), math.floor(diff / 3600))
     elseif diff < 604800 then
-        return string.format(_("%dd"), math.floor(diff / 86400))
+        return string.format(full_text and ("%d " .. _("days")) or _("%dd"), math.floor(diff / 86400))
     elseif diff < 2592000 then
-        return string.format(_("%dw"), math.floor(diff / 604800))
+        return string.format(full_text and ("%d " .. _("weeks")) or _("%dw"), math.floor(diff / 604800))
     elseif diff < 31536000 then
-        return string.format(_("%dM"), math.floor(diff / 2592000))
+        return string.format(full_text and ("%d " .. _("months")) or _("%dM"), math.floor(diff / 2592000))
     else
-        return string.format(_("%dy"), math.floor(diff / 31536000))
+        return string.format(full_text and ("%d " .. _("years")) or _("%dy"), math.floor(diff / 31536000))
     end
 end
 return calcLastReadText

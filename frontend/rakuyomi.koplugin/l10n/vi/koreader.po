@@ -802,11 +802,11 @@ msgstr  "Chế độ xem thư viện"
 
 #: ../Settings.lua:46
 msgid   "Base"
-msgstr  "Căn cứ"
+msgstr  "Cơ bản"
 
 #: ../Settings.lua:47
 msgid   "Cover"
-msgstr  "Che phủ"
+msgstr  "Cover"
 
 #: ../Settings.lua:48
 msgid   "Grid"

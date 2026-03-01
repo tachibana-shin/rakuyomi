@@ -1,21 +1,23 @@
+use std::io::Cursor;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::{fs, future::Future};
 
 use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
+use image::ImageReader;
 use log::debug;
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
-use tokio::io::AsyncReadExt;
 use tokio_util::sync::CancellationToken;
 use walkdir::{DirEntry, WalkDir};
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
-use crate::model::ChapterId;
+use crate::model::{ChapterId, MangaId};
+use crate::source::decode_image::decode_image_fast;
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
@@ -58,70 +60,48 @@ impl ChapterStorage {
         tokio::fs::remove_file(file_path).await
     }
 
-    pub async fn cache_poster(&self, url: &url::Url) -> Result<Option<PathBuf>> {
+    fn path_for_poster(&self, manga_id: &MangaId) -> PathBuf {
         let mut hasher = Sha256::new();
-        hasher.update(url.as_str().as_bytes());
+
+        hasher.update(manga_id.source_id().value().as_bytes());
+        hasher.update(manga_id.value().as_bytes());
+
         let encoded_hash = URL_SAFE_NO_PAD.encode(hasher.finalize());
 
         let poster_dir = self.downloads_folder_path.join(".posters");
 
-        let meta_path = poster_dir.join(format!(".{encoded_hash}"));
+        let file = poster_dir.join(format!("{}.jpg", encoded_hash));
 
-        if meta_path.exists() {
-            let mut f = tokio::fs::File::open(&meta_path).await?;
-            let mut ext = String::new();
-            f.read_to_string(&mut ext).await?;
+        file
+    }
 
-            let cached_path = poster_dir.join(format!("{encoded_hash}.{}", ext));
+    pub fn poster_exists(&self, manga_id: &MangaId) -> Option<PathBuf> {
+        let file = self.path_for_poster(manga_id);
 
-            if cached_path.exists() {
-                return Ok(Some(cached_path));
-            }
+        if file.exists() {
+            Some(file)
+        } else {
+            None
         }
-
-        Ok(None)
     }
 
     pub async fn cached_poster<F, Fut>(
         &self,
         token: &CancellationToken,
-        url: &url::Url,
+        manga_id: &MangaId,
         req: F,
     ) -> Result<PathBuf>
     where
         F: Fn() -> Fut,
         Fut: Future<Output = Result<Request>>,
     {
-        // --- Hash URL for stable filename ---
-        let mut hasher = Sha256::new();
-        hasher.update(url.as_str().as_bytes());
-        let encoded_hash = URL_SAFE_NO_PAD.encode(hasher.finalize());
-
-        // --- Directory for posters ---
         let poster_dir = self.downloads_folder_path.join(".posters");
         tokio::fs::create_dir_all(&poster_dir).await?;
 
-        // --- Sidecar: stores only extension ---
-        let meta_path = poster_dir.join(format!(".{encoded_hash}"));
-
-        // ============================================================
-        // FAST PATH → Use existing cache without doing HTTP requests
-        // ============================================================
-        if meta_path.exists() {
-            let mut f = tokio::fs::File::open(&meta_path).await?;
-            let mut ext = String::new();
-            f.read_to_string(&mut ext).await?;
-
-            let cached_path = poster_dir.join(format!("{encoded_hash}.{}", ext));
-
-            if cached_path.exists() {
-                return Ok(cached_path);
-            }
+        let file = self.path_for_poster(manga_id);
+        if file.exists() {
+            return Ok(file);
         }
-
-        // ============================================================
-        // SLOW PATH → download file with custom headers
-        // ============================================================
 
         let client = reqwest::Client::new();
         let bytes = tokio::select! {
@@ -134,20 +114,57 @@ impl ChapterStorage {
             } => result,
         }?;
 
-        let ext = match image::guess_format(&bytes) {
-            Ok(fmt) => fmt.extensions_str()[0].to_string(),
-            Err(_) => ".bin".to_owned(),
+        tokio::fs::write(&file, &self.convert_image_data_to_jpeg(&bytes)?).await?;
+
+        Ok(file)
+    }
+
+    fn convert_image_data_to_jpeg(&self, data: &[u8]) -> Result<Vec<u8>> {
+        let (width, height, rgb_pixels) = {
+            if let Some(data) = decode_image_fast(data) {
+                let image = data?;
+
+                // RGBA に変換（元は ARGB）
+                let mut rgb_pixels: Vec<u8> =
+                    Vec::with_capacity((image.width * image.height * 3) as usize);
+
+                for px in &image.data {
+                    let _a = ((px >> 24) & 0xFF) as u8;
+                    let r = ((px >> 16) & 0xFF) as u8;
+                    let g = ((px >> 8) & 0xFF) as u8;
+                    let b = (px & 0xFF) as u8;
+
+                    // JPEG は alpha に対応しないため RGB のみ書き込む
+                    rgb_pixels.extend_from_slice(&[r, g, b]);
+                }
+
+                (image.width as u32, image.height as u32, rgb_pixels)
+            }
+            // fallback with image
+            else {
+                let cursor = Cursor::new(data);
+                let rgb_img = ImageReader::new(cursor)
+                    .with_guessed_format()
+                    .ok()
+                    .and_then(|r| r.decode().ok())
+                    .map(|img| img.to_rgb8())
+                    .context("decode failed")?;
+
+                let width = rgb_img.width();
+                let height = rgb_img.height();
+
+                (width, height, rgb_img.to_vec())
+            }
         };
 
-        let poster_path = poster_dir.join(format!("{encoded_hash}.{ext}"));
+        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+        comp.set_size(width as usize, height as usize);
+        comp.set_fastest_defaults();
 
-        // --- Save poster file ---
-        tokio::fs::write(&poster_path, &bytes).await?;
+        let mut comp = comp.start_compress(Vec::new())?;
+        comp.write_scanlines(&rgb_pixels)?;
 
-        // --- Save metadata sidecar (.hash → ext) ---
-        tokio::fs::write(&meta_path, ext).await?;
-
-        Ok(poster_path)
+        Ok(comp.finish()?)
     }
 
     pub fn get_stored_chapter_and_errors(

@@ -93,24 +93,48 @@ async fn get_manga_library(
         database,
         source_manager,
         settings,
+        chapter_storage,
         ..
     }): StateExtractor<State>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
     let settings = settings.lock().await;
     let database = database.lock().await;
+    let chapter_storage = chapter_storage.lock().await;
     let library_sorting_mode = &settings.library_sorting_mode;
 
-    let mangas = usecases::get_manga_library(
+    let mut mangas = usecases::get_manga_library(
         &database,
         &*source_manager.lock().await,
         library_sorting_mode,
     )
-    .await?
-    .into_iter()
-    .map(Manga::from)
-    .collect::<Vec<_>>();
+    .await?;
 
-    Ok(Json(mangas))
+    if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
+        for manga in mangas.iter_mut() {
+            if manga.information.cover_url.is_some() {
+                manga.information.cover_url = if let Some(path) =
+                    chapter_storage.poster_exists(&manga.information.id)
+                {
+                    match url::Url::from_file_path(&path) {
+                        Ok(url) => Some(url),
+                        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
+                            Ok(url) => Some(url),
+                            Err(_) => {
+                                println!("Error converting path to URL");
+                                None
+                            }
+                        },
+                    }
+                } else {
+                    None
+                };
+            }
+        }
+    }
+
+    Ok(Json(
+        mangas.into_iter().map(Manga::from).collect::<Vec<_>>(),
+    ))
 }
 
 async fn find_orphan_or_read_files(

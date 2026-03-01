@@ -14,6 +14,10 @@ local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext+")
 local Paths = require("Paths")
 local Device = require("device")
+local Font = require("ui/font")
+local TextWidget = require("ui/widget/textwidget")
+local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
+local MovableContainer = require("ui/widget/container/movablecontainer")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -30,14 +34,20 @@ local Settings = FocusManager:extend {
 --- @type [string, ValueDefinition][]
 Settings.setting_value_definitions = {
   {
-    'chapter_sorting_mode',
+    nil,
+    { type = 'divider', title = _("Library") }
+  },
+  {
+    'library_view_mode',
     {
       type = 'enum',
-      title = _('Chapter sorting mode'),
+      title = _("Library view mode"),
       options = {
-        { label = _("By chapter ascending"),  value = 'chapter_ascending' },
-        { label = _("By chapter descending"), value = 'chapter_descending' },
-      }
+        { label = _("Base"),  value = "base" },
+        { label = _("Cover"), value = "cover" },
+        { label = _("Grid"),  value = "grid" },
+      },
+      default = "cover",
     }
   },
   {
@@ -55,101 +65,6 @@ Settings.setting_value_definitions = {
         { label = _("Last read ascending"),              value = 'last_read_asc' },
         { label = _("Last read descending"),             value = 'last_read_desc' },
       }
-    }
-  },
-  {
-    'storage_path',
-    {
-      type = 'path',
-      title = _("Chapter storage path"),
-      path_type = 'directory',
-      default = Paths.getHomeDirectory() .. '/downloads',
-    }
-  },
-  {
-    'storage_size_limit_mb',
-    {
-      type = 'integer',
-      title = _('Storage size limit'),
-      min_value = 1,
-      max_value = 10240,
-      unit = 'MB'
-    }
-  },
-  {
-    'concurrent_requests_pages',
-    {
-      type = 'integer',
-      title = _("Concurrent page requests"),
-      min_value = 1,
-      max_value = 20,
-      unit = 'pages',
-      default = Device.isKindle() and 4 or 5
-    }
-  },
-  {
-    'api_sync',
-    {
-      type = 'string',
-      title = _("WebDAV Sync"),
-      placeholder = 'user:password@example.com/folder',
-    }
-  },
-  {
-    'enabled_cron_check_mangas_update',
-    {
-      type = 'boolean',
-      title = _("Enabled cron check for manga updates"),
-      -- default = true,
-    }
-  },
-  {
-    'source_skip_cron',
-    {
-      type = 'string',
-      title = _("Source IDs skip check update"),
-      placeholder = 'com.manga,com.manga2'
-    }
-  },
-  {
-    'preload_chapters',
-    {
-      type = 'integer',
-      title = _("Preload chapters on reader open"),
-      min_value = 0,
-      max_value = 10,
-      unit = 'chapters',
-      default = 0
-    }
-  },
-  {
-    'optimize_image',
-    {
-      type = 'boolean',
-      title = _("Optimize page images (experimental)"),
-      default = false,
-    }
-  },
-  {
-    'library_view_mode',
-    {
-      type = 'enum',
-      title = _("Library view mode"),
-      options = {
-        { label = _("Base"),  value = "base" },
-        { label = _("Cover"), value = "cover" },
-        { label = _("Grid"),  value = "grid" },
-      },
-      default = "cover",
-    }
-  },
-  {
-    'allow_commaneer_filemanager',
-    {
-      type = 'boolean',
-      title = _("Allow requisition of the back button"),
-      is_local = true,
-      default = true
     }
   },
   {
@@ -184,7 +99,116 @@ Settings.setting_value_definitions = {
       is_local = true,
       default = 0
     }
-  }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Reader") }
+  },
+  {
+    'chapter_sorting_mode',
+    {
+      type = 'enum',
+      title = _('Chapter sorting mode'),
+      options = {
+        { label = _("By chapter ascending"),  value = 'chapter_ascending' },
+        { label = _("By chapter descending"), value = 'chapter_descending' },
+      }
+    }
+  },
+  {
+    'preload_chapters',
+    {
+      type = 'integer',
+      title = _("Preload chapters on reader open"),
+      min_value = 0,
+      max_value = 10,
+      unit = 'chapters',
+      default = 0
+    }
+  },
+  {
+    'optimize_image',
+    {
+      type = 'boolean',
+      title = _("Optimize page images (experimental)"),
+      default = false,
+    }
+  },
+  {
+    'concurrent_requests_pages',
+    {
+      type = 'integer',
+      title = _("Concurrent page requests"),
+      min_value = 1,
+      max_value = 20,
+      unit = 'pages',
+      default = Device.isKindle() and 4 or 5
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Storage") }
+  },
+  {
+    'storage_path',
+    {
+      type = 'path',
+      title = _("Chapter storage path"),
+      path_type = 'directory',
+      default = Paths.getHomeDirectory() .. '/downloads',
+    }
+  },
+  {
+    'storage_size_limit_mb',
+    {
+      type = 'integer',
+      title = _('Storage size limit'),
+      min_value = 1,
+      max_value = 10240,
+      unit = 'MB'
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Sync & Updates") }
+  },
+  {
+    'api_sync',
+    {
+      type = 'string',
+      title = _("WebDAV Sync"),
+      placeholder = 'user:password@example.com/folder',
+    }
+  },
+  {
+    'enabled_cron_check_mangas_update',
+    {
+      type = 'boolean',
+      title = _("Enabled cron check for manga updates"),
+      -- default = true,
+    }
+  },
+  {
+    'source_skip_cron',
+    {
+      type = 'string',
+      title = _("Source IDs skip check update"),
+      placeholder = 'com.manga,com.manga2'
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("System") }
+  },
+  {
+    'allow_commaneer_filemanager',
+    {
+      type = 'boolean',
+      title = _("Allow requisition of the back button"),
+      is_local = true,
+      default = true
+    }
+  },
 }
 
 
@@ -218,8 +242,13 @@ function Settings:init()
   for _, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
-
-    if definition.is_local then
+    if definition.type == 'divider' then
+      table.insert(vertical_group, TextWidget:new {
+        text = definition.title,
+        face = Font:getFace("cfont"),
+        bold = true,
+      })
+    elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {
         show_parent = self,
         width = self.item_width,
@@ -266,6 +295,13 @@ function Settings:init()
     end,
   }
 
+  local scrollable = ScrollableContainer:new {
+    dimen = Geom:new {
+      w = self.dimen.w,
+      h = self.dimen.h - self.title_bar.dimen.h,
+    },
+    vertical_group,
+  }
   local content = OverlapGroup:new {
     allow_mirroring = false,
     dimen = self.inner_dimen:copy(),
@@ -274,7 +310,7 @@ function Settings:init()
       self.title_bar,
       HorizontalGroup:new {
         HorizontalSpan:new { width = padding },
-        vertical_group
+        scrollable
       }
     }
   }
@@ -290,6 +326,13 @@ function Settings:init()
     background = Blitbuffer.COLOR_WHITE,
     content
   }
+
+  self.movable = MovableContainer:new {
+    self[1],
+    unmovable = self.unmovable,
+  }
+  scrollable.show_parent = self
+
 
   UIManager:setDirty(self, "ui")
 end

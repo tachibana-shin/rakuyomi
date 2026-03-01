@@ -135,13 +135,13 @@ impl RefreshLibraryDetailsJob {
                 }
             }
 
-            if !cancellation_token.is_cancelled() {
+            {
                 let mut status_lock = status.lock().await;
                 if let Status::Progressing { errors, .. } = &*status_lock {
                     *status_lock = Status::Finished {
                         errors: errors.clone(),
                     };
-                } else {
+                } else if !matches!(*status_lock, Status::Errored(_)) {
                     *status_lock = Status::Finished { errors: vec![] };
                 }
             }

@@ -285,7 +285,7 @@ function LibraryView:updateItems()
   if mode ~= "base" then
     MenuCustom.updateItems(self, MenuItemChoice)
   else
-    Menu.updateItems(self, MenuItemChoice)
+    Menu.updateItems(self)
   end
 end
 

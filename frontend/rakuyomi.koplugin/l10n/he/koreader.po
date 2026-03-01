@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -48,6 +48,35 @@ msgstr  "נסה להוסיף כמה רשימות מקורות על ידי עיו
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "מתקין מקור..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "בּוּטלָה!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "לְהַשְׁלִים!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "ממתין לביטול..."
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "מעבד..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "אירעה שגיאה"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "שגיאה לא ידועה"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "שְׁגִיאָה"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -98,7 +127,7 @@ msgstr  "הפרק נעול"
 msgid   "Open"
 msgstr  "לִפְתוֹחַ"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "לְרַעֲנֵן"
 
@@ -114,7 +143,7 @@ msgstr  "סִימָן"
 msgid   "Download"
 msgstr  "הורד"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:537
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "לְהַסִיר"
 
@@ -142,11 +171,11 @@ msgstr  "ביטול סימון"
 msgid   "chapter..."
 msgstr  "פֶּרֶק..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "סמן שנקרא"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "סמן שלא נקרא"
 
@@ -163,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "סמן פרקים כקראו או שלא נקראו"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
-#: ../LibraryView.lua:809 ../NotificationView.lua:543
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "לְבַטֵל"
 
@@ -220,8 +249,8 @@ msgstr  "האם אתה בטוח שברצונך לבטל את ההורדה?"
 msgid   "Add to Library"
 msgstr  "הוסף לספרייה"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:364
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "פרטים"
 
@@ -257,7 +286,7 @@ msgstr  "ההוספה לספרייה נכשלה"
 msgid   "Added to library."
 msgstr  "נוסף לספרייה."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "למרבה הצער, אין פרק הבא זמין! "
 
@@ -269,7 +298,7 @@ msgstr  "הַבָּא"
 msgid   "reading with"
 msgstr  "לקרוא עם"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "לִקְרוֹא"
 
@@ -333,29 +362,21 @@ msgstr  "מוריד את כל הפרקים, זה ייקח זמן... ("
 msgid   "Tap outside this message to cancel."
 msgstr  "הקש מחוץ להודעה זו כדי לבטל."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "ההורדה בוטלה!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "ההורדה הושלמה!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "ממתין עד שההורדות יבוטלו..."
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "מוריד פרקים, זה ייקח זמן מה..."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "הורדת פרקים, זה ייקח זמן מה... ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "ההורדה הושלמה!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "אירעה שגיאה בעת הורדת פרקים"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "ההורדה בוטלה!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -385,224 +406,244 @@ msgstr  "האם ברצונך להסיר את"
 msgid   "source?"
 msgstr  "מָקוֹר?"
 
-#: ../LibraryView.lua:49
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "סִפְרִיָה"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "לא נמצאו מנגה בספרייה"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "נסה להוסיף חלק על ידי החזקת שמם בתוצאות החיפוש!"
 
-#: ../LibraryView.lua:355
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "מנגה מרעננת"
 
-#: ../LibraryView.lua:404
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "המשך קריאה"
 
-#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "הסר מהספרייה"
 
-#: ../LibraryView.lua:446
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "מוצא את הפרק הבא..."
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "לא נמצאו פרקים למנגה זו."
 
-#: ../LibraryView.lua:496
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "המשך קריאה עם:"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "האם אתה רוצה להסיר"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "מהספרייה שלך?"
 
-#: ../LibraryView.lua:559
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "חפש מנגה"
 
-#: ../LibraryView.lua:569
-msgid   "Refresh mangas"
-msgstr  "רענן מנגה"
-
-#: ../LibraryView.lua:577
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "חפש מועדפים"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:630
+msgid   "Refresh mangas"
+msgstr  "רענן מנגה"
+
+#: ../LibraryView.lua:638
+msgid   "Refresh details"
+msgstr  "רענן פרטים"
+
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "פרקים נקיים יותר"
 
-#: ../LibraryView.lua:595
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "נהל מקורות"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "הגדרות"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "בדוק אם יש עדכונים"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "סנכרון מסד נתונים (ביטא)"
 
-#: ../LibraryView.lua:626
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "סנכרון ל-WebDAV..."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "האם ברצונך להעביר את מסד הנתונים המקומי שלך מהשרת?"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "מסד הנתונים המרוחק חדש יותר מהמסד המקומי."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "לא ניתן לבטל פעולה זו."
 
-#: ../LibraryView.lua:639
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "לְהַגֵר"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "מעביר מסד נתונים..."
 
-#: ../LibraryView.lua:654 ../LibraryView.lua:701
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "מסד הנתונים המקומי הועבר מהשרת!"
 
-#: ../LibraryView.lua:665
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "החלף את הענן"
 
-#: ../LibraryView.lua:669
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "מחליף ענן..."
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "מסד הנתונים בענן הוחלף בכפייה במאגר מקומי!"
 
-#: ../LibraryView.lua:697
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "מסד הנתונים כבר מעודכן!"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "מסד הנתונים סונכרן לשרת!"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "הסנכרון הושלם!"
 
-#: ../LibraryView.lua:727
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "חיפוש מנגה..."
 
-#: ../LibraryView.lua:728
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "האוסקי נו קוני"
 
-#: ../LibraryView.lua:729 ../LibraryView.lua:805
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "הקלד את שם המנגה לחיפוש"
 
-#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "לְחַפֵּשׂ"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "אל תכלול חיפוש מקור עבור"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "חיפוש מועדף..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:856
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "סורק קבצים..."
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "נמצאו %d קבצים."
 
-#: ../LibraryView.lua:872
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "גודל כולל %s."
 
-#: ../LibraryView.lua:873
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "סריקת קבצי RendOnly .cbz ו-.epub."
 
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "לְנַקוֹת"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "מוחק..."
 
-#: ../LibraryView.lua:900
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "ניקה את האחסון הפנוי של %s"
 
-#: ../LibraryView.lua:924
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "רענן מנגה..."
 
-#: ../LibraryView.lua:952
-msgid   "Some manga updates fail:"
-msgstr  "כמה עדכוני מנגה נכשלים:"
-
-#: ../LibraryView.lua:959
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "כל פרקי המנגה עודכנו!"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:988
+msgid   "Some manga updates fail:"
+msgstr  "כמה עדכוני מנגה נכשלים:"
+
+#: ../LibraryView.lua:999
+msgid   "Refresh manga details..."
+msgstr  "רענן את פרטי המנגה..."
+
+#: ../LibraryView.lua:1000
+msgid   "All manga details refresh!"
+msgstr  "כל פרטי המנגה רענון!"
+
+#: ../LibraryView.lua:1001
+msgid   "Some manga details refresh fail:"
+msgstr  "כמה רענון פרטי מנגה נכשל:"
+
+#: ../LibraryView.lua:1017
+msgid   "Progress"
+msgstr  "הִתקַדְמוּת"
+
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "מְנַקֶה"
 
-#: ../LibraryView.lua:971
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "מצא ומחק קבצים לא חוקיים כולל קבצים ממקורות שנמחקו"
 
-#: ../LibraryView.lua:971 ../LibraryView.lua:974
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "נוֹרמָלִי"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "חשוב: קבצי מטא (סימניות, היסטוריה) לא נשמרים!"
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "הפרק בוצע"
 
@@ -667,11 +708,11 @@ msgstr  "כַּסֶפֶת"
 msgid   "Suggestive"
 msgstr  "מְרַמֵז"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "פרטים מרעננים..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "רענון הפרטים בוטל."
 
@@ -707,23 +748,23 @@ msgstr  "מחפש"
 msgid   "Search cancelled."
 msgstr  "החיפוש בוטל."
 
-#: ../NotificationView.lua:336
+#: ../NotificationView.lua:37
 msgid   "Notification"
 msgstr  "הוֹדָעָה"
 
-#: ../NotificationView.lua:357
+#: ../NotificationView.lua:57
 msgid   "Cleared all notifications!"
 msgstr  "ניקה את כל ההתראות!"
 
-#: ../NotificationView.lua:485
+#: ../NotificationView.lua:103
 msgid   "No notification"
 msgstr  "אין התראה"
 
-#: ../NotificationView.lua:541
+#: ../NotificationView.lua:159
 msgid   "Delete this notification?"
 msgstr  "למחוק את ההודעה הזו?"
 
-#: ../NotificationView.lua:542
+#: ../NotificationView.lua:160
 msgid   "Delete"
 msgstr  "לִמְחוֹק"
 
@@ -755,87 +796,131 @@ msgstr  "לִסְגוֹר"
 msgid   "Do not show this message again"
 msgstr  "אל תציג הודעה זו שוב"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "מצב מיון פרקים"
+#: ../Settings.lua:44
+msgid   "Library view mode"
+msgstr  "מצב תצוגת ספרייה"
 
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "לפי פרק עולה"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "לפי פרק יורד"
+#: ../Settings.lua:46
+msgid   "Base"
+msgstr  "בָּסִיס"
 
 #: ../Settings.lua:47
+msgid   "Cover"
+msgstr  "לְכַסוֹת"
+
+#: ../Settings.lua:48
+msgid   "Grid"
+msgstr  "רֶשֶׁת"
+
+#: ../Settings.lua:57
 msgid   "Library sorting mode"
 msgstr  "מצב מיון ספרייה"
 
-#: ../Settings.lua:49
+#: ../Settings.lua:59
 msgid   "Order added ascending (Default)"
 msgstr  "סדר נוסף עולה (ברירת מחדל)"
 
-#: ../Settings.lua:50
+#: ../Settings.lua:60
 msgid   "Order added descending"
 msgstr  "סדר נוסף יורד"
 
-#: ../Settings.lua:51
+#: ../Settings.lua:61
 msgid   "Title manga ascending"
 msgstr  "כותרת מנגה עולה"
 
-#: ../Settings.lua:52
+#: ../Settings.lua:62
 msgid   "Title manga descending"
 msgstr  "כותר מנגה יורד"
 
-#: ../Settings.lua:53
+#: ../Settings.lua:63
 msgid   "Count unread chapters ascending"
 msgstr  "ספירת פרקים שלא נקראו בעלייה"
 
-#: ../Settings.lua:54
+#: ../Settings.lua:64
 msgid   "Count unread chapters descending"
 msgstr  "ספירת פרקים שלא נקראו בירידה"
 
-#: ../Settings.lua:55
+#: ../Settings.lua:65
 msgid   "Last read ascending"
 msgstr  "קריאה אחרונה עולה"
 
-#: ../Settings.lua:56
+#: ../Settings.lua:66
 msgid   "Last read descending"
 msgstr  "הקריאה האחרונה יורדת"
 
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "נתיב אחסון פרק"
+#: ../Settings.lua:74
+msgid   "Items per page (0 = auto)"
+msgstr  "פריטים לכל עמוד (0 = אוטומטי)"
 
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "מגבלת גודל אחסון"
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "עמודות רשת"
 
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "בקשות דפים במקביל"
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "שורות רשת"
 
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "סנכרון WebDAV"
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "קוֹרֵא"
 
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "הפעלת cron check עבור עדכוני מנגה"
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "מצב מיון פרקים"
 
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "מזהי מקור מדלגים על עדכון בדיקת"
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "לפי פרק עולה"
 
-#: ../Settings.lua:118
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "לפי פרק יורד"
+
+#: ../Settings.lua:122
 msgid   "Preload chapters on reader open"
 msgstr  "טען מראש פרקים על קורא פתוח"
 
-#: ../Settings.lua:129
+#: ../Settings.lua:133
 msgid   "Optimize page images (experimental)"
 msgstr  "בצע אופטימיזציה של תמונות עמוד (ניסיוני)"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "בקשות דפים במקביל"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "אִחסוּן"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "נתיב אחסון פרק"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "מגבלת גודל אחסון"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "סנכרון ועדכונים"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "סנכרון WebDAV"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "הפעלת cron check עבור עדכוני מנגה"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "מזהי מקור מדלגים על עדכון בדיקת"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "מַעֲרֶכֶת"
+
+#: ../Settings.lua:207
 msgid   "Allow requisition of the back button"
 msgstr  "אפשר דרישה של כפתור החזרה"
 
@@ -988,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "מצב לא מקוון"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "בְּסֵדֶר"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "מְבַצֵעַ..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "נַעֲשָׂה"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "לִבחוֹר"

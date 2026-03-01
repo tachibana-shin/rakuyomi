@@ -5,6 +5,8 @@ use super::{
     download_chapter::DownloadChapterJob,
     download_scanlator_chapters::DownloadScanlatorChaptersJob,
     download_unread_chapters::DownloadUnreadChaptersJob,
+    refresh_library_chapters::RefreshLibraryChaptersJob,
+    refresh_library_details::RefreshLibraryDetailsJob,
     state::{Job, JobState, RunningJob},
 };
 
@@ -24,6 +26,8 @@ impl JobDetail {
             RunningJob::ScanlatorChapters(job) => {
                 Self::from_download_scanlator_chapters_job(job).await
             }
+            RunningJob::LibraryChapters(job) => Self::from_refresh_library_chapters_job(job).await,
+            RunningJob::LibraryDetails(job) => Self::from_refresh_library_details_job(job).await,
         }
     }
 
@@ -60,6 +64,32 @@ impl JobDetail {
             JobState::InProgress(v) => (
                 JobDetail::Pending(serde_json::to_value(v).unwrap()),
                 Some(RunningJob::ScanlatorChapters(job)),
+            ),
+            JobState::Completed(_) => (JobDetail::Completed(().into()), None),
+            JobState::Errored(v) => (JobDetail::Error(serde_json::to_value(v).unwrap()), None),
+        }
+    }
+
+    async fn from_refresh_library_chapters_job(
+        job: RefreshLibraryChaptersJob,
+    ) -> (Self, Option<RunningJob>) {
+        match job.poll().await {
+            JobState::InProgress(v) => (
+                JobDetail::Pending(serde_json::to_value(v).unwrap()),
+                Some(RunningJob::LibraryChapters(job)),
+            ),
+            JobState::Completed(_) => (JobDetail::Completed(().into()), None),
+            JobState::Errored(v) => (JobDetail::Error(serde_json::to_value(v).unwrap()), None),
+        }
+    }
+
+    async fn from_refresh_library_details_job(
+        job: RefreshLibraryDetailsJob,
+    ) -> (Self, Option<RunningJob>) {
+        match job.poll().await {
+            JobState::InProgress(v) => (
+                JobDetail::Pending(serde_json::to_value(v).unwrap()),
+                Some(RunningJob::LibraryDetails(job)),
             ),
             JobState::Completed(_) => (JobDetail::Completed(().into()), None),
             JobState::Errored(v) => (JobDetail::Error(serde_json::to_value(v).unwrap()), None),

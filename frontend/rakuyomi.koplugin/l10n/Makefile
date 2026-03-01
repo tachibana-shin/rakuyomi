@@ -14,11 +14,6 @@ all: translate
 # 7. Checks the syntax of the final .po files.
 # 8. Cleans up all intermediate files.
 translate:
-	@if [ -z "$(API_KEY)" ]; then \
-		echo "\033[0;31mError: API_KEY environment variable is not set.\033[0m"; \
-		echo "Please set it before running translation. e.g., export API_KEY=your_key"; \
-		exit 1; \
-	fi
 	@echo "[1/7] Generating POT template file..."
 	@$(MAKE) template
 	@echo "[2/7] Merging POT file into PO files..."

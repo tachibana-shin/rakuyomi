@@ -345,11 +345,11 @@ function MenuItemCover:init()
       },
       --- @patch
       VerticalGroup:new {
-        VerticalSpan:new { height = 2 },
+        VerticalSpan:new { width = 2 },
 
         self:genCover(img_width, img_height),
 
-        VerticalSpan:new { height = 2 },
+        VerticalSpan:new { width = 2 },
       },
       HorizontalSpan:new {
         width = 12,
@@ -480,8 +480,23 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
       return font_size
     end
 
-    local fake_cover_w = wleft_width - border_size * 2
-    local fake_cover_h = wleft_height - border_size * 2
+    local max_w = wleft_width - border_size * 2
+    local max_h = wleft_height - border_size * 2
+
+    local aspect = 2 / 3 -- width / height
+
+    local w_by_height = max_h * aspect
+    local h_by_width = max_w / aspect
+
+    local fake_cover_w, fake_cover_h
+
+    if w_by_height <= max_w then
+      fake_cover_w = w_by_height
+      fake_cover_h = max_h
+    else
+      fake_cover_w = max_w
+      fake_cover_h = h_by_width
+    end
     wleft = CenterContainer:new {
       dimen = Geom:new { w = wleft_width, h = wleft_height },
       FrameContainer:new {

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -47,6 +47,35 @@ msgstr  "尝试通过查看我们的自述文件来添加一些源列表！"
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "正在安装源..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "取消！"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "完全的！"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "等到取消…"
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "加工..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "发生错误"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "未知错误"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "错误"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -97,7 +126,7 @@ msgstr  "章节已锁定"
 msgid   "Open"
 msgstr  "打开"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "刷新"
 
@@ -113,7 +142,7 @@ msgstr  "标记"
 msgid   "Download"
 msgstr  "下载"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:537
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "消除"
 
@@ -141,11 +170,11 @@ msgstr  "取消标记"
 msgid   "chapter..."
 msgstr  "章..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "标记已读"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "标记为未读"
 
@@ -162,9 +191,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "将章节标记为已读或未读"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
-#: ../LibraryView.lua:809 ../NotificationView.lua:543
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "取消"
 
@@ -219,8 +248,8 @@ msgstr  "您确定要取消下载吗？"
 msgid   "Add to Library"
 msgstr  "添加到库"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:364
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "细节"
 
@@ -256,7 +285,7 @@ msgstr  "添加到库失败"
 msgid   "Added to library."
 msgstr  "添加到库中。"
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "可惜没有下一章了！ "
 
@@ -268,7 +297,7 @@ msgstr  "下一个"
 msgid   "reading with"
 msgstr  "与阅读"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "读"
 
@@ -332,29 +361,21 @@ msgstr  "下载所有章节，这需要一段时间……（"
 msgid   "Tap outside this message to cancel."
 msgstr  "点击此消息外部即可取消。"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "下载已取消！"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "下载完成！"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "等待下载被取消..."
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "下载章节，这需要一段时间......"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "下载章节，这需要一段时间……（"
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "下载完成！"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "下载章节时出错"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "下载已取消！"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -384,224 +405,244 @@ msgstr  "您想删除"
 msgid   "source?"
 msgstr  "来源？"
 
-#: ../LibraryView.lua:49
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "图书馆"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "图书馆没有找到漫画"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "尝试通过在搜索结果中保留他们的名字来添加一些！"
 
-#: ../LibraryView.lua:355
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "清新漫画"
 
-#: ../LibraryView.lua:404
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "继续阅读"
 
-#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "从库中删除"
 
-#: ../LibraryView.lua:446
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "寻找下一章..."
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "没有找到该漫画的章节。"
 
-#: ../LibraryView.lua:496
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "继续阅读："
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "你想删除吗"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "从你的图书馆？"
 
-#: ../LibraryView.lua:559
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "搜索漫画"
 
-#: ../LibraryView.lua:569
-msgid   "Refresh mangas"
-msgstr  "刷新漫画"
-
-#: ../LibraryView.lua:577
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "搜索收藏夹"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:630
+msgid   "Refresh mangas"
+msgstr  "刷新漫画"
+
+#: ../LibraryView.lua:638
+msgid   "Refresh details"
+msgstr  "刷新详情"
+
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "更干净的章节"
 
-#: ../LibraryView.lua:595
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "管理来源"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "设置"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "检查更新"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "同步数据库（测试版）"
 
-#: ../LibraryView.lua:626
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "同步到 WebDAV..."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "您想从服务器迁移本地数据库吗？"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "远程数据库比本地数据库新。"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "此操作无法撤消。"
 
-#: ../LibraryView.lua:639
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "迁移"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "正在迁移数据库..."
 
-#: ../LibraryView.lua:654 ../LibraryView.lua:701
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "本地数据库已从服务器迁移！"
 
-#: ../LibraryView.lua:665
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "更换云"
 
-#: ../LibraryView.lua:669
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "更换云..."
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "云数据库被强制更换为本地数据库！"
 
-#: ../LibraryView.lua:697
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "数据库已经是最新的了！"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "数据库已同步到服务器！"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "同步完成！"
 
-#: ../LibraryView.lua:727
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "漫画搜索..."
 
-#: ../LibraryView.lua:728
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "宝石之国"
 
-#: ../LibraryView.lua:729 ../LibraryView.lua:805
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "输入要搜索的漫画名称"
 
-#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "搜索"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "排除源搜索"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "最喜欢的搜索..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "可爱卡哇伊"
 
-#: ../LibraryView.lua:856
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "正在扫描文件..."
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "找到 %d 个文件。"
 
-#: ../LibraryView.lua:872
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "总大小%s。"
 
-#: ../LibraryView.lua:873
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly 文件 .cbz 和 .epub 扫描。"
 
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "干净的"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "正在删除..."
 
-#: ../LibraryView.lua:900
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "已清理免费 %s 存储空间"
 
-#: ../LibraryView.lua:924
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "刷新漫画..."
 
-#: ../LibraryView.lua:952
-msgid   "Some manga updates fail:"
-msgstr  "一些漫画更新失败："
-
-#: ../LibraryView.lua:959
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "漫画全部章节更新！"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:988
+msgid   "Some manga updates fail:"
+msgstr  "一些漫画更新失败："
+
+#: ../LibraryView.lua:999
+msgid   "Refresh manga details..."
+msgstr  "刷新漫画详情..."
+
+#: ../LibraryView.lua:1000
+msgid   "All manga details refresh!"
+msgstr  "所有漫画细节刷新！"
+
+#: ../LibraryView.lua:1001
+msgid   "Some manga details refresh fail:"
+msgstr  "部分漫画详情刷新失败："
+
+#: ../LibraryView.lua:1017
+msgid   "Progress"
+msgstr  "进步"
+
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "清洁工"
 
-#: ../LibraryView.lua:971
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "查找并删除无效文件，包括来自已删除源的文件"
 
-#: ../LibraryView.lua:971 ../LibraryView.lua:974
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "普通的"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "重要提示：元文件（书签、历史记录）不保留！"
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "章节已读完"
 
@@ -666,11 +707,11 @@ msgstr  "安全的"
 msgid   "Suggestive"
 msgstr  "暗示性的"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "刷新细节..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "刷新详细信息已取消。"
 
@@ -706,23 +747,23 @@ msgstr  "正在寻找"
 msgid   "Search cancelled."
 msgstr  "搜索已取消。"
 
-#: ../NotificationView.lua:336
+#: ../NotificationView.lua:37
 msgid   "Notification"
 msgstr  "通知"
 
-#: ../NotificationView.lua:357
+#: ../NotificationView.lua:57
 msgid   "Cleared all notifications!"
 msgstr  "清除所有通知！"
 
-#: ../NotificationView.lua:485
+#: ../NotificationView.lua:103
 msgid   "No notification"
 msgstr  "无通知"
 
-#: ../NotificationView.lua:541
+#: ../NotificationView.lua:159
 msgid   "Delete this notification?"
 msgstr  "删除该通知吗？"
 
-#: ../NotificationView.lua:542
+#: ../NotificationView.lua:160
 msgid   "Delete"
 msgstr  "删除"
 
@@ -754,87 +795,131 @@ msgstr  "关闭"
 msgid   "Do not show this message again"
 msgstr  "不再显示此消息"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "章节排序模式"
+#: ../Settings.lua:44
+msgid   "Library view mode"
+msgstr  "库查看模式"
 
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "按章节升序"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "按章节降序"
+#: ../Settings.lua:46
+msgid   "Base"
+msgstr  "根据"
 
 #: ../Settings.lua:47
+msgid   "Cover"
+msgstr  "覆盖"
+
+#: ../Settings.lua:48
+msgid   "Grid"
+msgstr  "网格"
+
+#: ../Settings.lua:57
 msgid   "Library sorting mode"
 msgstr  "图书馆排序模式"
 
-#: ../Settings.lua:49
+#: ../Settings.lua:59
 msgid   "Order added ascending (Default)"
 msgstr  "添加升序顺序（默认）"
 
-#: ../Settings.lua:50
+#: ../Settings.lua:60
 msgid   "Order added descending"
 msgstr  "添加顺序降序"
 
-#: ../Settings.lua:51
+#: ../Settings.lua:61
 msgid   "Title manga ascending"
 msgstr  "标题漫画升序"
 
-#: ../Settings.lua:52
+#: ../Settings.lua:62
 msgid   "Title manga descending"
 msgstr  "标题漫画降序"
 
-#: ../Settings.lua:53
+#: ../Settings.lua:63
 msgid   "Count unread chapters ascending"
 msgstr  "未读章节升序计数"
 
-#: ../Settings.lua:54
+#: ../Settings.lua:64
 msgid   "Count unread chapters descending"
 msgstr  "按降序计数未读章节"
 
-#: ../Settings.lua:55
+#: ../Settings.lua:65
 msgid   "Last read ascending"
 msgstr  "上次阅读升序"
 
-#: ../Settings.lua:56
+#: ../Settings.lua:66
 msgid   "Last read descending"
 msgstr  "上次读取降序"
 
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "章节存储路径"
+#: ../Settings.lua:74
+msgid   "Items per page (0 = auto)"
+msgstr  "每页项目数（0 = 自动）"
 
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "存储大小限制"
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "网格列"
 
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "并发页面请求"
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "网格行"
 
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "网络DAV同步"
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "读者"
 
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "启用 cron 检查漫画更新"
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "章节排序模式"
 
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "源 ID 跳过检查更新"
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "按章节升序"
 
-#: ../Settings.lua:118
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "按章节降序"
+
+#: ../Settings.lua:122
 msgid   "Preload chapters on reader open"
 msgstr  "在读者打开时预加载章节"
 
-#: ../Settings.lua:129
+#: ../Settings.lua:133
 msgid   "Optimize page images (experimental)"
 msgstr  "优化页面图像（实验）"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "并发页面请求"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "贮存"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "章节存储路径"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "存储大小限制"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "同步和更新"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "网络DAV同步"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "启用 cron 检查漫画更新"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "源 ID 跳过检查更新"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "系统"
+
+#: ../Settings.lua:207
 msgid   "Allow requisition of the back button"
 msgstr  "允许请求后退按钮"
 
@@ -987,18 +1072,18 @@ msgstr  "章。"
 msgid   "Offline mode"
 msgstr  "离线模式"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "好的"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "正在执行..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "完毕"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "选择"

@@ -14,6 +14,10 @@ local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext+")
 local Paths = require("Paths")
 local Device = require("device")
+local Font = require("ui/font")
+local TextWidget = require("ui/widget/textwidget")
+local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
+local MovableContainer = require("ui/widget/container/movablecontainer")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -30,6 +34,77 @@ local Settings = FocusManager:extend {
 --- @type [string, ValueDefinition][]
 Settings.setting_value_definitions = {
   {
+    nil,
+    { type = 'divider', title = _("Library") }
+  },
+  {
+    'library_view_mode',
+    {
+      type = 'enum',
+      title = _("Library view mode"),
+      options = {
+        { label = _("Base"),  value = "base" },
+        { label = _("Cover"), value = "cover" },
+        { label = _("Grid"),  value = "grid" },
+      },
+      default = "cover",
+    }
+  },
+  {
+    'library_sorting_mode',
+    {
+      type = 'enum',
+      title = _("Library sorting mode"),
+      options = {
+        { label = _("Order added ascending (Default)"),  value = 'ascending' },
+        { label = _("Order added descending"),           value = 'descending' },
+        { label = _("Title manga ascending"),            value = 'title_asc' },
+        { label = _("Title manga descending"),           value = 'title_desc' },
+        { label = _("Count unread chapters ascending"),  value = 'unread_asc' },
+        { label = _("Count unread chapters descending"), value = 'unread_desc' },
+        { label = _("Last read ascending"),              value = 'last_read_asc' },
+        { label = _("Last read descending"),             value = 'last_read_desc' },
+      }
+    }
+  },
+  {
+    'rakuyomi_items_per_page',
+    {
+      type = 'integer',
+      title = _("Items per page (0 = auto)"),
+      min_value = 0,
+      max_value = 100,
+      is_local = true,
+      default = 0
+    }
+  },
+  {
+    'rakuyomi_grid_columns',
+    {
+      type = 'integer',
+      title = _("Grid columns"),
+      min_value = 2,
+      max_value = 6,
+      is_local = true,
+      default = 3
+    }
+  },
+  {
+    'rakuyomi_grid_rows',
+    {
+      type = 'integer',
+      title = _("Grid rows"),
+      min_value = 0,
+      max_value = 6,
+      is_local = true,
+      default = 0
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Reader") }
+  },
+  {
     'chapter_sorting_mode',
     {
       type = 'enum',
@@ -41,21 +116,38 @@ Settings.setting_value_definitions = {
     }
   },
   {
-    'library_sorting_mode',
+    'preload_chapters',
     {
-      type = 'enum',
-      title = _("Library sorting mode"),
-      options = {
-        { label = _("Order added ascending (Default)"), value = 'ascending' },
-        { label = _("Order added descending"),          value = 'descending' },
-        { label = _("Title manga ascending"),           value = 'title_asc' },
-        { label = _("Title manga descending"),          value = 'title_desc' },
-        { label = _("Count unread chapters ascending"), value = 'unread_asc' },
-        { label = _("Count unread chapters descending"), value = 'unread_desc' },
-        { label = _("Last read ascending"), value = 'last_read_asc' },
-        { label = _("Last read descending"), value = 'last_read_desc' },
-      }
+      type = 'integer',
+      title = _("Preload chapters on reader open"),
+      min_value = 0,
+      max_value = 10,
+      unit = 'chapters',
+      default = 0
     }
+  },
+  {
+    'optimize_image',
+    {
+      type = 'boolean',
+      title = _("Optimize page images (experimental)"),
+      default = false,
+    }
+  },
+  {
+    'concurrent_requests_pages',
+    {
+      type = 'integer',
+      title = _("Concurrent page requests"),
+      min_value = 1,
+      max_value = 20,
+      unit = 'pages',
+      default = Device.isKindle() and 4 or 5
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Storage") }
   },
   {
     'storage_path',
@@ -77,15 +169,8 @@ Settings.setting_value_definitions = {
     }
   },
   {
-    'concurrent_requests_pages',
-    {
-      type = 'integer',
-      title = _("Concurrent page requests"),
-      min_value = 1,
-      max_value = 20,
-      unit = 'pages',
-      default = Device.isKindle() and 4 or 5
-    }
+    nil,
+    { type = 'divider', title = _("Sync & Updates") }
   },
   {
     'api_sync',
@@ -112,24 +197,18 @@ Settings.setting_value_definitions = {
     }
   },
   {
-    'preload_chapters',
-    {
-      type = 'integer',
-      title = _("Preload chapters on reader open"),
-      min_value = 0,
-      max_value = 10,
-      unit = 'chapters',
-      default = 0
-    }
+    nil,
+    { type = 'divider', title = _("System") }
   },
   {
-    'optimize_image',
+    'allow_commaneer_filemanager',
     {
       type = 'boolean',
-      title = _("Optimize page images (experimental)"),
-      default = false,
+      title = _("Allow requisition of the back button"),
+      is_local = true,
+      default = true
     }
-  }
+  },
 }
 
 
@@ -163,38 +242,42 @@ function Settings:init()
   for _, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
-
-    -- FIXME shouldn't the backend return the default value when unset?
-    local value = self.settings[key]
-    if key == 'storage_path' and value == nil then
-      value = Paths.getHomeDirectory() .. '/downloads'
-    end
-
-    table.insert(vertical_group, SettingItem:new {
-      show_parent = self,
-      width = self.item_width,
-      label = definition.title,
-      value_definition = definition,
-      value = value,
-      on_value_changed_callback = function(new_value)
-        self:updateSetting(key, new_value)
+    if definition.type == 'divider' then
+      table.insert(vertical_group, TextWidget:new {
+        text = definition.title,
+        face = Font:getFace("cfont"),
+        bold = true,
+      })
+    elseif definition.is_local then
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = definition,
+        value = G_reader_settings:readSetting(key, definition.default),
+        on_value_changed_callback = function(new_value)
+          G_reader_settings:saveSetting(key, new_value)
+        end
+      })
+    else
+      -- FIXME shouldn't the backend return the default value when unset?
+      local value = self.settings[key]
+      if key == 'storage_path' and value == nil then
+        value = Paths.getHomeDirectory() .. '/downloads'
       end
-    })
-  end
 
-
-  table.insert(vertical_group, SettingItem:new {
-    show_parent = self,
-    width = self.item_width,
-    label = _("Allow requisition of the back button"),
-    value_definition = {
-      type = 'boolean',
-    },
-    value = G_reader_settings:nilOrFalse("allow_commaneer_filemanager") and false or true,
-    on_value_changed_callback = function(new_value)
-      G_reader_settings:saveSetting("allow_commaneer_filemanager", new_value)
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = definition,
+        value = value,
+        on_value_changed_callback = function(new_value)
+          self:updateSetting(key, new_value)
+        end
+      })
     end
-  })
+  end
 
   self.title_bar = TitleBar:new {
     title = _("Settings"),
@@ -212,6 +295,13 @@ function Settings:init()
     end,
   }
 
+  local scrollable = ScrollableContainer:new {
+    dimen = Geom:new {
+      w = self.dimen.w,
+      h = self.dimen.h - self.title_bar.dimen.h,
+    },
+    vertical_group,
+  }
   local content = OverlapGroup:new {
     allow_mirroring = false,
     dimen = self.inner_dimen:copy(),
@@ -220,7 +310,7 @@ function Settings:init()
       self.title_bar,
       HorizontalGroup:new {
         HorizontalSpan:new { width = padding },
-        vertical_group
+        scrollable
       }
     }
   }
@@ -236,6 +326,13 @@ function Settings:init()
     background = Blitbuffer.COLOR_WHITE,
     content
   }
+
+  self.movable = MovableContainer:new {
+    self[1],
+    unmovable = self.unmovable,
+  }
+  scrollable.show_parent = self
+
 
   UIManager:setDirty(self, "ui")
 end

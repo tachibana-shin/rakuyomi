@@ -46,6 +46,15 @@ pub enum LibrarySortingMode {
     LastReadDesc,
 }
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum LibraryViewMode {
+    Base,
+    #[default]
+    Cover,
+    Grid,
+}
+
 /// Settings used to configure rakuyomi's behavior.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, JsonSchema)]
 pub struct Settings {
@@ -100,6 +109,9 @@ pub struct Settings {
 
     #[serde(default)]
     pub optimize_image: bool,
+
+    #[serde(default)]
+    pub library_view_mode: LibraryViewMode,
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

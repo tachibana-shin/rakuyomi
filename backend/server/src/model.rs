@@ -33,6 +33,7 @@ pub struct Manga {
     unread_chapters_count: Option<usize>,
     last_read: Option<i64>,
     in_library: bool,
+    manga_cover: Option<url::Url>,
 }
 
 impl From<DomainManga> for Manga {
@@ -44,6 +45,7 @@ impl From<DomainManga> for Manga {
             unread_chapters_count: value.unread_chapters_count,
             last_read: value.last_read,
             in_library: value.in_library,
+            manga_cover: value.information.cover_url,
         }
     }
 }

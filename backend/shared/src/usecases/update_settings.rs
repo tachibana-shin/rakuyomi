@@ -4,7 +4,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use size::{consts, Size};
 
-use crate::settings::{ChapterSortingMode, LibrarySortingMode, Settings, StorageSizeLimit};
+use crate::settings::{
+    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, Settings, StorageSizeLimit,
+};
 
 pub fn update_settings(
     settings: &mut Settings,
@@ -34,6 +36,7 @@ pub struct UpdateableSettings {
     source_skip_cron: Option<String>,
     preload_chapters: usize,
     optimize_image: bool,
+    library_view_mode: LibraryViewMode,
 }
 
 impl UpdateableSettings {
@@ -49,6 +52,7 @@ impl UpdateableSettings {
         settings.source_skip_cron = self.source_skip_cron;
         settings.preload_chapters = self.preload_chapters;
         settings.optimize_image = self.optimize_image;
+        settings.library_view_mode = self.library_view_mode;
     }
 }
 
@@ -67,6 +71,7 @@ impl From<&Settings> for UpdateableSettings {
             source_skip_cron: value.source_skip_cron.clone(),
             preload_chapters: value.preload_chapters,
             optimize_image: value.optimize_image,
+            library_view_mode: value.library_view_mode,
         }
     }
 }

@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -48,6 +48,35 @@ msgstr  "README를 보고 소스 목록을 추가해 보세요!"
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "소스 설치 중..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "취소!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "완벽한!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "취소될 때까지 기다리는 중…"
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "처리 중..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "오류가 발생했습니다"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "알 수 없는 오류"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "오류"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -98,7 +127,7 @@ msgstr  "챕터가 잠겨 있습니다."
 msgid   "Open"
 msgstr  "열려 있는"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "새로 고치다"
 
@@ -114,7 +143,7 @@ msgstr  "표시"
 msgid   "Download"
 msgstr  "다운로드"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:537
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "제거하다"
 
@@ -142,11 +171,11 @@ msgstr  "표시 해제"
 msgid   "chapter..."
 msgstr  "장..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "읽은 것으로 표시"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "읽지 않은 것으로 표시"
 
@@ -163,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "챕터를 읽음 또는 읽지 않음으로 표시"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
-#: ../LibraryView.lua:809 ../NotificationView.lua:543
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "취소"
 
@@ -220,8 +249,8 @@ msgstr  "다운로드를 취소하시겠습니까?"
 msgid   "Add to Library"
 msgstr  "라이브러리에 추가"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:364
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "세부"
 
@@ -257,7 +286,7 @@ msgstr  "라이브러리에 추가하지 못했습니다."
 msgid   "Added to library."
 msgstr  "라이브러리에 추가되었습니다."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "안타깝게도 다음 챕터가 없습니다! "
 
@@ -269,7 +298,7 @@ msgstr  "다음"
 msgid   "reading with"
 msgstr  "함께 독서하다"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "읽다"
 
@@ -333,29 +362,21 @@ msgstr  "모든 챕터를 다운로드하는 데 시간이 좀 걸립니다… (
 msgid   "Tap outside this message to cancel."
 msgstr  "취소하려면 이 메시지 바깥쪽을 탭하세요."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "다운로드가 취소되었습니다!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "다운로드가 완료되었습니다!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "다운로드가 취소될 때까지 기다리는 중…"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "챕터를 다운로드하는 중입니다. 시간이 좀 걸립니다…"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "챕터를 다운로드하는 데 시간이 좀 걸립니다… ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "다운로드가 완료되었습니다!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "챕터를 다운로드하는 중 오류가 발생했습니다."
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "다운로드가 취소되었습니다!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -385,224 +406,244 @@ msgstr  "제거하시겠습니까?"
 msgid   "source?"
 msgstr  "원천?"
 
-#: ../LibraryView.lua:49
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "도서관"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "도서관에 만화가 없습니다"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "검색 결과에서 이름을 유지하여 추가해 보세요!"
 
-#: ../LibraryView.lua:355
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "상쾌한 만화"
 
-#: ../LibraryView.lua:404
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "계속 읽기"
 
-#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "라이브러리에서 제거"
 
-#: ../LibraryView.lua:446
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "다음 장을 찾는 중..."
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "이 만화에 대한 챕터를 찾을 수 없습니다."
 
-#: ../LibraryView.lua:496
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "다음을 사용하여 읽기를 재개하세요."
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "제거하시겠습니까?"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "네 도서관에서?"
 
-#: ../LibraryView.lua:559
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "만화 검색"
 
-#: ../LibraryView.lua:569
-msgid   "Refresh mangas"
-msgstr  "만화 새로 고침"
-
-#: ../LibraryView.lua:577
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "즐겨찾기 검색"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:630
+msgid   "Refresh mangas"
+msgstr  "만화 새로 고침"
+
+#: ../LibraryView.lua:638
+msgid   "Refresh details"
+msgstr  "세부정보 새로고침"
+
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "클리너 챕터"
 
-#: ../LibraryView.lua:595
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "소스 관리"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "설정"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "업데이트 확인"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "데이터베이스 동기화(베타)"
 
-#: ../LibraryView.lua:626
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "WebDAV에 동기화..."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "서버에서 로컬 데이터베이스를 마이그레이션하시겠습니까?"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "원격 데이터베이스는 로컬 데이터베이스보다 최신입니다."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "이 작업은 취소할 수 없습니다."
 
-#: ../LibraryView.lua:639
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "마이그레이션"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "데이터베이스 마이그레이션 중..."
 
-#: ../LibraryView.lua:654 ../LibraryView.lua:701
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "로컬 데이터베이스가 서버에서 마이그레이션되었습니다!"
 
-#: ../LibraryView.lua:665
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "클라우드 교체"
 
-#: ../LibraryView.lua:669
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "클라우드를 교체하는 중..."
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "클라우드 데이터베이스가 로컬 데이터베이스로 강제 교체되었습니다!"
 
-#: ../LibraryView.lua:697
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "데이터베이스가 이미 최신 상태입니다!"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "데이터베이스가 서버에 동기화되었습니다!"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "동기화가 완료되었습니다!"
 
-#: ../LibraryView.lua:727
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "만화 검색..."
 
-#: ../LibraryView.lua:728
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "하우스키노쿠니"
 
-#: ../LibraryView.lua:729 ../LibraryView.lua:805
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "검색할 만화 이름을 입력하세요."
 
-#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "찾다"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "다음에 대한 소스 검색 제외"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "즐겨찾기 검색..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "토니카쿠 카와이"
 
-#: ../LibraryView.lua:856
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "파일을 스캔하는 중..."
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "%d개의 파일을 찾았습니다."
 
-#: ../LibraryView.lua:872
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "전체 크기 %s."
 
-#: ../LibraryView.lua:873
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly 파일 .cbz 및 .epub 스캔."
 
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "깨끗한"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "삭제 중..."
 
-#: ../LibraryView.lua:900
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "무료 %s 저장소를 정리했습니다."
 
-#: ../LibraryView.lua:924
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "만화 새로 고침..."
 
-#: ../LibraryView.lua:952
-msgid   "Some manga updates fail:"
-msgstr  "일부 만화 업데이트가 실패합니다."
-
-#: ../LibraryView.lua:959
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "모든 챕터 만화가 업데이트되었습니다!"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:988
+msgid   "Some manga updates fail:"
+msgstr  "일부 만화 업데이트가 실패합니다."
+
+#: ../LibraryView.lua:999
+msgid   "Refresh manga details..."
+msgstr  "만화 세부정보 새로 고침..."
+
+#: ../LibraryView.lua:1000
+msgid   "All manga details refresh!"
+msgstr  "모든 만화 세부 정보가 새로 고쳐집니다!"
+
+#: ../LibraryView.lua:1001
+msgid   "Some manga details refresh fail:"
+msgstr  "일부 만화 세부 정보 새로 고침이 실패합니다."
+
+#: ../LibraryView.lua:1017
+msgid   "Progress"
+msgstr  "진전"
+
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "청소기"
 
-#: ../LibraryView.lua:971
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "삭제된 소스의 파일을 포함하여 유효하지 않은 파일 찾기 및 삭제"
 
-#: ../LibraryView.lua:971 ../LibraryView.lua:974
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "정상"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "중요: 메타 파일(북마크, 기록)은 보관되지 않습니다!"
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "챕터 읽기 완료"
 
@@ -667,11 +708,11 @@ msgstr  "안전한"
 msgid   "Suggestive"
 msgstr  "암시적"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "상쾌한 디테일..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "세부정보 새로고침이 취소되었습니다."
 
@@ -707,23 +748,23 @@ msgstr  "검색 중"
 msgid   "Search cancelled."
 msgstr  "검색이 취소되었습니다."
 
-#: ../NotificationView.lua:336
+#: ../NotificationView.lua:37
 msgid   "Notification"
 msgstr  "공고"
 
-#: ../NotificationView.lua:357
+#: ../NotificationView.lua:57
 msgid   "Cleared all notifications!"
 msgstr  "모든 알림을 삭제했습니다!"
 
-#: ../NotificationView.lua:485
+#: ../NotificationView.lua:103
 msgid   "No notification"
 msgstr  "알림 없음"
 
-#: ../NotificationView.lua:541
+#: ../NotificationView.lua:159
 msgid   "Delete this notification?"
 msgstr  "이 알림을 삭제하시겠습니까?"
 
-#: ../NotificationView.lua:542
+#: ../NotificationView.lua:160
 msgid   "Delete"
 msgstr  "삭제"
 
@@ -755,87 +796,131 @@ msgstr  "닫다"
 msgid   "Do not show this message again"
 msgstr  "이 메시지를 다시 표시하지 않음"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "챕터 정렬 모드"
+#: ../Settings.lua:44
+msgid   "Library view mode"
+msgstr  "라이브러리 보기 모드"
 
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "장별 오름차순"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "장 내림차순"
+#: ../Settings.lua:46
+msgid   "Base"
+msgstr  "베이스"
 
 #: ../Settings.lua:47
+msgid   "Cover"
+msgstr  "씌우다"
+
+#: ../Settings.lua:48
+msgid   "Grid"
+msgstr  "그리드"
+
+#: ../Settings.lua:57
 msgid   "Library sorting mode"
 msgstr  "라이브러리 정렬 모드"
 
-#: ../Settings.lua:49
+#: ../Settings.lua:59
 msgid   "Order added ascending (Default)"
 msgstr  "오름차순으로 추가됨(기본값)"
 
-#: ../Settings.lua:50
+#: ../Settings.lua:60
 msgid   "Order added descending"
 msgstr  "내림차순으로 추가됨"
 
-#: ../Settings.lua:51
+#: ../Settings.lua:61
 msgid   "Title manga ascending"
 msgstr  "제목 만화 오름차순"
 
-#: ../Settings.lua:52
+#: ../Settings.lua:62
 msgid   "Title manga descending"
 msgstr  "제목 만화 내림차순"
 
-#: ../Settings.lua:53
+#: ../Settings.lua:63
 msgid   "Count unread chapters ascending"
 msgstr  "읽지 않은 장을 오름차순으로 계산"
 
-#: ../Settings.lua:54
+#: ../Settings.lua:64
 msgid   "Count unread chapters descending"
 msgstr  "읽지 않은 장 수를 내림차순으로 계산"
 
-#: ../Settings.lua:55
+#: ../Settings.lua:65
 msgid   "Last read ascending"
 msgstr  "마지막 읽기 오름차순"
 
-#: ../Settings.lua:56
+#: ../Settings.lua:66
 msgid   "Last read descending"
 msgstr  "마지막 읽기 내림차순"
 
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "챕터 저장 경로"
+#: ../Settings.lua:74
+msgid   "Items per page (0 = auto)"
+msgstr  "페이지당 항목 수(0 = 자동)"
 
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "저장소 크기 제한"
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "그리드 열"
 
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "동시 페이지 요청"
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "그리드 행"
 
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "WebDAV 동기화"
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "리더"
 
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "챕터 정렬 모드"
 
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "소스 ID가 확인 업데이트를 건너뜁니다."
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "장별 오름차순"
 
-#: ../Settings.lua:118
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "장 내림차순"
+
+#: ../Settings.lua:122
 msgid   "Preload chapters on reader open"
 msgstr  "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:129
+#: ../Settings.lua:133
 msgid   "Optimize page images (experimental)"
 msgstr  "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "동시 페이지 요청"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "저장"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "챕터 저장 경로"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "저장소 크기 제한"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "동기화 및 업데이트"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "WebDAV 동기화"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "소스 ID가 확인 업데이트를 건너뜁니다."
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "체계"
+
+#: ../Settings.lua:207
 msgid   "Allow requisition of the back button"
 msgstr  "뒤로 버튼 요청 허용"
 
@@ -988,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "오프라인 모드"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "좋아요"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "실행 중..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "완료"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "선택하다"

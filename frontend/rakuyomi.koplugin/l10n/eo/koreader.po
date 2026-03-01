@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -48,6 +48,35 @@ msgstr  "Provu aldoni kelkajn fontlistojn rigardante nian README!"
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "Instalante fonton..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "Nuligite!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "Kompleta!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "Atendante ĝis nuligo..."
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "Prilaborado..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "Eraro okazis"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "Nekonata eraro"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "Eraro"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -98,7 +127,7 @@ msgstr  "Ĉapitro estas ŝlosita"
 msgid   "Open"
 msgstr  "Malfermu"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "Refreŝigi"
 
@@ -114,7 +143,7 @@ msgstr  "Mark"
 msgid   "Download"
 msgstr  "Elŝutu"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:537
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "Forigi"
 
@@ -142,11 +171,11 @@ msgstr  "Malmarkado"
 msgid   "chapter..."
 msgstr  "ĉapitro..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "Mark legis"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "Marki nelegita"
 
@@ -163,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Marku ĉapitrojn kiel legitajn aŭ nelegitajn"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
-#: ../LibraryView.lua:809 ../NotificationView.lua:543
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Nuligi"
 
@@ -220,8 +249,8 @@ msgstr  "Ĉu vi certas, ke vi volas nuligi la elŝuton?"
 msgid   "Add to Library"
 msgstr  "Aldoni al Biblioteko"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:364
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Detaloj"
 
@@ -257,7 +286,7 @@ msgstr  "Malsukcesis aldoni al biblioteko"
 msgid   "Added to library."
 msgstr  "Aldonita al biblioteko."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Bedaŭrinde, neniu sekva ĉapitro disponebla! "
 
@@ -269,7 +298,7 @@ msgstr  "Poste"
 msgid   "reading with"
 msgstr  "legante kun"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "Legu"
 
@@ -333,29 +362,21 @@ msgstr  "Elŝutante ĉiujn ĉapitrojn, ĉi tio daŭros iom da tempo... ("
 msgid   "Tap outside this message to cancel."
 msgstr  "Frapu ekster ĉi tiu mesaĝo por nuligi."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "Elŝuto nuligita!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "Elŝuto kompleta!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "Atendante ĝis elŝutoj estas nuligitaj..."
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "Elŝutante ĉapitrojn, ĉi tio daŭros iom da tempo..."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "Elŝutante ĉapitrojn, ĉi tio daŭros iom da tempo... ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "Elŝuto kompleta!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "Eraro okazis dum elŝuto de ĉapitroj"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "Elŝuto nuligita!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -385,224 +406,244 @@ msgstr  "Ĉu vi volas forigi la"
 msgid   "source?"
 msgstr  "fonto?"
 
-#: ../LibraryView.lua:49
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "Biblioteko"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "Neniuj mangaoj trovitaj en biblioteko"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Provu aldoni kelkajn tenante ilian nomon sur la serĉrezultoj!"
 
-#: ../LibraryView.lua:355
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "Refreŝigita Mangao"
 
-#: ../LibraryView.lua:404
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "Daŭre Legado"
 
-#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Forigi el Biblioteko"
 
-#: ../LibraryView.lua:446
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "Trovi sekvan ĉapitron..."
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "Neniuj ĉapitroj trovitaj por ĉi tiu Mangao."
 
-#: ../LibraryView.lua:496
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "Rekomencu legadon kun:"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "Ĉu vi volas forigi"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "el via biblioteko?"
 
-#: ../LibraryView.lua:559
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "Serĉu mangaojn"
 
-#: ../LibraryView.lua:569
-msgid   "Refresh mangas"
-msgstr  "Refreŝigu mangaojn"
-
-#: ../LibraryView.lua:577
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "Serĉu plej ŝatatajn"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:630
+msgid   "Refresh mangas"
+msgstr  "Refreŝigu mangaojn"
+
+#: ../LibraryView.lua:638
+msgid   "Refresh details"
+msgstr  "Refreŝigi detalojn"
+
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "Pli puraj ĉapitroj"
 
-#: ../LibraryView.lua:595
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "Administri fontojn"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Agordoj"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "Kontrolu ĝisdatigojn"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "Sinkronigi datumbazon (Betao)"
 
-#: ../LibraryView.lua:626
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "Sinkronigi al WebDAV..."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Ĉu vi volas migri vian lokan datumbazon de la servilo?"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "La fora datumbazo estas pli nova ol la loka."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "Ĉi tiu ago ne povas esti malfarita."
 
-#: ../LibraryView.lua:639
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "Migri"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "Migrado datumbazo..."
 
-#: ../LibraryView.lua:654 ../LibraryView.lua:701
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "Loka datumbazo estis migrita de la servilo!"
 
-#: ../LibraryView.lua:665
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "Anstataŭigi Nubon"
 
-#: ../LibraryView.lua:669
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "Anstataŭigante nubon..."
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Nuba datumbazo estis devige anstataŭigita per loka!"
 
-#: ../LibraryView.lua:697
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "Datumbazo jam estas ĝisdatigita!"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "Datumbazo estis sinkronigita al la servilo!"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "Sinkronigo finiĝis!"
 
-#: ../LibraryView.lua:727
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "Serĉo por Mangao..."
 
-#: ../LibraryView.lua:728
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:729 ../LibraryView.lua:805
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "Tajpu la manganomon por serĉi"
 
-#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "Serĉu"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "Ekskludu fontserĉon por"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "Plej ŝatata serĉo..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:856
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "Skanante dosierojn..."
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "Trovis %d dosierojn."
 
-#: ../LibraryView.lua:872
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Suma grandeco %s."
 
-#: ../LibraryView.lua:873
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly dosiero .cbz kaj .epub scan."
 
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "Pura"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "Forigante..."
 
-#: ../LibraryView.lua:900
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Purigis senpaga %s stokado"
 
-#: ../LibraryView.lua:924
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "Refreŝigu mangaojn..."
 
-#: ../LibraryView.lua:952
-msgid   "Some manga updates fail:"
-msgstr  "Iuj mangaaj ĝisdatigoj malsukcesas:"
-
-#: ../LibraryView.lua:959
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "Ĉiuj ĉapitroj Mangao ĝisdatigita!"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:988
+msgid   "Some manga updates fail:"
+msgstr  "Iuj mangaaj ĝisdatigoj malsukcesas:"
+
+#: ../LibraryView.lua:999
+msgid   "Refresh manga details..."
+msgstr  "Refreŝigu detalojn pri mangao..."
+
+#: ../LibraryView.lua:1000
+msgid   "All manga details refresh!"
+msgstr  "Ĉiuj mangadetaloj refreŝiĝas!"
+
+#: ../LibraryView.lua:1001
+msgid   "Some manga details refresh fail:"
+msgstr  "Kelkaj mangaaj detaloj malsukcesas refreŝigi:"
+
+#: ../LibraryView.lua:1017
+msgid   "Progress"
+msgstr  "Progreso"
+
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "Purigisto"
 
-#: ../LibraryView.lua:971
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Trovu kaj forigu nevalidajn dosierojn inkluzive de dosieroj de forigitaj fontoj"
 
-#: ../LibraryView.lua:971 ../LibraryView.lua:974
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "Normala"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "GRAVA: Metadosieroj (legosigno, historio) ne konservu!"
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "Ĉapitro legita finita"
 
@@ -667,11 +708,11 @@ msgstr  "Sekura"
 msgid   "Suggestive"
 msgstr  "Sugesta"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "Refreŝigante detalojn..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "Refreŝigi detalojn nuligitaj."
 
@@ -707,23 +748,23 @@ msgstr  "Serĉante"
 msgid   "Search cancelled."
 msgstr  "Serĉo nuligita."
 
-#: ../NotificationView.lua:336
+#: ../NotificationView.lua:37
 msgid   "Notification"
 msgstr  "Sciigo"
 
-#: ../NotificationView.lua:357
+#: ../NotificationView.lua:57
 msgid   "Cleared all notifications!"
 msgstr  "Forigis ĉiujn sciigojn!"
 
-#: ../NotificationView.lua:485
+#: ../NotificationView.lua:103
 msgid   "No notification"
 msgstr  "Neniu sciigo"
 
-#: ../NotificationView.lua:541
+#: ../NotificationView.lua:159
 msgid   "Delete this notification?"
 msgstr  "Ĉu forigi ĉi tiun sciigon?"
 
-#: ../NotificationView.lua:542
+#: ../NotificationView.lua:160
 msgid   "Delete"
 msgstr  "Forigi"
 
@@ -755,87 +796,131 @@ msgstr  "Fermu"
 msgid   "Do not show this message again"
 msgstr  "Ne montru ĉi tiun mesaĝon denove"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "Ĉapitro-ordiga reĝimo"
+#: ../Settings.lua:44
+msgid   "Library view mode"
+msgstr  "Biblioteko vido-reĝimo"
 
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "Laŭ ĉapitro supreniranta"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "Per ĉapitro malsupreniranta"
+#: ../Settings.lua:46
+msgid   "Base"
+msgstr  "Bazo"
 
 #: ../Settings.lua:47
+msgid   "Cover"
+msgstr  "Kovrilo"
+
+#: ../Settings.lua:48
+msgid   "Grid"
+msgstr  "Krado"
+
+#: ../Settings.lua:57
 msgid   "Library sorting mode"
 msgstr  "Biblioteko-ordiga reĝimo"
 
-#: ../Settings.lua:49
+#: ../Settings.lua:59
 msgid   "Order added ascending (Default)"
 msgstr  "Ordo aldonita suprenirante (Defaŭlte)"
 
-#: ../Settings.lua:50
+#: ../Settings.lua:60
 msgid   "Order added descending"
 msgstr  "Ordo aldonis malsupren"
 
-#: ../Settings.lua:51
+#: ../Settings.lua:61
 msgid   "Title manga ascending"
 msgstr  "Titolo Mangao ascendanta"
 
-#: ../Settings.lua:52
+#: ../Settings.lua:62
 msgid   "Title manga descending"
 msgstr  "Titolo Mangao malkreskanta"
 
-#: ../Settings.lua:53
+#: ../Settings.lua:63
 msgid   "Count unread chapters ascending"
 msgstr  "Nombri nelegitajn ĉapitrojn suprenirante"
 
-#: ../Settings.lua:54
+#: ../Settings.lua:64
 msgid   "Count unread chapters descending"
 msgstr  "Kalkulu nelegitajn ĉapitrojn malsuprenirantajn"
 
-#: ../Settings.lua:55
+#: ../Settings.lua:65
 msgid   "Last read ascending"
 msgstr  "Lasta legado suprenirante"
 
-#: ../Settings.lua:56
+#: ../Settings.lua:66
 msgid   "Last read descending"
 msgstr  "Lasta legado malsupreniranta"
 
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "Ĉapitro-stoka vojo"
+#: ../Settings.lua:74
+msgid   "Items per page (0 = auto)"
+msgstr  "Eroj per paĝo (0 = aŭtomate)"
 
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "Limo de stokado"
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "Kradaj kolumnoj"
 
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "Samtempaj paĝaj petoj"
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "Kradaj vicoj"
 
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "WebDAV Sync"
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "Leganto"
 
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "Ebligita kronkontrolo por mangaaj ĝisdatigoj"
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "Ĉapitro-ordiga reĝimo"
 
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "Font-IDoj preterpasas kontroli ĝisdatigon"
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "Laŭ ĉapitro supreniranta"
 
-#: ../Settings.lua:118
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "Per ĉapitro malsupreniranta"
+
+#: ../Settings.lua:122
 msgid   "Preload chapters on reader open"
 msgstr  "Antaŭŝargi ĉapitrojn sur leganto malfermiĝas"
 
-#: ../Settings.lua:129
+#: ../Settings.lua:133
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimumigu paĝajn bildojn (eksperimentaj)"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "Samtempaj paĝaj petoj"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "Stokado"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "Ĉapitro-stoka vojo"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "Limo de stokado"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "Sinkronigi & Ĝisdatigojn"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "WebDAV Sync"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "Ebligita kronkontrolo por mangaaj ĝisdatigoj"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "Font-IDoj preterpasas kontroli ĝisdatigon"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "Sistemo"
+
+#: ../Settings.lua:207
 msgid   "Allow requisition of the back button"
 msgstr  "Permesu rekvizicion de la malantaŭa butono"
 
@@ -988,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "Senkonekta reĝimo"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "Bone"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "Ekzekutante..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "Farita"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "Elektu"

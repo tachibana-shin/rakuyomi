@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-02-27 19:42+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -48,6 +48,35 @@ msgstr  "Zkuste přidat nějaké seznamy zdrojů v našem README!"
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "Instalace zdroje..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "Zrušeno!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "Kompletní!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "Čeká se na zrušení…"
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "Zpracovává se..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "Došlo k chybě"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "Neznámá chyba"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "Chyba"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -98,7 +127,7 @@ msgstr  "Kapitola je uzamčena"
 msgid   "Open"
 msgstr  "OTEVŘENO"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:344
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "Obnovit"
 
@@ -114,7 +143,7 @@ msgstr  "Označit"
 msgid   "Download"
 msgstr  "Stáhnout"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:537
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "Odstranit"
 
@@ -142,11 +171,11 @@ msgstr  "Zrušení označení"
 msgid   "chapter..."
 msgstr  "kapitola..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:380
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "Označit jako přečtené"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:391
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "Označit jako nepřečtené"
 
@@ -163,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Označte kapitoly jako přečtené nebo nepřečtené"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:498 ../LibraryView.lua:761
-#: ../LibraryView.lua:809 ../NotificationView.lua:543
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Zrušit"
 
@@ -220,8 +249,8 @@ msgstr  "Opravdu chcete stahování zrušit?"
 msgid   "Add to Library"
 msgstr  "Přidat do knihovny"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:364
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Podrobnosti"
 
@@ -257,7 +286,7 @@ msgstr  "Přidání do knihovny se nezdařilo"
 msgid   "Added to library."
 msgstr  "Přidáno do knihovny."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:490
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Bohužel není k dispozici žádná další kapitola! "
 
@@ -269,7 +298,7 @@ msgstr  "Další"
 msgid   "reading with"
 msgstr  "čtení s"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:497
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "Číst"
 
@@ -333,29 +362,21 @@ msgstr  "Stahování všech kapitol, bude to chvíli trvat... ("
 msgid   "Tap outside this message to cancel."
 msgstr  "Klepnutím mimo tuto zprávu zrušíte."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "Stahování zrušeno!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "Stahování dokončeno!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "Čekání na zrušení stahování…"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "Stahování kapitol, bude to chvíli trvat…"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "Stahování kapitol, bude to chvíli trvat... ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "Stahování dokončeno!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "Při stahování kapitol došlo k chybě"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "Stahování zrušeno!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -385,224 +406,244 @@ msgstr  "Chcete odstranit"
 msgid   "source?"
 msgstr  "zdroj?"
 
-#: ../LibraryView.lua:49
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "Knihovna"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "V knihovně nebyly nalezeny žádné mangy"
 
-#: ../LibraryView.lua:290
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Zkuste některé přidat tak, že podržíte jejich jméno ve výsledcích vyhledávání!"
 
-#: ../LibraryView.lua:355
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "Osvěžená manga"
 
-#: ../LibraryView.lua:404
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "Pokračovat ve čtení"
 
-#: ../LibraryView.lua:413 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Odebrat z knihovny"
 
-#: ../LibraryView.lua:446
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "Hledání další kapitoly..."
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "Pro tuto mangu nebyly nalezeny žádné kapitoly."
 
-#: ../LibraryView.lua:496
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "Pokračujte ve čtení pomocí:"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "Chcete odstranit"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "z vaší knihovny?"
 
-#: ../LibraryView.lua:559
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "Hledejte mangy"
 
-#: ../LibraryView.lua:569
-msgid   "Refresh mangas"
-msgstr  "Osvěžte mangy"
-
-#: ../LibraryView.lua:577
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "Hledat oblíbené"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:630
+msgid   "Refresh mangas"
+msgstr  "Osvěžte mangy"
+
+#: ../LibraryView.lua:638
+msgid   "Refresh details"
+msgstr  "Obnovit podrobnosti"
+
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "Čistší kapitoly"
 
-#: ../LibraryView.lua:595
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "Správa zdrojů"
 
-#: ../LibraryView.lua:605 ../LibraryView.lua:755 ../Settings.lua:200
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Nastavení"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "Zkontrolujte aktualizace"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "Synchronizovat databázi (Beta)"
 
-#: ../LibraryView.lua:626
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "Synchronizovat s WebDAV..."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Chcete migrovat místní databázi ze serveru?"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "Vzdálená databáze je novější než lokální."
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "Tuto akci nelze vrátit zpět."
 
-#: ../LibraryView.lua:639
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "Migrovat"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "Migrace databáze..."
 
-#: ../LibraryView.lua:654 ../LibraryView.lua:701
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "Místní databáze byla migrována ze serveru!"
 
-#: ../LibraryView.lua:665
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "Vyměňte Cloud"
 
-#: ../LibraryView.lua:669
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "Výměna cloudu..."
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Cloudová databáze byla nuceně nahrazena lokální!"
 
-#: ../LibraryView.lua:697
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "Databáze je již aktuální!"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "Databáze byla synchronizována se serverem!"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "Synchronizace dokončena!"
 
-#: ../LibraryView.lua:727
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "Hledání manga..."
 
-#: ../LibraryView.lua:728
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:729 ../LibraryView.lua:805
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "Zadejte název manga, kterou chcete vyhledat"
 
-#: ../LibraryView.lua:733 ../LibraryView.lua:742 ../LibraryView.lua:787
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "Vyhledávání"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "Vyloučit hledání zdroje"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "Oblíbené vyhledávání..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:856
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "Skenování souborů..."
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "Nalezeno %d souborů."
 
-#: ../LibraryView.lua:872
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Celková velikost %s."
 
-#: ../LibraryView.lua:873
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly soubor .cbz a .epub scan."
 
-#: ../LibraryView.lua:877
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "Čistý"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "Mazání..."
 
-#: ../LibraryView.lua:900
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Vyčištěno volné %s úložiště"
 
-#: ../LibraryView.lua:924
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "Osvěžte mangy..."
 
-#: ../LibraryView.lua:952
-msgid   "Some manga updates fail:"
-msgstr  "Některé aktualizace manga selžou:"
-
-#: ../LibraryView.lua:959
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "Všechny kapitoly manga aktualizovány!"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:988
+msgid   "Some manga updates fail:"
+msgstr  "Některé aktualizace manga selžou:"
+
+#: ../LibraryView.lua:999
+msgid   "Refresh manga details..."
+msgstr  "Obnovit detaily mangy..."
+
+#: ../LibraryView.lua:1000
+msgid   "All manga details refresh!"
+msgstr  "Všechny manga detaily aktualizovány!"
+
+#: ../LibraryView.lua:1001
+msgid   "Some manga details refresh fail:"
+msgstr  "Obnovení některých podrobností mangy se nezdařilo:"
+
+#: ../LibraryView.lua:1017
+msgid   "Progress"
+msgstr  "Pokrok"
+
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "Čistič"
 
-#: ../LibraryView.lua:971
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Najděte a odstraňte neplatné soubory včetně souborů z odstraněných zdrojů"
 
-#: ../LibraryView.lua:971 ../LibraryView.lua:974
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "Normální"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "DŮLEŽITÉ: Meta soubory (záložka, historie) se neuchovávají!"
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "Přečtená kapitola hotová"
 
@@ -667,11 +708,11 @@ msgstr  "Trezor"
 msgid   "Suggestive"
 msgstr  "Sugestivní"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "Aktualizace podrobností..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "Aktualizace podrobností zrušena."
 
@@ -707,23 +748,23 @@ msgstr  "Hledání"
 msgid   "Search cancelled."
 msgstr  "Hledání zrušeno."
 
-#: ../NotificationView.lua:336
+#: ../NotificationView.lua:37
 msgid   "Notification"
 msgstr  "Oznámení"
 
-#: ../NotificationView.lua:357
+#: ../NotificationView.lua:57
 msgid   "Cleared all notifications!"
 msgstr  "Vymazána všechna oznámení!"
 
-#: ../NotificationView.lua:485
+#: ../NotificationView.lua:103
 msgid   "No notification"
 msgstr  "Žádné upozornění"
 
-#: ../NotificationView.lua:541
+#: ../NotificationView.lua:159
 msgid   "Delete this notification?"
 msgstr  "Smazat toto oznámení?"
 
-#: ../NotificationView.lua:542
+#: ../NotificationView.lua:160
 msgid   "Delete"
 msgstr  "Vymazat"
 
@@ -755,87 +796,131 @@ msgstr  "Blízko"
 msgid   "Do not show this message again"
 msgstr  "Tuto zprávu již nezobrazovat"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "Režim řazení kapitol"
+#: ../Settings.lua:44
+msgid   "Library view mode"
+msgstr  "Režim zobrazení knihovny"
 
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "Po kapitolách vzestupně"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "Po kapitolách sestupně"
+#: ../Settings.lua:46
+msgid   "Base"
+msgstr  "Báze"
 
 #: ../Settings.lua:47
+msgid   "Cover"
+msgstr  "Pokrýt"
+
+#: ../Settings.lua:48
+msgid   "Grid"
+msgstr  "Mřížka"
+
+#: ../Settings.lua:57
 msgid   "Library sorting mode"
 msgstr  "Režim třídění knihoven"
 
-#: ../Settings.lua:49
+#: ../Settings.lua:59
 msgid   "Order added ascending (Default)"
 msgstr  "Objednávka přidána vzestupně (výchozí)"
 
-#: ../Settings.lua:50
+#: ../Settings.lua:60
 msgid   "Order added descending"
 msgstr  "Pořadí přidáno sestupně"
 
-#: ../Settings.lua:51
+#: ../Settings.lua:61
 msgid   "Title manga ascending"
 msgstr  "Název manga vzestupně"
 
-#: ../Settings.lua:52
+#: ../Settings.lua:62
 msgid   "Title manga descending"
 msgstr  "Název manga sestupně"
 
-#: ../Settings.lua:53
+#: ../Settings.lua:63
 msgid   "Count unread chapters ascending"
 msgstr  "Počítejte nepřečtené kapitoly vzestupně"
 
-#: ../Settings.lua:54
+#: ../Settings.lua:64
 msgid   "Count unread chapters descending"
 msgstr  "Počítejte nepřečtené kapitoly sestupně"
 
-#: ../Settings.lua:55
+#: ../Settings.lua:65
 msgid   "Last read ascending"
 msgstr  "Poslední čtení vzestupně"
 
-#: ../Settings.lua:56
+#: ../Settings.lua:66
 msgid   "Last read descending"
 msgstr  "Poslední čtení sestupně"
 
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "Cesta úložiště kapitoly"
+#: ../Settings.lua:74
+msgid   "Items per page (0 = auto)"
+msgstr  "Položky na stránku (0 = automaticky)"
 
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "Limit velikosti úložiště"
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "Sloupce mřížky"
 
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "Souběžné požadavky na stránku"
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "Řádky mřížky"
 
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "WebDAV synchronizace"
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "Čtenář"
 
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "Povolená kontrola cronu pro aktualizace manga"
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "Režim řazení kapitol"
 
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "Aktualizace kontroly přeskočení ID zdrojů"
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "Po kapitolách vzestupně"
 
-#: ../Settings.lua:118
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "Po kapitolách sestupně"
+
+#: ../Settings.lua:122
 msgid   "Preload chapters on reader open"
 msgstr  "Předběžně načíst kapitoly na čtečce otevřít"
 
-#: ../Settings.lua:129
+#: ../Settings.lua:133
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimalizace obrázků stránek (experimentální)"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "Souběžné požadavky na stránku"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "Skladování"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "Cesta úložiště kapitoly"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "Limit velikosti úložiště"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "Synchronizace a aktualizace"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "WebDAV synchronizace"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "Povolená kontrola cronu pro aktualizace manga"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "Aktualizace kontroly přeskočení ID zdrojů"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "Systém"
+
+#: ../Settings.lua:207
 msgid   "Allow requisition of the back button"
 msgstr  "Povolit požadavek na tlačítko Zpět"
 
@@ -988,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "Offline režim"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "Dobře"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "Probíhá..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "Hotovo"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "Vybrat"

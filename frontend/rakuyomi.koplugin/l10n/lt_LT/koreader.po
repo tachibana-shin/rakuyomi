@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 17:41+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr  "Skyrius užrakintas"
 msgid   "Open"
 msgstr  "Atidaryti"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:384
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "Atnaujinti"
 
@@ -143,7 +143,7 @@ msgstr  "Pažymėti"
 msgid   "Download"
 msgstr  "Atsisiųsti"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:577
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "Pašalinti"
 
@@ -171,11 +171,11 @@ msgstr  "Atžymėjimo panaikinimas"
 msgid   "chapter..."
 msgstr  "skyrius..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:420
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "Pažymėti skaitytą"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:431
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "Pažymėti kaip neskaitytą"
 
@@ -192,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Pažymėkite skyrius kaip skaitytus arba neskaitytus"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:538 ../LibraryView.lua:811
-#: ../LibraryView.lua:859 ../NotificationView.lua:161
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Atšaukti"
 
@@ -249,7 +249,7 @@ msgstr  "Ar tikrai norite atšaukti atsisiuntimą?"
 msgid   "Add to Library"
 msgstr  "Pridėti prie bibliotekos"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:404
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
 #: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Detalės"
@@ -286,7 +286,7 @@ msgstr  "Nepavyko pridėti prie bibliotekos"
 msgid   "Added to library."
 msgstr  "Pridėta prie bibliotekos."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:530
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Deja, kito skyriaus nėra! "
 
@@ -298,7 +298,7 @@ msgstr  "Kitas"
 msgid   "reading with"
 msgstr  "skaitymas su"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:537
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "Skaityti"
 
@@ -406,244 +406,244 @@ msgstr  "Ar norite pašalinti"
 msgid   "source?"
 msgstr  "šaltinis?"
 
-#: ../LibraryView.lua:57
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "biblioteka"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "Bibliotekoje mangų nerasta"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Pabandykite pridėti kai kurių laikydami jų vardą paieškos rezultatuose!"
 
-#: ../LibraryView.lua:395
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "Atnaujinta manga"
 
-#: ../LibraryView.lua:444
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "Skaityti toliau"
 
-#: ../LibraryView.lua:453 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Pašalinti iš bibliotekos"
 
-#: ../LibraryView.lua:486
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "Ieškomas kitas skyrius..."
 
-#: ../LibraryView.lua:497
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "Nerasta jokių šios mangos skyrių."
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "Tęsti skaitymą su:"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "Ar norite pašalinti"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "iš tavo bibliotekos?"
 
-#: ../LibraryView.lua:599
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "Ieškoti mangų"
 
-#: ../LibraryView.lua:609
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "Ieškokite mėgstamiausių"
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:630
 msgid   "Refresh mangas"
 msgstr  "Atnaujinkite mangas"
 
-#: ../LibraryView.lua:627
+#: ../LibraryView.lua:638
 msgid   "Refresh details"
 msgstr  "Atnaujinkite informaciją"
 
-#: ../LibraryView.lua:637
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "Švaresni skyriai"
 
-#: ../LibraryView.lua:645
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "Tvarkyti šaltinius"
 
-#: ../LibraryView.lua:655 ../LibraryView.lua:805 ../Settings.lua:227
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Nustatymai"
 
-#: ../LibraryView.lua:663
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "Patikrinkite, ar nėra atnaujinimų"
 
-#: ../LibraryView.lua:672
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "Sinchronizavimo duomenų bazė (beta versija)"
 
-#: ../LibraryView.lua:676
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "Sinchronizuoti su WebDAV..."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Ar norite perkelti vietinę duomenų bazę iš serverio?"
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "Nuotolinė duomenų bazė yra naujesnė nei vietinė."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "Šio veiksmo anuliuoti negalima."
 
-#: ../LibraryView.lua:689
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "Migruoti"
 
-#: ../LibraryView.lua:693
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "Perkeliama duomenų bazė..."
 
-#: ../LibraryView.lua:704 ../LibraryView.lua:751
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "Vietinė duomenų bazė buvo perkelta iš serverio!"
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "Pakeiskite debesį"
 
-#: ../LibraryView.lua:719
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "Keičiamas debesis..."
 
-#: ../LibraryView.lua:729
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Debesų duomenų bazė priverstinai pakeista vietine!"
 
-#: ../LibraryView.lua:747
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "Duomenų bazė jau atnaujinta!"
 
-#: ../LibraryView.lua:749
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "Duomenų bazė sinchronizuota su serveriu!"
 
-#: ../LibraryView.lua:753
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "Sinchronizavimas baigtas!"
 
-#: ../LibraryView.lua:777
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "Manga paieška..."
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "Houseki ne Kuni"
 
-#: ../LibraryView.lua:779 ../LibraryView.lua:855
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "Įveskite mangos pavadinimą, kurio norite ieškoti"
 
-#: ../LibraryView.lua:783 ../LibraryView.lua:792 ../LibraryView.lua:837
-#: ../LibraryView.lua:866
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "Ieškoti"
 
-#: ../LibraryView.lua:837
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "Išskirti šaltinio paiešką"
 
-#: ../LibraryView.lua:852
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "Mėgstamiausia paieška..."
 
-#: ../LibraryView.lua:854
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:906
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "Nuskaitomi failai..."
 
-#: ../LibraryView.lua:921
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "Rasta %d failų."
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Bendras dydis %s."
 
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "„RendOnly“ failų .cbz ir .epub nuskaitymas."
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "Švarus"
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "Ištrinama..."
 
-#: ../LibraryView.lua:950
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Išvalyta nemokama %s saugykla"
 
-#: ../LibraryView.lua:975
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "Atnaujinti mangas..."
 
-#: ../LibraryView.lua:976
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "Atnaujinti visi manga skyriai!"
 
-#: ../LibraryView.lua:977
+#: ../LibraryView.lua:988
 msgid   "Some manga updates fail:"
 msgstr  "Kai kurie mangos naujinimai nepavyksta:"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:999
 msgid   "Refresh manga details..."
 msgstr  "Atnaujinti mangos informaciją..."
 
-#: ../LibraryView.lua:989
+#: ../LibraryView.lua:1000
 msgid   "All manga details refresh!"
 msgstr  "Visos mangos detalės atnaujinamos!"
 
-#: ../LibraryView.lua:990
+#: ../LibraryView.lua:1001
 msgid   "Some manga details refresh fail:"
 msgstr  "Kai kurių mangos detalių atnaujinimas nepavyksta:"
 
-#: ../LibraryView.lua:1006
+#: ../LibraryView.lua:1017
 msgid   "Progress"
 msgstr  "Pažanga"
 
-#: ../LibraryView.lua:1024
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "Valytojas"
 
-#: ../LibraryView.lua:1025
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Raskite ir ištrinkite netinkamus failus, įskaitant failus iš ištrintų šaltinių"
 
-#: ../LibraryView.lua:1025 ../LibraryView.lua:1028
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "Normalus"
 
-#: ../LibraryView.lua:1027
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "SVARBU: Meta failai (žymės, istorija) nesaugomi!"
 
-#: ../LibraryView.lua:1034
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "Skyrius perskaitytas baigtas"
 
@@ -796,109 +796,133 @@ msgstr  "Uždaryti"
 msgid   "Do not show this message again"
 msgstr  "Daugiau nerodyti šio pranešimo"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "Skyrių rūšiavimo režimas"
-
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "Pagal skyrių didėjančia tvarka"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "Pagal skyrių mažėjančia tvarka"
-
-#: ../Settings.lua:47
-msgid   "Library sorting mode"
-msgstr  "Bibliotekos rūšiavimo režimas"
-
-#: ../Settings.lua:49
-msgid   "Order added ascending (Default)"
-msgstr  "Užsakymas pridėtas didėjančia tvarka (numatytasis)"
-
-#: ../Settings.lua:50
-msgid   "Order added descending"
-msgstr  "Užsakymas pridėtas mažėjančia tvarka"
-
-#: ../Settings.lua:51
-msgid   "Title manga ascending"
-msgstr  "Pavadinimas manga didėjančia tvarka"
-
-#: ../Settings.lua:52
-msgid   "Title manga descending"
-msgstr  "Pavadinimas manga mažėjantis"
-
-#: ../Settings.lua:53
-msgid   "Count unread chapters ascending"
-msgstr  "Skaičiuokite neskaitytus skyrius didėjimo tvarka"
-
-#: ../Settings.lua:54
-msgid   "Count unread chapters descending"
-msgstr  "Skaičiuokite neskaitytus skyrius mažėjančia tvarka"
-
-#: ../Settings.lua:55
-msgid   "Last read ascending"
-msgstr  "Paskutinis skaitymas didėjančia tvarka"
-
-#: ../Settings.lua:56
-msgid   "Last read descending"
-msgstr  "Paskutinį kartą skaityta mažėjančia tvarka"
-
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "Skyriaus saugojimo kelias"
-
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "Saugyklos dydžio apribojimas"
-
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "Vienu metu pateikiamos puslapio užklausos"
-
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "WebDAV sinchronizavimas"
-
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "Įgalintas cron tikrinimas, ar nėra manga naujinimų"
-
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "Šaltinio ID praleidžia patikros atnaujinimą"
-
-#: ../Settings.lua:118
-msgid   "Preload chapters on reader open"
-msgstr  "Atidaryti skaitytuvo skyriai iš anksto"
-
-#: ../Settings.lua:129
-msgid   "Optimize page images (experimental)"
-msgstr  "Optimizuoti puslapio vaizdus (eksperimentinis)"
-
-#: ../Settings.lua:137
+#: ../Settings.lua:44
 msgid   "Library view mode"
 msgstr  "Bibliotekos peržiūros režimas"
 
-#: ../Settings.lua:139
+#: ../Settings.lua:46
 msgid   "Base"
 msgstr  "Bazė"
 
-#: ../Settings.lua:140
+#: ../Settings.lua:47
 msgid   "Cover"
 msgstr  "Viršelis"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:48
 msgid   "Grid"
 msgstr  "Tinklelis"
 
-#: ../Settings.lua:202
-msgid   "Allow requisition of the back button"
-msgstr  "Leisti reikalauti atgalinio mygtuko"
+#: ../Settings.lua:57
+msgid   "Library sorting mode"
+msgstr  "Bibliotekos rūšiavimo režimas"
 
-#: ../Settings.lua:214
+#: ../Settings.lua:59
+msgid   "Order added ascending (Default)"
+msgstr  "Užsakymas pridėtas didėjančia tvarka (numatytasis)"
+
+#: ../Settings.lua:60
+msgid   "Order added descending"
+msgstr  "Užsakymas pridėtas mažėjančia tvarka"
+
+#: ../Settings.lua:61
+msgid   "Title manga ascending"
+msgstr  "Pavadinimas manga didėjančia tvarka"
+
+#: ../Settings.lua:62
+msgid   "Title manga descending"
+msgstr  "Pavadinimas manga mažėjantis"
+
+#: ../Settings.lua:63
+msgid   "Count unread chapters ascending"
+msgstr  "Skaičiuokite neskaitytus skyrius didėjimo tvarka"
+
+#: ../Settings.lua:64
+msgid   "Count unread chapters descending"
+msgstr  "Skaičiuokite neskaitytus skyrius mažėjančia tvarka"
+
+#: ../Settings.lua:65
+msgid   "Last read ascending"
+msgstr  "Paskutinis skaitymas didėjančia tvarka"
+
+#: ../Settings.lua:66
+msgid   "Last read descending"
+msgstr  "Paskutinį kartą skaityta mažėjančia tvarka"
+
+#: ../Settings.lua:74
 msgid   "Items per page (0 = auto)"
 msgstr  "Elementų skaičius puslapyje (0 = automatinis)"
+
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "Tinklelio stulpeliai"
+
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "Tinklelio eilutės"
+
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "Skaitytojas"
+
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "Skyrių rūšiavimo režimas"
+
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "Pagal skyrių didėjančia tvarka"
+
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "Pagal skyrių mažėjančia tvarka"
+
+#: ../Settings.lua:122
+msgid   "Preload chapters on reader open"
+msgstr  "Atidaryti skaitytuvo skyriai iš anksto"
+
+#: ../Settings.lua:133
+msgid   "Optimize page images (experimental)"
+msgstr  "Optimizuoti puslapio vaizdus (eksperimentinis)"
+
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "Vienu metu pateikiamos puslapio užklausos"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "Sandėliavimas"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "Skyriaus saugojimo kelias"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "Saugyklos dydžio apribojimas"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "Sinchronizavimas ir atnaujinimai"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "WebDAV sinchronizavimas"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "Įgalintas cron tikrinimas, ar nėra manga naujinimų"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "Šaltinio ID praleidžia patikros atnaujinimą"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "Sistema"
+
+#: ../Settings.lua:207
+msgid   "Allow requisition of the back button"
+msgstr  "Leisti reikalauti atgalinio mygtuko"
 
 #: ../SourceSettings.lua:197
 msgid   "Source settings"
@@ -1049,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "Režimas neprisijungus"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "Gerai"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "Vykdoma..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "Atlikta"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "Pasirinkite"

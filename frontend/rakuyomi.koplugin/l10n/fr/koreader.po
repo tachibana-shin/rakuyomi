@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 17:41+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr  "Le chapitre est verrouillé"
 msgid   "Open"
 msgstr  "Ouvrir"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:384
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "Rafraîchir"
 
@@ -143,7 +143,7 @@ msgstr  "Marque"
 msgid   "Download"
 msgstr  "Télécharger"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:577
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "Retirer"
 
@@ -171,11 +171,11 @@ msgstr  "Démarquage"
 msgid   "chapter..."
 msgstr  "chapitre..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:420
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "Marquer comme lu"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:431
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "Marquer comme non lu"
 
@@ -192,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Marquer les chapitres comme lus ou non lus"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:538 ../LibraryView.lua:811
-#: ../LibraryView.lua:859 ../NotificationView.lua:161
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Annuler"
 
@@ -249,7 +249,7 @@ msgstr  "Êtes-vous sûr de vouloir annuler le téléchargement ?"
 msgid   "Add to Library"
 msgstr  "Ajouter à la bibliothèque"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:404
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
 #: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Détails"
@@ -286,7 +286,7 @@ msgstr  "Échec de l'ajout à la bibliothèque"
 msgid   "Added to library."
 msgstr  "Ajouté à la bibliothèque."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:530
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Malheureusement, aucun prochain chapitre n'est disponible ! "
 
@@ -298,7 +298,7 @@ msgstr  "Suivant"
 msgid   "reading with"
 msgstr  "lire avec"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:537
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "Lire"
 
@@ -406,244 +406,244 @@ msgstr  "Voulez-vous supprimer le"
 msgid   "source?"
 msgstr  "source?"
 
-#: ../LibraryView.lua:57
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "Bibliothèque"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "Aucun manga trouvé dans la bibliothèque"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Essayez d'en ajouter en affichant leur nom dans les résultats de recherche !"
 
-#: ../LibraryView.lua:395
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "Manga rafraîchi"
 
-#: ../LibraryView.lua:444
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "Continuer la lecture"
 
-#: ../LibraryView.lua:453 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Supprimer de la bibliothèque"
 
-#: ../LibraryView.lua:486
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "Trouver le prochain chapitre..."
 
-#: ../LibraryView.lua:497
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "Aucun chapitre trouvé pour ce manga."
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "Reprenez la lecture avec :"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "Voulez-vous supprimer"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "de votre bibliothèque ?"
 
-#: ../LibraryView.lua:599
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "Rechercher des mangas"
 
-#: ../LibraryView.lua:609
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "Rechercher des favoris"
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:630
 msgid   "Refresh mangas"
 msgstr  "Actualiser les mangas"
 
-#: ../LibraryView.lua:627
+#: ../LibraryView.lua:638
 msgid   "Refresh details"
 msgstr  "Actualiser les détails"
 
-#: ../LibraryView.lua:637
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "Des chapitres plus propres"
 
-#: ../LibraryView.lua:645
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "Gérer les sources"
 
-#: ../LibraryView.lua:655 ../LibraryView.lua:805 ../Settings.lua:227
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Paramètres"
 
-#: ../LibraryView.lua:663
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "Vérifier les mises à jour"
 
-#: ../LibraryView.lua:672
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "Synchroniser la base de données (bêta)"
 
-#: ../LibraryView.lua:676
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "Synchroniser avec WebDAV..."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Voulez-vous migrer votre base de données locale depuis le serveur ?"
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "La base de données distante est plus récente que la base de données locale."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "Cette action ne peut pas être annulée."
 
-#: ../LibraryView.lua:689
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "Émigrer"
 
-#: ../LibraryView.lua:693
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "Migration de la base de données..."
 
-#: ../LibraryView.lua:704 ../LibraryView.lua:751
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "La base de données locale a été migrée depuis le serveur !"
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "Remplacer le cloud"
 
-#: ../LibraryView.lua:719
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "Remplacement du cloud..."
 
-#: ../LibraryView.lua:729
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "La base de données cloud a été remplacée de force par une base de données locale !"
 
-#: ../LibraryView.lua:747
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "La base de données est déjà à jour !"
 
-#: ../LibraryView.lua:749
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "La base de données a été synchronisée avec le serveur !"
 
-#: ../LibraryView.lua:753
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "Synchronisation terminée !"
 
-#: ../LibraryView.lua:777
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "Recherche de mangas..."
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "Houseki-no-Kuni"
 
-#: ../LibraryView.lua:779 ../LibraryView.lua:855
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "Tapez le nom du manga à rechercher"
 
-#: ../LibraryView.lua:783 ../LibraryView.lua:792 ../LibraryView.lua:837
-#: ../LibraryView.lua:866
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "Recherche"
 
-#: ../LibraryView.lua:837
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "Exclure la recherche de source pour"
 
-#: ../LibraryView.lua:852
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "Recherche favorite..."
 
-#: ../LibraryView.lua:854
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:906
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "Analyse des fichiers..."
 
-#: ../LibraryView.lua:921
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "%d fichiers trouvés."
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Taille totale %s."
 
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "Analyse des fichiers RendOnly .cbz et .epub."
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "Faire le ménage"
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "Suppression..."
 
-#: ../LibraryView.lua:950
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Espace de stockage %s gratuit nettoyé"
 
-#: ../LibraryView.lua:975
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "Actualiser les mangas..."
 
-#: ../LibraryView.lua:976
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "Tous les chapitres du manga mis à jour !"
 
-#: ../LibraryView.lua:977
+#: ../LibraryView.lua:988
 msgid   "Some manga updates fail:"
 msgstr  "Certaines mises à jour de mangas échouent :"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:999
 msgid   "Refresh manga details..."
 msgstr  "Actualiser les détails du manga..."
 
-#: ../LibraryView.lua:989
+#: ../LibraryView.lua:1000
 msgid   "All manga details refresh!"
 msgstr  "Tous les détails du manga sont actualisés !"
 
-#: ../LibraryView.lua:990
+#: ../LibraryView.lua:1001
 msgid   "Some manga details refresh fail:"
 msgstr  "L'actualisation de certains détails du manga échoue :"
 
-#: ../LibraryView.lua:1006
+#: ../LibraryView.lua:1017
 msgid   "Progress"
 msgstr  "Progrès"
 
-#: ../LibraryView.lua:1024
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "Nettoyeur"
 
-#: ../LibraryView.lua:1025
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Rechercher et supprimer les fichiers invalides, y compris les fichiers provenant de sources supprimées"
 
-#: ../LibraryView.lua:1025 ../LibraryView.lua:1028
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "Normale"
 
-#: ../LibraryView.lua:1027
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "IMPORTANT : Les méta-fichiers (signet, historique) ne sont pas conservés !"
 
-#: ../LibraryView.lua:1034
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "Chapitre lu terminé"
 
@@ -796,109 +796,133 @@ msgstr  "Fermer"
 msgid   "Do not show this message again"
 msgstr  "Ne plus afficher ce message"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "Mode de tri des chapitres"
-
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "Par chapitre ascendant"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "Par chapitre décroissant"
-
-#: ../Settings.lua:47
-msgid   "Library sorting mode"
-msgstr  "Mode de tri de la bibliothèque"
-
-#: ../Settings.lua:49
-msgid   "Order added ascending (Default)"
-msgstr  "Ordre ajouté par ordre croissant (par défaut)"
-
-#: ../Settings.lua:50
-msgid   "Order added descending"
-msgstr  "Ordre ajouté décroissant"
-
-#: ../Settings.lua:51
-msgid   "Title manga ascending"
-msgstr  "Titre du manga ascendant"
-
-#: ../Settings.lua:52
-msgid   "Title manga descending"
-msgstr  "Titre du manga décroissant"
-
-#: ../Settings.lua:53
-msgid   "Count unread chapters ascending"
-msgstr  "Compter les chapitres non lus par ordre croissant"
-
-#: ../Settings.lua:54
-msgid   "Count unread chapters descending"
-msgstr  "Compter les chapitres non lus par ordre décroissant"
-
-#: ../Settings.lua:55
-msgid   "Last read ascending"
-msgstr  "Dernière lecture par ordre croissant"
-
-#: ../Settings.lua:56
-msgid   "Last read descending"
-msgstr  "Dernière lecture décroissante"
-
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "Chemin de stockage des chapitres"
-
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "Limite de taille de stockage"
-
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "Demandes de pages simultanées"
-
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "Synchronisation WebDAV"
-
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "Activation de la vérification cron pour les mises à jour des mangas"
-
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "Les identifiants sources ignorent la mise à jour de la vérification"
-
-#: ../Settings.lua:118
-msgid   "Preload chapters on reader open"
-msgstr  "Précharger les chapitres sur le lecteur ouvert"
-
-#: ../Settings.lua:129
-msgid   "Optimize page images (experimental)"
-msgstr  "Optimiser les images de la page (expérimental)"
-
-#: ../Settings.lua:137
+#: ../Settings.lua:44
 msgid   "Library view mode"
 msgstr  "Mode d'affichage de la bibliothèque"
 
-#: ../Settings.lua:139
+#: ../Settings.lua:46
 msgid   "Base"
 msgstr  "Base"
 
-#: ../Settings.lua:140
+#: ../Settings.lua:47
 msgid   "Cover"
 msgstr  "Couverture"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:48
 msgid   "Grid"
 msgstr  "Grille"
 
-#: ../Settings.lua:202
-msgid   "Allow requisition of the back button"
-msgstr  "Autoriser la réquisition du bouton retour"
+#: ../Settings.lua:57
+msgid   "Library sorting mode"
+msgstr  "Mode de tri de la bibliothèque"
 
-#: ../Settings.lua:214
+#: ../Settings.lua:59
+msgid   "Order added ascending (Default)"
+msgstr  "Ordre ajouté par ordre croissant (par défaut)"
+
+#: ../Settings.lua:60
+msgid   "Order added descending"
+msgstr  "Ordre ajouté décroissant"
+
+#: ../Settings.lua:61
+msgid   "Title manga ascending"
+msgstr  "Titre du manga ascendant"
+
+#: ../Settings.lua:62
+msgid   "Title manga descending"
+msgstr  "Titre du manga décroissant"
+
+#: ../Settings.lua:63
+msgid   "Count unread chapters ascending"
+msgstr  "Compter les chapitres non lus par ordre croissant"
+
+#: ../Settings.lua:64
+msgid   "Count unread chapters descending"
+msgstr  "Compter les chapitres non lus par ordre décroissant"
+
+#: ../Settings.lua:65
+msgid   "Last read ascending"
+msgstr  "Dernière lecture par ordre croissant"
+
+#: ../Settings.lua:66
+msgid   "Last read descending"
+msgstr  "Dernière lecture décroissante"
+
+#: ../Settings.lua:74
 msgid   "Items per page (0 = auto)"
 msgstr  "Articles par page (0 = auto)"
+
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "Colonnes de la grille"
+
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "Lignes de grille"
+
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "Lecteur"
+
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "Mode de tri des chapitres"
+
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "Par chapitre ascendant"
+
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "Par chapitre décroissant"
+
+#: ../Settings.lua:122
+msgid   "Preload chapters on reader open"
+msgstr  "Précharger les chapitres sur le lecteur ouvert"
+
+#: ../Settings.lua:133
+msgid   "Optimize page images (experimental)"
+msgstr  "Optimiser les images de la page (expérimental)"
+
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "Demandes de pages simultanées"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "Stockage"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "Chemin de stockage des chapitres"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "Limite de taille de stockage"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "Synchronisation et mises à jour"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "Synchronisation WebDAV"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "Activation de la vérification cron pour les mises à jour des mangas"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "Les identifiants sources ignorent la mise à jour de la vérification"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "Système"
+
+#: ../Settings.lua:207
+msgid   "Allow requisition of the back button"
+msgstr  "Autoriser la réquisition du bouton retour"
 
 #: ../SourceSettings.lua:197
 msgid   "Source settings"
@@ -1049,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "Mode hors ligne"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "D'accord"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "Exécution..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "Fait"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "Sélectionner"

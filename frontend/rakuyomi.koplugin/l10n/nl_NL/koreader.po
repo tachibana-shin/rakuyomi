@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 17:41+0700\n"
+        "POT-Creation-Date: 2026-03-01 22:16+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr  "Hoofdstuk is vergrendeld"
 msgid   "Open"
 msgstr  "Open"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:384
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:395
 msgid   "Refresh"
 msgstr  "Vernieuwen"
 
@@ -143,7 +143,7 @@ msgstr  "Markering"
 msgid   "Download"
 msgstr  "Downloaden"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:577
+#: ../ChapterListing.lua:541 ../LibraryView.lua:588
 msgid   "Remove"
 msgstr  "Verwijderen"
 
@@ -171,11 +171,11 @@ msgstr  "Ontmarkering"
 msgid   "chapter..."
 msgstr  "hoofdstuk..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:420
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:431
 msgid   "Mark read"
 msgstr  "Markeer gelezen"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:431
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:442
 msgid   "Mark unread"
 msgstr  "Markeer als ongelezen"
 
@@ -192,9 +192,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Markeer hoofdstukken als gelezen of ongelezen"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:538 ../LibraryView.lua:811
-#: ../LibraryView.lua:859 ../NotificationView.lua:161
-#: ../widgets/SettingItemValue.lua:162
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:549 ../LibraryView.lua:822
+#: ../LibraryView.lua:870 ../NotificationView.lua:161
+#: ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Annuleren"
 
@@ -249,7 +249,7 @@ msgstr  "Weet u zeker dat u de download wilt annuleren?"
 msgid   "Add to Library"
 msgstr  "Toevoegen aan bibliotheek"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:404
+#: ../ChapterListing.lua:974 ../LibraryView.lua:415
 #: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Details"
@@ -286,7 +286,7 @@ msgstr  "Kan niet toevoegen aan bibliotheek"
 msgid   "Added to library."
 msgstr  "Toegevoegd aan bibliotheek."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:530
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:541
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Helaas is er geen volgend hoofdstuk beschikbaar! "
 
@@ -298,7 +298,7 @@ msgstr  "Volgende"
 msgid   "reading with"
 msgstr  "lezen met"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:537
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:548
 msgid   "Read"
 msgstr  "Lezen"
 
@@ -406,244 +406,244 @@ msgstr  "Wilt u de"
 msgid   "source?"
 msgstr  "bron?"
 
-#: ../LibraryView.lua:57
+#: ../LibraryView.lua:58 ../Settings.lua:38
 msgid   "Library"
 msgstr  "Bibliotheek"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "No mangas found in library"
 msgstr  "Geen manga's gevonden in de bibliotheek"
 
-#: ../LibraryView.lua:318
+#: ../LibraryView.lua:329
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Probeer er een paar toe te voegen door hun naam in de zoekresultaten te houden!"
 
-#: ../LibraryView.lua:395
+#: ../LibraryView.lua:406
 msgid   "Refreshed manga"
 msgstr  "Vernieuwde manga"
 
-#: ../LibraryView.lua:444
+#: ../LibraryView.lua:455
 msgid   "Continue Reading"
 msgstr  "Ga door met lezen"
 
-#: ../LibraryView.lua:453 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:464 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Verwijderen uit bibliotheek"
 
-#: ../LibraryView.lua:486
+#: ../LibraryView.lua:497
 msgid   "Finding next chapter..."
 msgstr  "Volgend hoofdstuk zoeken..."
 
-#: ../LibraryView.lua:497
+#: ../LibraryView.lua:508
 msgid   "No chapters found for this manga."
 msgstr  "Geen hoofdstukken gevonden voor deze manga."
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:547
 msgid   "Resume reading with:"
 msgstr  "Hervat het lezen met:"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "Do you want to remove"
 msgstr  "Wilt u verwijderen"
 
-#: ../LibraryView.lua:576
+#: ../LibraryView.lua:587
 msgid   "from your library?"
 msgstr  "uit uw bibliotheek?"
 
-#: ../LibraryView.lua:599
+#: ../LibraryView.lua:610
 msgid   "Search for mangas"
 msgstr  "Zoek naar manga's"
 
-#: ../LibraryView.lua:609
+#: ../LibraryView.lua:620
 msgid   "Search favorites"
 msgstr  "Zoek favorieten"
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:630
 msgid   "Refresh mangas"
 msgstr  "Vernieuw manga's"
 
-#: ../LibraryView.lua:627
+#: ../LibraryView.lua:638
 msgid   "Refresh details"
 msgstr  "Details vernieuwen"
 
-#: ../LibraryView.lua:637
+#: ../LibraryView.lua:648
 msgid   "Cleaner chapters"
 msgstr  "Schonere hoofdstukken"
 
-#: ../LibraryView.lua:645
+#: ../LibraryView.lua:656
 msgid   "Manage sources"
 msgstr  "Beheer bronnen"
 
-#: ../LibraryView.lua:655 ../LibraryView.lua:805 ../Settings.lua:227
+#: ../LibraryView.lua:666 ../LibraryView.lua:816 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Instellingen"
 
-#: ../LibraryView.lua:663
+#: ../LibraryView.lua:674
 msgid   "Check for updates"
 msgstr  "Controleer op updates"
 
-#: ../LibraryView.lua:672
+#: ../LibraryView.lua:683
 msgid   "Sync Database (Beta)"
 msgstr  "Database synchroniseren (bèta)"
 
-#: ../LibraryView.lua:676
+#: ../LibraryView.lua:687
 msgid   "Sync to WebDAV..."
 msgstr  "Synchroniseren met WebDAV..."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Wilt u uw lokale database vanaf de server migreren?"
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "The remote database is newer than the local one."
 msgstr  "De externe database is nieuwer dan de lokale."
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:699
 msgid   "This action cannot be undone."
 msgstr  "Deze actie kan niet ongedaan worden gemaakt."
 
-#: ../LibraryView.lua:689
+#: ../LibraryView.lua:700
 msgid   "Migrate"
 msgstr  "Migreren"
 
-#: ../LibraryView.lua:693
+#: ../LibraryView.lua:704
 msgid   "Migrating database..."
 msgstr  "Database migreren..."
 
-#: ../LibraryView.lua:704 ../LibraryView.lua:751
+#: ../LibraryView.lua:715 ../LibraryView.lua:762
 msgid   "Local database has been migrated from the server!"
 msgstr  "Lokale database is gemigreerd van de server!"
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:726
 msgid   "Replace Cloud"
 msgstr  "Vervang wolk"
 
-#: ../LibraryView.lua:719
+#: ../LibraryView.lua:730
 msgid   "Replacing cloud..."
 msgstr  "Wolk vervangen..."
 
-#: ../LibraryView.lua:729
+#: ../LibraryView.lua:740
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "De clouddatabase is noodgedwongen vervangen door een lokale database!"
 
-#: ../LibraryView.lua:747
+#: ../LibraryView.lua:758
 msgid   "Database is already up to date!"
 msgstr  "Database is al up-to-date!"
 
-#: ../LibraryView.lua:749
+#: ../LibraryView.lua:760
 msgid   "Database has been synced to the server!"
 msgstr  "Database is gesynchroniseerd met de server!"
 
-#: ../LibraryView.lua:753
+#: ../LibraryView.lua:764
 msgid   "Sync completed!"
 msgstr  "Synchronisatie voltooid!"
 
-#: ../LibraryView.lua:777
+#: ../LibraryView.lua:788
 msgid   "Manga search..."
 msgstr  "Manga-zoekopdracht..."
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:789
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:779 ../LibraryView.lua:855
+#: ../LibraryView.lua:790 ../LibraryView.lua:866
 msgid   "Type the manga name to search for"
 msgstr  "Typ de manganaam waarnaar u wilt zoeken"
 
-#: ../LibraryView.lua:783 ../LibraryView.lua:792 ../LibraryView.lua:837
-#: ../LibraryView.lua:866
+#: ../LibraryView.lua:794 ../LibraryView.lua:803 ../LibraryView.lua:848
+#: ../LibraryView.lua:877
 msgid   "Search"
 msgstr  "Zoekopdracht"
 
-#: ../LibraryView.lua:837
+#: ../LibraryView.lua:848
 msgid   "Exclude source search for"
 msgstr  "Zoek naar bronnen uitsluiten"
 
-#: ../LibraryView.lua:852
+#: ../LibraryView.lua:863
 msgid   "Favorite search..."
 msgstr  "Favoriete zoekopdracht..."
 
-#: ../LibraryView.lua:854
+#: ../LibraryView.lua:865
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:906
+#: ../LibraryView.lua:917
 msgid   "Scaning files..."
 msgstr  "Bestanden scannen..."
 
-#: ../LibraryView.lua:921
+#: ../LibraryView.lua:932
 #, lua-format
 msgid   "Found %d files."
 msgstr  "%d bestanden gevonden."
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:933
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Totale grootte %s."
 
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:934
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly-bestand .cbz en .epub-scan."
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:938
 msgid   "Clean"
 msgstr  "Schoon"
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:943
 msgid   "Deleting..."
 msgstr  "Verwijderen..."
 
-#: ../LibraryView.lua:950
+#: ../LibraryView.lua:961
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Vrije %s opslagruimte opgeschoond"
 
-#: ../LibraryView.lua:975
+#: ../LibraryView.lua:986
 msgid   "Refresh mangas..."
 msgstr  "Manga's vernieuwen..."
 
-#: ../LibraryView.lua:976
+#: ../LibraryView.lua:987
 msgid   "All chapters manga updated!"
 msgstr  "Alle hoofdstukken manga bijgewerkt!"
 
-#: ../LibraryView.lua:977
+#: ../LibraryView.lua:988
 msgid   "Some manga updates fail:"
 msgstr  "Sommige manga-updates mislukken:"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:999
 msgid   "Refresh manga details..."
 msgstr  "Manga-details vernieuwen..."
 
-#: ../LibraryView.lua:989
+#: ../LibraryView.lua:1000
 msgid   "All manga details refresh!"
 msgstr  "Alle mangadetails worden vernieuwd!"
 
-#: ../LibraryView.lua:990
+#: ../LibraryView.lua:1001
 msgid   "Some manga details refresh fail:"
 msgstr  "Het vernieuwen van sommige mangadetails mislukt:"
 
-#: ../LibraryView.lua:1006
+#: ../LibraryView.lua:1017
 msgid   "Progress"
 msgstr  "Voortgang"
 
-#: ../LibraryView.lua:1024
+#: ../LibraryView.lua:1035
 msgid   "Cleaner"
 msgstr  "Schoner"
 
-#: ../LibraryView.lua:1025
+#: ../LibraryView.lua:1036
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Zoek en verwijder ongeldige bestanden, inclusief bestanden uit verwijderde bronnen"
 
-#: ../LibraryView.lua:1025 ../LibraryView.lua:1028
+#: ../LibraryView.lua:1036 ../LibraryView.lua:1039
 msgid   "Normal"
 msgstr  "Normaal"
 
-#: ../LibraryView.lua:1027
+#: ../LibraryView.lua:1038
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "BELANGRIJK: Metabestanden (bladwijzer, geschiedenis) worden niet bewaard!"
 
-#: ../LibraryView.lua:1034
+#: ../LibraryView.lua:1045
 msgid   "Chapter read done"
 msgstr  "Hoofdstuk gelezen klaar"
 
@@ -796,109 +796,133 @@ msgstr  "Dichtbij"
 msgid   "Do not show this message again"
 msgstr  "Laat dit bericht niet meer zien"
 
-#: ../Settings.lua:36
-msgid   "Chapter sorting mode"
-msgstr  "Sorteermodus voor hoofdstukken"
-
-#: ../Settings.lua:38
-msgid   "By chapter ascending"
-msgstr  "Per hoofdstuk oplopend"
-
-#: ../Settings.lua:39
-msgid   "By chapter descending"
-msgstr  "Per hoofdstuk aflopend"
-
-#: ../Settings.lua:47
-msgid   "Library sorting mode"
-msgstr  "Sorteermodus van bibliotheek"
-
-#: ../Settings.lua:49
-msgid   "Order added ascending (Default)"
-msgstr  "Volgorde oplopend toegevoegd (standaard)"
-
-#: ../Settings.lua:50
-msgid   "Order added descending"
-msgstr  "Volgorde aflopend toegevoegd"
-
-#: ../Settings.lua:51
-msgid   "Title manga ascending"
-msgstr  "Titel manga oplopend"
-
-#: ../Settings.lua:52
-msgid   "Title manga descending"
-msgstr  "Titel manga aflopend"
-
-#: ../Settings.lua:53
-msgid   "Count unread chapters ascending"
-msgstr  "Tel ongelezen hoofdstukken oplopend"
-
-#: ../Settings.lua:54
-msgid   "Count unread chapters descending"
-msgstr  "Tel ongelezen hoofdstukken aflopend"
-
-#: ../Settings.lua:55
-msgid   "Last read ascending"
-msgstr  "Laatst gelezen oplopend"
-
-#: ../Settings.lua:56
-msgid   "Last read descending"
-msgstr  "Laatst gelezen aflopend"
-
-#: ../Settings.lua:64
-msgid   "Chapter storage path"
-msgstr  "Hoofdstukopslagpad"
-
-#: ../Settings.lua:73
-msgid   "Storage size limit"
-msgstr  "Limiet voor opslaggrootte"
-
-#: ../Settings.lua:83
-msgid   "Concurrent page requests"
-msgstr  "Gelijktijdige paginaverzoeken"
-
-#: ../Settings.lua:94
-msgid   "WebDAV Sync"
-msgstr  "WebDAV-synchronisatie"
-
-#: ../Settings.lua:102
-msgid   "Enabled cron check for manga updates"
-msgstr  "Cron-controle op manga-updates ingeschakeld"
-
-#: ../Settings.lua:110
-msgid   "Source IDs skip check update"
-msgstr  "Bron-ID's slaan de controle-update over"
-
-#: ../Settings.lua:118
-msgid   "Preload chapters on reader open"
-msgstr  "Hoofdstukken vooraf laden op reader geopend"
-
-#: ../Settings.lua:129
-msgid   "Optimize page images (experimental)"
-msgstr  "Pagina-afbeeldingen optimaliseren (experimenteel)"
-
-#: ../Settings.lua:137
+#: ../Settings.lua:44
 msgid   "Library view mode"
 msgstr  "Bibliotheekweergavemodus"
 
-#: ../Settings.lua:139
+#: ../Settings.lua:46
 msgid   "Base"
 msgstr  "Baseren"
 
-#: ../Settings.lua:140
+#: ../Settings.lua:47
 msgid   "Cover"
 msgstr  "Omslag"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:48
 msgid   "Grid"
 msgstr  "Rooster"
 
-#: ../Settings.lua:202
-msgid   "Allow requisition of the back button"
-msgstr  "Sta het aanvragen van de terugknop toe"
+#: ../Settings.lua:57
+msgid   "Library sorting mode"
+msgstr  "Sorteermodus van bibliotheek"
 
-#: ../Settings.lua:214
+#: ../Settings.lua:59
+msgid   "Order added ascending (Default)"
+msgstr  "Volgorde oplopend toegevoegd (standaard)"
+
+#: ../Settings.lua:60
+msgid   "Order added descending"
+msgstr  "Volgorde aflopend toegevoegd"
+
+#: ../Settings.lua:61
+msgid   "Title manga ascending"
+msgstr  "Titel manga oplopend"
+
+#: ../Settings.lua:62
+msgid   "Title manga descending"
+msgstr  "Titel manga aflopend"
+
+#: ../Settings.lua:63
+msgid   "Count unread chapters ascending"
+msgstr  "Tel ongelezen hoofdstukken oplopend"
+
+#: ../Settings.lua:64
+msgid   "Count unread chapters descending"
+msgstr  "Tel ongelezen hoofdstukken aflopend"
+
+#: ../Settings.lua:65
+msgid   "Last read ascending"
+msgstr  "Laatst gelezen oplopend"
+
+#: ../Settings.lua:66
+msgid   "Last read descending"
+msgstr  "Laatst gelezen aflopend"
+
+#: ../Settings.lua:74
 msgid   "Items per page (0 = auto)"
 msgstr  "Artikelen per pagina (0 = automatisch)"
+
+#: ../Settings.lua:85
+msgid   "Grid columns"
+msgstr  "Rasterkolommen"
+
+#: ../Settings.lua:96
+msgid   "Grid rows"
+msgstr  "Raster rijen"
+
+#: ../Settings.lua:105
+msgid   "Reader"
+msgstr  "Lezer"
+
+#: ../Settings.lua:111
+msgid   "Chapter sorting mode"
+msgstr  "Sorteermodus voor hoofdstukken"
+
+#: ../Settings.lua:113
+msgid   "By chapter ascending"
+msgstr  "Per hoofdstuk oplopend"
+
+#: ../Settings.lua:114
+msgid   "By chapter descending"
+msgstr  "Per hoofdstuk aflopend"
+
+#: ../Settings.lua:122
+msgid   "Preload chapters on reader open"
+msgstr  "Hoofdstukken vooraf laden op reader geopend"
+
+#: ../Settings.lua:133
+msgid   "Optimize page images (experimental)"
+msgstr  "Pagina-afbeeldingen optimaliseren (experimenteel)"
+
+#: ../Settings.lua:141
+msgid   "Concurrent page requests"
+msgstr  "Gelijktijdige paginaverzoeken"
+
+#: ../Settings.lua:150
+msgid   "Storage"
+msgstr  "Opslag"
+
+#: ../Settings.lua:156
+msgid   "Chapter storage path"
+msgstr  "Hoofdstukopslagpad"
+
+#: ../Settings.lua:165
+msgid   "Storage size limit"
+msgstr  "Limiet voor opslaggrootte"
+
+#: ../Settings.lua:173
+msgid   "Sync & Updates"
+msgstr  "Synchronisatie en updates"
+
+#: ../Settings.lua:179
+msgid   "WebDAV Sync"
+msgstr  "WebDAV-synchronisatie"
+
+#: ../Settings.lua:187
+msgid   "Enabled cron check for manga updates"
+msgstr  "Cron-controle op manga-updates ingeschakeld"
+
+#: ../Settings.lua:195
+msgid   "Source IDs skip check update"
+msgstr  "Bron-ID's slaan de controle-update over"
+
+#: ../Settings.lua:201
+msgid   "System"
+msgstr  "Systeem"
+
+#: ../Settings.lua:207
+msgid   "Allow requisition of the back button"
+msgstr  "Sta het aanvragen van de terugknop toe"
 
 #: ../SourceSettings.lua:197
 msgid   "Source settings"
@@ -1049,18 +1073,18 @@ msgstr  "Ch."
 msgid   "Offline mode"
 msgstr  "Offline-modus"
 
-#: ../widgets/SettingItemValue.lua:161
+#: ../widgets/SettingItemValue.lua:162
 msgid   "Ok"
 msgstr  "OK"
 
-#: ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:168
 msgid   "Executing..."
 msgstr  "Uitvoeren..."
 
-#: ../widgets/SettingItemValue.lua:180
+#: ../widgets/SettingItemValue.lua:181
 msgid   "Done"
 msgstr  "Klaar"
 
-#: ../widgets/SettingItemValue.lua:235
+#: ../widgets/SettingItemValue.lua:236
 msgid   "Select"
 msgstr  "Selecteer"

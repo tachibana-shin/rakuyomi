@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 12:54+0700\n"
+        "POT-Creation-Date: 2026-03-01 17:41+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -48,6 +48,35 @@ msgstr  "Hãy thử thêm một số danh sách nguồn bằng cách xem README 
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "Đang cài đặt nguồn..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "Đã hủy!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "Hoàn thành!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "Chờ cho đến khi bị hủy…"
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "Xử lý..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "Đã xảy ra lỗi"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "Lỗi không xác định"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "Lỗi"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -98,7 +127,7 @@ msgstr  "Chương bị khóa"
 msgid   "Open"
 msgstr  "Mở"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:379
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:384
 msgid   "Refresh"
 msgstr  "Làm mới"
 
@@ -114,7 +143,7 @@ msgstr  "Đánh dấu"
 msgid   "Download"
 msgstr  "Tải xuống"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:572
+#: ../ChapterListing.lua:541 ../LibraryView.lua:577
 msgid   "Remove"
 msgstr  "Di dời"
 
@@ -142,11 +171,11 @@ msgstr  "Bỏ đánh dấu"
 msgid   "chapter..."
 msgstr  "chương..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:415
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:420
 msgid   "Mark read"
 msgstr  "Đánh dấu đã đọc"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:426
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:431
 msgid   "Mark unread"
 msgstr  "Đánh dấu là chưa đọc"
 
@@ -163,8 +192,8 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Đánh dấu các chương là đã đọc hoặc chưa đọc"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:533 ../LibraryView.lua:806
-#: ../LibraryView.lua:854 ../NotificationView.lua:161
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:538 ../LibraryView.lua:811
+#: ../LibraryView.lua:859 ../NotificationView.lua:161
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "Hủy bỏ"
@@ -220,8 +249,8 @@ msgstr  "Bạn có chắc chắn muốn hủy tải xuống không?"
 msgid   "Add to Library"
 msgstr  "Thêm vào thư viện"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:399
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:404
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "Chi tiết"
 
@@ -257,7 +286,7 @@ msgstr  "Không thể thêm vào thư viện"
 msgid   "Added to library."
 msgstr  "Đã thêm vào thư viện."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:525
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:530
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Tiếc là chưa có chương tiếp theo! "
 
@@ -269,7 +298,7 @@ msgstr  "Kế tiếp"
 msgid   "reading with"
 msgstr  "đọc với"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:532
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:537
 msgid   "Read"
 msgstr  "Đọc"
 
@@ -333,29 +362,21 @@ msgstr  "Đang tải xuống tất cả các chương, việc này sẽ mất m�
 msgid   "Tap outside this message to cancel."
 msgstr  "Nhấn vào bên ngoài tin nhắn này để hủy."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "Đã hủy tải xuống!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "Tải xuống hoàn tất!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "Chờ cho đến khi quá trình tải xuống bị hủy…"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "Đang tải các chương xuống, việc này sẽ mất một lúc…"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "Đang tải các chương xuống, việc này sẽ mất một lúc… ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "Tải xuống hoàn tất!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "Đã xảy ra lỗi khi tải xuống các chương"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "Đã hủy tải xuống!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -385,240 +406,244 @@ msgstr  "Bạn có muốn loại bỏ"
 msgid   "source?"
 msgstr  "nguồn?"
 
-#: ../LibraryView.lua:52
+#: ../LibraryView.lua:57
 msgid   "Library"
 msgstr  "Thư viện"
 
-#: ../LibraryView.lua:313
+#: ../LibraryView.lua:318
 msgid   "No mangas found in library"
 msgstr  "Không tìm thấy truyện tranh nào trong thư viện"
 
-#: ../LibraryView.lua:313
+#: ../LibraryView.lua:318
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Hãy thử thêm một số bằng cách giữ tên của họ trên kết quả tìm kiếm!"
 
-#: ../LibraryView.lua:390
+#: ../LibraryView.lua:395
 msgid   "Refreshed manga"
 msgstr  "Truyện tranh được làm mới"
 
-#: ../LibraryView.lua:439
+#: ../LibraryView.lua:444
 msgid   "Continue Reading"
 msgstr  "Tiếp tục đọc"
 
-#: ../LibraryView.lua:448 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:453 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "Xóa khỏi Thư viện"
 
-#: ../LibraryView.lua:481
+#: ../LibraryView.lua:486
 msgid   "Finding next chapter..."
 msgstr  "Đang tìm chương tiếp theo..."
 
-#: ../LibraryView.lua:492
+#: ../LibraryView.lua:497
 msgid   "No chapters found for this manga."
 msgstr  "Không tìm thấy chương nào cho manga này."
 
-#: ../LibraryView.lua:531
+#: ../LibraryView.lua:536
 msgid   "Resume reading with:"
 msgstr  "Tiếp tục đọc với:"
 
-#: ../LibraryView.lua:571
+#: ../LibraryView.lua:576
 msgid   "Do you want to remove"
 msgstr  "Bạn có muốn xóa"
 
-#: ../LibraryView.lua:571
+#: ../LibraryView.lua:576
 msgid   "from your library?"
 msgstr  "từ thư viện của bạn?"
 
-#: ../LibraryView.lua:594
+#: ../LibraryView.lua:599
 msgid   "Search for mangas"
 msgstr  "Tìm kiếm"
 
-#: ../LibraryView.lua:604
+#: ../LibraryView.lua:609
 msgid   "Search favorites"
 msgstr  "Tìm kiếm yêu thích"
 
-#: ../LibraryView.lua:614
+#: ../LibraryView.lua:619
 msgid   "Refresh mangas"
 msgstr  "Làm mới"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:627
 msgid   "Refresh details"
 msgstr  "Làm mới chi tiết"
 
-#: ../LibraryView.lua:632
+#: ../LibraryView.lua:637
 msgid   "Cleaner chapters"
 msgstr  "Trình dọn rác"
 
-#: ../LibraryView.lua:640
+#: ../LibraryView.lua:645
 msgid   "Manage sources"
 msgstr  "Quản lý nguồn"
 
-#: ../LibraryView.lua:650 ../LibraryView.lua:800 ../Settings.lua:226
+#: ../LibraryView.lua:655 ../LibraryView.lua:805 ../Settings.lua:227
 msgid   "Settings"
 msgstr  "Cài đặt"
 
-#: ../LibraryView.lua:658
+#: ../LibraryView.lua:663
 msgid   "Check for updates"
 msgstr  "Kiểm tra các bản cập nhật"
 
-#: ../LibraryView.lua:667
+#: ../LibraryView.lua:672
 msgid   "Sync Database (Beta)"
 msgstr  "Đồng bộ hóa cơ sở dữ liệu (Beta)"
 
-#: ../LibraryView.lua:671
+#: ../LibraryView.lua:676
 msgid   "Sync to WebDAV..."
 msgstr  "Đồng bộ hóa với WebDAV..."
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Bạn có muốn di chuyển cơ sở dữ liệu cục bộ của mình từ máy chủ không?"
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "The remote database is newer than the local one."
 msgstr  "Cơ sở dữ liệu từ xa mới hơn cơ sở dữ liệu cục bộ."
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "This action cannot be undone."
 msgstr  "Không thể hoàn tác hành động này."
 
-#: ../LibraryView.lua:684
+#: ../LibraryView.lua:689
 msgid   "Migrate"
 msgstr  "Di cư"
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:693
 msgid   "Migrating database..."
 msgstr  "Đang di chuyển cơ sở dữ liệu..."
 
-#: ../LibraryView.lua:699 ../LibraryView.lua:746
+#: ../LibraryView.lua:704 ../LibraryView.lua:751
 msgid   "Local database has been migrated from the server!"
 msgstr  "Cơ sở dữ liệu cục bộ đã được di chuyển khỏi máy chủ!"
 
-#: ../LibraryView.lua:710
+#: ../LibraryView.lua:715
 msgid   "Replace Cloud"
 msgstr  "Thay thế đám mây"
 
-#: ../LibraryView.lua:714
+#: ../LibraryView.lua:719
 msgid   "Replacing cloud..."
 msgstr  "Thay thế đám mây..."
 
-#: ../LibraryView.lua:724
+#: ../LibraryView.lua:729
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Cơ sở dữ liệu đám mây đã bị buộc phải thay thế bằng cơ sở dữ liệu cục bộ!"
 
-#: ../LibraryView.lua:742
+#: ../LibraryView.lua:747
 msgid   "Database is already up to date!"
 msgstr  "Cơ sở dữ liệu đã được cập nhật!"
 
-#: ../LibraryView.lua:744
+#: ../LibraryView.lua:749
 msgid   "Database has been synced to the server!"
 msgstr  "Cơ sở dữ liệu đã được đồng bộ hóa với máy chủ!"
 
-#: ../LibraryView.lua:748
+#: ../LibraryView.lua:753
 msgid   "Sync completed!"
 msgstr  "Đồng bộ hóa hoàn tất!"
 
-#: ../LibraryView.lua:772
+#: ../LibraryView.lua:777
 msgid   "Manga search..."
 msgstr  "Tìm kiếm truyện tranh..."
 
-#: ../LibraryView.lua:773
+#: ../LibraryView.lua:778
 msgid   "Houseki no Kuni"
 msgstr  "Houseki no Kuni"
 
-#: ../LibraryView.lua:774 ../LibraryView.lua:850
+#: ../LibraryView.lua:779 ../LibraryView.lua:855
 msgid   "Type the manga name to search for"
 msgstr  "Nhập tên manga để tìm kiếm"
 
-#: ../LibraryView.lua:778 ../LibraryView.lua:787 ../LibraryView.lua:832
-#: ../LibraryView.lua:861
+#: ../LibraryView.lua:783 ../LibraryView.lua:792 ../LibraryView.lua:837
+#: ../LibraryView.lua:866
 msgid   "Search"
 msgstr  "Tìm kiếm"
 
-#: ../LibraryView.lua:832
+#: ../LibraryView.lua:837
 msgid   "Exclude source search for"
 msgstr  "Loại trừ tìm kiếm nguồn cho"
 
-#: ../LibraryView.lua:847
+#: ../LibraryView.lua:852
 msgid   "Favorite search..."
 msgstr  "Tìm kiếm yêu thích..."
 
-#: ../LibraryView.lua:849
+#: ../LibraryView.lua:854
 msgid   "Tonikaku Kawaii"
 msgstr  "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:901
+#: ../LibraryView.lua:906
 msgid   "Scaning files..."
 msgstr  "Đang quét tập tin..."
 
-#: ../LibraryView.lua:916
+#: ../LibraryView.lua:921
 #, lua-format
 msgid   "Found %d files."
 msgstr  "Đã tìm thấy tệp %d."
 
-#: ../LibraryView.lua:917
+#: ../LibraryView.lua:922
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Tổng kích thước %s."
 
-#: ../LibraryView.lua:918
+#: ../LibraryView.lua:923
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "Quét tệp RendOnly .cbz và .epub."
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:927
 msgid   "Clean"
 msgstr  "Lau dọn"
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:932
 msgid   "Deleting..."
 msgstr  "Đang xóa..."
 
-#: ../LibraryView.lua:945
+#: ../LibraryView.lua:950
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Đã dọn sạch %s bộ nhớ trống"
 
-#: ../LibraryView.lua:969
+#: ../LibraryView.lua:975
 msgid   "Refresh mangas..."
 msgstr  "Làm mới..."
 
-#: ../LibraryView.lua:997
-msgid   "Some manga updates fail:"
-msgstr  "Một số cập nhật manga không thành công:"
-
-#: ../LibraryView.lua:1004
+#: ../LibraryView.lua:976
 msgid   "All chapters manga updated!"
 msgstr  "Tất cả các chương manga được cập nhật!"
 
-#: ../LibraryView.lua:1016
+#: ../LibraryView.lua:977
+msgid   "Some manga updates fail:"
+msgstr  "Một số cập nhật manga không thành công:"
+
+#: ../LibraryView.lua:988
 msgid   "Refresh manga details..."
 msgstr  "Làm mới chi tiết manga..."
 
-#: ../LibraryView.lua:1044
-msgid   "Some manga details refresh fail:"
-msgstr  "Một số chi tiết manga làm mới không thành công:"
-
-#: ../LibraryView.lua:1051
+#: ../LibraryView.lua:989
 msgid   "All manga details refresh!"
 msgstr  "Tất cả các chi tiết manga được làm mới!"
 
-#: ../LibraryView.lua:1062
+#: ../LibraryView.lua:990
+msgid   "Some manga details refresh fail:"
+msgstr  "Một số chi tiết manga làm mới không thành công:"
+
+#: ../LibraryView.lua:1006
+msgid   "Progress"
+msgstr  "Tiến triển"
+
+#: ../LibraryView.lua:1024
 msgid   "Cleaner"
 msgstr  "Sạch hơn"
 
-#: ../LibraryView.lua:1063
+#: ../LibraryView.lua:1025
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Tìm và xóa các tệp không hợp lệ bao gồm các tệp từ các nguồn đã bị xóa"
 
-#: ../LibraryView.lua:1063 ../LibraryView.lua:1066
+#: ../LibraryView.lua:1025 ../LibraryView.lua:1028
 msgid   "Normal"
 msgstr  "Bình thường"
 
-#: ../LibraryView.lua:1065
+#: ../LibraryView.lua:1027
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "QUAN TRỌNG: Các tệp meta (dấu trang, lịch sử) không được giữ!"
 
-#: ../LibraryView.lua:1072
+#: ../LibraryView.lua:1034
 msgid   "Chapter read done"
 msgstr  "Đã đọc xong chương"
 
@@ -683,11 +708,11 @@ msgstr  "An toàn"
 msgid   "Suggestive"
 msgstr  "gợi ý"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "Đang làm mới chi tiết..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "Làm mới chi tiết đã bị hủy."
 
@@ -867,11 +892,11 @@ msgstr  "Che phủ"
 msgid   "Grid"
 msgstr  "Lưới"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:202
 msgid   "Allow requisition of the back button"
 msgstr  "Cho phép trưng dụng nút quay lại"
 
-#: ../Settings.lua:213
+#: ../Settings.lua:214
 msgid   "Items per page (0 = auto)"
 msgstr  "Các mục trên mỗi trang (0 = tự động)"
 

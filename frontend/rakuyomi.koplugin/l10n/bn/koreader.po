@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-01 12:54+0700\n"
+        "POT-Creation-Date: 2026-03-01 17:41+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -47,6 +47,35 @@ msgstr  "আমাদের README দেখে কিছু উৎস তাল
 #: ../AvailableSourcesListing.lua:162
 msgid   "Installing source..."
 msgstr  "উৎস ইনস্টল করা হচ্ছে..."
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+msgid   "Cancelled!"
+msgstr  "বাতিল!"
+
+#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+msgid   "Complete!"
+msgstr  "সম্পূর্ণ!"
+
+#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+msgid   "Waiting until cancelled…"
+msgstr  "বাতিল হওয়া পর্যন্ত অপেক্ষা করা হচ্ছে..."
+
+#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:165
+msgid   "Processing..."
+msgstr  "প্রক্রিয়া করা হচ্ছে..."
+
+#: ../BasicJobDialog.lua:92
+msgid   "An error occurred"
+msgstr  "একটি ত্রুটি ঘটেছে"
+
+#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+msgid   "Unknown error"
+msgstr  "অজানা ত্রুটি"
+
+#: ../BasicJobDialog.lua:250
+msgid   "Error"
+msgstr  "ত্রুটি"
 
 #: ../ChapterListing.lua:57
 msgid   "Chapter listing"
@@ -97,7 +126,7 @@ msgstr  "অধ্যায় তালাবদ্ধ"
 msgid   "Open"
 msgstr  "খোলা"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:379
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:384
 msgid   "Refresh"
 msgstr  "রিফ্রেশ"
 
@@ -113,7 +142,7 @@ msgstr  "মার্ক"
 msgid   "Download"
 msgstr  "ডাউনলোড করুন"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:572
+#: ../ChapterListing.lua:541 ../LibraryView.lua:577
 msgid   "Remove"
 msgstr  "সরান"
 
@@ -141,11 +170,11 @@ msgstr  "আন-মার্কিং"
 msgid   "chapter..."
 msgstr  "অধ্যায়..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:415
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:420
 msgid   "Mark read"
 msgstr  "পড়া চিহ্নিত করুন"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:426
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:431
 msgid   "Mark unread"
 msgstr  "অপঠিত চিহ্নিত করুন"
 
@@ -162,8 +191,8 @@ msgid   "Mark chapters as read or unread"
 msgstr  "অধ্যায়গুলিকে পঠিত বা অপঠিত হিসাবে চিহ্নিত করুন"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:533 ../LibraryView.lua:806
-#: ../LibraryView.lua:854 ../NotificationView.lua:161
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:538 ../LibraryView.lua:811
+#: ../LibraryView.lua:859 ../NotificationView.lua:161
 #: ../widgets/SettingItemValue.lua:162
 msgid   "Cancel"
 msgstr  "বাতিল করুন"
@@ -219,8 +248,8 @@ msgstr  "আপনি কি নিশ্চিত আপনি ডাউনল�
 msgid   "Add to Library"
 msgstr  "লাইব্রেরিতে যোগ করুন"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:399
-#: ../MangaSearchResults.lua:239
+#: ../ChapterListing.lua:974 ../LibraryView.lua:404
+#: ../MangaSearchResults.lua:269
 msgid   "Details"
 msgstr  "বিস্তারিত"
 
@@ -256,7 +285,7 @@ msgstr  "লাইব্রেরিতে যোগ করতে ব্যর�
 msgid   "Added to library."
 msgstr  "লাইব্রেরিতে যোগ করা হয়েছে।"
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:525
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:530
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "দুঃখের বিষয়, কোন পরবর্তী অধ্যায় উপলব্ধ! "
 
@@ -268,7 +297,7 @@ msgstr  "পরবর্তী"
 msgid   "reading with"
 msgstr  "সঙ্গে পড়া"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:532
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:537
 msgid   "Read"
 msgstr  "পড়ুন"
 
@@ -332,29 +361,21 @@ msgstr  "সমস্ত অধ্যায় ডাউনলোড করা �
 msgid   "Tap outside this message to cancel."
 msgstr  "বাতিল করতে এই বার্তার বাইরে আলতো চাপুন।"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download cancelled!"
-msgstr  "ডাউনলোড বাতিল হয়েছে!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:51
-msgid   "Download complete!"
-msgstr  "ডাউনলোড সম্পূর্ণ!"
-
-#: ../DownloadUnreadChaptersJobDialog.lua:54
-msgid   "Waiting until downloads are cancelled…"
-msgstr  "ডাউনলোড বাতিল না হওয়া পর্যন্ত অপেক্ষা করা হচ্ছে..."
-
-#: ../DownloadUnreadChaptersJobDialog.lua:56
+#: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid   "Downloading chapters, this will take a while…"
 msgstr  "অধ্যায়গুলি ডাউনলোড করা হচ্ছে, এতে একটু সময় লাগবে..."
 
-#: ../DownloadUnreadChaptersJobDialog.lua:58
-msgid   "Downloading chapters, this will take a while… ("
-msgstr  "অধ্যায়গুলি ডাউনলোড করা হচ্ছে, এতে কিছুটা সময় লাগবে... ("
+#: ../DownloadUnreadChaptersJobDialog.lua:7
+msgid   "Download complete!"
+msgstr  "ডাউনলোড সম্পূর্ণ!"
 
-#: ../DownloadUnreadChaptersJobDialog.lua:62
+#: ../DownloadUnreadChaptersJobDialog.lua:8
 msgid   "An error occurred while downloading chapters"
 msgstr  "অধ্যায়গুলি ডাউনলোড করার সময় একটি ত্রুটি ঘটেছে৷"
+
+#: ../DownloadUnreadChaptersJobDialog.lua:23
+msgid   "Download cancelled!"
+msgstr  "ডাউনলোড বাতিল হয়েছে!"
 
 #: ../ErrorDialog.lua:15
 msgid   "Retry"
@@ -384,240 +405,244 @@ msgstr  "আপনি কি অপসারণ করতে চান"
 msgid   "source?"
 msgstr  "উৎস?"
 
-#: ../LibraryView.lua:52
+#: ../LibraryView.lua:57
 msgid   "Library"
 msgstr  "লাইব্রেরি"
 
-#: ../LibraryView.lua:313
+#: ../LibraryView.lua:318
 msgid   "No mangas found in library"
 msgstr  "লাইব্রেরিতে কোনো মাঙ্গাস পাওয়া যায়নি"
 
-#: ../LibraryView.lua:313
+#: ../LibraryView.lua:318
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "অনুসন্ধান ফলাফলে তাদের নাম ধরে রেখে কিছু যোগ করার চেষ্টা করুন!"
 
-#: ../LibraryView.lua:390
+#: ../LibraryView.lua:395
 msgid   "Refreshed manga"
 msgstr  "রিফ্রেশড মাঙ্গা"
 
-#: ../LibraryView.lua:439
+#: ../LibraryView.lua:444
 msgid   "Continue Reading"
 msgstr  "পড়া চালিয়ে যান"
 
-#: ../LibraryView.lua:448 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:453 ../MangaSearchResults.lua:204
 msgid   "Remove from Library"
 msgstr  "লাইব্রেরি থেকে সরান"
 
-#: ../LibraryView.lua:481
+#: ../LibraryView.lua:486
 msgid   "Finding next chapter..."
 msgstr  "পরবর্তী অধ্যায় খোঁজা হচ্ছে..."
 
-#: ../LibraryView.lua:492
+#: ../LibraryView.lua:497
 msgid   "No chapters found for this manga."
 msgstr  "এই মাঙ্গার জন্য কোনো অধ্যায় পাওয়া যায়নি।"
 
-#: ../LibraryView.lua:531
+#: ../LibraryView.lua:536
 msgid   "Resume reading with:"
 msgstr  "এর সাথে পড়া পুনরায় শুরু করুন:"
 
-#: ../LibraryView.lua:571
+#: ../LibraryView.lua:576
 msgid   "Do you want to remove"
 msgstr  "আপনি কি সরাতে চান"
 
-#: ../LibraryView.lua:571
+#: ../LibraryView.lua:576
 msgid   "from your library?"
 msgstr  "আপনার লাইব্রেরি থেকে?"
 
-#: ../LibraryView.lua:594
+#: ../LibraryView.lua:599
 msgid   "Search for mangas"
 msgstr  "মাঙ্গার সন্ধান করুন"
 
-#: ../LibraryView.lua:604
+#: ../LibraryView.lua:609
 msgid   "Search favorites"
 msgstr  "পছন্দসই অনুসন্ধান করুন"
 
-#: ../LibraryView.lua:614
+#: ../LibraryView.lua:619
 msgid   "Refresh mangas"
 msgstr  "রিফ্রেশ"
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:627
 msgid   "Refresh details"
 msgstr  "বিবরণ রিফ্রেশ করুন"
 
-#: ../LibraryView.lua:632
+#: ../LibraryView.lua:637
 msgid   "Cleaner chapters"
 msgstr  "ক্লিনার অধ্যায়"
 
-#: ../LibraryView.lua:640
+#: ../LibraryView.lua:645
 msgid   "Manage sources"
 msgstr  "উত্স পরিচালনা করুন"
 
-#: ../LibraryView.lua:650 ../LibraryView.lua:800 ../Settings.lua:226
+#: ../LibraryView.lua:655 ../LibraryView.lua:805 ../Settings.lua:227
 msgid   "Settings"
 msgstr  "সেটিংস"
 
-#: ../LibraryView.lua:658
+#: ../LibraryView.lua:663
 msgid   "Check for updates"
 msgstr  "আপডেটের জন্য চেক করুন"
 
-#: ../LibraryView.lua:667
+#: ../LibraryView.lua:672
 msgid   "Sync Database (Beta)"
 msgstr  "সিঙ্ক ডাটাবেস (বিটা)"
 
-#: ../LibraryView.lua:671
+#: ../LibraryView.lua:676
 msgid   "Sync to WebDAV..."
 msgstr  "WebDAV-তে সিঙ্ক করুন..."
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "আপনি কি সার্ভার থেকে আপনার স্থানীয় ডাটাবেস স্থানান্তর করতে চান?"
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "The remote database is newer than the local one."
 msgstr  "দূরবর্তী ডাটাবেস স্থানীয় এক থেকে নতুন।"
 
-#: ../LibraryView.lua:683
+#: ../LibraryView.lua:688
 msgid   "This action cannot be undone."
 msgstr  "এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷"
 
-#: ../LibraryView.lua:684
+#: ../LibraryView.lua:689
 msgid   "Migrate"
 msgstr  "মাইগ্রেট করুন"
 
-#: ../LibraryView.lua:688
+#: ../LibraryView.lua:693
 msgid   "Migrating database..."
 msgstr  "ডাটাবেস স্থানান্তর করা হচ্ছে..."
 
-#: ../LibraryView.lua:699 ../LibraryView.lua:746
+#: ../LibraryView.lua:704 ../LibraryView.lua:751
 msgid   "Local database has been migrated from the server!"
 msgstr  "স্থানীয় ডাটাবেস সার্ভার থেকে স্থানান্তরিত হয়েছে!"
 
-#: ../LibraryView.lua:710
+#: ../LibraryView.lua:715
 msgid   "Replace Cloud"
 msgstr  "ক্লাউড প্রতিস্থাপন করুন"
 
-#: ../LibraryView.lua:714
+#: ../LibraryView.lua:719
 msgid   "Replacing cloud..."
 msgstr  "মেঘ প্রতিস্থাপন করা হচ্ছে..."
 
-#: ../LibraryView.lua:724
+#: ../LibraryView.lua:729
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "ক্লাউড ডাটাবেস জোর করে স্থানীয় এক দিয়ে প্রতিস্থাপন করা হয়েছে!"
 
-#: ../LibraryView.lua:742
+#: ../LibraryView.lua:747
 msgid   "Database is already up to date!"
 msgstr  "ডাটাবেস ইতিমধ্যে আপ টু ডেট!"
 
-#: ../LibraryView.lua:744
+#: ../LibraryView.lua:749
 msgid   "Database has been synced to the server!"
 msgstr  "ডাটাবেস সার্ভারে সিঙ্ক করা হয়েছে!"
 
-#: ../LibraryView.lua:748
+#: ../LibraryView.lua:753
 msgid   "Sync completed!"
 msgstr  "সিঙ্ক সম্পন্ন হয়েছে!"
 
-#: ../LibraryView.lua:772
+#: ../LibraryView.lua:777
 msgid   "Manga search..."
 msgstr  "মাঙ্গা অনুসন্ধান..."
 
-#: ../LibraryView.lua:773
+#: ../LibraryView.lua:778
 msgid   "Houseki no Kuni"
 msgstr  "হাউসকি না কুনি"
 
-#: ../LibraryView.lua:774 ../LibraryView.lua:850
+#: ../LibraryView.lua:779 ../LibraryView.lua:855
 msgid   "Type the manga name to search for"
 msgstr  "অনুসন্ধান করতে মাঙ্গা নাম টাইপ করুন"
 
-#: ../LibraryView.lua:778 ../LibraryView.lua:787 ../LibraryView.lua:832
-#: ../LibraryView.lua:861
+#: ../LibraryView.lua:783 ../LibraryView.lua:792 ../LibraryView.lua:837
+#: ../LibraryView.lua:866
 msgid   "Search"
 msgstr  "অনুসন্ধান করুন"
 
-#: ../LibraryView.lua:832
+#: ../LibraryView.lua:837
 msgid   "Exclude source search for"
 msgstr  "জন্য উৎস অনুসন্ধান বাদ"
 
-#: ../LibraryView.lua:847
+#: ../LibraryView.lua:852
 msgid   "Favorite search..."
 msgstr  "প্রিয় অনুসন্ধান..."
 
-#: ../LibraryView.lua:849
+#: ../LibraryView.lua:854
 msgid   "Tonikaku Kawaii"
 msgstr  "টনিকাকু কাওয়াই"
 
-#: ../LibraryView.lua:901
+#: ../LibraryView.lua:906
 msgid   "Scaning files..."
 msgstr  "ফাইল স্ক্যান করা হচ্ছে..."
 
-#: ../LibraryView.lua:916
+#: ../LibraryView.lua:921
 #, lua-format
 msgid   "Found %d files."
 msgstr  "%d ফাইল পাওয়া গেছে।"
 
-#: ../LibraryView.lua:917
+#: ../LibraryView.lua:922
 #, lua-format
 msgid   "Total size %s."
 msgstr  "মোট আকার %s।"
 
-#: ../LibraryView.lua:918
+#: ../LibraryView.lua:923
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly ফাইল .cbz এবং .epub স্ক্যান।"
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:927
 msgid   "Clean"
 msgstr  "পরিষ্কার"
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:932
 msgid   "Deleting..."
 msgstr  "মুছে ফেলা হচ্ছে..."
 
-#: ../LibraryView.lua:945
+#: ../LibraryView.lua:950
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "বিনামূল্যে %s সঞ্চয়স্থান পরিষ্কার করা হয়েছে৷"
 
-#: ../LibraryView.lua:969
+#: ../LibraryView.lua:975
 msgid   "Refresh mangas..."
 msgstr  "মঙ্গা রিফ্রেশ করুন..."
 
-#: ../LibraryView.lua:997
-msgid   "Some manga updates fail:"
-msgstr  "কিছু মাঙ্গা আপডেট ব্যর্থ হয়েছে:"
-
-#: ../LibraryView.lua:1004
+#: ../LibraryView.lua:976
 msgid   "All chapters manga updated!"
 msgstr  "সব অধ্যায় মাঙ্গা আপডেট!"
 
-#: ../LibraryView.lua:1016
+#: ../LibraryView.lua:977
+msgid   "Some manga updates fail:"
+msgstr  "কিছু মাঙ্গা আপডেট ব্যর্থ হয়েছে:"
+
+#: ../LibraryView.lua:988
 msgid   "Refresh manga details..."
 msgstr  "মাঙ্গার বিবরণ রিফ্রেশ করুন..."
 
-#: ../LibraryView.lua:1044
-msgid   "Some manga details refresh fail:"
-msgstr  "কিছু মাঙ্গা বিবরণ রিফ্রেশ ব্যর্থ:"
-
-#: ../LibraryView.lua:1051
+#: ../LibraryView.lua:989
 msgid   "All manga details refresh!"
 msgstr  "সমস্ত মাঙ্গা বিবরণ রিফ্রেশ!"
 
-#: ../LibraryView.lua:1062
+#: ../LibraryView.lua:990
+msgid   "Some manga details refresh fail:"
+msgstr  "কিছু মাঙ্গা বিবরণ রিফ্রেশ ব্যর্থ:"
+
+#: ../LibraryView.lua:1006
+msgid   "Progress"
+msgstr  "অগ্রগতি"
+
+#: ../LibraryView.lua:1024
 msgid   "Cleaner"
 msgstr  "ক্লিনার"
 
-#: ../LibraryView.lua:1063
+#: ../LibraryView.lua:1025
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "মুছে ফেলা উত্স থেকে ফাইলগুলি সহ অবৈধ ফাইলগুলি সন্ধান করুন এবং মুছুন৷"
 
-#: ../LibraryView.lua:1063 ../LibraryView.lua:1066
+#: ../LibraryView.lua:1025 ../LibraryView.lua:1028
 msgid   "Normal"
 msgstr  "স্বাভাবিক"
 
-#: ../LibraryView.lua:1065
+#: ../LibraryView.lua:1027
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "গুরুত্বপূর্ণ: মেটা ফাইল (বুকমার্ক, ইতিহাস) রাখবেন না!"
 
-#: ../LibraryView.lua:1072
+#: ../LibraryView.lua:1034
 msgid   "Chapter read done"
 msgstr  "অধ্যায় পড়া শেষ"
 
@@ -682,11 +707,11 @@ msgstr  "নিরাপদ"
 msgid   "Suggestive"
 msgstr  "পরামর্শমূলক"
 
-#: ../MangaInfoWidget.lua:546
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
 msgid   "Refreshing details..."
 msgstr  "বিশদ বিবরণ রিফ্রেশ করা হচ্ছে..."
 
-#: ../MangaInfoWidget.lua:558
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
 msgid   "Refresh details cancelled."
 msgstr  "রিফ্রেশ বিবরণ বাতিল করা হয়েছে."
 
@@ -866,11 +891,11 @@ msgstr  "আবরণ"
 msgid   "Grid"
 msgstr  "গ্রিড"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:202
 msgid   "Allow requisition of the back button"
 msgstr  "পিছনের বোতামের অনুরোধের অনুমতি দিন"
 
-#: ../Settings.lua:213
+#: ../Settings.lua:214
 msgid   "Items per page (0 = auto)"
 msgstr  "পৃষ্ঠা প্রতি আইটেম (0 = স্বয়ংক্রিয়)"
 

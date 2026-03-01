@@ -1,5 +1,6 @@
 -- FIXME make class names have _some_ kind of logic
 local ConfirmBox = require("ui/widget/confirmbox")
+local ffiutil = require("ffi/util")
 local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
@@ -39,6 +40,10 @@ local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
 local CheckboxDialog = require("CheckboxDialog")
+
+local RefreshLibraryChapters = require("jobs/RefreshLibraryChapters")
+local RefreshLibraryDetails = require("jobs/RefreshLibraryDetails")
+local BasicJobDialog = require("BasicJobDialog")
 
 local MenuItemCover = require("patch/MenuItemCover")
 local MenuCustom = require("patch/MenuCustom")
@@ -961,96 +966,53 @@ function LibraryView:_refreshManga(cancel_id, manga)
 end
 
 --- @private
+--- @private
 function LibraryView:refreshAllChapters()
-  local ProgressbarDialog = require("ui/widget/progressbardialog")
-
-  Trapper:wrap(function()
-    local progressbar_dialog = ProgressbarDialog:new {
-      title = _("Refresh mangas..."),
-      progress_max = #self.mangas_raw
-    }
-    UIManager:show(progressbar_dialog)
-    local errors = {}
-
-    for i, manga in ipairs(self.mangas_raw) do
-      local response = self:_refreshManga(Backend.createCancelId(), manga)
-
-      if response.type == 'ERROR' then
-        table.insert(errors, {
-          id = manga.id,
-          title = manga.title,
-          source = manga.source.id,
-          message = response.message
-        })
-      end
-
-      progressbar_dialog:reportProgress(i + 1)
-      progressbar_dialog:redrawProgressbarIfNeeded()
-    end
-
-    UIManager:close(self)
-    self:fetchAndShow()
-
-    progressbar_dialog:close()
-
-    if #errors > 0 then
-      local msg = _("Some manga updates fail:") .. "\n\n"
-      for __, err in ipairs(errors) do
-        msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
-      end
-      ErrorDialog:show(msg)
-    else
-      UIManager:show(InfoMessage:new {
-        text = _("All chapters manga updated!")
-      })
-    end
-  end)
+  local job = RefreshLibraryChapters:new()
+  if job then
+    self:_runLibraryJob(
+      job,
+      _("Refresh mangas..."),
+      _("All chapters manga updated!"),
+      _("Some manga updates fail:")
+    )
+  end
 end
 
 --- @private
 function LibraryView:refreshAllDetails()
-  local ProgressbarDialog = require("ui/widget/progressbardialog")
+  local job = RefreshLibraryDetails:new()
+  if job then
+    self:_runLibraryJob(
+      job,
+      _("Refresh manga details..."),
+      _("All manga details refresh!"),
+      _("Some manga details refresh fail:")
+    )
+  end
+end
 
+--- @private
+function LibraryView:_runLibraryJob(job, title, success_msg, error_prefix)
   Trapper:wrap(function()
-    local progressbar_dialog = ProgressbarDialog:new {
-      title = _("Refresh manga details..."),
-      progress_max = #self.mangas_raw
-    }
-    UIManager:show(progressbar_dialog)
-    local errors = {}
-
-    for i, manga in ipairs(self.mangas_raw) do
-      local response = Backend.refreshMangaDetails(Backend.createCancelId(), manga.source.id, manga.id)
-
-      if response.type == 'ERROR' then
-        table.insert(errors, {
-          id = manga.id,
-          title = manga.title,
-          source = manga.source.id,
-          message = response.message
-        })
+    local dialog = BasicJobDialog:new({
+      show_parent = self,
+      job = job,
+      title = title,
+      success_message = success_msg,
+      error_prefix = error_prefix,
+      format_progress = function(data)
+        if data and data.type == 'REFRESHING' then
+          return _("Progress") .. ": " .. (data.current or 0) .. " / " .. (data.total or #self.mangas_raw)
+        end
+        return nil
+      end,
+      dismiss_callback = function()
+        self:fetchAndShow()
+        UIManager:close(self)
       end
-
-      progressbar_dialog:reportProgress(i + 1)
-      progressbar_dialog:redrawProgressbarIfNeeded()
-    end
-
-    UIManager:close(self)
-    self:fetchAndShow()
-
-    progressbar_dialog:close()
-
-    if #errors > 0 then
-      local msg = _("Some manga details refresh fail:") .. "\n\n"
-      for __, err in ipairs(errors) do
-        msg = msg .. string.format("- [%s] (%s): %s\n", err.source, err.title, err.message)
-      end
-      ErrorDialog:show(msg)
-    else
-      UIManager:show(InfoMessage:new {
-        text = _("All manga details refresh!")
-      })
-    end
+    })
+    dialog:show()
   end)
 end
 

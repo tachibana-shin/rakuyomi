@@ -27,6 +27,10 @@ function Job:poll()
     return self.result
   end
 
+  if self.job_id == nil then
+    return { type = 'ERROR', message = 'job not started' }
+  end
+
   local response = Backend.getJobDetails(self.job_id)
   if response.type == 'ERROR' then
     self.result = response

@@ -21,6 +21,8 @@ use super::{
     download_chapter::DownloadChapterJob,
     download_scanlator_chapters::{DownloadScanlatorChaptersJob, ScanlatorFilter},
     download_unread_chapters::DownloadUnreadChaptersJob,
+    refresh_library_chapters::RefreshLibraryChaptersJob,
+    refresh_library_details::RefreshLibraryDetailsJob,
     state::Job,
 };
 
@@ -34,6 +36,14 @@ pub fn routes() -> Router<AppState> {
         .route(
             "/jobs/download-scanlator-chapters",
             post(create_download_scanlator_chapters_job),
+        )
+        .route(
+            "/jobs/refresh-library-chapters",
+            post(create_refresh_library_chapters_job),
+        )
+        .route(
+            "/jobs/refresh-library-details",
+            post(create_refresh_library_details_job),
         )
         .route("/jobs/{id}", get(get_job))
         .route("/jobs/{id}", delete(cancel_job))
@@ -208,6 +218,46 @@ async fn create_download_scanlator_chapters_job(
     Ok(Json(id))
 }
 
+async fn create_refresh_library_chapters_job(
+    StateExtractor(AppState {
+        source_manager,
+        database,
+        ..
+    }): StateExtractor<AppState>,
+    StateExtractor(State { job_registry }): StateExtractor<State>,
+) -> Result<Json<Uuid>, AppError> {
+    let id = Uuid::new_v4();
+    let job = RefreshLibraryChaptersJob::spawn_new(source_manager, database);
+
+    job_registry
+        .lock()
+        .await
+        .insert(id, RunningJob::LibraryChapters(job));
+
+    Ok(Json(id))
+}
+
+async fn create_refresh_library_details_job(
+    StateExtractor(AppState {
+        source_manager,
+        database,
+        chapter_storage,
+        ..
+    }): StateExtractor<AppState>,
+    StateExtractor(State { job_registry }): StateExtractor<State>,
+) -> Result<Json<Uuid>, AppError> {
+    let id = Uuid::new_v4();
+    let chapter_storage = chapter_storage.lock().await.clone();
+    let job = RefreshLibraryDetailsJob::spawn_new(source_manager, database, chapter_storage);
+
+    job_registry
+        .lock()
+        .await
+        .insert(id, RunningJob::LibraryDetails(job));
+
+    Ok(Json(id))
+}
+
 #[derive(Deserialize)]
 struct GetJobParams {
     id: Uuid,
@@ -245,6 +295,8 @@ async fn cancel_job(
         RunningJob::Chapter(job) => job.cancel().await?,
         RunningJob::UnreadChapters(job) => job.cancel().await?,
         RunningJob::ScanlatorChapters(job) => job.cancel().await?,
+        RunningJob::LibraryChapters(job) => job.cancel().await?,
+        RunningJob::LibraryDetails(job) => job.cancel().await?,
     };
 
     Ok(Json(()))

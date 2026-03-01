@@ -635,6 +635,24 @@ function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlat
   })
 end
 
+--- Creates a new refresh library chapters job. Returns the job's UUID.
+--- @return SuccessfulResponse<string>|ErrorResponse
+function Backend.refreshLibraryChaptersJob()
+  return Backend.requestJson({
+    path = "/jobs/refresh-library-chapters",
+    method = 'POST',
+  })
+end
+
+--- Creates a new refresh library details job. Returns the job's UUID.
+--- @return SuccessfulResponse<string>|ErrorResponse
+function Backend.refreshLibraryDetailsJob()
+  return Backend.requestJson({
+    path = "/jobs/refresh-library-details",
+    method = 'POST',
+  })
+end
+
 --- @class PendingJob<T>: { type: 'PENDING', data: T }
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
@@ -644,6 +662,9 @@ end
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse
 function Backend.getJobDetails(id)
+  if id == nil then
+    return { type = 'ERROR', message = 'job id is nil' }
+  end
   return Backend.requestJson({
     path = "/jobs/" .. id,
     method = 'GET'

@@ -9,6 +9,8 @@ use super::{
     download_chapter::DownloadChapterJob,
     download_scanlator_chapters::DownloadScanlatorChaptersJob,
     download_unread_chapters::DownloadUnreadChaptersJob,
+    refresh_library_chapters::RefreshLibraryChaptersJob,
+    refresh_library_details::RefreshLibraryDetailsJob,
 };
 
 pub enum JobState<Progress, Output, Error> {
@@ -30,6 +32,8 @@ pub enum RunningJob {
     Chapter(DownloadChapterJob),
     UnreadChapters(DownloadUnreadChaptersJob),
     ScanlatorChapters(DownloadScanlatorChaptersJob),
+    LibraryChapters(RefreshLibraryChaptersJob),
+    LibraryDetails(RefreshLibraryDetailsJob),
 }
 
 #[derive(Default, Clone)]

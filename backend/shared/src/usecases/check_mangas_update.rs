@@ -17,6 +17,8 @@ use crate::{
     usecases::{refresh_manga_chapters, refresh_manga_details},
 };
 
+const MIN_UPDATE_INTERVAL: i64 = 3 * 3600; // 3 hours in seconds
+
 pub async fn check_mangas_update(
     token: &CancellationToken,
     db: &Database,
@@ -173,6 +175,8 @@ pub async fn run_manga_cron(
 
     println!("Cron started");
     let token = &CancellationToken::new();
+    let mut last_run: Option<i64> = None;
+
     loop {
         let now = chrono::Utc::now().timestamp();
         let source_skip_cron = settings.source_skip_cron.clone().unwrap_or("".to_owned());
@@ -199,23 +203,37 @@ pub async fn run_manga_cron(
             };
 
             if next_manga.is_none() {
-                break;
+                tokio::time::sleep(std::time::Duration::from_secs(
+                    MIN_UPDATE_INTERVAL.try_into().unwrap_or(0),
+                ))
+                .await;
+                continue;
             }
         }
 
         let Some(next_manga_info) = next_manga else {
             break;
         };
-        let wait_secs = next_manga_info.1 - now;
 
-        println!("Cron waiting {wait_secs}s");
+        let mut wait_secs = next_manga_info.1 - now;
 
-        if wait_secs >= 0 {
+        if let Some(last_run_ts) = last_run {
+            let next_allowed_run = last_run_ts + MIN_UPDATE_INTERVAL;
+            let gap = next_allowed_run - now;
+            if gap > wait_secs {
+                wait_secs = gap;
+            }
+        }
+
+        if wait_secs > 0 {
+            println!("Cron waiting {wait_secs}s");
             tokio::time::sleep(std::time::Duration::from_secs(
                 wait_secs.try_into().unwrap_or(0),
             ))
             .await;
         }
+
+        last_run = Some(chrono::Utc::now().timestamp());
 
         let due_mangas = match db.get_due_mangas().await {
             Ok(v) => v,

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-02 03:30+0700\n"
+"POT-Creation-Date: 2026-03-05 00:28+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -480,7 +480,7 @@ msgstr ""
 msgid "Manage sources"
 msgstr ""
 
-#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:283
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
 msgid "Settings"
 msgstr ""
 
@@ -854,79 +854,87 @@ msgstr ""
 msgid "Last read descending"
 msgstr ""
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid "Source ascending"
+msgstr ""
+
+#: ../Settings.lua:68
+msgid "Source descending"
+msgstr ""
+
+#: ../Settings.lua:76
 msgid "Items per page (0 = auto)"
 msgstr ""
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid "Grid columns"
 msgstr ""
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid "Grid rows"
 msgstr ""
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid "Reader"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid "Chapter sorting mode"
 msgstr ""
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid "By chapter ascending"
 msgstr ""
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid "By chapter descending"
 msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid "Preload chapters on reader open"
 msgstr ""
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid "Optimize page images (experimental)"
 msgstr ""
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid "Concurrent page requests"
 msgstr ""
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid "Storage"
 msgstr ""
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid "Chapter storage path"
 msgstr ""
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid "Storage size limit"
 msgstr ""
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid "Sync & Updates"
 msgstr ""
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid "WebDAV Sync"
 msgstr ""
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid "Enabled cron check for manga updates"
 msgstr ""
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid "Source IDs skip check update"
 msgstr ""
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid "System"
 msgstr ""
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid "Allow requisition of the back button"
 msgstr ""
 

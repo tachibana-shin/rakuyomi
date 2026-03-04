@@ -210,7 +210,9 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
     end
   end
 
-  Menu._recalculateDimen(self, no_recalculate_dimen)
+  if perpage == nil then
+    Menu._recalculateDimen(self, no_recalculate_dimen)
+  end
 
   local perpagex = G_reader_settings:readSetting("items_per_page") or self
       .items_per_page_default
@@ -222,6 +224,7 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
   end
   if perpage ~= nil then
     self.perpage = perpage
+    self.page_num = self:getPageNumber(#self.item_table)
   end
 end
 

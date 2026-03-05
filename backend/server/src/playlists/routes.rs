@@ -104,13 +104,15 @@ async fn get_mangas_in_playlist(
                 {
                     match url::Url::from_file_path(&path) {
                         Ok(url) => Some(url),
-                        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
-                            Ok(url) => Some(url),
-                            Err(_) => {
-                                println!("Error converting path to URL");
+                        Err(_) => match path.canonicalize() {
+                            Ok(canonical_path) => {
+                                url::Url::from_file_path(canonical_path).ok()
+                            }
+                            Err(e) => {
+                                println!("Error canonicalizing path: {}", e);
                                 None
                             }
-                        },
+                        }
                     }
                 } else {
                     None

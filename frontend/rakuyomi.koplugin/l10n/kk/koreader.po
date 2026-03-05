@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-02 03:25+0700\n"
+        "POT-Creation-Date: 2026-03-05 16:47+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -122,11 +122,11 @@ msgstr  "Жаңарту тарау қатесі"
 msgid   "Chapter is locked"
 msgstr  "Бөлім құлыпталған"
 
-#: ../ChapterListing.lua:507
+#: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
 msgid   "Open"
 msgstr  "Ашық"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:410
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:440
 msgid   "Refresh"
 msgstr  "Жаңарту"
 
@@ -142,7 +142,7 @@ msgstr  "Белгілеу"
 msgid   "Download"
 msgstr  "Жүктеп алу"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:603
+#: ../ChapterListing.lua:541 ../LibraryView.lua:642
 msgid   "Remove"
 msgstr  "Жою"
 
@@ -170,11 +170,11 @@ msgstr  "Белгіні алып тастау"
 msgid   "chapter..."
 msgstr  "тарау..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:446
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:476
 msgid   "Mark read"
 msgstr  "Оқылған деп белгілеңіз"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:457
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:487
 msgid   "Mark unread"
 msgstr  "Оқылмаған деп белгілеңіз"
 
@@ -191,9 +191,9 @@ msgid   "Mark chapters as read or unread"
 msgstr  "Тарауларды оқылған немесе оқылмаған деп белгілеңіз"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:564 ../LibraryView.lua:837
-#: ../LibraryView.lua:885 ../NotificationView.lua:162
-#: ../widgets/SettingItemValue.lua:163
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:603 ../LibraryView.lua:885
+#: ../LibraryView.lua:933 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
 msgid   "Cancel"
 msgstr  "Болдырмау"
 
@@ -205,7 +205,7 @@ msgstr  "Белгіленуде..."
 msgid   "Marked"
 msgstr  "Белгіленген"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:103
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
 msgid   "No errors"
 msgstr  "Қателер жоқ"
 
@@ -219,7 +219,7 @@ msgstr  "Бет"
 msgid   "attempts"
 msgstr  "әрекеттері"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:119
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
 #, lua-format
 msgid   "… and %d more errors"
 msgstr  "… және тағы %d қате"
@@ -244,12 +244,12 @@ msgstr  "Жүктеп алу тоқтатылды."
 msgid   "Are you sure you want to cancel the download?"
 msgstr  "Жүктеп алудан бас тартқыңыз келетініне сенімдісіз бе?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:207
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
 msgid   "Add to Library"
 msgstr  "Кітапханаға қосу"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:430
-#: ../MangaSearchResults.lua:269
+#: ../ChapterListing.lua:974 ../LibraryView.lua:460
+#: ../MangaSearchResults.lua:279
 msgid   "Details"
 msgstr  "Мәліметтер"
 
@@ -285,7 +285,7 @@ msgstr  "Кітапханаға қосу мүмкін болмады"
 msgid   "Added to library."
 msgstr  "Кітапханаға қосылды."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:556
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:595
 msgid   "Sadly, no next chapter available! :c"
 msgstr  "Өкінішке орай, келесі бөлім жоқ! "
 
@@ -297,7 +297,7 @@ msgstr  "Келесі"
 msgid   "reading with"
 msgstr  "бірге оқу"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:563
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:602
 msgid   "Read"
 msgstr  "Оқыңыз"
 
@@ -405,244 +405,252 @@ msgstr  "жоюды қалайсыз ба"
 msgid   "source?"
 msgstr  "көзі?"
 
-#: ../LibraryView.lua:58 ../Settings.lua:38
+#: ../LibraryView.lua:60 ../Settings.lua:38
 msgid   "Library"
 msgstr  "Кітапхана"
 
-#: ../LibraryView.lua:344
+#: ../LibraryView.lua:379
 msgid   "No mangas found in library"
 msgstr  "Кітапханада манга табылмады"
 
-#: ../LibraryView.lua:344
+#: ../LibraryView.lua:379
 msgid   "Try adding some by holding their name on the search results!"
 msgstr  "Іздеу нәтижелерінде атын басып тұрып, кейбіреулерін қосып көріңіз!"
 
-#: ../LibraryView.lua:421
+#: ../LibraryView.lua:451
 msgid   "Refreshed manga"
 msgstr  "Жаңартылған манга"
 
-#: ../LibraryView.lua:470
+#: ../LibraryView.lua:500
 msgid   "Continue Reading"
 msgstr  "Оқуды жалғастыру"
 
-#: ../LibraryView.lua:479 ../MangaSearchResults.lua:204
+#: ../LibraryView.lua:509 ../MangaSearchResults.lua:270
+msgid   "Add to Playlist"
+msgstr  "Ойнату тізіміне қосу"
+
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:205
 msgid   "Remove from Library"
 msgstr  "Кітапханадан жою"
 
-#: ../LibraryView.lua:512
+#: ../LibraryView.lua:551
 msgid   "Finding next chapter..."
 msgstr  "Келесі тарау табылуда..."
 
-#: ../LibraryView.lua:523
+#: ../LibraryView.lua:562
 msgid   "No chapters found for this manga."
 msgstr  "Бұл манга үшін тараулар табылмады."
 
-#: ../LibraryView.lua:562
+#: ../LibraryView.lua:601
 msgid   "Resume reading with:"
 msgstr  "Оқуды жалғастырыңыз:"
 
-#: ../LibraryView.lua:602
+#: ../LibraryView.lua:641
 msgid   "Do you want to remove"
 msgstr  "Жою керек пе"
 
-#: ../LibraryView.lua:602
+#: ../LibraryView.lua:641
 msgid   "from your library?"
 msgstr  "кітапханаңыздан?"
 
-#: ../LibraryView.lua:625
+#: ../LibraryView.lua:664
 msgid   "Search for mangas"
 msgstr  "Мангаларды іздеңіз"
 
-#: ../LibraryView.lua:635
+#: ../LibraryView.lua:674
 msgid   "Search favorites"
 msgstr  "Таңдаулыларды іздеу"
 
-#: ../LibraryView.lua:645
+#: ../LibraryView.lua:684 ../PlaylistDialog.lua:304
+msgid   "Playlists"
+msgstr  "Ойнату тізімдері"
+
+#: ../LibraryView.lua:693
 msgid   "Refresh mangas"
 msgstr  "Мангаларды жаңартыңыз"
 
-#: ../LibraryView.lua:653
+#: ../LibraryView.lua:701
 msgid   "Refresh details"
 msgstr  "Мәліметтерді жаңарту"
 
-#: ../LibraryView.lua:663
+#: ../LibraryView.lua:711
 msgid   "Cleaner chapters"
 msgstr  "Таза тараулар"
 
-#: ../LibraryView.lua:671
+#: ../LibraryView.lua:719
 msgid   "Manage sources"
 msgstr  "Дереккөздерді басқару"
 
-#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:283
+#: ../LibraryView.lua:729 ../LibraryView.lua:879 ../Settings.lua:283
 msgid   "Settings"
 msgstr  "Параметрлер"
 
-#: ../LibraryView.lua:689
+#: ../LibraryView.lua:737
 msgid   "Check for updates"
 msgstr  "Жаңартуларды тексеріңіз"
 
-#: ../LibraryView.lua:698
+#: ../LibraryView.lua:746
 msgid   "Sync Database (Beta)"
 msgstr  "Синхрондау дерекқоры (бета)"
 
-#: ../LibraryView.lua:702
+#: ../LibraryView.lua:750
 msgid   "Sync to WebDAV..."
 msgstr  "WebDAV жүйесіне синхрондау..."
 
-#: ../LibraryView.lua:714
+#: ../LibraryView.lua:762
 msgid   "Do you want to migrate your local database from the server?"
 msgstr  "Жергілікті дерекқорды серверден көшіргіңіз келе ме?"
 
-#: ../LibraryView.lua:714
+#: ../LibraryView.lua:762
 msgid   "The remote database is newer than the local one."
 msgstr  "Қашықтағы дерекқор жергілікті дерекқорға қарағанда жаңа."
 
-#: ../LibraryView.lua:714
+#: ../LibraryView.lua:762
 msgid   "This action cannot be undone."
 msgstr  "Бұл әрекетті қайтару мүмкін емес."
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:763
 msgid   "Migrate"
 msgstr  "Көшіру"
 
-#: ../LibraryView.lua:719
+#: ../LibraryView.lua:767
 msgid   "Migrating database..."
 msgstr  "Дерекқор тасымалдануда..."
 
-#: ../LibraryView.lua:730 ../LibraryView.lua:777
+#: ../LibraryView.lua:778 ../LibraryView.lua:825
 msgid   "Local database has been migrated from the server!"
 msgstr  "Жергілікті дерекқор серверден көшірілді!"
 
-#: ../LibraryView.lua:741
+#: ../LibraryView.lua:789
 msgid   "Replace Cloud"
 msgstr  "Бұлтты ауыстырыңыз"
 
-#: ../LibraryView.lua:745
+#: ../LibraryView.lua:793
 msgid   "Replacing cloud..."
 msgstr  "Бұлтты ауыстыру..."
 
-#: ../LibraryView.lua:755
+#: ../LibraryView.lua:803
 msgid   "Cloud database has been forcedly replaced with local one!"
 msgstr  "Бұлтты дерекқор жергілікті дерекқорға мәжбүрлі түрде ауыстырылды!"
 
-#: ../LibraryView.lua:773
+#: ../LibraryView.lua:821
 msgid   "Database is already up to date!"
 msgstr  "Деректер базасы қазірдің өзінде жаңартылған!"
 
-#: ../LibraryView.lua:775
+#: ../LibraryView.lua:823
 msgid   "Database has been synced to the server!"
 msgstr  "Деректер базасы сервермен синхрондалды!"
 
-#: ../LibraryView.lua:779
+#: ../LibraryView.lua:827
 msgid   "Sync completed!"
 msgstr  "Синхрондау аяқталды!"
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:851
 msgid   "Manga search..."
 msgstr  "Манга іздеу..."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:852
 msgid   "Houseki no Kuni"
 msgstr  "Хауски жоқ Куни"
 
-#: ../LibraryView.lua:805 ../LibraryView.lua:881
+#: ../LibraryView.lua:853 ../LibraryView.lua:929
 msgid   "Type the manga name to search for"
 msgstr  "Іздеу үшін манга атын теріңіз"
 
-#: ../LibraryView.lua:809 ../LibraryView.lua:818 ../LibraryView.lua:863
-#: ../LibraryView.lua:892
+#: ../LibraryView.lua:857 ../LibraryView.lua:866 ../LibraryView.lua:911
+#: ../LibraryView.lua:940
 msgid   "Search"
 msgstr  "Іздеу"
 
-#: ../LibraryView.lua:863
+#: ../LibraryView.lua:911
 msgid   "Exclude source search for"
 msgstr  "Дереккөзді іздеуді қоспағанда"
 
-#: ../LibraryView.lua:878
+#: ../LibraryView.lua:926
 msgid   "Favorite search..."
 msgstr  "Таңдаулы іздеу..."
 
-#: ../LibraryView.lua:880
+#: ../LibraryView.lua:928
 msgid   "Tonikaku Kawaii"
 msgstr  "Тоникаку Кавайи"
 
-#: ../LibraryView.lua:932
+#: ../LibraryView.lua:980
 msgid   "Scaning files..."
 msgstr  "Файлдар сканерленуде..."
 
-#: ../LibraryView.lua:947
+#: ../LibraryView.lua:995
 #, lua-format
 msgid   "Found %d files."
 msgstr  "%d файл табылды."
 
-#: ../LibraryView.lua:948
+#: ../LibraryView.lua:996
 #, lua-format
 msgid   "Total size %s."
 msgstr  "Жалпы өлшем %s."
 
-#: ../LibraryView.lua:949
+#: ../LibraryView.lua:997
 #, lua-format
 msgid   "RendOnly file .cbz and .epub scan."
 msgstr  "RendOnly файлы .cbz және .epub сканері."
 
-#: ../LibraryView.lua:953
+#: ../LibraryView.lua:1001
 msgid   "Clean"
 msgstr  "Таза"
 
-#: ../LibraryView.lua:958
+#: ../LibraryView.lua:1006
 msgid   "Deleting..."
 msgstr  "Жоюда..."
 
-#: ../LibraryView.lua:976
+#: ../LibraryView.lua:1024
 #, lua-format
 msgid   "Cleaned free %s storage"
 msgstr  "Бос %s жады тазартылды"
 
-#: ../LibraryView.lua:1001
+#: ../LibraryView.lua:1049
 msgid   "Refresh mangas..."
 msgstr  "Мангаларды жаңарту..."
 
-#: ../LibraryView.lua:1002
+#: ../LibraryView.lua:1050
 msgid   "All chapters manga updated!"
 msgstr  "Манганың барлық тараулары жаңартылды!"
 
-#: ../LibraryView.lua:1003
+#: ../LibraryView.lua:1051
 msgid   "Some manga updates fail:"
 msgstr  "Кейбір манга жаңартулары сәтсіз аяқталды:"
 
-#: ../LibraryView.lua:1014
+#: ../LibraryView.lua:1062
 msgid   "Refresh manga details..."
 msgstr  "Манга мәліметтерін жаңарту..."
 
-#: ../LibraryView.lua:1015
+#: ../LibraryView.lua:1063
 msgid   "All manga details refresh!"
 msgstr  "Барлық манга мәліметтері жаңартылды!"
 
-#: ../LibraryView.lua:1016
+#: ../LibraryView.lua:1064
 msgid   "Some manga details refresh fail:"
 msgstr  "Кейбір манга мәліметтерін жаңарту сәтсіз аяқталды:"
 
-#: ../LibraryView.lua:1032
+#: ../LibraryView.lua:1080
 msgid   "Progress"
 msgstr  "Прогресс"
 
-#: ../LibraryView.lua:1050
+#: ../LibraryView.lua:1098
 msgid   "Cleaner"
 msgstr  "Тазартқыш"
 
-#: ../LibraryView.lua:1051
+#: ../LibraryView.lua:1099
 msgid   "Find and delete invalid files including files from deleted sources"
 msgstr  "Жарамсыз файлдарды, соның ішінде жойылған көздерден файлдарды табу және жою"
 
-#: ../LibraryView.lua:1051 ../LibraryView.lua:1054
+#: ../LibraryView.lua:1099 ../LibraryView.lua:1102
 msgid   "Normal"
 msgstr  "Қалыпты"
 
-#: ../LibraryView.lua:1053
+#: ../LibraryView.lua:1101
 msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr  "МАҢЫЗДЫ: Мета файлдар (бетбелгі, тарих) сақталмайды!"
 
-#: ../LibraryView.lua:1060
+#: ../LibraryView.lua:1108
 msgid   "Chapter read done"
 msgstr  "Бөлім оқылды"
 
@@ -707,11 +715,11 @@ msgstr  "Қауіпсіз"
 msgid   "Suggestive"
 msgstr  "Ойландыратын"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:233
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
 msgid   "Refreshing details..."
 msgstr  "Мәліметтер жаңартылуда..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:240
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
 msgid   "Refresh details cancelled."
 msgstr  "Мәліметтерді жаңарту тоқтатылды."
 
@@ -735,15 +743,15 @@ msgstr  "Иә"
 msgid   "No"
 msgstr  "Жоқ"
 
-#: ../MangaSearchResults.lua:25
+#: ../MangaSearchResults.lua:26
 msgid   "Search results..."
 msgstr  "Іздеу нәтижелері..."
 
-#: ../MangaSearchResults.lua:132
+#: ../MangaSearchResults.lua:133
 msgid   "Searching for"
 msgstr  "Іздеу"
 
-#: ../MangaSearchResults.lua:139
+#: ../MangaSearchResults.lua:140
 msgid   "Search cancelled."
 msgstr  "Іздеу тоқтатылды."
 
@@ -763,7 +771,8 @@ msgstr  "Хабарландыру жоқ"
 msgid   "Delete this notification?"
 msgstr  "Бұл хабарландыру жойылсын ба?"
 
-#: ../NotificationView.lua:161
+#: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
+#: ../PlaylistDialog.lua:232
 msgid   "Delete"
 msgstr  "Жою"
 
@@ -794,6 +803,38 @@ msgstr  "Жабу"
 #: ../OfflineAlertDialog.lua:64
 msgid   "Do not show this message again"
 msgstr  "Бұл хабарды қайта көрсетпеңіз"
+
+#: ../PlaylistDialog.lua:131
+msgid   "Rename Playlist"
+msgstr  "Ойнату тізімінің атын өзгерту"
+
+#: ../PlaylistDialog.lua:136
+msgid   "Save"
+msgstr  "Сақтау"
+
+#: ../PlaylistDialog.lua:158
+msgid   "Delete playlist"
+msgstr  "Ойнату тізімін жою"
+
+#: ../PlaylistDialog.lua:227
+msgid   "Rename"
+msgstr  "Атын өзгерту"
+
+#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:310
+msgid   "New Playlist"
+msgstr  "Жаңа ойнату тізімі"
+
+#: ../PlaylistDialog.lua:251
+msgid   "Playlist name"
+msgstr  "Ойнату тізімінің аты"
+
+#: ../PlaylistDialog.lua:264
+msgid   "Create"
+msgstr  "Жасау"
+
+#: ../PlaylistDialog.lua:322
+msgid   "No playlists yet."
+msgstr  "Әзірге ойнату тізімдері жоқ."
 
 #: ../Settings.lua:44
 msgid   "Library view mode"
@@ -1009,6 +1050,10 @@ msgstr  "ракуёми"
 #: ../_meta.lua:6
 msgid   "Download mangas on your e-book reader!"
 msgstr  "Электрондық кітап оқу құралына мангаларды жүктеп алыңыз!"
+
+#: ../handlers/addToPlaylist.lua:17
+msgid   "Added to"
+msgstr  "Қосылды"
 
 #: ../main.lua:39 ../main.lua:63
 msgid   "Rakuyomi"

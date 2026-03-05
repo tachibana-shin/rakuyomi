@@ -160,6 +160,18 @@ function LibraryView:patchTitleBar(count_notify)
       show_parent = self.title_bar.show_parent,
     },
     IconButton:new {
+      icon = "column.two",
+      width = left_icon_size,
+      height = left_icon_size,
+      padding = button_padding,
+      padding_bottom = right_icon_size,
+      callback = function()
+        PlaylistDialog:fetchAndShow()
+      end,
+      allow_flash = self.title_bar.left_icon_allow_flash,
+      show_parent = self.title_bar.show_parent,
+    },
+    IconButton:new {
       icon = "align.center",
       width = left_icon_size,
       height = left_icon_size,

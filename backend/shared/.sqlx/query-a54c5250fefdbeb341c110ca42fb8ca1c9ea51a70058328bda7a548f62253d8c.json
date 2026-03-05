@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM playlist_mangas WHERE playlist_id = ?1 AND source_id = ?2 AND manga_id = ?3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "a54c5250fefdbeb341c110ca42fb8ca1c9ea51a70058328bda7a548f62253d8c"
+}

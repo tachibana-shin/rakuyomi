@@ -1,7 +1,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-02 03:25+0700\n"
+        "POT-Creation-Date: 2026-03-05 00:28+0700\n"
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -474,7 +474,7 @@ msgstr  "Čistejšie kapitoly"
 msgid   "Manage sources"
 msgstr  "Spravujte zdroje"
 
-#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:283
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
 msgid   "Settings"
 msgstr  "Nastavenia"
 
@@ -848,79 +848,87 @@ msgstr  "Posledné čítanie vzostupne"
 msgid   "Last read descending"
 msgstr  "Posledné prečítanie zostupne"
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid   "Source ascending"
+msgstr  "Zdroj vzostupne"
+
+#: ../Settings.lua:68
+msgid   "Source descending"
+msgstr  "Zdroj zostupne"
+
+#: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"
 msgstr  "Položky na stránku (0 = automaticky)"
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid   "Grid columns"
 msgstr  "Mriežkové stĺpce"
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid   "Grid rows"
 msgstr  "Riadky mriežky"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid   "Reader"
 msgstr  "Čitateľ"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid   "Chapter sorting mode"
 msgstr  "Režim triedenia kapitol"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid   "By chapter ascending"
 msgstr  "Podľa kapitoly vzostupne"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid   "By chapter descending"
 msgstr  "Podľa kapitoly zostupne"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid   "Preload chapters on reader open"
 msgstr  "Vopred načítajte kapitoly na čítačke otvorené"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimalizácia obrázkov stránok (experimentálne)"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid   "Concurrent page requests"
 msgstr  "Súbežné požiadavky na stránku"
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid   "Storage"
 msgstr  "Skladovanie"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid   "Chapter storage path"
 msgstr  "Cesta k ukladaniu kapitol"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid   "Storage size limit"
 msgstr  "Limit veľkosti úložiska"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid   "Sync & Updates"
 msgstr  "Synchronizácia a aktualizácie"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid   "WebDAV Sync"
 msgstr  "WebDAV synchronizácia"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Enabled cron check for manga updates"
 msgstr  "Povolená kontrola cronu pre aktualizácie manga"
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid   "Source IDs skip check update"
 msgstr  "Aktualizácia kontroly preskočenia identifikátorov zdrojov"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid   "System"
 msgstr  "Systém"
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid   "Allow requisition of the back button"
 msgstr  "Povoliť požiadavku na tlačidlo Späť"
 

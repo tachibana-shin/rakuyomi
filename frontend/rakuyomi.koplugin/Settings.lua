@@ -64,6 +64,8 @@ Settings.setting_value_definitions = {
         { label = _("Count unread chapters descending"), value = 'unread_desc' },
         { label = _("Last read ascending"),              value = 'last_read_asc' },
         { label = _("Last read descending"),             value = 'last_read_desc' },
+        { label = _("Source ascending"),                 value = 'source_asc' },
+        { label = _("Source descending"),                value = 'source_desc' },
       }
     }
   },

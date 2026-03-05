@@ -854,7 +854,7 @@ msgstr  "Източник възходящ"
 
 #: ../Settings.lua:68
 msgid   "Source descending"
-msgstr  "Източникът намалява"
+msgstr  "Източник низходящ"
 
 #: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"

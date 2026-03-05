@@ -853,7 +853,7 @@ msgstr  "წყარო აღმავალი"
 
 #: ../Settings.lua:68
 msgid   "Source descending"
-msgstr  "წყარო დაღმავალია"
+msgstr  "წყარო დაღმავალი"
 
 #: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"

@@ -803,7 +803,7 @@ impl Database {
                         AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)
                         AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)
                     GROUP BY ml.source_id, ml.manga_id, lti.last_read_time
-                    ORDER BY ml.source_id COLLATE NOCASE DESC, mi.title COLLATE NOCASE ASC
+                    ORDER BY ml.source_id COLLATE NOCASE DESC, mi.title COLLATE NOCASE DESC
                     "#
                 )
                 .fetch_all(&self.pool)

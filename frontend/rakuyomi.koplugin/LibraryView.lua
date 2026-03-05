@@ -513,7 +513,9 @@ function LibraryView:onContextMenuChoice(item)
         end,
       },
     },
-    {
+  }
+  if self.current_playlist == nil then
+    table.insert(context_menu_buttons, {
       {
         text = _("Remove from Library"),
         callback = function()
@@ -521,8 +523,8 @@ function LibraryView:onContextMenuChoice(item)
           self:_handleRemoveFromLibrary(manga)
         end,
       },
-    },
-  }
+    })
+  end
   dialog_context_menu = ButtonDialog:new {
     title = manga.title .. "\n\n" .. manga.source.name,
     buttons = context_menu_buttons,

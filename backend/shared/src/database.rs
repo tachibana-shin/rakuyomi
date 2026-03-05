@@ -2507,7 +2507,7 @@ impl Database {
                     state: MangaState::default(),
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
-                    in_library: true,
+                    in_library: false,
                 })
             })
             .collect();

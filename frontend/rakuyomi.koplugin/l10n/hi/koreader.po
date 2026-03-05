@@ -1,7 +1,11 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
         "POT-Creation-Date: 2026-03-05 16:47+0700\n"
+=======
+        "POT-Creation-Date: 2026-03-05 00:28+0700\n"
+>>>>>>> main
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -481,7 +485,11 @@ msgstr  "स्वच्छ अध्याय"
 msgid   "Manage sources"
 msgstr  "स्रोत प्रबंधित करें"
 
+<<<<<<< HEAD
 #: ../LibraryView.lua:729 ../LibraryView.lua:879 ../Settings.lua:283
+=======
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
+>>>>>>> main
 msgid   "Settings"
 msgstr  "सेटिंग्स"
 
@@ -888,79 +896,87 @@ msgstr  "अंतिम पाठ आरोही है"
 msgid   "Last read descending"
 msgstr  "अंतिम पाठ अवरोही है"
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid   "Source ascending"
+msgstr  "स्रोत आरोही"
+
+#: ../Settings.lua:68
+msgid   "Source descending"
+msgstr  "स्रोत अवरोही"
+
+#: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"
 msgstr  "प्रति पृष्ठ आइटम (0 = स्वचालित)"
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid   "Grid columns"
 msgstr  "ग्रिड कॉलम"
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid   "Grid rows"
 msgstr  "ग्रिड पंक्तियाँ"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid   "Reader"
 msgstr  "पाठक"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid   "Chapter sorting mode"
 msgstr  "अध्याय छँटाई मोड"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid   "By chapter ascending"
 msgstr  "अध्याय चढ़ते हुए"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid   "By chapter descending"
 msgstr  "अध्याय अवरोह द्वारा"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid   "Preload chapters on reader open"
 msgstr  "रीडर पर प्रीलोड अध्याय खुले"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid   "Optimize page images (experimental)"
 msgstr  "पृष्ठ छवियों को अनुकूलित करें (प्रयोगात्मक)"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid   "Concurrent page requests"
 msgstr  "समवर्ती पृष्ठ अनुरोध"
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid   "Storage"
 msgstr  "भंडारण"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid   "Chapter storage path"
 msgstr  "अध्याय भंडारण पथ"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid   "Storage size limit"
 msgstr  "भंडारण आकार सीमा"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid   "Sync & Updates"
 msgstr  "सिंक और अपडेट"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid   "WebDAV Sync"
 msgstr  "वेबडीएवी सिंक"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Enabled cron check for manga updates"
 msgstr  "मंगा अपडेट के लिए सक्षम क्रॉन चेक"
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid   "Source IDs skip check update"
 msgstr  "स्रोत आईडी चेक अपडेट छोड़ें"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid   "System"
 msgstr  "प्रणाली"
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid   "Allow requisition of the back button"
 msgstr  "बैक बटन की मांग की अनुमति दें"
 

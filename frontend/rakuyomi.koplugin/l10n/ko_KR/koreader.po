@@ -1,7 +1,11 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
         "POT-Creation-Date: 2026-03-05 16:47+0700\n"
+=======
+        "POT-Creation-Date: 2026-03-05 00:28+0700\n"
+>>>>>>> main
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -482,7 +486,11 @@ msgstr  "클리너 챕터"
 msgid   "Manage sources"
 msgstr  "소스 관리"
 
+<<<<<<< HEAD
 #: ../LibraryView.lua:729 ../LibraryView.lua:879 ../Settings.lua:283
+=======
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
+>>>>>>> main
 msgid   "Settings"
 msgstr  "설정"
 
@@ -889,79 +897,87 @@ msgstr  "마지막 읽기 오름차순"
 msgid   "Last read descending"
 msgstr  "마지막 읽기 내림차순"
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid   "Source ascending"
+msgstr  "소스 오름차순"
+
+#: ../Settings.lua:68
+msgid   "Source descending"
+msgstr  "소스 내림차순"
+
+#: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"
 msgstr  "페이지당 항목 수(0 = 자동)"
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid   "Grid columns"
 msgstr  "그리드 열"
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid   "Grid rows"
 msgstr  "그리드 행"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid   "Reader"
 msgstr  "리더"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid   "Chapter sorting mode"
 msgstr  "챕터 정렬 모드"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid   "By chapter ascending"
 msgstr  "장별 오름차순"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid   "By chapter descending"
 msgstr  "장 내림차순"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid   "Preload chapters on reader open"
 msgstr  "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid   "Optimize page images (experimental)"
 msgstr  "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid   "Concurrent page requests"
 msgstr  "동시 페이지 요청"
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid   "Storage"
 msgstr  "저장"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid   "Chapter storage path"
 msgstr  "챕터 저장 경로"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid   "Storage size limit"
 msgstr  "저장소 크기 제한"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid   "Sync & Updates"
 msgstr  "동기화 및 업데이트"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid   "WebDAV Sync"
 msgstr  "WebDAV 동기화"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Enabled cron check for manga updates"
 msgstr  "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid   "Source IDs skip check update"
 msgstr  "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid   "System"
 msgstr  "체계"
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid   "Allow requisition of the back button"
 msgstr  "뒤로 버튼 요청 허용"
 

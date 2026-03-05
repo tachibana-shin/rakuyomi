@@ -1,7 +1,11 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
         "POT-Creation-Date: 2026-03-05 16:47+0700\n"
+=======
+        "POT-Creation-Date: 2026-03-05 00:28+0700\n"
+>>>>>>> main
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -482,7 +486,11 @@ msgstr  "Renere kapitler"
 msgid   "Manage sources"
 msgstr  "Administrer kilder"
 
+<<<<<<< HEAD
 #: ../LibraryView.lua:729 ../LibraryView.lua:879 ../Settings.lua:283
+=======
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
+>>>>>>> main
 msgid   "Settings"
 msgstr  "Innstillinger"
 
@@ -889,79 +897,87 @@ msgstr  "Sist lest stigende"
 msgid   "Last read descending"
 msgstr  "Sist lest synkende"
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid   "Source ascending"
+msgstr  "Kilde stigende"
+
+#: ../Settings.lua:68
+msgid   "Source descending"
+msgstr  "Kilde synkende"
+
+#: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"
 msgstr  "Elementer per side (0 = automatisk)"
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid   "Grid columns"
 msgstr  "Rutenettsøyler"
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid   "Grid rows"
 msgstr  "Rutenettrader"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid   "Reader"
 msgstr  "Leser"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid   "Chapter sorting mode"
 msgstr  "Kapittelsorteringsmodus"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid   "By chapter ascending"
 msgstr  "Etter kapittel stigende"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid   "By chapter descending"
 msgstr  "Etter kapittel fallende"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid   "Preload chapters on reader open"
 msgstr  "Forhåndslast kapitler på leseren åpen"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid   "Optimize page images (experimental)"
 msgstr  "Optimaliser sidebilder (eksperimentelt)"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid   "Concurrent page requests"
 msgstr  "Samtidig sideforespørsler"
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid   "Storage"
 msgstr  "Lagring"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid   "Chapter storage path"
 msgstr  "Kapittellagringsbane"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid   "Storage size limit"
 msgstr  "Begrensning for lagringsstørrelse"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid   "Sync & Updates"
 msgstr  "Synkronisering og oppdateringer"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid   "WebDAV Sync"
 msgstr  "WebDAV-synkronisering"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Enabled cron check for manga updates"
 msgstr  "Aktivert cron-sjekk for mangaoppdateringer"
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid   "Source IDs skip check update"
 msgstr  "Kilde-ID-er hopper over sjekkoppdatering"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid   "System"
 msgstr  "System"
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid   "Allow requisition of the back button"
 msgstr  "Tillat rekvisisjon av tilbake-knappen"
 

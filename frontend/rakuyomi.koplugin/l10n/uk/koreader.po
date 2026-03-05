@@ -1,7 +1,11 @@
 msgid   ""
 msgstr  "Project-Id-Version: rakuyomi.koreader \n"
         "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
         "POT-Creation-Date: 2026-03-05 16:47+0700\n"
+=======
+        "POT-Creation-Date: 2026-03-05 00:28+0700\n"
+>>>>>>> main
         "PO-Revision-Date: 2025-12-26 23:18+0700\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -482,7 +486,11 @@ msgstr  "Чистіші глави"
 msgid   "Manage sources"
 msgstr  "Керуйте джерелами"
 
+<<<<<<< HEAD
 #: ../LibraryView.lua:729 ../LibraryView.lua:879 ../Settings.lua:283
+=======
+#: ../LibraryView.lua:681 ../LibraryView.lua:831 ../Settings.lua:285
+>>>>>>> main
 msgid   "Settings"
 msgstr  "Налаштування"
 
@@ -889,79 +897,87 @@ msgstr  "Останнє читання за зростанням"
 msgid   "Last read descending"
 msgstr  "Останнє прочитане за спаданням"
 
-#: ../Settings.lua:74
+#: ../Settings.lua:67
+msgid   "Source ascending"
+msgstr  "Джерело за зростанням"
+
+#: ../Settings.lua:68
+msgid   "Source descending"
+msgstr  "Джерело спадає"
+
+#: ../Settings.lua:76
 msgid   "Items per page (0 = auto)"
 msgstr  "Елементів на сторінці (0 = автоматично)"
 
-#: ../Settings.lua:85
+#: ../Settings.lua:87
 msgid   "Grid columns"
 msgstr  "Колонки сітки"
 
-#: ../Settings.lua:96
+#: ../Settings.lua:98
 msgid   "Grid rows"
 msgstr  "Рядки сітки"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:107
 msgid   "Reader"
 msgstr  "Читач"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:113
 msgid   "Chapter sorting mode"
 msgstr  "Режим сортування розділів"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:115
 msgid   "By chapter ascending"
 msgstr  "По главам за зростанням"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:116
 msgid   "By chapter descending"
 msgstr  "За главою спадання"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:124
 msgid   "Preload chapters on reader open"
 msgstr  "Попереднє завантаження розділів у програмі Reader відкрито"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:135
 msgid   "Optimize page images (experimental)"
 msgstr  "Оптимізувати зображення сторінок (експериментально)"
 
-#: ../Settings.lua:141
+#: ../Settings.lua:143
 msgid   "Concurrent page requests"
 msgstr  "Одночасні запити сторінок"
 
-#: ../Settings.lua:150
+#: ../Settings.lua:152
 msgid   "Storage"
 msgstr  "Зберігання"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:158
 msgid   "Chapter storage path"
 msgstr  "Шлях зберігання глави"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:167
 msgid   "Storage size limit"
 msgstr  "Обмеження розміру сховища"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:175
 msgid   "Sync & Updates"
 msgstr  "Синхронізація та оновлення"
 
-#: ../Settings.lua:179
+#: ../Settings.lua:181
 msgid   "WebDAV Sync"
 msgstr  "Синхронізація WebDAV"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:189
 msgid   "Enabled cron check for manga updates"
 msgstr  "Увімкнено перевірку cron на наявність оновлень манги"
 
-#: ../Settings.lua:195
+#: ../Settings.lua:197
 msgid   "Source IDs skip check update"
 msgstr  "Ідентифікатори джерел пропускають перевірку оновлення"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:203
 msgid   "System"
 msgstr  "система"
 
-#: ../Settings.lua:207
+#: ../Settings.lua:209
 msgid   "Allow requisition of the back button"
 msgstr  "Дозволити запит кнопки Назад"
 

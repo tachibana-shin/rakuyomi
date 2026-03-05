@@ -44,6 +44,8 @@ pub enum LibrarySortingMode {
     UnreadDesc,
     LastReadAsc,
     LastReadDesc,
+    SourceAsc,
+    SourceDesc,
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]

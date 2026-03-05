@@ -668,7 +668,146 @@ impl Database {
                 .fetch_all(&self.pool)
                 .await?
             }
-            
+            crate::settings::LibrarySortingMode::SourceAsc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    WITH last_read AS (
+                        SELECT
+                            ci.source_id,
+                            ci.manga_id,
+                            MAX(ci.chapter_number) AS last_read_chapter
+                        FROM chapter_informations ci
+                        JOIN chapter_state cs
+                            ON ci.source_id = cs.source_id
+                            AND ci.manga_id = cs.manga_id
+                            AND ci.chapter_id = cs.chapter_id
+                        LEFT JOIN manga_state ms
+                            ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id
+                        WHERE (ms.preferred_scanlator IS NULL
+                        OR ci.scanlator = ms.preferred_scanlator
+                        OR ci.scanlator IS NULL)
+                        AND cs.read = 1
+                        GROUP BY ci.source_id, ci.manga_id
+                    ),
+                    last_time_interacted AS (
+                        SELECT
+                            ci.source_id,
+                            ci.manga_id,
+                            COALESCE(MAX(cs.last_read), 0) AS last_read_time
+                        FROM chapter_informations ci
+                        JOIN chapter_state cs
+                            ON ci.source_id = cs.source_id
+                            AND ci.manga_id = cs.manga_id
+                            AND ci.chapter_id = cs.chapter_id
+                        LEFT JOIN manga_state ms
+                            ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id
+                        WHERE (ms.preferred_scanlator IS NULL
+                        OR ci.scanlator = ms.preferred_scanlator
+                        OR ci.scanlator IS NULL)
+                        AND cs.last_read IS NOT NULL
+                        GROUP BY ci.source_id, ci.manga_id
+                    )
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        lti.last_read_time AS "last_read?: i64"
+                    FROM manga_library ml
+                    JOIN manga_informations mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN manga_state ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN last_read lr
+                        ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
+                    LEFT JOIN last_time_interacted lti
+                        ON lti.source_id = ml.source_id AND lti.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations ci
+                        ON ci.source_id = ml.source_id
+                        AND ci.manga_id = ml.manga_id
+                        AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)
+                        AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)
+                    GROUP BY ml.source_id, ml.manga_id, lti.last_read_time
+                    ORDER BY ml.source_id COLLATE NOCASE ASC, mi.title COLLATE NOCASE ASC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
+            crate::settings::LibrarySortingMode::SourceDesc => {
+                sqlx::query_as!(
+                    MangaLibraryRowWithReadCount,
+                    r#"
+                    WITH last_read AS (
+                        SELECT
+                            ci.source_id,
+                            ci.manga_id,
+                            MAX(ci.chapter_number) AS last_read_chapter
+                        FROM chapter_informations ci
+                        JOIN chapter_state cs
+                            ON ci.source_id = cs.source_id
+                            AND ci.manga_id = cs.manga_id
+                            AND ci.chapter_id = cs.chapter_id
+                        LEFT JOIN manga_state ms
+                            ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id
+                        WHERE (ms.preferred_scanlator IS NULL
+                        OR ci.scanlator = ms.preferred_scanlator
+                        OR ci.scanlator IS NULL)
+                        AND cs.read = 1
+                        GROUP BY ci.source_id, ci.manga_id
+                    ),
+                    last_time_interacted AS (
+                        SELECT
+                            ci.source_id,
+                            ci.manga_id,
+                            COALESCE(MAX(cs.last_read), 0) AS last_read_time
+                        FROM chapter_informations ci
+                        JOIN chapter_state cs
+                            ON ci.source_id = cs.source_id
+                            AND ci.manga_id = cs.manga_id
+                            AND ci.chapter_id = cs.chapter_id
+                        LEFT JOIN manga_state ms
+                            ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id
+                        WHERE (ms.preferred_scanlator IS NULL
+                        OR ci.scanlator = ms.preferred_scanlator
+                        OR ci.scanlator IS NULL)
+                        AND cs.last_read IS NOT NULL
+                        GROUP BY ci.source_id, ci.manga_id
+                    )
+                    SELECT
+                        ml.source_id,
+                        ml.manga_id,
+                        mi.title,
+                        mi.author,
+                        mi.artist,
+                        mi.cover_url,
+                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        lti.last_read_time AS "last_read?: i64"
+                    FROM manga_library ml
+                    JOIN manga_informations mi
+                        ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
+                    LEFT JOIN manga_state ms
+                        ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN last_read lr
+                        ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
+                    LEFT JOIN last_time_interacted lti
+                        ON lti.source_id = ml.source_id AND lti.manga_id = ml.manga_id
+                    LEFT JOIN chapter_informations ci
+                        ON ci.source_id = ml.source_id
+                        AND ci.manga_id = ml.manga_id
+                        AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)
+                        AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)
+                    GROUP BY ml.source_id, ml.manga_id, lti.last_read_time
+                    ORDER BY ml.source_id COLLATE NOCASE DESC, mi.title COLLATE NOCASE DESC
+                    "#
+                )
+                .fetch_all(&self.pool)
+                .await?
+            }
         };
 
         let mangas = rows

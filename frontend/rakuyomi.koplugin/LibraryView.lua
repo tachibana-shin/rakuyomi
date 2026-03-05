@@ -432,6 +432,9 @@ end
 function LibraryView:onContextMenuChoice(item)
   --- @type Manga
   local manga = item.manga
+  if manga == nil then
+    return
+  end
   local dialog_context_menu
 
   local context_menu_buttons = {

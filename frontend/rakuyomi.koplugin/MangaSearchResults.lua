@@ -1,9 +1,9 @@
 local ButtonDialog = require("ui/widget/buttondialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
-local Trapper = require("ui/trapper")
 local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext+")
+local addToPlaylist = require("handlers/addToPlaylist")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -14,6 +14,7 @@ local Testing = require("testing")
 local Icons = require("Icons")
 local MangaInfoWidget = require("MangaInfoWidget")
 local calcLastReadText = require("utils/calcLastReadText")
+local Trapper = require("ui/trapper")
 
 --- @class MangaSearchResults: { [any]: any }
 --- @field results Manga[]
@@ -263,6 +264,15 @@ function MangaSearchResults:onContextMenuChoice(item)
           end)
         end
       },
+    },
+    {
+      {
+        text = Icons.FA_PLUS .. " " .. _("Add to Playlist"),
+        callback = function()
+          UIManager:close(dialog)
+          addToPlaylist(manga)
+        end
+      }
     },
     {
       {

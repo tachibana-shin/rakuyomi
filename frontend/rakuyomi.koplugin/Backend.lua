@@ -794,6 +794,70 @@ function Backend.handleSourceNotification(cancel_id, source_id, key)
   })
 end
 
+--- @class Playlist
+--- @field id number
+--- @field name string
+
+--- @return SuccessfulResponse<Playlist[]>|ErrorResponse
+function Backend.getPlaylists()
+  return Backend.requestJson({
+    path = "/playlists",
+  })
+end
+
+--- @return SuccessfulResponse<Playlist>|ErrorResponse
+function Backend.createPlaylist(name)
+  return Backend.requestJson({
+    path = "/playlists",
+    method = 'POST',
+    body = { name = name },
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.deletePlaylist(id)
+  return Backend.requestJson({
+    path = "/playlists/" .. id,
+    method = 'DELETE',
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.renamePlaylist(id, name)
+  return Backend.requestJson({
+    path = "/playlists/" .. id,
+    method = 'PUT',
+    body = { name = name },
+  })
+end
+
+--- @return SuccessfulResponse<Manga[]>|ErrorResponse
+function Backend.getMangasInPlaylist(id)
+  return Backend.requestJson({
+    path = "/playlists/" .. id .. "/mangas",
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.addMangaToPlaylist(playlist_id, source_id, manga_id)
+  return Backend.requestJson({
+    path = "/playlists/" .. playlist_id .. "/mangas",
+    method = 'POST',
+    body = {
+      source_id = source_id,
+      manga_id = manga_id,
+    },
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.removeMangaFromPlaylist(playlist_id, source_id, manga_id)
+  return Backend.requestJson({
+    path = "/playlists/" .. playlist_id .. "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id),
+    method = 'DELETE',
+  })
+end
+
 -- we can't really rely upon Koreader informing us it has terminated because
 -- the plugin lifecycle is really obscure, so use the garbage collector to
 -- detect we're done and cleanup

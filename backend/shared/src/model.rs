@@ -202,3 +202,17 @@ pub struct NotificationInformation {
     pub chapter_number: f64,
     pub created_at: i64,
 }
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+pub struct Playlist {
+    pub id: i64,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+pub struct PlaylistManga {
+    pub playlist_id: i64,
+    pub source_id: String,
+    pub manga_id: String,
+}

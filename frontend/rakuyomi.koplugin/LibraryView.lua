@@ -17,6 +17,7 @@ local Font = require("ui/font")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
+local addToPlaylist = require("handlers/addToPlaylist")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -48,6 +49,7 @@ local BasicJobDialog = require("BasicJobDialog")
 local MenuItemCover = require("patch/MenuItemCover")
 local MenuItemGrid = require("patch/MenuItemGrid")
 local MenuCustom = require("patch/MenuCustom")
+local PlaylistDialog = require("PlaylistDialog")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
@@ -71,6 +73,9 @@ function LibraryView:init()
   self.width = Screen:getWidth()
   self.height = Screen:getHeight()
 
+  if self.current_playlist then
+    self.title = self.current_playlist.name
+  end
   local page = self.page
   Menu.init(self)
   MenuCustom.init(self)
@@ -78,12 +83,34 @@ function LibraryView:init()
 
   self.mangas_raw = self.mangas
   self.favorite_search_keyword = nil
+  self.current_playlist = nil
 
   self:patchTitleBar(0)
   self:fetchCountNotification()
 
   -- fix bottom bar size
   self:updateItems()
+end
+
+--- @private
+--- @param cleanup boolean|nil
+function LibraryView:fetchMangas(cleanup)
+  local response
+  if self.current_playlist then
+    response = Backend.getMangasInPlaylist(self.current_playlist.id)
+  else
+    response = Backend.getMangasInLibrary()
+  end
+
+  if response.type == 'ERROR' then
+    ErrorDialog:show(response.message, cleanup and function()
+      Backend.cleanup()
+      Backend.initialize()
+    end or nil)
+    return nil
+  end
+
+  return response.body
 end
 
 --- @private
@@ -177,14 +204,10 @@ function LibraryView:patchTitleBar(count_notify)
                 return
               end
 
-              local response = Backend.getMangasInLibrary()
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
-
+              local mangas = self:fetchMangas()
+              if not mangas then
                 return
               end
-
-              local mangas = response.body
 
               self.mangas_raw = mangas
               self.favorite_search_keyword = nil
@@ -348,7 +371,8 @@ function LibraryView:generateEmptyViewItemTable()
   }
 end
 
-function LibraryView:fetchAndShow()
+function LibraryView:fetchAndShow(playlist)
+  self.current_playlist = playlist
   local settings = Backend.getSettings()
 
   if settings.type == 'ERROR' then
@@ -360,23 +384,17 @@ function LibraryView:fetchAndShow()
     return
   end
 
-  local response = Backend.getMangasInLibrary()
-  if response.type == 'ERROR' then
-    ErrorDialog:show(response.message, function()
-      Backend.cleanup()
-      Backend.initialize()
-    end)
-
+  local mangas = self:fetchMangas(true)
+  if not mangas then
     return
   end
-
-  local mangas = response.body
 
   UIManager:show(LibraryView:new {
     mangas = mangas,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page,
     library_view_mode = settings.body.library_view_mode,
+    current_playlist = self.current_playlist,
   })
 
   Testing:emitEvent('library_view_shown')
@@ -471,6 +489,15 @@ function LibraryView:onContextMenuChoice(item)
         callback = function()
           UIManager:close(dialog_context_menu)
           self:_handleContinueReading(manga)
+        end,
+      },
+    },
+    {
+      {
+        text = Icons.FA_PLUS .. " " .. _("Add to Playlist"),
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          addToPlaylist(manga)
         end,
       },
     },
@@ -639,6 +666,15 @@ function LibraryView:openMenu()
           self:openSearchFavoritesDialog()
         end
       }
+    },
+    {
+      {
+        text = Icons.FA_LIST .. " " .. _("Playlists"),
+        callback = function()
+          UIManager:close(dialog)
+          PlaylistDialog:fetchAndShow()
+        end
+      },
     },
     {
       {

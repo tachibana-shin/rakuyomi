@@ -29,5 +29,9 @@ return {
   FA_CLEANER           = "\u{e000}",
   FA_LOCKED            = "\u{f023}",
   LANG                 = "\u{f1ab}",
-  DOT                  = "\u{f444}"
+  DOT                  = "\u{f444}",
+  FA_LIST              = "\u{f0ca}",
+  FA_PEN               = "\u{f304}",
+  FA_TRASH             = "\u{f1f8}",
+  FA_PLUS              = "\u{f067}",
 }

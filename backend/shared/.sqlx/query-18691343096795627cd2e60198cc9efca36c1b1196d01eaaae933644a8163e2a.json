@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO playlist_mangas (playlist_id, source_id, manga_id) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "18691343096795627cd2e60198cc9efca36c1b1196d01eaaae933644a8163e2a"
+}

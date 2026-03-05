@@ -16,3 +16,4 @@ devenv.local.nix
 
 .gemini/
 gha-creds-*.json
+dev.db

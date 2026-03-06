@@ -299,6 +299,8 @@ function PlaylistDialog:_buildAndShow(playlists, on_select_override, on_return_c
     end
   end
 
+  local item_height = Screen:scaleBySize(50)
+
   ---@diagnostic disable-next-line: undefined-field
   current_dialog = PlaylistDialog:new {
     title = _("Playlists"),
@@ -334,7 +336,7 @@ function PlaylistDialog:_buildAndShow(playlists, on_select_override, on_return_c
           dimen = Geom:new {
             x = 0, y = 0,
             w = max_width,
-            h = 40,
+            h = item_height,
           },
           on_tap = function() on_select(p) end,
           on_hold = function() on_context(p) end,

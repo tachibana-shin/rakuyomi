@@ -11,7 +11,8 @@ use url::Url;
 
 use crate::{
     model::{
-        Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation, MangaState, NotificationInformation, Playlist, SourceId, SourceInformation
+        Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation,
+        MangaState, NotificationInformation, Playlist, SourceId, SourceInformation,
     },
     source::model::PublishingStatus,
     source_collection::SourceCollection,
@@ -1614,8 +1615,12 @@ impl Database {
     }
 
     pub async fn mark_chapter_as_read(&self, id: &ChapterId, value: Option<bool>) -> Result<()> {
-        let now = chrono::Utc::now().timestamp();
         let value = value.unwrap_or(true);
+        let now = if value {
+            Some(chrono::Utc::now().timestamp())
+        } else {
+            None
+        };
 
         let source_id = id.source_id().value();
         let manga_id = id.manga_id().value();
@@ -1627,7 +1632,10 @@ impl Database {
             VALUES (?1, ?2, ?3, ?4, ?5)
             ON CONFLICT DO UPDATE SET
                 read = excluded.read,
-                last_read = excluded.last_read
+                last_read = CASE
+                    WHEN excluded.read = TRUE THEN excluded.last_read
+                    ELSE NULL
+                END
         "#,
             source_id,
             manga_id,
@@ -1952,15 +1960,14 @@ impl Database {
             sql.push_str("(?, ?, ?, ?)");
         }
 
-        // Add ON CONFLICT logic
         sql.push_str(
             r#"
             ON CONFLICT (source_id, manga_id, chapter_id)
             DO UPDATE SET
                 read = excluded.read,
                 last_read = CASE
-                    WHEN excluded.read = TRUE THEN excluded.last_read
-                    ELSE chapter_state.last_read
+                    WHEN excluded.read = TRUE THEN chapter_state.last_read
+                    ELSE NULL
                 END
             "#,
         );
@@ -1981,22 +1988,18 @@ impl Database {
     }
 
     pub async fn get_playlists(&self) -> Result<Vec<Playlist>> {
-        let playlists = sqlx::query_as!(
-            Playlist,
-            "SELECT id, name FROM playlists"
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let playlists = sqlx::query_as!(Playlist, "SELECT id, name FROM playlists")
+            .fetch_all(&self.pool)
+            .await?;
 
         Ok(playlists)
     }
 
     pub async fn create_playlist(&self, name: String) -> Result<Playlist> {
-        let row: (i64,) = sqlx::query_as(
-            "INSERT INTO playlists (name) VALUES (?1) RETURNING id"
-        ).bind(&name)
-        .fetch_one(&self.pool)
-        .await?;
+        let row: (i64,) = sqlx::query_as("INSERT INTO playlists (name) VALUES (?1) RETURNING id")
+            .bind(&name)
+            .fetch_one(&self.pool)
+            .await?;
 
         Ok(Playlist { id: row.0, name })
     }

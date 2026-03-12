@@ -33,8 +33,11 @@ function MangaReader:show(options)
   self.on_end_of_book_callback = options.on_end_of_book_callback
   self.chapter = options.chapter
   self.on_close_book_callback = options.on_close_book_callback
+  local c_showing = self.is_showing
 
-  if self.is_showing and ReaderUI.instance ~= nil then
+  -- move set self.is_showing function Rakuyomi:init call initializeFromReaderUI maybe random call sort
+  self.is_showing = true
+  if c_showing and ReaderUI.instance ~= nil then
     -- if we're showing, just switch the document
     ReaderUI.instance:switchDocument(options.path)
   else
@@ -45,7 +48,6 @@ function MangaReader:show(options)
     ReaderUI:showReader(options.path)
   end
 
-  self.is_showing = true
   Testing:emitEvent('manga_reader_shown')
 end
 

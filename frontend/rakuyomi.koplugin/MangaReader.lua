@@ -48,6 +48,8 @@ function MangaReader:show(options)
     ReaderUI:showReader(options.path)
   end
 
+  -- re set because hook end book
+  self.is_showing = true
   Testing:emitEvent('manga_reader_shown')
 end
 

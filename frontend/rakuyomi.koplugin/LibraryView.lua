@@ -683,7 +683,7 @@ function LibraryView:_handleRemoveFromPlaylist(manga)
 
         return
       end
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
       self:onClose()
     end
   })

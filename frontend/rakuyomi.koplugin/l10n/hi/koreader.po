@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 18:18+0700\n"
+"POT-Creation-Date: 2026-03-17 00:10+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr "चैप्टर लॉक है"
 msgid "Open"
 msgstr "खुला"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:440
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:446
 msgid "Refresh"
 msgstr "ताज़ा करना"
 
@@ -143,7 +143,7 @@ msgstr "निशान"
 msgid "Download"
 msgstr "डाउनलोड करना"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:644
+#: ../ChapterListing.lua:541 ../LibraryView.lua:660 ../LibraryView.lua:680
 msgid "Remove"
 msgstr "निकालना"
 
@@ -171,11 +171,11 @@ msgstr "अंकन हटाना"
 msgid "chapter..."
 msgstr "अध्याय..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:476
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:482
 msgid "Mark read"
 msgstr "पढ़ा हुआ चिह्नित करें"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:487
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:493
 msgid "Mark unread"
 msgstr "अपठित चिन्हित करो"
 
@@ -192,8 +192,8 @@ msgid "Mark chapters as read or unread"
 msgstr "अध्यायों को पठित या अपठित के रूप में चिह्नित करें"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:605 ../LibraryView.lua:887
-#: ../LibraryView.lua:935 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:621 ../LibraryView.lua:923
+#: ../LibraryView.lua:971 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "रद्द करना"
@@ -249,7 +249,7 @@ msgstr "क्या आप वाकई डाउनलोड रद्द क�
 msgid "Add to Library"
 msgstr "लाइब्रेरी में जोड़ें"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:460
+#: ../ChapterListing.lua:974 ../LibraryView.lua:466
 #: ../MangaSearchResults.lua:279
 msgid "Details"
 msgstr "विवरण"
@@ -286,7 +286,7 @@ msgstr "लाइब्रेरी में जोड़ने में व�
 msgid "Added to library."
 msgstr "लाइब्रेरी में जोड़ा गया."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:597
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:613
 msgid "Sadly, no next chapter available! :c"
 msgstr "अफसोस की बात है, कोई अगला अध्याय उपलब्ध नहीं है! "
 
@@ -298,7 +298,7 @@ msgstr "अगला"
 msgid "reading with"
 msgstr "के साथ पढ़ना"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:604
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:620
 msgid "Read"
 msgstr "पढ़ना"
 
@@ -418,240 +418,248 @@ msgstr "लाइब्रेरी में कोई मंगा नही�
 msgid "Try adding some by holding their name on the search results!"
 msgstr "खोज परिणामों पर उनका नाम पकड़कर कुछ जोड़ने का प्रयास करें!"
 
-#: ../LibraryView.lua:451
+#: ../LibraryView.lua:457
 msgid "Refreshed manga"
 msgstr "ताज़ा मंगा"
 
-#: ../LibraryView.lua:500
+#: ../LibraryView.lua:506
 msgid "Continue Reading"
 msgstr "जारी रखें पढ़ रहे हैं"
 
-#: ../LibraryView.lua:509 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:515 ../MangaSearchResults.lua:270
 msgid "Add to Playlist"
 msgstr "प्लेलिस्ट में जोड़ें"
 
-#: ../LibraryView.lua:520 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:526 ../MangaSearchResults.lua:205
 msgid "Remove from Library"
 msgstr "लाइब्रेरी से हटाएँ"
 
-#: ../LibraryView.lua:553
+#: ../LibraryView.lua:536
+msgid "Remove from Playlist"
+msgstr "प्लेलिस्ट से हटाएँ"
+
+#: ../LibraryView.lua:569
 msgid "Finding next chapter..."
 msgstr "अगला अध्याय खोजा जा रहा है..."
 
-#: ../LibraryView.lua:564
+#: ../LibraryView.lua:580
 msgid "No chapters found for this manga."
 msgstr "इस मंगा के लिए कोई अध्याय नहीं मिला।"
 
-#: ../LibraryView.lua:603
+#: ../LibraryView.lua:619
 msgid "Resume reading with:"
 msgstr "इसके साथ पढ़ना फिर से शुरू करें:"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:659 ../LibraryView.lua:679
 msgid "Do you want to remove"
 msgstr "क्या आप हटाना चाहते हैं"
 
-#: ../LibraryView.lua:643
+#: ../LibraryView.lua:659
 msgid "from your library?"
 msgstr "आपकी लाइब्रेरी से?"
 
-#: ../LibraryView.lua:666
+#: ../LibraryView.lua:679
+msgid "from your playlist?"
+msgstr "आपकी प्लेलिस्ट से?"
+
+#: ../LibraryView.lua:702
 msgid "Search for mangas"
 msgstr "मंगा खोजें"
 
-#: ../LibraryView.lua:676
+#: ../LibraryView.lua:712
 msgid "Search favorites"
 msgstr "पसंदीदा खोजें"
 
-#: ../LibraryView.lua:686 ../PlaylistDialog.lua:304
+#: ../LibraryView.lua:722 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "प्लेलिस्ट"
 
-#: ../LibraryView.lua:695
+#: ../LibraryView.lua:731
 msgid "Refresh mangas"
 msgstr "मंगा ताज़ा करें"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:739
 msgid "Refresh details"
 msgstr "विवरण ताज़ा करें"
 
-#: ../LibraryView.lua:713
+#: ../LibraryView.lua:749
 msgid "Cleaner chapters"
 msgstr "स्वच्छ अध्याय"
 
-#: ../LibraryView.lua:721
+#: ../LibraryView.lua:757
 msgid "Manage sources"
 msgstr "स्रोत प्रबंधित करें"
 
-#: ../LibraryView.lua:731 ../LibraryView.lua:881 ../Settings.lua:285
+#: ../LibraryView.lua:767 ../LibraryView.lua:917 ../Settings.lua:285
 msgid "Settings"
 msgstr "सेटिंग्स"
 
-#: ../LibraryView.lua:739
+#: ../LibraryView.lua:775
 msgid "Check for updates"
 msgstr "अद्यतन के लिए जाँच"
 
-#: ../LibraryView.lua:748
+#: ../LibraryView.lua:784
 msgid "Sync Database (Beta)"
 msgstr "सिंक डेटाबेस (बीटा)"
 
-#: ../LibraryView.lua:752
+#: ../LibraryView.lua:788
 msgid "Sync to WebDAV..."
 msgstr "WebDAV से सिंक करें..."
 
-#: ../LibraryView.lua:764
+#: ../LibraryView.lua:800
 msgid "Do you want to migrate your local database from the server?"
 msgstr "क्या आप अपने स्थानीय डेटाबेस को सर्वर से माइग्रेट करना चाहते हैं?"
 
-#: ../LibraryView.lua:764
+#: ../LibraryView.lua:800
 msgid "The remote database is newer than the local one."
 msgstr "दूरस्थ डेटाबेस स्थानीय डेटाबेस की तुलना में नया है।"
 
-#: ../LibraryView.lua:764
+#: ../LibraryView.lua:800
 msgid "This action cannot be undone."
 msgstr "इस एक्शन को वापस नहीं किया जा सकता।"
 
-#: ../LibraryView.lua:765
+#: ../LibraryView.lua:801
 msgid "Migrate"
 msgstr "माइग्रेट"
 
-#: ../LibraryView.lua:769
+#: ../LibraryView.lua:805
 msgid "Migrating database..."
 msgstr "डेटाबेस माइग्रेट हो रहा है..."
 
-#: ../LibraryView.lua:780 ../LibraryView.lua:827
+#: ../LibraryView.lua:816 ../LibraryView.lua:863
 msgid "Local database has been migrated from the server!"
 msgstr "स्थानीय डेटाबेस को सर्वर से माइग्रेट कर दिया गया है!"
 
-#: ../LibraryView.lua:791
+#: ../LibraryView.lua:827
 msgid "Replace Cloud"
 msgstr "बादल बदलें"
 
-#: ../LibraryView.lua:795
+#: ../LibraryView.lua:831
 msgid "Replacing cloud..."
 msgstr "बादल बदला जा रहा है..."
 
-#: ../LibraryView.lua:805
+#: ../LibraryView.lua:841
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "क्लाउड डेटाबेस को जबरन स्थानीय डेटाबेस से बदल दिया गया है!"
 
-#: ../LibraryView.lua:823
+#: ../LibraryView.lua:859
 msgid "Database is already up to date!"
 msgstr "डेटाबेस पहले से ही अद्यतित है!"
 
-#: ../LibraryView.lua:825
+#: ../LibraryView.lua:861
 msgid "Database has been synced to the server!"
 msgstr "डेटाबेस को सर्वर से सिंक कर दिया गया है!"
 
-#: ../LibraryView.lua:829
+#: ../LibraryView.lua:865
 msgid "Sync completed!"
 msgstr "सिंक पूरा हुआ!"
 
-#: ../LibraryView.lua:853
+#: ../LibraryView.lua:889
 msgid "Manga search..."
 msgstr "मंगा खोज..."
 
-#: ../LibraryView.lua:854
+#: ../LibraryView.lua:890
 msgid "Houseki no Kuni"
 msgstr "हाउसकी नो कुनी"
 
-#: ../LibraryView.lua:855 ../LibraryView.lua:931
+#: ../LibraryView.lua:891 ../LibraryView.lua:967
 msgid "Type the manga name to search for"
 msgstr "खोजने के लिए मंगा नाम टाइप करें"
 
-#: ../LibraryView.lua:859 ../LibraryView.lua:868 ../LibraryView.lua:913
-#: ../LibraryView.lua:942
+#: ../LibraryView.lua:895 ../LibraryView.lua:904 ../LibraryView.lua:949
+#: ../LibraryView.lua:978
 msgid "Search"
 msgstr "खोज"
 
-#: ../LibraryView.lua:913
+#: ../LibraryView.lua:949
 msgid "Exclude source search for"
 msgstr "के लिए स्रोत खोज बहिष्कृत करें"
 
-#: ../LibraryView.lua:928
+#: ../LibraryView.lua:964
 msgid "Favorite search..."
 msgstr "पसंदीदा खोज..."
 
-#: ../LibraryView.lua:930
+#: ../LibraryView.lua:966
 msgid "Tonikaku Kawaii"
 msgstr "टोनिकाकु कवई"
 
-#: ../LibraryView.lua:982
+#: ../LibraryView.lua:1018
 msgid "Scaning files..."
 msgstr "फ़ाइलें स्कैन की जा रही हैं..."
 
-#: ../LibraryView.lua:997
+#: ../LibraryView.lua:1033
 #, lua-format
 msgid "Found %d files."
 msgstr "%d फ़ाइलें मिलीं."
 
-#: ../LibraryView.lua:998
+#: ../LibraryView.lua:1034
 #, lua-format
 msgid "Total size %s."
 msgstr "कुल आकार %s."
 
-#: ../LibraryView.lua:999
+#: ../LibraryView.lua:1035
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "रेंडओनली फ़ाइल .cbz और .epub स्कैन।"
 
-#: ../LibraryView.lua:1003
+#: ../LibraryView.lua:1039
 msgid "Clean"
 msgstr "साफ"
 
-#: ../LibraryView.lua:1008
+#: ../LibraryView.lua:1044
 msgid "Deleting..."
 msgstr "हटाया जा रहा है..."
 
-#: ../LibraryView.lua:1026
+#: ../LibraryView.lua:1062
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "मुफ़्त %s संग्रहण साफ़ किया गया"
 
-#: ../LibraryView.lua:1051
+#: ../LibraryView.lua:1087
 msgid "Refresh mangas..."
 msgstr "मंगा ताज़ा करें..."
 
-#: ../LibraryView.lua:1052
+#: ../LibraryView.lua:1088
 msgid "All chapters manga updated!"
 msgstr "सभी अध्याय मंगा अद्यतन!"
 
-#: ../LibraryView.lua:1053
+#: ../LibraryView.lua:1089
 msgid "Some manga updates fail:"
 msgstr "कुछ मंगा अपडेट विफल:"
 
-#: ../LibraryView.lua:1064
+#: ../LibraryView.lua:1100
 msgid "Refresh manga details..."
 msgstr "मंगा विवरण ताज़ा करें..."
 
-#: ../LibraryView.lua:1065
+#: ../LibraryView.lua:1101
 msgid "All manga details refresh!"
 msgstr "सभी मंगा विवरण ताज़ा!"
 
-#: ../LibraryView.lua:1066
+#: ../LibraryView.lua:1102
 msgid "Some manga details refresh fail:"
 msgstr "कुछ मंगा विवरण ताज़ा करने में विफल:"
 
-#: ../LibraryView.lua:1082
+#: ../LibraryView.lua:1118
 msgid "Progress"
 msgstr "प्रगति"
 
-#: ../LibraryView.lua:1100
+#: ../LibraryView.lua:1136
 msgid "Cleaner"
 msgstr "क्लीनर"
 
-#: ../LibraryView.lua:1101
+#: ../LibraryView.lua:1137
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "हटाए गए स्रोतों से फ़ाइलों सहित अमान्य फ़ाइलें ढूंढें और हटाएं"
 
-#: ../LibraryView.lua:1101 ../LibraryView.lua:1104
+#: ../LibraryView.lua:1137 ../LibraryView.lua:1140
 msgid "Normal"
 msgstr "सामान्य"
 
-#: ../LibraryView.lua:1103
+#: ../LibraryView.lua:1139
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "महत्वपूर्ण: मेटा फ़ाइलें (बुकमार्क, इतिहास) नहीं रखें!"
 
-#: ../LibraryView.lua:1110
+#: ../LibraryView.lua:1146
 msgid "Chapter read done"
 msgstr "अध्याय का वाचन हो गया"
 
@@ -724,23 +732,23 @@ msgstr "ताज़ा विवरण..."
 msgid "Refresh details cancelled."
 msgstr "ताज़ा विवरण रद्द कर दिया गया."
 
-#: ../MangaReader.lua:89
+#: ../MangaReader.lua:101
 msgid "Go back to Rakuyomi..."
 msgstr "रकुयोमी वापस जाएँ..."
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:172
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "क्या आप चाहते हैं कि जब आप इस बटन को खोलें तो राकुयोमी इस बटन पर नियंत्रण रखे?"
 
-#: ../MangaReader.lua:156
+#: ../MangaReader.lua:172
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "यह सेटिंग केवल तभी प्रभावित होती है जब आप इसे राकुयोमी के साथ खोलते हैं।"
 
-#: ../MangaReader.lua:158
+#: ../MangaReader.lua:174
 msgid "Yes"
 msgstr "हाँ"
 
-#: ../MangaReader.lua:159
+#: ../MangaReader.lua:175
 msgid "No"
 msgstr "नहीं"
 
@@ -821,7 +829,7 @@ msgstr "प्लेलिस्ट हटाएँ"
 msgid "Rename"
 msgstr "नाम बदलें"
 
-#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:310
+#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
 msgid "New Playlist"
 msgstr "नई प्लेलिस्ट"
 
@@ -833,7 +841,7 @@ msgstr "प्लेलिस्ट का नाम"
 msgid "Create"
 msgstr "बनाएं"
 
-#: ../PlaylistDialog.lua:322
+#: ../PlaylistDialog.lua:324
 msgid "No playlists yet."
 msgstr "अभी तक कोई प्लेलिस्ट नहीं."
 

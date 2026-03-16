@@ -83,7 +83,7 @@ function LibraryView:init()
 
   self.mangas_raw = self.mangas
   self.favorite_search_keyword = nil
-  self.current_playlist = nil
+  -- self.current_playlist = nil
 
   self:patchTitleBar(0)
   self:fetchCountNotification()
@@ -252,7 +252,7 @@ function LibraryView:patchTitleBar(count_notify)
         callback = function()
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow()
+              self:fetchAndShow(self.current_playlist)
             end
 
             NotificationView:fetchAndShow(onReturnCallback)
@@ -384,6 +384,7 @@ function LibraryView:generateEmptyViewItemTable()
 end
 
 function LibraryView:fetchAndShow(playlist)
+  local old = self.current_playlist
   self.current_playlist = playlist
   local settings = Backend.getSettings()
 
@@ -409,6 +410,8 @@ function LibraryView:fetchAndShow(playlist)
     current_playlist = self.current_playlist,
   })
 
+  self.current_playlist = old
+
   Testing:emitEvent('library_view_shown')
 end
 
@@ -419,7 +422,7 @@ function LibraryView:onPrimaryMenuChoice(item)
     local manga = item.manga
 
     local onReturnCallback = function()
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
     end
 
     if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
@@ -455,7 +458,7 @@ function LibraryView:onContextMenuChoice(item)
             })
           end
 
-          self:fetchAndShow()
+          self:fetchAndShow(self.current_playlist)
           UIManager:close(self)
         end
       },
@@ -466,7 +469,7 @@ function LibraryView:onContextMenuChoice(item)
 
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow()
+              self:fetchAndShow(self.current_playlist)
             end
             MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
             UIManager:close(self)
@@ -632,7 +635,7 @@ function LibraryView:_handleContinueReading(manga)
           manga = manga,
           chapter_sorting_mode = settings.chapter_sorting_mode,
           on_return_callback = function()
-            self:fetchAndShow()
+            self:fetchAndShow(self.current_playlist)
           end,
           covers_fullscreen = true, -- hint for UIManager:_repaint()
           page = self.page,
@@ -663,7 +666,7 @@ function LibraryView:_handleRemoveFromLibrary(manga)
 
         return
       end
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
       self:onClose()
     end
   })
@@ -815,7 +818,7 @@ function LibraryView:openMenu()
 
                   UIManager:close(self)
                   UIManager:close(dialog)
-                  self:fetchAndShow()
+                  self:fetchAndShow(self.current_playlist)
                 end)
               end,
               other_buttons = {
@@ -840,7 +843,7 @@ function LibraryView:openMenu()
 
                         UIManager:close(self)
                         UIManager:close(dialog)
-                        self:fetchAndShow()
+                        self:fetchAndShow(self.current_playlist)
                       end)
                     end,
                   }
@@ -1117,7 +1120,7 @@ function LibraryView:_runLibraryJob(job, title, success_msg, error_prefix)
         return nil
       end,
       dismiss_callback = function()
-        self:fetchAndShow()
+        self:fetchAndShow(self.current_playlist)
         UIManager:close(self)
       end
     })
@@ -1155,7 +1158,7 @@ end
 function LibraryView:searchMangas(search_text, exclude)
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
     end
 
     if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
@@ -1168,7 +1171,7 @@ end
 function LibraryView:openInstalledSourcesListing()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
     end
 
     InstalledSourcesListing:fetchAndShow(onReturnCallback)
@@ -1181,7 +1184,7 @@ end
 function LibraryView:openSettings()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow()
+      self:fetchAndShow(self.current_playlist)
     end
 
     Settings:fetchAndShow(onReturnCallback)

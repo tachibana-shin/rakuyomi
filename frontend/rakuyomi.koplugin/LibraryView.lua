@@ -527,6 +527,16 @@ function LibraryView:onContextMenuChoice(item)
         end,
       },
     })
+  else
+    table.insert(context_menu_buttons, {
+      {
+        text = _("Remove from Playlist"),
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          self:_handleRemoveFromPlaylist(manga)
+        end,
+      },
+    })
   end
   dialog_context_menu = ButtonDialog:new {
     title = manga.title .. "\n\n" .. manga.source.name,
@@ -647,6 +657,26 @@ function LibraryView:_handleRemoveFromLibrary(manga)
     ok_text = _("Remove"),
     ok_callback = function()
       local response = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
+
+      if response.type == 'ERROR' then
+        ErrorDialog:show(response.message)
+
+        return
+      end
+      self:fetchAndShow()
+      self:onClose()
+    end
+  })
+end
+
+---@private
+---@param manga Manga
+function LibraryView:_handleRemoveFromPlaylist(manga)
+  UIManager:show(ConfirmBox:new {
+    text = _("Do you want to remove") .. "\" " .. manga.title .. "\" " .. _("from your playlist?"),
+    ok_text = _("Remove"),
+    ok_callback = function()
+      local response = Backend.removeMangaFromPlaylist(self.current_playlist.id, manga.source.id, manga.id)
 
       if response.type == 'ERROR' then
         ErrorDialog:show(response.message)

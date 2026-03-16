@@ -166,7 +166,7 @@ function LibraryView:patchTitleBar(count_notify)
       padding = button_padding,
       padding_bottom = right_icon_size,
       callback = function()
-        PlaylistDialog:fetchAndShow()
+        self:openPlaylistDialog()
       end,
       allow_flash = self.title_bar.left_icon_allow_flash,
       show_parent = self.title_bar.show_parent,
@@ -383,7 +383,7 @@ function LibraryView:generateEmptyViewItemTable()
   }
 end
 
-function LibraryView:fetchAndShow(playlist)
+function LibraryView:fetchAndShow(playlist, on_after_open)
   self.current_playlist = playlist
   local settings = Backend.getSettings()
 
@@ -408,6 +408,10 @@ function LibraryView:fetchAndShow(playlist)
     library_view_mode = settings.body.library_view_mode,
     current_playlist = self.current_playlist,
   })
+
+  if on_after_open then
+    on_after_open()
+  end
 
   Testing:emitEvent('library_view_shown')
 end
@@ -689,7 +693,7 @@ function LibraryView:openMenu()
         text = Icons.FA_LIST .. " " .. _("Playlists"),
         callback = function()
           UIManager:close(dialog)
-          PlaylistDialog:fetchAndShow()
+          self:openPlaylistDialog()
         end
       },
     },
@@ -847,6 +851,18 @@ function LibraryView:openMenu()
   UIManager:show(dialog)
 
   Testing:emitEvent('library_view_menu_opened')
+end
+
+---@private
+function LibraryView:openPlaylistDialog()
+  PlaylistDialog:fetchAndShow(function(playlist)
+    local need_close = self.current_playlist ~= nil
+    LibraryView:fetchAndShow(playlist, function()
+      if need_close then
+        self:onClose()
+      end
+    end)
+  end)
 end
 
 --- @private

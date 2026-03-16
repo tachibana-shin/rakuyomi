@@ -1,1179 +1,1180 @@
-msgid   ""
-msgstr  "Project-Id-Version: rakuyomi.koreader \n"
-        "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-16 23:42+0700\n"
-        "PO-Revision-Date: 2025-12-26 23:18+0700\n"
-        "Last-Translator: Automatically generated\n"
-        "Language-Team: none\n"
-        "Language: uk\n"
-        "MIME-Version: 1.0\n"
-        "Content-Type: text/plain; charset=UTF-8\n"
-        "Content-Transfer-Encoding: 8bit\n"
-        "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+msgid ""
+msgstr ""
+"Project-Id-Version: rakuyomi.koreader \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-17 00:10+0700\n"
+"PO-Revision-Date: 2025-12-26 23:18+0700\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: ../AvailableSourcesListing.lua:21
-msgid   "Available sources"
-msgstr  "Доступні джерела"
+msgid "Available sources"
+msgstr "Доступні джерела"
 
 #: ../AvailableSourcesListing.lua:81
-msgid   "Update available!"
-msgstr  "Доступне оновлення!"
+msgid "Update available!"
+msgstr "Доступне оновлення!"
 
 #: ../AvailableSourcesListing.lua:84
-msgid   "Latest version installed"
-msgstr  "Остання версія встановлена"
+msgid "Latest version installed"
+msgstr "Остання версія встановлена"
 
 #: ../AvailableSourcesListing.lua:88
-msgid   "Installable"
-msgstr  "Встановлюється"
+msgid "Installable"
+msgstr "Встановлюється"
 
 #: ../AvailableSourcesListing.lua:94 ../InstalledSourcesListing.lua:81
-msgid   "version"
-msgstr  "версія"
+msgid "version"
+msgstr "версія"
 
 #: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
 #: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
-msgid   "Unknown"
-msgstr  "Невідомий"
+msgid "Unknown"
+msgstr "Невідомий"
 
 #: ../AvailableSourcesListing.lua:144
-msgid   "No available sources found."
-msgstr  "Доступних джерел не знайдено."
+msgid "No available sources found."
+msgstr "Доступних джерел не знайдено."
 
 #: ../AvailableSourcesListing.lua:144
-msgid   "Try adding some source lists by looking at our README!"
-msgstr  "Спробуйте додати кілька списків джерел, переглянувши наш README!"
+msgid "Try adding some source lists by looking at our README!"
+msgstr "Спробуйте додати кілька списків джерел, переглянувши наш README!"
 
 #: ../AvailableSourcesListing.lua:162
-msgid   "Installing source..."
-msgstr  "Встановлення джерела..."
+msgid "Installing source..."
+msgstr "Встановлення джерела..."
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
-msgid   "Cancelled!"
-msgstr  "Скасовано!"
+msgid "Cancelled!"
+msgstr "Скасовано!"
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
-msgid   "Complete!"
-msgstr  "Готово!"
+msgid "Complete!"
+msgstr "Готово!"
 
 #: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
-msgid   "Waiting until cancelled…"
-msgstr  "Очікування скасування…"
+msgid "Waiting until cancelled…"
+msgstr "Очікування скасування…"
 
 #: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
 #: ../BasicJobDialog.lua:165
-msgid   "Processing..."
-msgstr  "Обробка..."
+msgid "Processing..."
+msgstr "Обробка..."
 
 #: ../BasicJobDialog.lua:92
-msgid   "An error occurred"
-msgstr  "Сталася помилка"
+msgid "An error occurred"
+msgstr "Сталася помилка"
 
 #: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
-msgid   "Unknown error"
-msgstr  "Невідома помилка"
+msgid "Unknown error"
+msgstr "Невідома помилка"
 
 #: ../BasicJobDialog.lua:250
-msgid   "Error"
-msgstr  "Помилка"
+msgid "Error"
+msgstr "Помилка"
 
 #: ../ChapterListing.lua:57
-msgid   "Chapter listing"
-msgstr  "Перелік розділів"
+msgid "Chapter listing"
+msgstr "Перелік розділів"
 
 #: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
-msgid   "Languages"
-msgstr  "Мови"
+msgid "Languages"
+msgstr "Мови"
 
 #: ../ChapterListing.lua:323
-msgid   "No chapters found"
-msgstr  "Розділів не знайдено"
+msgid "No chapters found"
+msgstr "Розділів не знайдено"
 
 #: ../ChapterListing.lua:323
-msgid   "Try swiping down to refresh the chapter list."
-msgstr  "Спробуйте провести пальцем униз, щоб оновити список розділів."
+msgid "Try swiping down to refresh the chapter list."
+msgstr "Спробуйте провести пальцем униз, щоб оновити список розділів."
 
 #: ../ChapterListing.lua:365
-msgid   "Volume"
-msgstr  "Обсяг"
+msgid "Volume"
+msgstr "Обсяг"
 
 #: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
-msgid   "Chapter"
-msgstr  "Розділ"
+msgid "Chapter"
+msgstr "Розділ"
 
 #: ../ChapterListing.lua:395
-msgid   "Locked"
-msgstr  "Заблоковано"
+msgid "Locked"
+msgstr "Заблоковано"
 
 #: ../ChapterListing.lua:431 ../ChapterListing.lua:632
-msgid   "Refreshing chapters..."
-msgstr  "Оновлення розділів..."
+msgid "Refreshing chapters..."
+msgstr "Оновлення розділів..."
 
 #: ../ChapterListing.lua:439 ../ChapterListing.lua:639
 #: ../ChapterListing.lua:1301
-msgid   "Cancelled."
-msgstr  "Скасовано."
+msgid "Cancelled."
+msgstr "Скасовано."
 
 #: ../ChapterListing.lua:451
-msgid   "Refresh chapter error"
-msgstr  "Помилка оновлення розділу"
+msgid "Refresh chapter error"
+msgstr "Помилка оновлення розділу"
 
 #: ../ChapterListing.lua:490
-msgid   "Chapter is locked"
-msgstr  "Розділ заблоковано"
+msgid "Chapter is locked"
+msgstr "Розділ заблоковано"
 
 #: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
-msgid   "Open"
-msgstr  "ВІДЧИНЕНО"
+msgid "Open"
+msgstr "ВІДЧИНЕНО"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:443
-msgid   "Refresh"
-msgstr  "Оновити"
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:446
+msgid "Refresh"
+msgstr "Оновити"
 
 #: ../ChapterListing.lua:523
-msgid   "Chapter refreshed"
-msgstr  "Розділ оновлено"
+msgid "Chapter refreshed"
+msgstr "Розділ оновлено"
 
 #: ../ChapterListing.lua:529 ../ChapterListing.lua:678
-msgid   "Mark"
-msgstr  "Марк"
+msgid "Mark"
+msgstr "Марк"
 
 #: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
-msgid   "Download"
-msgstr  "Завантажити"
+msgid "Download"
+msgstr "Завантажити"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:657 ../LibraryView.lua:677
-msgid   "Remove"
-msgstr  "видалити"
+#: ../ChapterListing.lua:541 ../LibraryView.lua:660 ../LibraryView.lua:680
+msgid "Remove"
+msgstr "видалити"
 
 #: ../ChapterListing.lua:550
-msgid   "Chapter downloaded"
-msgstr  "Розділ завантажено"
+msgid "Chapter downloaded"
+msgstr "Розділ завантажено"
 
 #: ../ChapterListing.lua:569
-msgid   "Revoke chapter..."
-msgstr  "Відкликати розділ..."
+msgid "Revoke chapter..."
+msgstr "Відкликати розділ..."
 
 #: ../ChapterListing.lua:587
-msgid   "Removed chapter"
-msgstr  "Видалений розділ"
+msgid "Removed chapter"
+msgstr "Видалений розділ"
 
 #: ../ChapterListing.lua:598
-msgid   "Marking"
-msgstr  "Маркування"
+msgid "Marking"
+msgstr "Маркування"
 
 #: ../ChapterListing.lua:598
-msgid   "Un-marking"
-msgstr  "Зняття маркування"
+msgid "Un-marking"
+msgstr "Зняття маркування"
 
 #: ../ChapterListing.lua:598
-msgid   "chapter..."
-msgstr  "розділ..."
+msgid "chapter..."
+msgstr "розділ..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:479
-msgid   "Mark read"
-msgstr  "Марк прочитаний"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:482
+msgid "Mark read"
+msgstr "Марк прочитаний"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:490
-msgid   "Mark unread"
-msgstr  "Позначити як непрочитане"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:493
+msgid "Mark unread"
+msgstr "Позначити як непрочитане"
 
 #: ../ChapterListing.lua:666
-msgid   "1 - 10.5, 20 - 100"
-msgstr  "1 - 10,5, 20 - 100"
+msgid "1 - 10.5, 20 - 100"
+msgstr "1 - 10,5, 20 - 100"
 
 #: ../ChapterListing.lua:667
-msgid   "Leaving blank will select all"
-msgstr  "Якщо залишити порожнім, ви виберете всі"
+msgid "Leaving blank will select all"
+msgstr "Якщо залишити порожнім, ви виберете всі"
 
 #: ../ChapterListing.lua:667
-msgid   "Mark chapters as read or unread"
-msgstr  "Позначайте розділи як прочитані чи непрочитані"
+msgid "Mark chapters as read or unread"
+msgstr "Позначайте розділи як прочитані чи непрочитані"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:618 ../LibraryView.lua:920
-#: ../LibraryView.lua:968 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:621 ../LibraryView.lua:923
+#: ../LibraryView.lua:971 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
-msgid   "Cancel"
-msgstr  "Скасувати"
+msgid "Cancel"
+msgstr "Скасувати"
 
 #: ../ChapterListing.lua:688
-msgid   "Marking..."
-msgstr  "Маркування..."
+msgid "Marking..."
+msgstr "Маркування..."
 
 #: ../ChapterListing.lua:698
-msgid   "Marked"
-msgstr  "Позначений"
+msgid "Marked"
+msgstr "Позначений"
 
 #: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
-msgid   "No errors"
-msgstr  "Помилок немає"
+msgid "No errors"
+msgstr "Помилок немає"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid   "Page"
-msgstr  "Сторінка"
+msgid "Page"
+msgstr "Сторінка"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid   "attempts"
-msgstr  "спроби"
+msgid "attempts"
+msgstr "спроби"
 
 #: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
 #, lua-format
-msgid   "… and %d more errors"
-msgstr  "… і ще %d помилки"
+msgid "… and %d more errors"
+msgstr "… і ще %d помилки"
 
 #: ../ChapterListing.lua:753 ../ChapterListing.lua:768
-msgid   "Could not download chapter."
-msgstr  "Не вдалося завантажити розділ."
+msgid "Could not download chapter."
+msgstr "Не вдалося завантажити розділ."
 
 #: ../ChapterListing.lua:761
-msgid   "Loading chapter..."
-msgstr  "Завантаження розділу..."
+msgid "Loading chapter..."
+msgstr "Завантаження розділу..."
 
 #: ../ChapterListing.lua:762
-msgid   "unknown"
-msgstr  "невідомий"
+msgid "unknown"
+msgstr "невідомий"
 
 #: ../ChapterListing.lua:781
-msgid   "Download cancelled."
-msgstr  "Завантаження скасовано."
+msgid "Download cancelled."
+msgstr "Завантаження скасовано."
 
 #: ../ChapterListing.lua:787
-msgid   "Are you sure you want to cancel the download?"
-msgstr  "Ви впевнені, що бажаєте скасувати завантаження?"
+msgid "Are you sure you want to cancel the download?"
+msgstr "Ви впевнені, що бажаєте скасувати завантаження?"
 
 #: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
-msgid   "Add to Library"
-msgstr  "Додати до бібліотеки"
+msgid "Add to Library"
+msgstr "Додати до бібліотеки"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:463
+#: ../ChapterListing.lua:974 ../LibraryView.lua:466
 #: ../MangaSearchResults.lua:279
-msgid   "Details"
-msgstr  "Подробиці"
+msgid "Details"
+msgstr "Подробиці"
 
 #: ../ChapterListing.lua:1014
-msgid   "Resume"
-msgstr  "Резюме"
+msgid "Resume"
+msgstr "Резюме"
 
 #: ../ChapterListing.lua:1022
-msgid   "Next Chapter"
-msgstr  "Наступна глава"
+msgid "Next Chapter"
+msgstr "Наступна глава"
 
 #: ../ChapterListing.lua:1032
-msgid   "Download unread chapters…"
-msgstr  "Завантажити непрочитані розділи…"
+msgid "Download unread chapters…"
+msgstr "Завантажити непрочитані розділи…"
 
 #: ../ChapterListing.lua:1059
-msgid   "Group"
-msgstr  "Група"
+msgid "Group"
+msgstr "Група"
 
 #: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
-msgid   "Filter by Group"
-msgstr  "Фільтрувати за групою"
+msgid "Filter by Group"
+msgstr "Фільтрувати за групою"
 
 #: ../ChapterListing.lua:1083
-msgid   "Adding to library..."
-msgstr  "Додавання до бібліотеки..."
+msgid "Adding to library..."
+msgstr "Додавання до бібліотеки..."
 
 #: ../ChapterListing.lua:1090
-msgid   "Failed to add to library"
-msgstr  "Не вдалося додати до бібліотеки"
+msgid "Failed to add to library"
+msgstr "Не вдалося додати до бібліотеки"
 
 #: ../ChapterListing.lua:1095
-msgid   "Added to library."
-msgstr  "Додано до бібліотеки."
+msgid "Added to library."
+msgstr "Додано до бібліотеки."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:610
-msgid   "Sadly, no next chapter available! :c"
-msgstr  "На жаль, наступного розділу немає! "
-
-#: ../ChapterListing.lua:1113
-msgid   "Next"
-msgstr  "Далі"
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:613
+msgid "Sadly, no next chapter available! :c"
+msgstr "На жаль, наступного розділу немає! "
 
 #: ../ChapterListing.lua:1113
-msgid   "reading with"
-msgstr  "читання с"
+msgid "Next"
+msgstr "Далі"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:617
-msgid   "Read"
-msgstr  "Прочитайте"
+#: ../ChapterListing.lua:1113
+msgid "reading with"
+msgstr "читання с"
+
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:620
+msgid "Read"
+msgstr "Прочитайте"
 
 #: ../ChapterListing.lua:1136
-msgid   "Show All"
-msgstr  "Показати все"
+msgid "Show All"
+msgstr "Показати все"
 
 #: ../ChapterListing.lua:1144
-msgid   "Showing all groups"
-msgstr  "Показані всі групи"
+msgid "Showing all groups"
+msgstr "Показані всі групи"
 
 #: ../ChapterListing.lua:1164
-msgid   "Filtered to"
-msgstr  "Відфільтровано до"
+msgid "Filtered to"
+msgstr "Відфільтровано до"
 
 #: ../ChapterListing.lua:1181
-msgid   "Download unread chapters..."
-msgstr  "Завантажити непрочитані розділи..."
+msgid "Download unread chapters..."
+msgstr "Завантажити непрочитані розділи..."
 
 #: ../ChapterListing.lua:1183
-msgid   "Amount of unread chapters (default: all)"
-msgstr  "Кількість непрочитаних розділів (за замовчуванням: усі)"
+msgid "Amount of unread chapters (default: all)"
+msgstr "Кількість непрочитаних розділів (за замовчуванням: усі)"
 
 #: ../ChapterListing.lua:1185
-msgid   "Specify amount or leave empty for all."
-msgstr  "Вкажіть суму або залиште пустим для всіх."
+msgid "Specify amount or leave empty for all."
+msgstr "Вкажіть суму або залиште пустим для всіх."
 
 #: ../ChapterListing.lua:1185
-msgid   "Will download from"
-msgstr  "Буде завантажено з"
+msgid "Will download from"
+msgstr "Буде завантажено з"
 
 #: ../ChapterListing.lua:1186
-msgid   "Specify the amount of unread chapters to download"
-msgstr  "Укажіть кількість непрочитаних розділів для завантаження"
+msgid "Specify the amount of unread chapters to download"
+msgstr "Укажіть кількість непрочитаних розділів для завантаження"
 
 #: ../ChapterListing.lua:1186
-msgid   "or leave empty to download all of them."
-msgstr  "або залиште пустим, щоб завантажити їх усі."
+msgid "or leave empty to download all of them."
+msgstr "або залиште пустим, щоб завантажити їх усі."
 
 #: ../ChapterListing.lua:1207
-msgid   "Invalid amount of chapters!"
-msgstr  "Неправильна кількість розділів!"
+msgid "Invalid amount of chapters!"
+msgstr "Неправильна кількість розділів!"
 
 #: ../ChapterListing.lua:1228
-msgid   "No unread chapters found for"
-msgstr  "Непрочитаних розділів не знайдено"
+msgid "No unread chapters found for"
+msgstr "Непрочитаних розділів не знайдено"
 
 #: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
-msgid   "Downloading all chapters, this will take a while…"
-msgstr  "Завантаження всіх розділів, це займе деякий час…"
+msgid "Downloading all chapters, this will take a while…"
+msgstr "Завантаження всіх розділів, це займе деякий час…"
 
 #: ../ChapterListing.lua:1338
-msgid   "Waiting for download to be cancelled…"
-msgstr  "Очікування скасування завантаження…"
+msgid "Waiting for download to be cancelled…"
+msgstr "Очікування скасування завантаження…"
 
 #: ../ChapterListing.lua:1340
-msgid   "Downloading all chapters, this will take a while… ("
-msgstr  "Завантаження всіх розділів займе деякий час… ("
+msgid "Downloading all chapters, this will take a while… ("
+msgstr "Завантаження всіх розділів займе деякий час… ("
 
 #: ../ChapterListing.lua:1343
-msgid   "Tap outside this message to cancel."
-msgstr  "Торкніться за межами цього повідомлення, щоб скасувати."
+msgid "Tap outside this message to cancel."
+msgstr "Торкніться за межами цього повідомлення, щоб скасувати."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
-msgid   "Downloading chapters, this will take a while…"
-msgstr  "Завантаження розділів, це займе деякий час…"
+msgid "Downloading chapters, this will take a while…"
+msgstr "Завантаження розділів, це займе деякий час…"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:7
-msgid   "Download complete!"
-msgstr  "Завантаження завершено!"
+msgid "Download complete!"
+msgstr "Завантаження завершено!"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:8
-msgid   "An error occurred while downloading chapters"
-msgstr  "Під час завантаження розділів сталася помилка"
+msgid "An error occurred while downloading chapters"
+msgstr "Під час завантаження розділів сталася помилка"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:23
-msgid   "Download cancelled!"
-msgstr  "Завантаження скасовано!"
+msgid "Download cancelled!"
+msgstr "Завантаження скасовано!"
 
 #: ../ErrorDialog.lua:15
-msgid   "Retry"
-msgstr  "Повторіть спробу"
+msgid "Retry"
+msgstr "Повторіть спробу"
 
 #: ../InstalledSourcesListing.lua:21
-msgid   "Installed sources"
-msgstr  "Встановлені джерела"
+msgid "Installed sources"
+msgstr "Встановлені джерела"
 
 #: ../InstalledSourcesListing.lua:95
-msgid   "No installed sources found"
-msgstr  "Немає встановлених джерел"
+msgid "No installed sources found"
+msgstr "Немає встановлених джерел"
 
 #: ../InstalledSourcesListing.lua:95
-msgid   "Try installing some by tapping"
-msgstr  "Спробуйте встановити деякі, торкнувшись"
+msgid "Try installing some by tapping"
+msgstr "Спробуйте встановити деякі, торкнувшись"
 
 #: ../InstalledSourcesListing.lua:96
-msgid   "the top-left button to list the available sources."
-msgstr  "верхню ліву кнопку для переліку доступних джерел."
+msgid "the top-left button to list the available sources."
+msgstr "верхню ліву кнопку для переліку доступних джерел."
 
 #: ../InstalledSourcesListing.lua:123
-msgid   "Do you want to remove the"
-msgstr  "Ви хочете видалити"
+msgid "Do you want to remove the"
+msgstr "Ви хочете видалити"
 
 #: ../InstalledSourcesListing.lua:123
-msgid   "source?"
-msgstr  "джерело?"
+msgid "source?"
+msgstr "джерело?"
 
 #: ../LibraryView.lua:60 ../Settings.lua:38
-msgid   "Library"
-msgstr  "Бібліотека"
+msgid "Library"
+msgstr "Бібліотека"
 
 #: ../LibraryView.lua:379
-msgid   "No mangas found in library"
-msgstr  "У бібліотеці манги не знайдено"
+msgid "No mangas found in library"
+msgstr "У бібліотеці манги не знайдено"
 
 #: ../LibraryView.lua:379
-msgid   "Try adding some by holding their name on the search results!"
-msgstr  "Спробуйте додати кілька, утримуючи їх ім’я в результатах пошуку!"
+msgid "Try adding some by holding their name on the search results!"
+msgstr "Спробуйте додати кілька, утримуючи їх ім’я в результатах пошуку!"
 
-#: ../LibraryView.lua:454
-msgid   "Refreshed manga"
-msgstr  "Оновлена ​​манга"
+#: ../LibraryView.lua:457
+msgid "Refreshed manga"
+msgstr "Оновлена ​​манга"
 
-#: ../LibraryView.lua:503
-msgid   "Continue Reading"
-msgstr  "Читати далі"
+#: ../LibraryView.lua:506
+msgid "Continue Reading"
+msgstr "Читати далі"
 
-#: ../LibraryView.lua:512 ../MangaSearchResults.lua:270
-msgid   "Add to Playlist"
-msgstr  "Додати до списку відтворення"
+#: ../LibraryView.lua:515 ../MangaSearchResults.lua:270
+msgid "Add to Playlist"
+msgstr "Додати до списку відтворення"
 
-#: ../LibraryView.lua:523 ../MangaSearchResults.lua:205
-msgid   "Remove from Library"
-msgstr  "Видалити з бібліотеки"
+#: ../LibraryView.lua:526 ../MangaSearchResults.lua:205
+msgid "Remove from Library"
+msgstr "Видалити з бібліотеки"
 
-#: ../LibraryView.lua:533
-msgid   "Remove from Playlist"
-msgstr  "Видалити зі списку відтворення"
+#: ../LibraryView.lua:536
+msgid "Remove from Playlist"
+msgstr "Видалити зі списку відтворення"
 
-#: ../LibraryView.lua:566
-msgid   "Finding next chapter..."
-msgstr  "Пошук наступного розділу..."
+#: ../LibraryView.lua:569
+msgid "Finding next chapter..."
+msgstr "Пошук наступного розділу..."
 
-#: ../LibraryView.lua:577
-msgid   "No chapters found for this manga."
-msgstr  "Для цієї манги не знайдено розділів."
+#: ../LibraryView.lua:580
+msgid "No chapters found for this manga."
+msgstr "Для цієї манги не знайдено розділів."
 
-#: ../LibraryView.lua:616
-msgid   "Resume reading with:"
-msgstr  "Відновити читання за допомогою:"
+#: ../LibraryView.lua:619
+msgid "Resume reading with:"
+msgstr "Відновити читання за допомогою:"
 
-#: ../LibraryView.lua:656 ../LibraryView.lua:676
-msgid   "Do you want to remove"
-msgstr  "Ви хочете видалити"
+#: ../LibraryView.lua:659 ../LibraryView.lua:679
+msgid "Do you want to remove"
+msgstr "Ви хочете видалити"
 
-#: ../LibraryView.lua:656
-msgid   "from your library?"
-msgstr  "з вашої бібліотеки?"
+#: ../LibraryView.lua:659
+msgid "from your library?"
+msgstr "з вашої бібліотеки?"
 
-#: ../LibraryView.lua:676
-msgid   "from your playlist?"
-msgstr  "з вашого списку відтворення?"
+#: ../LibraryView.lua:679
+msgid "from your playlist?"
+msgstr "з вашого списку відтворення?"
 
-#: ../LibraryView.lua:699
-msgid   "Search for mangas"
-msgstr  "Пошук манги"
+#: ../LibraryView.lua:702
+msgid "Search for mangas"
+msgstr "Пошук манги"
 
-#: ../LibraryView.lua:709
-msgid   "Search favorites"
-msgstr  "Шукайте улюблені"
+#: ../LibraryView.lua:712
+msgid "Search favorites"
+msgstr "Шукайте улюблені"
 
-#: ../LibraryView.lua:719 ../PlaylistDialog.lua:306
-msgid   "Playlists"
-msgstr  "Списки відтворення"
+#: ../LibraryView.lua:722 ../PlaylistDialog.lua:306
+msgid "Playlists"
+msgstr "Списки відтворення"
 
-#: ../LibraryView.lua:728
-msgid   "Refresh mangas"
-msgstr  "Оновити мангу"
+#: ../LibraryView.lua:731
+msgid "Refresh mangas"
+msgstr "Оновити мангу"
 
-#: ../LibraryView.lua:736
-msgid   "Refresh details"
-msgstr  "Оновити деталі"
+#: ../LibraryView.lua:739
+msgid "Refresh details"
+msgstr "Оновити деталі"
 
-#: ../LibraryView.lua:746
-msgid   "Cleaner chapters"
-msgstr  "Чистіші глави"
+#: ../LibraryView.lua:749
+msgid "Cleaner chapters"
+msgstr "Чистіші глави"
 
-#: ../LibraryView.lua:754
-msgid   "Manage sources"
-msgstr  "Керуйте джерелами"
+#: ../LibraryView.lua:757
+msgid "Manage sources"
+msgstr "Керуйте джерелами"
 
-#: ../LibraryView.lua:764 ../LibraryView.lua:914 ../Settings.lua:285
-msgid   "Settings"
-msgstr  "Налаштування"
+#: ../LibraryView.lua:767 ../LibraryView.lua:917 ../Settings.lua:285
+msgid "Settings"
+msgstr "Налаштування"
 
-#: ../LibraryView.lua:772
-msgid   "Check for updates"
-msgstr  "Перевірте наявність оновлень"
+#: ../LibraryView.lua:775
+msgid "Check for updates"
+msgstr "Перевірте наявність оновлень"
 
-#: ../LibraryView.lua:781
-msgid   "Sync Database (Beta)"
-msgstr  "Синхронізація бази даних (бета-версія)"
+#: ../LibraryView.lua:784
+msgid "Sync Database (Beta)"
+msgstr "Синхронізація бази даних (бета-версія)"
 
-#: ../LibraryView.lua:785
-msgid   "Sync to WebDAV..."
-msgstr  "Синхронізувати з WebDAV..."
+#: ../LibraryView.lua:788
+msgid "Sync to WebDAV..."
+msgstr "Синхронізувати з WebDAV..."
 
-#: ../LibraryView.lua:797
-msgid   "Do you want to migrate your local database from the server?"
-msgstr  "Бажаєте перенести свою локальну базу даних із сервера?"
+#: ../LibraryView.lua:800
+msgid "Do you want to migrate your local database from the server?"
+msgstr "Бажаєте перенести свою локальну базу даних із сервера?"
 
-#: ../LibraryView.lua:797
-msgid   "The remote database is newer than the local one."
-msgstr  "Віддалена база даних новіша за локальну."
+#: ../LibraryView.lua:800
+msgid "The remote database is newer than the local one."
+msgstr "Віддалена база даних новіша за локальну."
 
-#: ../LibraryView.lua:797
-msgid   "This action cannot be undone."
-msgstr  "Цю дію не можна скасувати."
+#: ../LibraryView.lua:800
+msgid "This action cannot be undone."
+msgstr "Цю дію не можна скасувати."
 
-#: ../LibraryView.lua:798
-msgid   "Migrate"
-msgstr  "Мігрувати"
+#: ../LibraryView.lua:801
+msgid "Migrate"
+msgstr "Мігрувати"
 
-#: ../LibraryView.lua:802
-msgid   "Migrating database..."
-msgstr  "Міграція бази даних..."
+#: ../LibraryView.lua:805
+msgid "Migrating database..."
+msgstr "Міграція бази даних..."
 
-#: ../LibraryView.lua:813 ../LibraryView.lua:860
-msgid   "Local database has been migrated from the server!"
-msgstr  "Локальну базу даних перенесено з сервера!"
+#: ../LibraryView.lua:816 ../LibraryView.lua:863
+msgid "Local database has been migrated from the server!"
+msgstr "Локальну базу даних перенесено з сервера!"
 
-#: ../LibraryView.lua:824
-msgid   "Replace Cloud"
-msgstr  "Замінити хмару"
+#: ../LibraryView.lua:827
+msgid "Replace Cloud"
+msgstr "Замінити хмару"
 
-#: ../LibraryView.lua:828
-msgid   "Replacing cloud..."
-msgstr  "Заміна хмари..."
+#: ../LibraryView.lua:831
+msgid "Replacing cloud..."
+msgstr "Заміна хмари..."
 
-#: ../LibraryView.lua:838
-msgid   "Cloud database has been forcedly replaced with local one!"
-msgstr  "Хмарну базу примусово замінено на локальну!"
+#: ../LibraryView.lua:841
+msgid "Cloud database has been forcedly replaced with local one!"
+msgstr "Хмарну базу примусово замінено на локальну!"
 
-#: ../LibraryView.lua:856
-msgid   "Database is already up to date!"
-msgstr  "База даних вже актуальна!"
+#: ../LibraryView.lua:859
+msgid "Database is already up to date!"
+msgstr "База даних вже актуальна!"
 
-#: ../LibraryView.lua:858
-msgid   "Database has been synced to the server!"
-msgstr  "Базу даних синхронізовано з сервером!"
+#: ../LibraryView.lua:861
+msgid "Database has been synced to the server!"
+msgstr "Базу даних синхронізовано з сервером!"
 
-#: ../LibraryView.lua:862
-msgid   "Sync completed!"
-msgstr  "Синхронізацію завершено!"
+#: ../LibraryView.lua:865
+msgid "Sync completed!"
+msgstr "Синхронізацію завершено!"
 
-#: ../LibraryView.lua:886
-msgid   "Manga search..."
-msgstr  "Пошук манги..."
+#: ../LibraryView.lua:889
+msgid "Manga search..."
+msgstr "Пошук манги..."
 
-#: ../LibraryView.lua:887
-msgid   "Houseki no Kuni"
-msgstr  "Хаускі но Куні"
+#: ../LibraryView.lua:890
+msgid "Houseki no Kuni"
+msgstr "Хаускі но Куні"
 
-#: ../LibraryView.lua:888 ../LibraryView.lua:964
-msgid   "Type the manga name to search for"
-msgstr  "Введіть назву манги для пошуку"
+#: ../LibraryView.lua:891 ../LibraryView.lua:967
+msgid "Type the manga name to search for"
+msgstr "Введіть назву манги для пошуку"
 
-#: ../LibraryView.lua:892 ../LibraryView.lua:901 ../LibraryView.lua:946
-#: ../LibraryView.lua:975
-msgid   "Search"
-msgstr  "Пошук"
+#: ../LibraryView.lua:895 ../LibraryView.lua:904 ../LibraryView.lua:949
+#: ../LibraryView.lua:978
+msgid "Search"
+msgstr "Пошук"
 
-#: ../LibraryView.lua:946
-msgid   "Exclude source search for"
-msgstr  "Виключити пошук джерела"
+#: ../LibraryView.lua:949
+msgid "Exclude source search for"
+msgstr "Виключити пошук джерела"
 
-#: ../LibraryView.lua:961
-msgid   "Favorite search..."
-msgstr  "Улюблений пошук..."
+#: ../LibraryView.lua:964
+msgid "Favorite search..."
+msgstr "Улюблений пошук..."
 
-#: ../LibraryView.lua:963
-msgid   "Tonikaku Kawaii"
-msgstr  "Тонікаку Каваї"
+#: ../LibraryView.lua:966
+msgid "Tonikaku Kawaii"
+msgstr "Тонікаку Каваї"
 
-#: ../LibraryView.lua:1015
-msgid   "Scaning files..."
-msgstr  "Сканування файлів..."
+#: ../LibraryView.lua:1018
+msgid "Scaning files..."
+msgstr "Сканування файлів..."
 
-#: ../LibraryView.lua:1030
+#: ../LibraryView.lua:1033
 #, lua-format
-msgid   "Found %d files."
-msgstr  "Знайдено %d файлів."
+msgid "Found %d files."
+msgstr "Знайдено %d файлів."
 
-#: ../LibraryView.lua:1031
+#: ../LibraryView.lua:1034
 #, lua-format
-msgid   "Total size %s."
-msgstr  "Загальний розмір %s."
+msgid "Total size %s."
+msgstr "Загальний розмір %s."
 
-#: ../LibraryView.lua:1032
+#: ../LibraryView.lua:1035
 #, lua-format
-msgid   "RendOnly file .cbz and .epub scan."
-msgstr  "Сканування RendOnly файлів .cbz і .epub."
+msgid "RendOnly file .cbz and .epub scan."
+msgstr "Сканування RendOnly файлів .cbz і .epub."
 
-#: ../LibraryView.lua:1036
-msgid   "Clean"
-msgstr  "чистий"
+#: ../LibraryView.lua:1039
+msgid "Clean"
+msgstr "чистий"
 
-#: ../LibraryView.lua:1041
-msgid   "Deleting..."
-msgstr  "Видалення..."
+#: ../LibraryView.lua:1044
+msgid "Deleting..."
+msgstr "Видалення..."
 
-#: ../LibraryView.lua:1059
+#: ../LibraryView.lua:1062
 #, lua-format
-msgid   "Cleaned free %s storage"
-msgstr  "Очищено безкоштовне сховище %s"
+msgid "Cleaned free %s storage"
+msgstr "Очищено безкоштовне сховище %s"
 
-#: ../LibraryView.lua:1084
-msgid   "Refresh mangas..."
-msgstr  "Оновити мангу..."
+#: ../LibraryView.lua:1087
+msgid "Refresh mangas..."
+msgstr "Оновити мангу..."
 
-#: ../LibraryView.lua:1085
-msgid   "All chapters manga updated!"
-msgstr  "Усі розділи манги оновлено!"
+#: ../LibraryView.lua:1088
+msgid "All chapters manga updated!"
+msgstr "Усі розділи манги оновлено!"
 
-#: ../LibraryView.lua:1086
-msgid   "Some manga updates fail:"
-msgstr  "Деякі оновлення манги не вдаються:"
+#: ../LibraryView.lua:1089
+msgid "Some manga updates fail:"
+msgstr "Деякі оновлення манги не вдаються:"
 
-#: ../LibraryView.lua:1097
-msgid   "Refresh manga details..."
-msgstr  "Оновити деталі манги..."
+#: ../LibraryView.lua:1100
+msgid "Refresh manga details..."
+msgstr "Оновити деталі манги..."
 
-#: ../LibraryView.lua:1098
-msgid   "All manga details refresh!"
-msgstr  "Усі деталі манги оновлено!"
+#: ../LibraryView.lua:1101
+msgid "All manga details refresh!"
+msgstr "Усі деталі манги оновлено!"
 
-#: ../LibraryView.lua:1099
-msgid   "Some manga details refresh fail:"
-msgstr  "Деякі деталі манги не оновлюються:"
+#: ../LibraryView.lua:1102
+msgid "Some manga details refresh fail:"
+msgstr "Деякі деталі манги не оновлюються:"
 
-#: ../LibraryView.lua:1115
-msgid   "Progress"
-msgstr  "Прогрес"
-
-#: ../LibraryView.lua:1133
-msgid   "Cleaner"
-msgstr  "Прибиральник"
-
-#: ../LibraryView.lua:1134
-msgid   "Find and delete invalid files including files from deleted sources"
-msgstr  "Знайдіть і видаліть недійсні файли, включаючи файли з видалених джерел"
-
-#: ../LibraryView.lua:1134 ../LibraryView.lua:1137
-msgid   "Normal"
-msgstr  "нормальний"
+#: ../LibraryView.lua:1118
+msgid "Progress"
+msgstr "Прогрес"
 
 #: ../LibraryView.lua:1136
-msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
-msgstr  "ВАЖЛИВО: Мета-файли (закладки, історія) не зберігаються!"
+msgid "Cleaner"
+msgstr "Прибиральник"
 
-#: ../LibraryView.lua:1143
-msgid   "Chapter read done"
-msgstr  "Розділ прочитано"
+#: ../LibraryView.lua:1137
+msgid "Find and delete invalid files including files from deleted sources"
+msgstr "Знайдіть і видаліть недійсні файли, включаючи файли з видалених джерел"
+
+#: ../LibraryView.lua:1137 ../LibraryView.lua:1140
+msgid "Normal"
+msgstr "нормальний"
+
+#: ../LibraryView.lua:1139
+msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr "ВАЖЛИВО: Мета-файли (закладки, історія) не зберігаються!"
+
+#: ../LibraryView.lua:1146
+msgid "Chapter read done"
+msgstr "Розділ прочитано"
 
 #: ../MangaInfoWidget.lua:141
-msgid   "Statistics"
-msgstr  "Статистика"
+msgid "Statistics"
+msgstr "Статистика"
 
 #: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
 #: ../MangaInfoWidget.lua:503
-msgid   "Description"
-msgstr  "опис"
+msgid "Description"
+msgstr "опис"
 
 #: ../MangaInfoWidget.lua:276
-msgid   "%1 % Completed"
-msgstr  "%1% завершено"
+msgid "%1 % Completed"
+msgstr "%1% завершено"
 
 #: ../MangaInfoWidget.lua:308
-msgid   "Last read: %1"
-msgstr  "Останнє прочитання: %1"
+msgid "Last read: %1"
+msgstr "Останнє прочитання: %1"
 
 #: ../MangaInfoWidget.lua:380
-msgid   "Status"
-msgstr  "Статус"
+msgid "Status"
+msgstr "Статус"
 
 #: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid   "NSFW"
-msgstr  "NSFW"
+msgid "NSFW"
+msgstr "NSFW"
 
 #: ../MangaInfoWidget.lua:394
-msgid   "Last Updated"
-msgstr  "Останнє оновлення"
+msgid "Last Updated"
+msgstr "Останнє оновлення"
 
 #: ../MangaInfoWidget.lua:419
-msgid   "N/A"
-msgstr  "N/A"
+msgid "N/A"
+msgstr "N/A"
 
 #: ../MangaInfoWidget.lua:435
-msgid   "Ongoing"
-msgstr  "Триває"
+msgid "Ongoing"
+msgstr "Триває"
 
 #: ../MangaInfoWidget.lua:437
-msgid   "Completed"
-msgstr  "Виконано"
+msgid "Completed"
+msgstr "Виконано"
 
 #: ../MangaInfoWidget.lua:439
-msgid   "Cancelled"
-msgstr  "Скасовано"
+msgid "Cancelled"
+msgstr "Скасовано"
 
 #: ../MangaInfoWidget.lua:441
-msgid   "Hiatus"
-msgstr  "Перерва"
+msgid "Hiatus"
+msgstr "Перерва"
 
 #: ../MangaInfoWidget.lua:443
-msgid   "Not published"
-msgstr  "Не опубліковано"
+msgid "Not published"
+msgstr "Не опубліковано"
 
 #: ../MangaInfoWidget.lua:451
-msgid   "Safe"
-msgstr  "Безпечний"
+msgid "Safe"
+msgstr "Безпечний"
 
 #: ../MangaInfoWidget.lua:453
-msgid   "Suggestive"
-msgstr  "Сугестивний"
+msgid "Suggestive"
+msgstr "Сугестивний"
 
 #: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
-msgid   "Refreshing details..."
-msgstr  "Оновлення деталей..."
+msgid "Refreshing details..."
+msgstr "Оновлення деталей..."
 
 #: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
-msgid   "Refresh details cancelled."
-msgstr  "Оновлення деталей скасовано."
+msgid "Refresh details cancelled."
+msgstr "Оновлення деталей скасовано."
 
 #: ../MangaReader.lua:101
-msgid   "Go back to Rakuyomi..."
-msgstr  "Повернись до Ракуйомі..."
+msgid "Go back to Rakuyomi..."
+msgstr "Повернись до Ракуйомі..."
 
 #: ../MangaReader.lua:172
-msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
-msgstr  "Ви хочете, щоб Ракуйомі заволодів цією кнопкою, коли ви її відкриваєте?"
+msgid "Do you want Rakuyomi to commandeer this button when you open it?"
+msgstr "Ви хочете, щоб Ракуйомі заволодів цією кнопкою, коли ви її відкриваєте?"
 
 #: ../MangaReader.lua:172
-msgid   "This setting only affects when you open it with Rakuyomi."
-msgstr  "Цей параметр діє лише тоді, коли ви відкриваєте його за допомогою Rakuyomi."
+msgid "This setting only affects when you open it with Rakuyomi."
+msgstr "Цей параметр діє лише тоді, коли ви відкриваєте його за допомогою Rakuyomi."
 
 #: ../MangaReader.lua:174
-msgid   "Yes"
-msgstr  "так"
+msgid "Yes"
+msgstr "так"
 
 #: ../MangaReader.lua:175
-msgid   "No"
-msgstr  "немає"
+msgid "No"
+msgstr "немає"
 
 #: ../MangaSearchResults.lua:26
-msgid   "Search results..."
-msgstr  "Результати пошуку..."
+msgid "Search results..."
+msgstr "Результати пошуку..."
 
 #: ../MangaSearchResults.lua:133
-msgid   "Searching for"
-msgstr  "Пошук"
+msgid "Searching for"
+msgstr "Пошук"
 
 #: ../MangaSearchResults.lua:140
-msgid   "Search cancelled."
-msgstr  "Пошук скасовано."
+msgid "Search cancelled."
+msgstr "Пошук скасовано."
 
 #: ../NotificationView.lua:37
-msgid   "Notification"
-msgstr  "Сповіщення"
+msgid "Notification"
+msgstr "Сповіщення"
 
 #: ../NotificationView.lua:57
-msgid   "Cleared all notifications!"
-msgstr  "Видалено всі сповіщення!"
+msgid "Cleared all notifications!"
+msgstr "Видалено всі сповіщення!"
 
 #: ../NotificationView.lua:104
-msgid   "No notification"
-msgstr  "Немає сповіщень"
+msgid "No notification"
+msgstr "Немає сповіщень"
 
 #: ../NotificationView.lua:160
-msgid   "Delete this notification?"
-msgstr  "Видалити це сповіщення?"
+msgid "Delete this notification?"
+msgstr "Видалити це сповіщення?"
 
 #: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
 #: ../PlaylistDialog.lua:232
-msgid   "Delete"
-msgstr  "Видалити"
+msgid "Delete"
+msgstr "Видалити"
 
 #: ../OfflineAlertDialog.lua:44
-msgid   "Some features may be limited"
-msgstr  "Деякі функції можуть бути обмежені"
+msgid "Some features may be limited"
+msgstr "Деякі функції можуть бути обмежені"
 
 #: ../OfflineAlertDialog.lua:44
-msgid   "You appear to be offline"
-msgstr  "Здається, ви офлайн"
+msgid "You appear to be offline"
+msgstr "Здається, ви офлайн"
 
 #: ../OfflineAlertDialog.lua:45
-msgid   "• You can still read any downloaded manga chapters"
-msgstr  "• Ви все ще можете читати будь-які завантажені розділи манги"
+msgid "• You can still read any downloaded manga chapters"
+msgstr "• Ви все ще можете читати будь-які завантажені розділи манги"
 
 #: ../OfflineAlertDialog.lua:46
-msgid   "• Your library content will be available"
-msgstr  "• Вміст вашої бібліотеки буде доступним"
+msgid "• Your library content will be available"
+msgstr "• Вміст вашої бібліотеки буде доступним"
 
 #: ../OfflineAlertDialog.lua:47
-msgid   "• New content and updates require a connection"
-msgstr  "• Новий вміст і оновлення потребують підключення"
+msgid "• New content and updates require a connection"
+msgstr "• Новий вміст і оновлення потребують підключення"
 
 #: ../OfflineAlertDialog.lua:54
-msgid   "Close"
-msgstr  "Закрити"
+msgid "Close"
+msgstr "Закрити"
 
 #: ../OfflineAlertDialog.lua:64
-msgid   "Do not show this message again"
-msgstr  "Більше не показувати це повідомлення"
+msgid "Do not show this message again"
+msgstr "Більше не показувати це повідомлення"
 
 #: ../PlaylistDialog.lua:131
-msgid   "Rename Playlist"
-msgstr  "Перейменувати список відтворення"
+msgid "Rename Playlist"
+msgstr "Перейменувати список відтворення"
 
 #: ../PlaylistDialog.lua:136
-msgid   "Save"
-msgstr  "зберегти"
+msgid "Save"
+msgstr "зберегти"
 
 #: ../PlaylistDialog.lua:158
-msgid   "Delete playlist"
-msgstr  "Видалити список відтворення"
+msgid "Delete playlist"
+msgstr "Видалити список відтворення"
 
 #: ../PlaylistDialog.lua:227
-msgid   "Rename"
-msgstr  "Перейменувати"
+msgid "Rename"
+msgstr "Перейменувати"
 
 #: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
-msgid   "New Playlist"
-msgstr  "Новий список відтворення"
+msgid "New Playlist"
+msgstr "Новий список відтворення"
 
 #: ../PlaylistDialog.lua:251
-msgid   "Playlist name"
-msgstr  "Назва списку відтворення"
+msgid "Playlist name"
+msgstr "Назва списку відтворення"
 
 #: ../PlaylistDialog.lua:264
-msgid   "Create"
-msgstr  "Створити"
+msgid "Create"
+msgstr "Створити"
 
 #: ../PlaylistDialog.lua:324
-msgid   "No playlists yet."
-msgstr  "Списків відтворення ще немає."
+msgid "No playlists yet."
+msgstr "Списків відтворення ще немає."
 
 #: ../Settings.lua:44
-msgid   "Library view mode"
-msgstr  "Режим перегляду бібліотеки"
+msgid "Library view mode"
+msgstr "Режим перегляду бібліотеки"
 
 #: ../Settings.lua:46
-msgid   "Base"
-msgstr  "База"
+msgid "Base"
+msgstr "База"
 
 #: ../Settings.lua:47
-msgid   "Cover"
-msgstr  "Обкладинка"
+msgid "Cover"
+msgstr "Обкладинка"
 
 #: ../Settings.lua:48
-msgid   "Grid"
-msgstr  "Сітка"
+msgid "Grid"
+msgstr "Сітка"
 
 #: ../Settings.lua:57
-msgid   "Library sorting mode"
-msgstr  "Режим сортування бібліотеки"
+msgid "Library sorting mode"
+msgstr "Режим сортування бібліотеки"
 
 #: ../Settings.lua:59
-msgid   "Order added ascending (Default)"
-msgstr  "Порядок додавання за зростанням (за замовчуванням)"
+msgid "Order added ascending (Default)"
+msgstr "Порядок додавання за зростанням (за замовчуванням)"
 
 #: ../Settings.lua:60
-msgid   "Order added descending"
-msgstr  "Порядок додано за спаданням"
+msgid "Order added descending"
+msgstr "Порядок додано за спаданням"
 
 #: ../Settings.lua:61
-msgid   "Title manga ascending"
-msgstr  "Назва манги за зростанням"
+msgid "Title manga ascending"
+msgstr "Назва манги за зростанням"
 
 #: ../Settings.lua:62
-msgid   "Title manga descending"
-msgstr  "Назва манги за спаданням"
+msgid "Title manga descending"
+msgstr "Назва манги за спаданням"
 
 #: ../Settings.lua:63
-msgid   "Count unread chapters ascending"
-msgstr  "Лічити непрочитані розділи за зростанням"
+msgid "Count unread chapters ascending"
+msgstr "Лічити непрочитані розділи за зростанням"
 
 #: ../Settings.lua:64
-msgid   "Count unread chapters descending"
-msgstr  "Лічити непрочитані розділи за спаданням"
+msgid "Count unread chapters descending"
+msgstr "Лічити непрочитані розділи за спаданням"
 
 #: ../Settings.lua:65
-msgid   "Last read ascending"
-msgstr  "Останнє читання за зростанням"
+msgid "Last read ascending"
+msgstr "Останнє читання за зростанням"
 
 #: ../Settings.lua:66
-msgid   "Last read descending"
-msgstr  "Останнє прочитане за спаданням"
+msgid "Last read descending"
+msgstr "Останнє прочитане за спаданням"
 
 #: ../Settings.lua:67
-msgid   "Source ascending"
-msgstr  "Джерело за зростанням"
+msgid "Source ascending"
+msgstr "Джерело за зростанням"
 
 #: ../Settings.lua:68
-msgid   "Source descending"
-msgstr  "Джерело спадає"
+msgid "Source descending"
+msgstr "Джерело спадає"
 
 #: ../Settings.lua:76
-msgid   "Items per page (0 = auto)"
-msgstr  "Елементів на сторінці (0 = автоматично)"
+msgid "Items per page (0 = auto)"
+msgstr "Елементів на сторінці (0 = автоматично)"
 
 #: ../Settings.lua:87
-msgid   "Grid columns"
-msgstr  "Колонки сітки"
+msgid "Grid columns"
+msgstr "Колонки сітки"
 
 #: ../Settings.lua:98
-msgid   "Grid rows"
-msgstr  "Рядки сітки"
+msgid "Grid rows"
+msgstr "Рядки сітки"
 
 #: ../Settings.lua:107
-msgid   "Reader"
-msgstr  "Читач"
+msgid "Reader"
+msgstr "Читач"
 
 #: ../Settings.lua:113
-msgid   "Chapter sorting mode"
-msgstr  "Режим сортування розділів"
+msgid "Chapter sorting mode"
+msgstr "Режим сортування розділів"
 
 #: ../Settings.lua:115
-msgid   "By chapter ascending"
-msgstr  "По главам за зростанням"
+msgid "By chapter ascending"
+msgstr "По главам за зростанням"
 
 #: ../Settings.lua:116
-msgid   "By chapter descending"
-msgstr  "За главою спадання"
+msgid "By chapter descending"
+msgstr "За главою спадання"
 
 #: ../Settings.lua:124
-msgid   "Preload chapters on reader open"
-msgstr  "Попереднє завантаження розділів у програмі Reader відкрито"
+msgid "Preload chapters on reader open"
+msgstr "Попереднє завантаження розділів у програмі Reader відкрито"
 
 #: ../Settings.lua:135
-msgid   "Optimize page images (experimental)"
-msgstr  "Оптимізувати зображення сторінок (експериментально)"
+msgid "Optimize page images (experimental)"
+msgstr "Оптимізувати зображення сторінок (експериментально)"
 
 #: ../Settings.lua:143
-msgid   "Concurrent page requests"
-msgstr  "Одночасні запити сторінок"
+msgid "Concurrent page requests"
+msgstr "Одночасні запити сторінок"
 
 #: ../Settings.lua:152
-msgid   "Storage"
-msgstr  "Зберігання"
+msgid "Storage"
+msgstr "Зберігання"
 
 #: ../Settings.lua:158
-msgid   "Chapter storage path"
-msgstr  "Шлях зберігання глави"
+msgid "Chapter storage path"
+msgstr "Шлях зберігання глави"
 
 #: ../Settings.lua:167
-msgid   "Storage size limit"
-msgstr  "Обмеження розміру сховища"
+msgid "Storage size limit"
+msgstr "Обмеження розміру сховища"
 
 #: ../Settings.lua:175
-msgid   "Sync & Updates"
-msgstr  "Синхронізація та оновлення"
+msgid "Sync & Updates"
+msgstr "Синхронізація та оновлення"
 
 #: ../Settings.lua:181
-msgid   "WebDAV Sync"
-msgstr  "Синхронізація WebDAV"
+msgid "WebDAV Sync"
+msgstr "Синхронізація WebDAV"
 
 #: ../Settings.lua:189
-msgid   "Enabled cron check for manga updates"
-msgstr  "Увімкнено перевірку cron на наявність оновлень манги"
+msgid "Enabled cron check for manga updates"
+msgstr "Увімкнено перевірку cron на наявність оновлень манги"
 
 #: ../Settings.lua:197
-msgid   "Source IDs skip check update"
-msgstr  "Ідентифікатори джерел пропускають перевірку оновлення"
+msgid "Source IDs skip check update"
+msgstr "Ідентифікатори джерел пропускають перевірку оновлення"
 
 #: ../Settings.lua:203
-msgid   "System"
-msgstr  "система"
+msgid "System"
+msgstr "система"
 
 #: ../Settings.lua:209
-msgid   "Allow requisition of the back button"
-msgstr  "Дозволити запит кнопки Назад"
+msgid "Allow requisition of the back button"
+msgstr "Дозволити запит кнопки Назад"
 
 #: ../SourceSettings.lua:197
-msgid   "Source settings"
-msgstr  "Налаштування джерела"
+msgid "Source settings"
+msgstr "Налаштування джерела"
 
 #: ../UpdateChecker.lua:24
-msgid   "Cannot check for updates while offline"
-msgstr  "Неможливо перевірити наявність оновлень у режимі офлайн"
+msgid "Cannot check for updates while offline"
+msgstr "Неможливо перевірити наявність оновлень у режимі офлайн"
 
 #: ../UpdateChecker.lua:39
-msgid   "You're running the latest version!"
-msgstr  "Ви використовуєте останню версію!"
+msgid "You're running the latest version!"
+msgstr "Ви використовуєте останню версію!"
 
 #: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
 #, lua-format
-msgid   "Version"
-msgstr  "Версія"
+msgid "Version"
+msgstr "Версія"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "Would you like to update now?"
-msgstr  "Хочете оновити зараз?"
+msgid "Would you like to update now?"
+msgstr "Хочете оновити зараз?"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "You're currently running version "
-msgstr  "Ви зараз використовуєте версію"
+msgid "You're currently running version "
+msgstr "Ви зараз використовуєте версію"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "is available"
-msgstr  "є в наявності"
+msgid "is available"
+msgstr "є в наявності"
 
 #: ../UpdateChecker.lua:58
-msgid   "Later"
-msgstr  "Пізніше"
+msgid "Later"
+msgstr "Пізніше"
 
 #: ../UpdateChecker.lua:64
-msgid   "Update Now"
-msgstr  "Оновити зараз"
+msgid "Update Now"
+msgstr "Оновити зараз"
 
 #: ../UpdateChecker.lua:74
 #, lua-format
-msgid   "is available. You're currently running version "
-msgstr  "є в наявності. "
+msgid "is available. You're currently running version "
+msgstr "є в наявності. "
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid   "This update cannot be installed automatically"
-msgstr  "Це оновлення неможливо встановити автоматично"
+msgid "This update cannot be installed automatically"
+msgstr "Це оновлення неможливо встановити автоматично"
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid   "please visit the user guide for instructions."
-msgstr  "див. інструкції в посібнику користувача."
+msgid "please visit the user guide for instructions."
+msgstr "див. інструкції в посібнику користувача."
 
 #: ../UpdateChecker.lua:83
-msgid   "OK"
-msgstr  "добре"
+msgid "OK"
+msgstr "добре"
 
 #: ../UpdateChecker.lua:103
-msgid   "Updating rakuyomi, please wait..."
-msgstr  "Оновлення rakuyomi, зачекайте..."
+msgid "Updating rakuyomi, please wait..."
+msgstr "Оновлення rakuyomi, зачекайте..."
 
 #: ../UpdateChecker.lua:119
-msgid   "Restart Now"
-msgstr  "Перезапустіть зараз"
+msgid "Restart Now"
+msgstr "Перезапустіть зараз"
 
 #: ../UpdateChecker.lua:130
-msgid   "KOReader needs to be restarted to apply the changes."
-msgstr  "KOReader потрібно перезапустити, щоб застосувати зміни."
+msgid "KOReader needs to be restarted to apply the changes."
+msgstr "KOReader потрібно перезапустити, щоб застосувати зміни."
 
 #: ../UpdateChecker.lua:130
-msgid   "The update has been installed successfully"
-msgstr  "Оновлення успішно встановлено"
+msgid "The update has been installed successfully"
+msgstr "Оновлення успішно встановлено"
 
 #: ../UpdateChecker.lua:140
-msgid   "Restarting..."
-msgstr  "Перезапуск..."
+msgid "Restarting..."
+msgstr "Перезапуск..."
 
 #: ../_meta.lua:5
-msgid   "rakuyomi"
-msgstr  "rakuyomi"
+msgid "rakuyomi"
+msgstr "rakuyomi"
 
 #: ../_meta.lua:6
-msgid   "Download mangas on your e-book reader!"
-msgstr  "Завантажте мангу на свій пристрій для читання електронних книг!"
+msgid "Download mangas on your e-book reader!"
+msgstr "Завантажте мангу на свій пристрій для читання електронних книг!"
 
 #: ../handlers/addToPlaylist.lua:17
-msgid   "Added to"
-msgstr  "Додано до"
+msgid "Added to"
+msgstr "Додано до"
 
 #: ../main.lua:39 ../main.lua:63
-msgid   "Rakuyomi"
-msgstr  "Ракуйомі"
+msgid "Rakuyomi"
+msgstr "Ракуйомі"
 
 #: ../main.lua:79
-msgid   "Oops!"
-msgstr  "Ой!"
+msgid "Oops!"
+msgstr "Ой!"
 
 #: ../main.lua:79
-msgid   "Rakuyomi encountered an issue while starting up!"
-msgstr  "Rakuyomi зіткнувся з проблемою під час запуску!"
+msgid "Rakuyomi encountered an issue while starting up!"
+msgstr "Rakuyomi зіткнувся з проблемою під час запуску!"
 
 #: ../main.lua:80
-msgid   "Here are some messages that might help identify the problem:"
-msgstr  "Ось кілька повідомлень, які можуть допомогти визначити проблему:"
+msgid "Here are some messages that might help identify the problem:"
+msgstr "Ось кілька повідомлень, які можуть допомогти визначити проблему:"
 
 #: ../utils/calcLastReadText.lua:13
-msgid   "jnow"
-msgstr  "jnow"
+msgid "jnow"
+msgstr "jnow"
 
 #: ../utils/calcLastReadText.lua:13
-msgid   "just now"
-msgstr  "тільки зараз"
+msgid "just now"
+msgstr "тільки зараз"
 
 #: ../utils/calcLastReadText.lua:15
 #, lua-format
-msgid   "%dm"
-msgstr  "%dm"
+msgid "%dm"
+msgstr "%dm"
 
 #: ../utils/calcLastReadText.lua:15
-msgid   "minutes"
-msgstr  "хвилин"
+msgid "minutes"
+msgstr "хвилин"
 
 #: ../utils/calcLastReadText.lua:17
 #, lua-format
-msgid   "%dh"
-msgstr  "%dh"
+msgid "%dh"
+msgstr "%dh"
 
 #: ../utils/calcLastReadText.lua:17
-msgid   "hours"
-msgstr  "години"
+msgid "hours"
+msgstr "години"
 
 #: ../utils/calcLastReadText.lua:19
 #, lua-format
-msgid   "%dd"
-msgstr  "%dd"
+msgid "%dd"
+msgstr "%dd"
 
 #: ../utils/calcLastReadText.lua:19
-msgid   "days"
-msgstr  "днів"
+msgid "days"
+msgstr "днів"
 
 #: ../utils/calcLastReadText.lua:21
 #, lua-format
-msgid   "%dw"
-msgstr  "%dw"
+msgid "%dw"
+msgstr "%dw"
 
 #: ../utils/calcLastReadText.lua:21
-msgid   "weeks"
-msgstr  "тижнів"
+msgid "weeks"
+msgstr "тижнів"
 
 #: ../utils/calcLastReadText.lua:23
 #, lua-format
-msgid   "%dM"
-msgstr  "%dM"
+msgid "%dM"
+msgstr "%dM"
 
 #: ../utils/calcLastReadText.lua:23
-msgid   "months"
-msgstr  "місяців"
+msgid "months"
+msgstr "місяців"
 
 #: ../utils/calcLastReadText.lua:25
 #, lua-format
-msgid   "%dy"
-msgstr  "%dy"
+msgid "%dy"
+msgstr "%dy"
 
 #: ../utils/calcLastReadText.lua:25
-msgid   "years"
-msgstr  "років"
+msgid "years"
+msgstr "років"
 
 #: ../utils/getChapterDisplayName.lua:5
-msgid   "Vol."
-msgstr  "том."
+msgid "Vol."
+msgstr "том."
 
 #: ../utils/getChapterDisplayName.lua:6
-msgid   "Ch."
-msgstr  "гл."
+msgid "Ch."
+msgstr "гл."
 
 #: ../widgets/Menu.lua:82
-msgid   "Offline mode"
-msgstr  "Автономний режим"
+msgid "Offline mode"
+msgstr "Автономний режим"
 
 #: ../widgets/SettingItemValue.lua:162
-msgid   "Ok"
-msgstr  "добре"
+msgid "Ok"
+msgstr "добре"
 
 #: ../widgets/SettingItemValue.lua:168
-msgid   "Executing..."
-msgstr  "Виконання..."
+msgid "Executing..."
+msgstr "Виконання..."
 
 #: ../widgets/SettingItemValue.lua:181
-msgid   "Done"
-msgstr  "Готово"
+msgid "Done"
+msgstr "Готово"
 
 #: ../widgets/SettingItemValue.lua:236
-msgid   "Select"
-msgstr  "Виберіть"
+msgid "Select"
+msgstr "Виберіть"

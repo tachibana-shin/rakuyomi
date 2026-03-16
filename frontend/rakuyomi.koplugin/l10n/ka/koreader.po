@@ -1,1178 +1,1179 @@
-msgid   ""
-msgstr  "Project-Id-Version: rakuyomi.koreader \n"
-        "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2026-03-16 23:42+0700\n"
-        "PO-Revision-Date: 2025-12-26 23:18+0700\n"
-        "Last-Translator: Automatically generated\n"
-        "Language-Team: none\n"
-        "Language: ka\n"
-        "MIME-Version: 1.0\n"
-        "Content-Type: text/plain; charset=UTF-8\n"
-        "Content-Transfer-Encoding: 8bit\n"
+msgid ""
+msgstr ""
+"Project-Id-Version: rakuyomi.koreader \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-17 00:10+0700\n"
+"PO-Revision-Date: 2025-12-26 23:18+0700\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: ../AvailableSourcesListing.lua:21
-msgid   "Available sources"
-msgstr  "ხელმისაწვდომი წყაროები"
+msgid "Available sources"
+msgstr "ხელმისაწვდომი წყაროები"
 
 #: ../AvailableSourcesListing.lua:81
-msgid   "Update available!"
-msgstr  "განახლება ხელმისაწვდომია!"
+msgid "Update available!"
+msgstr "განახლება ხელმისაწვდომია!"
 
 #: ../AvailableSourcesListing.lua:84
-msgid   "Latest version installed"
-msgstr  "დაინსტალირებული უახლესი ვერსია"
+msgid "Latest version installed"
+msgstr "დაინსტალირებული უახლესი ვერსია"
 
 #: ../AvailableSourcesListing.lua:88
-msgid   "Installable"
-msgstr  "ინსტალაციადია"
+msgid "Installable"
+msgstr "ინსტალაციადია"
 
 #: ../AvailableSourcesListing.lua:94 ../InstalledSourcesListing.lua:81
-msgid   "version"
-msgstr  "ვერსია"
+msgid "version"
+msgstr "ვერსია"
 
 #: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
 #: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
-msgid   "Unknown"
-msgstr  "უცნობი"
+msgid "Unknown"
+msgstr "უცნობი"
 
 #: ../AvailableSourcesListing.lua:144
-msgid   "No available sources found."
-msgstr  "ხელმისაწვდომი წყაროები არ მოიძებნა."
+msgid "No available sources found."
+msgstr "ხელმისაწვდომი წყაროები არ მოიძებნა."
 
 #: ../AvailableSourcesListing.lua:144
-msgid   "Try adding some source lists by looking at our README!"
-msgstr  "სცადეთ დაამატოთ რამდენიმე წყაროს სია ჩვენი README-ის ნახვით!"
+msgid "Try adding some source lists by looking at our README!"
+msgstr "სცადეთ დაამატოთ რამდენიმე წყაროს სია ჩვენი README-ის ნახვით!"
 
 #: ../AvailableSourcesListing.lua:162
-msgid   "Installing source..."
-msgstr  "მიმდინარეობს წყაროს დაყენება..."
+msgid "Installing source..."
+msgstr "მიმდინარეობს წყაროს დაყენება..."
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
-msgid   "Cancelled!"
-msgstr  "გაუქმდა!"
+msgid "Cancelled!"
+msgstr "გაუქმდა!"
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
-msgid   "Complete!"
-msgstr  "სრული!"
+msgid "Complete!"
+msgstr "სრული!"
 
 #: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
-msgid   "Waiting until cancelled…"
-msgstr  "ელოდება გაუქმებას…"
+msgid "Waiting until cancelled…"
+msgstr "ელოდება გაუქმებას…"
 
 #: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
 #: ../BasicJobDialog.lua:165
-msgid   "Processing..."
-msgstr  "დამუშავება..."
+msgid "Processing..."
+msgstr "დამუშავება..."
 
 #: ../BasicJobDialog.lua:92
-msgid   "An error occurred"
-msgstr  "მოხდა შეცდომა"
+msgid "An error occurred"
+msgstr "მოხდა შეცდომა"
 
 #: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
-msgid   "Unknown error"
-msgstr  "უცნობი შეცდომა"
+msgid "Unknown error"
+msgstr "უცნობი შეცდომა"
 
 #: ../BasicJobDialog.lua:250
-msgid   "Error"
-msgstr  "შეცდომა"
+msgid "Error"
+msgstr "შეცდომა"
 
 #: ../ChapterListing.lua:57
-msgid   "Chapter listing"
-msgstr  "თავების ჩამონათვალი"
+msgid "Chapter listing"
+msgstr "თავების ჩამონათვალი"
 
 #: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
-msgid   "Languages"
-msgstr  "ენები"
+msgid "Languages"
+msgstr "ენები"
 
 #: ../ChapterListing.lua:323
-msgid   "No chapters found"
-msgstr  "თავები ვერ მოიძებნა"
+msgid "No chapters found"
+msgstr "თავები ვერ მოიძებნა"
 
 #: ../ChapterListing.lua:323
-msgid   "Try swiping down to refresh the chapter list."
-msgstr  "სცადეთ გადაფურცვლა ქვემოთ, რათა განაახლოთ თავების სია."
+msgid "Try swiping down to refresh the chapter list."
+msgstr "სცადეთ გადაფურცვლა ქვემოთ, რათა განაახლოთ თავების სია."
 
 #: ../ChapterListing.lua:365
-msgid   "Volume"
-msgstr  "მოცულობა"
+msgid "Volume"
+msgstr "მოცულობა"
 
 #: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
-msgid   "Chapter"
-msgstr  "თავი"
+msgid "Chapter"
+msgstr "თავი"
 
 #: ../ChapterListing.lua:395
-msgid   "Locked"
-msgstr  "ჩაკეტილი"
+msgid "Locked"
+msgstr "ჩაკეტილი"
 
 #: ../ChapterListing.lua:431 ../ChapterListing.lua:632
-msgid   "Refreshing chapters..."
-msgstr  "მიმდინარეობს თავების განახლება..."
+msgid "Refreshing chapters..."
+msgstr "მიმდინარეობს თავების განახლება..."
 
 #: ../ChapterListing.lua:439 ../ChapterListing.lua:639
 #: ../ChapterListing.lua:1301
-msgid   "Cancelled."
-msgstr  "გაუქმდა."
+msgid "Cancelled."
+msgstr "გაუქმდა."
 
 #: ../ChapterListing.lua:451
-msgid   "Refresh chapter error"
-msgstr  "თავის განახლების შეცდომა"
+msgid "Refresh chapter error"
+msgstr "თავის განახლების შეცდომა"
 
 #: ../ChapterListing.lua:490
-msgid   "Chapter is locked"
-msgstr  "თავი დაკეტილია"
+msgid "Chapter is locked"
+msgstr "თავი დაკეტილია"
 
 #: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
-msgid   "Open"
-msgstr  "გახსენით"
+msgid "Open"
+msgstr "გახსენით"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:443
-msgid   "Refresh"
-msgstr  "განაახლეთ"
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:446
+msgid "Refresh"
+msgstr "განაახლეთ"
 
 #: ../ChapterListing.lua:523
-msgid   "Chapter refreshed"
-msgstr  "თავი განახლებულია"
+msgid "Chapter refreshed"
+msgstr "თავი განახლებულია"
 
 #: ../ChapterListing.lua:529 ../ChapterListing.lua:678
-msgid   "Mark"
-msgstr  "მარკო"
+msgid "Mark"
+msgstr "მარკო"
 
 #: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
-msgid   "Download"
-msgstr  "ჩამოტვირთვა"
+msgid "Download"
+msgstr "ჩამოტვირთვა"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:657 ../LibraryView.lua:677
-msgid   "Remove"
-msgstr  "ამოღება"
+#: ../ChapterListing.lua:541 ../LibraryView.lua:660 ../LibraryView.lua:680
+msgid "Remove"
+msgstr "ამოღება"
 
 #: ../ChapterListing.lua:550
-msgid   "Chapter downloaded"
-msgstr  "თავი ჩამოტვირთულია"
+msgid "Chapter downloaded"
+msgstr "თავი ჩამოტვირთულია"
 
 #: ../ChapterListing.lua:569
-msgid   "Revoke chapter..."
-msgstr  "თავის გაუქმება..."
+msgid "Revoke chapter..."
+msgstr "თავის გაუქმება..."
 
 #: ../ChapterListing.lua:587
-msgid   "Removed chapter"
-msgstr  "თავი ამოღებულია"
+msgid "Removed chapter"
+msgstr "თავი ამოღებულია"
 
 #: ../ChapterListing.lua:598
-msgid   "Marking"
-msgstr  "მარკირება"
+msgid "Marking"
+msgstr "მარკირება"
 
 #: ../ChapterListing.lua:598
-msgid   "Un-marking"
-msgstr  "მარკირების გაუქმება"
+msgid "Un-marking"
+msgstr "მარკირების გაუქმება"
 
 #: ../ChapterListing.lua:598
-msgid   "chapter..."
-msgstr  "თავი..."
+msgid "chapter..."
+msgstr "თავი..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:479
-msgid   "Mark read"
-msgstr  "მონიშნე წაკითხული"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:482
+msgid "Mark read"
+msgstr "მონიშნე წაკითხული"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:490
-msgid   "Mark unread"
-msgstr  "მონიშნე წაუკითხავად"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:493
+msgid "Mark unread"
+msgstr "მონიშნე წაუკითხავად"
 
 #: ../ChapterListing.lua:666
-msgid   "1 - 10.5, 20 - 100"
-msgstr  "1 - 10.5, 20 - 100"
+msgid "1 - 10.5, 20 - 100"
+msgstr "1 - 10.5, 20 - 100"
 
 #: ../ChapterListing.lua:667
-msgid   "Leaving blank will select all"
-msgstr  "ცარიელი დატოვეთ ყველა აირჩევა"
+msgid "Leaving blank will select all"
+msgstr "ცარიელი დატოვეთ ყველა აირჩევა"
 
 #: ../ChapterListing.lua:667
-msgid   "Mark chapters as read or unread"
-msgstr  "მონიშნეთ თავი წაკითხულად ან წაუკითხავად"
+msgid "Mark chapters as read or unread"
+msgstr "მონიშნეთ თავი წაკითხულად ან წაუკითხავად"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:618 ../LibraryView.lua:920
-#: ../LibraryView.lua:968 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:621 ../LibraryView.lua:923
+#: ../LibraryView.lua:971 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
-msgid   "Cancel"
-msgstr  "გაუქმება"
+msgid "Cancel"
+msgstr "გაუქმება"
 
 #: ../ChapterListing.lua:688
-msgid   "Marking..."
-msgstr  "მარკირება..."
+msgid "Marking..."
+msgstr "მარკირება..."
 
 #: ../ChapterListing.lua:698
-msgid   "Marked"
-msgstr  "მონიშნულია"
+msgid "Marked"
+msgstr "მონიშნულია"
 
 #: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
-msgid   "No errors"
-msgstr  "შეცდომები არ არის"
+msgid "No errors"
+msgstr "შეცდომები არ არის"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid   "Page"
-msgstr  "გვერდი"
+msgid "Page"
+msgstr "გვერდი"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid   "attempts"
-msgstr  "მცდელობები"
+msgid "attempts"
+msgstr "მცდელობები"
 
 #: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
 #, lua-format
-msgid   "… and %d more errors"
-msgstr  "… და კიდევ %d შეცდომა"
+msgid "… and %d more errors"
+msgstr "… და კიდევ %d შეცდომა"
 
 #: ../ChapterListing.lua:753 ../ChapterListing.lua:768
-msgid   "Could not download chapter."
-msgstr  "თავის ჩამოტვირთვა ვერ მოხერხდა."
+msgid "Could not download chapter."
+msgstr "თავის ჩამოტვირთვა ვერ მოხერხდა."
 
 #: ../ChapterListing.lua:761
-msgid   "Loading chapter..."
-msgstr  "იტვირთება თავი..."
+msgid "Loading chapter..."
+msgstr "იტვირთება თავი..."
 
 #: ../ChapterListing.lua:762
-msgid   "unknown"
-msgstr  "უცნობი"
+msgid "unknown"
+msgstr "უცნობი"
 
 #: ../ChapterListing.lua:781
-msgid   "Download cancelled."
-msgstr  "ჩამოტვირთვა გაუქმდა."
+msgid "Download cancelled."
+msgstr "ჩამოტვირთვა გაუქმდა."
 
 #: ../ChapterListing.lua:787
-msgid   "Are you sure you want to cancel the download?"
-msgstr  "დარწმუნებული ხართ, რომ გსურთ ჩამოტვირთვის გაუქმება?"
+msgid "Are you sure you want to cancel the download?"
+msgstr "დარწმუნებული ხართ, რომ გსურთ ჩამოტვირთვის გაუქმება?"
 
 #: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
-msgid   "Add to Library"
-msgstr  "ბიბლიოთეკაში დამატება"
+msgid "Add to Library"
+msgstr "ბიბლიოთეკაში დამატება"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:463
+#: ../ChapterListing.lua:974 ../LibraryView.lua:466
 #: ../MangaSearchResults.lua:279
-msgid   "Details"
-msgstr  "დეტალები"
+msgid "Details"
+msgstr "დეტალები"
 
 #: ../ChapterListing.lua:1014
-msgid   "Resume"
-msgstr  "რეზიუმე"
+msgid "Resume"
+msgstr "რეზიუმე"
 
 #: ../ChapterListing.lua:1022
-msgid   "Next Chapter"
-msgstr  "შემდეგი თავი"
+msgid "Next Chapter"
+msgstr "შემდეგი თავი"
 
 #: ../ChapterListing.lua:1032
-msgid   "Download unread chapters…"
-msgstr  "ჩამოტვირთეთ წაუკითხავი თავები…"
+msgid "Download unread chapters…"
+msgstr "ჩამოტვირთეთ წაუკითხავი თავები…"
 
 #: ../ChapterListing.lua:1059
-msgid   "Group"
-msgstr  "ჯგუფი"
+msgid "Group"
+msgstr "ჯგუფი"
 
 #: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
-msgid   "Filter by Group"
-msgstr  "გაფილტვრა ჯგუფის მიხედვით"
+msgid "Filter by Group"
+msgstr "გაფილტვრა ჯგუფის მიხედვით"
 
 #: ../ChapterListing.lua:1083
-msgid   "Adding to library..."
-msgstr  "ბიბლიოთეკაში დამატება..."
+msgid "Adding to library..."
+msgstr "ბიბლიოთეკაში დამატება..."
 
 #: ../ChapterListing.lua:1090
-msgid   "Failed to add to library"
-msgstr  "ბიბლიოთეკაში დამატება ვერ მოხერხდა"
+msgid "Failed to add to library"
+msgstr "ბიბლიოთეკაში დამატება ვერ მოხერხდა"
 
 #: ../ChapterListing.lua:1095
-msgid   "Added to library."
-msgstr  "დამატებულია ბიბლიოთეკაში."
+msgid "Added to library."
+msgstr "დამატებულია ბიბლიოთეკაში."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:610
-msgid   "Sadly, no next chapter available! :c"
-msgstr  "სამწუხაროდ, შემდეგი თავი არ არის ხელმისაწვდომი! "
-
-#: ../ChapterListing.lua:1113
-msgid   "Next"
-msgstr  "შემდეგი"
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:613
+msgid "Sadly, no next chapter available! :c"
+msgstr "სამწუხაროდ, შემდეგი თავი არ არის ხელმისაწვდომი! "
 
 #: ../ChapterListing.lua:1113
-msgid   "reading with"
-msgstr  "კითხულობს"
+msgid "Next"
+msgstr "შემდეგი"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:617
-msgid   "Read"
-msgstr  "წაიკითხეთ"
+#: ../ChapterListing.lua:1113
+msgid "reading with"
+msgstr "კითხულობს"
+
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:620
+msgid "Read"
+msgstr "წაიკითხეთ"
 
 #: ../ChapterListing.lua:1136
-msgid   "Show All"
-msgstr  "ყველას ჩვენება"
+msgid "Show All"
+msgstr "ყველას ჩვენება"
 
 #: ../ChapterListing.lua:1144
-msgid   "Showing all groups"
-msgstr  "ნაჩვენებია ყველა ჯგუფი"
+msgid "Showing all groups"
+msgstr "ნაჩვენებია ყველა ჯგუფი"
 
 #: ../ChapterListing.lua:1164
-msgid   "Filtered to"
-msgstr  "გაფილტრული"
+msgid "Filtered to"
+msgstr "გაფილტრული"
 
 #: ../ChapterListing.lua:1181
-msgid   "Download unread chapters..."
-msgstr  "ჩამოტვირთეთ წაუკითხავი თავები..."
+msgid "Download unread chapters..."
+msgstr "ჩამოტვირთეთ წაუკითხავი თავები..."
 
 #: ../ChapterListing.lua:1183
-msgid   "Amount of unread chapters (default: all)"
-msgstr  "წაუკითხავი თავების რაოდენობა (ნაგულისხმევი: ყველა)"
+msgid "Amount of unread chapters (default: all)"
+msgstr "წაუკითხავი თავების რაოდენობა (ნაგულისხმევი: ყველა)"
 
 #: ../ChapterListing.lua:1185
-msgid   "Specify amount or leave empty for all."
-msgstr  "მიუთითეთ თანხა ან დატოვეთ ცარიელი ყველასთვის."
+msgid "Specify amount or leave empty for all."
+msgstr "მიუთითეთ თანხა ან დატოვეთ ცარიელი ყველასთვის."
 
 #: ../ChapterListing.lua:1185
-msgid   "Will download from"
-msgstr  "ჩამოიტვირთება დან"
+msgid "Will download from"
+msgstr "ჩამოიტვირთება დან"
 
 #: ../ChapterListing.lua:1186
-msgid   "Specify the amount of unread chapters to download"
-msgstr  "მიუთითეთ წაუკითხავი თავების რაოდენობა ჩამოსატვირთად"
+msgid "Specify the amount of unread chapters to download"
+msgstr "მიუთითეთ წაუკითხავი თავების რაოდენობა ჩამოსატვირთად"
 
 #: ../ChapterListing.lua:1186
-msgid   "or leave empty to download all of them."
-msgstr  "ან დატოვეთ ცარიელი ყველა ჩამოსატვირთად."
+msgid "or leave empty to download all of them."
+msgstr "ან დატოვეთ ცარიელი ყველა ჩამოსატვირთად."
 
 #: ../ChapterListing.lua:1207
-msgid   "Invalid amount of chapters!"
-msgstr  "თავების არასწორი რაოდენობა!"
+msgid "Invalid amount of chapters!"
+msgstr "თავების არასწორი რაოდენობა!"
 
 #: ../ChapterListing.lua:1228
-msgid   "No unread chapters found for"
-msgstr  "ამისთვის წაუკითხავი თავები ვერ მოიძებნა"
+msgid "No unread chapters found for"
+msgstr "ამისთვის წაუკითხავი თავები ვერ მოიძებნა"
 
 #: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
-msgid   "Downloading all chapters, this will take a while…"
-msgstr  "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება…"
+msgid "Downloading all chapters, this will take a while…"
+msgstr "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება…"
 
 #: ../ChapterListing.lua:1338
-msgid   "Waiting for download to be cancelled…"
-msgstr  "ელოდება ჩამოტვირთვის გაუქმებას…"
+msgid "Waiting for download to be cancelled…"
+msgstr "ელოდება ჩამოტვირთვის გაუქმებას…"
 
 #: ../ChapterListing.lua:1340
-msgid   "Downloading all chapters, this will take a while… ("
-msgstr  "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება… ("
+msgid "Downloading all chapters, this will take a while… ("
+msgstr "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება… ("
 
 #: ../ChapterListing.lua:1343
-msgid   "Tap outside this message to cancel."
-msgstr  "შეეხეთ ამ შეტყობინების გარეთ გასაუქმებლად."
+msgid "Tap outside this message to cancel."
+msgstr "შეეხეთ ამ შეტყობინების გარეთ გასაუქმებლად."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
-msgid   "Downloading chapters, this will take a while…"
-msgstr  "მიმდინარეობს თავების ჩამოტვირთვა, ამას გარკვეული დრო დასჭირდება…"
+msgid "Downloading chapters, this will take a while…"
+msgstr "მიმდინარეობს თავების ჩამოტვირთვა, ამას გარკვეული დრო დასჭირდება…"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:7
-msgid   "Download complete!"
-msgstr  "ჩამოტვირთვა დასრულდა!"
+msgid "Download complete!"
+msgstr "ჩამოტვირთვა დასრულდა!"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:8
-msgid   "An error occurred while downloading chapters"
-msgstr  "თავების ჩამოტვირთვისას მოხდა შეცდომა"
+msgid "An error occurred while downloading chapters"
+msgstr "თავების ჩამოტვირთვისას მოხდა შეცდომა"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:23
-msgid   "Download cancelled!"
-msgstr  "ჩამოტვირთვა გაუქმდა!"
+msgid "Download cancelled!"
+msgstr "ჩამოტვირთვა გაუქმდა!"
 
 #: ../ErrorDialog.lua:15
-msgid   "Retry"
-msgstr  "ხელახლა სცადეთ"
+msgid "Retry"
+msgstr "ხელახლა სცადეთ"
 
 #: ../InstalledSourcesListing.lua:21
-msgid   "Installed sources"
-msgstr  "დაინსტალირებული წყაროები"
+msgid "Installed sources"
+msgstr "დაინსტალირებული წყაროები"
 
 #: ../InstalledSourcesListing.lua:95
-msgid   "No installed sources found"
-msgstr  "დაინსტალირებული წყაროები ვერ მოიძებნა"
+msgid "No installed sources found"
+msgstr "დაინსტალირებული წყაროები ვერ მოიძებნა"
 
 #: ../InstalledSourcesListing.lua:95
-msgid   "Try installing some by tapping"
-msgstr  "სცადეთ ზოგიერთის დაყენება შეხებით"
+msgid "Try installing some by tapping"
+msgstr "სცადეთ ზოგიერთის დაყენება შეხებით"
 
 #: ../InstalledSourcesListing.lua:96
-msgid   "the top-left button to list the available sources."
-msgstr  "ზედა მარცხენა ღილაკი ხელმისაწვდომი წყაროების სიაში."
+msgid "the top-left button to list the available sources."
+msgstr "ზედა მარცხენა ღილაკი ხელმისაწვდომი წყაროების სიაში."
 
 #: ../InstalledSourcesListing.lua:123
-msgid   "Do you want to remove the"
-msgstr  "გსურთ ამოიღოთ"
+msgid "Do you want to remove the"
+msgstr "გსურთ ამოიღოთ"
 
 #: ../InstalledSourcesListing.lua:123
-msgid   "source?"
-msgstr  "წყარო?"
+msgid "source?"
+msgstr "წყარო?"
 
 #: ../LibraryView.lua:60 ../Settings.lua:38
-msgid   "Library"
-msgstr  "ბიბლიოთეკა"
+msgid "Library"
+msgstr "ბიბლიოთეკა"
 
 #: ../LibraryView.lua:379
-msgid   "No mangas found in library"
-msgstr  "ბიბლიოთეკაში მანგა არ მოიძებნა"
+msgid "No mangas found in library"
+msgstr "ბიბლიოთეკაში მანგა არ მოიძებნა"
 
 #: ../LibraryView.lua:379
-msgid   "Try adding some by holding their name on the search results!"
-msgstr  "სცადეთ ზოგიერთის დამატება ძიების შედეგებზე მათი სახელის დაჭერით!"
+msgid "Try adding some by holding their name on the search results!"
+msgstr "სცადეთ ზოგიერთის დამატება ძიების შედეგებზე მათი სახელის დაჭერით!"
 
-#: ../LibraryView.lua:454
-msgid   "Refreshed manga"
-msgstr  "განახლებული მანგა"
+#: ../LibraryView.lua:457
+msgid "Refreshed manga"
+msgstr "განახლებული მანგა"
 
-#: ../LibraryView.lua:503
-msgid   "Continue Reading"
-msgstr  "განაგრძეთ კითხვა"
+#: ../LibraryView.lua:506
+msgid "Continue Reading"
+msgstr "განაგრძეთ კითხვა"
 
-#: ../LibraryView.lua:512 ../MangaSearchResults.lua:270
-msgid   "Add to Playlist"
-msgstr  "დასაკრავ სიაში დამატება"
+#: ../LibraryView.lua:515 ../MangaSearchResults.lua:270
+msgid "Add to Playlist"
+msgstr "დასაკრავ სიაში დამატება"
 
-#: ../LibraryView.lua:523 ../MangaSearchResults.lua:205
-msgid   "Remove from Library"
-msgstr  "ბიბლიოთეკიდან წაშლა"
+#: ../LibraryView.lua:526 ../MangaSearchResults.lua:205
+msgid "Remove from Library"
+msgstr "ბიბლიოთეკიდან წაშლა"
 
-#: ../LibraryView.lua:533
-msgid   "Remove from Playlist"
-msgstr  "წაშლა დასაკრავი სიიდან"
+#: ../LibraryView.lua:536
+msgid "Remove from Playlist"
+msgstr "წაშლა დასაკრავი სიიდან"
 
-#: ../LibraryView.lua:566
-msgid   "Finding next chapter..."
-msgstr  "შემდეგი თავის პოვნა..."
+#: ../LibraryView.lua:569
+msgid "Finding next chapter..."
+msgstr "შემდეგი თავის პოვნა..."
 
-#: ../LibraryView.lua:577
-msgid   "No chapters found for this manga."
-msgstr  "ამ მანგასთვის თავები ვერ მოიძებნა."
+#: ../LibraryView.lua:580
+msgid "No chapters found for this manga."
+msgstr "ამ მანგასთვის თავები ვერ მოიძებნა."
 
-#: ../LibraryView.lua:616
-msgid   "Resume reading with:"
-msgstr  "განაახლეთ კითხვა:"
+#: ../LibraryView.lua:619
+msgid "Resume reading with:"
+msgstr "განაახლეთ კითხვა:"
 
-#: ../LibraryView.lua:656 ../LibraryView.lua:676
-msgid   "Do you want to remove"
-msgstr  "გსურთ წაშალოთ"
+#: ../LibraryView.lua:659 ../LibraryView.lua:679
+msgid "Do you want to remove"
+msgstr "გსურთ წაშალოთ"
 
-#: ../LibraryView.lua:656
-msgid   "from your library?"
-msgstr  "თქვენი ბიბლიოთეკიდან?"
+#: ../LibraryView.lua:659
+msgid "from your library?"
+msgstr "თქვენი ბიბლიოთეკიდან?"
 
-#: ../LibraryView.lua:676
-msgid   "from your playlist?"
-msgstr  "თქვენი დასაკრავი სიიდან?"
+#: ../LibraryView.lua:679
+msgid "from your playlist?"
+msgstr "თქვენი დასაკრავი სიიდან?"
 
-#: ../LibraryView.lua:699
-msgid   "Search for mangas"
-msgstr  "მანგას ძებნა"
+#: ../LibraryView.lua:702
+msgid "Search for mangas"
+msgstr "მანგას ძებნა"
 
-#: ../LibraryView.lua:709
-msgid   "Search favorites"
-msgstr  "მოძებნეთ რჩეულები"
+#: ../LibraryView.lua:712
+msgid "Search favorites"
+msgstr "მოძებნეთ რჩეულები"
 
-#: ../LibraryView.lua:719 ../PlaylistDialog.lua:306
-msgid   "Playlists"
-msgstr  "დასაკრავი სიები"
+#: ../LibraryView.lua:722 ../PlaylistDialog.lua:306
+msgid "Playlists"
+msgstr "დასაკრავი სიები"
 
-#: ../LibraryView.lua:728
-msgid   "Refresh mangas"
-msgstr  "განაახლეთ მანგა"
+#: ../LibraryView.lua:731
+msgid "Refresh mangas"
+msgstr "განაახლეთ მანგა"
 
-#: ../LibraryView.lua:736
-msgid   "Refresh details"
-msgstr  "განაახლეთ დეტალები"
+#: ../LibraryView.lua:739
+msgid "Refresh details"
+msgstr "განაახლეთ დეტალები"
 
-#: ../LibraryView.lua:746
-msgid   "Cleaner chapters"
-msgstr  "უფრო სუფთა თავები"
+#: ../LibraryView.lua:749
+msgid "Cleaner chapters"
+msgstr "უფრო სუფთა თავები"
 
-#: ../LibraryView.lua:754
-msgid   "Manage sources"
-msgstr  "მართეთ წყაროები"
+#: ../LibraryView.lua:757
+msgid "Manage sources"
+msgstr "მართეთ წყაროები"
 
-#: ../LibraryView.lua:764 ../LibraryView.lua:914 ../Settings.lua:285
-msgid   "Settings"
-msgstr  "პარამეტრები"
+#: ../LibraryView.lua:767 ../LibraryView.lua:917 ../Settings.lua:285
+msgid "Settings"
+msgstr "პარამეტრები"
 
-#: ../LibraryView.lua:772
-msgid   "Check for updates"
-msgstr  "შეამოწმეთ განახლებები"
+#: ../LibraryView.lua:775
+msgid "Check for updates"
+msgstr "შეამოწმეთ განახლებები"
 
-#: ../LibraryView.lua:781
-msgid   "Sync Database (Beta)"
-msgstr  "მონაცემთა ბაზის სინქრონიზაცია (ბეტა)"
+#: ../LibraryView.lua:784
+msgid "Sync Database (Beta)"
+msgstr "მონაცემთა ბაზის სინქრონიზაცია (ბეტა)"
 
-#: ../LibraryView.lua:785
-msgid   "Sync to WebDAV..."
-msgstr  "სინქრონიზაცია WebDAV-თან..."
+#: ../LibraryView.lua:788
+msgid "Sync to WebDAV..."
+msgstr "სინქრონიზაცია WebDAV-თან..."
 
-#: ../LibraryView.lua:797
-msgid   "Do you want to migrate your local database from the server?"
-msgstr  "გსურთ თქვენი ადგილობრივი მონაცემთა ბაზის მიგრაცია სერვერიდან?"
+#: ../LibraryView.lua:800
+msgid "Do you want to migrate your local database from the server?"
+msgstr "გსურთ თქვენი ადგილობრივი მონაცემთა ბაზის მიგრაცია სერვერიდან?"
 
-#: ../LibraryView.lua:797
-msgid   "The remote database is newer than the local one."
-msgstr  "დისტანციური მონაცემთა ბაზა უფრო ახალია, ვიდრე ადგილობრივი."
+#: ../LibraryView.lua:800
+msgid "The remote database is newer than the local one."
+msgstr "დისტანციური მონაცემთა ბაზა უფრო ახალია, ვიდრე ადგილობრივი."
 
-#: ../LibraryView.lua:797
-msgid   "This action cannot be undone."
-msgstr  "ამ მოქმედების გაუქმება შეუძლებელია."
+#: ../LibraryView.lua:800
+msgid "This action cannot be undone."
+msgstr "ამ მოქმედების გაუქმება შეუძლებელია."
 
-#: ../LibraryView.lua:798
-msgid   "Migrate"
-msgstr  "მიგრაცია"
+#: ../LibraryView.lua:801
+msgid "Migrate"
+msgstr "მიგრაცია"
 
-#: ../LibraryView.lua:802
-msgid   "Migrating database..."
-msgstr  "მონაცემთა ბაზის მიგრაცია..."
+#: ../LibraryView.lua:805
+msgid "Migrating database..."
+msgstr "მონაცემთა ბაზის მიგრაცია..."
 
-#: ../LibraryView.lua:813 ../LibraryView.lua:860
-msgid   "Local database has been migrated from the server!"
-msgstr  "ლოკალური მონაცემთა ბაზა გადატანილია სერვერიდან!"
+#: ../LibraryView.lua:816 ../LibraryView.lua:863
+msgid "Local database has been migrated from the server!"
+msgstr "ლოკალური მონაცემთა ბაზა გადატანილია სერვერიდან!"
 
-#: ../LibraryView.lua:824
-msgid   "Replace Cloud"
-msgstr  "შეცვალეთ ღრუბელი"
+#: ../LibraryView.lua:827
+msgid "Replace Cloud"
+msgstr "შეცვალეთ ღრუბელი"
 
-#: ../LibraryView.lua:828
-msgid   "Replacing cloud..."
-msgstr  "ღრუბლის ჩანაცვლება..."
+#: ../LibraryView.lua:831
+msgid "Replacing cloud..."
+msgstr "ღრუბლის ჩანაცვლება..."
 
-#: ../LibraryView.lua:838
-msgid   "Cloud database has been forcedly replaced with local one!"
-msgstr  "ღრუბლოვანი მონაცემთა ბაზა იძულებით შეიცვალა ლოკალურით!"
+#: ../LibraryView.lua:841
+msgid "Cloud database has been forcedly replaced with local one!"
+msgstr "ღრუბლოვანი მონაცემთა ბაზა იძულებით შეიცვალა ლოკალურით!"
 
-#: ../LibraryView.lua:856
-msgid   "Database is already up to date!"
-msgstr  "მონაცემთა ბაზა უკვე განახლებულია!"
+#: ../LibraryView.lua:859
+msgid "Database is already up to date!"
+msgstr "მონაცემთა ბაზა უკვე განახლებულია!"
 
-#: ../LibraryView.lua:858
-msgid   "Database has been synced to the server!"
-msgstr  "მონაცემთა ბაზა სინქრონიზებულია სერვერთან!"
+#: ../LibraryView.lua:861
+msgid "Database has been synced to the server!"
+msgstr "მონაცემთა ბაზა სინქრონიზებულია სერვერთან!"
 
-#: ../LibraryView.lua:862
-msgid   "Sync completed!"
-msgstr  "სინქრონიზაცია დასრულდა!"
+#: ../LibraryView.lua:865
+msgid "Sync completed!"
+msgstr "სინქრონიზაცია დასრულდა!"
 
-#: ../LibraryView.lua:886
-msgid   "Manga search..."
-msgstr  "მანგას ძებნა..."
+#: ../LibraryView.lua:889
+msgid "Manga search..."
+msgstr "მანგას ძებნა..."
 
-#: ../LibraryView.lua:887
-msgid   "Houseki no Kuni"
-msgstr  "ჰაუსკი არა კუნი"
+#: ../LibraryView.lua:890
+msgid "Houseki no Kuni"
+msgstr "ჰაუსკი არა კუნი"
 
-#: ../LibraryView.lua:888 ../LibraryView.lua:964
-msgid   "Type the manga name to search for"
-msgstr  "ჩაწერეთ მანგას სახელი საძიებლად"
+#: ../LibraryView.lua:891 ../LibraryView.lua:967
+msgid "Type the manga name to search for"
+msgstr "ჩაწერეთ მანგას სახელი საძიებლად"
 
-#: ../LibraryView.lua:892 ../LibraryView.lua:901 ../LibraryView.lua:946
-#: ../LibraryView.lua:975
-msgid   "Search"
-msgstr  "ძიება"
+#: ../LibraryView.lua:895 ../LibraryView.lua:904 ../LibraryView.lua:949
+#: ../LibraryView.lua:978
+msgid "Search"
+msgstr "ძიება"
 
-#: ../LibraryView.lua:946
-msgid   "Exclude source search for"
-msgstr  "გამორიცხეთ წყაროს ძებნა"
+#: ../LibraryView.lua:949
+msgid "Exclude source search for"
+msgstr "გამორიცხეთ წყაროს ძებნა"
 
-#: ../LibraryView.lua:961
-msgid   "Favorite search..."
-msgstr  "საყვარელი ძიება..."
+#: ../LibraryView.lua:964
+msgid "Favorite search..."
+msgstr "საყვარელი ძიება..."
 
-#: ../LibraryView.lua:963
-msgid   "Tonikaku Kawaii"
-msgstr  "ტონიკაკუ კავაი"
+#: ../LibraryView.lua:966
+msgid "Tonikaku Kawaii"
+msgstr "ტონიკაკუ კავაი"
 
-#: ../LibraryView.lua:1015
-msgid   "Scaning files..."
-msgstr  "მიმდინარეობს ფაილების სკანირება..."
+#: ../LibraryView.lua:1018
+msgid "Scaning files..."
+msgstr "მიმდინარეობს ფაილების სკანირება..."
 
-#: ../LibraryView.lua:1030
+#: ../LibraryView.lua:1033
 #, lua-format
-msgid   "Found %d files."
-msgstr  "ნაპოვნია %d ფაილი."
+msgid "Found %d files."
+msgstr "ნაპოვნია %d ფაილი."
 
-#: ../LibraryView.lua:1031
+#: ../LibraryView.lua:1034
 #, lua-format
-msgid   "Total size %s."
-msgstr  "საერთო ზომა %s."
+msgid "Total size %s."
+msgstr "საერთო ზომა %s."
 
-#: ../LibraryView.lua:1032
+#: ../LibraryView.lua:1035
 #, lua-format
-msgid   "RendOnly file .cbz and .epub scan."
-msgstr  "RendOnly ფაილი .cbz და .epub სკანირება."
+msgid "RendOnly file .cbz and .epub scan."
+msgstr "RendOnly ფაილი .cbz და .epub სკანირება."
 
-#: ../LibraryView.lua:1036
-msgid   "Clean"
-msgstr  "სუფთა"
+#: ../LibraryView.lua:1039
+msgid "Clean"
+msgstr "სუფთა"
 
-#: ../LibraryView.lua:1041
-msgid   "Deleting..."
-msgstr  "მიმდინარეობს წაშლა..."
+#: ../LibraryView.lua:1044
+msgid "Deleting..."
+msgstr "მიმდინარეობს წაშლა..."
 
-#: ../LibraryView.lua:1059
+#: ../LibraryView.lua:1062
 #, lua-format
-msgid   "Cleaned free %s storage"
-msgstr  "გაწმენდილი უფასო %s საცავი"
+msgid "Cleaned free %s storage"
+msgstr "გაწმენდილი უფასო %s საცავი"
 
-#: ../LibraryView.lua:1084
-msgid   "Refresh mangas..."
-msgstr  "განაახლეთ მანგასი..."
+#: ../LibraryView.lua:1087
+msgid "Refresh mangas..."
+msgstr "განაახლეთ მანგასი..."
 
-#: ../LibraryView.lua:1085
-msgid   "All chapters manga updated!"
-msgstr  "მანგას ყველა თავი განახლებულია!"
+#: ../LibraryView.lua:1088
+msgid "All chapters manga updated!"
+msgstr "მანგას ყველა თავი განახლებულია!"
 
-#: ../LibraryView.lua:1086
-msgid   "Some manga updates fail:"
-msgstr  "მანგას ზოგიერთი განახლება ვერ ხერხდება:"
+#: ../LibraryView.lua:1089
+msgid "Some manga updates fail:"
+msgstr "მანგას ზოგიერთი განახლება ვერ ხერხდება:"
 
-#: ../LibraryView.lua:1097
-msgid   "Refresh manga details..."
-msgstr  "მანგას დეტალების განახლება..."
+#: ../LibraryView.lua:1100
+msgid "Refresh manga details..."
+msgstr "მანგას დეტალების განახლება..."
 
-#: ../LibraryView.lua:1098
-msgid   "All manga details refresh!"
-msgstr  "მანგას ყველა დეტალის განახლება!"
+#: ../LibraryView.lua:1101
+msgid "All manga details refresh!"
+msgstr "მანგას ყველა დეტალის განახლება!"
 
-#: ../LibraryView.lua:1099
-msgid   "Some manga details refresh fail:"
-msgstr  "მანგას ზოგიერთი დეტალის განახლება ვერ მოხერხდა:"
+#: ../LibraryView.lua:1102
+msgid "Some manga details refresh fail:"
+msgstr "მანგას ზოგიერთი დეტალის განახლება ვერ მოხერხდა:"
 
-#: ../LibraryView.lua:1115
-msgid   "Progress"
-msgstr  "პროგრესი"
-
-#: ../LibraryView.lua:1133
-msgid   "Cleaner"
-msgstr  "დამლაგებელი"
-
-#: ../LibraryView.lua:1134
-msgid   "Find and delete invalid files including files from deleted sources"
-msgstr  "იპოვეთ და წაშალეთ არასწორი ფაილები, მათ შორის ფაილები წაშლილი წყაროებიდან"
-
-#: ../LibraryView.lua:1134 ../LibraryView.lua:1137
-msgid   "Normal"
-msgstr  "ნორმალური"
+#: ../LibraryView.lua:1118
+msgid "Progress"
+msgstr "პროგრესი"
 
 #: ../LibraryView.lua:1136
-msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
-msgstr  "მნიშვნელოვანია: მეტა ფაილები (სანიშნე, ისტორია) არ ინახება!"
+msgid "Cleaner"
+msgstr "დამლაგებელი"
 
-#: ../LibraryView.lua:1143
-msgid   "Chapter read done"
-msgstr  "წაკითხული თავი შესრულებულია"
+#: ../LibraryView.lua:1137
+msgid "Find and delete invalid files including files from deleted sources"
+msgstr "იპოვეთ და წაშალეთ არასწორი ფაილები, მათ შორის ფაილები წაშლილი წყაროებიდან"
+
+#: ../LibraryView.lua:1137 ../LibraryView.lua:1140
+msgid "Normal"
+msgstr "ნორმალური"
+
+#: ../LibraryView.lua:1139
+msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr "მნიშვნელოვანია: მეტა ფაილები (სანიშნე, ისტორია) არ ინახება!"
+
+#: ../LibraryView.lua:1146
+msgid "Chapter read done"
+msgstr "წაკითხული თავი შესრულებულია"
 
 #: ../MangaInfoWidget.lua:141
-msgid   "Statistics"
-msgstr  "სტატისტიკა"
+msgid "Statistics"
+msgstr "სტატისტიკა"
 
 #: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
 #: ../MangaInfoWidget.lua:503
-msgid   "Description"
-msgstr  "აღწერა"
+msgid "Description"
+msgstr "აღწერა"
 
 #: ../MangaInfoWidget.lua:276
-msgid   "%1 % Completed"
-msgstr  "%1% დასრულებული"
+msgid "%1 % Completed"
+msgstr "%1% დასრულებული"
 
 #: ../MangaInfoWidget.lua:308
-msgid   "Last read: %1"
-msgstr  "ბოლო წაკითხვა: %1"
+msgid "Last read: %1"
+msgstr "ბოლო წაკითხვა: %1"
 
 #: ../MangaInfoWidget.lua:380
-msgid   "Status"
-msgstr  "სტატუსი"
+msgid "Status"
+msgstr "სტატუსი"
 
 #: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid   "NSFW"
-msgstr  "NSFW"
+msgid "NSFW"
+msgstr "NSFW"
 
 #: ../MangaInfoWidget.lua:394
-msgid   "Last Updated"
-msgstr  "ბოლო განახლება"
+msgid "Last Updated"
+msgstr "ბოლო განახლება"
 
 #: ../MangaInfoWidget.lua:419
-msgid   "N/A"
-msgstr  "N/A"
+msgid "N/A"
+msgstr "N/A"
 
 #: ../MangaInfoWidget.lua:435
-msgid   "Ongoing"
-msgstr  "მიმდინარე"
+msgid "Ongoing"
+msgstr "მიმდინარე"
 
 #: ../MangaInfoWidget.lua:437
-msgid   "Completed"
-msgstr  "დასრულებული"
+msgid "Completed"
+msgstr "დასრულებული"
 
 #: ../MangaInfoWidget.lua:439
-msgid   "Cancelled"
-msgstr  "გაუქმდა"
+msgid "Cancelled"
+msgstr "გაუქმდა"
 
 #: ../MangaInfoWidget.lua:441
-msgid   "Hiatus"
-msgstr  "ჰიატუსი"
+msgid "Hiatus"
+msgstr "ჰიატუსი"
 
 #: ../MangaInfoWidget.lua:443
-msgid   "Not published"
-msgstr  "არ არის გამოქვეყნებული"
+msgid "Not published"
+msgstr "არ არის გამოქვეყნებული"
 
 #: ../MangaInfoWidget.lua:451
-msgid   "Safe"
-msgstr  "უსაფრთხო"
+msgid "Safe"
+msgstr "უსაფრთხო"
 
 #: ../MangaInfoWidget.lua:453
-msgid   "Suggestive"
-msgstr  "სუგესტური"
+msgid "Suggestive"
+msgstr "სუგესტური"
 
 #: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
-msgid   "Refreshing details..."
-msgstr  "დეტალების განახლება..."
+msgid "Refreshing details..."
+msgstr "დეტალების განახლება..."
 
 #: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
-msgid   "Refresh details cancelled."
-msgstr  "დეტალების განახლება გაუქმდა."
+msgid "Refresh details cancelled."
+msgstr "დეტალების განახლება გაუქმდა."
 
 #: ../MangaReader.lua:101
-msgid   "Go back to Rakuyomi..."
-msgstr  "დაბრუნდი რაკუიომიში..."
+msgid "Go back to Rakuyomi..."
+msgstr "დაბრუნდი რაკუიომიში..."
 
 #: ../MangaReader.lua:172
-msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
-msgstr  "გნებავთ რაკუიომი ამ ღილაკს მართოს როცა გახსნით?"
+msgid "Do you want Rakuyomi to commandeer this button when you open it?"
+msgstr "გნებავთ რაკუიომი ამ ღილაკს მართოს როცა გახსნით?"
 
 #: ../MangaReader.lua:172
-msgid   "This setting only affects when you open it with Rakuyomi."
-msgstr  "ეს პარამეტრი მოქმედებს მხოლოდ Rakuyomi-ით გახსნისას."
+msgid "This setting only affects when you open it with Rakuyomi."
+msgstr "ეს პარამეტრი მოქმედებს მხოლოდ Rakuyomi-ით გახსნისას."
 
 #: ../MangaReader.lua:174
-msgid   "Yes"
-msgstr  "დიახ"
+msgid "Yes"
+msgstr "დიახ"
 
 #: ../MangaReader.lua:175
-msgid   "No"
-msgstr  "არა"
+msgid "No"
+msgstr "არა"
 
 #: ../MangaSearchResults.lua:26
-msgid   "Search results..."
-msgstr  "ძიების შედეგები..."
+msgid "Search results..."
+msgstr "ძიების შედეგები..."
 
 #: ../MangaSearchResults.lua:133
-msgid   "Searching for"
-msgstr  "ეძებს"
+msgid "Searching for"
+msgstr "ეძებს"
 
 #: ../MangaSearchResults.lua:140
-msgid   "Search cancelled."
-msgstr  "ძებნა გაუქმდა."
+msgid "Search cancelled."
+msgstr "ძებნა გაუქმდა."
 
 #: ../NotificationView.lua:37
-msgid   "Notification"
-msgstr  "შეტყობინება"
+msgid "Notification"
+msgstr "შეტყობინება"
 
 #: ../NotificationView.lua:57
-msgid   "Cleared all notifications!"
-msgstr  "გაასუფთავეს ყველა შეტყობინება!"
+msgid "Cleared all notifications!"
+msgstr "გაასუფთავეს ყველა შეტყობინება!"
 
 #: ../NotificationView.lua:104
-msgid   "No notification"
-msgstr  "არანაირი შეტყობინება"
+msgid "No notification"
+msgstr "არანაირი შეტყობინება"
 
 #: ../NotificationView.lua:160
-msgid   "Delete this notification?"
-msgstr  "წაშალოთ ეს შეტყობინება?"
+msgid "Delete this notification?"
+msgstr "წაშალოთ ეს შეტყობინება?"
 
 #: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
 #: ../PlaylistDialog.lua:232
-msgid   "Delete"
-msgstr  "წაშლა"
+msgid "Delete"
+msgstr "წაშლა"
 
 #: ../OfflineAlertDialog.lua:44
-msgid   "Some features may be limited"
-msgstr  "ზოგიერთი ფუნქცია შეიძლება შეზღუდული იყოს"
+msgid "Some features may be limited"
+msgstr "ზოგიერთი ფუნქცია შეიძლება შეზღუდული იყოს"
 
 #: ../OfflineAlertDialog.lua:44
-msgid   "You appear to be offline"
-msgstr  "როგორც ჩანს, ხაზგარეშე ხართ"
+msgid "You appear to be offline"
+msgstr "როგორც ჩანს, ხაზგარეშე ხართ"
 
 #: ../OfflineAlertDialog.lua:45
-msgid   "• You can still read any downloaded manga chapters"
-msgstr  "• თქვენ კვლავ შეგიძლიათ წაიკითხოთ ნებისმიერი გადმოწერილი მანგას თავი"
+msgid "• You can still read any downloaded manga chapters"
+msgstr "• თქვენ კვლავ შეგიძლიათ წაიკითხოთ ნებისმიერი გადმოწერილი მანგას თავი"
 
 #: ../OfflineAlertDialog.lua:46
-msgid   "• Your library content will be available"
-msgstr  "• ხელმისაწვდომი იქნება თქვენი ბიბლიოთეკის შინაარსი"
+msgid "• Your library content will be available"
+msgstr "• ხელმისაწვდომი იქნება თქვენი ბიბლიოთეკის შინაარსი"
 
 #: ../OfflineAlertDialog.lua:47
-msgid   "• New content and updates require a connection"
-msgstr  "• ახალი შინაარსი და განახლებები საჭიროებს კავშირს"
+msgid "• New content and updates require a connection"
+msgstr "• ახალი შინაარსი და განახლებები საჭიროებს კავშირს"
 
 #: ../OfflineAlertDialog.lua:54
-msgid   "Close"
-msgstr  "დახურვა"
+msgid "Close"
+msgstr "დახურვა"
 
 #: ../OfflineAlertDialog.lua:64
-msgid   "Do not show this message again"
-msgstr  "აღარ აჩვენო ეს შეტყობინება"
+msgid "Do not show this message again"
+msgstr "აღარ აჩვენო ეს შეტყობინება"
 
 #: ../PlaylistDialog.lua:131
-msgid   "Rename Playlist"
-msgstr  "გადარქმევა დასაკრავი სია"
+msgid "Rename Playlist"
+msgstr "გადარქმევა დასაკრავი სია"
 
 #: ../PlaylistDialog.lua:136
-msgid   "Save"
-msgstr  "შენახვა"
+msgid "Save"
+msgstr "შენახვა"
 
 #: ../PlaylistDialog.lua:158
-msgid   "Delete playlist"
-msgstr  "დასაკრავი სიის წაშლა"
+msgid "Delete playlist"
+msgstr "დასაკრავი სიის წაშლა"
 
 #: ../PlaylistDialog.lua:227
-msgid   "Rename"
-msgstr  "გადარქმევა"
+msgid "Rename"
+msgstr "გადარქმევა"
 
 #: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
-msgid   "New Playlist"
-msgstr  "ახალი დასაკრავი სია"
+msgid "New Playlist"
+msgstr "ახალი დასაკრავი სია"
 
 #: ../PlaylistDialog.lua:251
-msgid   "Playlist name"
-msgstr  "დასაკრავი სიის სახელი"
+msgid "Playlist name"
+msgstr "დასაკრავი სიის სახელი"
 
 #: ../PlaylistDialog.lua:264
-msgid   "Create"
-msgstr  "შექმნა"
+msgid "Create"
+msgstr "შექმნა"
 
 #: ../PlaylistDialog.lua:324
-msgid   "No playlists yet."
-msgstr  "დასაკრავი სიები ჯერ არ არის."
+msgid "No playlists yet."
+msgstr "დასაკრავი სიები ჯერ არ არის."
 
 #: ../Settings.lua:44
-msgid   "Library view mode"
-msgstr  "ბიბლიოთეკის ნახვის რეჟიმი"
+msgid "Library view mode"
+msgstr "ბიბლიოთეკის ნახვის რეჟიმი"
 
 #: ../Settings.lua:46
-msgid   "Base"
-msgstr  "ბაზა"
+msgid "Base"
+msgstr "ბაზა"
 
 #: ../Settings.lua:47
-msgid   "Cover"
-msgstr  "საფარი"
+msgid "Cover"
+msgstr "საფარი"
 
 #: ../Settings.lua:48
-msgid   "Grid"
-msgstr  "ბადე"
+msgid "Grid"
+msgstr "ბადე"
 
 #: ../Settings.lua:57
-msgid   "Library sorting mode"
-msgstr  "ბიბლიოთეკის დახარისხების რეჟიმი"
+msgid "Library sorting mode"
+msgstr "ბიბლიოთეკის დახარისხების რეჟიმი"
 
 #: ../Settings.lua:59
-msgid   "Order added ascending (Default)"
-msgstr  "შეკვეთა დამატებულია ზრდადობით (ნაგულისხმევი)"
+msgid "Order added ascending (Default)"
+msgstr "შეკვეთა დამატებულია ზრდადობით (ნაგულისხმევი)"
 
 #: ../Settings.lua:60
-msgid   "Order added descending"
-msgstr  "შეკვეთა დამატებულია კლებადობით"
+msgid "Order added descending"
+msgstr "შეკვეთა დამატებულია კლებადობით"
 
 #: ../Settings.lua:61
-msgid   "Title manga ascending"
-msgstr  "სათაური მანგა აღმავალი"
+msgid "Title manga ascending"
+msgstr "სათაური მანგა აღმავალი"
 
 #: ../Settings.lua:62
-msgid   "Title manga descending"
-msgstr  "სათაური მანგა დაღმავალი"
+msgid "Title manga descending"
+msgstr "სათაური მანგა დაღმავალი"
 
 #: ../Settings.lua:63
-msgid   "Count unread chapters ascending"
-msgstr  "დაითვალეთ წაუკითხავი თავები აღმავალზე"
+msgid "Count unread chapters ascending"
+msgstr "დაითვალეთ წაუკითხავი თავები აღმავალზე"
 
 #: ../Settings.lua:64
-msgid   "Count unread chapters descending"
-msgstr  "დათვალეთ წაუკითხავი თავები კლებად"
+msgid "Count unread chapters descending"
+msgstr "დათვალეთ წაუკითხავი თავები კლებად"
 
 #: ../Settings.lua:65
-msgid   "Last read ascending"
-msgstr  "ბოლო წაკითხვა აღმავალი"
+msgid "Last read ascending"
+msgstr "ბოლო წაკითხვა აღმავალი"
 
 #: ../Settings.lua:66
-msgid   "Last read descending"
-msgstr  "ბოლო წაკითხვა კლებადობით"
+msgid "Last read descending"
+msgstr "ბოლო წაკითხვა კლებადობით"
 
 #: ../Settings.lua:67
-msgid   "Source ascending"
-msgstr  "წყარო აღმავალი"
+msgid "Source ascending"
+msgstr "წყარო აღმავალი"
 
 #: ../Settings.lua:68
-msgid   "Source descending"
-msgstr  "წყარო დაღმავალი"
+msgid "Source descending"
+msgstr "წყარო დაღმავალი"
 
 #: ../Settings.lua:76
-msgid   "Items per page (0 = auto)"
-msgstr  "ერთეულები თითო გვერდზე (0 = ავტომატური)"
+msgid "Items per page (0 = auto)"
+msgstr "ერთეულები თითო გვერდზე (0 = ავტომატური)"
 
 #: ../Settings.lua:87
-msgid   "Grid columns"
-msgstr  "ბადის სვეტები"
+msgid "Grid columns"
+msgstr "ბადის სვეტები"
 
 #: ../Settings.lua:98
-msgid   "Grid rows"
-msgstr  "ბადის რიგები"
+msgid "Grid rows"
+msgstr "ბადის რიგები"
 
 #: ../Settings.lua:107
-msgid   "Reader"
-msgstr  "მკითხველი"
+msgid "Reader"
+msgstr "მკითხველი"
 
 #: ../Settings.lua:113
-msgid   "Chapter sorting mode"
-msgstr  "თავების დახარისხების რეჟიმი"
+msgid "Chapter sorting mode"
+msgstr "თავების დახარისხების რეჟიმი"
 
 #: ../Settings.lua:115
-msgid   "By chapter ascending"
-msgstr  "თავით აღმავალი"
+msgid "By chapter ascending"
+msgstr "თავით აღმავალი"
 
 #: ../Settings.lua:116
-msgid   "By chapter descending"
-msgstr  "თავის კლებით"
+msgid "By chapter descending"
+msgstr "თავის კლებით"
 
 #: ../Settings.lua:124
-msgid   "Preload chapters on reader open"
-msgstr  "მკითხველზე თავების წინასწარ ჩატვირთვა ღიაა"
+msgid "Preload chapters on reader open"
+msgstr "მკითხველზე თავების წინასწარ ჩატვირთვა ღიაა"
 
 #: ../Settings.lua:135
-msgid   "Optimize page images (experimental)"
-msgstr  "გვერდის სურათების ოპტიმიზაცია (ექსპერიმენტული)"
+msgid "Optimize page images (experimental)"
+msgstr "გვერდის სურათების ოპტიმიზაცია (ექსპერიმენტული)"
 
 #: ../Settings.lua:143
-msgid   "Concurrent page requests"
-msgstr  "თანმხლები გვერდის მოთხოვნები"
+msgid "Concurrent page requests"
+msgstr "თანმხლები გვერდის მოთხოვნები"
 
 #: ../Settings.lua:152
-msgid   "Storage"
-msgstr  "შენახვა"
+msgid "Storage"
+msgstr "შენახვა"
 
 #: ../Settings.lua:158
-msgid   "Chapter storage path"
-msgstr  "თავის შენახვის გზა"
+msgid "Chapter storage path"
+msgstr "თავის შენახვის გზა"
 
 #: ../Settings.lua:167
-msgid   "Storage size limit"
-msgstr  "შენახვის ზომის ლიმიტი"
+msgid "Storage size limit"
+msgstr "შენახვის ზომის ლიმიტი"
 
 #: ../Settings.lua:175
-msgid   "Sync & Updates"
-msgstr  "სინქრონიზაცია და განახლებები"
+msgid "Sync & Updates"
+msgstr "სინქრონიზაცია და განახლებები"
 
 #: ../Settings.lua:181
-msgid   "WebDAV Sync"
-msgstr  "WebDAV სინქრონიზაცია"
+msgid "WebDAV Sync"
+msgstr "WebDAV სინქრონიზაცია"
 
 #: ../Settings.lua:189
-msgid   "Enabled cron check for manga updates"
-msgstr  "ჩართულია cron შემოწმება მანგას განახლებისთვის"
+msgid "Enabled cron check for manga updates"
+msgstr "ჩართულია cron შემოწმება მანგას განახლებისთვის"
 
 #: ../Settings.lua:197
-msgid   "Source IDs skip check update"
-msgstr  "წყაროს ID-ების გამოტოვება შემოწმების განახლება"
+msgid "Source IDs skip check update"
+msgstr "წყაროს ID-ების გამოტოვება შემოწმების განახლება"
 
 #: ../Settings.lua:203
-msgid   "System"
-msgstr  "სისტემა"
+msgid "System"
+msgstr "სისტემა"
 
 #: ../Settings.lua:209
-msgid   "Allow requisition of the back button"
-msgstr  "დაუშვით უკანა ღილაკის მოთხოვნა"
+msgid "Allow requisition of the back button"
+msgstr "დაუშვით უკანა ღილაკის მოთხოვნა"
 
 #: ../SourceSettings.lua:197
-msgid   "Source settings"
-msgstr  "წყაროს პარამეტრები"
+msgid "Source settings"
+msgstr "წყაროს პარამეტრები"
 
 #: ../UpdateChecker.lua:24
-msgid   "Cannot check for updates while offline"
-msgstr  "ხაზგარეშე რეჟიმში განახლებების შემოწმება შეუძლებელია"
+msgid "Cannot check for updates while offline"
+msgstr "ხაზგარეშე რეჟიმში განახლებების შემოწმება შეუძლებელია"
 
 #: ../UpdateChecker.lua:39
-msgid   "You're running the latest version!"
-msgstr  "თქვენ იყენებთ უახლეს ვერსიას!"
+msgid "You're running the latest version!"
+msgstr "თქვენ იყენებთ უახლეს ვერსიას!"
 
 #: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
 #, lua-format
-msgid   "Version"
-msgstr  "ვერსია"
+msgid "Version"
+msgstr "ვერსია"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "Would you like to update now?"
-msgstr  "გსურთ განახლება ახლა?"
+msgid "Would you like to update now?"
+msgstr "გსურთ განახლება ახლა?"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "You're currently running version "
-msgstr  "თქვენ ამჟამად გაშვებული გაქვთ ვერსია"
+msgid "You're currently running version "
+msgstr "თქვენ ამჟამად გაშვებული გაქვთ ვერსია"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid   "is available"
-msgstr  "ხელმისაწვდომია"
+msgid "is available"
+msgstr "ხელმისაწვდომია"
 
 #: ../UpdateChecker.lua:58
-msgid   "Later"
-msgstr  "მოგვიანებით"
+msgid "Later"
+msgstr "მოგვიანებით"
 
 #: ../UpdateChecker.lua:64
-msgid   "Update Now"
-msgstr  "განაახლეთ ახლა"
+msgid "Update Now"
+msgstr "განაახლეთ ახლა"
 
 #: ../UpdateChecker.lua:74
 #, lua-format
-msgid   "is available. You're currently running version "
-msgstr  "ხელმისაწვდომია. "
+msgid "is available. You're currently running version "
+msgstr "ხელმისაწვდომია. "
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid   "This update cannot be installed automatically"
-msgstr  "ამ განახლების ავტომატურად ინსტალაცია შეუძლებელია"
+msgid "This update cannot be installed automatically"
+msgstr "ამ განახლების ავტომატურად ინსტალაცია შეუძლებელია"
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid   "please visit the user guide for instructions."
-msgstr  "გთხოვთ ეწვიოთ მომხმარებლის სახელმძღვანელოს ინსტრუქციებისთვის."
+msgid "please visit the user guide for instructions."
+msgstr "გთხოვთ ეწვიოთ მომხმარებლის სახელმძღვანელოს ინსტრუქციებისთვის."
 
 #: ../UpdateChecker.lua:83
-msgid   "OK"
-msgstr  "OK"
+msgid "OK"
+msgstr "OK"
 
 #: ../UpdateChecker.lua:103
-msgid   "Updating rakuyomi, please wait..."
-msgstr  "მიმდინარეობს რაკუიომის განახლება, გთხოვთ დაელოდოთ..."
+msgid "Updating rakuyomi, please wait..."
+msgstr "მიმდინარეობს რაკუიომის განახლება, გთხოვთ დაელოდოთ..."
 
 #: ../UpdateChecker.lua:119
-msgid   "Restart Now"
-msgstr  "გადატვირთეთ ახლა"
+msgid "Restart Now"
+msgstr "გადატვირთეთ ახლა"
 
 #: ../UpdateChecker.lua:130
-msgid   "KOReader needs to be restarted to apply the changes."
-msgstr  "ცვლილებების გამოსაყენებლად საჭიროა KOREader-ის გადატვირთვა."
+msgid "KOReader needs to be restarted to apply the changes."
+msgstr "ცვლილებების გამოსაყენებლად საჭიროა KOREader-ის გადატვირთვა."
 
 #: ../UpdateChecker.lua:130
-msgid   "The update has been installed successfully"
-msgstr  "განახლება წარმატებით დაინსტალირებულია"
+msgid "The update has been installed successfully"
+msgstr "განახლება წარმატებით დაინსტალირებულია"
 
 #: ../UpdateChecker.lua:140
-msgid   "Restarting..."
-msgstr  "გადატვირთვა..."
+msgid "Restarting..."
+msgstr "გადატვირთვა..."
 
 #: ../_meta.lua:5
-msgid   "rakuyomi"
-msgstr  "რაკუიომი"
+msgid "rakuyomi"
+msgstr "რაკუიომი"
 
 #: ../_meta.lua:6
-msgid   "Download mangas on your e-book reader!"
-msgstr  "ჩამოტვირთეთ მანგაები თქვენს ელექტრონულ წიგნების მკითხველზე!"
+msgid "Download mangas on your e-book reader!"
+msgstr "ჩამოტვირთეთ მანგაები თქვენს ელექტრონულ წიგნების მკითხველზე!"
 
 #: ../handlers/addToPlaylist.lua:17
-msgid   "Added to"
-msgstr  "დაემატა"
+msgid "Added to"
+msgstr "დაემატა"
 
 #: ../main.lua:39 ../main.lua:63
-msgid   "Rakuyomi"
-msgstr  "რაკუიომი"
+msgid "Rakuyomi"
+msgstr "რაკუიომი"
 
 #: ../main.lua:79
-msgid   "Oops!"
-msgstr  "უი!"
+msgid "Oops!"
+msgstr "უი!"
 
 #: ../main.lua:79
-msgid   "Rakuyomi encountered an issue while starting up!"
-msgstr  "რაკუიომის გაშვებისას პრობლემა შეექმნა!"
+msgid "Rakuyomi encountered an issue while starting up!"
+msgstr "რაკუიომის გაშვებისას პრობლემა შეექმნა!"
 
 #: ../main.lua:80
-msgid   "Here are some messages that might help identify the problem:"
-msgstr  "აქ მოცემულია რამდენიმე შეტყობინება, რომელიც დაგეხმარებათ პრობლემის იდენტიფიცირებაში:"
+msgid "Here are some messages that might help identify the problem:"
+msgstr "აქ მოცემულია რამდენიმე შეტყობინება, რომელიც დაგეხმარებათ პრობლემის იდენტიფიცირებაში:"
 
 #: ../utils/calcLastReadText.lua:13
-msgid   "jnow"
-msgstr  "jnow"
+msgid "jnow"
+msgstr "jnow"
 
 #: ../utils/calcLastReadText.lua:13
-msgid   "just now"
-msgstr  "მხოლოდ ახლა"
+msgid "just now"
+msgstr "მხოლოდ ახლა"
 
 #: ../utils/calcLastReadText.lua:15
 #, lua-format
-msgid   "%dm"
-msgstr  "%dm"
+msgid "%dm"
+msgstr "%dm"
 
 #: ../utils/calcLastReadText.lua:15
-msgid   "minutes"
-msgstr  "წუთები"
+msgid "minutes"
+msgstr "წუთები"
 
 #: ../utils/calcLastReadText.lua:17
 #, lua-format
-msgid   "%dh"
-msgstr  "%dh"
+msgid "%dh"
+msgstr "%dh"
 
 #: ../utils/calcLastReadText.lua:17
-msgid   "hours"
-msgstr  "საათები"
+msgid "hours"
+msgstr "საათები"
 
 #: ../utils/calcLastReadText.lua:19
 #, lua-format
-msgid   "%dd"
-msgstr  "%dd"
+msgid "%dd"
+msgstr "%dd"
 
 #: ../utils/calcLastReadText.lua:19
-msgid   "days"
-msgstr  "დღეები"
+msgid "days"
+msgstr "დღეები"
 
 #: ../utils/calcLastReadText.lua:21
 #, lua-format
-msgid   "%dw"
-msgstr  "%dw"
+msgid "%dw"
+msgstr "%dw"
 
 #: ../utils/calcLastReadText.lua:21
-msgid   "weeks"
-msgstr  "კვირები"
+msgid "weeks"
+msgstr "კვირები"
 
 #: ../utils/calcLastReadText.lua:23
 #, lua-format
-msgid   "%dM"
-msgstr  "%dM"
+msgid "%dM"
+msgstr "%dM"
 
 #: ../utils/calcLastReadText.lua:23
-msgid   "months"
-msgstr  "თვეების"
+msgid "months"
+msgstr "თვეების"
 
 #: ../utils/calcLastReadText.lua:25
 #, lua-format
-msgid   "%dy"
-msgstr  "%dy"
+msgid "%dy"
+msgstr "%dy"
 
 #: ../utils/calcLastReadText.lua:25
-msgid   "years"
-msgstr  "წლები"
+msgid "years"
+msgstr "წლები"
 
 #: ../utils/getChapterDisplayName.lua:5
-msgid   "Vol."
-msgstr  "ტ."
+msgid "Vol."
+msgstr "ტ."
 
 #: ../utils/getChapterDisplayName.lua:6
-msgid   "Ch."
-msgstr  "ჩ."
+msgid "Ch."
+msgstr "ჩ."
 
 #: ../widgets/Menu.lua:82
-msgid   "Offline mode"
-msgstr  "ოფლაინ რეჟიმი"
+msgid "Offline mode"
+msgstr "ოფლაინ რეჟიმი"
 
 #: ../widgets/SettingItemValue.lua:162
-msgid   "Ok"
-msgstr  "კარგი"
+msgid "Ok"
+msgstr "კარგი"
 
 #: ../widgets/SettingItemValue.lua:168
-msgid   "Executing..."
-msgstr  "მიმდინარეობს შესრულება..."
+msgid "Executing..."
+msgstr "მიმდინარეობს შესრულება..."
 
 #: ../widgets/SettingItemValue.lua:181
-msgid   "Done"
-msgstr  "შესრულებულია"
+msgid "Done"
+msgstr "შესრულებულია"
 
 #: ../widgets/SettingItemValue.lua:236
-msgid   "Select"
-msgstr  "აირჩიეთ"
+msgid "Select"
+msgstr "აირჩიეთ"

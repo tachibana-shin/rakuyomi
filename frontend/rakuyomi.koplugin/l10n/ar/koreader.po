@@ -1,1171 +1,1178 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: rakuyomi.koreader \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 18:18+0700\n"
-"PO-Revision-Date: 2025-12-26 23:18+0700\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: ar\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+msgid   ""
+msgstr  "Project-Id-Version: rakuyomi.koreader \n"
+        "Report-Msgid-Bugs-To: \n"
+        "POT-Creation-Date: 2026-03-16 23:42+0700\n"
+        "PO-Revision-Date: 2025-12-26 23:18+0700\n"
+        "Last-Translator: Automatically generated\n"
+        "Language-Team: none\n"
+        "Language: ar\n"
+        "MIME-Version: 1.0\n"
+        "Content-Type: text/plain; charset=UTF-8\n"
+        "Content-Transfer-Encoding: 8bit\n"
 
 #: ../AvailableSourcesListing.lua:21
-msgid "Available sources"
-msgstr "المصادر المتاحة"
+msgid   "Available sources"
+msgstr  "المصادر المتاحة"
 
 #: ../AvailableSourcesListing.lua:81
-msgid "Update available!"
-msgstr "التحديث متاح!"
+msgid   "Update available!"
+msgstr  "التحديث متاح!"
 
 #: ../AvailableSourcesListing.lua:84
-msgid "Latest version installed"
-msgstr "تم تثبيت أحدث إصدار"
+msgid   "Latest version installed"
+msgstr  "تم تثبيت أحدث إصدار"
 
 #: ../AvailableSourcesListing.lua:88
-msgid "Installable"
-msgstr "قابل للتثبيت"
+msgid   "Installable"
+msgstr  "قابل للتثبيت"
 
 #: ../AvailableSourcesListing.lua:94 ../InstalledSourcesListing.lua:81
-msgid "version"
-msgstr "إصدار"
+msgid   "version"
+msgstr  "إصدار"
 
 #: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
 #: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:445
-msgid "Unknown"
-msgstr "مجهول"
+msgid   "Unknown"
+msgstr  "مجهول"
 
 #: ../AvailableSourcesListing.lua:144
-msgid "No available sources found."
-msgstr "لم يتم العثور على المصادر المتاحة."
+msgid   "No available sources found."
+msgstr  "لم يتم العثور على المصادر المتاحة."
 
 #: ../AvailableSourcesListing.lua:144
-msgid "Try adding some source lists by looking at our README!"
-msgstr "حاول إضافة بعض قوائم المصادر من خلال الاطلاع على الملف التمهيدي الخاص بنا!"
+msgid   "Try adding some source lists by looking at our README!"
+msgstr  "حاول إضافة بعض قوائم المصادر من خلال الاطلاع على الملف التمهيدي الخاص بنا!"
 
 #: ../AvailableSourcesListing.lua:162
-msgid "Installing source..."
-msgstr "جارٍ تثبيت المصدر..."
+msgid   "Installing source..."
+msgstr  "جارٍ تثبيت المصدر..."
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
-msgid "Cancelled!"
-msgstr "تم الإلغاء!"
+msgid   "Cancelled!"
+msgstr  "تم الإلغاء!"
 
 #: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
-msgid "Complete!"
-msgstr "مكتمل!"
+msgid   "Complete!"
+msgstr  "مكتمل!"
 
 #: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
-msgid "Waiting until cancelled…"
-msgstr "في انتظار الإلغاء…"
+msgid   "Waiting until cancelled…"
+msgstr  "في انتظار الإلغاء…"
 
 #: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
 #: ../BasicJobDialog.lua:165
-msgid "Processing..."
-msgstr "يعالج..."
+msgid   "Processing..."
+msgstr  "يعالج..."
 
 #: ../BasicJobDialog.lua:92
-msgid "An error occurred"
-msgstr "حدث خطأ"
+msgid   "An error occurred"
+msgstr  "حدث خطأ"
 
 #: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
-msgid "Unknown error"
-msgstr "خطأ غير معروف"
+msgid   "Unknown error"
+msgstr  "خطأ غير معروف"
 
 #: ../BasicJobDialog.lua:250
-msgid "Error"
-msgstr "خطأ"
+msgid   "Error"
+msgstr  "خطأ"
 
 #: ../ChapterListing.lua:57
-msgid "Chapter listing"
-msgstr "قائمة الفصل"
+msgid   "Chapter listing"
+msgstr  "قائمة الفصل"
 
 #: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
-msgid "Languages"
-msgstr "اللغات"
+msgid   "Languages"
+msgstr  "اللغات"
 
 #: ../ChapterListing.lua:323
-msgid "No chapters found"
-msgstr "لم يتم العثور على فصول"
+msgid   "No chapters found"
+msgstr  "لم يتم العثور على فصول"
 
 #: ../ChapterListing.lua:323
-msgid "Try swiping down to refresh the chapter list."
-msgstr "حاول التمرير لأسفل لتحديث قائمة الفصول."
+msgid   "Try swiping down to refresh the chapter list."
+msgstr  "حاول التمرير لأسفل لتحديث قائمة الفصول."
 
 #: ../ChapterListing.lua:365
-msgid "Volume"
-msgstr "مقدار"
+msgid   "Volume"
+msgstr  "مقدار"
 
 #: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
-msgid "Chapter"
-msgstr "الفصل"
+msgid   "Chapter"
+msgstr  "الفصل"
 
 #: ../ChapterListing.lua:395
-msgid "Locked"
-msgstr "مغلق"
+msgid   "Locked"
+msgstr  "مغلق"
 
 #: ../ChapterListing.lua:431 ../ChapterListing.lua:632
-msgid "Refreshing chapters..."
-msgstr "تجديد الفصول..."
+msgid   "Refreshing chapters..."
+msgstr  "تجديد الفصول..."
 
 #: ../ChapterListing.lua:439 ../ChapterListing.lua:639
 #: ../ChapterListing.lua:1301
-msgid "Cancelled."
-msgstr "تم الإلغاء."
+msgid   "Cancelled."
+msgstr  "تم الإلغاء."
 
 #: ../ChapterListing.lua:451
-msgid "Refresh chapter error"
-msgstr "تحديث خطأ الفصل"
+msgid   "Refresh chapter error"
+msgstr  "تحديث خطأ الفصل"
 
 #: ../ChapterListing.lua:490
-msgid "Chapter is locked"
-msgstr "الفصل مغلق"
+msgid   "Chapter is locked"
+msgstr  "الفصل مغلق"
 
 #: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
-msgid "Open"
-msgstr "يفتح"
+msgid   "Open"
+msgstr  "يفتح"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:440
-msgid "Refresh"
-msgstr "ينعش"
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:443
+msgid   "Refresh"
+msgstr  "ينعش"
 
 #: ../ChapterListing.lua:523
-msgid "Chapter refreshed"
-msgstr "تم تحديث الفصل"
+msgid   "Chapter refreshed"
+msgstr  "تم تحديث الفصل"
 
 #: ../ChapterListing.lua:529 ../ChapterListing.lua:678
-msgid "Mark"
-msgstr "علامة"
+msgid   "Mark"
+msgstr  "علامة"
 
 #: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
-msgid "Download"
-msgstr "تحميل"
+msgid   "Download"
+msgstr  "تحميل"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:644
-msgid "Remove"
-msgstr "يزيل"
+#: ../ChapterListing.lua:541 ../LibraryView.lua:657 ../LibraryView.lua:677
+msgid   "Remove"
+msgstr  "يزيل"
 
 #: ../ChapterListing.lua:550
-msgid "Chapter downloaded"
-msgstr "تم تنزيل الفصل"
+msgid   "Chapter downloaded"
+msgstr  "تم تنزيل الفصل"
 
 #: ../ChapterListing.lua:569
-msgid "Revoke chapter..."
-msgstr "إلغاء الفصل..."
+msgid   "Revoke chapter..."
+msgstr  "إلغاء الفصل..."
 
 #: ../ChapterListing.lua:587
-msgid "Removed chapter"
-msgstr "تمت إزالة الفصل"
+msgid   "Removed chapter"
+msgstr  "تمت إزالة الفصل"
 
 #: ../ChapterListing.lua:598
-msgid "Marking"
-msgstr "وضع العلامات"
+msgid   "Marking"
+msgstr  "وضع العلامات"
 
 #: ../ChapterListing.lua:598
-msgid "Un-marking"
-msgstr "إلغاء وضع العلامات"
+msgid   "Un-marking"
+msgstr  "إلغاء وضع العلامات"
 
 #: ../ChapterListing.lua:598
-msgid "chapter..."
-msgstr "فصل..."
+msgid   "chapter..."
+msgstr  "فصل..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:476
-msgid "Mark read"
-msgstr "مارك اقرأ"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:479
+msgid   "Mark read"
+msgstr  "مارك اقرأ"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:487
-msgid "Mark unread"
-msgstr "وضع علامة غير مقروءة"
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:490
+msgid   "Mark unread"
+msgstr  "وضع علامة غير مقروءة"
 
 #: ../ChapterListing.lua:666
-msgid "1 - 10.5, 20 - 100"
-msgstr "1 - 10.5، 20 - 100"
+msgid   "1 - 10.5, 20 - 100"
+msgstr  "1 - 10.5، 20 - 100"
 
 #: ../ChapterListing.lua:667
-msgid "Leaving blank will select all"
-msgstr "سيؤدي ترك الفراغ إلى تحديد الكل"
+msgid   "Leaving blank will select all"
+msgstr  "سيؤدي ترك الفراغ إلى تحديد الكل"
 
 #: ../ChapterListing.lua:667
-msgid "Mark chapters as read or unread"
-msgstr "وضع علامة على الفصول كمقروءة أو غير مقروءة"
+msgid   "Mark chapters as read or unread"
+msgstr  "وضع علامة على الفصول كمقروءة أو غير مقروءة"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:605 ../LibraryView.lua:887
-#: ../LibraryView.lua:935 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:618 ../LibraryView.lua:920
+#: ../LibraryView.lua:968 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
-msgid "Cancel"
-msgstr "يلغي"
+msgid   "Cancel"
+msgstr  "يلغي"
 
 #: ../ChapterListing.lua:688
-msgid "Marking..."
-msgstr "وضع العلامات..."
+msgid   "Marking..."
+msgstr  "وضع العلامات..."
 
 #: ../ChapterListing.lua:698
-msgid "Marked"
-msgstr "ملحوظ"
+msgid   "Marked"
+msgstr  "ملحوظ"
 
 #: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
-msgid "No errors"
-msgstr "لا توجد أخطاء"
+msgid   "No errors"
+msgstr  "لا توجد أخطاء"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid "Page"
-msgstr "صفحة"
+msgid   "Page"
+msgstr  "صفحة"
 
 #: ../ChapterListing.lua:726
 #, lua-format
-msgid "attempts"
-msgstr "محاولات"
+msgid   "attempts"
+msgstr  "محاولات"
 
 #: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
 #, lua-format
-msgid "… and %d more errors"
-msgstr "... و%d أخطاء أخرى"
+msgid   "… and %d more errors"
+msgstr  "... و%d أخطاء أخرى"
 
 #: ../ChapterListing.lua:753 ../ChapterListing.lua:768
-msgid "Could not download chapter."
-msgstr "تعذر تحميل الفصل."
+msgid   "Could not download chapter."
+msgstr  "تعذر تحميل الفصل."
 
 #: ../ChapterListing.lua:761
-msgid "Loading chapter..."
-msgstr "جارٍ تحميل الفصل..."
+msgid   "Loading chapter..."
+msgstr  "جارٍ تحميل الفصل..."
 
 #: ../ChapterListing.lua:762
-msgid "unknown"
-msgstr "مجهول"
+msgid   "unknown"
+msgstr  "مجهول"
 
 #: ../ChapterListing.lua:781
-msgid "Download cancelled."
-msgstr "تم إلغاء التنزيل."
+msgid   "Download cancelled."
+msgstr  "تم إلغاء التنزيل."
 
 #: ../ChapterListing.lua:787
-msgid "Are you sure you want to cancel the download?"
-msgstr "هل أنت متأكد أنك تريد إلغاء التنزيل؟"
+msgid   "Are you sure you want to cancel the download?"
+msgstr  "هل أنت متأكد أنك تريد إلغاء التنزيل؟"
 
 #: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
-msgid "Add to Library"
-msgstr "أضف إلى المكتبة"
+msgid   "Add to Library"
+msgstr  "أضف إلى المكتبة"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:460
+#: ../ChapterListing.lua:974 ../LibraryView.lua:463
 #: ../MangaSearchResults.lua:279
-msgid "Details"
-msgstr "تفاصيل"
+msgid   "Details"
+msgstr  "تفاصيل"
 
 #: ../ChapterListing.lua:1014
-msgid "Resume"
-msgstr "سيرة ذاتية"
+msgid   "Resume"
+msgstr  "سيرة ذاتية"
 
 #: ../ChapterListing.lua:1022
-msgid "Next Chapter"
-msgstr "الفصل التالي"
+msgid   "Next Chapter"
+msgstr  "الفصل التالي"
 
 #: ../ChapterListing.lua:1032
-msgid "Download unread chapters…"
-msgstr "تحميل الفصول غير المقروءة..."
+msgid   "Download unread chapters…"
+msgstr  "تحميل الفصول غير المقروءة..."
 
 #: ../ChapterListing.lua:1059
-msgid "Group"
-msgstr "مجموعة"
+msgid   "Group"
+msgstr  "مجموعة"
 
 #: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
-msgid "Filter by Group"
-msgstr "التصفية حسب المجموعة"
+msgid   "Filter by Group"
+msgstr  "التصفية حسب المجموعة"
 
 #: ../ChapterListing.lua:1083
-msgid "Adding to library..."
-msgstr "جارٍ الإضافة إلى المكتبة..."
+msgid   "Adding to library..."
+msgstr  "جارٍ الإضافة إلى المكتبة..."
 
 #: ../ChapterListing.lua:1090
-msgid "Failed to add to library"
-msgstr "فشلت الإضافة إلى المكتبة"
+msgid   "Failed to add to library"
+msgstr  "فشلت الإضافة إلى المكتبة"
 
 #: ../ChapterListing.lua:1095
-msgid "Added to library."
-msgstr "تمت إضافتها إلى المكتبة."
+msgid   "Added to library."
+msgstr  "تمت إضافتها إلى المكتبة."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:597
-msgid "Sadly, no next chapter available! :c"
-msgstr "للأسف، لا يوجد الفصل التالي متاح! "
-
-#: ../ChapterListing.lua:1113
-msgid "Next"
-msgstr "التالي"
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:610
+msgid   "Sadly, no next chapter available! :c"
+msgstr  "للأسف، لا يوجد الفصل التالي متاح! "
 
 #: ../ChapterListing.lua:1113
-msgid "reading with"
-msgstr "القراءة مع"
+msgid   "Next"
+msgstr  "التالي"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:604
-msgid "Read"
-msgstr "يقرأ"
+#: ../ChapterListing.lua:1113
+msgid   "reading with"
+msgstr  "القراءة مع"
+
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:617
+msgid   "Read"
+msgstr  "يقرأ"
 
 #: ../ChapterListing.lua:1136
-msgid "Show All"
-msgstr "إظهار الكل"
+msgid   "Show All"
+msgstr  "إظهار الكل"
 
 #: ../ChapterListing.lua:1144
-msgid "Showing all groups"
-msgstr "عرض كافة المجموعات"
+msgid   "Showing all groups"
+msgstr  "عرض كافة المجموعات"
 
 #: ../ChapterListing.lua:1164
-msgid "Filtered to"
-msgstr "تمت التصفية إلى"
+msgid   "Filtered to"
+msgstr  "تمت التصفية إلى"
 
 #: ../ChapterListing.lua:1181
-msgid "Download unread chapters..."
-msgstr "تحميل الفصول غير المقروءة..."
+msgid   "Download unread chapters..."
+msgstr  "تحميل الفصول غير المقروءة..."
 
 #: ../ChapterListing.lua:1183
-msgid "Amount of unread chapters (default: all)"
-msgstr "مقدار الفصول غير المقروءة (الافتراضي: الكل)"
+msgid   "Amount of unread chapters (default: all)"
+msgstr  "مقدار الفصول غير المقروءة (الافتراضي: الكل)"
 
 #: ../ChapterListing.lua:1185
-msgid "Specify amount or leave empty for all."
-msgstr "حدد المبلغ أو اتركه فارغًا للجميع."
+msgid   "Specify amount or leave empty for all."
+msgstr  "حدد المبلغ أو اتركه فارغًا للجميع."
 
 #: ../ChapterListing.lua:1185
-msgid "Will download from"
-msgstr "سيتم التحميل من"
+msgid   "Will download from"
+msgstr  "سيتم التحميل من"
 
 #: ../ChapterListing.lua:1186
-msgid "Specify the amount of unread chapters to download"
-msgstr "حدد مقدار الفصول غير المقروءة المراد تنزيلها"
+msgid   "Specify the amount of unread chapters to download"
+msgstr  "حدد مقدار الفصول غير المقروءة المراد تنزيلها"
 
 #: ../ChapterListing.lua:1186
-msgid "or leave empty to download all of them."
-msgstr "أو اتركه فارغًا لتنزيله جميعًا."
+msgid   "or leave empty to download all of them."
+msgstr  "أو اتركه فارغًا لتنزيله جميعًا."
 
 #: ../ChapterListing.lua:1207
-msgid "Invalid amount of chapters!"
-msgstr "كمية غير صالحة من الفصول!"
+msgid   "Invalid amount of chapters!"
+msgstr  "كمية غير صالحة من الفصول!"
 
 #: ../ChapterListing.lua:1228
-msgid "No unread chapters found for"
-msgstr "لم يتم العثور على فصول غير مقروءة لـ"
+msgid   "No unread chapters found for"
+msgstr  "لم يتم العثور على فصول غير مقروءة لـ"
 
 #: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
-msgid "Downloading all chapters, this will take a while…"
-msgstr "جارٍ تنزيل جميع الفصول، سيستغرق هذا بعض الوقت..."
+msgid   "Downloading all chapters, this will take a while…"
+msgstr  "جارٍ تنزيل جميع الفصول، سيستغرق هذا بعض الوقت..."
 
 #: ../ChapterListing.lua:1338
-msgid "Waiting for download to be cancelled…"
-msgstr "في انتظار إلغاء التنزيل..."
+msgid   "Waiting for download to be cancelled…"
+msgstr  "في انتظار إلغاء التنزيل..."
 
 #: ../ChapterListing.lua:1340
-msgid "Downloading all chapters, this will take a while… ("
-msgstr "جارٍ تنزيل جميع الفصول، سيستغرق هذا بعض الوقت... ("
+msgid   "Downloading all chapters, this will take a while… ("
+msgstr  "جارٍ تنزيل جميع الفصول، سيستغرق هذا بعض الوقت... ("
 
 #: ../ChapterListing.lua:1343
-msgid "Tap outside this message to cancel."
-msgstr "اضغط خارج هذه الرسالة للإلغاء."
+msgid   "Tap outside this message to cancel."
+msgstr  "اضغط خارج هذه الرسالة للإلغاء."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
-msgid "Downloading chapters, this will take a while…"
-msgstr "جارٍ تنزيل الفصول، سيستغرق هذا بعض الوقت..."
+msgid   "Downloading chapters, this will take a while…"
+msgstr  "جارٍ تنزيل الفصول، سيستغرق هذا بعض الوقت..."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:7
-msgid "Download complete!"
-msgstr "اكتمل التنزيل!"
+msgid   "Download complete!"
+msgstr  "اكتمل التنزيل!"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:8
-msgid "An error occurred while downloading chapters"
-msgstr "حدث خطأ أثناء تنزيل الفصول"
+msgid   "An error occurred while downloading chapters"
+msgstr  "حدث خطأ أثناء تنزيل الفصول"
 
 #: ../DownloadUnreadChaptersJobDialog.lua:23
-msgid "Download cancelled!"
-msgstr "تم إلغاء التنزيل!"
+msgid   "Download cancelled!"
+msgstr  "تم إلغاء التنزيل!"
 
 #: ../ErrorDialog.lua:15
-msgid "Retry"
-msgstr "أعد المحاولة"
+msgid   "Retry"
+msgstr  "أعد المحاولة"
 
 #: ../InstalledSourcesListing.lua:21
-msgid "Installed sources"
-msgstr "المصادر المثبتة"
+msgid   "Installed sources"
+msgstr  "المصادر المثبتة"
 
 #: ../InstalledSourcesListing.lua:95
-msgid "No installed sources found"
-msgstr "لم يتم العثور على مصادر مثبتة"
+msgid   "No installed sources found"
+msgstr  "لم يتم العثور على مصادر مثبتة"
 
 #: ../InstalledSourcesListing.lua:95
-msgid "Try installing some by tapping"
-msgstr "حاول تثبيت بعضها عن طريق النقر"
+msgid   "Try installing some by tapping"
+msgstr  "حاول تثبيت بعضها عن طريق النقر"
 
 #: ../InstalledSourcesListing.lua:96
-msgid "the top-left button to list the available sources."
-msgstr "الزر العلوي الأيسر لسرد المصادر المتاحة."
+msgid   "the top-left button to list the available sources."
+msgstr  "الزر العلوي الأيسر لسرد المصادر المتاحة."
 
 #: ../InstalledSourcesListing.lua:123
-msgid "Do you want to remove the"
-msgstr "هل تريد إزالة"
+msgid   "Do you want to remove the"
+msgstr  "هل تريد إزالة"
 
 #: ../InstalledSourcesListing.lua:123
-msgid "source?"
-msgstr "مصدر؟"
+msgid   "source?"
+msgstr  "مصدر؟"
 
 #: ../LibraryView.lua:60 ../Settings.lua:38
-msgid "Library"
-msgstr "مكتبة"
+msgid   "Library"
+msgstr  "مكتبة"
 
 #: ../LibraryView.lua:379
-msgid "No mangas found in library"
-msgstr "لم يتم العثور على مانجا في المكتبة"
+msgid   "No mangas found in library"
+msgstr  "لم يتم العثور على مانجا في المكتبة"
 
 #: ../LibraryView.lua:379
-msgid "Try adding some by holding their name on the search results!"
-msgstr "حاول إضافة البعض من خلال وضع أسمائهم في نتائج البحث!"
+msgid   "Try adding some by holding their name on the search results!"
+msgstr  "حاول إضافة البعض من خلال وضع أسمائهم في نتائج البحث!"
 
-#: ../LibraryView.lua:451
-msgid "Refreshed manga"
-msgstr "المانجا المحدثة"
+#: ../LibraryView.lua:454
+msgid   "Refreshed manga"
+msgstr  "المانجا المحدثة"
 
-#: ../LibraryView.lua:500
-msgid "Continue Reading"
-msgstr "مواصلة القراءة"
+#: ../LibraryView.lua:503
+msgid   "Continue Reading"
+msgstr  "مواصلة القراءة"
 
-#: ../LibraryView.lua:509 ../MangaSearchResults.lua:270
-msgid "Add to Playlist"
-msgstr "أضف إلى قائمة التشغيل"
+#: ../LibraryView.lua:512 ../MangaSearchResults.lua:270
+msgid   "Add to Playlist"
+msgstr  "أضف إلى قائمة التشغيل"
 
-#: ../LibraryView.lua:520 ../MangaSearchResults.lua:205
-msgid "Remove from Library"
-msgstr "إزالة من المكتبة"
+#: ../LibraryView.lua:523 ../MangaSearchResults.lua:205
+msgid   "Remove from Library"
+msgstr  "إزالة من المكتبة"
 
-#: ../LibraryView.lua:553
-msgid "Finding next chapter..."
-msgstr "جارٍ البحث عن الفصل التالي..."
+#: ../LibraryView.lua:533
+msgid   "Remove from Playlist"
+msgstr  "إزالة من قائمة التشغيل"
 
-#: ../LibraryView.lua:564
-msgid "No chapters found for this manga."
-msgstr "لم يتم العثور على فصول لهذه المانجا."
+#: ../LibraryView.lua:566
+msgid   "Finding next chapter..."
+msgstr  "جارٍ البحث عن الفصل التالي..."
 
-#: ../LibraryView.lua:603
-msgid "Resume reading with:"
-msgstr "استئناف القراءة مع:"
+#: ../LibraryView.lua:577
+msgid   "No chapters found for this manga."
+msgstr  "لم يتم العثور على فصول لهذه المانجا."
 
-#: ../LibraryView.lua:643
-msgid "Do you want to remove"
-msgstr "هل تريد إزالة"
+#: ../LibraryView.lua:616
+msgid   "Resume reading with:"
+msgstr  "استئناف القراءة مع:"
 
-#: ../LibraryView.lua:643
-msgid "from your library?"
-msgstr "من مكتبتك؟"
+#: ../LibraryView.lua:656 ../LibraryView.lua:676
+msgid   "Do you want to remove"
+msgstr  "هل تريد إزالة"
 
-#: ../LibraryView.lua:666
-msgid "Search for mangas"
-msgstr "البحث عن المانجا"
+#: ../LibraryView.lua:656
+msgid   "from your library?"
+msgstr  "من مكتبتك؟"
 
 #: ../LibraryView.lua:676
-msgid "Search favorites"
-msgstr "البحث في المفضلة"
+msgid   "from your playlist?"
+msgstr  "من قائمة التشغيل الخاصة بك؟"
 
-#: ../LibraryView.lua:686 ../PlaylistDialog.lua:304
-msgid "Playlists"
-msgstr "قوائم التشغيل"
+#: ../LibraryView.lua:699
+msgid   "Search for mangas"
+msgstr  "البحث عن المانجا"
 
-#: ../LibraryView.lua:695
-msgid "Refresh mangas"
-msgstr "تحديث المانجا"
+#: ../LibraryView.lua:709
+msgid   "Search favorites"
+msgstr  "البحث في المفضلة"
 
-#: ../LibraryView.lua:703
-msgid "Refresh details"
-msgstr "تحديث التفاصيل"
+#: ../LibraryView.lua:719 ../PlaylistDialog.lua:306
+msgid   "Playlists"
+msgstr  "قوائم التشغيل"
 
-#: ../LibraryView.lua:713
-msgid "Cleaner chapters"
-msgstr "فصول نظيفة"
+#: ../LibraryView.lua:728
+msgid   "Refresh mangas"
+msgstr  "تحديث المانجا"
 
-#: ../LibraryView.lua:721
-msgid "Manage sources"
-msgstr "إدارة المصادر"
+#: ../LibraryView.lua:736
+msgid   "Refresh details"
+msgstr  "تحديث التفاصيل"
 
-#: ../LibraryView.lua:731 ../LibraryView.lua:881 ../Settings.lua:285
-msgid "Settings"
-msgstr "إعدادات"
+#: ../LibraryView.lua:746
+msgid   "Cleaner chapters"
+msgstr  "فصول نظيفة"
 
-#: ../LibraryView.lua:739
-msgid "Check for updates"
-msgstr "التحقق من وجود تحديثات"
+#: ../LibraryView.lua:754
+msgid   "Manage sources"
+msgstr  "إدارة المصادر"
 
-#: ../LibraryView.lua:748
-msgid "Sync Database (Beta)"
-msgstr "مزامنة قاعدة البيانات (تجريبية)"
+#: ../LibraryView.lua:764 ../LibraryView.lua:914 ../Settings.lua:285
+msgid   "Settings"
+msgstr  "إعدادات"
 
-#: ../LibraryView.lua:752
-msgid "Sync to WebDAV..."
-msgstr "المزامنة مع WebDAV..."
+#: ../LibraryView.lua:772
+msgid   "Check for updates"
+msgstr  "التحقق من وجود تحديثات"
 
-#: ../LibraryView.lua:764
-msgid "Do you want to migrate your local database from the server?"
-msgstr "هل تريد ترحيل قاعدة البيانات المحلية الخاصة بك من الخادم؟"
+#: ../LibraryView.lua:781
+msgid   "Sync Database (Beta)"
+msgstr  "مزامنة قاعدة البيانات (تجريبية)"
 
-#: ../LibraryView.lua:764
-msgid "The remote database is newer than the local one."
-msgstr "قاعدة البيانات البعيدة أحدث من قاعدة البيانات المحلية."
+#: ../LibraryView.lua:785
+msgid   "Sync to WebDAV..."
+msgstr  "المزامنة مع WebDAV..."
 
-#: ../LibraryView.lua:764
-msgid "This action cannot be undone."
-msgstr "لا يمكن التراجع عن هذا الإجراء."
+#: ../LibraryView.lua:797
+msgid   "Do you want to migrate your local database from the server?"
+msgstr  "هل تريد ترحيل قاعدة البيانات المحلية الخاصة بك من الخادم؟"
 
-#: ../LibraryView.lua:765
-msgid "Migrate"
-msgstr "يهاجر"
+#: ../LibraryView.lua:797
+msgid   "The remote database is newer than the local one."
+msgstr  "قاعدة البيانات البعيدة أحدث من قاعدة البيانات المحلية."
 
-#: ../LibraryView.lua:769
-msgid "Migrating database..."
-msgstr "ترحيل قاعدة البيانات..."
+#: ../LibraryView.lua:797
+msgid   "This action cannot be undone."
+msgstr  "لا يمكن التراجع عن هذا الإجراء."
 
-#: ../LibraryView.lua:780 ../LibraryView.lua:827
-msgid "Local database has been migrated from the server!"
-msgstr "تم ترحيل قاعدة البيانات المحلية من الخادم!"
+#: ../LibraryView.lua:798
+msgid   "Migrate"
+msgstr  "يهاجر"
 
-#: ../LibraryView.lua:791
-msgid "Replace Cloud"
-msgstr "استبدال السحابة"
+#: ../LibraryView.lua:802
+msgid   "Migrating database..."
+msgstr  "ترحيل قاعدة البيانات..."
 
-#: ../LibraryView.lua:795
-msgid "Replacing cloud..."
-msgstr "استبدال السحابة..."
+#: ../LibraryView.lua:813 ../LibraryView.lua:860
+msgid   "Local database has been migrated from the server!"
+msgstr  "تم ترحيل قاعدة البيانات المحلية من الخادم!"
 
-#: ../LibraryView.lua:805
-msgid "Cloud database has been forcedly replaced with local one!"
-msgstr "تم استبدال قاعدة البيانات السحابية قسريًا بقاعدة بيانات محلية!"
+#: ../LibraryView.lua:824
+msgid   "Replace Cloud"
+msgstr  "استبدال السحابة"
 
-#: ../LibraryView.lua:823
-msgid "Database is already up to date!"
-msgstr "قاعدة البيانات محدثة بالفعل!"
+#: ../LibraryView.lua:828
+msgid   "Replacing cloud..."
+msgstr  "استبدال السحابة..."
 
-#: ../LibraryView.lua:825
-msgid "Database has been synced to the server!"
-msgstr "تمت مزامنة قاعدة البيانات مع الخادم!"
+#: ../LibraryView.lua:838
+msgid   "Cloud database has been forcedly replaced with local one!"
+msgstr  "تم استبدال قاعدة البيانات السحابية قسريًا بقاعدة بيانات محلية!"
 
-#: ../LibraryView.lua:829
-msgid "Sync completed!"
-msgstr "اكتملت المزامنة!"
+#: ../LibraryView.lua:856
+msgid   "Database is already up to date!"
+msgstr  "قاعدة البيانات محدثة بالفعل!"
 
-#: ../LibraryView.lua:853
-msgid "Manga search..."
-msgstr "بحث عن المانجا..."
+#: ../LibraryView.lua:858
+msgid   "Database has been synced to the server!"
+msgstr  "تمت مزامنة قاعدة البيانات مع الخادم!"
 
-#: ../LibraryView.lua:854
-msgid "Houseki no Kuni"
-msgstr "هوسكي نو كوني"
+#: ../LibraryView.lua:862
+msgid   "Sync completed!"
+msgstr  "اكتملت المزامنة!"
 
-#: ../LibraryView.lua:855 ../LibraryView.lua:931
-msgid "Type the manga name to search for"
-msgstr "اكتب اسم المانجا للبحث عنه"
+#: ../LibraryView.lua:886
+msgid   "Manga search..."
+msgstr  "بحث عن المانجا..."
 
-#: ../LibraryView.lua:859 ../LibraryView.lua:868 ../LibraryView.lua:913
-#: ../LibraryView.lua:942
-msgid "Search"
-msgstr "يبحث"
+#: ../LibraryView.lua:887
+msgid   "Houseki no Kuni"
+msgstr  "هوسكي نو كوني"
 
-#: ../LibraryView.lua:913
-msgid "Exclude source search for"
-msgstr "استبعاد البحث عن المصدر"
+#: ../LibraryView.lua:888 ../LibraryView.lua:964
+msgid   "Type the manga name to search for"
+msgstr  "اكتب اسم المانجا للبحث عنه"
 
-#: ../LibraryView.lua:928
-msgid "Favorite search..."
-msgstr "البحث المفضل..."
+#: ../LibraryView.lua:892 ../LibraryView.lua:901 ../LibraryView.lua:946
+#: ../LibraryView.lua:975
+msgid   "Search"
+msgstr  "يبحث"
 
-#: ../LibraryView.lua:930
-msgid "Tonikaku Kawaii"
-msgstr "تونكاكو كاواي"
+#: ../LibraryView.lua:946
+msgid   "Exclude source search for"
+msgstr  "استبعاد البحث عن المصدر"
 
-#: ../LibraryView.lua:982
-msgid "Scaning files..."
-msgstr "مسح الملفات..."
+#: ../LibraryView.lua:961
+msgid   "Favorite search..."
+msgstr  "البحث المفضل..."
 
-#: ../LibraryView.lua:997
+#: ../LibraryView.lua:963
+msgid   "Tonikaku Kawaii"
+msgstr  "تونكاكو كاواي"
+
+#: ../LibraryView.lua:1015
+msgid   "Scaning files..."
+msgstr  "مسح الملفات..."
+
+#: ../LibraryView.lua:1030
 #, lua-format
-msgid "Found %d files."
-msgstr "تم العثور على %d ملف."
+msgid   "Found %d files."
+msgstr  "تم العثور على %d ملف."
 
-#: ../LibraryView.lua:998
+#: ../LibraryView.lua:1031
 #, lua-format
-msgid "Total size %s."
-msgstr "الحجم الإجمالي %s."
+msgid   "Total size %s."
+msgstr  "الحجم الإجمالي %s."
 
-#: ../LibraryView.lua:999
+#: ../LibraryView.lua:1032
 #, lua-format
-msgid "RendOnly file .cbz and .epub scan."
-msgstr "مسح ملف RendOnly .cbz و.epub."
+msgid   "RendOnly file .cbz and .epub scan."
+msgstr  "مسح ملف RendOnly .cbz و.epub."
 
-#: ../LibraryView.lua:1003
-msgid "Clean"
-msgstr "ينظف"
+#: ../LibraryView.lua:1036
+msgid   "Clean"
+msgstr  "ينظف"
 
-#: ../LibraryView.lua:1008
-msgid "Deleting..."
-msgstr "جارٍ الحذف..."
+#: ../LibraryView.lua:1041
+msgid   "Deleting..."
+msgstr  "جارٍ الحذف..."
 
-#: ../LibraryView.lua:1026
+#: ../LibraryView.lua:1059
 #, lua-format
-msgid "Cleaned free %s storage"
-msgstr "تم تنظيف مساحة تخزين %s المجانية"
+msgid   "Cleaned free %s storage"
+msgstr  "تم تنظيف مساحة تخزين %s المجانية"
 
-#: ../LibraryView.lua:1051
-msgid "Refresh mangas..."
-msgstr "تحديث المانجا..."
+#: ../LibraryView.lua:1084
+msgid   "Refresh mangas..."
+msgstr  "تحديث المانجا..."
 
-#: ../LibraryView.lua:1052
-msgid "All chapters manga updated!"
-msgstr "تم تحديث جميع فصول المانجا!"
+#: ../LibraryView.lua:1085
+msgid   "All chapters manga updated!"
+msgstr  "تم تحديث جميع فصول المانجا!"
 
-#: ../LibraryView.lua:1053
-msgid "Some manga updates fail:"
-msgstr "فشل بعض تحديثات المانجا:"
+#: ../LibraryView.lua:1086
+msgid   "Some manga updates fail:"
+msgstr  "فشل بعض تحديثات المانجا:"
 
-#: ../LibraryView.lua:1064
-msgid "Refresh manga details..."
-msgstr "تحديث تفاصيل المانجا..."
+#: ../LibraryView.lua:1097
+msgid   "Refresh manga details..."
+msgstr  "تحديث تفاصيل المانجا..."
 
-#: ../LibraryView.lua:1065
-msgid "All manga details refresh!"
-msgstr "تحديث جميع تفاصيل المانجا!"
+#: ../LibraryView.lua:1098
+msgid   "All manga details refresh!"
+msgstr  "تحديث جميع تفاصيل المانجا!"
 
-#: ../LibraryView.lua:1066
-msgid "Some manga details refresh fail:"
-msgstr "فشل تحديث بعض تفاصيل المانجا:"
+#: ../LibraryView.lua:1099
+msgid   "Some manga details refresh fail:"
+msgstr  "فشل تحديث بعض تفاصيل المانجا:"
 
-#: ../LibraryView.lua:1082
-msgid "Progress"
-msgstr "تقدم"
+#: ../LibraryView.lua:1115
+msgid   "Progress"
+msgstr  "تقدم"
 
-#: ../LibraryView.lua:1100
-msgid "Cleaner"
-msgstr "منظف"
+#: ../LibraryView.lua:1133
+msgid   "Cleaner"
+msgstr  "منظف"
 
-#: ../LibraryView.lua:1101
-msgid "Find and delete invalid files including files from deleted sources"
-msgstr "البحث عن الملفات غير الصالحة وحذفها بما في ذلك الملفات من المصادر المحذوفة"
+#: ../LibraryView.lua:1134
+msgid   "Find and delete invalid files including files from deleted sources"
+msgstr  "البحث عن الملفات غير الصالحة وحذفها بما في ذلك الملفات من المصادر المحذوفة"
 
-#: ../LibraryView.lua:1101 ../LibraryView.lua:1104
-msgid "Normal"
-msgstr "طبيعي"
+#: ../LibraryView.lua:1134 ../LibraryView.lua:1137
+msgid   "Normal"
+msgstr  "طبيعي"
 
-#: ../LibraryView.lua:1103
-msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
-msgstr "هام: لا يتم الاحتفاظ بملفات التعريف (الإشارة المرجعية والتاريخ)!"
+#: ../LibraryView.lua:1136
+msgid   "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr  "هام: لا يتم الاحتفاظ بملفات التعريف (الإشارة المرجعية والتاريخ)!"
 
-#: ../LibraryView.lua:1110
-msgid "Chapter read done"
-msgstr "تمت قراءة الفصل"
+#: ../LibraryView.lua:1143
+msgid   "Chapter read done"
+msgstr  "تمت قراءة الفصل"
 
 #: ../MangaInfoWidget.lua:141
-msgid "Statistics"
-msgstr "إحصائيات"
+msgid   "Statistics"
+msgstr  "إحصائيات"
 
 #: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
 #: ../MangaInfoWidget.lua:503
-msgid "Description"
-msgstr "وصف"
+msgid   "Description"
+msgstr  "وصف"
 
 #: ../MangaInfoWidget.lua:276
-msgid "%1 % Completed"
-msgstr "%1% مكتمل"
+msgid   "%1 % Completed"
+msgstr  "%1% مكتمل"
 
 #: ../MangaInfoWidget.lua:308
-msgid "Last read: %1"
-msgstr "آخر قراءة: %1"
+msgid   "Last read: %1"
+msgstr  "آخر قراءة: %1"
 
 #: ../MangaInfoWidget.lua:380
-msgid "Status"
-msgstr "حالة"
+msgid   "Status"
+msgstr  "حالة"
 
 #: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid "NSFW"
-msgstr "NSFW"
+msgid   "NSFW"
+msgstr  "NSFW"
 
 #: ../MangaInfoWidget.lua:394
-msgid "Last Updated"
-msgstr "آخر تحديث"
+msgid   "Last Updated"
+msgstr  "آخر تحديث"
 
 #: ../MangaInfoWidget.lua:419
-msgid "N/A"
-msgstr "لا يوجد"
+msgid   "N/A"
+msgstr  "لا يوجد"
 
 #: ../MangaInfoWidget.lua:435
-msgid "Ongoing"
-msgstr "مستمر"
+msgid   "Ongoing"
+msgstr  "مستمر"
 
 #: ../MangaInfoWidget.lua:437
-msgid "Completed"
-msgstr "مكتمل"
+msgid   "Completed"
+msgstr  "مكتمل"
 
 #: ../MangaInfoWidget.lua:439
-msgid "Cancelled"
-msgstr "تم الإلغاء"
+msgid   "Cancelled"
+msgstr  "تم الإلغاء"
 
 #: ../MangaInfoWidget.lua:441
-msgid "Hiatus"
-msgstr "فجوة"
+msgid   "Hiatus"
+msgstr  "فجوة"
 
 #: ../MangaInfoWidget.lua:443
-msgid "Not published"
-msgstr "لم يتم نشره"
+msgid   "Not published"
+msgstr  "لم يتم نشره"
 
 #: ../MangaInfoWidget.lua:451
-msgid "Safe"
-msgstr "آمن"
+msgid   "Safe"
+msgstr  "آمن"
 
 #: ../MangaInfoWidget.lua:453
-msgid "Suggestive"
-msgstr "موحية"
+msgid   "Suggestive"
+msgstr  "موحية"
 
 #: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
-msgid "Refreshing details..."
-msgstr "تفاصيل متجددة..."
+msgid   "Refreshing details..."
+msgstr  "تفاصيل متجددة..."
 
 #: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
-msgid "Refresh details cancelled."
-msgstr "تم إلغاء تفاصيل التحديث."
+msgid   "Refresh details cancelled."
+msgstr  "تم إلغاء تفاصيل التحديث."
 
-#: ../MangaReader.lua:89
-msgid "Go back to Rakuyomi..."
-msgstr "ارجع إلى راكويومى.."
+#: ../MangaReader.lua:101
+msgid   "Go back to Rakuyomi..."
+msgstr  "ارجع إلى راكويومى.."
 
-#: ../MangaReader.lua:156
-msgid "Do you want Rakuyomi to commandeer this button when you open it?"
-msgstr "هل تريد أن يقوم Rakuyomi بالاستيلاء على هذا الزر عند فتحه؟"
+#: ../MangaReader.lua:172
+msgid   "Do you want Rakuyomi to commandeer this button when you open it?"
+msgstr  "هل تريد أن يقوم Rakuyomi بالاستيلاء على هذا الزر عند فتحه؟"
 
-#: ../MangaReader.lua:156
-msgid "This setting only affects when you open it with Rakuyomi."
-msgstr "يؤثر هذا الإعداد فقط عند فتحه باستخدام Rakuyomi."
+#: ../MangaReader.lua:172
+msgid   "This setting only affects when you open it with Rakuyomi."
+msgstr  "يؤثر هذا الإعداد فقط عند فتحه باستخدام Rakuyomi."
 
-#: ../MangaReader.lua:158
-msgid "Yes"
-msgstr "نعم"
+#: ../MangaReader.lua:174
+msgid   "Yes"
+msgstr  "نعم"
 
-#: ../MangaReader.lua:159
-msgid "No"
-msgstr "لا"
+#: ../MangaReader.lua:175
+msgid   "No"
+msgstr  "لا"
 
 #: ../MangaSearchResults.lua:26
-msgid "Search results..."
-msgstr "نتائج البحث..."
+msgid   "Search results..."
+msgstr  "نتائج البحث..."
 
 #: ../MangaSearchResults.lua:133
-msgid "Searching for"
-msgstr "البحث عن"
+msgid   "Searching for"
+msgstr  "البحث عن"
 
 #: ../MangaSearchResults.lua:140
-msgid "Search cancelled."
-msgstr "تم إلغاء البحث."
+msgid   "Search cancelled."
+msgstr  "تم إلغاء البحث."
 
 #: ../NotificationView.lua:37
-msgid "Notification"
-msgstr "إشعار"
+msgid   "Notification"
+msgstr  "إشعار"
 
 #: ../NotificationView.lua:57
-msgid "Cleared all notifications!"
-msgstr "مسح كافة الإخطارات!"
+msgid   "Cleared all notifications!"
+msgstr  "مسح كافة الإخطارات!"
 
 #: ../NotificationView.lua:104
-msgid "No notification"
-msgstr "لا يوجد إشعار"
+msgid   "No notification"
+msgstr  "لا يوجد إشعار"
 
 #: ../NotificationView.lua:160
-msgid "Delete this notification?"
-msgstr "هل تريد حذف هذا الإشعار؟"
+msgid   "Delete this notification?"
+msgstr  "هل تريد حذف هذا الإشعار؟"
 
 #: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
 #: ../PlaylistDialog.lua:232
-msgid "Delete"
-msgstr "يمسح"
+msgid   "Delete"
+msgstr  "يمسح"
 
 #: ../OfflineAlertDialog.lua:44
-msgid "Some features may be limited"
-msgstr "قد تكون بعض الميزات محدودة"
+msgid   "Some features may be limited"
+msgstr  "قد تكون بعض الميزات محدودة"
 
 #: ../OfflineAlertDialog.lua:44
-msgid "You appear to be offline"
-msgstr "يبدو أنك غير متصل"
+msgid   "You appear to be offline"
+msgstr  "يبدو أنك غير متصل"
 
 #: ../OfflineAlertDialog.lua:45
-msgid "• You can still read any downloaded manga chapters"
-msgstr "• لا يزال بإمكانك قراءة أي فصول مانغا تم تنزيلها"
+msgid   "• You can still read any downloaded manga chapters"
+msgstr  "• لا يزال بإمكانك قراءة أي فصول مانغا تم تنزيلها"
 
 #: ../OfflineAlertDialog.lua:46
-msgid "• Your library content will be available"
-msgstr "• سيكون محتوى مكتبتك متاحًا"
+msgid   "• Your library content will be available"
+msgstr  "• سيكون محتوى مكتبتك متاحًا"
 
 #: ../OfflineAlertDialog.lua:47
-msgid "• New content and updates require a connection"
-msgstr "• المحتوى الجديد والتحديثات تتطلب اتصالاً"
+msgid   "• New content and updates require a connection"
+msgstr  "• المحتوى الجديد والتحديثات تتطلب اتصالاً"
 
 #: ../OfflineAlertDialog.lua:54
-msgid "Close"
-msgstr "يغلق"
+msgid   "Close"
+msgstr  "يغلق"
 
 #: ../OfflineAlertDialog.lua:64
-msgid "Do not show this message again"
-msgstr "لا تظهر هذه الرسالة مرة أخرى"
+msgid   "Do not show this message again"
+msgstr  "لا تظهر هذه الرسالة مرة أخرى"
 
 #: ../PlaylistDialog.lua:131
-msgid "Rename Playlist"
-msgstr "إعادة تسمية قائمة التشغيل"
+msgid   "Rename Playlist"
+msgstr  "إعادة تسمية قائمة التشغيل"
 
 #: ../PlaylistDialog.lua:136
-msgid "Save"
-msgstr "يحفظ"
+msgid   "Save"
+msgstr  "يحفظ"
 
 #: ../PlaylistDialog.lua:158
-msgid "Delete playlist"
-msgstr "حذف قائمة التشغيل"
+msgid   "Delete playlist"
+msgstr  "حذف قائمة التشغيل"
 
 #: ../PlaylistDialog.lua:227
-msgid "Rename"
-msgstr "إعادة تسمية"
+msgid   "Rename"
+msgstr  "إعادة تسمية"
 
-#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:310
-msgid "New Playlist"
-msgstr "قائمة تشغيل جديدة"
+#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
+msgid   "New Playlist"
+msgstr  "قائمة تشغيل جديدة"
 
 #: ../PlaylistDialog.lua:251
-msgid "Playlist name"
-msgstr "اسم قائمة التشغيل"
+msgid   "Playlist name"
+msgstr  "اسم قائمة التشغيل"
 
 #: ../PlaylistDialog.lua:264
-msgid "Create"
-msgstr "يخلق"
+msgid   "Create"
+msgstr  "يخلق"
 
-#: ../PlaylistDialog.lua:322
-msgid "No playlists yet."
-msgstr "لا توجد قوائم تشغيل حتى الآن."
+#: ../PlaylistDialog.lua:324
+msgid   "No playlists yet."
+msgstr  "لا توجد قوائم تشغيل حتى الآن."
 
 #: ../Settings.lua:44
-msgid "Library view mode"
-msgstr "وضع عرض المكتبة"
+msgid   "Library view mode"
+msgstr  "وضع عرض المكتبة"
 
 #: ../Settings.lua:46
-msgid "Base"
-msgstr "قاعدة"
+msgid   "Base"
+msgstr  "قاعدة"
 
 #: ../Settings.lua:47
-msgid "Cover"
-msgstr "غطاء"
+msgid   "Cover"
+msgstr  "غطاء"
 
 #: ../Settings.lua:48
-msgid "Grid"
-msgstr "شبكة"
+msgid   "Grid"
+msgstr  "شبكة"
 
 #: ../Settings.lua:57
-msgid "Library sorting mode"
-msgstr "وضع فرز المكتبة"
+msgid   "Library sorting mode"
+msgstr  "وضع فرز المكتبة"
 
 #: ../Settings.lua:59
-msgid "Order added ascending (Default)"
-msgstr "تمت إضافة الطلب تصاعديًا (افتراضي)"
+msgid   "Order added ascending (Default)"
+msgstr  "تمت إضافة الطلب تصاعديًا (افتراضي)"
 
 #: ../Settings.lua:60
-msgid "Order added descending"
-msgstr "تمت إضافة الطلب تنازليًا"
+msgid   "Order added descending"
+msgstr  "تمت إضافة الطلب تنازليًا"
 
 #: ../Settings.lua:61
-msgid "Title manga ascending"
-msgstr "عنوان المانجا تصاعدي"
+msgid   "Title manga ascending"
+msgstr  "عنوان المانجا تصاعدي"
 
 #: ../Settings.lua:62
-msgid "Title manga descending"
-msgstr "عنوان المانجا تنازلي"
+msgid   "Title manga descending"
+msgstr  "عنوان المانجا تنازلي"
 
 #: ../Settings.lua:63
-msgid "Count unread chapters ascending"
-msgstr "عد الفصول غير المقروءة تصاعديا"
+msgid   "Count unread chapters ascending"
+msgstr  "عد الفصول غير المقروءة تصاعديا"
 
 #: ../Settings.lua:64
-msgid "Count unread chapters descending"
-msgstr "عد الفصول غير المقروءة تنازليا"
+msgid   "Count unread chapters descending"
+msgstr  "عد الفصول غير المقروءة تنازليا"
 
 #: ../Settings.lua:65
-msgid "Last read ascending"
-msgstr "آخر قراءة تصاعدي"
+msgid   "Last read ascending"
+msgstr  "آخر قراءة تصاعدي"
 
 #: ../Settings.lua:66
-msgid "Last read descending"
-msgstr "آخر قراءة تنازلي"
+msgid   "Last read descending"
+msgstr  "آخر قراءة تنازلي"
 
 #: ../Settings.lua:67
-msgid "Source ascending"
-msgstr "المصدر تصاعدي"
+msgid   "Source ascending"
+msgstr  "المصدر تصاعدي"
 
 #: ../Settings.lua:68
-msgid "Source descending"
-msgstr "مصدر تنازلي"
+msgid   "Source descending"
+msgstr  "مصدر تنازلي"
 
 #: ../Settings.lua:76
-msgid "Items per page (0 = auto)"
-msgstr "العناصر لكل صفحة (0 = تلقائي)"
+msgid   "Items per page (0 = auto)"
+msgstr  "العناصر لكل صفحة (0 = تلقائي)"
 
 #: ../Settings.lua:87
-msgid "Grid columns"
-msgstr "أعمدة الشبكة"
+msgid   "Grid columns"
+msgstr  "أعمدة الشبكة"
 
 #: ../Settings.lua:98
-msgid "Grid rows"
-msgstr "صفوف الشبكة"
+msgid   "Grid rows"
+msgstr  "صفوف الشبكة"
 
 #: ../Settings.lua:107
-msgid "Reader"
-msgstr "قارئ"
+msgid   "Reader"
+msgstr  "قارئ"
 
 #: ../Settings.lua:113
-msgid "Chapter sorting mode"
-msgstr "وضع فرز الفصل"
+msgid   "Chapter sorting mode"
+msgstr  "وضع فرز الفصل"
 
 #: ../Settings.lua:115
-msgid "By chapter ascending"
-msgstr "حسب الفصل تصاعديا"
+msgid   "By chapter ascending"
+msgstr  "حسب الفصل تصاعديا"
 
 #: ../Settings.lua:116
-msgid "By chapter descending"
-msgstr "حسب الفصل تنازليا"
+msgid   "By chapter descending"
+msgstr  "حسب الفصل تنازليا"
 
 #: ../Settings.lua:124
-msgid "Preload chapters on reader open"
-msgstr "التحميل المسبق للفصول على القارئ مفتوح"
+msgid   "Preload chapters on reader open"
+msgstr  "التحميل المسبق للفصول على القارئ مفتوح"
 
 #: ../Settings.lua:135
-msgid "Optimize page images (experimental)"
-msgstr "تحسين صور الصفحة (تجريبي)"
+msgid   "Optimize page images (experimental)"
+msgstr  "تحسين صور الصفحة (تجريبي)"
 
 #: ../Settings.lua:143
-msgid "Concurrent page requests"
-msgstr "طلبات الصفحة المتزامنة"
+msgid   "Concurrent page requests"
+msgstr  "طلبات الصفحة المتزامنة"
 
 #: ../Settings.lua:152
-msgid "Storage"
-msgstr "تخزين"
+msgid   "Storage"
+msgstr  "تخزين"
 
 #: ../Settings.lua:158
-msgid "Chapter storage path"
-msgstr "مسار تخزين الفصل"
+msgid   "Chapter storage path"
+msgstr  "مسار تخزين الفصل"
 
 #: ../Settings.lua:167
-msgid "Storage size limit"
-msgstr "الحد الأقصى لحجم التخزين"
+msgid   "Storage size limit"
+msgstr  "الحد الأقصى لحجم التخزين"
 
 #: ../Settings.lua:175
-msgid "Sync & Updates"
-msgstr "المزامنة والتحديثات"
+msgid   "Sync & Updates"
+msgstr  "المزامنة والتحديثات"
 
 #: ../Settings.lua:181
-msgid "WebDAV Sync"
-msgstr "مزامنة WebDAV"
+msgid   "WebDAV Sync"
+msgstr  "مزامنة WebDAV"
 
 #: ../Settings.lua:189
-msgid "Enabled cron check for manga updates"
-msgstr "تمكين التحقق من تحديثات المانجا"
+msgid   "Enabled cron check for manga updates"
+msgstr  "تمكين التحقق من تحديثات المانجا"
 
 #: ../Settings.lua:197
-msgid "Source IDs skip check update"
-msgstr "معرفات المصدر تخطي تحديث التحقق"
+msgid   "Source IDs skip check update"
+msgstr  "معرفات المصدر تخطي تحديث التحقق"
 
 #: ../Settings.lua:203
-msgid "System"
-msgstr "نظام"
+msgid   "System"
+msgstr  "نظام"
 
 #: ../Settings.lua:209
-msgid "Allow requisition of the back button"
-msgstr "السماح بطلب زر الرجوع"
+msgid   "Allow requisition of the back button"
+msgstr  "السماح بطلب زر الرجوع"
 
 #: ../SourceSettings.lua:197
-msgid "Source settings"
-msgstr "إعدادات المصدر"
+msgid   "Source settings"
+msgstr  "إعدادات المصدر"
 
 #: ../UpdateChecker.lua:24
-msgid "Cannot check for updates while offline"
-msgstr "لا يمكن التحقق من وجود تحديثات أثناء عدم الاتصال بالإنترنت"
+msgid   "Cannot check for updates while offline"
+msgstr  "لا يمكن التحقق من وجود تحديثات أثناء عدم الاتصال بالإنترنت"
 
 #: ../UpdateChecker.lua:39
-msgid "You're running the latest version!"
-msgstr "أنت تقوم بتشغيل أحدث إصدار!"
+msgid   "You're running the latest version!"
+msgstr  "أنت تقوم بتشغيل أحدث إصدار!"
 
 #: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
 #, lua-format
-msgid "Version"
-msgstr "إصدار"
+msgid   "Version"
+msgstr  "إصدار"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid "Would you like to update now?"
-msgstr "هل ترغب بالتحديث الآن؟"
+msgid   "Would you like to update now?"
+msgstr  "هل ترغب بالتحديث الآن؟"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid "You're currently running version "
-msgstr "أنت تقوم حاليًا بتشغيل الإصدار"
+msgid   "You're currently running version "
+msgstr  "أنت تقوم حاليًا بتشغيل الإصدار"
 
 #: ../UpdateChecker.lua:50
 #, lua-format
-msgid "is available"
-msgstr "متاح"
+msgid   "is available"
+msgstr  "متاح"
 
 #: ../UpdateChecker.lua:58
-msgid "Later"
-msgstr "لاحقاً"
+msgid   "Later"
+msgstr  "لاحقاً"
 
 #: ../UpdateChecker.lua:64
-msgid "Update Now"
-msgstr "التحديث الآن"
+msgid   "Update Now"
+msgstr  "التحديث الآن"
 
 #: ../UpdateChecker.lua:74
 #, lua-format
-msgid "is available. You're currently running version "
-msgstr "متاح. "
+msgid   "is available. You're currently running version "
+msgstr  "متاح. "
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid "This update cannot be installed automatically"
-msgstr "لا يمكن تثبيت هذا التحديث تلقائيًا"
+msgid   "This update cannot be installed automatically"
+msgstr  "لا يمكن تثبيت هذا التحديث تلقائيًا"
 
 #: ../UpdateChecker.lua:75
 #, lua-format
-msgid "please visit the user guide for instructions."
-msgstr "يرجى زيارة دليل المستخدم للحصول على التعليمات."
+msgid   "please visit the user guide for instructions."
+msgstr  "يرجى زيارة دليل المستخدم للحصول على التعليمات."
 
 #: ../UpdateChecker.lua:83
-msgid "OK"
-msgstr "نعم"
+msgid   "OK"
+msgstr  "نعم"
 
 #: ../UpdateChecker.lua:103
-msgid "Updating rakuyomi, please wait..."
-msgstr "جارٍ تحديث rakuyomi، يرجى الانتظار..."
+msgid   "Updating rakuyomi, please wait..."
+msgstr  "جارٍ تحديث rakuyomi، يرجى الانتظار..."
 
 #: ../UpdateChecker.lua:119
-msgid "Restart Now"
-msgstr "أعد التشغيل الآن"
+msgid   "Restart Now"
+msgstr  "أعد التشغيل الآن"
 
 #: ../UpdateChecker.lua:130
-msgid "KOReader needs to be restarted to apply the changes."
-msgstr "يحتاج KOReader إلى إعادة التشغيل لتطبيق التغييرات."
+msgid   "KOReader needs to be restarted to apply the changes."
+msgstr  "يحتاج KOReader إلى إعادة التشغيل لتطبيق التغييرات."
 
 #: ../UpdateChecker.lua:130
-msgid "The update has been installed successfully"
-msgstr "تم تثبيت التحديث بنجاح"
+msgid   "The update has been installed successfully"
+msgstr  "تم تثبيت التحديث بنجاح"
 
 #: ../UpdateChecker.lua:140
-msgid "Restarting..."
-msgstr "جارٍ إعادة التشغيل..."
+msgid   "Restarting..."
+msgstr  "جارٍ إعادة التشغيل..."
 
 #: ../_meta.lua:5
-msgid "rakuyomi"
-msgstr "راكويومي"
+msgid   "rakuyomi"
+msgstr  "راكويومي"
 
 #: ../_meta.lua:6
-msgid "Download mangas on your e-book reader!"
-msgstr "قم بتنزيل mangas على قارئ الكتب الإلكترونية الخاص بك!"
+msgid   "Download mangas on your e-book reader!"
+msgstr  "قم بتنزيل mangas على قارئ الكتب الإلكترونية الخاص بك!"
 
 #: ../handlers/addToPlaylist.lua:17
-msgid "Added to"
-msgstr "يضاف إلى"
+msgid   "Added to"
+msgstr  "يضاف إلى"
 
 #: ../main.lua:39 ../main.lua:63
-msgid "Rakuyomi"
-msgstr "راكويومي"
+msgid   "Rakuyomi"
+msgstr  "راكويومي"
 
 #: ../main.lua:79
-msgid "Oops!"
-msgstr "أُووبس!"
+msgid   "Oops!"
+msgstr  "أُووبس!"
 
 #: ../main.lua:79
-msgid "Rakuyomi encountered an issue while starting up!"
-msgstr "واجه Rakuyomi مشكلة أثناء بدء التشغيل!"
+msgid   "Rakuyomi encountered an issue while starting up!"
+msgstr  "واجه Rakuyomi مشكلة أثناء بدء التشغيل!"
 
 #: ../main.lua:80
-msgid "Here are some messages that might help identify the problem:"
-msgstr "فيما يلي بعض الرسائل التي قد تساعد في تحديد المشكلة:"
+msgid   "Here are some messages that might help identify the problem:"
+msgstr  "فيما يلي بعض الرسائل التي قد تساعد في تحديد المشكلة:"
 
 #: ../utils/calcLastReadText.lua:13
-msgid "jnow"
-msgstr "com.jnow"
+msgid   "jnow"
+msgstr  "com.jnow"
 
 #: ../utils/calcLastReadText.lua:13
-msgid "just now"
-msgstr "الآن"
+msgid   "just now"
+msgstr  "الآن"
 
 #: ../utils/calcLastReadText.lua:15
 #, lua-format
-msgid "%dm"
-msgstr "%dm"
+msgid   "%dm"
+msgstr  "%dm"
 
 #: ../utils/calcLastReadText.lua:15
-msgid "minutes"
-msgstr "دقائق"
+msgid   "minutes"
+msgstr  "دقائق"
 
 #: ../utils/calcLastReadText.lua:17
 #, lua-format
-msgid "%dh"
-msgstr "%dh"
+msgid   "%dh"
+msgstr  "%dh"
 
 #: ../utils/calcLastReadText.lua:17
-msgid "hours"
-msgstr "ساعات"
+msgid   "hours"
+msgstr  "ساعات"
 
 #: ../utils/calcLastReadText.lua:19
 #, lua-format
-msgid "%dd"
-msgstr "%dd"
+msgid   "%dd"
+msgstr  "%dd"
 
 #: ../utils/calcLastReadText.lua:19
-msgid "days"
-msgstr "أيام"
+msgid   "days"
+msgstr  "أيام"
 
 #: ../utils/calcLastReadText.lua:21
 #, lua-format
-msgid "%dw"
-msgstr "%dw"
+msgid   "%dw"
+msgstr  "%dw"
 
 #: ../utils/calcLastReadText.lua:21
-msgid "weeks"
-msgstr "أسابيع"
+msgid   "weeks"
+msgstr  "أسابيع"
 
 #: ../utils/calcLastReadText.lua:23
 #, lua-format
-msgid "%dM"
-msgstr "%dM"
+msgid   "%dM"
+msgstr  "%dM"
 
 #: ../utils/calcLastReadText.lua:23
-msgid "months"
-msgstr "شهور"
+msgid   "months"
+msgstr  "شهور"
 
 #: ../utils/calcLastReadText.lua:25
 #, lua-format
-msgid "%dy"
-msgstr "%dy"
+msgid   "%dy"
+msgstr  "%dy"
 
 #: ../utils/calcLastReadText.lua:25
-msgid "years"
-msgstr "سنين"
+msgid   "years"
+msgstr  "سنين"
 
 #: ../utils/getChapterDisplayName.lua:5
-msgid "Vol."
-msgstr "المجلد."
+msgid   "Vol."
+msgstr  "المجلد."
 
 #: ../utils/getChapterDisplayName.lua:6
-msgid "Ch."
-msgstr "الفصل."
+msgid   "Ch."
+msgstr  "الفصل."
 
 #: ../widgets/Menu.lua:82
-msgid "Offline mode"
-msgstr "وضع غير متصل بالشبكة"
+msgid   "Offline mode"
+msgstr  "وضع غير متصل بالشبكة"
 
 #: ../widgets/SettingItemValue.lua:162
-msgid "Ok"
-msgstr "نعم"
+msgid   "Ok"
+msgstr  "نعم"
 
 #: ../widgets/SettingItemValue.lua:168
-msgid "Executing..."
-msgstr "جاري التنفيذ..."
+msgid   "Executing..."
+msgstr  "جاري التنفيذ..."
 
 #: ../widgets/SettingItemValue.lua:181
-msgid "Done"
-msgstr "منتهي"
+msgid   "Done"
+msgstr  "منتهي"
 
 #: ../widgets/SettingItemValue.lua:236
-msgid "Select"
-msgstr "يختار"
+msgid   "Select"
+msgstr  "يختار"

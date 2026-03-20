@@ -6,7 +6,10 @@ use axum::{Json, Router};
 use futures::Future;
 use log::warn;
 use serde::{Deserialize, Serialize};
-use shared::model::{ChapterId, MangaId, NotificationInformation};
+use shared::model::{
+    ChapterId, MangaId, NotificationInformation, TrackingCandidate, TrackingService,
+    TrackingSyncDirection, TrackingSyncResult,
+};
 use shared::usecases;
 use tokio_util::sync::CancellationToken;
 
@@ -85,6 +88,23 @@ pub fn routes() -> Router<State> {
         .route(
             "/mangas/{source_id}/{manga_id}/preferred-scanlator",
             post(set_manga_preferred_scanlator),
+        )
+        .route("/mangas/{source_id}/{manga_id}/tracking", get(list_tracking_bindings))
+        .route(
+            "/mangas/{source_id}/{manga_id}/tracking/search",
+            post(search_tracking_candidates),
+        )
+        .route(
+            "/mangas/{source_id}/{manga_id}/tracking/link",
+            post(link_tracking_binding),
+        )
+        .route(
+            "/mangas/{source_id}/{manga_id}/tracking/sync",
+            post(sync_tracking_bindings),
+        )
+        .route(
+            "/mangas/{source_id}/{manga_id}/tracking/{service}",
+            delete(unlink_tracking_binding),
         )
 }
 
@@ -540,18 +560,29 @@ async fn mark_chapters_as_read(
     StateExtractor(State {
         database,
         chapter_storage,
+        settings,
+        settings_path,
         ..
     }): StateExtractor<State>,
     Path(params): Path<MangaChaptersPathParams>,
     Json(MangaMarkChaptersAsRead { range, state }): Json<MangaMarkChaptersAsRead>,
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
+    let database_handle = database.clone();
+    let settings_handle = settings.clone();
     let database = database.lock().await;
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
-        usecases::mark_chapters_as_read(&database, chapter_storage, manga_id, &range, state)
+        usecases::mark_chapters_as_read(&database, chapter_storage, &manga_id, &range, state)
             .await?;
+
+    spawn_tracking_sync_after_local_update(
+        database_handle,
+        settings_handle,
+        settings_path,
+        manga_id,
+    );
 
     Ok(Json(count))
 }
@@ -625,28 +656,54 @@ struct MarkChapterAsReadBody {
     state: Option<bool>,
 }
 async fn mark_chapter_as_read(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        settings,
+        settings_path,
+        ..
+    }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
+    let database_handle = database.clone();
+    let settings_handle = settings.clone();
     let database = database.lock().await;
 
     usecases::mark_chapter_as_read(&database, &chapter_id, state).await?;
+    spawn_tracking_sync_after_local_update(
+        database_handle,
+        settings_handle,
+        settings_path,
+        chapter_id.manga_id().clone(),
+    );
 
     Ok(Json(()))
 }
 
 async fn update_last_read(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        settings,
+        settings_path,
+        ..
+    }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
+    let database_handle = database.clone();
+    let settings_handle = settings.clone();
     let database = database.lock().await;
 
     usecases::update_last_read_chapter(&database, &chapter_id).await?;
+    spawn_tracking_sync_after_local_update(
+        database_handle,
+        settings_handle,
+        settings_path,
+        chapter_id.manga_id().clone(),
+    );
 
     Ok(Json(()))
 }
@@ -682,6 +739,134 @@ async fn set_manga_preferred_scanlator(
     usecases::set_manga_preferred_scanlator(&database, manga_id, body.preferred_scanlator).await?;
 
     Ok(Json(()))
+}
+
+async fn list_tracking_bindings(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+) -> Result<Json<Vec<shared::model::TrackingBinding>>, AppError> {
+    let manga_id = MangaId::from(params);
+    let database = database.lock().await;
+
+    Ok(Json(usecases::list_tracking_bindings(&database, &manga_id).await?))
+}
+
+#[derive(Deserialize)]
+struct SearchTrackingCandidatesBody {
+    service: TrackingService,
+    query: String,
+}
+
+async fn search_tracking_candidates(
+    StateExtractor(State { settings, settings_path, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(_params): Path<MangaChaptersPathParams>,
+    Json(body): Json<SearchTrackingCandidatesBody>,
+) -> Result<Json<Vec<TrackingCandidate>>, AppError> {
+    let mut settings = settings.lock().await;
+    let results =
+        usecases::search_tracking_candidates(&mut settings, body.service, &body.query).await?;
+
+    settings.save_to_file(&settings_path)?;
+
+    Ok(Json(results))
+}
+
+async fn link_tracking_binding(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+    Json(candidate): Json<TrackingCandidate>,
+) -> Result<Json<()>, AppError> {
+    let manga_id = MangaId::from(params);
+    let database = database.lock().await;
+
+    usecases::link_tracking_binding(&database, &manga_id, &candidate).await?;
+
+    Ok(Json(()))
+}
+
+#[derive(Deserialize)]
+struct SyncTrackingBindingsBody {
+    service: Option<TrackingService>,
+    direction: TrackingSyncDirection,
+}
+
+async fn sync_tracking_bindings(
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        settings,
+        settings_path,
+        ..
+    }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+    Json(body): Json<SyncTrackingBindingsBody>,
+) -> Result<Json<Vec<TrackingSyncResult>>, AppError> {
+    let manga_id = MangaId::from(params);
+    let mut settings = settings.lock().await;
+    let database = database.lock().await;
+    let chapter_storage = chapter_storage.lock().await;
+
+    let results = usecases::sync_manga_tracking(
+        &database,
+        &chapter_storage,
+        &mut settings,
+        &manga_id,
+        body.service,
+        body.direction,
+    )
+    .await?;
+
+    settings.save_to_file(&settings_path)?;
+
+    Ok(Json(results))
+}
+
+#[derive(Deserialize)]
+struct TrackingBindingPathParams {
+    source_id: String,
+    manga_id: String,
+    service: String,
+}
+
+async fn unlink_tracking_binding(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<TrackingBindingPathParams>,
+) -> Result<Json<()>, AppError> {
+    let service = TrackingService::try_from(params.service.as_str())?;
+    let manga_id = MangaId::from_strings(params.source_id, params.manga_id);
+    let database = database.lock().await;
+
+    usecases::unlink_tracking_binding(&database, &manga_id, service).await?;
+
+    Ok(Json(()))
+}
+
+fn spawn_tracking_sync_after_local_update(
+    database: std::sync::Arc<tokio::sync::Mutex<shared::database::Database>>,
+    settings: std::sync::Arc<tokio::sync::Mutex<shared::settings::Settings>>,
+    settings_path: std::path::PathBuf,
+    manga_id: MangaId,
+) {
+    tokio::spawn(async move {
+        let mut settings = settings.lock().await;
+        if !settings.tracking_auto_sync {
+            return;
+        }
+
+        let database = database.lock().await;
+        if let Err(err) =
+            usecases::sync_manga_tracking_push(&database, &mut settings, &manga_id).await
+        {
+            warn!("tracking auto-sync failed for {:?}: {err:#}", manga_id.value());
+        } else {
+            let _ = settings.save_to_file(&settings_path);
+        }
+    });
 }
 
 type CancelTokenStore =

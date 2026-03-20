@@ -33,9 +33,9 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
---- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
+--- @class ButtonDefinition: { type: 'button', title: string, key: string|nil, callback: (fun():nil)|nil, confirm_title: string|nil, confirm_message: string|nil }
 
---- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
+--- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition|ButtonDefinition
 
 --- @class SettingItemValue: { [any]: any }
 --- @field value_definition ValueDefinition
@@ -156,6 +156,10 @@ function SettingItemValue:createValueWidget()
     return ButtonWidget:new {
       text = self.value_definition.title,
       callback = function()
+        if self.value_definition.callback then
+          self.value_definition.callback()
+          return
+        end
         local confirm_dialog
         confirm_dialog = ConfirmBox:new {
           text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,

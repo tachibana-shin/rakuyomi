@@ -1,6 +1,6 @@
 use anyhow::Context;
 use axum::extract::State as StateExtractor;
-use axum::routing::{get, put};
+use axum::routing::{get, post, put};
 use axum::{Json, Router};
 use shared::usecases;
 use shared::usecases::update_settings::UpdateableSettings;
@@ -12,6 +12,7 @@ pub fn routes() -> Router<State> {
     Router::new()
         .route("/settings", get(get_settings))
         .route("/settings", put(update_settings))
+        .route("/settings/tracking/validate", post(validate_tracking_settings))
 }
 
 async fn get_settings(
@@ -47,4 +48,20 @@ async fn update_settings(
     }
 
     Ok(Json(UpdateableSettings::from(&*settings)))
+}
+#[derive(serde::Deserialize)]
+struct ValidateTrackingRequest {
+    service: shared::model::TrackingService,
+}
+
+async fn validate_tracking_settings(
+    StateExtractor(State { settings, settings_path, .. }): StateExtractor<State>,
+    Json(body): Json<ValidateTrackingRequest>,
+) -> Result<Json<()>, AppError> {
+    let mut settings = settings.lock().await;
+    usecases::validate_tracking_settings(&mut settings, body.service).await?;
+
+    settings.save_to_file(&settings_path)?;
+
+    Ok(Json(()))
 }

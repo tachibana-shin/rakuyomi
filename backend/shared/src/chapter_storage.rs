@@ -1,5 +1,4 @@
 use std::io::Cursor;
-use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::{fs, future::Future};
 
@@ -218,6 +217,21 @@ impl ChapterStorage {
         }
     }
 
+    pub fn is_stored_chapter_in_index(
+        &self,
+        id: &ChapterId,
+        index: &std::collections::HashSet<PathBuf>,
+    ) -> bool {
+        let candidates = [
+            self.path_for_chapter(id, false),
+            self.path_for_chapter(id, true),
+            self.path_for_chapter_legacy(id, false),
+            self.path_for_chapter_legacy(id, true),
+        ];
+
+        candidates.into_iter().any(|path| index.contains(&path))
+    }
+
     pub fn get_path_to_store_chapter(&self, id: &ChapterId, is_novel: bool) -> PathBuf {
         // New chapters should always use the new path format
         self.path_for_chapter(id, is_novel)
@@ -248,7 +262,7 @@ impl ChapterStorage {
         errors: &Vec<crate::chapter_downloader::DownloadError>,
     ) -> Result<PathBuf> {
         let mut current_size = self.calculate_storage_size();
-        let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.size());
+        let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.len());
 
         while current_size + persisted_chapter_size > self.storage_size_limit {
             debug!(
@@ -298,7 +312,7 @@ impl ChapterStorage {
     fn calculate_storage_size(&self) -> Size {
         let size_in_bytes: u64 = self
             .chapter_files_iterator()
-            .filter_map(|entry| entry.metadata().ok().map(|metadata| metadata.size()))
+            .filter_map(|entry| entry.metadata().ok().map(|metadata| metadata.len()))
             .sum();
 
         Size::from_bytes(size_in_bytes)

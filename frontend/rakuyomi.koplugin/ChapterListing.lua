@@ -40,6 +40,46 @@ local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local findNextChapter = require("chapters/findNextChapter")
 
+local function trackingServiceLabel(service)
+  if service == "anilist" then
+    return "AniList"
+  elseif service == "myanimelist" then
+    return "MyAnimeList"
+  elseif service == "shikimori" then
+    return "Shikimori"
+  elseif service == "kavita" then
+    return "Kavita"
+  end
+
+  return service
+end
+
+local function findTrackingBinding(bindings, service)
+  for _, binding in ipairs(bindings or {}) do
+    if binding.service == service then
+      return binding
+    end
+  end
+
+  return nil
+end
+
+local function formatTrackingCandidate(candidate)
+  local suffix = {}
+  if candidate.total_chapters ~= nil then
+    table.insert(suffix, _("Chapters") .. ": " .. candidate.total_chapters)
+  end
+  if candidate.total_volumes ~= nil then
+    table.insert(suffix, _("Volumes") .. ": " .. candidate.total_volumes)
+  end
+
+  if #suffix == 0 then
+    return candidate.title
+  end
+
+  return candidate.title .. " (" .. table.concat(suffix, ", ") .. ")"
+end
+
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local Font = require("ui/font")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
@@ -989,6 +1029,16 @@ function ChapterListing:openMenu()
     },
     {
       {
+        text = Icons.SYNC .. " " .. _("Tracking"),
+        callback = function()
+          UIManager:close(dialog)
+
+          self:openTrackingMenu()
+        end
+      }
+    },
+    {
+      {
         text = Icons.CHECK_ALL .. " " .. _("Mark read"),
         callback = function()
           UIManager:close(dialog)
@@ -1075,6 +1125,249 @@ function ChapterListing:openMenu()
   }
 
   UIManager:show(dialog)
+end
+
+function ChapterListing:openTrackingMenu()
+  local services = { "anilist", "myanimelist", "shikimori", "kavita" }
+  local buttons = {}
+  local dialog
+
+  for _, s in ipairs(services) do
+    table.insert(buttons, {
+      {
+        text = trackingServiceLabel(s),
+        callback = function()
+          UIManager:close(dialog)
+          self:openTrackingServiceActions(s)
+        end
+      }
+    })
+  end
+
+  dialog = ButtonDialog:new {
+    title = _("Select Tracking Service"),
+    buttons = buttons,
+  }
+
+  UIManager:show(dialog)
+end
+
+function ChapterListing:openTrackingServiceActions(service)
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(
+      _("Loading tracking..."),
+      function()
+        return Backend.getTrackingBindings(self.manga.source.id, self.manga.id)
+      end
+    )
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    local bindings = response.body or {}
+    local binding = findTrackingBinding(bindings, service)
+    local dialog
+    local buttons = {}
+
+    -- Link / Relink
+    table.insert(buttons, {
+      {
+        text = Icons.SYNC .. " " .. (binding and _("Relink") or _("Link")),
+        callback = function()
+          UIManager:close(dialog)
+          self:openTrackingSearch(service)
+        end
+      }
+    })
+
+    if binding then
+      -- Pull & Push
+      table.insert(buttons, {
+        {
+          text = Icons.INFO .. " " .. _("Pull progress"),
+          callback = function()
+            UIManager:close(dialog)
+            self:syncTrackingService(service, "pull")
+          end
+        },
+        {
+          text = Icons.SYNC .. " " .. _("Push progress"),
+          callback = function()
+            UIManager:close(dialog)
+            self:syncTrackingService(service, "push")
+          end
+        }
+      })
+
+      -- Unlink
+      table.insert(buttons, {
+        {
+          text = Icons.FA_TRASH .. " " .. _("Unlink") .. " (" .. binding.remote_title .. ")",
+          callback = function()
+            UIManager:close(dialog)
+            self:unlinkTrackingService(service)
+          end
+        }
+      })
+    end
+
+    dialog = ButtonDialog:new {
+      title = trackingServiceLabel(service),
+      buttons = buttons,
+    }
+
+    UIManager:show(dialog)
+  end)
+end
+
+function ChapterListing:openTrackingSearch(service)
+  local input_dialog
+  input_dialog = InputDialog:new {
+    title = _("Search tracker title"),
+    input = self.manga.title,
+    input_hint = trackingServiceLabel(service),
+    description = _("Search for a matching manga entry to link with this title."),
+    buttons = {
+      {
+        {
+          text = _("Cancel"),
+          id = "close",
+          callback = function()
+            UIManager:close(input_dialog)
+          end
+        },
+        {
+          text = _("Search"),
+          is_enter_default = true,
+          callback = function()
+            local query = input_dialog:getInputText()
+            UIManager:close(input_dialog)
+
+            Trapper:wrap(function()
+              local response = LoadingDialog:showAndRun(
+                _("Searching tracker..."),
+                function()
+                  return Backend.searchTrackingCandidates(self.manga.source.id, self.manga.id, service, query)
+                end
+              )
+
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+                return
+              end
+
+              if #response.body == 0 then
+                UIManager:show(InfoMessage:new { text = _("No tracking results found.") })
+                return
+              end
+
+              self:showTrackingCandidates(service, response.body)
+            end)
+          end
+        }
+      }
+    }
+  }
+
+  UIManager:show(input_dialog)
+  input_dialog:onShowKeyboard()
+end
+
+function ChapterListing:showTrackingCandidates(service, candidates)
+  local dialog
+  local buttons = {}
+
+  for __, candidate in ipairs(candidates) do
+    table.insert(buttons, {
+      {
+        text = formatTrackingCandidate(candidate),
+        callback = function()
+          UIManager:close(dialog)
+
+          Trapper:wrap(function()
+            local response = LoadingDialog:showAndRun(
+              _("Linking tracker entry..."),
+              function()
+                return Backend.linkTrackingBinding(self.manga.source.id, self.manga.id, candidate)
+              end
+            )
+
+            if response.type == 'ERROR' then
+              ErrorDialog:show(response.message)
+              return
+            end
+
+            UIManager:show(InfoMessage:new {
+              text = _("Linked with") .. " " .. trackingServiceLabel(service) .. ": " .. candidate.title,
+            })
+          end)
+        end
+      }
+    })
+  end
+
+  dialog = ButtonDialog:new {
+    title = trackingServiceLabel(service),
+    buttons = buttons,
+  }
+
+  UIManager:show(dialog)
+end
+
+function ChapterListing:syncTrackingService(service, direction)
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(
+      direction == "pull" and _("Pulling tracking progress...") or _("Pushing tracking progress..."),
+      function()
+        return Backend.syncTrackingBindings(self.manga.source.id, self.manga.id, service, direction)
+      end
+    )
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    if #response.body == 0 then
+      UIManager:show(InfoMessage:new { text = _("No tracking binding found for this service.") })
+      return
+    end
+
+    local messages = {}
+    for _, result in ipairs(response.body) do
+      table.insert(messages, result.message)
+    end
+
+    if direction == "pull" then
+      self:updateChapterList()
+    end
+
+    UIManager:show(InfoMessage:new {
+      text = table.concat(messages, "\n"),
+    })
+  end)
+end
+
+function ChapterListing:unlinkTrackingService(service)
+  Trapper:wrap(function()
+    local response = LoadingDialog:showAndRun(
+      _("Removing tracking binding..."),
+      function()
+        return Backend.unlinkTrackingBinding(self.manga.source.id, self.manga.id, service)
+      end
+    )
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    UIManager:show(InfoMessage:new {
+      text = _("Unlinked") .. " " .. trackingServiceLabel(service),
+    })
+  end)
 end
 
 function ChapterListing:addToLibrary()

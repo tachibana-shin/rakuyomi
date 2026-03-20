@@ -100,6 +100,45 @@ pub struct Settings {
     #[serde(default)]
     pub api_sync: Option<String>,
 
+    #[serde(default = "default_true")]
+    pub tracking_auto_sync: bool,
+
+    #[serde(default)]
+    pub anilist_access_token: Option<String>,
+
+    #[serde(default)]
+    pub mal_client_id: Option<String>,
+
+    #[serde(default)]
+    pub mal_client_secret: Option<String>,
+
+    #[serde(default)]
+    pub mal_access_token: Option<String>,
+
+    #[serde(default)]
+    pub mal_refresh_token: Option<String>,
+    
+    #[serde(default)]
+    pub anilist_refresh_token: Option<String>,
+
+    #[serde(default)]
+    pub shikimori_client_id: Option<String>,
+
+    #[serde(default)]
+    pub shikimori_client_secret: Option<String>,
+
+    #[serde(default)]
+    pub shikimori_access_token: Option<String>,
+
+    #[serde(default)]
+    pub shikimori_refresh_token: Option<String>,
+
+    #[serde(default)]
+    pub kavita_url: Option<String>,
+
+    #[serde(default)]
+    pub kavita_api_key: Option<String>,
+
     #[serde(default = "default_false")]
     pub enabled_cron_check_mangas_update: bool,
 
@@ -126,6 +165,10 @@ fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {
 
 fn default_false() -> bool {
     false
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for StorageSizeLimit {

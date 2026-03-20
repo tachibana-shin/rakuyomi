@@ -11,15 +11,15 @@ use crate::{
 pub async fn mark_chapters_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
-    manga_id: MangaId,
+    manga_id: &MangaId,
     text: &str,
     state: bool,
 ) -> Result<Option<usize>> {
-    let chapters = super::get_cached_manga_chapters(db, chapter_storage, &manga_id).await?;
+    let chapters = super::get_cached_manga_chapters(db, chapter_storage, manga_id).await?;
 
     let selected_ids = parse_chapter_ranges(&chapters, text)?;
 
-    db.set_chapters_read_state(&manga_id, &selected_ids, state)
+    db.set_chapters_read_state(manga_id, &selected_ids, state)
         .await
 }
 

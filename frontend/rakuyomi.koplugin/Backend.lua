@@ -565,6 +565,91 @@ function Backend.setPreferredScanlator(source_id, manga_id, preferred_scanlator)
   })
 end
 
+--- @class TrackingBinding
+--- @field service string
+--- @field remote_media_id number
+--- @field remote_title string
+--- @field remote_url string|nil
+--- @field total_chapters number|nil
+--- @field total_volumes number|nil
+--- @field last_synced_progress number|nil
+--- @field last_synced_at number|nil
+
+--- @class TrackingCandidate
+--- @field service string
+--- @field remote_media_id number
+--- @field title string
+--- @field url string|nil
+--- @field total_chapters number|nil
+--- @field total_volumes number|nil
+
+--- @class TrackingSyncResult
+--- @field service string
+--- @field direction string
+--- @field local_progress number|nil
+--- @field remote_progress number|nil
+--- @field message string
+
+--- @return SuccessfulResponse<TrackingBinding[]>|ErrorResponse
+function Backend.getTrackingBindings(source_id, manga_id)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking",
+    method = "GET"
+  })
+end
+
+--- @return SuccessfulResponse<TrackingCandidate[]>|ErrorResponse
+function Backend.searchTrackingCandidates(source_id, manga_id, service, query)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/search",
+    method = "POST",
+    body = {
+      service = service,
+      query = query,
+    }
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.linkTrackingBinding(source_id, manga_id, candidate)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/link",
+    method = "POST",
+    body = candidate,
+  })
+end
+
+--- @return SuccessfulResponse<TrackingSyncResult[]>|ErrorResponse
+function Backend.syncTrackingBindings(source_id, manga_id, service, direction)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/sync",
+    method = "POST",
+    body = {
+      service = service,
+      direction = direction,
+    }
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.unlinkTrackingBinding(source_id, manga_id, service)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/" .. service,
+    method = "DELETE",
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.validateTrackingSettings(service)
+  return Backend.requestJson({
+    path = "/settings/tracking/validate",
+    method = "POST",
+    body = {
+      service = service,
+    }
+  })
+end
+
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
 --- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode }

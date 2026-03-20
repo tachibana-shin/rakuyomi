@@ -129,6 +129,109 @@ pub struct MangaState {
     pub preferred_scanlator: Option<String>,
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Hash, Serialize)]
+pub enum TrackingService {
+    #[serde(alias = "anilist")]
+    AniList,
+    #[serde(alias = "myanimelist")]
+    MyAnimeList,
+    #[serde(alias = "shikimori")]
+    Shikimori,
+    #[serde(alias = "kavita")]
+    Kavita,
+}
+
+impl TrackingService {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::AniList => "anilist",
+            Self::MyAnimeList => "myanimelist",
+            Self::Shikimori => "shikimori",
+            Self::Kavita => "kavita",
+        }
+    }
+
+    pub fn display_name(self) -> &'static str {
+        match self {
+            Self::AniList => "AniList",
+            Self::MyAnimeList => "MyAnimeList",
+            Self::Shikimori => "Shikimori",
+            Self::Kavita => "Kavita",
+        }
+    }
+}
+
+impl TryFrom<&str> for TrackingService {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> anyhow::Result<Self> {
+        match value {
+            "anilist" => Ok(Self::AniList),
+            "myanimelist" => Ok(Self::MyAnimeList),
+            "shikimori" => Ok(Self::Shikimori),
+            "kavita" => Ok(Self::Kavita),
+            other => Err(anyhow::anyhow!("unsupported tracking service: {other}")),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TrackingStatus {
+    Current,
+    Completed,
+    Paused,
+    Dropped,
+    Planning,
+    Repeating,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TrackingSyncDirection {
+    Push,
+    Pull,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingBinding {
+    pub service: TrackingService,
+    pub remote_media_id: i64,
+    pub remote_title: String,
+    pub remote_url: Option<Url>,
+    pub total_chapters: Option<i64>,
+    pub total_volumes: Option<i64>,
+    pub last_synced_progress: Option<i64>,
+    pub last_synced_at: Option<i64>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingCandidate {
+    pub service: TrackingService,
+    pub remote_media_id: i64,
+    pub title: String,
+    pub url: Option<Url>,
+    pub total_chapters: Option<i64>,
+    pub total_volumes: Option<i64>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct TrackingProgressSnapshot {
+    pub status: Option<TrackingStatus>,
+    pub chapter_progress: Option<i64>,
+    pub volume_progress: Option<i64>,
+    pub updated_at: Option<i64>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingSyncResult {
+    pub service: TrackingService,
+    pub direction: TrackingSyncDirection,
+    pub local_progress: Option<i64>,
+    pub remote_progress: Option<i64>,
+    pub message: String,
+}
+
 #[derive(Default)]
 pub struct ChapterState {
     pub read: bool,

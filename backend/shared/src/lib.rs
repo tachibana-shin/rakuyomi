@@ -10,6 +10,7 @@ pub mod settings;
 pub mod source;
 pub mod source_collection;
 pub mod source_manager;
+pub mod tracking;
 pub(crate) mod unscrable_image;
 #[cfg(feature = "all")]
 pub mod usecases;

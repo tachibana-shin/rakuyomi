@@ -32,6 +32,19 @@ pub struct UpdateableSettings {
     storage_path: Option<PathBuf>,
     concurrent_requests_pages: Option<usize>,
     api_sync: Option<String>,
+    tracking_auto_sync: bool,
+    anilist_access_token: Option<String>,
+    mal_client_id: Option<String>,
+    mal_client_secret: Option<String>,
+    mal_access_token: Option<String>,
+    mal_refresh_token: Option<String>,
+    anilist_refresh_token: Option<String>,
+    shikimori_client_id: Option<String>,
+    shikimori_client_secret: Option<String>,
+    shikimori_access_token: Option<String>,
+    shikimori_refresh_token: Option<String>,
+    kavita_url: Option<String>,
+    kavita_api_key: Option<String>,
     enabled_cron_check_mangas_update: bool,
     source_skip_cron: Option<String>,
     preload_chapters: usize,
@@ -48,6 +61,19 @@ impl UpdateableSettings {
         settings.storage_path = self.storage_path;
         settings.concurrent_requests_pages = self.concurrent_requests_pages;
         settings.api_sync = self.api_sync;
+        settings.tracking_auto_sync = self.tracking_auto_sync;
+        settings.anilist_access_token = self.anilist_access_token.filter(|v| !v.trim().is_empty());
+        settings.mal_client_id = self.mal_client_id.filter(|v| !v.trim().is_empty());
+        settings.mal_client_secret = self.mal_client_secret.filter(|v| !v.trim().is_empty());
+        settings.mal_access_token = self.mal_access_token.filter(|v| !v.trim().is_empty());
+        settings.mal_refresh_token = self.mal_refresh_token.filter(|v| !v.trim().is_empty());
+        settings.anilist_refresh_token = self.anilist_refresh_token.filter(|v| !v.trim().is_empty());
+        settings.shikimori_client_id = self.shikimori_client_id.filter(|v| !v.trim().is_empty());
+        settings.shikimori_client_secret = self.shikimori_client_secret.filter(|v| !v.trim().is_empty());
+        settings.shikimori_access_token = self.shikimori_access_token.filter(|v| !v.trim().is_empty());
+        settings.shikimori_refresh_token = self.shikimori_refresh_token.filter(|v| !v.trim().is_empty());
+        settings.kavita_url = self.kavita_url.filter(|v| !v.trim().is_empty());
+        settings.kavita_api_key = self.kavita_api_key.filter(|v| !v.trim().is_empty());
         settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
         settings.source_skip_cron = self.source_skip_cron;
         settings.preload_chapters = self.preload_chapters;
@@ -67,6 +93,19 @@ impl From<&Settings> for UpdateableSettings {
             storage_path: value.storage_path.clone(),
             concurrent_requests_pages: value.concurrent_requests_pages,
             api_sync: value.api_sync.clone(),
+            tracking_auto_sync: value.tracking_auto_sync,
+            anilist_access_token: value.anilist_access_token.clone(),
+            mal_client_id: value.mal_client_id.clone(),
+            mal_client_secret: value.mal_client_secret.clone(),
+            mal_access_token: value.mal_access_token.clone(),
+            mal_refresh_token: value.mal_refresh_token.clone(),
+            anilist_refresh_token: value.anilist_refresh_token.clone(),
+            shikimori_client_id: value.shikimori_client_id.clone(),
+            shikimori_client_secret: value.shikimori_client_secret.clone(),
+            shikimori_access_token: value.shikimori_access_token.clone(),
+            shikimori_refresh_token: value.shikimori_refresh_token.clone(),
+            kavita_url: value.kavita_url.clone(),
+            kavita_api_key: value.kavita_api_key.clone(),
             enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
             source_skip_cron: value.source_skip_cron.clone(),
             preload_chapters: value.preload_chapters,

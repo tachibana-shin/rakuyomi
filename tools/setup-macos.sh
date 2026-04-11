@@ -93,15 +93,7 @@ copy_plugin_to() {
     local dest="$1"
     rm -rf "$dest"
     mkdir -p "$dest"
-    find "$REPO_ROOT/frontend/rakuyomi.koplugin" \
-        -not -name "*_spec.lua" \
-        -not -type d \
-        | while read -r f; do
-            local rel="${f#$REPO_ROOT/frontend/rakuyomi.koplugin/}"
-            local target="$dest/$rel"
-            mkdir -p "$(dirname "$target")"
-            cp "$f" "$target"
-        done
+    rsync -a --exclude='*_spec.lua' "$REPO_ROOT/frontend/rakuyomi.koplugin/" "$dest/"
 }
 
 install_plugin() {

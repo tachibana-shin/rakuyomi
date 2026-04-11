@@ -30,7 +30,7 @@ fi
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 # Reinstall Lua plugin on every launch so frontend changes are picked up immediately.
-bash "$REPO_ROOT/tools/setup-macos.sh" 2>/dev/null | grep -v "^===" || true
+rsync -a --exclude='*_spec.lua' "$REPO_ROOT/frontend/rakuyomi.koplugin/" "$PLUGIN_DIR/"
 
 # Build request-path binaries and copy them into the plugin directory.
 # KOReader looks for these at plugin_dir/uds_http_request and plugin_dir/cbz_metadata_reader.

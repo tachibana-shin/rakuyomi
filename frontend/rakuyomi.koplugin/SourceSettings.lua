@@ -88,8 +88,8 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
   elseif setting_definition.type == 'text' then
     return {
       type = 'string',
-      title = setting_definition.title or setting_definition.placeholder,
-      placeholder = setting_definition.placeholder
+      title = setting_definition.title or setting_definition.placeholder or '',
+      placeholder = setting_definition.placeholder or ''
     }
   elseif setting_definition.type == 'link' then
     return {

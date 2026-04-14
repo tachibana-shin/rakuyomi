@@ -64,7 +64,7 @@ pub enum SettingDefinition {
     },
     #[serde(rename = "text")]
     Text {
-        placeholder: String,
+        placeholder: Option<String>,
         key: String,
         // FIXME is text the only setting type that's allowed to not have a default?
         default: Option<String>,

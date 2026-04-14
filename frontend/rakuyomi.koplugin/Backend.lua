@@ -515,7 +515,7 @@ end
 --- @class LoginSettingDefinition: { type: 'login', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class ButtonSettingDefinition: { type: 'button', title: string, key: string, confirmTitle: string|nil, confirmMessage: string|nil  }
 --- @class EditableListSettingDefinition: { type: 'editable-list', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
---- @class TextSettingDefinition: { type: 'text', placeholder: string, key: string, default: string|nil }
+--- @class TextSettingDefinition: { type: 'text', placeholder: string|nil, key: string, default: string|nil }
 --- @class LinkSettingDefinition: { type: 'link', title: string, url: string }
 
 --- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|ButtonSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition

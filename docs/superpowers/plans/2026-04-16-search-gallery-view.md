@@ -4,9 +4,9 @@
 
 **Goal:** Add cover and grid view modes to the manga search results screen, toggleable via a title bar icon and a plugin settings entry, persisted in `G_reader_settings`.
 
-**Architecture:** `MangaSearchResults` is switched from `Menu:extend` to `MenuCustom:extend` to gain grid-column layout support. A `search_view_mode` field (read from `G_reader_settings` on init) drives which `MenuItem` class is used in `updateItems()`. A left title bar icon cycles through the three modes on tap. A new `is_local` entry in `Settings.lua` exposes the same key in the settings menu.
+**Architecture:** `MangaSearchResults` is switched from `Menu:extend` to `MenuCustom:extend` to gain grid-column layout support. A `search_view_mode` field (read from `G_reader_settings` on init) drives which `MenuItem` class is used in `updateItems()`. A left title bar icon cycles through the three modes on tap and emits a `search_view_mode_changed` IPC event for testability. A new `is_local` entry in `Settings.lua` exposes the same key in the settings menu.
 
-**Tech Stack:** LuaJIT, KOReader widget API (`Menu`, `MenuCustom`, `MenuItemCover`, `MenuItemGrid`), `G_reader_settings` for local persistence.
+**Tech Stack:** LuaJIT, KOReader widget API (`Menu`, `MenuCustom`, `MenuItemCover`, `MenuItemGrid`), `G_reader_settings` for local persistence. E2E tests use pytest + `KOReaderDriver` (pyautogui + LLM-based UI queries).
 
 ---
 
@@ -14,8 +14,9 @@
 
 | File | Change |
 |------|--------|
-| `frontend/rakuyomi.koplugin/MangaSearchResults.lua` | Extend `MenuCustom`, add view mode field, title bar toggle, update `updateItems` and `generateItemTableFromSearchResults` |
+| `frontend/rakuyomi.koplugin/MangaSearchResults.lua` | Extend `MenuCustom`, add view mode field, title bar toggle + event emit, update `updateItems` and `generateItemTableFromSearchResults` |
 | `frontend/rakuyomi.koplugin/Settings.lua` | Add `rakuyomi_search_view_mode` entry under a new Search divider |
+| `e2e-tests/tests/test_search_view_modes.py` | New e2e test: toggle cycles modes, UI reflects each mode, mode persists across searches |
 
 ---
 
@@ -134,7 +135,7 @@ end
 
 - [ ] **Step 3: Add cycleViewMode()**
 
-Add this method after `init()`:
+Add this method after `init()`. It cycles the mode, persists to `G_reader_settings`, re-renders, and emits an IPC event so the e2e test can wait on it:
 
 ```lua
 function MangaSearchResults:cycleViewMode()
@@ -149,6 +150,7 @@ function MangaSearchResults:cycleViewMode()
   self.search_view_mode = next_mode
   G_reader_settings:saveSetting("rakuyomi_search_view_mode", next_mode)
   self:updateItems()
+  Testing:emitEvent("search_view_mode_changed", { mode = next_mode })
 end
 ```
 
@@ -221,29 +223,119 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
 end
 ```
 
-- [ ] **Step 7: Manual test — list view (base)**
+- [ ] **Step 7: Manual smoke test**
 
-Launch with `./tools/dev-macos.sh`. Search for any manga. Confirm results display as a list (current behavior unchanged). The title bar should show the `column.two` icon on the left.
+Launch with `./tools/dev-macos.sh`. Search for any manga. Confirm:
+- Default view is a text list with the `column.two` icon in the title bar
+- Tapping the icon once switches to cover art view
+- Tapping again switches to grid view
+- Tapping again returns to list view
 
-- [ ] **Step 8: Manual test — cover view**
-
-Tap the `column.two` icon once. Confirm the results switch to cover art view with source name displayed below each title.
-
-- [ ] **Step 9: Manual test — grid view**
-
-Tap the icon again. Confirm the results switch to grid view using the same column count as the library grid setting.
-
-- [ ] **Step 10: Manual test — persistence**
-
-While in grid mode, close the search results and open a new search. Confirm the view mode is still grid. Restart KOReader and confirm it persists across sessions.
-
-- [ ] **Step 11: Manual test — settings menu**
-
-Open plugin settings. Change "Search view mode" to a different value. Open search results and confirm the new mode is applied.
-
-- [ ] **Step 12: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add frontend/rakuyomi.koplugin/MangaSearchResults.lua
 git commit -m "feat: add gallery view to search results"
+```
+
+---
+
+### Task 3: Add e2e test for search view modes
+
+**Files:**
+- Create: `e2e-tests/tests/test_search_view_modes.py`
+
+- [ ] **Step 1: Create the test file**
+
+Create `e2e-tests/tests/test_search_view_modes.py` with the following content:
+
+```python
+import time
+from typing import Literal
+
+from pydantic import BaseModel
+
+from . import queries
+from .queries.locate_button import LocateButtonResponse
+from .koreader_driver import KOReaderDriver
+
+
+class SearchViewModeResponse(BaseModel):
+    mode: Literal['base', 'cover', 'grid']
+
+
+async def get_search_view_mode(driver: KOReaderDriver) -> str:
+    response = await driver.query(
+        "What is the current view mode of the search results? "
+        "Reply with 'base' if items are shown as a plain text list with no images, "
+        "'cover' if items show cover art on the left side next to text, "
+        "or 'grid' if items are arranged in multiple columns each showing cover art.",
+        SearchViewModeResponse,
+    )
+    return response.mode
+
+
+async def open_search(driver: KOReaderDriver, query: str) -> None:
+    menu_button = await queries.locate_button(driver, "menu")
+    driver.click_element(menu_button)
+
+    search_button = await queries.locate_button(driver, "Search")
+    driver.click_element(search_button)
+    time.sleep(1)
+
+    driver.type(query)
+    search_button = await queries.locate_button(driver, "Search")
+    driver.click_element(search_button)
+
+    await driver.wait_for_event('manga_search_results_shown')
+
+
+async def test_search_view_modes(koreader_driver: KOReaderDriver):
+    await koreader_driver.install_source('multi.batoto')
+    await koreader_driver.open_library_view()
+
+    # Open an initial search
+    await open_search(koreader_driver, 'houseki no kuni')
+
+    # Default should be base (list) view
+    mode = await get_search_view_mode(koreader_driver)
+    assert mode == 'base', f"Expected default view mode 'base', got '{mode}'"
+
+    # Tap toggle → cover
+    toggle = await koreader_driver.query(
+        "Locate the view mode toggle icon button in the top left corner of the title bar",
+        LocateButtonResponse,
+    )
+    koreader_driver.click_element(toggle)
+    await koreader_driver.wait_for_event('search_view_mode_changed')
+
+    mode = await get_search_view_mode(koreader_driver)
+    assert mode == 'cover', f"Expected view mode 'cover', got '{mode}'"
+
+    # Tap toggle → grid
+    toggle = await koreader_driver.query(
+        "Locate the view mode toggle icon button in the top left corner of the title bar",
+        LocateButtonResponse,
+    )
+    koreader_driver.click_element(toggle)
+    await koreader_driver.wait_for_event('search_view_mode_changed')
+
+    mode = await get_search_view_mode(koreader_driver)
+    assert mode == 'grid', f"Expected view mode 'grid', got '{mode}'"
+
+    # Close search and reopen — mode should persist
+    back_button = await queries.locate_button(koreader_driver, "Back")
+    koreader_driver.click_element(back_button)
+
+    await open_search(koreader_driver, 'houseki no kuni')
+
+    mode = await get_search_view_mode(koreader_driver)
+    assert mode == 'grid', f"Expected persisted view mode 'grid', got '{mode}'"
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add e2e-tests/tests/test_search_view_modes.py
+git commit -m "test: add e2e test for search view mode cycling and persistence"
 ```

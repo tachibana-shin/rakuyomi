@@ -15,6 +15,14 @@ use crate::source_extractor::SourceExtractor;
 use crate::state::State;
 use crate::AppError;
 
+fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
+    url::Url::from_file_path(path).ok().or_else(|| {
+        path.canonicalize()
+            .ok()
+            .and_then(|p| url::Url::from_file_path(p).ok())
+    })
+}
+
 pub fn routes() -> Router<State> {
     Router::new()
         .route("/library", get(get_manga_library))
@@ -112,22 +120,9 @@ async fn get_manga_library(
     if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
         for manga in mangas.iter_mut() {
             if manga.information.cover_url.is_some() {
-                manga.information.cover_url = if let Some(path) =
-                    chapter_storage.poster_exists(&manga.information.id)
-                {
-                    match url::Url::from_file_path(&path) {
-                        Ok(url) => Some(url),
-                        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
-                            Ok(url) => Some(url),
-                            Err(_) => {
-                                println!("Error converting path to URL");
-                                None
-                            }
-                        },
-                    }
-                } else {
-                    None
-                };
+                manga.information.cover_url = chapter_storage
+                    .poster_exists(&manga.information.id)
+                    .and_then(|path| path_to_file_url(&path));
             }
         }
     }
@@ -286,15 +281,9 @@ async fn get_mangas(
 
     for manga in mangas.iter_mut() {
         if manga.information.cover_url.is_some() {
-            if let Some(path) = chapter_storage.poster_exists(&manga.information.id) {
-                manga.information.cover_url = match url::Url::from_file_path(&path) {
-                    Ok(url) => Some(url),
-                    Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
-                        Ok(url) => Some(url),
-                        Err(_) => None,
-                    },
-                };
-            }
+            manga.information.cover_url = chapter_storage
+                .poster_exists(&manga.information.id)
+                .and_then(|path| path_to_file_url(&path));
         }
     }
 

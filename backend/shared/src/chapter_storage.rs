@@ -414,3 +414,89 @@ impl ChapterStorage {
         self.downloads_folder_path.join(output_filename)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use size::Size;
+    use tempfile::tempdir;
+
+    fn make_storage() -> ChapterStorage {
+        let dir = tempdir().unwrap();
+        ChapterStorage::new(dir.into_path(), Size::from_mebibytes(100.0)).unwrap()
+    }
+
+    fn make_rgb_jpeg(width: u32, height: u32) -> Vec<u8> {
+        let pixels: Vec<u8> = vec![128u8; (width * height * 3) as usize];
+        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+        comp.set_size(width as usize, height as usize);
+        comp.set_fastest_defaults();
+        let mut comp = comp.start_compress(Vec::new()).unwrap();
+        comp.write_scanlines(&pixels).unwrap();
+        comp.finish().unwrap()
+    }
+
+    fn output_dimensions(jpeg: &[u8]) -> (u32, u32) {
+        let cursor = std::io::Cursor::new(jpeg);
+        let img = image::ImageReader::new(cursor)
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap();
+        (img.width(), img.height())
+    }
+
+    #[test]
+    fn small_image_is_stored_unchanged() {
+        let storage = make_storage();
+        let input = make_rgb_jpeg(200, 300);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert_eq!((w, h), (200, 300));
+    }
+
+    #[test]
+    fn wide_image_is_capped_at_max_width() {
+        let storage = make_storage();
+        // 1200x400 — wider than MAX_WIDTH (400), height within limit
+        let input = make_rgb_jpeg(1200, 400);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert!(w <= 400, "width {w} exceeds MAX_WIDTH");
+        // Aspect ratio preserved: 1200/400 = 3.0, so h should be ~133
+        assert_eq!(w, 400);
+        assert_eq!(h, 133);
+    }
+
+    #[test]
+    fn tall_image_is_capped_at_max_height() {
+        let storage = make_storage();
+        // 200x1200 — taller than MAX_HEIGHT (600), width within limit
+        let input = make_rgb_jpeg(200, 1200);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert!(h <= 600, "height {h} exceeds MAX_HEIGHT");
+        assert_eq!(h, 600);
+        assert_eq!(w, 100);
+    }
+
+    #[test]
+    fn large_portrait_cover_fits_within_bounds() {
+        let storage = make_storage();
+        // Typical high-res manga cover
+        let input = make_rgb_jpeg(1400, 2100);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert!(w <= 400, "width {w} exceeds MAX_WIDTH");
+        assert!(h <= 600, "height {h} exceeds MAX_HEIGHT");
+    }
+
+    #[test]
+    fn exact_max_dimensions_are_not_resized() {
+        let storage = make_storage();
+        let input = make_rgb_jpeg(400, 600);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert_eq!((w, h), (400, 600));
+    }
+}

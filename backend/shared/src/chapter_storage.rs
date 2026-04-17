@@ -120,6 +120,12 @@ impl ChapterStorage {
     }
 
     fn convert_image_data_to_jpeg(&self, data: &[u8]) -> Result<Vec<u8>> {
+        // Maximum poster dimensions. Covers are displayed as small thumbnails so
+        // full-resolution originals are wasteful and can exceed KOReader's LRU
+        // image cache when loaded as raw bitmaps.
+        const MAX_WIDTH: u32 = 400;
+        const MAX_HEIGHT: u32 = 600;
+
         let (width, height, rgb_pixels) = {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
@@ -155,6 +161,24 @@ impl ChapterStorage {
 
                 (width, height, rgb_img.to_vec())
             }
+        };
+
+        // Downscale to fit within MAX_WIDTH x MAX_HEIGHT, preserving aspect ratio.
+        let (width, height, rgb_pixels) = if width > MAX_WIDTH || height > MAX_HEIGHT {
+            let scale = (MAX_WIDTH as f32 / width as f32).min(MAX_HEIGHT as f32 / height as f32);
+            let new_width = ((width as f32 * scale).round() as u32).max(1);
+            let new_height = ((height as f32 * scale).round() as u32).max(1);
+            let img = image::RgbImage::from_raw(width, height, rgb_pixels)
+                .context("failed to build image buffer for resize")?;
+            let resized = image::imageops::resize(
+                &img,
+                new_width,
+                new_height,
+                image::imageops::FilterType::Triangle,
+            );
+            (new_width, new_height, resized.into_raw())
+        } else {
+            (width, height, rgb_pixels)
         };
 
         let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);

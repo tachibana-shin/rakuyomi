@@ -1,4 +1,5 @@
 use crate::{
+    chapter_storage::ChapterStorage,
     database::Database,
     model::{Manga, MangaInformation, MangaState, SourceInformation},
     source_collection::SourceCollection,
@@ -21,6 +22,7 @@ pub struct SearchError {
 pub async fn search_mangas(
     source_collection: &impl SourceCollection,
     db: &Database,
+    chapter_storage: &ChapterStorage,
     cancellation_token: CancellationToken,
     query: String,
     exclude: &Option<Vec<String>>,
@@ -44,6 +46,7 @@ pub async fn search_mangas(
             .map(|source| {
                 let cancellation_token = cancellation_token.clone();
                 let query = query.to_string();
+                let chapter_storage = chapter_storage.clone();
 
                 async move {
                     if exclude
@@ -108,6 +111,18 @@ pub async fn search_mangas(
                     let _ = db
                         .upsert_cached_manga_information(&manga_informations)
                         .await;
+
+                    // Download posters for each result so cover/grid view can render them
+                    for info in &manga_informations {
+                        if let Some(cover_url) = &info.cover_url {
+                            let url = cover_url.clone();
+                            let _ = chapter_storage
+                                .cached_poster(&token, &info.id, || {
+                                    source.get_image_request(url.clone(), None)
+                                })
+                                .await;
+                        }
+                    }
 
                     // Fetch unread chapters count for each manga
                     let manga_ids: Vec<_> =

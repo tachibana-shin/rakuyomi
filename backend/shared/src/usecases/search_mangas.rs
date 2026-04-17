@@ -1,7 +1,7 @@
 use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
-    model::{Manga, MangaInformation, MangaState, SourceInformation},
+    model::{Manga, MangaId, MangaInformation, MangaState, SourceInformation},
     source_collection::SourceCollection,
 };
 use futures::{stream, StreamExt};
@@ -12,6 +12,7 @@ use tokio_util::sync::CancellationToken;
 use unicode_normalization::UnicodeNormalization;
 
 const CONCURRENT_SEARCH_REQUESTS: usize = 5;
+const CONCURRENT_POSTER_DOWNLOADS: usize = 4;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct SearchError {
@@ -112,17 +113,29 @@ pub async fn search_mangas(
                         .upsert_cached_manga_information(&manga_informations)
                         .await;
 
-                    // Download posters for each result so cover/grid view can render them
-                    for info in &manga_informations {
-                        if let Some(cover_url) = &info.cover_url {
-                            let url = cover_url.clone();
+                    // Download posters concurrently so cover/grid view can render them
+                    let poster_items: Vec<(MangaId, url::Url)> = manga_informations
+                        .iter()
+                        .filter_map(|info| {
+                            info.cover_url.as_ref().map(|url| (info.id.clone(), url.clone()))
+                        })
+                        .collect();
+                    stream::iter(poster_items)
+                    .map(|(id, url)| {
+                        let chapter_storage = chapter_storage.clone();
+                        let source = source.clone();
+                        let token = token.clone();
+                        async move {
                             let _ = chapter_storage
-                                .cached_poster(&token, &info.id, || {
+                                .cached_poster(&token, &id, || {
                                     source.get_image_request(url.clone(), None)
                                 })
                                 .await;
                         }
-                    }
+                    })
+                    .buffered(CONCURRENT_POSTER_DOWNLOADS)
+                    .collect::<Vec<_>>()
+                    .await;
 
                     // Fetch unread chapters count for each manga
                     let manga_ids: Vec<_> =

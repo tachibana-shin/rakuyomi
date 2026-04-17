@@ -114,7 +114,11 @@ impl ChapterStorage {
             } => result,
         }?;
 
-        tokio::fs::write(&file, &self.convert_image_data_to_jpeg(&bytes)?).await?;
+        let jpeg_bytes = {
+            let storage = self.clone();
+            tokio::task::spawn_blocking(move || storage.convert_image_data_to_jpeg(&bytes)).await??
+        };
+        tokio::fs::write(&file, &jpeg_bytes).await?;
 
         Ok(file)
     }

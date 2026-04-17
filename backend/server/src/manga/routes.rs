@@ -258,6 +258,7 @@ async fn get_mangas(
         database,
         source_manager,
         cancel_token_store,
+        chapter_storage,
         ..
     }): StateExtractor<State>,
     Query(GetMangasQuery {
@@ -268,6 +269,7 @@ async fn get_mangas(
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
+    let chapter_storage = chapter_storage.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {
@@ -276,11 +278,25 @@ async fn get_mangas(
             .collect::<Vec<_>>()
     });
 
-    let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(source_manager, &database, token, q, &exclude, 30)
+    let (mut mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
+        usecases::search_mangas(source_manager, &database, &chapter_storage, token, q, &exclude, 30)
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;
+
+    for manga in mangas.iter_mut() {
+        if manga.information.cover_url.is_some() {
+            if let Some(path) = chapter_storage.poster_exists(&manga.information.id) {
+                manga.information.cover_url = match url::Url::from_file_path(&path) {
+                    Ok(url) => Some(url),
+                    Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
+                        Ok(url) => Some(url),
+                        Err(_) => None,
+                    },
+                };
+            }
+        }
+    }
 
     let results = mangas.into_iter().map(Manga::from).collect();
 

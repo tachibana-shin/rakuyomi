@@ -178,7 +178,7 @@ impl ChapterStorage {
                 &img,
                 new_width,
                 new_height,
-                image::imageops::FilterType::Triangle,
+                image::imageops::FilterType::CatmullRom,
             );
             (new_width, new_height, resized.into_raw())
         } else {

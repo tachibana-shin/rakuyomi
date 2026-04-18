@@ -264,7 +264,7 @@ async fn get_mangas(
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
-    let chapter_storage = chapter_storage.lock().await;
+    let chapter_storage = chapter_storage.lock().await.clone();
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {

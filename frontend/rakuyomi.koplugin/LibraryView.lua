@@ -1150,7 +1150,7 @@ function LibraryView:openCleanerDialog()
   dialog = ConfirmBox:new {
     text = _("Cleaner") .. "\n\n" ..
         _("Normal") .. ": " .. _("Find and delete invalid files including files from deleted sources") .. "\n\n" ..
-        ("Chapter read done: Find and delete chapters that have been read") .. "\n\n" ..
+        _("Chapter read done") .. ": " .. _("Find and delete chapters that have been read") .. "\n\n" ..
         _("IMPORTANT: Meta files (bookmark, history) not keep!"),
     ok_text = _("Normal"),
     ok_callback = function()

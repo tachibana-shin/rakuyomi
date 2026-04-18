@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-17 00:10+0700\n"
+"POT-Creation-Date: 2026-04-18 12:18+0200\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -127,7 +127,7 @@ msgstr "บทถูกล็อค"
 msgid "Open"
 msgstr "เปิด"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:446
+#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:449
 msgid "Refresh"
 msgstr "รีเฟรช"
 
@@ -143,7 +143,7 @@ msgstr "เครื่องหมาย"
 msgid "Download"
 msgstr "ดาวน์โหลด"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:660 ../LibraryView.lua:680
+#: ../ChapterListing.lua:541 ../LibraryView.lua:663 ../LibraryView.lua:683
 msgid "Remove"
 msgstr "ลบ"
 
@@ -171,11 +171,11 @@ msgstr "ยกเลิกการทำเครื่องหมาย"
 msgid "chapter..."
 msgstr "บท..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:482
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:485
 msgid "Mark read"
 msgstr "มาร์คอ่านแล้ว."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:493
+#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:496
 msgid "Mark unread"
 msgstr "ทำเครื่องหมายว่ายังไม่ได้อ่าน"
 
@@ -192,8 +192,8 @@ msgid "Mark chapters as read or unread"
 msgstr "ทำเครื่องหมายบทว่าอ่านแล้วหรือยังไม่ได้อ่าน"
 
 #: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:621 ../LibraryView.lua:923
-#: ../LibraryView.lua:971 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:1190 ../LibraryView.lua:624 ../LibraryView.lua:938
+#: ../LibraryView.lua:986 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "ยกเลิก"
@@ -249,7 +249,7 @@ msgstr "คุณแน่ใจหรือไม่ว่าต้องกา
 msgid "Add to Library"
 msgstr "เพิ่มลงในห้องสมุด"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:466
+#: ../ChapterListing.lua:974 ../LibraryView.lua:469
 #: ../MangaSearchResults.lua:279
 msgid "Details"
 msgstr "รายละเอียด"
@@ -286,7 +286,7 @@ msgstr "ไม่สามารถเพิ่มลงในห้องสม
 msgid "Added to library."
 msgstr "เพิ่มลงในห้องสมุดแล้ว"
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:613
+#: ../ChapterListing.lua:1107 ../LibraryView.lua:616
 msgid "Sadly, no next chapter available! :c"
 msgstr "น่าเสียดายที่ไม่มีตอนต่อไป! "
 
@@ -298,7 +298,7 @@ msgstr "ต่อไป"
 msgid "reading with"
 msgstr "การอ่านด้วย"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:620
+#: ../ChapterListing.lua:1114 ../LibraryView.lua:623
 msgid "Read"
 msgstr "อ่าน"
 
@@ -418,250 +418,254 @@ msgstr "ไม่พบมังงะในห้องสมุด"
 msgid "Try adding some by holding their name on the search results!"
 msgstr "ลองเพิ่มบางส่วนโดยเก็บชื่อไว้ในผลการค้นหา!"
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:460
 msgid "Refreshed manga"
 msgstr "มังงะที่รีเฟรช"
 
-#: ../LibraryView.lua:506
+#: ../LibraryView.lua:509
 msgid "Continue Reading"
 msgstr "อ่านต่อ"
 
-#: ../LibraryView.lua:515 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
 msgid "Add to Playlist"
 msgstr "เพิ่มลงในเพลย์ลิสต์"
 
-#: ../LibraryView.lua:526 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
 msgid "Remove from Library"
 msgstr "ลบออกจากห้องสมุด"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:539
 msgid "Remove from Playlist"
 msgstr "ลบออกจากเพลย์ลิสต์"
 
-#: ../LibraryView.lua:569
+#: ../LibraryView.lua:572
 msgid "Finding next chapter..."
 msgstr "กำลังค้นหาบทต่อไป..."
 
-#: ../LibraryView.lua:580
+#: ../LibraryView.lua:583
 msgid "No chapters found for this manga."
 msgstr "ไม่พบตอนสำหรับมังงะเรื่องนี้"
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:622
 msgid "Resume reading with:"
 msgstr "อ่านต่อด้วย:"
 
-#: ../LibraryView.lua:659 ../LibraryView.lua:679
+#: ../LibraryView.lua:662 ../LibraryView.lua:682
 msgid "Do you want to remove"
 msgstr "คุณต้องการลบออก"
 
-#: ../LibraryView.lua:659
+#: ../LibraryView.lua:662
 msgid "from your library?"
 msgstr "จากห้องสมุดของคุณเหรอ?"
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:682
 msgid "from your playlist?"
 msgstr "จากเพลย์ลิสต์ของคุณเหรอ?"
 
-#: ../LibraryView.lua:702
+#: ../LibraryView.lua:705
 msgid "Search for mangas"
 msgstr "ค้นหามังงะ"
 
-#: ../LibraryView.lua:712
+#: ../LibraryView.lua:715
 msgid "Search favorites"
 msgstr "ค้นหารายการโปรด"
 
-#: ../LibraryView.lua:722 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:725 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "เพลย์ลิสต์"
 
-#: ../LibraryView.lua:731
+#: ../LibraryView.lua:734
 msgid "Refresh mangas"
 msgstr "รีเฟรชมังงะ"
 
-#: ../LibraryView.lua:739
+#: ../LibraryView.lua:742
 msgid "Refresh details"
 msgstr "รีเฟรชรายละเอียด"
 
-#: ../LibraryView.lua:749
+#: ../LibraryView.lua:752
 msgid "Cleaner chapters"
 msgstr "บทที่สะอาดกว่า"
 
-#: ../LibraryView.lua:757
+#: ../LibraryView.lua:760
 msgid "Manage sources"
 msgstr "จัดการแหล่งที่มา"
 
-#: ../LibraryView.lua:767 ../LibraryView.lua:917 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
 msgid "Settings"
 msgstr "การตั้งค่า"
 
-#: ../LibraryView.lua:775
+#: ../LibraryView.lua:778
 msgid "Check for updates"
 msgstr "ตรวจสอบการอัปเดต"
 
-#: ../LibraryView.lua:784
+#: ../LibraryView.lua:787
 msgid "Sync Database (Beta)"
 msgstr "ซิงค์ฐานข้อมูล (เบต้า)"
 
-#: ../LibraryView.lua:788
+#: ../LibraryView.lua:791
 msgid "Sync to WebDAV..."
 msgstr "ซิงค์กับ WebDAV..."
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:803
 msgid "Do you want to migrate your local database from the server?"
 msgstr "คุณต้องการย้ายฐานข้อมูลภายในเครื่องของคุณจากเซิร์ฟเวอร์หรือไม่?"
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:803
 msgid "The remote database is newer than the local one."
 msgstr "ฐานข้อมูลระยะไกลใหม่กว่าฐานข้อมูลในเครื่อง"
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:803
 msgid "This action cannot be undone."
 msgstr "การดำเนินการนี้ไม่สามารถยกเลิกได้"
 
-#: ../LibraryView.lua:801
+#: ../LibraryView.lua:804
 msgid "Migrate"
 msgstr "โยกย้าย"
 
-#: ../LibraryView.lua:805
+#: ../LibraryView.lua:808
 msgid "Migrating database..."
 msgstr "กำลังย้ายฐานข้อมูล..."
 
-#: ../LibraryView.lua:816 ../LibraryView.lua:863
+#: ../LibraryView.lua:819 ../LibraryView.lua:866
 msgid "Local database has been migrated from the server!"
 msgstr "ฐานข้อมูลท้องถิ่นถูกย้ายจากเซิร์ฟเวอร์แล้ว!"
 
-#: ../LibraryView.lua:827
+#: ../LibraryView.lua:830
 msgid "Replace Cloud"
 msgstr "แทนที่คลาวด์"
 
-#: ../LibraryView.lua:831
+#: ../LibraryView.lua:834
 msgid "Replacing cloud..."
 msgstr "กำลังแทนที่คลาวด์..."
 
-#: ../LibraryView.lua:841
+#: ../LibraryView.lua:844
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "ฐานข้อมูลคลาวด์ถูกบังคับให้แทนที่ด้วยฐานข้อมูลในเครื่อง!"
 
-#: ../LibraryView.lua:859
+#: ../LibraryView.lua:862
 msgid "Database is already up to date!"
 msgstr "ฐานข้อมูลเป็นปัจจุบันแล้ว!"
 
-#: ../LibraryView.lua:861
+#: ../LibraryView.lua:864
 msgid "Database has been synced to the server!"
 msgstr "ฐานข้อมูลถูกซิงค์กับเซิร์ฟเวอร์แล้ว!"
 
-#: ../LibraryView.lua:865
+#: ../LibraryView.lua:868
 msgid "Sync completed!"
 msgstr "การซิงค์เสร็จสมบูรณ์!"
 
-#: ../LibraryView.lua:889
+#: ../LibraryView.lua:904
 msgid "Manga search..."
 msgstr "ค้นหามังงะ..."
 
-#: ../LibraryView.lua:890
+#: ../LibraryView.lua:905
 msgid "Houseki no Kuni"
 msgstr "เฮาส์กิ โนะ คุนิ"
 
-#: ../LibraryView.lua:891 ../LibraryView.lua:967
+#: ../LibraryView.lua:906 ../LibraryView.lua:982
 msgid "Type the manga name to search for"
 msgstr "พิมพ์ชื่อมังงะที่จะค้นหา"
 
-#: ../LibraryView.lua:895 ../LibraryView.lua:904 ../LibraryView.lua:949
-#: ../LibraryView.lua:978
+#: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
+#: ../LibraryView.lua:993
 msgid "Search"
 msgstr "ค้นหา"
 
-#: ../LibraryView.lua:949
+#: ../LibraryView.lua:964
 msgid "Exclude source search for"
 msgstr "ไม่รวมการค้นหาแหล่งที่มา"
 
-#: ../LibraryView.lua:964
+#: ../LibraryView.lua:979
 msgid "Favorite search..."
 msgstr "ค้นหาที่ชื่นชอบ..."
 
-#: ../LibraryView.lua:966
+#: ../LibraryView.lua:981
 msgid "Tonikaku Kawaii"
 msgstr "โทนิคาคุ คาวาอิ"
 
-#: ../LibraryView.lua:1018
+#: ../LibraryView.lua:1033
 msgid "Scaning files..."
 msgstr "กำลังสแกนไฟล์..."
 
-#: ../LibraryView.lua:1033
+#: ../LibraryView.lua:1048
 #, lua-format
 msgid "Found %d files."
 msgstr "พบ %d ไฟล์"
 
-#: ../LibraryView.lua:1034
+#: ../LibraryView.lua:1049
 #, lua-format
 msgid "Total size %s."
 msgstr "ขนาดทั้งหมด %s"
 
-#: ../LibraryView.lua:1035
+#: ../LibraryView.lua:1050
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "สแกนไฟล์ RendOnly .cbz และ .epub"
 
-#: ../LibraryView.lua:1039
+#: ../LibraryView.lua:1054
 msgid "Clean"
 msgstr "ทำความสะอาด"
 
-#: ../LibraryView.lua:1044
+#: ../LibraryView.lua:1059
 msgid "Deleting..."
 msgstr "กำลังลบ..."
 
-#: ../LibraryView.lua:1062
+#: ../LibraryView.lua:1077
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "ทำความสะอาดพื้นที่เก็บข้อมูล %s ฟรีแล้ว"
 
-#: ../LibraryView.lua:1087
+#: ../LibraryView.lua:1102
 msgid "Refresh mangas..."
 msgstr "รีเฟรชมังงะ..."
 
-#: ../LibraryView.lua:1088
+#: ../LibraryView.lua:1103
 msgid "All chapters manga updated!"
 msgstr "อัปเดตมังงะทุกบทแล้ว!"
 
-#: ../LibraryView.lua:1089
+#: ../LibraryView.lua:1104
 msgid "Some manga updates fail:"
 msgstr "การอัปเดตมังงะบางเรื่องล้มเหลว:"
 
-#: ../LibraryView.lua:1100
+#: ../LibraryView.lua:1115
 msgid "Refresh manga details..."
 msgstr "รีเฟรชรายละเอียดมังงะ..."
 
-#: ../LibraryView.lua:1101
+#: ../LibraryView.lua:1116
 msgid "All manga details refresh!"
 msgstr "รายละเอียดมังงะทั้งหมดรีเฟรช!"
 
-#: ../LibraryView.lua:1102
+#: ../LibraryView.lua:1117
 msgid "Some manga details refresh fail:"
 msgstr "การรีเฟรชรายละเอียดมังงะบางส่วนล้มเหลว:"
 
-#: ../LibraryView.lua:1118
+#: ../LibraryView.lua:1133
 msgid "Progress"
 msgstr "ความคืบหน้า"
 
-#: ../LibraryView.lua:1136
+#: ../LibraryView.lua:1151
 msgid "Cleaner"
 msgstr "ทำความสะอาด"
 
-#: ../LibraryView.lua:1137
+#: ../LibraryView.lua:1152
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "ค้นหาและลบไฟล์ที่ไม่ถูกต้อง รวมถึงไฟล์จากแหล่งที่ถูกลบ"
 
-#: ../LibraryView.lua:1137 ../LibraryView.lua:1140
+#: ../LibraryView.lua:1152 ../LibraryView.lua:1155
 msgid "Normal"
 msgstr "ปกติ"
 
-#: ../LibraryView.lua:1139
-msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
-msgstr "สำคัญ: ไฟล์ Meta (บุ๊กมาร์ก, ประวัติ) ไม่เก็บไว้!"
-
-#: ../LibraryView.lua:1146
+#: ../LibraryView.lua:1153 ../LibraryView.lua:1161
 msgid "Chapter read done"
 msgstr "อ่านบทจบแล้ว"
+
+#: ../LibraryView.lua:1153
+msgid "Find and delete chapters that have been read"
+msgstr "ค้นหาและลบบทที่อ่านแล้ว"
+
+#: ../LibraryView.lua:1154
+msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr "สำคัญ: ไฟล์ Meta (บุ๊กมาร์ก, ประวัติ) ไม่เก็บไว้!"
 
 #: ../MangaInfoWidget.lua:141
 msgid "Statistics"

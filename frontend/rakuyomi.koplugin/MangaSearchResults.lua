@@ -50,7 +50,6 @@ function MangaSearchResults:init()
   self.height = Screen:getHeight()
   local page = self.page
   Menu.init(self)
-  MenuCustom.init(self)
   self.page = page
 
   self.paths = { 0 }

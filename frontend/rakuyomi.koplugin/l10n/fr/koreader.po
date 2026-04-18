@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-18 12:18+0200\n"
-"PO-Revision-Date: 2026-04-18 12:18+0200\n"
+"PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Topi (T0pii on Github)\n"
 "Language-Team: none\n"
 "Language: fr\n"
@@ -658,11 +658,11 @@ msgstr "Normal"
 
 #: ../LibraryView.lua:1153 ../LibraryView.lua:1161
 msgid "Chapter read done"
-msgstr "Chapitres marqués comme lu :"
+msgstr "Chapitres marqués comme lus"
 
 #: ../LibraryView.lua:1153
 msgid "Find and delete chapters that have been read"
-msgstr "Recherche et supprime les chapitres marqués comme lu"
+msgstr "Recherche et supprime les chapitres marqués comme lus"
 
 #: ../LibraryView.lua:1154
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"

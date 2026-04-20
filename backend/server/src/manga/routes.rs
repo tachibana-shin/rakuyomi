@@ -7,6 +7,7 @@ use futures::Future;
 use log::warn;
 use serde::{Deserialize, Serialize};
 use shared::model::{ChapterId, MangaId, NotificationInformation};
+use shared::settings::SearchViewMode;
 use shared::usecases;
 use tokio_util::sync::CancellationToken;
 
@@ -254,6 +255,7 @@ async fn get_mangas(
         source_manager,
         cancel_token_store,
         chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     Query(GetMangasQuery {
@@ -264,7 +266,8 @@ async fn get_mangas(
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
-    let chapter_storage = chapter_storage.lock().await.clone();
+    let chapter_storage = chapter_storage.lock().await;
+    let with_covers = settings.lock().await.search_view_mode != SearchViewMode::Base;
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {
@@ -274,16 +277,18 @@ async fn get_mangas(
     });
 
     let (mut mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(source_manager, &database, &chapter_storage, token, q, &exclude, 30)
+        usecases::search_mangas(source_manager, &database, &chapter_storage, token, q, &exclude, 30, with_covers)
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;
 
-    for manga in mangas.iter_mut() {
-        if manga.information.cover_url.is_some() {
-            manga.information.cover_url = chapter_storage
-                .poster_exists(&manga.information.id)
-                .and_then(|path| path_to_file_url(&path));
+    if with_covers {
+        for manga in mangas.iter_mut() {
+            if manga.information.cover_url.is_some() {
+                manga.information.cover_url = chapter_storage
+                    .poster_exists(&manga.information.id)
+                    .and_then(|path| path_to_file_url(&path));
+            }
         }
     }
 

@@ -107,7 +107,7 @@ Settings.setting_value_definitions = {
     { type = 'divider', title = _("Search") }
   },
   {
-    'rakuyomi_search_view_mode',
+    'search_view_mode',
     {
       type = 'enum',
       title = _("Search view mode"),
@@ -116,7 +116,6 @@ Settings.setting_value_definitions = {
         { label = _("Cover"), value = "cover" },
         { label = _("Grid"),  value = "grid" },
       },
-      is_local = true,
       default = "base",
     }
   },

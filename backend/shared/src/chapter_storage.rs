@@ -120,6 +120,13 @@ impl ChapterStorage {
     }
 
     fn convert_image_data_to_jpeg(&self, data: &[u8]) -> Result<Vec<u8>> {
+        // KOReader's ImageCache is 8 MB total. Full-resolution covers (e.g. 800×1200)
+        // decode to ~3.8 MB each as raw bitmaps, exhausting the cache in 2-3 images.
+        // Cap at 400×600 so each cover stays under ~1 MB and the cache can hold a full
+        // page of search results without crashing.
+        const MAX_WIDTH: u32 = 400;
+        const MAX_HEIGHT: u32 = 600;
+
         let (width, height, rgb_pixels) = {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
@@ -155,6 +162,23 @@ impl ChapterStorage {
 
                 (width, height, rgb_img.to_vec())
             }
+        };
+
+        let (width, height, rgb_pixels) = if width > MAX_WIDTH || height > MAX_HEIGHT {
+            let scale = (MAX_WIDTH as f32 / width as f32).min(MAX_HEIGHT as f32 / height as f32);
+            let new_width = ((width as f32 * scale).round() as u32).max(1);
+            let new_height = ((height as f32 * scale).round() as u32).max(1);
+            let img = image::RgbImage::from_raw(width, height, rgb_pixels)
+                .context("failed to build image buffer for resize")?;
+            let resized = image::imageops::resize(
+                &img,
+                new_width,
+                new_height,
+                image::imageops::FilterType::Triangle,
+            );
+            (new_width, new_height, resized.into_raw())
+        } else {
+            (width, height, rgb_pixels)
         };
 
         let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);

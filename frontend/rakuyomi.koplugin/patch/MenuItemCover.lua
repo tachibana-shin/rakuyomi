@@ -434,7 +434,7 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
     end)
     local wimage = ImageWidget:new {
       file = cover_path,
-      -- scale_factor = 0.5
+      file_do_cache = false,
     }
     wimage:_loadfile()
     local image_size = wimage:getSize() -- get final widget size
@@ -442,7 +442,8 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
 
     wimage = ImageWidget:new {
       file = cover_path,
-      scale_factor = scale_factor
+      scale_factor = scale_factor,
+      file_do_cache = false,
     }
 
     wimage:_render()

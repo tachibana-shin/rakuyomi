@@ -28,6 +28,7 @@ pub async fn search_mangas(
     query: String,
     exclude: &Option<Vec<String>>,
     seconds: u64,
+    with_covers: bool,
 ) -> Result<(Vec<Manga>, Vec<SearchError>), Error> {
     // FIXME this looks awful
     let query = &query;
@@ -114,28 +115,30 @@ pub async fn search_mangas(
                         .await;
 
                     // Download posters concurrently so cover/grid view can render them
-                    let poster_items: Vec<(MangaId, url::Url)> = manga_informations
-                        .iter()
-                        .filter_map(|info| {
-                            info.cover_url.as_ref().map(|url| (info.id.clone(), url.clone()))
-                        })
-                        .collect();
-                    stream::iter(poster_items)
-                    .map(|(id, url)| {
-                        let chapter_storage = chapter_storage.clone();
-                        let source = source.clone();
-                        let token = token.clone();
-                        async move {
-                            let _ = chapter_storage
-                                .cached_poster(&token, &id, || {
-                                    source.get_image_request(url.clone(), None)
-                                })
-                                .await;
-                        }
-                    })
-                    .buffered(CONCURRENT_POSTER_DOWNLOADS)
-                    .collect::<Vec<_>>()
-                    .await;
+                    if with_covers {
+                        let poster_items: Vec<(MangaId, url::Url)> = manga_informations
+                            .iter()
+                            .filter_map(|info| {
+                                info.cover_url.as_ref().map(|url| (info.id.clone(), url.clone()))
+                            })
+                            .collect();
+                        stream::iter(poster_items)
+                            .map(|(id, url)| {
+                                let chapter_storage = chapter_storage.clone();
+                                let source = source.clone();
+                                let token = token.clone();
+                                async move {
+                                    let _ = chapter_storage
+                                        .cached_poster(&token, &id, || {
+                                            source.get_image_request(url.clone(), None)
+                                        })
+                                        .await;
+                                }
+                            })
+                            .buffered(CONCURRENT_POSTER_DOWNLOADS)
+                            .collect::<Vec<_>>()
+                            .await;
+                    }
 
                     // Fetch unread chapters count for each manga
                     let manga_ids: Vec<_> =

@@ -2,6 +2,6 @@ mod implementation;
 mod schema;
 
 pub use schema::{
-    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, Settings, SourceSettingValue,
-    StorageSizeLimit,
+    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, SearchViewMode, Settings,
+    SourceSettingValue, StorageSizeLimit,
 };

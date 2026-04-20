@@ -39,7 +39,8 @@ function MangaSearchResults:init()
   -- in our explicit updateItems() below, exhausting the LRU image cache.
   local results = self.results or {}
   self.results = {}
-  self.search_view_mode = G_reader_settings:readSetting("rakuyomi_search_view_mode", "base")
+  local settings_response = Backend.getSettings()
+  self.search_view_mode = (settings_response.type ~= 'ERROR' and settings_response.body.search_view_mode) or "base"
 
   self.title_bar_left_icon = "column.two"
   self.onLeftButtonTap = function()
@@ -68,7 +69,11 @@ function MangaSearchResults:cycleViewMode()
     end
   end
   self.search_view_mode = next_mode
-  G_reader_settings:saveSetting("rakuyomi_search_view_mode", next_mode)
+  local settings_response = Backend.getSettings()
+  if settings_response.type ~= 'ERROR' then
+    settings_response.body.search_view_mode = next_mode
+    Backend.setSettings(settings_response.body)
+  end
   self:updateItems()
   Testing:emitEvent("search_view_mode_changed", { mode = next_mode })
 end
@@ -95,7 +100,7 @@ function MangaSearchResults:updateItems()
 
   local mode = self.search_view_mode
   if mode == "grid" then
-    self.grid_columns = G_reader_settings:readSetting("rakuyomi_grid_columns") or 3
+    self.grid_columns = 3
     MenuCustom.updateItems(self, MenuItemGrid)
   elseif mode == "cover" then
     self.grid_columns = nil
@@ -274,7 +279,7 @@ function MangaSearchResults:onContextMenuChoice(item)
             local added = manga.in_library
             manga.in_library = not added
 
-            if manga.in_library and self.search_view_mode ~= 'base' then
+            if manga.in_library and Backend.getSettings().body.library_view_mode ~= 'base' then
               local cancel_id = Backend.createCancelId()
               local response, cancelled = LoadingDialog:showAndRun(
                 _("Refreshing details..."),

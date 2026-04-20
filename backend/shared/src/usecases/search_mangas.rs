@@ -13,6 +13,7 @@ use unicode_normalization::UnicodeNormalization;
 
 const CONCURRENT_SEARCH_REQUESTS: usize = 5;
 const CONCURRENT_POSTER_DOWNLOADS: usize = 4;
+const POSTER_DOWNLOAD_TIMEOUT_SECS: u64 = 10;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct SearchError {
@@ -126,11 +127,13 @@ pub async fn search_mangas(
                             let source = source.clone();
                             let token = token.clone();
                             async move {
-                                let _ = chapter_storage
-                                    .cached_poster(&token, &id, || {
+                                let _ = timeout(
+                                    Duration::from_secs(POSTER_DOWNLOAD_TIMEOUT_SECS),
+                                    chapter_storage.cached_poster(&token, &id, || {
                                         source.get_image_request(url.clone(), None)
-                                    })
-                                    .await;
+                                    }),
+                                )
+                                .await;
                             }
                         })
                         .buffered(CONCURRENT_POSTER_DOWNLOADS)

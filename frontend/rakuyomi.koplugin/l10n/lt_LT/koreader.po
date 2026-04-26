@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 12:18+0200\n"
+"POT-Creation-Date: 2026-04-26 18:27+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "Žymėjimas..."
 msgid "Marked"
 msgstr "Pažymėta"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
 msgid "No errors"
 msgstr "Jokių klaidų"
 
@@ -221,7 +221,7 @@ msgstr "Puslapis"
 msgid "attempts"
 msgstr "bandymus"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… ir dar %d klaidų"
@@ -246,12 +246,12 @@ msgstr "Atsisiuntimas atšauktas."
 msgid "Are you sure you want to cancel the download?"
 msgstr "Ar tikrai norite atšaukti atsisiuntimą?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
 msgid "Add to Library"
 msgstr "Pridėti prie bibliotekos"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:279
+#: ../MangaSearchResults.lua:333
 msgid "Details"
 msgstr "Detalės"
 
@@ -427,11 +427,11 @@ msgstr "Atnaujinta manga"
 msgid "Continue Reading"
 msgstr "Skaityti toliau"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
 msgid "Add to Playlist"
 msgstr "Pridėti prie grojaraščio"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
 msgid "Remove from Library"
 msgstr "Pašalinti iš bibliotekos"
 
@@ -491,7 +491,7 @@ msgstr "Švaresni skyriai"
 msgid "Manage sources"
 msgstr "Tvarkyti šaltinius"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
 msgid "Settings"
 msgstr "Nustatymai"
 
@@ -568,7 +568,7 @@ msgid "Type the manga name to search for"
 msgstr "Įveskite mangos pavadinimą, kurio norite ieškoti"
 
 #: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993
+#: ../LibraryView.lua:993 ../Settings.lua:107
 msgid "Search"
 msgstr "Ieškoti"
 
@@ -729,11 +729,11 @@ msgstr "Saugus"
 msgid "Suggestive"
 msgstr "Įtaigus"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
 msgid "Refreshing details..."
 msgstr "Atnaujinama informacija..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
 msgid "Refresh details cancelled."
 msgstr "Išsamios informacijos atnaujinimas atšauktas."
 
@@ -757,15 +757,15 @@ msgstr "Taip"
 msgid "No"
 msgstr "Nr"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaSearchResults.lua:29
 msgid "Search results..."
 msgstr "Paieškos rezultatai..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:187
 msgid "Searching for"
 msgstr "Ieškau"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:194
 msgid "Search cancelled."
 msgstr "Paieška atšaukta."
 
@@ -854,15 +854,15 @@ msgstr "Dar nėra grojaraščių."
 msgid "Library view mode"
 msgstr "Bibliotekos peržiūros režimas"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:46 ../Settings.lua:115
 msgid "Base"
 msgstr "Bazė"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:47 ../Settings.lua:116
 msgid "Cover"
 msgstr "Viršelis"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:48 ../Settings.lua:117
 msgid "Grid"
 msgstr "Tinklelis"
 
@@ -922,67 +922,71 @@ msgstr "Tinklelio stulpeliai"
 msgid "Grid rows"
 msgstr "Tinklelio eilutės"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:113
+msgid "Search view mode"
+msgstr "Paieškos peržiūros režimas"
+
+#: ../Settings.lua:124
 msgid "Reader"
 msgstr "Skaitytojas"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:130
 msgid "Chapter sorting mode"
 msgstr "Skyrių rūšiavimo režimas"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:132
 msgid "By chapter ascending"
 msgstr "Pagal skyrių didėjančia tvarka"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:133
 msgid "By chapter descending"
 msgstr "Pagal skyrių mažėjančia tvarka"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:141
 msgid "Preload chapters on reader open"
 msgstr "Atidaryti skaitytuvo skyriai iš anksto"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:152
 msgid "Optimize page images (experimental)"
 msgstr "Optimizuoti puslapio vaizdus (eksperimentinis)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:160
 msgid "Concurrent page requests"
 msgstr "Vienu metu pateikiamos puslapio užklausos"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:169
 msgid "Storage"
 msgstr "Sandėliavimas"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:175
 msgid "Chapter storage path"
 msgstr "Skyriaus saugojimo kelias"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:184
 msgid "Storage size limit"
 msgstr "Saugyklos dydžio apribojimas"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:192
 msgid "Sync & Updates"
 msgstr "Sinchronizavimas ir atnaujinimai"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:198
 msgid "WebDAV Sync"
 msgstr "WebDAV sinchronizavimas"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:206
 msgid "Enabled cron check for manga updates"
 msgstr "Įgalintas cron tikrinimas, ar nėra manga naujinimų"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:214
 msgid "Source IDs skip check update"
 msgstr "Šaltinio ID praleidžia patikros atnaujinimą"
 
-#: ../Settings.lua:203
+#: ../Settings.lua:220
 msgid "System"
 msgstr "Sistema"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:226
 msgid "Allow requisition of the back button"
 msgstr "Leisti reikalauti atgalinio mygtuko"
 

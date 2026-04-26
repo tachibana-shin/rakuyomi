@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 12:18+0200\n"
+"POT-Creation-Date: 2026-04-26 18:27+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -206,7 +206,7 @@ msgstr "Marcando..."
 msgid "Marked"
 msgstr "Marcado"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
 msgid "No errors"
 msgstr "Sen erros"
 
@@ -220,7 +220,7 @@ msgstr "Páx"
 msgid "attempts"
 msgstr "intentos"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… e %d erros máis"
@@ -245,12 +245,12 @@ msgstr "Descarga cancelada."
 msgid "Are you sure you want to cancel the download?"
 msgstr "Estás seguro de que queres cancelar a descarga?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
 msgid "Add to Library"
 msgstr "Engadir á biblioteca"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:279
+#: ../MangaSearchResults.lua:333
 msgid "Details"
 msgstr "Detalles"
 
@@ -426,11 +426,11 @@ msgstr "Manga renovada"
 msgid "Continue Reading"
 msgstr "Continúe lendo"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
 msgid "Add to Playlist"
 msgstr "Engadir á lista de reprodución"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
 msgid "Remove from Library"
 msgstr "Eliminar da biblioteca"
 
@@ -490,7 +490,7 @@ msgstr "Capítulos máis limpos"
 msgid "Manage sources"
 msgstr "Xestionar fontes"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
 msgid "Settings"
 msgstr "Configuración"
 
@@ -567,7 +567,7 @@ msgid "Type the manga name to search for"
 msgstr "Escribe o nome do manga para buscar"
 
 #: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993
+#: ../LibraryView.lua:993 ../Settings.lua:107
 msgid "Search"
 msgstr "Busca"
 
@@ -728,11 +728,11 @@ msgstr "Seguro"
 msgid "Suggestive"
 msgstr "Suxestivo"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
 msgid "Refreshing details..."
 msgstr "Actualizando detalles..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
 msgid "Refresh details cancelled."
 msgstr "Canceláronse os detalles de actualización."
 
@@ -756,15 +756,15 @@ msgstr "Si"
 msgid "No"
 msgstr "Non"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaSearchResults.lua:29
 msgid "Search results..."
 msgstr "Resultados da busca..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:187
 msgid "Searching for"
 msgstr "Buscando"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:194
 msgid "Search cancelled."
 msgstr "Busca cancelada."
 
@@ -853,15 +853,15 @@ msgstr "Aínda non hai listas de reprodución."
 msgid "Library view mode"
 msgstr "Modo de visualización da biblioteca"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:46 ../Settings.lua:115
 msgid "Base"
 msgstr "Base"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:47 ../Settings.lua:116
 msgid "Cover"
 msgstr "Cuberta"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:48 ../Settings.lua:117
 msgid "Grid"
 msgstr "Reixa"
 
@@ -921,67 +921,71 @@ msgstr "Columnas de cuadrícula"
 msgid "Grid rows"
 msgstr "Filas de cuadrícula"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:113
+msgid "Search view mode"
+msgstr "Modo de visualización de busca"
+
+#: ../Settings.lua:124
 msgid "Reader"
 msgstr "Lector"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:130
 msgid "Chapter sorting mode"
 msgstr "Modo de clasificación de capítulos"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:132
 msgid "By chapter ascending"
 msgstr "Por capítulos ascendentes"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:133
 msgid "By chapter descending"
 msgstr "Por capítulos descendentes"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:141
 msgid "Preload chapters on reader open"
 msgstr "Carga previa de capítulos no lector aberto"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:152
 msgid "Optimize page images (experimental)"
 msgstr "Optimizar imaxes da páxina (experimental)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:160
 msgid "Concurrent page requests"
 msgstr "Solicitudes de páxinas simultáneas"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:169
 msgid "Storage"
 msgstr "Almacenamento"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:175
 msgid "Chapter storage path"
 msgstr "Camiño de almacenamento do capítulo"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:184
 msgid "Storage size limit"
 msgstr "Límite de tamaño de almacenamento"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:192
 msgid "Sync & Updates"
 msgstr "Sincronización e actualizacións"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:198
 msgid "WebDAV Sync"
 msgstr "Sincronización WebDAV"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:206
 msgid "Enabled cron check for manga updates"
 msgstr "Activouse a verificación cron para actualizacións de manga"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:214
 msgid "Source IDs skip check update"
 msgstr "Os ID de orixe omiten a actualización de verificación"
 
-#: ../Settings.lua:203
+#: ../Settings.lua:220
 msgid "System"
 msgstr "Sistema"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:226
 msgid "Allow requisition of the back button"
 msgstr "Permitir a solicitude do botón Atrás"
 

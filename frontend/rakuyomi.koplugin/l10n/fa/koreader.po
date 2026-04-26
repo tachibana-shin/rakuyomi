@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 12:18+0200\n"
+"POT-Creation-Date: 2026-04-26 18:27+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -206,7 +206,7 @@ msgstr "علامت گذاری..."
 msgid "Marked"
 msgstr "علامت گذاری شده است"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
 msgid "No errors"
 msgstr "بدون خطا"
 
@@ -220,7 +220,7 @@ msgstr "صفحه"
 msgid "attempts"
 msgstr "تلاش می کند"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… و %d خطای دیگر"
@@ -245,12 +245,12 @@ msgstr "دانلود لغو شد."
 msgid "Are you sure you want to cancel the download?"
 msgstr "آیا مطمئنید که می خواهید دانلود را لغو کنید؟"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
 msgid "Add to Library"
 msgstr "افزودن به کتابخانه"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:279
+#: ../MangaSearchResults.lua:333
 msgid "Details"
 msgstr "جزئیات"
 
@@ -426,11 +426,11 @@ msgstr "مانگای تازه شده"
 msgid "Continue Reading"
 msgstr "به خواندن ادامه دهید"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
 msgid "Add to Playlist"
 msgstr "به لیست پخش اضافه کنید"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
 msgid "Remove from Library"
 msgstr "حذف از کتابخانه"
 
@@ -490,7 +490,7 @@ msgstr "فصل های تمیزتر"
 msgid "Manage sources"
 msgstr "مدیریت منابع"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
 msgid "Settings"
 msgstr "تنظیمات"
 
@@ -567,7 +567,7 @@ msgid "Type the manga name to search for"
 msgstr "نام مانگا را برای جستجو تایپ کنید"
 
 #: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993
+#: ../LibraryView.lua:993 ../Settings.lua:107
 msgid "Search"
 msgstr "جستجو کنید"
 
@@ -728,11 +728,11 @@ msgstr "امن"
 msgid "Suggestive"
 msgstr "پیشنهادی"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
 msgid "Refreshing details..."
 msgstr "تازه کردن جزئیات..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
 msgid "Refresh details cancelled."
 msgstr "بازخوانی جزئیات لغو شد."
 
@@ -756,15 +756,15 @@ msgstr "بله"
 msgid "No"
 msgstr "خیر"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaSearchResults.lua:29
 msgid "Search results..."
 msgstr "نتایج جستجو..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:187
 msgid "Searching for"
 msgstr "جستجو برای"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:194
 msgid "Search cancelled."
 msgstr "جستجو لغو شد."
 
@@ -853,15 +853,15 @@ msgstr "هنوز لیست پخشی وجود ندارد."
 msgid "Library view mode"
 msgstr "حالت مشاهده کتابخانه"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:46 ../Settings.lua:115
 msgid "Base"
 msgstr "پایه"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:47 ../Settings.lua:116
 msgid "Cover"
 msgstr "پوشش"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:48 ../Settings.lua:117
 msgid "Grid"
 msgstr "شبکه"
 
@@ -921,67 +921,71 @@ msgstr "ستون های شبکه"
 msgid "Grid rows"
 msgstr "ردیف های شبکه ای"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:113
+msgid "Search view mode"
+msgstr "حالت مشاهده جستجو"
+
+#: ../Settings.lua:124
 msgid "Reader"
 msgstr "خواننده"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:130
 msgid "Chapter sorting mode"
 msgstr "حالت مرتب‌سازی فصل"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:132
 msgid "By chapter ascending"
 msgstr "با فصل صعودی"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:133
 msgid "By chapter descending"
 msgstr "با نزول فصل"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:141
 msgid "Preload chapters on reader open"
 msgstr "فصل‌ها را از قبل بارگیری کنید در خواننده باز است"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:152
 msgid "Optimize page images (experimental)"
 msgstr "بهینه سازی تصاویر صفحه (تجربی)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:160
 msgid "Concurrent page requests"
 msgstr "درخواست های همزمان صفحه"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:169
 msgid "Storage"
 msgstr "ذخیره سازی"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:175
 msgid "Chapter storage path"
 msgstr "مسیر ذخیره فصل"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:184
 msgid "Storage size limit"
 msgstr "محدودیت اندازه ذخیره سازی"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:192
 msgid "Sync & Updates"
 msgstr "همگام سازی و به روز رسانی"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:198
 msgid "WebDAV Sync"
 msgstr "WebDAV Sync"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:206
 msgid "Enabled cron check for manga updates"
 msgstr "بررسی cron برای به‌روزرسانی‌های مانگا فعال شد"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:214
 msgid "Source IDs skip check update"
 msgstr "شناسه منبع به‌روزرسانی بررسی را رد می‌کند"
 
-#: ../Settings.lua:203
+#: ../Settings.lua:220
 msgid "System"
 msgstr "سیستم"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:226
 msgid "Allow requisition of the back button"
 msgstr "اجازه درخواست دکمه برگشت را بدهید"
 

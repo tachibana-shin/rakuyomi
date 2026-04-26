@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 12:18+0200\n"
+"POT-Creation-Date: 2026-04-26 18:27+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "마킹..."
 msgid "Marked"
 msgstr "두드러진"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
 msgid "No errors"
 msgstr "오류 없음"
 
@@ -221,7 +221,7 @@ msgstr "페이지"
 msgid "attempts"
 msgstr "시도"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
 #, lua-format
 msgid "… and %d more errors"
 msgstr "...그리고 %d개의 추가 오류"
@@ -246,12 +246,12 @@ msgstr "다운로드가 취소되었습니다."
 msgid "Are you sure you want to cancel the download?"
 msgstr "다운로드를 취소하시겠습니까?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
 msgid "Add to Library"
 msgstr "라이브러리에 추가"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:279
+#: ../MangaSearchResults.lua:333
 msgid "Details"
 msgstr "세부"
 
@@ -427,11 +427,11 @@ msgstr "상쾌한 만화"
 msgid "Continue Reading"
 msgstr "계속 읽기"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
 msgid "Add to Playlist"
 msgstr "재생목록에 추가"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
 msgid "Remove from Library"
 msgstr "라이브러리에서 제거"
 
@@ -491,7 +491,7 @@ msgstr "클리너 챕터"
 msgid "Manage sources"
 msgstr "소스 관리"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
 msgid "Settings"
 msgstr "설정"
 
@@ -568,7 +568,7 @@ msgid "Type the manga name to search for"
 msgstr "검색할 만화 이름을 입력하세요."
 
 #: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993
+#: ../LibraryView.lua:993 ../Settings.lua:107
 msgid "Search"
 msgstr "찾다"
 
@@ -729,11 +729,11 @@ msgstr "안전한"
 msgid "Suggestive"
 msgstr "암시적"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
 msgid "Refreshing details..."
 msgstr "상쾌한 디테일..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
 msgid "Refresh details cancelled."
 msgstr "세부정보 새로고침이 취소되었습니다."
 
@@ -757,15 +757,15 @@ msgstr "예"
 msgid "No"
 msgstr "아니요"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaSearchResults.lua:29
 msgid "Search results..."
 msgstr "검색결과..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:187
 msgid "Searching for"
 msgstr "검색 중"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:194
 msgid "Search cancelled."
 msgstr "검색이 취소되었습니다."
 
@@ -854,15 +854,15 @@ msgstr "아직 재생목록이 없습니다."
 msgid "Library view mode"
 msgstr "라이브러리 보기 모드"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:46 ../Settings.lua:115
 msgid "Base"
 msgstr "베이스"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:47 ../Settings.lua:116
 msgid "Cover"
 msgstr "씌우다"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:48 ../Settings.lua:117
 msgid "Grid"
 msgstr "그리드"
 
@@ -922,67 +922,71 @@ msgstr "그리드 열"
 msgid "Grid rows"
 msgstr "그리드 행"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:113
+msgid "Search view mode"
+msgstr "검색 보기 모드"
+
+#: ../Settings.lua:124
 msgid "Reader"
 msgstr "리더"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:130
 msgid "Chapter sorting mode"
 msgstr "챕터 정렬 모드"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:132
 msgid "By chapter ascending"
 msgstr "장별 오름차순"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:133
 msgid "By chapter descending"
 msgstr "장 내림차순"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:141
 msgid "Preload chapters on reader open"
 msgstr "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:135
+#: ../Settings.lua:152
 msgid "Optimize page images (experimental)"
 msgstr "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:160
 msgid "Concurrent page requests"
 msgstr "동시 페이지 요청"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:169
 msgid "Storage"
 msgstr "저장"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:175
 msgid "Chapter storage path"
 msgstr "챕터 저장 경로"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:184
 msgid "Storage size limit"
 msgstr "저장소 크기 제한"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:192
 msgid "Sync & Updates"
 msgstr "동기화 및 업데이트"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:198
 msgid "WebDAV Sync"
 msgstr "WebDAV 동기화"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:206
 msgid "Enabled cron check for manga updates"
 msgstr "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
 
-#: ../Settings.lua:197
+#: ../Settings.lua:214
 msgid "Source IDs skip check update"
 msgstr "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:203
+#: ../Settings.lua:220
 msgid "System"
 msgstr "체계"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:226
 msgid "Allow requisition of the back button"
 msgstr "뒤로 버튼 요청 허용"
 

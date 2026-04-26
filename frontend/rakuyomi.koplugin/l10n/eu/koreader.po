@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 12:18+0200\n"
+"POT-Creation-Date: 2026-04-26 18:27+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -206,7 +206,7 @@ msgstr "Markatzen..."
 msgid "Marked"
 msgstr "Markatuta"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
 msgid "No errors"
 msgstr "Akatsik ez"
 
@@ -220,7 +220,7 @@ msgstr "Orria"
 msgid "attempts"
 msgstr "saiakerak"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… eta %d errore gehiago"
@@ -245,12 +245,12 @@ msgstr "Deskarga bertan behera utzi da."
 msgid "Are you sure you want to cancel the download?"
 msgstr "Ziur deskarga bertan behera utzi nahi duzula?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
 msgid "Add to Library"
 msgstr "Gehitu liburutegira"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:279
+#: ../MangaSearchResults.lua:333
 msgid "Details"
 msgstr "Xehetasunak"
 
@@ -426,11 +426,11 @@ msgstr "Manga berritua"
 msgid "Continue Reading"
 msgstr "Jarraitu Irakurtzen"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
 msgid "Add to Playlist"
 msgstr "Gehitu erreprodukzio zerrendara"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
 msgid "Remove from Library"
 msgstr "Kendu liburutegitik"
 
@@ -490,7 +490,7 @@ msgstr "Kapitulu garbiagoak"
 msgid "Manage sources"
 msgstr "Kudeatu iturriak"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:285
+#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
 msgid "Settings"
 msgstr "Ezarpenak"
 
@@ -567,7 +567,7 @@ msgid "Type the manga name to search for"
 msgstr "Idatzi bilatu nahi duzun manga izena"
 
 #: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993
+#: ../LibraryView.lua:993 ../Settings.lua:107
 msgid "Search"
 msgstr "Bilatu"
 
@@ -728,11 +728,11 @@ msgstr "Seguru"
 msgid "Suggestive"
 msgstr "Iradokitzailea"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
 msgid "Refreshing details..."
 msgstr "Xehetasunak freskatzen..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
 msgid "Refresh details cancelled."
 msgstr "Freskatzeko xehetasunak bertan behera utzi dira."
 
@@ -756,15 +756,15 @@ msgstr "Bai"
 msgid "No"
 msgstr "Ez"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaSearchResults.lua:29
 msgid "Search results..."
 msgstr "Bilaketa-emaitzak..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:187
 msgid "Searching for"
 msgstr "Bilatzen"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:194
 msgid "Search cancelled."
 msgstr "Bilaketa bertan behera utzi da."
 
@@ -853,15 +853,15 @@ msgstr "Oraindik ez dago erreprodukzio-zerrendarik."
 msgid "Library view mode"
 msgstr "Liburutegia ikusteko modua"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:46 ../Settings.lua:115
 msgid "Base"
 msgstr "Oinarria"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:47 ../Settings.lua:116
 msgid "Cover"
 msgstr "Estalkia"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:48 ../Settings.lua:117
 msgid "Grid"
 msgstr "Sarea"
 
@@ -921,67 +921,71 @@ msgstr "Sare-zutabeak"
 msgid "Grid rows"
 msgstr "Sare-lerroak"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:113
+msgid "Search view mode"
+msgstr "Bilaketa ikuspegi modua"
+
+#: ../Settings.lua:124
 msgid "Reader"
 msgstr "Irakurlea"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:130
 msgid "Chapter sorting mode"
 msgstr "Kapituluak ordenatzeko modua"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:132
 msgid "By chapter ascending"
 msgstr "Goranzko kapituluaren arabera"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:133
 msgid "By chapter descending"
 msgstr "Kapituluen arabera"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:141
 msgid "Preload chapters on reader open"
 msgstr "Aurrez kargatu kapituluak irakurgailuan irekita"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:152
 msgid "Optimize page images (experimental)"
 msgstr "Optimizatu orriaren irudiak (esperimentalak)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:160
 msgid "Concurrent page requests"
 msgstr "Orrialde aldibereko eskaerak"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:169
 msgid "Storage"
 msgstr "Biltegiratzea"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:175
 msgid "Chapter storage path"
 msgstr "Kapitulua biltegiratzeko bidea"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:184
 msgid "Storage size limit"
 msgstr "Biltegiratze-tamainaren muga"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:192
 msgid "Sync & Updates"
 msgstr "Sinkronizazioa eta eguneraketak"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:198
 msgid "WebDAV Sync"
 msgstr "WebDAV sinkronizazioa"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:206
 msgid "Enabled cron check for manga updates"
 msgstr "Manga eguneratzeetarako cron egiaztapena gaituta"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:214
 msgid "Source IDs skip check update"
 msgstr "Iturburu IDek egiaztapenaren eguneratzea saltatzen dute"
 
-#: ../Settings.lua:203
+#: ../Settings.lua:220
 msgid "System"
 msgstr "Sistema"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:226
 msgid "Allow requisition of the back button"
 msgstr "Baimendu atzera botoia eskatzea"
 

@@ -18,7 +18,13 @@ use crate::AppError;
 fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
     match url::Url::from_file_path(&path) {
         Ok(url) => Some(url),
-        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
+        Err(_) => match path.canonicalize() {
+            Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
+            Err(e) => {
+                println!("Error canonicalizing path: {}", e);
+                None
+            }
+        },
             Ok(url) => Some(url),
             Err(_) => {
                 println!("Error converting path to URL");

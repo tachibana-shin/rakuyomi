@@ -16,11 +16,16 @@ use crate::state::State;
 use crate::AppError;
 
 fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
-    url::Url::from_file_path(path).ok().or_else(|| {
-        path.canonicalize()
-            .ok()
-            .and_then(|p| url::Url::from_file_path(p).ok())
-    })
+    match url::Url::from_file_path(&path) {
+        Ok(url) => Some(url),
+        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
+            Ok(url) => Some(url),
+            Err(_) => {
+                println!("Error converting path to URL");
+                None
+            }
+        },
+    }
 }
 
 pub fn routes() -> Router<State> {
@@ -254,6 +259,7 @@ async fn get_mangas(
         source_manager,
         cancel_token_store,
         chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     Query(GetMangasQuery {
@@ -265,6 +271,7 @@ async fn get_mangas(
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
     let chapter_storage = chapter_storage.lock().await;
+    let settings = settings.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {
@@ -274,16 +281,27 @@ async fn get_mangas(
     });
 
     let (mut mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(source_manager, &database, &chapter_storage, token, q, &exclude, 30)
+        usecases::search_mangas(
+            source_manager,
+            &database,
+            &chapter_storage,
+            &settings,
+            token,
+            q,
+            &exclude,
+            30,
+        )
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;
 
-    for manga in mangas.iter_mut() {
-        if manga.information.cover_url.is_some() {
-            manga.information.cover_url = chapter_storage
-                .poster_exists(&manga.information.id)
-                .and_then(|path| path_to_file_url(&path));
+    if settings.search_view_mode != shared::settings::SearchViewMode::Base {
+        for manga in mangas.iter_mut() {
+            if manga.information.cover_url.is_some() {
+                manga.information.cover_url = chapter_storage
+                    .poster_exists(&manga.information.id)
+                    .and_then(|path| path_to_file_url(&path));
+            }
         }
     }
 

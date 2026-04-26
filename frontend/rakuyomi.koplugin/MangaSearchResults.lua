@@ -29,16 +29,14 @@ local MangaSearchResults = MenuCustom:extend {
   title = _("Search results..."),
   with_context_menu = true,
 
+  -- list of mangas
   results = nil,
+  -- callback to be called when pressing the back button
   on_return_callback = nil,
 }
 
 function MangaSearchResults:init()
-  -- Stash results before Menu.init so its internal updateItems() call sees an
-  -- empty list. Without this, covers are loaded once inside Menu.init and again
-  -- in our explicit updateItems() below, exhausting the LRU image cache.
   local results = self.results or {}
-  self.results = {}
   local settings_response = Backend.getSettings()
   self.search_view_mode = (settings_response.type ~= 'ERROR' and settings_response.body.search_view_mode) or "base"
 
@@ -53,6 +51,8 @@ function MangaSearchResults:init()
   Menu.init(self)
   self.page = page
 
+  -- see `ChapterListing` for an explanation on this
+  -- FIXME we could refactor this into a single class
   self.paths = { 0 }
   self.on_return_callback = nil
   self.results = results
@@ -99,14 +99,17 @@ function MangaSearchResults:updateItems()
   self.item_table = self:generateItemTableFromSearchResults(self.results)
 
   local mode = self.search_view_mode
+  local MenuItemChoice = MenuItemCover
   if mode == "grid" then
-    self.grid_columns = 3
-    MenuCustom.updateItems(self, MenuItemGrid)
-  elseif mode == "cover" then
-    self.grid_columns = nil
-    MenuCustom.updateItems(self, MenuItemCover)
+    MenuItemChoice = MenuItemGrid
+    self.grid_columns = G_reader_settings:readSetting("rakuyomi_grid_columns") or 3
   else
     self.grid_columns = nil
+  end
+
+  if mode ~= "base" then
+    MenuCustom.updateItems(self, MenuItemChoice)
+  else
     Menu.updateItems(self)
   end
 end

@@ -4,6 +4,7 @@ use pprof::criterion::{Output, PProfProfiler};
 use shared::{
     database::Database, settings::Settings, source_manager::SourceManager, usecases::search_mangas,
 };
+use size::Size;
 use std::sync::Arc;
 use std::{env, path::PathBuf};
 use tokio::sync::Mutex;
@@ -28,10 +29,18 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
         b.to_async(&runtime).iter(|| async {
             let db = Database::new(&PathBuf::from("test.db")).await.unwrap();
             let source_manager: &SourceManager = &arc_manager.blocking_lock();
+            let chapter_storage = shared::chapter_storage::ChapterStorage::new(
+                PathBuf::from("test.db"),
+                Size::from_mebibytes(100.0),
+            )
+            .unwrap();
+            let settings = Settings::default();
 
             search_mangas(
                 source_manager,
                 &db,
+                &chapter_storage,
+                &settings,
                 CancellationToken::new(),
                 query.clone(),
                 &None,

@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use size::{consts, Size};
 
 use crate::settings::{
-    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, Settings, StorageSizeLimit,
+    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, SearchViewMode, Settings,
+    StorageSizeLimit,
 };
 
 pub fn update_settings(
@@ -37,6 +38,7 @@ pub struct UpdateableSettings {
     preload_chapters: usize,
     optimize_image: bool,
     library_view_mode: LibraryViewMode,
+    search_view_mode: SearchViewMode,
 }
 
 impl UpdateableSettings {
@@ -53,6 +55,7 @@ impl UpdateableSettings {
         settings.preload_chapters = self.preload_chapters;
         settings.optimize_image = self.optimize_image;
         settings.library_view_mode = self.library_view_mode;
+        settings.search_view_mode = self.search_view_mode;
     }
 }
 
@@ -72,6 +75,7 @@ impl From<&Settings> for UpdateableSettings {
             preload_chapters: value.preload_chapters,
             optimize_image: value.optimize_image,
             library_view_mode: value.library_view_mode,
+            search_view_mode: value.search_view_mode,
         }
     }
 }

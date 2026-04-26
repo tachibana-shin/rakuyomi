@@ -390,3 +390,44 @@ impl ChapterStorage {
         self.downloads_folder_path.join(output_filename)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use size::Size;
+    use tempfile::tempdir;
+
+    fn make_storage() -> ChapterStorage {
+        let dir = tempdir().unwrap();
+        ChapterStorage::new(dir.keep(), Size::from_mebibytes(100.0)).unwrap()
+    }
+
+    fn make_rgb_jpeg(width: u32, height: u32) -> Vec<u8> {
+        let pixels: Vec<u8> = vec![128u8; (width * height * 3) as usize];
+        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+        comp.set_size(width as usize, height as usize);
+        comp.set_fastest_defaults();
+        let mut comp = comp.start_compress(Vec::new()).unwrap();
+        comp.write_scanlines(&pixels).unwrap();
+        comp.finish().unwrap()
+    }
+
+    fn output_dimensions(jpeg: &[u8]) -> (u32, u32) {
+        let cursor = std::io::Cursor::new(jpeg);
+        let img = image::ImageReader::new(cursor)
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap();
+        (img.width(), img.height())
+    }
+
+    #[test]
+    fn image_is_transcoded_to_jpeg() {
+        let storage = make_storage();
+        let input = make_rgb_jpeg(200, 300);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert_eq!((w, h), (200, 300));
+    }
+}

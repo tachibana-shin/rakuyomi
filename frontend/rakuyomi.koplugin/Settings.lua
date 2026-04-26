@@ -104,6 +104,23 @@ Settings.setting_value_definitions = {
   },
   {
     nil,
+    { type = 'divider', title = _("Search") }
+  },
+  {
+    'search_view_mode',
+    {
+      type = 'enum',
+      title = _("Search view mode"),
+      options = {
+        { label = _("Base"),  value = "base" },
+        { label = _("Cover"), value = "cover" },
+        { label = _("Grid"),  value = "grid" },
+      },
+      default = "base",
+    }
+  },
+  {
+    nil,
     { type = 'divider', title = _("Reader") }
   },
   {

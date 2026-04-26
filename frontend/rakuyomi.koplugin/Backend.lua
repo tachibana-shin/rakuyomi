@@ -567,7 +567,8 @@ end
 
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode }
+--- @alias SearchViewMode 'base' | 'cover' | 'grid'
+--- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode, search_view_mode: SearchViewMode }
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse

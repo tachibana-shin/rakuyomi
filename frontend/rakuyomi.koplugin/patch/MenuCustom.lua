@@ -40,7 +40,7 @@ function MenuCustom:updateItems(MenuItem, select_number, no_recalculate_dimen)
 
   local columns = self.grid_columns or 1
   if columns > 1 then
-    local rows = math.floor(items_nb / columns)
+    local rows = math.ceil(items_nb / columns)
     for r = 1, rows do
       local row_group = HorizontalGroup:new { align = "center" }
       for c = 1, columns do

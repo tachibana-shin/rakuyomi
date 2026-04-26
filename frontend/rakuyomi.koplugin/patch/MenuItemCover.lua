@@ -429,17 +429,21 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
 
   local wleft
   if self.entry.manga_cover and starts_with(self.entry.manga_cover, "file://") then
+    local cover_path = self.entry.manga_cover:gsub("^file://", ""):gsub("%%(%x%x)", function(hex)
+      return string.char(tonumber(hex, 16))
+    end)
     local wimage = ImageWidget:new {
-      file = self.entry.manga_cover:gsub("^file://", ""),
-      -- scale_factor = 0.5
+      file = cover_path,
+      file_do_cache = false,
     }
     wimage:_loadfile()
     local image_size = wimage:getSize() -- get final widget size
     local _, _, scale_factor = getCachedCoverSize(image_size.w, image_size.h, wleft_width, wleft_height)
 
     wimage = ImageWidget:new {
-      file = self.entry.manga_cover:gsub("^file://", ""),
-      scale_factor = scale_factor
+      file = cover_path,
+      scale_factor = scale_factor,
+      file_do_cache = false,
     }
 
     wimage:_render()

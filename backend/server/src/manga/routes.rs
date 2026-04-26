@@ -15,6 +15,25 @@ use crate::source_extractor::SourceExtractor;
 use crate::state::State;
 use crate::AppError;
 
+fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
+    match url::Url::from_file_path(&path) {
+        Ok(url) => Some(url),
+        Err(_) => match path.canonicalize() {
+            Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
+            Err(e) => {
+                println!("Error canonicalizing path: {}", e);
+                None
+            }
+        },
+            Ok(url) => Some(url),
+            Err(_) => {
+                println!("Error converting path to URL");
+                None
+            }
+        },
+    }
+}
+
 pub fn routes() -> Router<State> {
     Router::new()
         .route("/library", get(get_manga_library))
@@ -112,22 +131,9 @@ async fn get_manga_library(
     if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
         for manga in mangas.iter_mut() {
             if manga.information.cover_url.is_some() {
-                manga.information.cover_url = if let Some(path) =
-                    chapter_storage.poster_exists(&manga.information.id)
-                {
-                    match url::Url::from_file_path(&path) {
-                        Ok(url) => Some(url),
-                        Err(_) => match url::Url::from_file_path(path.canonicalize().unwrap()) {
-                            Ok(url) => Some(url),
-                            Err(_) => {
-                                println!("Error converting path to URL");
-                                None
-                            }
-                        },
-                    }
-                } else {
-                    None
-                };
+                manga.information.cover_url = chapter_storage
+                    .poster_exists(&manga.information.id)
+                    .and_then(|path| path_to_file_url(&path));
             }
         }
     }
@@ -258,6 +264,8 @@ async fn get_mangas(
         database,
         source_manager,
         cancel_token_store,
+        chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     Query(GetMangasQuery {
@@ -268,6 +276,8 @@ async fn get_mangas(
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
     let source_manager = { &*source_manager.lock().await };
     let database = { database.lock().await };
+    let chapter_storage = chapter_storage.lock().await;
+    let settings = settings.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {
@@ -276,11 +286,30 @@ async fn get_mangas(
             .collect::<Vec<_>>()
     });
 
-    let (mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(source_manager, &database, token, q, &exclude, 30)
+    let (mut mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
+        usecases::search_mangas(
+            source_manager,
+            &database,
+            &chapter_storage,
+            &settings,
+            token,
+            q,
+            &exclude,
+            30,
+        )
     })
     .await
     .map_err(AppError::from_search_mangas_error)?;
+
+    if settings.search_view_mode != shared::settings::SearchViewMode::Base {
+        for manga in mangas.iter_mut() {
+            if manga.information.cover_url.is_some() {
+                manga.information.cover_url = chapter_storage
+                    .poster_exists(&manga.information.id)
+                    .and_then(|path| path_to_file_url(&path));
+            }
+        }
+    }
 
     let results = mangas.into_iter().map(Manga::from).collect();
 

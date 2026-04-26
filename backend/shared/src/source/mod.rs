@@ -1382,7 +1382,7 @@ impl BlockingSource {
 
                 let mut comp =  comp.start_compress(Vec::new())?;
                 comp.write_scanlines(&rgb_pixels)?;
-                
+
 
                 comp.finish()?
             };

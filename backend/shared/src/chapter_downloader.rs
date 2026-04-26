@@ -280,13 +280,9 @@ where
                                         if let Some(image) =
                                             crate::source::decode_image::decode_image_fast(&data)
                                         {
-                                            if let Ok(image) = image
-                                                .map_err(|err| {
-                                                    eprintln!(
-                                                        "failed to load image with faster {err}"
-                                                    )
-                                                })
-                                            {
+                                            if let Ok(image) = image.map_err(|err| {
+                                                eprintln!("failed to load image with faster {err}")
+                                            }) {
                                                 // RGBA に変換（元は ARGB）
                                                 let mut rgb_pixels: Vec<u8> = Vec::with_capacity(
                                                     (image.width * image.height * 3) as usize,

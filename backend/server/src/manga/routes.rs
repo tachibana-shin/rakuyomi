@@ -25,12 +25,6 @@ fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
                 None
             }
         },
-            Ok(url) => Some(url),
-            Err(_) => {
-                println!("Error converting path to URL");
-                None
-            }
-        },
     }
 }
 

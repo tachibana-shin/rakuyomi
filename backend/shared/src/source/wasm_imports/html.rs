@@ -88,8 +88,10 @@ fn parse_fragment_with_uri(
     base_uri: Option<String>,
 ) -> Result<i32> {
     let store = caller.data_mut();
-    let fragment =
-        Document::fragment(format!("<html><head></head><body>{}</body></html>", data.context("data is required for parse_fragment_with_uri")?));
+    let fragment = Document::fragment(format!(
+        "<html><head></head><body>{}</body></html>",
+        data.context("data is required for parse_fragment_with_uri")?
+    ));
     let node_id = fragment.root().id;
     let html_element = HTMLElement {
         document: store.set_html(fragment),

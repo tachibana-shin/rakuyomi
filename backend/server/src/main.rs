@@ -14,7 +14,8 @@ use state::State;
 use std::collections::HashMap;
 use std::env::current_exe;
 use std::fs;
-use std::path::PathBuf;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -42,6 +43,8 @@ struct Args {
 }
 
 const SOCKET_PATH: &str = "/tmp/rakuyomi.sock";
+
+const DEFAULT_SETTINGS_JSON: &str = include_str!("../assets/default-settings.json");
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -73,6 +76,8 @@ async fn main() -> anyhow::Result<()> {
     let database = Database::new(&database_path)
         .await
         .context("couldn't open database file")?;
+    seed_default_settings(&settings_path)
+        .with_context(|| format!("seeding default settings at {}", settings_path.display()))?;
     let settings = Settings::from_file(&settings_path)
         .with_context(|| format!("couldn't read settings file at {}", settings_path.display()))?;
     let source_manager = SourceManager::from_folder(sources_path, settings.clone())
@@ -131,6 +136,57 @@ async fn main() -> anyhow::Result<()> {
 
     axum::serve(listener, app).await?;
 
+    Ok(())
+}
+
+// Atomically creates `settings_path` with the default JSON if it doesn't already
+// exist. Writes to a sibling temp file, restricts it to 0600 (settings.json may
+// later contain credentials), then renames into place. A concurrent first-run
+// that wins the rename is treated as success.
+fn seed_default_settings(settings_path: &Path) -> anyhow::Result<()> {
+    if settings_path.exists() {
+        return Ok(());
+    }
+    info!(
+        "settings file not found at {}, creating default",
+        settings_path.display()
+    );
+
+    let parent = settings_path
+        .parent()
+        .expect("settings_path is built by joining onto home_path, so it always has a parent");
+    let mut tmp = tempfile::Builder::new()
+        .prefix(".settings-")
+        .suffix(".tmp")
+        .tempfile_in(parent)?;
+
+    tmp.write_all(DEFAULT_SETTINGS_JSON.as_bytes())?;
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        // Best-effort: filesystems without POSIX permissions (FAT on Kindle's
+        // /mnt/us, exFAT, …) reject the chmod. Log and move on rather than
+        // failing startup — defaults are world-readable on those FSes anyway.
+        if let Err(e) = tmp
+            .as_file()
+            .set_permissions(fs::Permissions::from_mode(0o600))
+        {
+            warn!(
+                "couldn't restrict permissions on default settings file: {} \
+                (filesystem likely doesn't support POSIX modes)",
+                e
+            );
+        }
+    }
+
+    tmp.as_file().sync_all()?;
+
+    // We already returned early when `settings_path` existed, so a plain
+    // atomic rename is enough. (Avoids `persist_noclobber`, which is
+    // implemented via `hard_link` + `unlink` and fails with EPERM on
+    // filesystems without hard-link support, e.g. FAT on Kindle's /mnt/us.)
+    tmp.persist(settings_path).map_err(|e| e.error)?;
     Ok(())
 }
 

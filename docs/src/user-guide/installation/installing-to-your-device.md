@@ -8,20 +8,12 @@ The `settings.json` file contains basic settings that rakuyomi needs to work, in
 - **Source lists**: URLs containing information about available sources
 - **Languages**: Your preferred reading languages
 
-Here's a recommended starter configuration that you can customize or use as-is:
+A recommended starter configuration is created automatically on the first plugin start, so writing this file by hand is optional. The defaults are equivalent to the snippet below — use it as a reference if you want to customise the file before that first run.
 
 Any source that can run on [Aidoku](https://github.com/Aidoku) can also run on [rakuyomi](https://github.com/tachibana-shin/rakuyomi) (except `WebView`)
 
 ```json,downloadable:settings.json
-{
-  "$schema": "https://github.com/tachibana-shin/rakuyomi/releases/latest/download/settings.schema.json",
-  "source_lists": [
-    "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/index.min.json",
-    
-    "https://aidoku-community.github.io/sources/index.min.json"
-  ],
-  "languages": ["en"]
-}
+{{#include ../../../../backend/server/assets/default-settings.json}}
 ```
 
 ## Copying the Plugin to Your Device
@@ -39,6 +31,10 @@ Any source that can run on [Aidoku](https://github.com/Aidoku) can also run on [
 
 5. Copy the entire `rakuyomi.koplugin` folder into the `plugins` folder:
 ![plugins folder](./user-guide/installation/images/plugins-folder.png)
+
+```admonish note
+Steps 6 and 7 are only needed if you customised the snippet above. Otherwise, skip ahead — rakuyomi creates the `rakuyomi` folder and a default `settings.json` automatically on first start.
+```
 
 6. Return to the KOReader folder and create a new `rakuyomi` folder:
 ![rakuyomi folder](./user-guide/installation/images/rakuyomi-folder.png)

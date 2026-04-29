@@ -43,6 +43,8 @@ struct Args {
 
 const SOCKET_PATH: &str = "/tmp/rakuyomi.sock";
 
+const DEFAULT_SETTINGS_JSON: &str = include_str!("../assets/default-settings.json");
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     if std::env::var("RUST_LOG").is_err() {
@@ -73,6 +75,18 @@ async fn main() -> anyhow::Result<()> {
     let database = Database::new(&database_path)
         .await
         .context("couldn't open database file")?;
+    if !settings_path.exists() {
+        info!(
+            "settings file not found at {}, creating default",
+            settings_path.display()
+        );
+        fs::write(&settings_path, DEFAULT_SETTINGS_JSON).with_context(|| {
+            format!(
+                "couldn't write default settings file at {}",
+                settings_path.display()
+            )
+        })?;
+    }
     let settings = Settings::from_file(&settings_path)
         .with_context(|| format!("couldn't read settings file at {}", settings_path.display()))?;
     let source_manager = SourceManager::from_folder(sources_path, settings.clone())

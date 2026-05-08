@@ -44,6 +44,7 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
                 CancellationToken::new(),
                 query.clone(),
                 &None,
+                1,
                 60,
             )
             .await

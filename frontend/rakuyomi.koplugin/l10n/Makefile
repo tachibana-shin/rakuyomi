@@ -29,7 +29,7 @@ translate:
 	@echo "[7/7] Cleaning up intermediate files..."
 	@$(MAKE) clean
 	@echo "\nTranslation process completed successfully!"
-
+	@$(MAKE) fmt
 
 DOMAIN = koreader
 TEMPLATE_DIR = templates

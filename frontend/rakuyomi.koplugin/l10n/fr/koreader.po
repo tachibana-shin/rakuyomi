@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 18:27+0700\n"
+"POT-Creation-Date: 2026-05-09 01:58+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Topi (T0pii on Github)\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "Marquage..."
 msgid "Marked"
 msgstr "Marqué"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
 msgid "No errors"
 msgstr "Aucune erreur"
 
@@ -221,7 +221,7 @@ msgstr "Page"
 msgid "attempts"
 msgstr "tentatives"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… et %d erreurs supplémentaires"
@@ -246,12 +246,12 @@ msgstr "Téléchargement annulé."
 msgid "Are you sure you want to cancel the download?"
 msgstr "Êtes-vous sûr de vouloir annuler le téléchargement ?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
 msgid "Add to Library"
 msgstr "Ajouter à la bibliothèque"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:333
+#: ../MangaSearchResults.lua:403
 msgid "Details"
 msgstr "Détails"
 
@@ -427,11 +427,11 @@ msgstr "Manga actualisé"
 msgid "Continue Reading"
 msgstr "Continuer la lecture"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
 msgid "Add to Playlist"
 msgstr "Ajouter à la liste de lecture"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
 msgid "Remove from Library"
 msgstr "Supprimer de la bibliothèque"
 
@@ -729,11 +729,11 @@ msgstr "Sûr"
 msgid "Suggestive"
 msgstr "Suggestif"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
 msgid "Refreshing details..."
 msgstr "Actualisation des détails..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
 msgid "Refresh details cancelled."
 msgstr "Actualisation des détails annulée."
 
@@ -761,11 +761,15 @@ msgstr "Non"
 msgid "Search results..."
 msgstr "Résultats de la recherche..."
 
-#: ../MangaSearchResults.lua:187
+#: ../MangaSearchResults.lua:152
+msgid "Next page"
+msgstr "Page suivante"
+
+#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
 msgid "Searching for"
 msgstr "Recherche de"
 
-#: ../MangaSearchResults.lua:194
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
 msgid "Search cancelled."
 msgstr "Recherche annulée."
 

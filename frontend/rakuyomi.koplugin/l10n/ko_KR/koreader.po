@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 18:27+0700\n"
+"POT-Creation-Date: 2026-05-09 01:58+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "마킹..."
 msgid "Marked"
 msgstr "두드러진"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
 msgid "No errors"
 msgstr "오류 없음"
 
@@ -221,7 +221,7 @@ msgstr "페이지"
 msgid "attempts"
 msgstr "시도"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
 #, lua-format
 msgid "… and %d more errors"
 msgstr "...그리고 %d개의 추가 오류"
@@ -246,12 +246,12 @@ msgstr "다운로드가 취소되었습니다."
 msgid "Are you sure you want to cancel the download?"
 msgstr "다운로드를 취소하시겠습니까?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
 msgid "Add to Library"
 msgstr "라이브러리에 추가"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:333
+#: ../MangaSearchResults.lua:403
 msgid "Details"
 msgstr "세부"
 
@@ -427,11 +427,11 @@ msgstr "상쾌한 만화"
 msgid "Continue Reading"
 msgstr "계속 읽기"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
 msgid "Add to Playlist"
 msgstr "재생목록에 추가"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
 msgid "Remove from Library"
 msgstr "라이브러리에서 제거"
 
@@ -729,11 +729,11 @@ msgstr "안전한"
 msgid "Suggestive"
 msgstr "암시적"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
 msgid "Refreshing details..."
 msgstr "상쾌한 디테일..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
 msgid "Refresh details cancelled."
 msgstr "세부정보 새로고침이 취소되었습니다."
 
@@ -761,11 +761,15 @@ msgstr "아니요"
 msgid "Search results..."
 msgstr "검색결과..."
 
-#: ../MangaSearchResults.lua:187
+#: ../MangaSearchResults.lua:152
+msgid "Next page"
+msgstr "다음 페이지"
+
+#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
 msgid "Searching for"
 msgstr "검색 중"
 
-#: ../MangaSearchResults.lua:194
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
 msgid "Search cancelled."
 msgstr "검색이 취소되었습니다."
 

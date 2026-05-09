@@ -297,7 +297,7 @@ end
 
 --- @private
 function MangaSearchResults:onPrimaryMenuChoice(item)
-  if item.manga.callback then
+  if item.manga and item.manga.callback then
     item.manga.callback()
     return
   end
@@ -318,6 +318,11 @@ end
 
 --- @private
 function MangaSearchResults:onContextMenuChoice(item)
+  if item.manga and item.manga.callback then
+    item.manga.callback()
+    return
+  end
+
   --- @type Manga
   local manga = item.manga
 

@@ -310,6 +310,7 @@ end
 
 --- Searches manga from the manga sources.
 --- @param cancel_id number
+--- @search_text string
 --- @param exclude string[]|nil
 --- @param page number|nil
 --- @return SuccessfulResponse<[Manga[], SearchError[], boolean]>|ErrorResponse

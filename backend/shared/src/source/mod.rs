@@ -614,6 +614,9 @@ impl BlockingSource {
                     (mangas, list.has_next_page)
                 });
         }
+        if page > 1 {
+            return Ok((Vec::new(), false));
+        }
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.search_mangas_by_filters_inner(vec![Filter::Title(query)])
         })

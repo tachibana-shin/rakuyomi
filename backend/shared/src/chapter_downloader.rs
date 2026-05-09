@@ -283,22 +283,29 @@ where
                                             if let Ok(image) = image.map_err(|err| {
                                                 eprintln!("failed to load image with faster {err}")
                                             }) {
-                                                let rgb_pixels = crate::source::decode_image::decode_argb_to_rgb(
+                                                match crate::source::decode_image::decode_argb_to_rgb(
                                                     image.width, image.height, &image.data,
-                                                )?;
-                                                let mut comp = mozjpeg::Compress::new(
-                                                    mozjpeg::ColorSpace::JCS_RGB,
-                                                );
-                                                comp.set_size(
-                                                    image.width as usize,
-                                                    image.height as usize,
-                                                );
-                                                comp.set_fastest_defaults();
+                                                ) {
+                                                    Ok(rgb_pixels) => {
+                                                        let mut comp = mozjpeg::Compress::new(
+                                                            mozjpeg::ColorSpace::JCS_RGB,
+                                                        );
+                                                        comp.set_size(
+                                                            image.width as usize,
+                                                            image.height as usize,
+                                                        );
+                                                        comp.set_fastest_defaults();
 
-                                                let mut comp = comp.start_compress(Vec::new())?;
-                                                comp.write_scanlines(&rgb_pixels)?;
+                                                        let mut comp = comp.start_compress(Vec::new())?;
+                                                        comp.write_scanlines(&rgb_pixels)?;
 
-                                                comp.finish()?
+                                                        comp.finish()?
+                                                    }
+                                                    Err(e) => {
+                                                        eprintln!("failed to convert ARGB to RGB: {e}");
+                                                        data
+                                                    }
+                                                }
                                             } else {
                                                 data
                                             }

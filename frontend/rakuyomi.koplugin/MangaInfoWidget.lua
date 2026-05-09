@@ -38,7 +38,7 @@ local function parse_iso8601(str)
       str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)")
 
   if not year then
-    return 0
+    return nil
   end
 
   return os.time({
@@ -307,7 +307,8 @@ function MangaInfoWidget:genBookInfoGroup(manga)
 
   -- last read text
   if manga.last_read ~= nil then
-    local last_read_str = calcLastReadText(parse_iso8601(manga.last_read))
+    local ts = parse_iso8601(manga.last_read)
+    local last_read_str = ts and calcLastReadText(ts) or _("N/A")
     local text_last_read = TextWidget:new {
       text = T(_("Last read: %1"), last_read_str),
       face = self.small_font_face,
@@ -401,6 +402,14 @@ function MangaInfoWidget:genStatisticsGroup(width, manga)
     }
   }
 
+  local last_updated_text = _("N/A")
+  if manga.last_updated then
+    local ts = parse_iso8601(manga.last_updated)
+    if ts then
+      last_updated_text = calcLastReadText(ts)
+    end
+  end
+
   local data_group = HorizontalGroup:new {
     align = "center",
     CenterContainer:new {
@@ -420,7 +429,7 @@ function MangaInfoWidget:genStatisticsGroup(width, manga)
     CenterContainer:new {
       dimen = Geom:new { w = tile_width, h = tile_height },
       TextWidget:new {
-        text = manga.last_updated and calcLastReadText(parse_iso8601(manga.last_updated)) or _("N/A"),
+        text = last_updated_text,
         face = self.medium_font_face,
       }
     }

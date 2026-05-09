@@ -165,13 +165,14 @@ pub async fn run_manga_cron(
     source_manager: &SourceManager,
     settings: &Settings,
 ) {
-    if CRON_RUNNING.load(Ordering::SeqCst) {
+    if CRON_RUNNING
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
         println!("Cron already running, skipping this tick");
         tokio::time::sleep(std::time::Duration::from_secs(30)).await;
         return;
     }
-
-    CRON_RUNNING.store(true, Ordering::SeqCst);
 
     println!("Cron started");
     let token = &CancellationToken::new();

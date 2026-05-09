@@ -8,8 +8,6 @@ local Trapper = require("ui/trapper")
 local Screen = require("device").screen
 local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
----@diagnostic disable-next-line: different-requires
-local util = require("util")
 local ffiutil = require("ffi/util")
 local _ = require("gettext+")
 local IconButton = require("ui/widget/iconbutton")
@@ -341,53 +339,57 @@ function ChapterListing:generateItemTableFromChapters(chapters)
     end
   end
 
-  --- @type Chapter[]
-  --- @diagnostic disable-next-line: assign-type-mismatch
-  local sorted_chapters_with_index = util.tableDeepCopy(filtered_chapters)
-  for index, chapter in ipairs(sorted_chapters_with_index) do
-    ---@diagnostic disable-next-line: inject-field
-    chapter.index = index
+  local indexed = {}
+  for i, ch in ipairs(filtered_chapters) do
+    indexed[i] = {
+      index = i,
+      volume_num = ch.volume_num,
+      chapter_num = ch.chapter_num,
+      ch = ch,
+    }
   end
 
   if self.chapter_sorting_mode == 'chapter_ascending' then
-    table.sort(sorted_chapters_with_index, isBeforeChapter)
+    table.sort(indexed, isBeforeChapter)
   else
-    table.sort(sorted_chapters_with_index, function(a, b) return not isBeforeChapter(a, b) end)
+    table.sort(indexed, function(a, b) return not isBeforeChapter(a, b) end)
   end
 
   local item_table = {}
 
-  for __, chapter in ipairs(sorted_chapters_with_index) do
-    local text = ""
+  for __, entry in ipairs(indexed) do
+    local chapter = entry.ch
+    local text_parts = {}
     if chapter.volume_num ~= nil then
       -- FIXME we assume there's a chapter number if there's a volume number
       -- might not be true but who knows
-      text = text .. _("Volume") .. " " .. chapter.volume_num .. ", "
+      table.insert(text_parts, _("Volume") .. " " .. chapter.volume_num .. ", ")
     end
 
     if chapter.chapter_num ~= nil then
-      text = text .. _("Chapter") .. " " .. chapter.chapter_num .. " - "
+      table.insert(text_parts, _("Chapter") .. " " .. chapter.chapter_num .. " - ")
     end
 
-    text = text .. chapter.title
+    table.insert(text_parts, chapter.title)
 
     -- Only show scanlator if not filtering by scanlator
     if chapter.scanlator ~= nil and not self.selected_scanlator then
-      text = text .. " (" .. chapter.scanlator .. ")"
+      table.insert(text_parts, " (" .. chapter.scanlator .. ")")
     end
 
     -- The text that shows to the right of the menu item
-    local mandatory = ""
+    local mandatory_parts = {}
     if chapter.read then
-      mandatory = mandatory .. Icons.FA_BOOK
+      table.insert(mandatory_parts, Icons.FA_BOOK)
     end
 
     if chapter.last_read then
-      mandatory = (calcLastReadText(chapter.last_read) .. " ") .. mandatory
+      table.insert(mandatory_parts, 1, " ")
+      table.insert(mandatory_parts, 1, calcLastReadText(chapter.last_read))
     end
 
     if chapter.downloaded then
-      mandatory = mandatory .. Icons.FA_DOWNLOAD
+      table.insert(mandatory_parts, Icons.FA_DOWNLOAD)
     end
 
     local post_text = nil
@@ -400,10 +402,10 @@ function ChapterListing:generateItemTableFromChapters(chapters)
 
     table.insert(item_table, {
       chapter = chapter,
-      text = text,
+      text = table.concat(text_parts),
       post_text = post_text,
       dim = chapter.locked,
-      mandatory = chapter.locked and Icons.FA_LOCKED or mandatory,
+      mandatory = chapter.locked and Icons.FA_LOCKED or table.concat(mandatory_parts),
     })
   end
 

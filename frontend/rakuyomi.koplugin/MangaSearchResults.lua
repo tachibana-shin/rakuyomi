@@ -123,15 +123,20 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
   local is_cover = self.search_view_mode == "cover"
 
   for _, manga in ipairs(results) do
-    local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
+    local mandatory_parts = {}
+    if manga.last_read then
+      table.insert(mandatory_parts, calcLastReadText(manga.last_read) .. " ")
+    end
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = mandatory .. Icons.FA_BELL .. manga.unread_chapters_count
+      table.insert(mandatory_parts, Icons.FA_BELL .. manga.unread_chapters_count)
     end
 
     if manga.in_library then
-      mandatory = mandatory .. Icons.COD_LIBRARY
+      table.insert(mandatory_parts, Icons.COD_LIBRARY)
     end
+
+    local mandatory = table.concat(mandatory_parts)
 
     table.insert(item_table, {
       manga = manga,

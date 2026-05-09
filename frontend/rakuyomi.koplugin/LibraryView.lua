@@ -183,6 +183,7 @@ function LibraryView:patchTitleBar(count_notify)
           local response = Backend.getSettings()
           if response.type == 'ERROR' then
             ErrorDialog:show(response.message)
+            return
           end
 
           local settings = response.body
@@ -340,25 +341,33 @@ function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   local is_cover = self:getLibraryViewMode() == "cover"
 
+  local mandatory_parts = {}
+
   for _, manga in ipairs(mangas) do
-    local mandatory = ""
+    mandatory_parts = {}
 
     if is_cover then
-      mandatory = manga.source.name
+      table.insert(mandatory_parts, manga.source.name)
+    end
+
+    if manga.last_read then
+      local text = calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base")
+      if not is_cover then
+        text = text .. " "
+      end
+      table.insert(mandatory_parts, text)
+    end
+
+    if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
+      local bell = Icons.FA_BELL
+      if is_cover then
+        bell = bell .. " "
+      end
+      table.insert(mandatory_parts, bell .. manga.unread_chapters_count)
     end
 
     local space = is_cover and "  " .. Icons.DOT .. "  " or ""
-
-    mandatory = mandatory .. (manga.last_read and space
-      .. calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base") .. (is_cover and "" or " ") or "")
-
-    if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      if is_cover then
-        mandatory = mandatory .. space .. Icons.FA_BELL .. " " .. manga.unread_chapters_count
-      else
-        mandatory = mandatory .. Icons.FA_BELL .. manga.unread_chapters_count
-      end
-    end
+    local mandatory = table.concat(mandatory_parts, space)
 
     table.insert(item_table, {
       manga = manga,
@@ -1067,7 +1076,7 @@ function LibraryView:startCleaner(modeInvalid)
             ErrorDialog:show(response.message)
             return
           end
-          progressbar_dialog:reportProgress(i + 1)
+          progressbar_dialog:reportProgress(i)
           progressbar_dialog:redrawProgressbarIfNeeded()
         end
 

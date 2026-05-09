@@ -110,37 +110,29 @@ impl SourceManager {
         &mut self,
         manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<HashMap<SourceId, Source>> {
-        let path = &self.sources_folder.clone();
-
-        let files = fs::read_dir(path).with_context(|| {
+        let files = fs::read_dir(&self.sources_folder).with_context(|| {
             format!(
                 "while attempting to read source collection at {}",
-                &path.display()
+                self.sources_folder.display()
             )
         })?;
 
-        let sources: Vec<Source> = files
-            .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-            .filter(|path| {
-                path.extension()
-                    .is_some_and(|ext| ext.eq_ignore_ascii_case("aix"))
-            })
-            .map(|path| -> Result<Source> {
-                let source = Source::from_aix_file(&path, self, manager)?;
-                #[cfg(not(feature = "all"))]
-                self.file_sources.insert(
-                    source.manifest().info.id,
-                    path.as_path().to_string_lossy().to_string(),
-                );
+        let mut sources_by_id = HashMap::new();
+        for entry in files.flatten() {
+            let path = entry.path();
+            if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("aix")) {
+                continue;
+            }
 
-                Ok(source)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+            let source = Source::from_aix_file(&path, self, manager)?;
+            #[cfg(not(feature = "all"))]
+            self.file_sources.insert(
+                source.manifest().info.id.clone(),
+                path.as_path().to_string_lossy().to_string(),
+            );
 
-        let sources_by_id = sources
-            .into_iter()
-            .map(|source| (SourceId::new(source.manifest().info.id.clone()), source))
-            .collect();
+            sources_by_id.insert(SourceId::new(source.manifest().info.id.clone()), source);
+        }
 
         Ok(sources_by_id)
     }

@@ -35,15 +35,19 @@ local calcLastReadText = require("utils/calcLastReadText")
 
 local function parse_iso8601(str)
   local year, month, day, hour, min, sec =
-      str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)Z")
+      str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)")
+
+  if not year then
+    return 0
+  end
 
   return os.time({
     year = year,
     month = month,
     day = day,
-    hour = hour,
-    min = min,
-    sec = sec,
+    hour = hour or 0,
+    min = min or 0,
+    sec = sec or 0,
     isdst = false,
   })
 end

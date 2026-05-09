@@ -42,7 +42,7 @@ impl Database {
         })
     }
 
-    pub async fn hot_replace(&mut self, buf: &Vec<u8>) -> Result<()> {
+    pub async fn hot_replace(&mut self, buf: &[u8]) -> Result<()> {
         self.pool.close().await;
 
         tokio::fs::write(&self.filename, buf).await?;
@@ -1270,7 +1270,7 @@ impl Database {
             return Ok(());
         }
 
-        const MAX_BATCH_SIZE: usize = 20; // Kindle safe size
+        const MAX_BATCH_SIZE: usize = 100; // Kindle safe size. Old value is 20
         let mut start = 0;
 
         while start < manga_informations.len() {
@@ -1311,10 +1311,7 @@ impl Database {
                 query = query.bind(info.cover_url.as_ref().map(|url| url.to_string()));
             }
 
-            // No transaction, flush immediately
-            if let Err(e) = query.execute(&self.pool).await {
-                eprintln!("WARN: upsert_cached_manga_information failed: {e}");
-            }
+            query.execute(&self.pool).await?;
         }
 
         Ok(())
@@ -1583,6 +1580,31 @@ impl Database {
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
+    }
+
+    pub async fn find_chapter_states_for_manga(
+        &self,
+        manga_id: &MangaId,
+    ) -> Result<HashMap<String, ChapterState>> {
+        let source_id = manga_id.source_id().value();
+        let manga_id = manga_id.value();
+
+        let rows = sqlx::query_as!(
+            ChapterStateRow,
+            r#"
+                SELECT source_id, manga_id, chapter_id, read AS "read: bool", last_read AS "last_read?: i64" FROM chapter_state
+                WHERE source_id = ?1 AND manga_id = ?2;
+            "#,
+            source_id,
+            manga_id,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|row| (row.chapter_id.clone(), row.into()))
+            .collect())
     }
 
     pub async fn upsert_chapter_state(

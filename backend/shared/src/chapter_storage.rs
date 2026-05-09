@@ -56,7 +56,15 @@ impl ChapterStorage {
     }
 
     pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
-        let file_path = self.downloads_folder_path.join(filename);
+        let file_path = self.downloads_folder_path.join(&filename);
+        let canonical = file_path.canonicalize()?;
+        let base = self.downloads_folder_path.canonicalize()?;
+        if !canonical.starts_with(&base) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "path traversal denied",
+            ));
+        }
         tokio::fs::remove_file(file_path).await
     }
 
@@ -125,17 +133,15 @@ impl ChapterStorage {
                 let image = data?;
 
                 // RGBA に変換（元は ARGB）
-                let mut rgb_pixels: Vec<u8> =
-                    Vec::with_capacity((image.width * image.height * 3) as usize);
+                let len = (image.width * image.height * 3) as usize;
+                let mut rgb_pixels = vec![0u8; len];
 
-                for px in &image.data {
+                for (i, px) in image.data.iter().enumerate() {
+                    let base = i * 3;
                     let _a = ((px >> 24) & 0xFF) as u8;
-                    let r = ((px >> 16) & 0xFF) as u8;
-                    let g = ((px >> 8) & 0xFF) as u8;
-                    let b = (px & 0xFF) as u8;
-
-                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                    rgb_pixels.extend_from_slice(&[r, g, b]);
+                    rgb_pixels[base]     = ((px >> 16) & 0xFF) as u8;
+                    rgb_pixels[base + 1] = ((px >> 8) & 0xFF) as u8;
+                    rgb_pixels[base + 2] = (px & 0xFF) as u8;
                 }
 
                 (image.width as u32, image.height as u32, rgb_pixels)

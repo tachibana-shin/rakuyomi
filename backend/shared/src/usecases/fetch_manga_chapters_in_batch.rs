@@ -1,6 +1,6 @@
 use async_stream::stream;
 use futures::Stream;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
@@ -99,6 +99,14 @@ async fn apply_chapter_filter(
 
     let use_lang_filter = !langs.is_empty();
 
+    // Batch-fetch all chapter states for this manga in a single query
+    let manga_id = all_chapters.first().map(|c| c.id.manga_id().clone());
+    let chapter_states = if let Some(id) = manga_id {
+        db.find_chapter_states_for_manga(&id).await.unwrap_or_default()
+    } else {
+        HashMap::new()
+    };
+
     // Starting from the newest chapter (in source order), find out the first one marked as read.
     for chapter in all_chapters.iter() {
         // Filter: language
@@ -117,10 +125,8 @@ async fn apply_chapter_filter(
             }
         }
 
-        let read = db
-            .find_chapter_state(&chapter.id)
-            .await
-            .unwrap_or(None)
+        let read = chapter_states
+            .get(chapter.id.value())
             .is_some_and(|state| state.read);
 
         if read {

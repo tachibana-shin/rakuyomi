@@ -267,8 +267,7 @@ async fn get_mangas(
         page,
     }): Query<GetMangasQuery>,
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
-    let source_manager = { &*source_manager.lock().await };
-    let database = { database.lock().await };
+    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let settings = settings.lock().await;
     let source_manager = source_manager.lock().await;

@@ -290,7 +290,7 @@ where
                                                 for (i, px) in image.data.iter().enumerate() {
                                                     let base = i * 3;
                                                     let _a = ((px >> 24) & 0xFF) as u8;
-                                                    rgb_pixels[base]     = ((px >> 16) & 0xFF) as u8;
+                                                    rgb_pixels[base] = ((px >> 16) & 0xFF) as u8;
                                                     rgb_pixels[base + 1] = ((px >> 8) & 0xFF) as u8;
                                                     rgb_pixels[base + 2] = (px & 0xFF) as u8;
                                                 }

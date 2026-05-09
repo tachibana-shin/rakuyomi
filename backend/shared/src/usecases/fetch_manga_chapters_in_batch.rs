@@ -102,7 +102,9 @@ async fn apply_chapter_filter(
     // Batch-fetch all chapter states for this manga in a single query
     let manga_id = all_chapters.first().map(|c| c.id.manga_id().clone());
     let chapter_states = if let Some(id) = manga_id {
-        db.find_chapter_states_for_manga(&id).await.unwrap_or_default()
+        db.find_chapter_states_for_manga(&id)
+            .await
+            .unwrap_or_default()
     } else {
         HashMap::new()
     };

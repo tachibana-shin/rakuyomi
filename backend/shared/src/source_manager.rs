@@ -120,7 +120,10 @@ impl SourceManager {
         let mut sources_by_id = HashMap::new();
         for entry in files.flatten() {
             let path = entry.path();
-            if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("aix")) {
+            if !path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("aix"))
+            {
                 continue;
             }
 

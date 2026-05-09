@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-09 01:58+0700\n"
+"POT-Creation-Date: 2026-05-09 16:15+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,9 +31,9 @@ msgstr "Instalagarria"
 msgid "version"
 msgstr "bertsioa"
 
-#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
-#: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:445
+#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:275
+#: ../ChapterListing.lua:335 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "Ezezaguna"
 
@@ -78,287 +78,287 @@ msgstr "Errore ezezaguna"
 msgid "Error"
 msgstr "Errorea"
 
-#: ../ChapterListing.lua:57
+#: ../ChapterListing.lua:55
 msgid "Chapter listing"
 msgstr "Kapituluen zerrenda"
 
-#: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
+#: ../ChapterListing.lua:232 ../ChapterListing.lua:1048
 msgid "Languages"
 msgstr "Hizkuntzak"
 
-#: ../ChapterListing.lua:323
+#: ../ChapterListing.lua:321
 msgid "No chapters found"
 msgstr "Ez da kapitulurik aurkitu"
 
-#: ../ChapterListing.lua:323
+#: ../ChapterListing.lua:321
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Saiatu hatza behera kapituluen zerrenda freskatzeko."
 
-#: ../ChapterListing.lua:365
+#: ../ChapterListing.lua:366
 msgid "Volume"
 msgstr "Bolumena"
 
-#: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:370 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "kapitulua"
 
-#: ../ChapterListing.lua:395
+#: ../ChapterListing.lua:397
 msgid "Locked"
 msgstr "Blokeatua"
 
-#: ../ChapterListing.lua:431 ../ChapterListing.lua:632
+#: ../ChapterListing.lua:433 ../ChapterListing.lua:634
 msgid "Refreshing chapters..."
 msgstr "Kapituluak freskatzen..."
 
-#: ../ChapterListing.lua:439 ../ChapterListing.lua:639
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:441 ../ChapterListing.lua:641
+#: ../ChapterListing.lua:1303
 msgid "Cancelled."
 msgstr "Bertan behera utzita."
 
-#: ../ChapterListing.lua:451
+#: ../ChapterListing.lua:453
 msgid "Refresh chapter error"
 msgstr "Freskatu kapituluaren errorea"
 
-#: ../ChapterListing.lua:490
+#: ../ChapterListing.lua:492
 msgid "Chapter is locked"
 msgstr "Kapitulua blokeatuta dago"
 
-#: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
+#: ../ChapterListing.lua:509 ../PlaylistDialog.lua:220
 msgid "Open"
 msgstr "Ireki"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:449
+#: ../ChapterListing.lua:519 ../ChapterListing.lua:968 ../LibraryView.lua:458
 msgid "Refresh"
 msgstr "Freskatu"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:525
 msgid "Chapter refreshed"
 msgstr "Kapitulua berritu da"
 
-#: ../ChapterListing.lua:529 ../ChapterListing.lua:678
+#: ../ChapterListing.lua:531 ../ChapterListing.lua:680
 msgid "Mark"
 msgstr "Markatu"
 
-#: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
+#: ../ChapterListing.lua:543 ../ChapterListing.lua:1199
 msgid "Download"
 msgstr "Deskargatu"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:663 ../LibraryView.lua:683
+#: ../ChapterListing.lua:543 ../LibraryView.lua:672 ../LibraryView.lua:692
 msgid "Remove"
 msgstr "Kendu"
 
-#: ../ChapterListing.lua:550
+#: ../ChapterListing.lua:552
 msgid "Chapter downloaded"
 msgstr "Deskargatu da kapitulua"
 
-#: ../ChapterListing.lua:569
+#: ../ChapterListing.lua:571
 msgid "Revoke chapter..."
 msgstr "Ezeztatu kapitulua..."
 
-#: ../ChapterListing.lua:587
+#: ../ChapterListing.lua:589
 msgid "Removed chapter"
 msgstr "Kapitulua kenduta"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "Marking"
 msgstr "Markatzea"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "Un-marking"
 msgstr "Desmarkatzea"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "chapter..."
 msgstr "kapitulua..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:485
+#: ../ChapterListing.lua:667 ../ChapterListing.lua:994 ../LibraryView.lua:494
 msgid "Mark read"
 msgstr "Mark irakurri"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:496
+#: ../ChapterListing.lua:667 ../ChapterListing.lua:1004 ../LibraryView.lua:505
 msgid "Mark unread"
 msgstr "Markatu irakurri gabe"
 
-#: ../ChapterListing.lua:666
+#: ../ChapterListing.lua:668
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:667
+#: ../ChapterListing.lua:669
 msgid "Leaving blank will select all"
 msgstr "Hutsik uzten baduzu, guztiak hautatuko dira"
 
-#: ../ChapterListing.lua:667
+#: ../ChapterListing.lua:669
 msgid "Mark chapters as read or unread"
 msgstr "Markatu kapituluak irakurrita edo irakurri gabeko gisa"
 
-#: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:624 ../LibraryView.lua:938
-#: ../LibraryView.lua:986 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:673 ../ChapterListing.lua:1117
+#: ../ChapterListing.lua:1192 ../LibraryView.lua:633 ../LibraryView.lua:947
+#: ../LibraryView.lua:995 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "Utzi"
 
-#: ../ChapterListing.lua:688
+#: ../ChapterListing.lua:690
 msgid "Marking..."
 msgstr "Markatzen..."
 
-#: ../ChapterListing.lua:698
+#: ../ChapterListing.lua:700
 msgid "Marked"
 msgstr "Markatuta"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
+#: ../ChapterListing.lua:719 ../MangaSearchResults.lua:180
 msgid "No errors"
 msgstr "Akatsik ez"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:728
 #, lua-format
 msgid "Page"
 msgstr "Orria"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:728
 #, lua-format
 msgid "attempts"
 msgstr "saiakerak"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
+#: ../ChapterListing.lua:736 ../MangaSearchResults.lua:196
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… eta %d errore gehiago"
 
-#: ../ChapterListing.lua:753 ../ChapterListing.lua:768
+#: ../ChapterListing.lua:755 ../ChapterListing.lua:770
 msgid "Could not download chapter."
 msgstr "Ezin izan da kapitulua deskargatu."
 
-#: ../ChapterListing.lua:761
+#: ../ChapterListing.lua:763
 msgid "Loading chapter..."
 msgstr "Kapitulua kargatzen..."
 
-#: ../ChapterListing.lua:762
+#: ../ChapterListing.lua:764
 msgid "unknown"
 msgstr "ezezaguna"
 
-#: ../ChapterListing.lua:781
+#: ../ChapterListing.lua:783
 msgid "Download cancelled."
 msgstr "Deskarga bertan behera utzi da."
 
-#: ../ChapterListing.lua:787
+#: ../ChapterListing.lua:789
 msgid "Are you sure you want to cancel the download?"
 msgstr "Ziur deskarga bertan behera utzi nahi duzula?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
+#: ../ChapterListing.lua:958 ../MangaSearchResults.lua:349
 msgid "Add to Library"
 msgstr "Gehitu liburutegira"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:403
+#: ../ChapterListing.lua:976 ../LibraryView.lua:478
+#: ../MangaSearchResults.lua:419
 msgid "Details"
 msgstr "Xehetasunak"
 
-#: ../ChapterListing.lua:1014
+#: ../ChapterListing.lua:1016
 msgid "Resume"
 msgstr "Curriculuma"
 
-#: ../ChapterListing.lua:1022
+#: ../ChapterListing.lua:1024
 msgid "Next Chapter"
 msgstr "Hurrengo kapitulua"
 
-#: ../ChapterListing.lua:1032
+#: ../ChapterListing.lua:1034
 msgid "Download unread chapters…"
 msgstr "Deskargatu irakurri gabeko kapituluak..."
 
-#: ../ChapterListing.lua:1059
+#: ../ChapterListing.lua:1061
 msgid "Group"
 msgstr "Taldea"
 
-#: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1062 ../ChapterListing.lua:1173
 msgid "Filter by Group"
 msgstr "Iragazi Taldearen arabera"
 
-#: ../ChapterListing.lua:1083
+#: ../ChapterListing.lua:1085
 msgid "Adding to library..."
 msgstr "Liburutegian gehitzen..."
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1092
 msgid "Failed to add to library"
 msgstr "Ezin izan da gehitu liburutegira"
 
-#: ../ChapterListing.lua:1095
+#: ../ChapterListing.lua:1097
 msgid "Added to library."
 msgstr "Liburutegian gehitu da."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:616
+#: ../ChapterListing.lua:1109 ../LibraryView.lua:625
 msgid "Sadly, no next chapter available! :c"
 msgstr "Zoritxarrez, ez dago hurrengo kapitulurik eskuragarri! "
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1115
 msgid "Next"
 msgstr "Hurrengoa"
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1115
 msgid "reading with"
 msgstr "batera irakurtzen"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:623
+#: ../ChapterListing.lua:1116 ../LibraryView.lua:632
 msgid "Read"
 msgstr "Irakurri"
 
-#: ../ChapterListing.lua:1136
+#: ../ChapterListing.lua:1138
 msgid "Show All"
 msgstr "Erakutsi guztiak"
 
-#: ../ChapterListing.lua:1144
+#: ../ChapterListing.lua:1146
 msgid "Showing all groups"
 msgstr "Talde guztiak erakusten"
 
-#: ../ChapterListing.lua:1164
+#: ../ChapterListing.lua:1166
 msgid "Filtered to"
 msgstr "Iragazita"
 
-#: ../ChapterListing.lua:1181
+#: ../ChapterListing.lua:1183
 msgid "Download unread chapters..."
 msgstr "Deskargatu irakurri gabeko kapituluak..."
 
-#: ../ChapterListing.lua:1183
+#: ../ChapterListing.lua:1185
 msgid "Amount of unread chapters (default: all)"
 msgstr "Irakurri gabeko kapituluen kopurua (lehenetsia: guztiak)"
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1187
 msgid "Specify amount or leave empty for all."
 msgstr "Zehaztu zenbatekoa edo utzi hutsik guztientzat."
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1187
 msgid "Will download from"
 msgstr "Hemendik deskargatuko da"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1188
 msgid "Specify the amount of unread chapters to download"
 msgstr "Zehaztu deskargatu beharreko irakurri gabeko kapitulu kopurua"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1188
 msgid "or leave empty to download all of them."
 msgstr "edo utzi hutsik denak deskargatzeko."
 
-#: ../ChapterListing.lua:1207
+#: ../ChapterListing.lua:1209
 msgid "Invalid amount of chapters!"
 msgstr "Kapitulu kopuru baliogabea!"
 
-#: ../ChapterListing.lua:1228
+#: ../ChapterListing.lua:1230
 msgid "No unread chapters found for"
 msgstr "Ez da irakurri gabeko kapitulurik aurkitu"
 
-#: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
+#: ../ChapterListing.lua:1255 ../ChapterListing.lua:1330
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Kapitulu guztiak deskargatzen, denbora pixka bat beharko da..."
 
-#: ../ChapterListing.lua:1338
+#: ../ChapterListing.lua:1340
 msgid "Waiting for download to be cancelled…"
 msgstr "Deskarga bertan behera uzteko zain..."
 
-#: ../ChapterListing.lua:1340
+#: ../ChapterListing.lua:1342
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Kapitulu guztiak deskargatzen, denbora pixka bat beharko da... ("
 
-#: ../ChapterListing.lua:1343
+#: ../ChapterListing.lua:1345
 msgid "Tap outside this message to cancel."
 msgstr "Sakatu mezu honetatik kanpo bertan behera uzteko."
 
@@ -410,329 +410,329 @@ msgstr "iturria?"
 msgid "Library"
 msgstr "Liburutegia"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:388
 msgid "No mangas found in library"
 msgstr "Ez da mangarik aurkitu liburutegian"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:388
 msgid "Try adding some by holding their name on the search results!"
 msgstr "Saiatu batzuk gehitzen bilaketa-emaitzetan haien izenari eutsiz!"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:469
 msgid "Refreshed manga"
 msgstr "Manga berritua"
 
-#: ../LibraryView.lua:509
+#: ../LibraryView.lua:518
 msgid "Continue Reading"
 msgstr "Jarraitu Irakurtzen"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
+#: ../LibraryView.lua:527 ../MangaSearchResults.lua:410
 msgid "Add to Playlist"
 msgstr "Gehitu erreprodukzio zerrendara"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
+#: ../LibraryView.lua:538 ../MangaSearchResults.lua:346
 msgid "Remove from Library"
 msgstr "Kendu liburutegitik"
 
-#: ../LibraryView.lua:539
+#: ../LibraryView.lua:548
 msgid "Remove from Playlist"
 msgstr "Kendu erreprodukzio zerrendatik"
 
-#: ../LibraryView.lua:572
+#: ../LibraryView.lua:581
 msgid "Finding next chapter..."
 msgstr "Hurrengo kapitulua bilatzen..."
 
-#: ../LibraryView.lua:583
+#: ../LibraryView.lua:592
 msgid "No chapters found for this manga."
 msgstr "Ez da aurkitu manga honetarako kapitulurik."
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:631
 msgid "Resume reading with:"
 msgstr "Jarraitu irakurtzen honekin:"
 
-#: ../LibraryView.lua:662 ../LibraryView.lua:682
+#: ../LibraryView.lua:671 ../LibraryView.lua:691
 msgid "Do you want to remove"
 msgstr "Kendu nahi al duzu"
 
-#: ../LibraryView.lua:662
+#: ../LibraryView.lua:671
 msgid "from your library?"
 msgstr "zure liburutegitik?"
 
-#: ../LibraryView.lua:682
+#: ../LibraryView.lua:691
 msgid "from your playlist?"
 msgstr "zure erreprodukzio zerrendatik?"
 
-#: ../LibraryView.lua:705
+#: ../LibraryView.lua:714
 msgid "Search for mangas"
 msgstr "Bilatu mangak"
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:724
 msgid "Search favorites"
 msgstr "Bilatu gogokoenak"
 
-#: ../LibraryView.lua:725 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:734 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "Erreprodukzio-zerrendak"
 
-#: ../LibraryView.lua:734
+#: ../LibraryView.lua:743
 msgid "Refresh mangas"
 msgstr "Freskatu mangak"
 
-#: ../LibraryView.lua:742
+#: ../LibraryView.lua:751
 msgid "Refresh details"
 msgstr "Freskatu xehetasunak"
 
-#: ../LibraryView.lua:752
+#: ../LibraryView.lua:761
 msgid "Cleaner chapters"
 msgstr "Kapitulu garbiagoak"
 
-#: ../LibraryView.lua:760
+#: ../LibraryView.lua:769
 msgid "Manage sources"
 msgstr "Kudeatu iturriak"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
+#: ../LibraryView.lua:779 ../LibraryView.lua:941 ../Settings.lua:302
 msgid "Settings"
 msgstr "Ezarpenak"
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:787
 msgid "Check for updates"
 msgstr "Egiaztatu eguneratzeak"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:796
 msgid "Sync Database (Beta)"
 msgstr "Sinkronizatu datu-basea (beta)"
 
-#: ../LibraryView.lua:791
+#: ../LibraryView.lua:800
 msgid "Sync to WebDAV..."
 msgstr "Sinkronizatu WebDAVrekin..."
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Zure datu-base lokala zerbitzaritik migratu nahi duzu?"
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "The remote database is newer than the local one."
 msgstr "Urruneko datu-basea lokala baino berriagoa da."
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "This action cannot be undone."
 msgstr "Ekintza hau ezin da desegin."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:813
 msgid "Migrate"
 msgstr "Migratu"
 
-#: ../LibraryView.lua:808
+#: ../LibraryView.lua:817
 msgid "Migrating database..."
 msgstr "Datu-basea migratzen..."
 
-#: ../LibraryView.lua:819 ../LibraryView.lua:866
+#: ../LibraryView.lua:828 ../LibraryView.lua:875
 msgid "Local database has been migrated from the server!"
 msgstr "Tokiko datu-basea zerbitzaritik migratu da!"
 
-#: ../LibraryView.lua:830
+#: ../LibraryView.lua:839
 msgid "Replace Cloud"
 msgstr "Ordeztu hodeia"
 
-#: ../LibraryView.lua:834
+#: ../LibraryView.lua:843
 msgid "Replacing cloud..."
 msgstr "Hodeia ordezkatzen..."
 
-#: ../LibraryView.lua:844
+#: ../LibraryView.lua:853
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Hodeiko datu-basea tokiko batekin ordezkatu da nahitaez!"
 
-#: ../LibraryView.lua:862
+#: ../LibraryView.lua:871
 msgid "Database is already up to date!"
 msgstr "Datu-basea eguneratuta dago jada!"
 
-#: ../LibraryView.lua:864
+#: ../LibraryView.lua:873
 msgid "Database has been synced to the server!"
 msgstr "Datu-basea zerbitzariarekin sinkronizatu da!"
 
-#: ../LibraryView.lua:868
+#: ../LibraryView.lua:877
 msgid "Sync completed!"
 msgstr "Sinkronizazioa osatu da!"
 
-#: ../LibraryView.lua:904
+#: ../LibraryView.lua:913
 msgid "Manga search..."
 msgstr "Manga bilaketa..."
 
-#: ../LibraryView.lua:905
+#: ../LibraryView.lua:914
 msgid "Houseki no Kuni"
 msgstr "Houseki ez Kuni"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:982
+#: ../LibraryView.lua:915 ../LibraryView.lua:991
 msgid "Type the manga name to search for"
 msgstr "Idatzi bilatu nahi duzun manga izena"
 
-#: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993 ../Settings.lua:107
+#: ../LibraryView.lua:919 ../LibraryView.lua:928 ../LibraryView.lua:973
+#: ../LibraryView.lua:1002 ../Settings.lua:107
 msgid "Search"
 msgstr "Bilatu"
 
-#: ../LibraryView.lua:964
+#: ../LibraryView.lua:973
 msgid "Exclude source search for"
 msgstr "Baztertu iturriaren bilaketa"
 
-#: ../LibraryView.lua:979
+#: ../LibraryView.lua:988
 msgid "Favorite search..."
 msgstr "Bilaketa gogokoena..."
 
-#: ../LibraryView.lua:981
+#: ../LibraryView.lua:990
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:1033
+#: ../LibraryView.lua:1042
 msgid "Scaning files..."
 msgstr "Fitxategiak eskaneatzen..."
 
-#: ../LibraryView.lua:1048
+#: ../LibraryView.lua:1057
 #, lua-format
 msgid "Found %d files."
 msgstr "%d fitxategi aurkitu dira."
 
-#: ../LibraryView.lua:1049
+#: ../LibraryView.lua:1058
 #, lua-format
 msgid "Total size %s."
 msgstr "Tamaina totala %s."
 
-#: ../LibraryView.lua:1050
+#: ../LibraryView.lua:1059
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly fitxategiak .cbz eta .epub eskaneatzea."
 
-#: ../LibraryView.lua:1054
+#: ../LibraryView.lua:1063
 msgid "Clean"
 msgstr "Garbitu"
 
-#: ../LibraryView.lua:1059
+#: ../LibraryView.lua:1068
 msgid "Deleting..."
 msgstr "Ezabatzen..."
 
-#: ../LibraryView.lua:1077
+#: ../LibraryView.lua:1086
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Doako %s biltegia garbitu da"
 
-#: ../LibraryView.lua:1102
+#: ../LibraryView.lua:1111
 msgid "Refresh mangas..."
 msgstr "Freskatu mangak..."
 
-#: ../LibraryView.lua:1103
+#: ../LibraryView.lua:1112
 msgid "All chapters manga updated!"
 msgstr "Kapitulu guztiak manga eguneratuta!"
 
-#: ../LibraryView.lua:1104
+#: ../LibraryView.lua:1113
 msgid "Some manga updates fail:"
 msgstr "Manga eguneratze batzuek huts egiten dute:"
 
-#: ../LibraryView.lua:1115
+#: ../LibraryView.lua:1124
 msgid "Refresh manga details..."
 msgstr "Freskatu manga xehetasunak..."
 
-#: ../LibraryView.lua:1116
+#: ../LibraryView.lua:1125
 msgid "All manga details refresh!"
 msgstr "Manga xehetasun guztiak freskatu!"
 
-#: ../LibraryView.lua:1117
+#: ../LibraryView.lua:1126
 msgid "Some manga details refresh fail:"
 msgstr "Manga xehetasun batzuk freskatu egiten dira:"
 
-#: ../LibraryView.lua:1133
+#: ../LibraryView.lua:1142
 msgid "Progress"
 msgstr "Aurrerapena"
 
-#: ../LibraryView.lua:1151
+#: ../LibraryView.lua:1160
 msgid "Cleaner"
 msgstr "Garbitzailea"
 
-#: ../LibraryView.lua:1152
+#: ../LibraryView.lua:1161
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Bilatu eta ezabatu baliogabeko fitxategiak, ezabatutako iturrietako fitxategiak barne"
 
-#: ../LibraryView.lua:1152 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1161 ../LibraryView.lua:1164
 msgid "Normal"
 msgstr "Normala"
 
-#: ../LibraryView.lua:1153 ../LibraryView.lua:1161
+#: ../LibraryView.lua:1162 ../LibraryView.lua:1170
 msgid "Chapter read done"
 msgstr "Irakurritako kapitulua eginda"
 
-#: ../LibraryView.lua:1153
+#: ../LibraryView.lua:1162
 msgid "Find and delete chapters that have been read"
 msgstr "Aurkitu eta ezabatu irakurritako kapituluak"
 
-#: ../LibraryView.lua:1154
+#: ../LibraryView.lua:1163
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "GARRANTZITSUA: meta fitxategiak (laster-marka, historia) ez dira gorde!"
 
-#: ../MangaInfoWidget.lua:141
+#: ../MangaInfoWidget.lua:145
 msgid "Statistics"
 msgstr "Estatistika"
 
-#: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
-#: ../MangaInfoWidget.lua:503
+#: ../MangaInfoWidget.lua:147 ../MangaInfoWidget.lua:490
+#: ../MangaInfoWidget.lua:516
 msgid "Description"
 msgstr "Deskribapena"
 
-#: ../MangaInfoWidget.lua:276
+#: ../MangaInfoWidget.lua:280
 msgid "%1 % Completed"
 msgstr "% 1 Osatu da"
 
-#: ../MangaInfoWidget.lua:308
-msgid "Last read: %1"
-msgstr "Azken irakurketa: %1"
-
-#: ../MangaInfoWidget.lua:380
-msgid "Status"
-msgstr "Egoera"
-
-#: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid "NSFW"
-msgstr "NSFW"
-
-#: ../MangaInfoWidget.lua:394
-msgid "Last Updated"
-msgstr "Azken eguneratua"
-
-#: ../MangaInfoWidget.lua:419
+#: ../MangaInfoWidget.lua:311 ../MangaInfoWidget.lua:405
 msgid "N/A"
 msgstr "N/A"
 
-#: ../MangaInfoWidget.lua:435
+#: ../MangaInfoWidget.lua:313
+msgid "Last read: %1"
+msgstr "Azken irakurketa: %1"
+
+#: ../MangaInfoWidget.lua:385
+msgid "Status"
+msgstr "Egoera"
+
+#: ../MangaInfoWidget.lua:392 ../MangaInfoWidget.lua:468
+msgid "NSFW"
+msgstr "NSFW"
+
+#: ../MangaInfoWidget.lua:399
+msgid "Last Updated"
+msgstr "Azken eguneratua"
+
+#: ../MangaInfoWidget.lua:448
 msgid "Ongoing"
 msgstr "Etengabe"
 
-#: ../MangaInfoWidget.lua:437
+#: ../MangaInfoWidget.lua:450
 msgid "Completed"
 msgstr "Osatua"
 
-#: ../MangaInfoWidget.lua:439
+#: ../MangaInfoWidget.lua:452
 msgid "Cancelled"
 msgstr "Bertan behera utzita"
 
-#: ../MangaInfoWidget.lua:441
+#: ../MangaInfoWidget.lua:454
 msgid "Hiatus"
 msgstr "Etenaldia"
 
-#: ../MangaInfoWidget.lua:443
+#: ../MangaInfoWidget.lua:456
 msgid "Not published"
 msgstr "Ez da argitaratu"
 
-#: ../MangaInfoWidget.lua:451
+#: ../MangaInfoWidget.lua:464
 msgid "Safe"
 msgstr "Seguru"
 
-#: ../MangaInfoWidget.lua:453
+#: ../MangaInfoWidget.lua:466
 msgid "Suggestive"
 msgstr "Iradokitzailea"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
+#: ../MangaInfoWidget.lua:559 ../MangaSearchResults.lua:375
 msgid "Refreshing details..."
 msgstr "Xehetasunak freskatzen..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
+#: ../MangaInfoWidget.lua:571 ../MangaSearchResults.lua:381
 msgid "Refresh details cancelled."
 msgstr "Freskatzeko xehetasunak bertan behera utzi dira."
 
@@ -760,15 +760,15 @@ msgstr "Ez"
 msgid "Search results..."
 msgstr "Bilaketa-emaitzak..."
 
-#: ../MangaSearchResults.lua:152
+#: ../MangaSearchResults.lua:157
 msgid "Next page"
 msgstr "Hurrengo orrialdea"
 
-#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:269
 msgid "Searching for"
 msgstr "Bilatzen"
 
-#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
+#: ../MangaSearchResults.lua:214 ../MangaSearchResults.lua:275
 msgid "Search cancelled."
 msgstr "Bilaketa bertan behera utzi da."
 
@@ -1162,11 +1162,11 @@ msgstr "%dy"
 msgid "years"
 msgstr "urteak"
 
-#: ../utils/getChapterDisplayName.lua:5
+#: ../utils/getChapterDisplayName.lua:7
 msgid "Vol."
 msgstr "liburukia"
 
-#: ../utils/getChapterDisplayName.lua:6
+#: ../utils/getChapterDisplayName.lua:10
 msgid "Ch."
 msgstr "Ch."
 

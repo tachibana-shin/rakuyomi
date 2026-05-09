@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-09 01:58+0700\n"
+"POT-Creation-Date: 2026-05-09 16:15+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -32,9 +32,9 @@ msgstr "Installabile"
 msgid "version"
 msgstr "versione"
 
-#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
-#: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:445
+#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:275
+#: ../ChapterListing.lua:335 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "Sconosciuto"
 
@@ -79,287 +79,287 @@ msgstr "Errore sconosciuto"
 msgid "Error"
 msgstr "Errore"
 
-#: ../ChapterListing.lua:57
+#: ../ChapterListing.lua:55
 msgid "Chapter listing"
 msgstr "Elenco dei capitoli"
 
-#: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
+#: ../ChapterListing.lua:232 ../ChapterListing.lua:1048
 msgid "Languages"
 msgstr "Lingue"
 
-#: ../ChapterListing.lua:323
+#: ../ChapterListing.lua:321
 msgid "No chapters found"
 msgstr "Nessun capitolo trovato"
 
-#: ../ChapterListing.lua:323
+#: ../ChapterListing.lua:321
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Prova a scorrere verso il basso per aggiornare l'elenco dei capitoli."
 
-#: ../ChapterListing.lua:365
+#: ../ChapterListing.lua:366
 msgid "Volume"
 msgstr "Volume"
 
-#: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
+#: ../ChapterListing.lua:370 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "Capitolo"
 
-#: ../ChapterListing.lua:395
+#: ../ChapterListing.lua:397
 msgid "Locked"
 msgstr "Bloccato"
 
-#: ../ChapterListing.lua:431 ../ChapterListing.lua:632
+#: ../ChapterListing.lua:433 ../ChapterListing.lua:634
 msgid "Refreshing chapters..."
 msgstr "Aggiornamento dei capitoli..."
 
-#: ../ChapterListing.lua:439 ../ChapterListing.lua:639
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:441 ../ChapterListing.lua:641
+#: ../ChapterListing.lua:1303
 msgid "Cancelled."
 msgstr "Annullato."
 
-#: ../ChapterListing.lua:451
+#: ../ChapterListing.lua:453
 msgid "Refresh chapter error"
 msgstr "Errore di aggiornamento del capitolo"
 
-#: ../ChapterListing.lua:490
+#: ../ChapterListing.lua:492
 msgid "Chapter is locked"
 msgstr "Il capitolo è bloccato"
 
-#: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
+#: ../ChapterListing.lua:509 ../PlaylistDialog.lua:220
 msgid "Open"
 msgstr "Aprire"
 
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:449
+#: ../ChapterListing.lua:519 ../ChapterListing.lua:968 ../LibraryView.lua:458
 msgid "Refresh"
 msgstr "Aggiorna"
 
-#: ../ChapterListing.lua:523
+#: ../ChapterListing.lua:525
 msgid "Chapter refreshed"
 msgstr "Capitolo aggiornato"
 
-#: ../ChapterListing.lua:529 ../ChapterListing.lua:678
+#: ../ChapterListing.lua:531 ../ChapterListing.lua:680
 msgid "Mark"
 msgstr "Segno"
 
-#: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
+#: ../ChapterListing.lua:543 ../ChapterListing.lua:1199
 msgid "Download"
 msgstr "Scaricamento"
 
-#: ../ChapterListing.lua:541 ../LibraryView.lua:663 ../LibraryView.lua:683
+#: ../ChapterListing.lua:543 ../LibraryView.lua:672 ../LibraryView.lua:692
 msgid "Remove"
 msgstr "Rimuovere"
 
-#: ../ChapterListing.lua:550
+#: ../ChapterListing.lua:552
 msgid "Chapter downloaded"
 msgstr "Capitolo scaricato"
 
-#: ../ChapterListing.lua:569
+#: ../ChapterListing.lua:571
 msgid "Revoke chapter..."
 msgstr "Revoca capitolo..."
 
-#: ../ChapterListing.lua:587
+#: ../ChapterListing.lua:589
 msgid "Removed chapter"
 msgstr "Capitolo rimosso"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "Marking"
 msgstr "Marcatura"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "Un-marking"
 msgstr "Demarcazione"
 
-#: ../ChapterListing.lua:598
+#: ../ChapterListing.lua:600
 msgid "chapter..."
 msgstr "capitolo..."
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:485
+#: ../ChapterListing.lua:667 ../ChapterListing.lua:994 ../LibraryView.lua:494
 msgid "Mark read"
 msgstr "Marco ha letto"
 
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:496
+#: ../ChapterListing.lua:667 ../ChapterListing.lua:1004 ../LibraryView.lua:505
 msgid "Mark unread"
 msgstr "Segna come non letto"
 
-#: ../ChapterListing.lua:666
+#: ../ChapterListing.lua:668
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:667
+#: ../ChapterListing.lua:669
 msgid "Leaving blank will select all"
 msgstr "Lasciando vuoto selezionerai tutto"
 
-#: ../ChapterListing.lua:667
+#: ../ChapterListing.lua:669
 msgid "Mark chapters as read or unread"
 msgstr "Segna i capitoli come letti o non letti"
 
-#: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:624 ../LibraryView.lua:938
-#: ../LibraryView.lua:986 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
+#: ../ChapterListing.lua:673 ../ChapterListing.lua:1117
+#: ../ChapterListing.lua:1192 ../LibraryView.lua:633 ../LibraryView.lua:947
+#: ../LibraryView.lua:995 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
 #: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "Cancellare"
 
-#: ../ChapterListing.lua:688
+#: ../ChapterListing.lua:690
 msgid "Marking..."
 msgstr "Marcatura..."
 
-#: ../ChapterListing.lua:698
+#: ../ChapterListing.lua:700
 msgid "Marked"
 msgstr "Segnato"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
+#: ../ChapterListing.lua:719 ../MangaSearchResults.lua:180
 msgid "No errors"
 msgstr "Nessun errore"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:728
 #, lua-format
 msgid "Page"
 msgstr "Pagina"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:728
 #, lua-format
 msgid "attempts"
 msgstr "tentativi"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
+#: ../ChapterListing.lua:736 ../MangaSearchResults.lua:196
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… e altri %d errori"
 
-#: ../ChapterListing.lua:753 ../ChapterListing.lua:768
+#: ../ChapterListing.lua:755 ../ChapterListing.lua:770
 msgid "Could not download chapter."
 msgstr "Impossibile scaricare il capitolo."
 
-#: ../ChapterListing.lua:761
+#: ../ChapterListing.lua:763
 msgid "Loading chapter..."
 msgstr "Caricamento capitolo..."
 
-#: ../ChapterListing.lua:762
+#: ../ChapterListing.lua:764
 msgid "unknown"
 msgstr "sconosciuto"
 
-#: ../ChapterListing.lua:781
+#: ../ChapterListing.lua:783
 msgid "Download cancelled."
 msgstr "Download annullato."
 
-#: ../ChapterListing.lua:787
+#: ../ChapterListing.lua:789
 msgid "Are you sure you want to cancel the download?"
 msgstr "Sei sicuro di voler annullare il download?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
+#: ../ChapterListing.lua:958 ../MangaSearchResults.lua:349
 msgid "Add to Library"
 msgstr "Aggiungi alla libreria"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:403
+#: ../ChapterListing.lua:976 ../LibraryView.lua:478
+#: ../MangaSearchResults.lua:419
 msgid "Details"
 msgstr "Dettagli"
 
-#: ../ChapterListing.lua:1014
+#: ../ChapterListing.lua:1016
 msgid "Resume"
 msgstr "Riprendere"
 
-#: ../ChapterListing.lua:1022
+#: ../ChapterListing.lua:1024
 msgid "Next Chapter"
 msgstr "Capitolo successivo"
 
-#: ../ChapterListing.lua:1032
+#: ../ChapterListing.lua:1034
 msgid "Download unread chapters…"
 msgstr "Scarica i capitoli non letti..."
 
-#: ../ChapterListing.lua:1059
+#: ../ChapterListing.lua:1061
 msgid "Group"
 msgstr "Gruppo"
 
-#: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1062 ../ChapterListing.lua:1173
 msgid "Filter by Group"
 msgstr "Filtra per gruppo"
 
-#: ../ChapterListing.lua:1083
+#: ../ChapterListing.lua:1085
 msgid "Adding to library..."
 msgstr "Aggiunta alla libreria..."
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1092
 msgid "Failed to add to library"
 msgstr "Impossibile aggiungere alla libreria"
 
-#: ../ChapterListing.lua:1095
+#: ../ChapterListing.lua:1097
 msgid "Added to library."
 msgstr "Aggiunto alla libreria."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:616
+#: ../ChapterListing.lua:1109 ../LibraryView.lua:625
 msgid "Sadly, no next chapter available! :c"
 msgstr "Purtroppo, nessun capitolo successivo disponibile! "
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1115
 msgid "Next"
 msgstr "Prossimo"
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1115
 msgid "reading with"
 msgstr "leggere con"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:623
+#: ../ChapterListing.lua:1116 ../LibraryView.lua:632
 msgid "Read"
 msgstr "Leggere"
 
-#: ../ChapterListing.lua:1136
+#: ../ChapterListing.lua:1138
 msgid "Show All"
 msgstr "Mostra tutto"
 
-#: ../ChapterListing.lua:1144
+#: ../ChapterListing.lua:1146
 msgid "Showing all groups"
 msgstr "Visualizzazione di tutti i gruppi"
 
-#: ../ChapterListing.lua:1164
+#: ../ChapterListing.lua:1166
 msgid "Filtered to"
 msgstr "Filtrato a"
 
-#: ../ChapterListing.lua:1181
+#: ../ChapterListing.lua:1183
 msgid "Download unread chapters..."
 msgstr "Scarica capitoli non letti..."
 
-#: ../ChapterListing.lua:1183
+#: ../ChapterListing.lua:1185
 msgid "Amount of unread chapters (default: all)"
 msgstr "Quantità di capitoli non letti (impostazione predefinita: tutti)"
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1187
 msgid "Specify amount or leave empty for all."
 msgstr "Specificare l'importo o lasciare vuoto per tutti."
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1187
 msgid "Will download from"
 msgstr "Verrà scaricato da"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1188
 msgid "Specify the amount of unread chapters to download"
 msgstr "Specificare la quantità di capitoli non letti da scaricare"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1188
 msgid "or leave empty to download all of them."
 msgstr "oppure lascia vuoto per scaricarli tutti."
 
-#: ../ChapterListing.lua:1207
+#: ../ChapterListing.lua:1209
 msgid "Invalid amount of chapters!"
 msgstr "Quantità di capitoli non valida!"
 
-#: ../ChapterListing.lua:1228
+#: ../ChapterListing.lua:1230
 msgid "No unread chapters found for"
 msgstr "Nessun capitolo non letto trovato per"
 
-#: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
+#: ../ChapterListing.lua:1255 ../ChapterListing.lua:1330
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Scaricando tutti i capitoli, l'operazione richiederà un po' di tempo..."
 
-#: ../ChapterListing.lua:1338
+#: ../ChapterListing.lua:1340
 msgid "Waiting for download to be cancelled…"
 msgstr "In attesa dell'annullamento del download…"
 
-#: ../ChapterListing.lua:1340
+#: ../ChapterListing.lua:1342
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Scaricando tutti i capitoli, l'operazione richiederà un po' di tempo... ("
 
-#: ../ChapterListing.lua:1343
+#: ../ChapterListing.lua:1345
 msgid "Tap outside this message to cancel."
 msgstr "Tocca fuori da questo messaggio per annullare."
 
@@ -411,329 +411,329 @@ msgstr "fonte?"
 msgid "Library"
 msgstr "Biblioteca"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:388
 msgid "No mangas found in library"
 msgstr "Nessun manga trovato nella libreria"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:388
 msgid "Try adding some by holding their name on the search results!"
 msgstr "Prova ad aggiungerne alcuni mantenendo il loro nome nei risultati di ricerca!"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:469
 msgid "Refreshed manga"
 msgstr "Manga aggiornato"
 
-#: ../LibraryView.lua:509
+#: ../LibraryView.lua:518
 msgid "Continue Reading"
 msgstr "Continua a leggere"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
+#: ../LibraryView.lua:527 ../MangaSearchResults.lua:410
 msgid "Add to Playlist"
 msgstr "Aggiungi alla playlist"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
+#: ../LibraryView.lua:538 ../MangaSearchResults.lua:346
 msgid "Remove from Library"
 msgstr "Rimuovi dalla libreria"
 
-#: ../LibraryView.lua:539
+#: ../LibraryView.lua:548
 msgid "Remove from Playlist"
 msgstr "Rimuovi dalla playlist"
 
-#: ../LibraryView.lua:572
+#: ../LibraryView.lua:581
 msgid "Finding next chapter..."
 msgstr "Ricerca del capitolo successivo..."
 
-#: ../LibraryView.lua:583
+#: ../LibraryView.lua:592
 msgid "No chapters found for this manga."
 msgstr "Nessun capitolo trovato per questo manga."
 
-#: ../LibraryView.lua:622
+#: ../LibraryView.lua:631
 msgid "Resume reading with:"
 msgstr "Riprendi la lettura con:"
 
-#: ../LibraryView.lua:662 ../LibraryView.lua:682
+#: ../LibraryView.lua:671 ../LibraryView.lua:691
 msgid "Do you want to remove"
 msgstr "Vuoi rimuovere"
 
-#: ../LibraryView.lua:662
+#: ../LibraryView.lua:671
 msgid "from your library?"
 msgstr "dalla tua biblioteca?"
 
-#: ../LibraryView.lua:682
+#: ../LibraryView.lua:691
 msgid "from your playlist?"
 msgstr "dalla tua playlist?"
 
-#: ../LibraryView.lua:705
+#: ../LibraryView.lua:714
 msgid "Search for mangas"
 msgstr "Cerca manga"
 
-#: ../LibraryView.lua:715
+#: ../LibraryView.lua:724
 msgid "Search favorites"
 msgstr "Cerca preferiti"
 
-#: ../LibraryView.lua:725 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:734 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "Playlist"
 
-#: ../LibraryView.lua:734
+#: ../LibraryView.lua:743
 msgid "Refresh mangas"
 msgstr "Aggiorna i manga"
 
-#: ../LibraryView.lua:742
+#: ../LibraryView.lua:751
 msgid "Refresh details"
 msgstr "Aggiorna i dettagli"
 
-#: ../LibraryView.lua:752
+#: ../LibraryView.lua:761
 msgid "Cleaner chapters"
 msgstr "Capitoli più puliti"
 
-#: ../LibraryView.lua:760
+#: ../LibraryView.lua:769
 msgid "Manage sources"
 msgstr "Gestisci le fonti"
 
-#: ../LibraryView.lua:770 ../LibraryView.lua:932 ../Settings.lua:302
+#: ../LibraryView.lua:779 ../LibraryView.lua:941 ../Settings.lua:302
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:787
 msgid "Check for updates"
 msgstr "Controlla gli aggiornamenti"
 
-#: ../LibraryView.lua:787
+#: ../LibraryView.lua:796
 msgid "Sync Database (Beta)"
 msgstr "Sincronizzazione database (Beta)"
 
-#: ../LibraryView.lua:791
+#: ../LibraryView.lua:800
 msgid "Sync to WebDAV..."
 msgstr "Sincronizza con WebDAV..."
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Vuoi migrare il tuo database locale dal server?"
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "The remote database is newer than the local one."
 msgstr "Il database remoto è più recente di quello locale."
 
-#: ../LibraryView.lua:803
+#: ../LibraryView.lua:812
 msgid "This action cannot be undone."
 msgstr "Questa azione non può essere annullata."
 
-#: ../LibraryView.lua:804
+#: ../LibraryView.lua:813
 msgid "Migrate"
 msgstr "Migrare"
 
-#: ../LibraryView.lua:808
+#: ../LibraryView.lua:817
 msgid "Migrating database..."
 msgstr "Migrazione del database..."
 
-#: ../LibraryView.lua:819 ../LibraryView.lua:866
+#: ../LibraryView.lua:828 ../LibraryView.lua:875
 msgid "Local database has been migrated from the server!"
 msgstr "Il database locale è stato migrato dal server!"
 
-#: ../LibraryView.lua:830
+#: ../LibraryView.lua:839
 msgid "Replace Cloud"
 msgstr "Sostituisci Nuvola"
 
-#: ../LibraryView.lua:834
+#: ../LibraryView.lua:843
 msgid "Replacing cloud..."
 msgstr "Sostituzione del cloud..."
 
-#: ../LibraryView.lua:844
+#: ../LibraryView.lua:853
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Il database cloud è stato forzatamente sostituito con quello locale!"
 
-#: ../LibraryView.lua:862
+#: ../LibraryView.lua:871
 msgid "Database is already up to date!"
 msgstr "Il database è già aggiornato!"
 
-#: ../LibraryView.lua:864
+#: ../LibraryView.lua:873
 msgid "Database has been synced to the server!"
 msgstr "Il database è stato sincronizzato con il server!"
 
-#: ../LibraryView.lua:868
+#: ../LibraryView.lua:877
 msgid "Sync completed!"
 msgstr "Sincronizzazione completata!"
 
-#: ../LibraryView.lua:904
+#: ../LibraryView.lua:913
 msgid "Manga search..."
 msgstr "Ricerca Manga..."
 
-#: ../LibraryView.lua:905
+#: ../LibraryView.lua:914
 msgid "Houseki no Kuni"
 msgstr "Houseki no Kuni"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:982
+#: ../LibraryView.lua:915 ../LibraryView.lua:991
 msgid "Type the manga name to search for"
 msgstr "Digita il nome del manga da cercare"
 
-#: ../LibraryView.lua:910 ../LibraryView.lua:919 ../LibraryView.lua:964
-#: ../LibraryView.lua:993 ../Settings.lua:107
+#: ../LibraryView.lua:919 ../LibraryView.lua:928 ../LibraryView.lua:973
+#: ../LibraryView.lua:1002 ../Settings.lua:107
 msgid "Search"
 msgstr "Ricerca"
 
-#: ../LibraryView.lua:964
+#: ../LibraryView.lua:973
 msgid "Exclude source search for"
 msgstr "Escludi la ricerca della fonte per"
 
-#: ../LibraryView.lua:979
+#: ../LibraryView.lua:988
 msgid "Favorite search..."
 msgstr "Ricerca preferita..."
 
-#: ../LibraryView.lua:981
+#: ../LibraryView.lua:990
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:1033
+#: ../LibraryView.lua:1042
 msgid "Scaning files..."
 msgstr "Scansione file..."
 
-#: ../LibraryView.lua:1048
+#: ../LibraryView.lua:1057
 #, lua-format
 msgid "Found %d files."
 msgstr "Trovati %d file."
 
-#: ../LibraryView.lua:1049
+#: ../LibraryView.lua:1058
 #, lua-format
 msgid "Total size %s."
 msgstr "Dimensione totale %s."
 
-#: ../LibraryView.lua:1050
+#: ../LibraryView.lua:1059
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "Scansione RendOnly dei file .cbz e .epub."
 
-#: ../LibraryView.lua:1054
+#: ../LibraryView.lua:1063
 msgid "Clean"
 msgstr "Pulito"
 
-#: ../LibraryView.lua:1059
+#: ../LibraryView.lua:1068
 msgid "Deleting..."
 msgstr "Eliminazione..."
 
-#: ../LibraryView.lua:1077
+#: ../LibraryView.lua:1086
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Spazio di archiviazione %s libero pulito"
 
-#: ../LibraryView.lua:1102
+#: ../LibraryView.lua:1111
 msgid "Refresh mangas..."
 msgstr "Aggiorna i manga..."
 
-#: ../LibraryView.lua:1103
+#: ../LibraryView.lua:1112
 msgid "All chapters manga updated!"
 msgstr "Tutti i capitoli del manga aggiornati!"
 
-#: ../LibraryView.lua:1104
+#: ../LibraryView.lua:1113
 msgid "Some manga updates fail:"
 msgstr "Alcuni aggiornamenti manga falliscono:"
 
-#: ../LibraryView.lua:1115
+#: ../LibraryView.lua:1124
 msgid "Refresh manga details..."
 msgstr "Aggiorna i dettagli del manga..."
 
-#: ../LibraryView.lua:1116
+#: ../LibraryView.lua:1125
 msgid "All manga details refresh!"
 msgstr "Tutti i dettagli del manga vengono aggiornati!"
 
-#: ../LibraryView.lua:1117
+#: ../LibraryView.lua:1126
 msgid "Some manga details refresh fail:"
 msgstr "L'aggiornamento di alcuni dettagli del manga non riesce:"
 
-#: ../LibraryView.lua:1133
+#: ../LibraryView.lua:1142
 msgid "Progress"
 msgstr "Progressi"
 
-#: ../LibraryView.lua:1151
+#: ../LibraryView.lua:1160
 msgid "Cleaner"
 msgstr "Più pulito"
 
-#: ../LibraryView.lua:1152
+#: ../LibraryView.lua:1161
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Trova ed elimina file non validi, inclusi file provenienti da origini eliminate"
 
-#: ../LibraryView.lua:1152 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1161 ../LibraryView.lua:1164
 msgid "Normal"
 msgstr "Normale"
 
-#: ../LibraryView.lua:1153 ../LibraryView.lua:1161
+#: ../LibraryView.lua:1162 ../LibraryView.lua:1170
 msgid "Chapter read done"
 msgstr "Capitolo letto finito"
 
-#: ../LibraryView.lua:1153
+#: ../LibraryView.lua:1162
 msgid "Find and delete chapters that have been read"
 msgstr "Trova ed elimina i capitoli che sono stati letti"
 
-#: ../LibraryView.lua:1154
+#: ../LibraryView.lua:1163
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "IMPORTANTE: i meta file (segnalibri, cronologia) non vengono conservati!"
 
-#: ../MangaInfoWidget.lua:141
+#: ../MangaInfoWidget.lua:145
 msgid "Statistics"
 msgstr "Statistiche"
 
-#: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
-#: ../MangaInfoWidget.lua:503
+#: ../MangaInfoWidget.lua:147 ../MangaInfoWidget.lua:490
+#: ../MangaInfoWidget.lua:516
 msgid "Description"
 msgstr "Descrizione"
 
-#: ../MangaInfoWidget.lua:276
+#: ../MangaInfoWidget.lua:280
 msgid "%1 % Completed"
 msgstr "%1% completato"
 
-#: ../MangaInfoWidget.lua:308
-msgid "Last read: %1"
-msgstr "Ultima lettura: %1"
-
-#: ../MangaInfoWidget.lua:380
-msgid "Status"
-msgstr "Stato"
-
-#: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid "NSFW"
-msgstr "NSFW"
-
-#: ../MangaInfoWidget.lua:394
-msgid "Last Updated"
-msgstr "Ultimo aggiornamento"
-
-#: ../MangaInfoWidget.lua:419
+#: ../MangaInfoWidget.lua:311 ../MangaInfoWidget.lua:405
 msgid "N/A"
 msgstr "N / A"
 
-#: ../MangaInfoWidget.lua:435
+#: ../MangaInfoWidget.lua:313
+msgid "Last read: %1"
+msgstr "Ultima lettura: %1"
+
+#: ../MangaInfoWidget.lua:385
+msgid "Status"
+msgstr "Stato"
+
+#: ../MangaInfoWidget.lua:392 ../MangaInfoWidget.lua:468
+msgid "NSFW"
+msgstr "NSFW"
+
+#: ../MangaInfoWidget.lua:399
+msgid "Last Updated"
+msgstr "Ultimo aggiornamento"
+
+#: ../MangaInfoWidget.lua:448
 msgid "Ongoing"
 msgstr "In corso"
 
-#: ../MangaInfoWidget.lua:437
+#: ../MangaInfoWidget.lua:450
 msgid "Completed"
 msgstr "Completato"
 
-#: ../MangaInfoWidget.lua:439
+#: ../MangaInfoWidget.lua:452
 msgid "Cancelled"
 msgstr "Annullato"
 
-#: ../MangaInfoWidget.lua:441
+#: ../MangaInfoWidget.lua:454
 msgid "Hiatus"
 msgstr "Iato"
 
-#: ../MangaInfoWidget.lua:443
+#: ../MangaInfoWidget.lua:456
 msgid "Not published"
 msgstr "Non pubblicato"
 
-#: ../MangaInfoWidget.lua:451
+#: ../MangaInfoWidget.lua:464
 msgid "Safe"
 msgstr "Sicuro"
 
-#: ../MangaInfoWidget.lua:453
+#: ../MangaInfoWidget.lua:466
 msgid "Suggestive"
 msgstr "Suggestivo"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
+#: ../MangaInfoWidget.lua:559 ../MangaSearchResults.lua:375
 msgid "Refreshing details..."
 msgstr "Aggiornamento dei dettagli..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
+#: ../MangaInfoWidget.lua:571 ../MangaSearchResults.lua:381
 msgid "Refresh details cancelled."
 msgstr "Aggiornamento dei dettagli annullato."
 
@@ -761,15 +761,15 @@ msgstr "NO"
 msgid "Search results..."
 msgstr "Risultati della ricerca..."
 
-#: ../MangaSearchResults.lua:152
+#: ../MangaSearchResults.lua:157
 msgid "Next page"
 msgstr "Pagina successiva"
 
-#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:269
 msgid "Searching for"
 msgstr "Cercando"
 
-#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
+#: ../MangaSearchResults.lua:214 ../MangaSearchResults.lua:275
 msgid "Search cancelled."
 msgstr "Ricerca annullata."
 
@@ -1163,11 +1163,11 @@ msgstr "%dy"
 msgid "years"
 msgstr "anni"
 
-#: ../utils/getChapterDisplayName.lua:5
+#: ../utils/getChapterDisplayName.lua:7
 msgid "Vol."
 msgstr "vol."
 
-#: ../utils/getChapterDisplayName.lua:6
+#: ../utils/getChapterDisplayName.lua:10
 msgid "Ch."
 msgstr "cap."
 

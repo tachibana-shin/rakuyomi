@@ -283,17 +283,9 @@ where
                                             if let Ok(image) = image.map_err(|err| {
                                                 eprintln!("failed to load image with faster {err}")
                                             }) {
-                                                // RGBA に変換（元は ARGB）
-                                                let len = (image.width * image.height * 3) as usize;
-                                                let mut rgb_pixels = vec![0u8; len];
-
-                                                for (i, px) in image.data.iter().enumerate() {
-                                                    let base = i * 3;
-                                                    let _a = ((px >> 24) & 0xFF) as u8;
-                                                    rgb_pixels[base] = ((px >> 16) & 0xFF) as u8;
-                                                    rgb_pixels[base + 1] = ((px >> 8) & 0xFF) as u8;
-                                                    rgb_pixels[base + 2] = (px & 0xFF) as u8;
-                                                }
+                                                let rgb_pixels = crate::source::decode_image::decode_argb_to_rgb(
+                                                    image.width, image.height, &image.data,
+                                                )?;
                                                 let mut comp = mozjpeg::Compress::new(
                                                     mozjpeg::ColorSpace::JCS_RGB,
                                                 );

@@ -117,6 +117,9 @@ impl SourceManager {
             )
         })?;
 
+        #[cfg(not(feature = "all"))]
+        self.file_sources.clear();
+
         let mut sources_by_id = HashMap::new();
         for entry in files.flatten() {
             let path = entry.path();

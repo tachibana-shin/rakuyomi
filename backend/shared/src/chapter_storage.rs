@@ -17,7 +17,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
 use crate::model::{ChapterId, MangaId};
-use crate::source::decode_image::decode_image_fast;
+use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
@@ -132,18 +132,7 @@ impl ChapterStorage {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
 
-                // RGBA に変換（元は ARGB）
-                let len = (image.width * image.height * 3) as usize;
-                let mut rgb_pixels = vec![0u8; len];
-
-                for (i, px) in image.data.iter().enumerate() {
-                    let base = i * 3;
-                    let _a = ((px >> 24) & 0xFF) as u8;
-                    rgb_pixels[base] = ((px >> 16) & 0xFF) as u8;
-                    rgb_pixels[base + 1] = ((px >> 8) & 0xFF) as u8;
-                    rgb_pixels[base + 2] = (px & 0xFF) as u8;
-                }
-
+                let rgb_pixels = decode_argb_to_rgb(image.width, image.height, &image.data)?;
                 (image.width as u32, image.height as u32, rgb_pixels)
             }
             // fallback with image

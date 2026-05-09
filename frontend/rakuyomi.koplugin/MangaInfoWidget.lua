@@ -45,9 +45,9 @@ local function parse_iso8601(str)
     year = year,
     month = month,
     day = day,
-    hour = hour or 0,
-    min = min or 0,
-    sec = sec or 0,
+    hour = hour,
+    min = min,
+    sec = sec,
     isdst = false,
   })
 end

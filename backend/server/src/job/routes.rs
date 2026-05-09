@@ -129,12 +129,13 @@ async fn create_download_unread_chapters_job(
     let manga_id = MangaId::from(body);
 
     let chapter_storage = chapter_storage.lock().await.clone();
+    let source = {
+        let sm = source_manager.lock().await;
+        sm.get_by_id(manga_id.source_id())
+            .ok_or(AppError::SourceNotFound)?
+            .clone()
+    };
     let settings = settings.lock().await;
-    let source_manager = source_manager.lock().await;
-    let source = source_manager
-        .get_by_id(manga_id.source_id())
-        .ok_or(AppError::SourceNotFound)?
-        .clone();
 
     let id = Uuid::new_v4();
     let job = DownloadUnreadChaptersJob::spawn_new(
@@ -186,12 +187,13 @@ async fn create_download_scanlator_chapters_job(
     let manga_id = MangaId::from(body.clone());
 
     let chapter_storage = chapter_storage.lock().await.clone();
+    let source = {
+        let sm = source_manager.lock().await;
+        sm.get_by_id(manga_id.source_id())
+            .ok_or(AppError::SourceNotFound)?
+            .clone()
+    };
     let settings = settings.lock().await;
-    let source_manager = source_manager.lock().await;
-    let source = source_manager
-        .get_by_id(manga_id.source_id())
-        .ok_or(AppError::SourceNotFound)?
-        .clone();
 
     let scanlator_filter = ScanlatorFilter {
         scanlator: body.scanlator,

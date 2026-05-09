@@ -291,6 +291,12 @@ function MangaSearchResults:loadNextPage()
     self.result_page = next_page
     self:updateItems()
 
+    if #response.body[2] > 0 then
+      UIManager:show(InfoMessage:new {
+        text = formatSearchErrors(response.body[2])
+      })
+    end
+
     Testing:emitEvent("manga_search_results_shown")
   end)
 end

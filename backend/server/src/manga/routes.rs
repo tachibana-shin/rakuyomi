@@ -282,7 +282,7 @@ async fn get_mangas(
             .collect::<Vec<_>>()
     });
 
-    let page = page.unwrap_or(1);
+    let page = page.unwrap_or(1).max(1);
 
     let (mut mangas, errors, has_next_page) = cancel_after(&token.0, Duration::from_secs(59), |token| {
         usecases::search_mangas(

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 18:27+0700\n"
+"POT-Creation-Date: 2026-05-09 01:58+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "マーキング..."
 msgid "Marked"
 msgstr "マークあり"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
 msgid "No errors"
 msgstr "エラーなし"
 
@@ -221,7 +221,7 @@ msgstr "ページ"
 msgid "attempts"
 msgstr "試み"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
 #, lua-format
 msgid "… and %d more errors"
 msgstr "…さらに %d 個のエラー"
@@ -246,12 +246,12 @@ msgstr "ダウンロードがキャンセルされました。"
 msgid "Are you sure you want to cancel the download?"
 msgstr "ダウンロードをキャンセルしてもよろしいですか?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
 msgid "Add to Library"
 msgstr "ライブラリに追加"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:333
+#: ../MangaSearchResults.lua:403
 msgid "Details"
 msgstr "詳細"
 
@@ -427,11 +427,11 @@ msgstr "爽やかなマンガ"
 msgid "Continue Reading"
 msgstr "続きを読む"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
 msgid "Add to Playlist"
 msgstr "プレイリストに追加"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
 msgid "Remove from Library"
 msgstr "ライブラリから削除"
 
@@ -729,11 +729,11 @@ msgstr "安全"
 msgid "Suggestive"
 msgstr "挑発的"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
 msgid "Refreshing details..."
 msgstr "詳細を更新中..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
 msgid "Refresh details cancelled."
 msgstr "詳細の更新がキャンセルされました。"
 
@@ -761,11 +761,15 @@ msgstr "いいえ"
 msgid "Search results..."
 msgstr "検索結果..."
 
-#: ../MangaSearchResults.lua:187
+#: ../MangaSearchResults.lua:152
+msgid "Next page"
+msgstr "次のページ"
+
+#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
 msgid "Searching for"
 msgstr "探しています"
 
-#: ../MangaSearchResults.lua:194
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
 msgid "Search cancelled."
 msgstr "検索がキャンセルされました。"
 

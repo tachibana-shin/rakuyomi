@@ -33,6 +33,11 @@ local MangaSearchResults = MenuCustom:extend {
   results = nil,
   -- callback to be called when pressing the back button
   on_return_callback = nil,
+  -- pagination
+  search_text = nil,
+  exclude = nil,
+  result_page = 1,
+  has_next_page = false,
 }
 
 function MangaSearchResults:init()
@@ -147,6 +152,18 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
     })
   end
 
+  if self.has_next_page then
+    table.insert(item_table, {
+      text = "(" .. _("Next page") .. " " .. (self.result_page + 1) .. ")",
+      manga = {
+        callback = function()
+          self:loadNextPage()
+        end,
+      },
+      bold = true
+    })
+  end
+
   return item_table
 end
 
@@ -193,8 +210,6 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
     function() return Backend.searchMangas(cancel_id, search_text, exclude) end,
     function()
       Backend.cancel(cancel_id)
-      local InfoMessage = require("ui/widget/infomessage")
-
       local cancelledMessage = InfoMessage:new {
         text = _("Search cancelled."),
       }
@@ -213,9 +228,14 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
   end
 
   local results = response.body[1]
+  local has_next_page = response.body[3] == true
 
   local ui = MangaSearchResults:new {
     results = results,
+    search_text = search_text,
+    exclude = exclude,
+    result_page = 1,
+    has_next_page = has_next_page,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page
@@ -234,8 +254,65 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
   return true
 end
 
+--- Loads the next page of search results.
+--- @private
+function MangaSearchResults:loadNextPage()
+  Trapper:wrap(function()
+    local search_text = self.search_text
+    if not search_text or search_text == "" then
+      return
+    end
+
+    local cancel_id = Backend.createCancelId()
+    local next_page = self.result_page + 1
+    local response, cancelled = LoadingDialog:showAndRun(
+      _("Searching for") .. " \"" .. search_text .. "\"",
+      function() return Backend.searchMangas(cancel_id, search_text, self.exclude, next_page) end,
+      function()
+        Backend.cancel(cancel_id)
+
+        local cancelledMessage = InfoMessage:new {
+          text = _("Search cancelled."),
+        }
+        UIManager:show(cancelledMessage)
+      end
+    )
+
+    if cancelled then
+      return
+    end
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    local results = response.body[1]
+    self.has_next_page = response.body[3] == true
+
+    for _, manga in ipairs(results) do
+      table.insert(self.results, manga)
+    end
+    self.result_page = next_page
+    self:updateItems()
+
+    if #response.body[2] > 0 then
+      UIManager:show(InfoMessage:new {
+        text = formatSearchErrors(response.body[2])
+      })
+    end
+
+    Testing:emitEvent("manga_search_results_shown")
+  end)
+end
+
 --- @private
 function MangaSearchResults:onPrimaryMenuChoice(item)
+  if item.manga and item.manga.callback then
+    item.manga.callback()
+    return
+  end
+
   Trapper:wrap(function()
     --- @type Manga
     local manga = item.manga
@@ -252,6 +329,11 @@ end
 
 --- @private
 function MangaSearchResults:onContextMenuChoice(item)
+  if item.manga and item.manga.callback then
+    item.manga.callback()
+    return
+  end
+
   --- @type Manga
   local manga = item.manga
 
@@ -294,7 +376,6 @@ function MangaSearchResults:onContextMenuChoice(item)
                 function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
                 function()
                   Backend.cancel(cancel_id)
-                  local InfoMessage = require("ui/widget/infomessage")
 
                   local cancelledMessage = InfoMessage:new {
                     text = _("Refresh details cancelled."),
@@ -343,6 +424,10 @@ function MangaSearchResults:onContextMenuChoice(item)
             local onReturnCallback = function()
               local ui = MangaSearchResults:new {
                 results = self.results,
+                search_text = self.search_text,
+                exclude = self.exclude,
+                result_page = self.result_page,
+                has_next_page = self.has_next_page,
                 on_return_callback = self.on_return_callback,
                 covers_fullscreen = true, -- hint for UIManager:_repaint()
                 page = self.page

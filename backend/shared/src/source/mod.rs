@@ -183,9 +183,10 @@ impl Source {
 
     wrap_blocking_source_fn!(
         search_mangas,
-        Result<Vec<Manga>>,
+        Result<(Vec<Manga>, bool)>,
         cancellation_token: CancellationToken,
-        query: String
+        query: String,
+        page: i32
     );
 
     wrap_blocking_source_fn!(
@@ -600,20 +601,26 @@ impl BlockingSource {
         &mut self,
         cancellation_token: CancellationToken,
         query: String,
-    ) -> Result<Vec<Manga>> {
+        page: i32,
+    ) -> Result<(Vec<Manga>, bool)> {
         if self.next_sdk {
             return self
-                .get_search_manga_list_next(cancellation_token, query, 1, [].to_vec())
+                .get_search_manga_list_next(cancellation_token, query, page, [].to_vec())
                 .map(|list| {
-                    list.entries
+                    let mangas = list.entries
                         .into_iter()
                         .map(|v| Manga::from(v, self.id.clone()))
-                        .collect::<Vec<_>>()
+                        .collect::<Vec<_>>();
+                    (mangas, list.has_next_page)
                 });
+        }
+        if page > 1 {
+            return Ok((Vec::new(), false));
         }
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.search_mangas_by_filters_inner(vec![Filter::Title(query)])
         })
+        .map(|mangas| (mangas, false))
     }
 
     fn search_mangas_by_filters_inner(&mut self, filters: Vec<Filter>) -> Result<Vec<Manga>> {

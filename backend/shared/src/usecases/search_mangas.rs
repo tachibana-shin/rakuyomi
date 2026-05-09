@@ -30,8 +30,9 @@ pub async fn search_mangas(
     cancellation_token: CancellationToken,
     query: String,
     exclude: &Option<Vec<String>>,
+    page: i32,
     seconds: u64,
-) -> Result<(Vec<Manga>, Vec<SearchError>), Error> {
+) -> Result<(Vec<Manga>, Vec<SearchError>, bool), Error> {
     // FIXME this looks awful
     let query = &query;
 
@@ -45,7 +46,7 @@ pub async fn search_mangas(
         .cloned()
         .collect::<Vec<_>>();
 
-    let source_results: Vec<(SourceMangaSearchResults, Option<SearchError>)> =
+    let source_results: Vec<(SourceMangaSearchResults, Option<SearchError>, bool)> =
         stream::iter(sources)
             .map(|source| {
                 let cancellation_token = cancellation_token.clone();
@@ -65,20 +66,22 @@ pub async fn search_mangas(
                                 mangas: vec![],
                             },
                             None,
+                            false,
                         );
                     }
 
                     let token = cancellation_token.child_token();
 
-                    let fetch_task = async { source.search_mangas(token.clone(), query).await };
+                    let fetch_task = async { source.search_mangas(token.clone(), query, page).await };
 
-                    let (manga_informations, error) =
+                    let (manga_informations, has_next, error) =
                         match timeout(Duration::from_secs(seconds), fetch_task).await {
-                            Ok(Ok(source_mangas)) => (
+                            Ok(Ok((source_mangas, has_next_page))) => (
                                 source_mangas
                                     .into_iter()
                                     .map(MangaInformation::from)
                                     .collect(),
+                                has_next_page,
                                 None,
                             ),
 
@@ -91,6 +94,7 @@ pub async fn search_mangas(
 
                                 (
                                     vec![],
+                                    false,
                                     Some(SearchError {
                                         source_id: source.manifest().info.id.clone(),
                                         reason: e.to_string(),
@@ -103,6 +107,7 @@ pub async fn search_mangas(
 
                                 (
                                     vec![],
+                                    false,
                                     Some(SearchError {
                                         source_id: source.manifest().info.id.clone(),
                                         reason: "timeout".to_string(),
@@ -167,6 +172,7 @@ pub async fn search_mangas(
                             mangas,
                         },
                         error,
+                        has_next,
                     )
                 }
             })
@@ -175,11 +181,15 @@ pub async fn search_mangas(
             .await;
 
     let mut errors: Vec<SearchError> = vec![];
+    let mut has_next_page = false;
     let mut mangas: Vec<_> = source_results
         .into_iter()
-        .flat_map(|(results, error)| {
+        .flat_map(|(results, error, has_next)| {
             if let Some(error) = error {
                 errors.push(error);
+            }
+            if has_next {
+                has_next_page = true;
             }
 
             let SourceMangaSearchResults {
@@ -214,7 +224,7 @@ pub async fn search_mangas(
             .collect::<String>()
     });
 
-    Ok((mangas, errors))
+    Ok((mangas, errors, has_next_page))
 }
 
 #[derive(thiserror::Error, Debug)]

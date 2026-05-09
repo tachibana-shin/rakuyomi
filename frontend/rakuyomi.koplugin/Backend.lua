@@ -310,15 +310,18 @@ end
 
 --- Searches manga from the manga sources.
 --- @param cancel_id number
+--- @search_text string
 --- @param exclude string[]|nil
---- @return SuccessfulResponse<[Manga[], SearchError[]]>|ErrorResponse
-function Backend.searchMangas(cancel_id, search_text, exclude)
+--- @param page number|nil
+--- @return SuccessfulResponse<[Manga[], SearchError[], boolean]>|ErrorResponse
+function Backend.searchMangas(cancel_id, search_text, exclude, page)
   return Backend.requestJson({
     path = "/mangas",
     query_params = {
       q = search_text,
       exclude = exclude and table.concat(exclude, ",") or nil,
       cancel_id = cancel_id,
+      page = page,
     }
   })
 end

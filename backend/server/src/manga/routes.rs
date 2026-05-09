@@ -248,6 +248,7 @@ struct GetMangasQuery {
     cancel_id: Option<usize>,
     exclude: Option<String>,
     q: String,
+    page: Option<i32>,
 }
 
 async fn get_mangas(
@@ -263,9 +264,10 @@ async fn get_mangas(
         cancel_id,
         exclude,
         q,
+        page,
     }): Query<GetMangasQuery>,
-) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>)>, AppError> {
-    let database = { database.lock().await };
+) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
+    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let settings = settings.lock().await;
     let source_manager = source_manager.lock().await;
@@ -277,7 +279,9 @@ async fn get_mangas(
             .collect::<Vec<_>>()
     });
 
-    let (mut mangas, errors) = cancel_after(&token.0, Duration::from_secs(59), |token| {
+    let page = page.unwrap_or(1).max(1);
+
+    let (mut mangas, errors, has_next_page) = cancel_after(&token.0, Duration::from_secs(59), |token| {
         usecases::search_mangas(
             &*source_manager,
             &database,
@@ -286,6 +290,7 @@ async fn get_mangas(
             token,
             q,
             &exclude,
+            page,
             30,
         )
     })
@@ -304,7 +309,7 @@ async fn get_mangas(
 
     let results = mangas.into_iter().map(Manga::from).collect();
 
-    Ok(Json((results, errors)))
+    Ok(Json((results, errors, has_next_page)))
 }
 
 async fn post_cancel_request(

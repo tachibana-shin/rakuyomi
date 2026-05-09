@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 18:27+0700\n"
+"POT-Creation-Date: 2026-05-09 01:58+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -207,7 +207,7 @@ msgstr "Žymėjimas..."
 msgid "Marked"
 msgstr "Pažymėta"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
 msgid "No errors"
 msgstr "Jokių klaidų"
 
@@ -221,7 +221,7 @@ msgstr "Puslapis"
 msgid "attempts"
 msgstr "bandymus"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… ir dar %d klaidų"
@@ -246,12 +246,12 @@ msgstr "Atsisiuntimas atšauktas."
 msgid "Are you sure you want to cancel the download?"
 msgstr "Ar tikrai norite atšaukti atsisiuntimą?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
 msgid "Add to Library"
 msgstr "Pridėti prie bibliotekos"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:333
+#: ../MangaSearchResults.lua:403
 msgid "Details"
 msgstr "Detalės"
 
@@ -427,11 +427,11 @@ msgstr "Atnaujinta manga"
 msgid "Continue Reading"
 msgstr "Skaityti toliau"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
 msgid "Add to Playlist"
 msgstr "Pridėti prie grojaraščio"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
 msgid "Remove from Library"
 msgstr "Pašalinti iš bibliotekos"
 
@@ -729,11 +729,11 @@ msgstr "Saugus"
 msgid "Suggestive"
 msgstr "Įtaigus"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
 msgid "Refreshing details..."
 msgstr "Atnaujinama informacija..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
 msgid "Refresh details cancelled."
 msgstr "Išsamios informacijos atnaujinimas atšauktas."
 
@@ -761,11 +761,15 @@ msgstr "Nr"
 msgid "Search results..."
 msgstr "Paieškos rezultatai..."
 
-#: ../MangaSearchResults.lua:187
+#: ../MangaSearchResults.lua:152
+msgid "Next page"
+msgstr "Kitas puslapis"
+
+#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
 msgid "Searching for"
 msgstr "Ieškau"
 
-#: ../MangaSearchResults.lua:194
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
 msgid "Search cancelled."
 msgstr "Paieška atšaukta."
 

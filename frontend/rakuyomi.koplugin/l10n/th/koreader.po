@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 18:27+0700\n"
+"POT-Creation-Date: 2026-05-09 01:58+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -206,7 +206,7 @@ msgstr "กำลังทำเครื่องหมาย..."
 msgid "Marked"
 msgstr "ทำเครื่องหมาย"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:158
+#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:175
 msgid "No errors"
 msgstr "ไม่มีข้อผิดพลาด"
 
@@ -220,7 +220,7 @@ msgstr "หน้าหนังสือ"
 msgid "attempts"
 msgstr "ความพยายาม"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:174
+#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:191
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… และข้อผิดพลาดอีก %d รายการ"
@@ -245,12 +245,12 @@ msgstr "การดาวน์โหลดถูกยกเลิก"
 msgid "Are you sure you want to cancel the download?"
 msgstr "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการดาวน์โหลด"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:262
+#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:333
 msgid "Add to Library"
 msgstr "เพิ่มลงในห้องสมุด"
 
 #: ../ChapterListing.lua:974 ../LibraryView.lua:469
-#: ../MangaSearchResults.lua:333
+#: ../MangaSearchResults.lua:403
 msgid "Details"
 msgstr "รายละเอียด"
 
@@ -426,11 +426,11 @@ msgstr "มังงะที่รีเฟรช"
 msgid "Continue Reading"
 msgstr "อ่านต่อ"
 
-#: ../LibraryView.lua:518 ../MangaSearchResults.lua:324
+#: ../LibraryView.lua:518 ../MangaSearchResults.lua:394
 msgid "Add to Playlist"
 msgstr "เพิ่มลงในเพลย์ลิสต์"
 
-#: ../LibraryView.lua:529 ../MangaSearchResults.lua:259
+#: ../LibraryView.lua:529 ../MangaSearchResults.lua:330
 msgid "Remove from Library"
 msgstr "ลบออกจากห้องสมุด"
 
@@ -728,11 +728,11 @@ msgstr "ปลอดภัย"
 msgid "Suggestive"
 msgstr "ชี้นำ"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:288
+#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:359
 msgid "Refreshing details..."
 msgstr "กำลังรีเฟรชรายละเอียด..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:295
+#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:365
 msgid "Refresh details cancelled."
 msgstr "รีเฟรชรายละเอียดถูกยกเลิก"
 
@@ -760,11 +760,15 @@ msgstr "เลขที่"
 msgid "Search results..."
 msgstr "ผลการค้นหา..."
 
-#: ../MangaSearchResults.lua:187
+#: ../MangaSearchResults.lua:152
+msgid "Next page"
+msgstr "หน้าถัดไป"
+
+#: ../MangaSearchResults.lua:204 ../MangaSearchResults.lua:264
 msgid "Searching for"
 msgstr "กำลังค้นหา"
 
-#: ../MangaSearchResults.lua:194
+#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:270
 msgid "Search cancelled."
 msgstr "การค้นหาถูกยกเลิก"
 

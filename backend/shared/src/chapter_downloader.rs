@@ -283,33 +283,29 @@ where
                                             if let Ok(image) = image.map_err(|err| {
                                                 eprintln!("failed to load image with faster {err}")
                                             }) {
-                                                // RGBA に変換（元は ARGB）
-                                                let mut rgb_pixels: Vec<u8> = Vec::with_capacity(
-                                                    (image.width * image.height * 3) as usize,
-                                                );
+                                                match crate::source::decode_image::decode_argb_to_rgb(
+                                                    image.width, image.height, &image.data,
+                                                ) {
+                                                    Ok(rgb_pixels) => {
+                                                        let mut comp = mozjpeg::Compress::new(
+                                                            mozjpeg::ColorSpace::JCS_RGB,
+                                                        );
+                                                        comp.set_size(
+                                                            image.width as usize,
+                                                            image.height as usize,
+                                                        );
+                                                        comp.set_fastest_defaults();
 
-                                                for px in &image.data {
-                                                    let _a = ((px >> 24) & 0xFF) as u8;
-                                                    let r = ((px >> 16) & 0xFF) as u8;
-                                                    let g = ((px >> 8) & 0xFF) as u8;
-                                                    let b = (px & 0xFF) as u8;
+                                                        let mut comp = comp.start_compress(Vec::new())?;
+                                                        comp.write_scanlines(&rgb_pixels)?;
 
-                                                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                                                    rgb_pixels.extend_from_slice(&[r, g, b]);
+                                                        comp.finish()?
+                                                    }
+                                                    Err(e) => {
+                                                        eprintln!("failed to convert ARGB to RGB: {e}");
+                                                        data
+                                                    }
                                                 }
-                                                let mut comp = mozjpeg::Compress::new(
-                                                    mozjpeg::ColorSpace::JCS_RGB,
-                                                );
-                                                comp.set_size(
-                                                    image.width as usize,
-                                                    image.height as usize,
-                                                );
-                                                comp.set_fastest_defaults();
-
-                                                let mut comp = comp.start_compress(Vec::new())?;
-                                                comp.write_scanlines(&rgb_pixels)?;
-
-                                                comp.finish()?
                                             } else {
                                                 data
                                             }

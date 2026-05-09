@@ -29,14 +29,13 @@ async fn update_settings(
     }): StateExtractor<State>,
     Json(updateable_settings): Json<UpdateableSettings>,
 ) -> Result<Json<UpdateableSettings>, AppError> {
+    let mut chapter_storage = chapter_storage.lock().await;
     let mut settings = settings.lock().await;
     usecases::update_settings(&mut settings, &settings_path, updateable_settings)?;
 
     // Update the chapter storage for the new storage path
     if let Some(storage_path) = settings.storage_path.as_ref() {
         chapter_storage
-            .lock()
-            .await
             .set_downloads_folder_path(storage_path.clone())
             .with_context(|| {
                 format!(

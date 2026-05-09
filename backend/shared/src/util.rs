@@ -389,9 +389,9 @@ pub async fn download_all_images(
         >,
     >;
     #[cfg(not(feature = "all"))]
-    let mut tasks: Vec<(usize, Task)> = Vec::new();
+    let mut tasks: Vec<(usize, Task)> = Vec::with_capacity(pages.len());
     #[cfg(feature = "all")]
-    let mut tasks: Vec<Task> = Vec::new();
+    let mut tasks: Vec<Task> = Vec::with_capacity(pages.len());
 
     for page in &pages {
         if token.is_cancelled() {

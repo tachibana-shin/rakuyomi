@@ -17,7 +17,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
 use crate::model::{ChapterId, MangaId};
-use crate::source::decode_image::decode_image_fast;
+use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
@@ -56,7 +56,15 @@ impl ChapterStorage {
     }
 
     pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
-        let file_path = self.downloads_folder_path.join(filename);
+        let file_path = self.downloads_folder_path.join(&filename);
+        let canonical = tokio::fs::canonicalize(&file_path).await?;
+        let base = tokio::fs::canonicalize(&self.downloads_folder_path).await?;
+        if !canonical.starts_with(&base) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "path traversal denied",
+            ));
+        }
         tokio::fs::remove_file(file_path).await
     }
 
@@ -124,20 +132,7 @@ impl ChapterStorage {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
 
-                // RGBA に変換（元は ARGB）
-                let mut rgb_pixels: Vec<u8> =
-                    Vec::with_capacity((image.width * image.height * 3) as usize);
-
-                for px in &image.data {
-                    let _a = ((px >> 24) & 0xFF) as u8;
-                    let r = ((px >> 16) & 0xFF) as u8;
-                    let g = ((px >> 8) & 0xFF) as u8;
-                    let b = (px & 0xFF) as u8;
-
-                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                    rgb_pixels.extend_from_slice(&[r, g, b]);
-                }
-
+                let rgb_pixels = decode_argb_to_rgb(image.width, image.height, &image.data)?;
                 (image.width as u32, image.height as u32, rgb_pixels)
             }
             // fallback with image

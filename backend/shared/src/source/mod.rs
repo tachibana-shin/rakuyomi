@@ -956,13 +956,12 @@ impl BlockingSource {
                 .store
                 .data_mut()
                 .get_mut_request(request_descriptor)
-                .unwrap();
+                .ok_or_else(|| anyhow::anyhow!("failed to get mutable request state"))?;
 
             let request_building_state = match request_state {
-                RequestState::Building(building_state) => Some(building_state),
-                _ => None,
-            }
-            .unwrap();
+                RequestState::Building(building_state) => building_state,
+                _ => return Err(anyhow::anyhow!("expected request to be in Building state")),
+            };
 
             request_building_state.method = Some(Method::GET);
             request_building_state.url = Some(url);
@@ -990,13 +989,12 @@ impl BlockingSource {
             .store
             .data_mut()
             .remove_request(request_descriptor)
-            .unwrap();
+            .ok_or_else(|| anyhow::anyhow!("failed to remove request state"))?;
 
         let request_building_state = match request_state {
-            RequestState::Building(building_state) => Some(building_state),
-            _ => None,
-        }
-        .unwrap();
+            RequestState::Building(building_state) => building_state,
+            _ => return Err(anyhow::anyhow!("expected request to be in Building state")),
+        };
 
         (request_building_state as &RequestBuildingState).try_into()
     }
@@ -1364,18 +1362,9 @@ impl BlockingSource {
                     .context(format!("process_page_image failed {image_pointer}"))?;
                 store.take_std_value(pointer);
 
-                // RGBA に変換（元は ARGB）
-                let mut rgb_pixels: Vec<u8> = Vec::with_capacity((width * height * 3) as usize);
-
-                for px in &pixels {
-                    let _a = ((px >> 24) & 0xFF) as u8;
-                    let r = ((px >> 16) & 0xFF) as u8;
-                    let g = ((px >> 8) & 0xFF) as u8;
-                    let b = (px & 0xFF) as u8;
-
-                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                    rgb_pixels.extend_from_slice(&[r, g, b]);
-                }
+                let rgb_pixels = crate::source::decode_image::decode_argb_to_rgb(
+                    width as i32, height as i32, &pixels,
+                )?;
                 let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
                 comp.set_size(width as usize, height as usize);
                 comp.set_fastest_defaults();

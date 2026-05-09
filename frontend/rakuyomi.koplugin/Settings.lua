@@ -390,6 +390,7 @@ function Settings:fetchAndShow(on_return_callback)
   local response = Backend.getSettings()
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
+    return
   end
 
   local ui = Settings:new {

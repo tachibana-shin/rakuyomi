@@ -35,9 +35,8 @@ pub async fn refresh_manga_chapters<'a>(
         }
     };
 
-    let _ = db
-        .upsert_cached_chapter_informations(id, &fresh_chapter_informations)
-        .await;
+    db.upsert_cached_chapter_informations(id, &fresh_chapter_informations)
+        .await?;
 
     Ok(fresh_chapter_informations)
 }

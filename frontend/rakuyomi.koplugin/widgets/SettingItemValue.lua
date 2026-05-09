@@ -133,7 +133,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "list" then
     return TextWidget:new {
-      text = table.concat(self:getCurrentValue(), "\n") or "<empty>",
+      text = table.concat(self:getCurrentValue() or {}, "\n") or "<empty>",
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -290,7 +290,7 @@ function SettingItemValue:onTap()
     local dialog
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = table.concat(self:getCurrentValue(), "\n"),
+      input = table.concat(self:getCurrentValue() or {}, "\n"),
       input_hint = self.value_definition.placeholder,
       buttons = {
         {

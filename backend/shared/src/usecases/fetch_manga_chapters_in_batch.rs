@@ -1,6 +1,7 @@
+use anyhow::Result;
 use async_stream::stream;
 use futures::Stream;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
@@ -44,7 +45,13 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                 return;
             }
         };
-        let chapters_to_download = apply_chapter_filter(db, all_chapters, filter, langs).await;
+        let chapters_to_download = match apply_chapter_filter(db, all_chapters, filter, langs).await {
+            Ok(v) => v,
+            Err(e) => {
+                yield ProgressReport::Errored(Error::Other(e));
+                return;
+            }
+        };
 
         let total = chapters_to_download.len();
         yield ProgressReport::Progressing { downloaded: 0, total };
@@ -90,7 +97,7 @@ async fn apply_chapter_filter(
     all_chapters: Vec<ChapterInformation>,
     filter: Filter,
     langs: &[&str],
-) -> Vec<ChapterInformation> {
+) -> Result<Vec<ChapterInformation>> {
     let mut last_read_chapter = None;
     let target_scanlator = match &filter {
         Filter::ScanlatorChapters { scanlator, .. } => Some(scanlator.clone()),
@@ -98,6 +105,14 @@ async fn apply_chapter_filter(
     };
 
     let use_lang_filter = !langs.is_empty();
+
+    // Batch-fetch all chapter states for this manga in a single query
+    let manga_id = all_chapters.first().map(|c| c.id.manga_id().clone());
+    let chapter_states = if let Some(id) = manga_id {
+        db.find_chapter_states_for_manga(&id).await?
+    } else {
+        HashMap::new()
+    };
 
     // Starting from the newest chapter (in source order), find out the first one marked as read.
     for chapter in all_chapters.iter() {
@@ -117,10 +132,8 @@ async fn apply_chapter_filter(
             }
         }
 
-        let read = db
-            .find_chapter_state(&chapter.id)
-            .await
-            .unwrap_or(None)
+        let read = chapter_states
+            .get(chapter.id.value())
             .is_some_and(|state| state.read);
 
         if read {
@@ -186,7 +199,7 @@ async fn apply_chapter_filter(
         }
     };
 
-    filtered_chapters
+    Ok(filtered_chapters)
 }
 
 pub enum Filter {

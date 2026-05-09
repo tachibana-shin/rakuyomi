@@ -52,13 +52,11 @@ function Backend.requestJson(request)
 
   -- FIXME naming
   local query_params = request.query_params or {}
-  local built_query_params = ""
+  local parts = {}
   for name, value in pairs(query_params) do
-    if built_query_params ~= "" then
-      built_query_params = built_query_params .. "&"
-    end
-    built_query_params = built_query_params .. name .. "=" .. url.escape(value)
+    table.insert(parts, name .. "=" .. url.escape(value))
   end
+  local built_query_params = table.concat(parts, "&")
 
   local path_and_query = request.path
   if built_query_params ~= "" then
@@ -138,6 +136,8 @@ function Backend.initialize()
 
   if not waitUntilHttpServerIsReady() then
     local logBuffer = Backend.server:getLogBuffer()
+    Backend.server:stop()
+    Backend.server = nil
 
     return false, table.concat(logBuffer, "\n")
   end

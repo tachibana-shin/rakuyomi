@@ -57,8 +57,8 @@ impl ChapterStorage {
 
     pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
         let file_path = self.downloads_folder_path.join(&filename);
-        let canonical = file_path.canonicalize()?;
-        let base = self.downloads_folder_path.canonicalize()?;
+        let canonical = tokio::fs::canonicalize(&file_path).await?;
+        let base = tokio::fs::canonicalize(&self.downloads_folder_path).await?;
         if !canonical.starts_with(&base) {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,

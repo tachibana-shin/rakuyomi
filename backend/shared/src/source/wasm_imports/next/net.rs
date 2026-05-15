@@ -40,6 +40,7 @@ pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "net", "set_timeout", set_timeout)?; // OK
     register_wasm_function!(linker, "net", "data_len", data_len)?; // OK
     register_wasm_function!(linker, "net", "read_data", read_data)?; // OK
+    register_wasm_function!(linker, "net", "get_url", get_url)?; // OK
     register_wasm_function!(linker, "net", "get_image", get_image)?; // OK
     register_wasm_function!(linker, "net", "get_status_code", get_status_code)?; // OK
     register_wasm_function!(linker, "net", "get_header", get_header)?; // OK
@@ -258,6 +259,10 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
 fn set_url(caller: Caller<'_, WasmStore>, request_ptr: i32, url: Option<String>) -> FFIResult {
     crate::source::wasm_imports::net::set_url(caller, request_ptr, url)?;
     ResultContext::Success.into()
+}
+#[aidoku_wasm_function]
+fn get_url(caller: Caller<'_, WasmStore>, request_ptr: i32) -> Result<i32> {
+    crate::source::wasm_imports::net::get_url(caller, request_ptr)
 }
 #[aidoku_wasm_function]
 fn set_header(

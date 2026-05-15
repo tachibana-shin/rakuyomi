@@ -265,7 +265,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
 }
 
 #[aidoku_wasm_function]
-fn get_url(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
+pub fn get_url(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = request_descriptor_i32.try_into()?;
     let url = {
         let wasm_store = caller.data_mut();

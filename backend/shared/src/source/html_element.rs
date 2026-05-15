@@ -390,6 +390,88 @@ fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
 mod tests {
     use super::normalize_contains;
 
+    fn setup_html_store(html: &str) -> (crate::source::wasm_store::WasmStore, super::HTMLElement) {
+        use crate::settings::Settings;
+        use crate::source::source_settings::SourceSettings;
+        use crate::source_manager::SourceManager;
+        use dom_query::Document;
+        use std::collections::HashMap;
+        use std::path::PathBuf;
+        use std::sync::Arc;
+
+        let source_settings = SourceSettings::new(
+            "test".to_owned(),
+            &[],
+            &HashMap::new(),
+            &Arc::new(tokio::sync::Mutex::new(SourceManager::new(
+                PathBuf::new(),
+                HashMap::new(),
+                Settings::default(),
+            ))),
+        )
+        .unwrap();
+
+        let mut store = crate::source::wasm_store::WasmStore::default(source_settings);
+        let document = Document::from(html);
+        let root_id = document.root().id;
+        let html_idx = store.set_html(document);
+        let element = super::HTMLElement {
+            document: html_idx,
+            node_id: root_id,
+            base_uri: None,
+        };
+        (store, element)
+    }
+
+    #[test]
+    fn test_kind_element() {
+        let (mut store, _) = setup_html_store("<div><p>hello</p><span>world</span></div>");
+        let doc = store.get_html(0).unwrap();
+        let root_id = doc.root().id;
+        let root_element = super::HTMLElement {
+            document: 0,
+            node_id: root_id,
+            base_uri: None,
+        };
+        assert_eq!(root_element.kind(&mut store).unwrap(), 7);
+    }
+
+    #[test]
+    fn test_kind_returns_element_for_div() {
+        let (mut store, element) = setup_html_store("<div><p>hello</p></div>");
+        let children = element.children(&mut store).unwrap();
+        assert_eq!(children.len(), 1);
+        let kind = children[0].kind(&mut store).unwrap();
+        assert_eq!(kind, 5);
+    }
+
+    #[test]
+    fn test_child_nodes_returns_all_children() {
+        let (mut store, element) = setup_html_store("<div><span>a</span><span>b</span></div>");
+        let div = element
+            .select_soup(&mut store, "div")
+            .unwrap()
+            .unwrap();
+        let child_nodes = div[0].child_nodes(&mut store).unwrap();
+        assert_eq!(child_nodes.len(), 2);
+    }
+
+    #[test]
+    fn test_child_nodes_includes_text_nodes() {
+        let (mut store, element) = setup_html_store("<div>hello<span>world</span></div>");
+        let div = element
+            .select_soup(&mut store, "div")
+            .unwrap()
+            .unwrap();
+        let child_nodes = div[0].child_nodes(&mut store).unwrap();
+        let text_kinds: Vec<i32> = child_nodes
+            .iter()
+            .map(|n| n.kind(&mut store).unwrap())
+            .collect();
+        assert!(text_kinds.contains(&2));
+        assert!(text_kinds.contains(&5));
+    }
+
     #[test]
     fn keeps_selector_without_contains_unchanged() {
         let sel = "div.content > a[href^=\"https\"]";

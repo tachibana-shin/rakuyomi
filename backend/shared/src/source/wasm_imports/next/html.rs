@@ -27,6 +27,8 @@ pub fn register_html_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "html", "prepend", prepend)?;
     register_wasm_function!(linker, "html", "append", append)?;
     register_wasm_function!(linker, "html", "parent", parent)?;
+    register_wasm_function!(linker, "html", "kind", kind)?;
+    register_wasm_function!(linker, "html", "child_nodes", child_nodes)?;
     register_wasm_function!(linker, "html", "children", children)?; // OK
     register_wasm_function!(linker, "html", "siblings", siblings)?;
     register_wasm_function!(linker, "html", "next", next)?;
@@ -292,6 +294,51 @@ fn parent(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
         .flat_map(|element| element.parent(wasm_store))
         .collect();
 
+    Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
+}
+
+#[aidoku_wasm_function]
+fn kind(mut caller: Caller<'_, WasmStore>, ptr: i32) -> Result<i32> {
+    let wasm_store = caller.data_mut();
+    let std_value = wasm_store
+        .get_std_value(ptr as usize)
+        .context("failed to get standard value")?;
+    let Some(html_elements) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => Some(elements),
+        _ => None,
+    }) else {
+        return Ok(0);
+    };
+    let Some(element) = html_elements.first() else {
+        return Ok(0);
+    };
+    let kind = element.kind(wasm_store).unwrap_or(0);
+    Ok(if html_elements.len() > 1 && kind == 5 {
+        6
+    } else {
+        kind
+    })
+}
+
+#[aidoku_wasm_function]
+fn child_nodes(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
+    let Some(descriptor): Option<usize> = ptr.try_into().ok() else {
+        return ResultContext::InvalidDescriptor.into();
+    };
+    let wasm_store = caller.data_mut();
+    let Some(std_value) = wasm_store.get_std_value(descriptor) else {
+        return ResultContext::InvalidDescriptor.into();
+    };
+    let Some(html_elements) = (match std_value.as_ref() {
+        Value::HTMLElements(elements) => Some(elements),
+        _ => None,
+    }) else {
+        return ResultContext::NoResult.into();
+    };
+    let selected_elements: Vec<_> = html_elements
+        .iter()
+        .flat_map(|element| element.child_nodes(wasm_store))
+        .collect();
     Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
 }
 

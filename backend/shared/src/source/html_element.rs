@@ -85,6 +85,29 @@ impl HTMLElement {
 
         node.parent().map(|node| self.to_element(node.id))
     }
+    pub fn kind(&self, store: &mut WasmStore) -> Option<i32> {
+        let node = self.node_ref(store)?;
+        let kind = if node.is_document() {
+            7
+        } else if node.is_text() {
+            2
+        } else if node.is_comment() {
+            4
+        } else if node.is_element() {
+            5
+        } else {
+            0
+        };
+        Some(kind)
+    }
+    pub fn child_nodes(&self, store: &mut WasmStore) -> Option<Vec<Self>> {
+        let node = self.node_ref(store)?;
+        node.children()
+            .into_iter()
+            .map(|node| self.to_element(node.id))
+            .collect::<Vec<_>>()
+            .into()
+    }
     pub fn children(&self, store: &mut WasmStore) -> Option<Vec<Self>> {
         let node = self.node_ref(store)?;
 

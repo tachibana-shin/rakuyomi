@@ -20,7 +20,8 @@ pub enum SettingDefinition {
     },
     #[serde(rename = "select")]
     // `segment` works just like a `select`, but it's shown as a segmented button in Aidoku.
-    #[serde(alias = "segment")]
+    // `picker` is an inline picker that allows selection of a single value.
+    #[serde(alias = "segment", alias = "picker")]
     Select {
         title: String,
         key: String,

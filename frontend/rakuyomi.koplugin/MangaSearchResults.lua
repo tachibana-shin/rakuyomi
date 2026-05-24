@@ -318,7 +318,18 @@ function MangaSearchResults:onPrimaryMenuChoice(item)
     local manga = item.manga
 
     local onReturnCallback = function()
-      UIManager:show(self)
+      local ui = MangaSearchResults:new {
+        results = self.results,
+        search_text = self.search_text,
+        exclude = self.exclude,
+        result_page = self.result_page,
+        has_next_page = self.has_next_page,
+        on_return_callback = self.onReturnCallback,
+        covers_fullscreen = true, -- hint for UIManager:_repaint()
+        page = self.page
+      }
+      ui.on_return_callback = self.onReturnCallback
+      UIManager:show(ui)
     end
 
     if ChapterListing:fetchAndShow(manga, onReturnCallback) then

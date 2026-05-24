@@ -42,10 +42,10 @@ jobs:
           ~/.local/share/containers
         key: ${{ runner.os }}-podman-cross-${{ matrix.target }}
 
-    - name: Install Rust 1.91.1
+    - name: Install Rust 1.95.0
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.91.1
+        toolchain: 1.95.0
         profile: minimal
         components: rustfmt, clippy
         override: true

@@ -528,7 +528,7 @@ function ChapterListing:onContextMenuChoice(item)
       },
       {
         text_func = function()
-          return Icons.CHECK_ALL .. " " .. _("Mark") .. " " .. (chapter.read and "unread" or "read")
+          return Icons.CHECK_ALL .. " " .. _(chapter.read and "Mark unread" or "Mark read")
         end,
         callback = function()
           UIManager:close(dialog_context_menu)

@@ -146,7 +146,7 @@ msgstr "Tải xuống"
 
 #: ../ChapterListing.lua:543 ../LibraryView.lua:672 ../LibraryView.lua:692
 msgid "Remove"
-msgstr "Di dời"
+msgstr "Xóa"
 
 #: ../ChapterListing.lua:552
 msgid "Chapter downloaded"

@@ -78,13 +78,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: cachix/install-nix-action@v27
-    - uses: cachix/cachix-action@v15
+    
+    - name: Install system deps
+      run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev podman gettext && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
       with:
-        name: rakuyomi
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+ 
+    - name: Install Rust 1.95.0
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.95.0
+        profile: minimal
+        components: rustfmt, clippy
+        override: true
+
     - name: Build settings schema
-      run: "nix build .#rakuyomi.settings-schema -o build/settings.schema.json"
+      run: bash scripts/generate-settings-schema.sh
+
     - name: Upload plugin as workflow artifact
       uses: actions/upload-artifact@v4
       with:

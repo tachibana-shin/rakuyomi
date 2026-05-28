@@ -632,45 +632,51 @@ function LibraryView:_handleContinueReading(manga)
       return
     end
 
-    local confirm_dialog
-    confirm_dialog = ConfirmBox:new {
-      text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter_to_open) .. "?",
-      ok_text = _("Read"),
-      cancel_text = _("Cancel"),
-      ok_callback = function()
-        UIManager:close(confirm_dialog)
-
-        local response = Backend.getSettings()
-        if response.type == 'ERROR' then
-          ErrorDialog:show(response.message)
-
-          return
-        end
-
-        local settings = response.body
-
-        local onReturnCallback = function()
-          self:fetchAndShow(self.current_playlist)
-        end
-        local temp_listing = ChapterListing:new {
-          manga = manga,
-          chapter_sorting_mode = settings.chapter_sorting_mode,
-          on_return_callback = onReturnCallback,
-          covers_fullscreen = true, -- hint for UIManager:_repaint()
-          page = self.page,
-          preload_count = settings.preload_chapters
-        }
-        temp_listing.on_return_callback = onReturnCallback
-        temp_listing.chapters = chapters
-        temp_listing:openChapterOnReader(chapter_to_open, nil, function(onReturnCallback)
-          self:onClose()
-        end)
-      end,
-      cancel_callback = function()
-        UIManager:close(confirm_dialog)
+    local function openContinueReading()
+      local response = Backend.getSettings()
+      if response.type == 'ERROR' then
+        ErrorDialog:show(response.message)
+        return
       end
-    }
-    UIManager:show(confirm_dialog)
+
+      local settings = response.body
+
+      local onReturnCallback = function()
+        self:fetchAndShow(self.current_playlist)
+      end
+      local temp_listing = ChapterListing:new {
+        manga = manga,
+        chapter_sorting_mode = settings.chapter_sorting_mode,
+        on_return_callback = onReturnCallback,
+        covers_fullscreen = true,
+        page = self.page,
+        preload_count = settings.preload_chapters
+      }
+      temp_listing.on_return_callback = onReturnCallback
+      temp_listing.chapters = chapters
+      temp_listing:openChapterOnReader(chapter_to_open, nil, function(onReturnCallback)
+        self:onClose()
+      end)
+    end
+
+    if G_reader_settings:isTrue("rakuyomi_skip_resume_confirm") then
+      openContinueReading()
+    else
+      local confirm_dialog
+      confirm_dialog = ConfirmBox:new {
+        text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter_to_open) .. "?",
+        ok_text = _("Read"),
+        cancel_text = _("Cancel"),
+        ok_callback = function()
+          UIManager:close(confirm_dialog)
+          openContinueReading()
+        end,
+        cancel_callback = function()
+          UIManager:close(confirm_dialog)
+        end
+      }
+      UIManager:show(confirm_dialog)
+    end
   end)
 end
 

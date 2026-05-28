@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 12:28+0700\n"
+"POT-Creation-Date: 2026-05-28 12:36+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -112,7 +112,7 @@ msgid "Refreshing chapters..."
 msgstr "Opdaterer kapitler..."
 
 #: ../ChapterListing.lua:441 ../ChapterListing.lua:640
-#: ../ChapterListing.lua:1307
+#: ../ChapterListing.lua:1310
 msgid "Cancelled."
 msgstr "Annulleret."
 
@@ -141,11 +141,11 @@ msgstr "Kapitel opdateret"
 msgid "Mark unread"
 msgstr "Marker ulæst"
 
-#: ../ChapterListing.lua:542 ../ChapterListing.lua:1203
+#: ../ChapterListing.lua:542 ../ChapterListing.lua:1206
 msgid "Download"
 msgstr "Download"
 
-#: ../ChapterListing.lua:542 ../LibraryView.lua:681 ../LibraryView.lua:701
+#: ../ChapterListing.lua:542 ../LibraryView.lua:687 ../LibraryView.lua:707
 msgid "Remove"
 msgstr "Fjerne"
 
@@ -189,9 +189,9 @@ msgstr "Hvis du lader stå tomt, vælges alle"
 msgid "Mark chapters as read or unread"
 msgstr "Marker kapitler som læste eller ulæste"
 
-#: ../ChapterListing.lua:672 ../ChapterListing.lua:1121
-#: ../ChapterListing.lua:1196 ../LibraryView.lua:639 ../LibraryView.lua:956
-#: ../LibraryView.lua:1004 ../NotificationView.lua:162
+#: ../ChapterListing.lua:672 ../ChapterListing.lua:1124
+#: ../ChapterListing.lua:1199 ../LibraryView.lua:669 ../LibraryView.lua:962
+#: ../LibraryView.lua:1010 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:135 ../PlaylistDialog.lua:255
 #: ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
@@ -273,7 +273,7 @@ msgstr "Download ulæste kapitler..."
 msgid "Group"
 msgstr "Gruppe"
 
-#: ../ChapterListing.lua:1066 ../ChapterListing.lua:1177
+#: ../ChapterListing.lua:1066 ../ChapterListing.lua:1180
 msgid "Filter by Group"
 msgstr "Filtrer efter gruppe"
 
@@ -293,75 +293,75 @@ msgstr "Tilføjet til biblioteket."
 msgid "Sadly, no next chapter available! :c"
 msgstr "Desværre er der ikke noget næste kapitel tilgængeligt! "
 
-#: ../ChapterListing.lua:1119
+#: ../ChapterListing.lua:1122
 msgid "Next"
 msgstr "Næste"
 
-#: ../ChapterListing.lua:1119
+#: ../ChapterListing.lua:1122
 msgid "reading with"
 msgstr "læse med"
 
-#: ../ChapterListing.lua:1120 ../LibraryView.lua:638
+#: ../ChapterListing.lua:1123 ../LibraryView.lua:668
 msgid "Read"
 msgstr "Læse"
 
-#: ../ChapterListing.lua:1142
+#: ../ChapterListing.lua:1145
 msgid "Show All"
 msgstr "Vis alle"
 
-#: ../ChapterListing.lua:1150
+#: ../ChapterListing.lua:1153
 msgid "Showing all groups"
 msgstr "Viser alle grupper"
 
-#: ../ChapterListing.lua:1170
+#: ../ChapterListing.lua:1173
 msgid "Filtered to"
 msgstr "Filtreret til"
 
-#: ../ChapterListing.lua:1187
+#: ../ChapterListing.lua:1190
 msgid "Download unread chapters..."
 msgstr "Download ulæste kapitler..."
 
-#: ../ChapterListing.lua:1189
+#: ../ChapterListing.lua:1192
 msgid "Amount of unread chapters (default: all)"
 msgstr "Antal ulæste kapitler (standard: alle)"
 
-#: ../ChapterListing.lua:1191
+#: ../ChapterListing.lua:1194
 msgid "Specify amount or leave empty for all."
 msgstr "Angiv beløb eller lad stå tomt for alle."
 
-#: ../ChapterListing.lua:1191
+#: ../ChapterListing.lua:1194
 msgid "Will download from"
 msgstr "Vil downloade fra"
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1195
 msgid "Specify the amount of unread chapters to download"
 msgstr "Angiv mængden af ​​ulæste kapitler, der skal downloades"
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1195
 msgid "or leave empty to download all of them."
 msgstr "eller lad stå tomt for at downloade dem alle."
 
-#: ../ChapterListing.lua:1213
+#: ../ChapterListing.lua:1216
 msgid "Invalid amount of chapters!"
 msgstr "Ugyldigt antal kapitler!"
 
-#: ../ChapterListing.lua:1234
+#: ../ChapterListing.lua:1237
 msgid "No unread chapters found for"
 msgstr "Ingen ulæste kapitler fundet for"
 
-#: ../ChapterListing.lua:1259 ../ChapterListing.lua:1334
+#: ../ChapterListing.lua:1262 ../ChapterListing.lua:1337
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Downloader alle kapitler, det vil tage et stykke tid..."
 
-#: ../ChapterListing.lua:1344
+#: ../ChapterListing.lua:1347
 msgid "Waiting for download to be cancelled…"
 msgstr "Venter på, at download annulleres..."
 
-#: ../ChapterListing.lua:1346
+#: ../ChapterListing.lua:1349
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Downloader alle kapitler, det vil tage et stykke tid... ("
 
-#: ../ChapterListing.lua:1349
+#: ../ChapterListing.lua:1352
 msgid "Tap outside this message to cancel."
 msgstr "Tryk uden for denne besked for at annullere."
 
@@ -449,224 +449,224 @@ msgstr "Finder næste kapitel..."
 msgid "No chapters found for this manga."
 msgstr "Der blev ikke fundet nogen kapitler til denne manga."
 
-#: ../LibraryView.lua:637
+#: ../LibraryView.lua:667
 msgid "Resume reading with:"
 msgstr "Genoptag læsning med:"
 
-#: ../LibraryView.lua:680 ../LibraryView.lua:700
+#: ../LibraryView.lua:686 ../LibraryView.lua:706
 msgid "Do you want to remove"
 msgstr "Vil du fjerne"
 
-#: ../LibraryView.lua:680
+#: ../LibraryView.lua:686
 msgid "from your library?"
 msgstr "fra dit bibliotek?"
 
-#: ../LibraryView.lua:700
+#: ../LibraryView.lua:706
 msgid "from your playlist?"
 msgstr "fra din playliste?"
 
-#: ../LibraryView.lua:723
+#: ../LibraryView.lua:729
 msgid "Search for mangas"
 msgstr "Søg efter mangaer"
 
-#: ../LibraryView.lua:733
+#: ../LibraryView.lua:739
 msgid "Search favorites"
 msgstr "Søg efter favoritter"
 
-#: ../LibraryView.lua:743 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:749 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "Afspilningslister"
 
-#: ../LibraryView.lua:752
+#: ../LibraryView.lua:758
 msgid "Refresh mangas"
 msgstr "Opfrisk mangaer"
 
-#: ../LibraryView.lua:760
+#: ../LibraryView.lua:766
 msgid "Refresh details"
 msgstr "Opdater detaljer"
 
-#: ../LibraryView.lua:770
+#: ../LibraryView.lua:776
 msgid "Cleaner chapters"
 msgstr "Renere kapitler"
 
-#: ../LibraryView.lua:778
+#: ../LibraryView.lua:784
 msgid "Manage sources"
 msgstr "Administrer kilder"
 
-#: ../LibraryView.lua:788 ../LibraryView.lua:950 ../Settings.lua:315
+#: ../LibraryView.lua:794 ../LibraryView.lua:956 ../Settings.lua:324
 msgid "Settings"
 msgstr "Indstillinger"
 
-#: ../LibraryView.lua:796
+#: ../LibraryView.lua:802
 msgid "Check for updates"
 msgstr "Se efter opdateringer"
 
-#: ../LibraryView.lua:805
+#: ../LibraryView.lua:811
 msgid "Sync Database (Beta)"
 msgstr "Synkroniser database (beta)"
 
-#: ../LibraryView.lua:809
+#: ../LibraryView.lua:815
 msgid "Sync to WebDAV..."
 msgstr "Synkroniser til WebDAV..."
 
-#: ../LibraryView.lua:821
+#: ../LibraryView.lua:827
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Vil du migrere din lokale database fra serveren?"
 
-#: ../LibraryView.lua:821
+#: ../LibraryView.lua:827
 msgid "The remote database is newer than the local one."
 msgstr "Fjerndatabasen er nyere end den lokale."
 
-#: ../LibraryView.lua:821
+#: ../LibraryView.lua:827
 msgid "This action cannot be undone."
 msgstr "Denne handling kan ikke fortrydes."
 
-#: ../LibraryView.lua:822
+#: ../LibraryView.lua:828
 msgid "Migrate"
 msgstr "Migrer"
 
-#: ../LibraryView.lua:826
+#: ../LibraryView.lua:832
 msgid "Migrating database..."
 msgstr "Migrerer database..."
 
-#: ../LibraryView.lua:837 ../LibraryView.lua:884
+#: ../LibraryView.lua:843 ../LibraryView.lua:890
 msgid "Local database has been migrated from the server!"
 msgstr "Lokal database er blevet migreret fra serveren!"
 
-#: ../LibraryView.lua:848
+#: ../LibraryView.lua:854
 msgid "Replace Cloud"
 msgstr "Erstat Cloud"
 
-#: ../LibraryView.lua:852
+#: ../LibraryView.lua:858
 msgid "Replacing cloud..."
 msgstr "Udskifter skyen..."
 
-#: ../LibraryView.lua:862
+#: ../LibraryView.lua:868
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Cloud-databasen er blevet tvunget erstattet med en lokal!"
 
-#: ../LibraryView.lua:880
+#: ../LibraryView.lua:886
 msgid "Database is already up to date!"
 msgstr "Databasen er allerede opdateret!"
 
-#: ../LibraryView.lua:882
+#: ../LibraryView.lua:888
 msgid "Database has been synced to the server!"
 msgstr "Databasen er blevet synkroniseret til serveren!"
 
-#: ../LibraryView.lua:886
+#: ../LibraryView.lua:892
 msgid "Sync completed!"
 msgstr "Synkronisering fuldført!"
 
-#: ../LibraryView.lua:922
+#: ../LibraryView.lua:928
 msgid "Manga search..."
 msgstr "Manga-søgning..."
 
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:929
 msgid "Houseki no Kuni"
 msgstr "Houseki no Kuni"
 
-#: ../LibraryView.lua:924 ../LibraryView.lua:1000
+#: ../LibraryView.lua:930 ../LibraryView.lua:1006
 msgid "Type the manga name to search for"
 msgstr "Indtast manganavnet for at søge efter"
 
-#: ../LibraryView.lua:928 ../LibraryView.lua:937 ../LibraryView.lua:982
-#: ../LibraryView.lua:1011 ../Settings.lua:120
+#: ../LibraryView.lua:934 ../LibraryView.lua:943 ../LibraryView.lua:988
+#: ../LibraryView.lua:1017 ../Settings.lua:129
 msgid "Search"
 msgstr "Søge"
 
-#: ../LibraryView.lua:982
+#: ../LibraryView.lua:988
 msgid "Exclude source search for"
 msgstr "Udelad kildesøgning efter"
 
-#: ../LibraryView.lua:997
+#: ../LibraryView.lua:1003
 msgid "Favorite search..."
 msgstr "Favoritsøgning..."
 
-#: ../LibraryView.lua:999
+#: ../LibraryView.lua:1005
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:1051
+#: ../LibraryView.lua:1057
 msgid "Scaning files..."
 msgstr "Scanner filer..."
 
-#: ../LibraryView.lua:1066
+#: ../LibraryView.lua:1072
 #, lua-format
 msgid "Found %d files."
 msgstr "Fundet %d filer."
 
-#: ../LibraryView.lua:1067
+#: ../LibraryView.lua:1073
 #, lua-format
 msgid "Total size %s."
 msgstr "Samlet størrelse %s."
 
-#: ../LibraryView.lua:1068
+#: ../LibraryView.lua:1074
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly fil .cbz og .epub scanning."
 
-#: ../LibraryView.lua:1072
+#: ../LibraryView.lua:1078
 msgid "Clean"
 msgstr "Ren"
 
-#: ../LibraryView.lua:1077
+#: ../LibraryView.lua:1083
 msgid "Deleting..."
 msgstr "Sletter..."
 
-#: ../LibraryView.lua:1095
+#: ../LibraryView.lua:1101
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Renset gratis %s lagerplads"
 
-#: ../LibraryView.lua:1120
+#: ../LibraryView.lua:1126
 msgid "Refresh mangas..."
 msgstr "Opdater mangaer..."
 
-#: ../LibraryView.lua:1121
+#: ../LibraryView.lua:1127
 msgid "All chapters manga updated!"
 msgstr "Alle kapitler manga opdateret!"
 
-#: ../LibraryView.lua:1122
+#: ../LibraryView.lua:1128
 msgid "Some manga updates fail:"
 msgstr "Nogle manga-opdateringer mislykkes:"
 
-#: ../LibraryView.lua:1133
+#: ../LibraryView.lua:1139
 msgid "Refresh manga details..."
 msgstr "Opdater mangadetaljer..."
 
-#: ../LibraryView.lua:1134
+#: ../LibraryView.lua:1140
 msgid "All manga details refresh!"
 msgstr "Alle manga detaljer opdateres!"
 
-#: ../LibraryView.lua:1135
+#: ../LibraryView.lua:1141
 msgid "Some manga details refresh fail:"
 msgstr "Nogle opdateringer af mangadetaljer mislykkes:"
 
-#: ../LibraryView.lua:1151
+#: ../LibraryView.lua:1157
 msgid "Progress"
 msgstr "Fremskridt"
 
-#: ../LibraryView.lua:1169
+#: ../LibraryView.lua:1175
 msgid "Cleaner"
 msgstr "Renere"
 
-#: ../LibraryView.lua:1170
+#: ../LibraryView.lua:1176
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Find og slet ugyldige filer inklusive filer fra slettede kilder"
 
-#: ../LibraryView.lua:1170 ../LibraryView.lua:1173
+#: ../LibraryView.lua:1176 ../LibraryView.lua:1179
 msgid "Normal"
 msgstr "Normal"
 
-#: ../LibraryView.lua:1171 ../LibraryView.lua:1179
+#: ../LibraryView.lua:1177 ../LibraryView.lua:1185
 msgid "Chapter read done"
 msgstr "Kapitel læst færdigt"
 
-#: ../LibraryView.lua:1171
+#: ../LibraryView.lua:1177
 msgid "Find and delete chapters that have been read"
 msgstr "Find og slet kapitler, der er blevet læst"
 
-#: ../LibraryView.lua:1172
+#: ../LibraryView.lua:1178
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "VIGTIGT: Metafiler (bogmærke, historie) gemmes ikke!"
 
@@ -860,15 +860,15 @@ msgstr "Ingen afspilningslister endnu."
 msgid "Library view mode"
 msgstr "Biblioteksvisningstilstand"
 
-#: ../Settings.lua:46 ../Settings.lua:128
+#: ../Settings.lua:46 ../Settings.lua:137
 msgid "Base"
 msgstr "Grundlag"
 
-#: ../Settings.lua:47 ../Settings.lua:129
+#: ../Settings.lua:47 ../Settings.lua:138
 msgid "Cover"
 msgstr "Dække"
 
-#: ../Settings.lua:48 ../Settings.lua:130
+#: ../Settings.lua:48 ../Settings.lua:139
 msgid "Grid"
 msgstr "Gitter"
 
@@ -940,71 +940,76 @@ msgstr "Åbn kapitelliste"
 msgid "Continue reading"
 msgstr "Fortsæt med at læse"
 
-#: ../Settings.lua:126
+#: ../Settings.lua:122
+#, fuzzy
+msgid "Skip resume reading confirmation"
+msgstr "Genoptag læsning med:"
+
+#: ../Settings.lua:135
 msgid "Search view mode"
 msgstr "Søgevisningstilstand"
 
-#: ../Settings.lua:137
+#: ../Settings.lua:146
 msgid "Reader"
 msgstr "Læser"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:152
 msgid "Chapter sorting mode"
 msgstr "Kapitelsorteringstilstand"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:154
 msgid "By chapter ascending"
 msgstr "Efter kapitel stigende"
 
-#: ../Settings.lua:146
+#: ../Settings.lua:155
 msgid "By chapter descending"
 msgstr "Efter kapitel faldende"
 
-#: ../Settings.lua:154
+#: ../Settings.lua:163
 msgid "Preload chapters on reader open"
 msgstr "Forudindlæs kapitler på læseren åben"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:174
 msgid "Optimize page images (experimental)"
 msgstr "Optimer sidebilleder (eksperimentel)"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:182
 msgid "Concurrent page requests"
 msgstr "Samtidig sideanmodninger"
 
-#: ../Settings.lua:182
+#: ../Settings.lua:191
 msgid "Storage"
 msgstr "Opbevaring"
 
-#: ../Settings.lua:188
+#: ../Settings.lua:197
 msgid "Chapter storage path"
 msgstr "Kapitellagringssti"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:206
 msgid "Storage size limit"
 msgstr "Grænse for lagerstørrelse"
 
-#: ../Settings.lua:205
+#: ../Settings.lua:214
 msgid "Sync & Updates"
 msgstr "Synkronisering og opdateringer"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:220
 msgid "WebDAV Sync"
 msgstr "WebDAV-synkronisering"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:228
 msgid "Enabled cron check for manga updates"
 msgstr "Aktiveret cron-tjek for manga-opdateringer"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:236
 msgid "Source IDs skip check update"
 msgstr "Kilde-id'er springer tjekopdatering over"
 
-#: ../Settings.lua:233
+#: ../Settings.lua:242
 msgid "System"
 msgstr "System"
 
-#: ../Settings.lua:239
+#: ../Settings.lua:248
 msgid "Allow requisition of the back button"
 msgstr "Tillad rekvisition af tilbage-knappen"
 

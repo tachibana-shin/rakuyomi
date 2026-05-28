@@ -116,6 +116,15 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_skip_resume_confirm',
+    {
+      type = 'boolean',
+      title = _("Skip resume reading confirmation"),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Search") }
   },

@@ -1114,21 +1114,24 @@ function ChapterListing:readContinue(nextChapter)
     return
   end
 
-  local confirm_dialog
-  confirm_dialog = ConfirmBox:new {
-    text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(chapter_to_open) .. "?",
-    ok_text = _("Read"),
-    cancel_text = _("Cancel"),
-    ok_callback = function()
-      UIManager:close(confirm_dialog)
-
-      self:openChapterOnReader(chapter_to_open)
-    end,
-    cancel_callback = function()
-      UIManager:close(confirm_dialog)
-    end
-  }
-  UIManager:show(confirm_dialog)
+  if G_reader_settings:isTrue("rakuyomi_skip_resume_confirm") then
+    self:openChapterOnReader(chapter_to_open)
+  else
+    local confirm_dialog
+    confirm_dialog = ConfirmBox:new {
+      text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(chapter_to_open) .. "?",
+      ok_text = _("Read"),
+      cancel_text = _("Cancel"),
+      ok_callback = function()
+        UIManager:close(confirm_dialog)
+        self:openChapterOnReader(chapter_to_open)
+      end,
+      cancel_callback = function()
+        UIManager:close(confirm_dialog)
+      end
+    }
+    UIManager:show(confirm_dialog)
+  end
 end
 
 -- Scanlator selection dialog with persistence

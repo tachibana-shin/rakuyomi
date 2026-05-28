@@ -884,7 +884,8 @@ end
 --- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
-function ChapterListing:openChapterOnReader(chapter, download_job)
+--- @param on_opened nil|fun(on_return_callback)
+function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
   self:downloadChapter(chapter, download_job, function(manga_path)
     local onReturnCallback = function()
       self:updateItems()
@@ -944,6 +945,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     end
 
     self:onClose(false)
+
+    if on_opened then
+      on_opened(onReturnCallback)
+    end
   end)
 end
 

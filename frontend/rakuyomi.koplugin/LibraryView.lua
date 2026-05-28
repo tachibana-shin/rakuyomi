@@ -433,12 +433,18 @@ function LibraryView:onPrimaryMenuChoice(item)
     --- @type Manga
     local manga = item.manga
 
-    local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
-    end
+    local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
 
-    if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-      self:onClose()
+    if tap_action == "continue_reading" then
+      self:_handleContinueReading(manga)
+    else
+      local onReturnCallback = function()
+        self:fetchAndShow(self.current_playlist)
+      end
+
+      if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+        self:onClose()
+      end
     end
   end)
 end
@@ -643,19 +649,22 @@ function LibraryView:_handleContinueReading(manga)
 
         local settings = response.body
 
+        local onReturnCallback = function()
+          self:fetchAndShow(self.current_playlist)
+        end
         local temp_listing = ChapterListing:new {
           manga = manga,
           chapter_sorting_mode = settings.chapter_sorting_mode,
-          on_return_callback = function()
-            self:fetchAndShow(self.current_playlist)
-          end,
+          on_return_callback = onReturnCallback,
           covers_fullscreen = true, -- hint for UIManager:_repaint()
           page = self.page,
           preload_count = settings.preload_chapters
         }
+        temp_listing.on_return_callback = onReturnCallback
         temp_listing.chapters = chapters
-        temp_listing:openChapterOnReader(chapter_to_open)
-        self:onClose()
+        temp_listing:openChapterOnReader(chapter_to_open, nil, function(onReturnCallback)
+          self:onClose()
+        end)
       end,
       cancel_callback = function()
         UIManager:close(confirm_dialog)

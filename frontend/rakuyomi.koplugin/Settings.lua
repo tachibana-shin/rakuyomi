@@ -103,6 +103,19 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_tap_manga_action',
+    {
+      type = 'enum',
+      title = _("Tap manga action"),
+      options = {
+        { label = _("Open chapter list"), value = "chapter_list" },
+        { label = _("Continue reading"),  value = "continue_reading" },
+      },
+      default = "chapter_list",
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Search") }
   },

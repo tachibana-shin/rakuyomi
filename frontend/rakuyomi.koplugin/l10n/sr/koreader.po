@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-28 12:36+0700\n"
+"POT-Creation-Date: 2026-06-02 18:27+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -145,7 +145,7 @@ msgstr "Означи као непрочитано"
 msgid "Download"
 msgstr "Преузми"
 
-#: ../ChapterListing.lua:542 ../LibraryView.lua:687 ../LibraryView.lua:707
+#: ../ChapterListing.lua:542 ../LibraryView.lua:704 ../LibraryView.lua:724
 msgid "Remove"
 msgstr "Уклони"
 
@@ -190,8 +190,8 @@ msgid "Mark chapters as read or unread"
 msgstr "Означите поглавља као прочитана или непрочитана"
 
 #: ../ChapterListing.lua:672 ../ChapterListing.lua:1124
-#: ../ChapterListing.lua:1199 ../LibraryView.lua:669 ../LibraryView.lua:962
-#: ../LibraryView.lua:1010 ../NotificationView.lua:162
+#: ../ChapterListing.lua:1199 ../LibraryView.lua:686 ../LibraryView.lua:979
+#: ../LibraryView.lua:1027 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:135 ../PlaylistDialog.lua:255
 #: ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
@@ -289,7 +289,7 @@ msgstr "Додавање у библиотеку није успело"
 msgid "Added to library."
 msgstr "Додато у библиотеку."
 
-#: ../ChapterListing.lua:1113 ../LibraryView.lua:631
+#: ../ChapterListing.lua:1113 ../LibraryView.lua:648
 msgid "Sadly, no next chapter available! :c"
 msgstr "Нажалост, следеће поглавље није доступно! "
 
@@ -301,7 +301,7 @@ msgstr "Следеће"
 msgid "reading with"
 msgstr "читање са"
 
-#: ../ChapterListing.lua:1123 ../LibraryView.lua:668
+#: ../ChapterListing.lua:1123 ../LibraryView.lua:685
 msgid "Read"
 msgstr "Читај"
 
@@ -433,240 +433,244 @@ msgstr "Наставите са читањем"
 msgid "Add to Playlist"
 msgstr "Додај на листу за репродукцију"
 
-#: ../LibraryView.lua:544 ../MangaSearchResults.lua:357
+#: ../LibraryView.lua:545
+msgid "List chapters"
+msgstr "Наведите поглавља"
+
+#: ../LibraryView.lua:561 ../MangaSearchResults.lua:357
 msgid "Remove from Library"
 msgstr "Уклони из библиотеке"
 
-#: ../LibraryView.lua:554
+#: ../LibraryView.lua:571
 msgid "Remove from Playlist"
 msgstr "Уклони са плејлисте"
 
-#: ../LibraryView.lua:587
+#: ../LibraryView.lua:604
 msgid "Finding next chapter..."
 msgstr "Проналажење следећег поглавља..."
 
-#: ../LibraryView.lua:598
+#: ../LibraryView.lua:615
 msgid "No chapters found for this manga."
 msgstr "Није пронађено ниједно поглавље за ову мангу."
 
-#: ../LibraryView.lua:667
+#: ../LibraryView.lua:684
 msgid "Resume reading with:"
 msgstr "Наставите читање са:"
 
-#: ../LibraryView.lua:686 ../LibraryView.lua:706
+#: ../LibraryView.lua:703 ../LibraryView.lua:723
 msgid "Do you want to remove"
 msgstr "Да ли желите да уклоните"
 
-#: ../LibraryView.lua:686
+#: ../LibraryView.lua:703
 msgid "from your library?"
 msgstr "из ваше библиотеке?"
 
-#: ../LibraryView.lua:706
+#: ../LibraryView.lua:723
 msgid "from your playlist?"
 msgstr "са ваше листе песама?"
 
-#: ../LibraryView.lua:729
+#: ../LibraryView.lua:746
 msgid "Search for mangas"
 msgstr "Потражите манге"
 
-#: ../LibraryView.lua:739
+#: ../LibraryView.lua:756
 msgid "Search favorites"
 msgstr "Претражите фаворите"
 
-#: ../LibraryView.lua:749 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:766 ../PlaylistDialog.lua:306
 msgid "Playlists"
 msgstr "Плејлисте"
 
-#: ../LibraryView.lua:758
+#: ../LibraryView.lua:775
 msgid "Refresh mangas"
 msgstr "Освежите манге"
 
-#: ../LibraryView.lua:766
+#: ../LibraryView.lua:783
 msgid "Refresh details"
 msgstr "Освежите детаље"
 
-#: ../LibraryView.lua:776
+#: ../LibraryView.lua:793
 msgid "Cleaner chapters"
 msgstr "Чиста поглавља"
 
-#: ../LibraryView.lua:784
+#: ../LibraryView.lua:801
 msgid "Manage sources"
 msgstr "Управљајте изворима"
 
-#: ../LibraryView.lua:794 ../LibraryView.lua:956 ../Settings.lua:324
+#: ../LibraryView.lua:811 ../LibraryView.lua:973 ../Settings.lua:324
 msgid "Settings"
 msgstr "Подешавања"
 
-#: ../LibraryView.lua:802
+#: ../LibraryView.lua:819
 msgid "Check for updates"
 msgstr "Проверите ажурирања"
 
-#: ../LibraryView.lua:811
+#: ../LibraryView.lua:828
 msgid "Sync Database (Beta)"
 msgstr "Синхронизујте базу података (Бета)"
 
-#: ../LibraryView.lua:815
+#: ../LibraryView.lua:832
 msgid "Sync to WebDAV..."
 msgstr "Синхронизујте са ВебДАВ-ом..."
 
-#: ../LibraryView.lua:827
+#: ../LibraryView.lua:844
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Да ли желите да мигрирате своју локалну базу података са сервера?"
 
-#: ../LibraryView.lua:827
+#: ../LibraryView.lua:844
 msgid "The remote database is newer than the local one."
 msgstr "Удаљена база података је новија од локалне."
 
-#: ../LibraryView.lua:827
+#: ../LibraryView.lua:844
 msgid "This action cannot be undone."
 msgstr "Ова радња се не може опозвати."
 
-#: ../LibraryView.lua:828
+#: ../LibraryView.lua:845
 msgid "Migrate"
 msgstr "Миграте"
 
-#: ../LibraryView.lua:832
+#: ../LibraryView.lua:849
 msgid "Migrating database..."
 msgstr "Миграција базе података..."
 
-#: ../LibraryView.lua:843 ../LibraryView.lua:890
+#: ../LibraryView.lua:860 ../LibraryView.lua:907
 msgid "Local database has been migrated from the server!"
 msgstr "Локална база података је мигрирана са сервера!"
 
-#: ../LibraryView.lua:854
+#: ../LibraryView.lua:871
 msgid "Replace Cloud"
 msgstr "Замените облак"
 
-#: ../LibraryView.lua:858
+#: ../LibraryView.lua:875
 msgid "Replacing cloud..."
 msgstr "Замена облака..."
 
-#: ../LibraryView.lua:868
+#: ../LibraryView.lua:885
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Цлоуд база података је принудно замењена локалном!"
 
-#: ../LibraryView.lua:886
+#: ../LibraryView.lua:903
 msgid "Database is already up to date!"
 msgstr "База података је већ ажурирана!"
 
-#: ../LibraryView.lua:888
+#: ../LibraryView.lua:905
 msgid "Database has been synced to the server!"
 msgstr "База података је синхронизована са сервером!"
 
-#: ../LibraryView.lua:892
+#: ../LibraryView.lua:909
 msgid "Sync completed!"
 msgstr "Синхронизација је завршена!"
 
-#: ../LibraryView.lua:928
+#: ../LibraryView.lua:945
 msgid "Manga search..."
 msgstr "Претрага манге..."
 
-#: ../LibraryView.lua:929
+#: ../LibraryView.lua:946
 msgid "Houseki no Kuni"
 msgstr "Хоусеки но Куни"
 
-#: ../LibraryView.lua:930 ../LibraryView.lua:1006
+#: ../LibraryView.lua:947 ../LibraryView.lua:1023
 msgid "Type the manga name to search for"
 msgstr "Унесите назив манге за претрагу"
 
-#: ../LibraryView.lua:934 ../LibraryView.lua:943 ../LibraryView.lua:988
-#: ../LibraryView.lua:1017 ../Settings.lua:129
+#: ../LibraryView.lua:951 ../LibraryView.lua:960 ../LibraryView.lua:1005
+#: ../LibraryView.lua:1034 ../Settings.lua:129
 msgid "Search"
 msgstr "Тражи"
 
-#: ../LibraryView.lua:988
+#: ../LibraryView.lua:1005
 msgid "Exclude source search for"
 msgstr "Изузми претрагу извора за"
 
-#: ../LibraryView.lua:1003
+#: ../LibraryView.lua:1020
 msgid "Favorite search..."
 msgstr "Омиљена претрага..."
 
-#: ../LibraryView.lua:1005
+#: ../LibraryView.lua:1022
 msgid "Tonikaku Kawaii"
 msgstr "Тоникаку Каваии"
 
-#: ../LibraryView.lua:1057
+#: ../LibraryView.lua:1074
 msgid "Scaning files..."
 msgstr "Скенирање датотека..."
 
-#: ../LibraryView.lua:1072
+#: ../LibraryView.lua:1089
 #, lua-format
 msgid "Found %d files."
 msgstr "Пронађено је %d датотека."
 
-#: ../LibraryView.lua:1073
+#: ../LibraryView.lua:1090
 #, lua-format
 msgid "Total size %s."
 msgstr "Укупна величина %s."
 
-#: ../LibraryView.lua:1074
+#: ../LibraryView.lua:1091
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "РендОнли датотека .цбз и .епуб скенирање."
 
-#: ../LibraryView.lua:1078
+#: ../LibraryView.lua:1095
 msgid "Clean"
 msgstr "Чисто"
 
-#: ../LibraryView.lua:1083
+#: ../LibraryView.lua:1100
 msgid "Deleting..."
 msgstr "Брисање..."
 
-#: ../LibraryView.lua:1101
+#: ../LibraryView.lua:1118
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Очишћено бесплатно складиште %s"
 
-#: ../LibraryView.lua:1126
+#: ../LibraryView.lua:1143
 msgid "Refresh mangas..."
 msgstr "Освежи манге..."
 
-#: ../LibraryView.lua:1127
+#: ../LibraryView.lua:1144
 msgid "All chapters manga updated!"
 msgstr "Сва поглавља манге су ажурирана!"
 
-#: ../LibraryView.lua:1128
+#: ../LibraryView.lua:1145
 msgid "Some manga updates fail:"
 msgstr "Нека ажурирања манге не успевају:"
 
-#: ../LibraryView.lua:1139
+#: ../LibraryView.lua:1156
 msgid "Refresh manga details..."
 msgstr "Освежи детаље манге..."
 
-#: ../LibraryView.lua:1140
+#: ../LibraryView.lua:1157
 msgid "All manga details refresh!"
 msgstr "Освежавање свих детаља о манги!"
 
-#: ../LibraryView.lua:1141
+#: ../LibraryView.lua:1158
 msgid "Some manga details refresh fail:"
 msgstr "Освежавање неких детаља манге није успело:"
 
-#: ../LibraryView.lua:1157
+#: ../LibraryView.lua:1174
 msgid "Progress"
 msgstr "Напредак"
 
-#: ../LibraryView.lua:1175
+#: ../LibraryView.lua:1192
 msgid "Cleaner"
 msgstr "Чистач"
 
-#: ../LibraryView.lua:1176
+#: ../LibraryView.lua:1193
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Пронађите и избришите неважеће датотеке укључујући датотеке из избрисаних извора"
 
-#: ../LibraryView.lua:1176 ../LibraryView.lua:1179
+#: ../LibraryView.lua:1193 ../LibraryView.lua:1196
 msgid "Normal"
 msgstr "Нормално"
 
-#: ../LibraryView.lua:1177 ../LibraryView.lua:1185
+#: ../LibraryView.lua:1194 ../LibraryView.lua:1202
 msgid "Chapter read done"
 msgstr "Прочитано поглавље завршено"
 
-#: ../LibraryView.lua:1177
+#: ../LibraryView.lua:1194
 msgid "Find and delete chapters that have been read"
 msgstr "Пронађите и избришите поглавља која су прочитана"
 
-#: ../LibraryView.lua:1178
+#: ../LibraryView.lua:1195
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "ВАЖНО: Мета датотеке (обележивач, историја) се не чувају!"
 
@@ -941,9 +945,8 @@ msgid "Continue reading"
 msgstr "Наставите са читањем"
 
 #: ../Settings.lua:122
-#, fuzzy
 msgid "Skip resume reading confirmation"
-msgstr "Наставите читање са:"
+msgstr "Прескочите потврду за наставак читања"
 
 #: ../Settings.lua:135
 msgid "Search view mode"

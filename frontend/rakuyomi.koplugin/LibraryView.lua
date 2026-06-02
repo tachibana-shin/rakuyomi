@@ -538,6 +538,23 @@ function LibraryView:onContextMenuChoice(item)
       },
     },
   }
+
+  local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
+  if tap_action == "continue_reading" then
+    table.insert(context_menu_buttons, 1, {
+      text = _("List chapters"),
+      callback = function()
+        local onReturnCallback = function()
+          self:fetchAndShow(self.current_playlist)
+        end
+
+        if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+          self:onClose()
+        end
+      end
+    })
+  end
+
   if self.current_playlist == nil then
     table.insert(context_menu_buttons, {
       {

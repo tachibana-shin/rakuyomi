@@ -11,6 +11,7 @@ plugins:
           { "path": "build/rakuyomi-desktop.zip", "label": "Desktop (Linux) build" },
           { "path": "build/rakuyomi-kindle.zip", "label": "Kindle build" },
           { "path": "build/rakuyomi-kindlehf.zip", "label": "Kindle (hard floats) build" },
+          { "path": "build/rakuyomi-kindlea9.zip", "label": "Kindle (Cortex-A9 optimized) build" },
           { "path": "build/settings.schema.json", "label": "Settings JSON schema" },
         ],
         "successComment": false,

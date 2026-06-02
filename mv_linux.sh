@@ -1,6 +1,6 @@
 
 cd backend
-cargo build --release
+cargo build
 
 cd ..
 cp backend/target/release/uds_http_request ~/.config/koreader/plugins/raku*/

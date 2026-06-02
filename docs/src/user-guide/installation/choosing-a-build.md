@@ -31,6 +31,11 @@ For Kindle devices, check the table below for determining the correct build:
       <td style="text-align: center">< 5.16.3</td>
       <td style="text-align: center">Kindle</td>
     </tr>
+    <tr>
+      <td style="text-align: center">Kindle CPU Cortex A9 (Kindle Paperwhite 3rd gen or older, Kindle Voyage 6th gen or older, Kindle 7th gen or older, Kindle Oasis 1st gen)</td>
+      <td style="text-align: center">any</td>
+      <td style="text-align: center">Kindle (Cortex-A9 optimized)</td>
+    </tr>
   </tbody>
 </table>
 

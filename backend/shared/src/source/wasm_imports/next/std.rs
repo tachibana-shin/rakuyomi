@@ -14,6 +14,12 @@ pub fn register_std_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "std", "current_date", current_date)?; // OK
     register_wasm_function!(linker, "std", "utc_offset", utc_offset)?; // OK
     register_wasm_function!(linker, "std", "parse_date", parse_date)?; // OK
+    register_wasm_function!(linker, "std", "print", print)?; // OK
+    linker.func_wrap(
+        "std",
+        "abort",
+        crate::source::wasm_imports::next::env::abort,
+    )?;
     Ok(())
 }
 
@@ -249,4 +255,9 @@ fn parse_date(
     let timestamp = date_time.timestamp() as f64
         + (date_time.timestamp_subsec_nanos() as f64) / (10f64.powi(9));
     Ok(timestamp.into())
+}
+
+#[aidoku_wasm_function]
+fn print(caller: Caller<'_, WasmStore>, string: Option<String>) -> Result<()> {
+    crate::source::wasm_imports::next::env::print(caller, string)
 }

@@ -1,10 +1,7 @@
 use anyhow::{anyhow, Ok, Result};
 use chrono::DateTime;
 use memory_reader::{read_bytes, read_string};
-use wasmi::{
-    core::{ValType, F64},
-    Caller, Extern, Memory, Val,
-};
+use wasmi::{Caller, Extern, Memory, Val, ValType, F64};
 
 pub mod memory_reader;
 

@@ -65,7 +65,7 @@ pub fn aidoku_wasm_function(_args: OGTokenStream, input: OGTokenStream) -> OGTok
         .collect();
 
     let wasm_parameter_types_array_definition = quote! {
-        let mut wasm_parameter_types = ::std::vec::Vec::<::wasmi::core::ValType>::new();
+        let mut wasm_parameter_types = ::std::vec::Vec::<::wasmi::ValType>::new();
     };
 
     let wasm_parameter_types_appenders: Vec<TokenStream> = input_types.iter()

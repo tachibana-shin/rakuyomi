@@ -224,7 +224,11 @@ fn sha256_file(path: &Path) -> Result<String> {
     let data = fs::read(path)?;
     let mut hasher = Sha256::new();
     hasher.update(data);
-    Ok(format!("{:x}", hasher.finalize()))
+
+    let result = hasher.finalize();
+    let bytes: [u8; 32] = result.into();
+
+    Ok(bytes.iter().map(|byte| format!("{:02x}", byte)).collect())
 }
 
 fn parse_url_info(endpoint: &str) -> Option<(String, String, String, String)> {

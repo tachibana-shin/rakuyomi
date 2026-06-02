@@ -72,7 +72,8 @@ pub async fn search_mangas(
 
                     let token = cancellation_token.child_token();
 
-                    let fetch_task = async { source.search_mangas(token.clone(), query, page).await };
+                    let fetch_task =
+                        async { source.search_mangas(token.clone(), query, page).await };
 
                     let (manga_informations, has_next, error) =
                         match timeout(Duration::from_secs(seconds), fetch_task).await {

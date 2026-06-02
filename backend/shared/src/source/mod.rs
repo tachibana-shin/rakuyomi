@@ -607,7 +607,8 @@ impl BlockingSource {
             return self
                 .get_search_manga_list_next(cancellation_token, query, page, [].to_vec())
                 .map(|list| {
-                    let mangas = list.entries
+                    let mangas = list
+                        .entries
                         .into_iter()
                         .map(|v| Manga::from(v, self.id.clone()))
                         .collect::<Vec<_>>();

@@ -281,21 +281,22 @@ async fn get_mangas(
 
     let page = page.unwrap_or(1).max(1);
 
-    let (mut mangas, errors, has_next_page) = cancel_after(&token.0, Duration::from_secs(59), |token| {
-        usecases::search_mangas(
-            &*source_manager,
-            &database,
-            &chapter_storage,
-            &settings,
-            token,
-            q,
-            &exclude,
-            page,
-            30,
-        )
-    })
-    .await
-    .map_err(AppError::from_search_mangas_error)?;
+    let (mut mangas, errors, has_next_page) =
+        cancel_after(&token.0, Duration::from_secs(59), |token| {
+            usecases::search_mangas(
+                &*source_manager,
+                &database,
+                &chapter_storage,
+                &settings,
+                token,
+                q,
+                &exclude,
+                page,
+                30,
+            )
+        })
+        .await
+        .map_err(AppError::from_search_mangas_error)?;
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
         for manga in mangas.iter_mut() {

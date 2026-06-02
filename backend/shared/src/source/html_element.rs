@@ -448,10 +448,7 @@ mod tests {
     #[test]
     fn test_child_nodes_returns_all_children() {
         let (mut store, element) = setup_html_store("<div><span>a</span><span>b</span></div>");
-        let div = element
-            .select_soup(&mut store, "div")
-            .unwrap()
-            .unwrap();
+        let div = element.select_soup(&mut store, "div").unwrap().unwrap();
         let child_nodes = div[0].child_nodes(&mut store).unwrap();
         assert_eq!(child_nodes.len(), 2);
     }
@@ -459,10 +456,7 @@ mod tests {
     #[test]
     fn test_child_nodes_includes_text_nodes() {
         let (mut store, element) = setup_html_store("<div>hello<span>world</span></div>");
-        let div = element
-            .select_soup(&mut store, "div")
-            .unwrap()
-            .unwrap();
+        let div = element.select_soup(&mut store, "div").unwrap().unwrap();
         let child_nodes = div[0].child_nodes(&mut store).unwrap();
         let text_kinds: Vec<i32> = child_nodes
             .iter()

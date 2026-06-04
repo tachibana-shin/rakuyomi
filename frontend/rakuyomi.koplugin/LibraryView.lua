@@ -33,6 +33,7 @@ local findEntries = require("utils/findEntries")
 local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
 local filterChaptersByLang = require("utils/filterChaptersByLang")
+local formatBytes = require("utils/formatBytes")
 local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
 local LuaSettings = require("luasettings")
@@ -76,10 +77,13 @@ local LibraryView = MenuCustom:extend {
 
   -- list of mangas in your library
   mangas = nil,
+  -- lookup of downloaded storage usage (bytes) keyed by "source_id|manga_id"
+  storage_by_manga = nil,
 }
 
 function LibraryView:init()
   self.mangas = self.mangas or {}
+  self.storage_by_manga = self.storage_by_manga or {}
   self.title_bar_left_icon = "appbar.menu"
   self.onLeftButtonTap = function()
     self:openMenu()
@@ -178,6 +182,24 @@ function LibraryView:fetchMangas(cleanup)
   end
 
   return response.body
+end
+
+--- Fetches downloaded storage usage and returns a lookup keyed by
+--- "source_id|manga_id" mapping to the number of bytes used. Returns an empty
+--- table if the stats cannot be retrieved (display is best-effort).
+--- @private
+--- @return table<string, number>
+function LibraryView:fetchStorageByManga()
+  local lookup = {}
+
+  local response = Backend.getStorageStats()
+  if response.type == 'SUCCESS' and response.body and response.body.per_manga then
+    for _, usage in ipairs(response.body.per_manga) do
+      lookup[usage.source_id .. "|" .. usage.manga_id] = usage.bytes
+    end
+  end
+
+  return lookup
 end
 
 --- @private
@@ -372,10 +394,32 @@ function LibraryView:patchTitleBar(count_notify)
   end
 end
 
+--- Filters out fully-read mangas when the "hide read manga" preference is on.
+--- @private
+--- @param mangas Manga[]
+--- @return Manga[]
+function LibraryView:_applyHideReadFilter(mangas)
+  if not G_reader_settings:isTrue("rakuyomi_hide_read_manga") then
+    return mangas
+  end
+
+  local filtered = {}
+  for _, manga in ipairs(mangas) do
+    -- Keep mangas with unread chapters, or whose unread count is unknown.
+    if not (manga.unread_chapters_count ~= nil and manga.unread_chapters_count == 0) then
+      table.insert(filtered, manga)
+    end
+  end
+
+  return filtered
+end
+
 --- @private
 function LibraryView:updateItems()
-  if #self.mangas > 0 then
-    self.item_table = self:generateItemTableFromMangas(self.mangas)
+  local mangas = self:_applyHideReadFilter(self.mangas)
+
+  if #mangas > 0 then
+    self.item_table = self:generateItemTableFromMangas(mangas)
     self.multilines_show_more_text = false
     self.items_per_page = nil
   else
@@ -438,6 +482,17 @@ function LibraryView:generateItemTableFromMangas(mangas)
       table.insert(mandatory_parts, bell .. manga.unread_chapters_count)
     end
 
+    if self:getLibraryViewMode() ~= "base" then
+      local bytes = self.storage_by_manga[manga.source.id .. "|" .. manga.id]
+      if bytes and bytes > 0 then
+        local download = Icons.FA_DOWNLOAD
+        if is_cover then
+          download = download .. " "
+        end
+        table.insert(mandatory_parts, download .. formatBytes(bytes))
+      end
+    end
+
     local space = is_cover and "  " .. Icons.DOT .. "  " or ""
     local mandatory = table.concat(mandatory_parts, space)
 
@@ -493,6 +548,7 @@ function LibraryView:fetchAndShow(playlist, on_after_open, options)
 
   local lv = LibraryView:new {
     mangas = mangas,
+    storage_by_manga = self:fetchStorageByManga(),
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page,
     library_view_mode = settings.body.library_view_mode,
@@ -522,24 +578,67 @@ end
 
 --- @private
 function LibraryView:onPrimaryMenuChoice(item)
+  --- @type Manga
+  local manga = item.manga
+
+  local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "ask")
+
+  if tap_action == "continue_reading" then
+    self:_handleContinueReading(manga)
+  elseif tap_action == "chapter_list" then
+    self:_openChapterList(manga)
+  else
+    self:_showMangaActionDialog(manga)
+  end
+end
+
+--- Opens the chapter listing for the given manga.
+--- @private
+--- @param manga Manga
+function LibraryView:_openChapterList(manga)
   Trapper:wrap(function()
-    --- @type Manga
-    local manga = item.manga
+    local onReturnCallback = function()
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+    end
 
-    local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
-
-    if tap_action == "continue_reading" then
-      self:_handleContinueReading(manga)
-    else
-      local onReturnCallback = function()
-        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
-      end
-
-      if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-        self:onClose(true)
-      end
+    if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+      self:onClose(true)
     end
   end)
+end
+
+--- Presents a dialog letting the user choose between resuming reading or
+--- opening the chapter list for the given manga.
+--- @private
+--- @param manga Manga
+function LibraryView:_showMangaActionDialog(manga)
+  local dialog
+  dialog = ButtonDialog:new {
+    title = manga.title,
+    title_align = "center",
+    buttons = {
+      {
+        {
+          text = Icons.RESTORE .. " " .. _("Continue Reading"),
+          callback = function()
+            UIManager:close(dialog)
+            self:_handleContinueReading(manga)
+          end,
+        },
+      },
+      {
+        {
+          text = Icons.FA_LIST .. " " .. _("Chapter List"),
+          callback = function()
+            UIManager:close(dialog)
+            self:_openChapterList(manga)
+          end,
+        },
+      },
+    },
+  }
+
+  UIManager:show(dialog)
 end
 
 --- @private
@@ -614,10 +713,17 @@ function LibraryView:onContextMenuChoice(item)
     },
     {
       {
-        text = _("Continue Reading"),
+        text = Icons.RESTORE .. " " .. _("Continue Reading"),
         callback = function()
           UIManager:close(dialog_context_menu)
           self:_handleContinueReading(manga)
+        end,
+      },
+      {
+        text = Icons.FA_LIST .. " " .. _("Chapter List"),
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          self:_openChapterList(manga)
         end,
       },
     },
@@ -672,7 +778,6 @@ function LibraryView:onContextMenuChoice(item)
     })
   end
   dialog_context_menu = ButtonDialog:new {
-    title = manga.title .. "\n\n" .. manga.source.name,
     buttons = context_menu_buttons,
   }
   UIManager:show(dialog_context_menu)
@@ -861,6 +966,21 @@ function LibraryView:openMenu()
         callback = function()
           UIManager:close(dialog)
           self:openPlaylistDialog()
+        end
+      },
+    },
+    {
+      {
+        text = (G_reader_settings:isTrue("rakuyomi_hide_read_manga")
+          and (Icons.FA_CHECK .. " " .. _("Show fully read manga"))
+          or (Icons.FA_BOOK .. " " .. _("Hide fully read manga"))),
+        callback = function()
+          UIManager:close(dialog)
+
+          local new_value = not G_reader_settings:isTrue("rakuyomi_hide_read_manga")
+          G_reader_settings:saveSetting("rakuyomi_hide_read_manga", new_value)
+
+          self:updateItems()
         end
       },
     },
@@ -1438,9 +1558,9 @@ function LibraryView:openSettings()
       self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
-    Settings:fetchAndShow(onReturnCallback)
-
-    self:onClose(true)
+    if Settings:fetchAndShow(onReturnCallback) then
+      self:onClose(true)
+    end
   end)
 end
 

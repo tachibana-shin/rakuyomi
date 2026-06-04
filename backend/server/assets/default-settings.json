@@ -4,5 +4,7 @@
     "https://tachibana-shin.github.io/aidoku-sources-next/index.min.json",
     "https://aidoku-community.github.io/sources/index.min.json"
   ],
-  "languages": ["en"]
+  "languages": ["en"],
+  "delete_downloaded_on_remove": true,
+  "delete_downloaded_after_read": false
 }

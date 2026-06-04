@@ -85,7 +85,7 @@ function SettingItemValue:createValueWidget()
     end
 
     return TextWidget:new {
-      text = label_for_value[self:getCurrentValue()] .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = (label_for_value[self:getCurrentValue()] or tostring(self:getCurrentValue() or "")) .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -119,7 +119,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "integer" then
     return TextWidget:new {
-      text = self:getCurrentValue() .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
+      text = (self:getCurrentValue() or self.value_definition.default or 0) .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,

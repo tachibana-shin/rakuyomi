@@ -6,11 +6,14 @@ use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::{Chapter, ChapterId, MangaId},
+    settings::Settings,
+    usecases::revoke_manga_chapter::revoke_manga_chapter,
 };
 
 pub async fn mark_chapters_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
+    settings: &Settings,
     manga_id: MangaId,
     text: &str,
     state: bool,
@@ -19,8 +22,19 @@ pub async fn mark_chapters_as_read(
 
     let selected_ids = parse_chapter_ranges(&chapters, text)?;
 
-    db.set_chapters_read_state(&manga_id, &selected_ids, state)
-        .await
+    let unread_count = db
+        .set_chapters_read_state(&manga_id, &selected_ids, state)
+        .await?;
+
+    if state && settings.delete_downloaded_after_read {
+        for chapter_id in &selected_ids {
+            // Best-effort cleanup in both persistent and RAM-backed storage.
+            let _ = revoke_manga_chapter(chapter_storage, chapter_id, false).await;
+            let _ = revoke_manga_chapter(chapter_storage, chapter_id, true).await;
+        }
+    }
+
+    Ok(unread_count)
 }
 
 fn parse_chapter_ranges(chapters: &[Chapter], text: &str) -> Result<Vec<ChapterId>> {

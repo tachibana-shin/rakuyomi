@@ -98,14 +98,22 @@ function Backend.requestJson(request)
   -- is not 2xx
   local parsed_body, err = rapidjson.decode(response.body)
   if err then
+    if not (response.status and response.status >= 200 and response.status <= 299) then
+      logger.err("Request failed with status code", response.status, "and non-JSON body", response.body)
+      return {
+        type = 'ERROR',
+        status = response.status,
+        message = response.body or ("HTTP " .. tostring(response.status)),
+      }
+    end
+
     error("Expected to be able to decode the response body as JSON: " ..
       response.body .. "(status code: " .. response.status .. ")")
   end
 
   if not (response.status and response.status >= 200 and response.status <= 299) then
     logger.err("Request failed with status code", response.status, "and body", parsed_body)
-    local error_message = parsed_body.message
-    assert(error_message ~= nil, "Request failed without error message")
+    local error_message = parsed_body.message or tostring(response.body) or ("HTTP " .. tostring(response.status))
 
     return { type = 'ERROR', status = response.status, message = error_message }
   end
@@ -356,6 +364,23 @@ Backend.MangaViewerName = MangaViewerName
 function Backend.getMangasInLibrary()
   return Backend.requestJson({
     path = "/library",
+  })
+end
+
+--- @class MangaStorageUsage
+--- @field source_id string The ID of the source.
+--- @field manga_id string The ID of the manga.
+--- @field bytes number The number of bytes occupied by this manga's downloaded chapters.
+
+--- @class StorageStats
+--- @field total_bytes number The total number of bytes used by downloaded chapters in the library.
+--- @field per_manga MangaStorageUsage[] Per-manga storage usage breakdown.
+
+--- Gets disk usage statistics for downloaded chapters of mangas in the library.
+--- @return SuccessfulResponse<StorageStats>|ErrorResponse
+function Backend.getStorageStats()
+  return Backend.requestJson({
+    path = "/storage-stats",
   })
 end
 

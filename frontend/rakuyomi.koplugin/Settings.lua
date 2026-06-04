@@ -22,6 +22,7 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
+local formatBytes = require("utils/formatBytes")
 
 local ffi = require("ffi")
 
@@ -72,6 +73,7 @@ end
 local Settings = FocusManager:extend {
   settings = {},
   on_return_callback = nil,
+  storage_total_text = '',
   paths = { 0 }
 }
 
@@ -102,16 +104,16 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Library sorting mode"),
       options = {
-        { label = _("Order added ascending (Default)"),  value = 'ascending' },
-        { label = _("Order added descending"),           value = 'descending' },
-        { label = _("Title manga ascending"),            value = 'title_asc' },
-        { label = _("Title manga descending"),           value = 'title_desc' },
-        { label = _("Count unread chapters ascending"),  value = 'unread_asc' },
-        { label = _("Count unread chapters descending"), value = 'unread_desc' },
-        { label = _("Last read ascending"),              value = 'last_read_asc' },
-        { label = _("Last read descending"),             value = 'last_read_desc' },
-        { label = _("Source ascending"),                 value = 'source_asc' },
-        { label = _("Source descending"),                value = 'source_desc' },
+        { label = _("Date added (oldest first)"),  value = 'ascending' },
+        { label = _("Date added (newest first)"),  value = 'descending' },
+        { label = _("Title (A-Z)"),                value = 'title_asc' },
+        { label = _("Title (Z-A)"),                value = 'title_desc' },
+        { label = _("Unread count (fewest first)"), value = 'unread_asc' },
+        { label = _("Unread count (most first)"),  value = 'unread_desc' },
+        { label = _("Last read (oldest first)"),   value = 'last_read_asc' },
+        { label = _("Last read (newest first)"),   value = 'last_read_desc' },
+        { label = _("Source (A-Z)"),               value = 'source_asc' },
+        { label = _("Source (Z-A)"),               value = 'source_desc' },
       }
     }
   },
@@ -172,10 +174,20 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Tap manga action"),
       options = {
+        { label = _("Ask each time"),     value = "ask" },
         { label = _("Open chapter list"), value = "chapter_list" },
         { label = _("Continue reading"),  value = "continue_reading" },
       },
-      default = "chapter_list",
+      default = "ask",
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_hide_read_manga',
+    {
+      type = 'boolean',
+      title = _("Hide fully read manga"),
+      default = false,
       is_local = true,
     }
   },
@@ -208,6 +220,32 @@ Settings.setting_value_definitions = {
   {
     nil,
     { type = 'divider', title = _("Reader") }
+  },
+  {
+    'rakuyomi_reading_direction',
+    {
+      type = 'enum',
+      title = _("Reading direction"),
+      options = {
+        { label = _("Left to right"), value = "ltr" },
+        { label = _("Right to left"), value = "rtl" },
+      },
+      default = "ltr",
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_page_turn_style',
+    {
+      type = 'enum',
+      title = _("Page turn style"),
+      options = {
+        { label = _("Paginated"),         value = "paginated" },
+        { label = _("Continuous scroll"), value = "scroll" },
+      },
+      default = "paginated",
+      is_local = true,
+    }
   },
   {
     'chapter_sorting_mode',
@@ -390,7 +428,32 @@ Settings.setting_value_definitions = {
       title = _('Storage size limit'),
       min_value = 1,
       max_value = 10240,
-      unit = 'MB'
+      unit = 'MB',
+      default = 2000,
+    }
+  },
+  {
+    'storage_total_display',
+    {
+      type = 'label',
+      title = _("Total downloaded"),
+      text = '',
+    }
+  },
+  {
+    'delete_downloaded_on_remove',
+    {
+      type = 'boolean',
+      title = _("Delete downloads when removing from library"),
+      default = true,
+    }
+  },
+  {
+    'delete_downloaded_after_read',
+    {
+      type = 'boolean',
+      title = _("Delete downloads after marking as read"),
+      default = false,
     }
   },
   {
@@ -540,7 +603,7 @@ function Settings:init()
     align = "left",
   }
 
-  for _, tuple in ipairs(Settings.setting_value_definitions) do
+  for __, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
     if definition.type == 'divider' then
@@ -548,6 +611,24 @@ function Settings:init()
         text = definition.title,
         face = Font:getFace("cfont"),
         bold = true,
+      })
+    elseif definition.type == 'label' then
+      local text = definition.text
+      if key == 'storage_total_display' then
+        text = self.storage_total_text ~= '' and self.storage_total_text or _("Unknown")
+      end
+
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = {
+          type = 'label',
+          title = definition.title,
+          text = text,
+        },
+        value = nil,
+        on_value_changed_callback = function() end,
       })
     elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {
@@ -563,8 +644,16 @@ function Settings:init()
     else
       -- FIXME shouldn't the backend return the default value when unset?
       local value = self.settings[key]
+      if value == nil and definition.default ~= nil then
+        value = definition.default
+        self.settings[key] = value
+      elseif value == nil and definition.type == 'boolean' then
+        value = false
+        self.settings[key] = value
+      end
       if key == 'storage_path' and value == nil then
         value = Paths.getHomeDirectory() .. '/downloads'
+        self.settings[key] = value
       end
 
       table.insert(vertical_group, SettingItem:new {
@@ -700,19 +789,43 @@ function Settings:updateSetting(key, value)
   end
 end
 
+--- @return boolean # true when the settings screen was shown
 function Settings:fetchAndShow(on_return_callback)
   local response = Backend.getSettings()
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
-    return
+    return false
   end
 
-  local ui = Settings:new {
-    settings = response.body,
-    on_return_callback = on_return_callback
-  }
+  local storage_total_text = ''
+  local stats_ok, stats_result = pcall(function()
+    local stats_response = Backend.getStorageStats()
+    if stats_response.type == 'SUCCESS' and stats_response.body then
+      return formatBytes(stats_response.body.total_bytes)
+    end
+    return ''
+  end)
+  if stats_ok and stats_result then
+    storage_total_text = stats_result
+  end
+
+  local ok, ui = pcall(function()
+    return Settings:new {
+      settings = response.body,
+      storage_total_text = storage_total_text,
+      on_return_callback = on_return_callback,
+    }
+  end)
+
+  if not ok then
+    ErrorDialog:show(tostring(ui))
+    return false
+  end
+
   ui.on_return_callback = on_return_callback
   UIManager:show(ui)
+
+  return true
 end
 
 return Settings

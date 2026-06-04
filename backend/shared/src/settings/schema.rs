@@ -174,6 +174,16 @@ pub struct Settings {
     /// Controls how the chapter title is formatted in ComicInfo.xml.
     #[serde(default)]
     pub chapter_title_format: ChapterTitleFormat,
+
+    /// Whether downloaded chapter files should be deleted when a manga is removed
+    /// from the library. Enabled by default.
+    #[serde(default = "default_true")]
+    pub delete_downloaded_on_remove: bool,
+
+    /// Whether a downloaded chapter file should be deleted right after it is
+    /// marked as read. Disabled by default.
+    #[serde(default = "default_false")]
+    pub delete_downloaded_after_read: bool,
 }
 
 fn default_ram_storage_size_mb() -> usize {
@@ -190,6 +200,10 @@ fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {
 
 fn default_false() -> bool {
     false
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for StorageSizeLimit {

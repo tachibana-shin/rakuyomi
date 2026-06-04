@@ -24,6 +24,7 @@ local Testing = require('testing')
 --- This is a singleton that contains a simpler interface with ReaderUI.
 local MangaReader = {
   on_return_callback = nil,
+  on_back_to_library_callback = nil,
   on_end_of_book_callback = nil,
   on_beginning_of_book_callback = nil,
   on_close_book_callback = nil,
@@ -34,6 +35,7 @@ local MangaReader = {
 --- @class MangaReaderOptions
 --- @field path string Path to the file to be displayed.
 --- @field on_return_callback fun(): nil Function to be called when the user selects "Go back to Rakuyomi".
+--- @field on_back_to_library_callback? fun(): nil Function to be called when the user selects "Back to library".
 --- @field on_end_of_book_callback fun(no_as_read: boolean): nil Function to be called when the user reaches the end of the file.
 --- @field on_beginning_of_book_callback? fun(): nil Function to be called when the user navigates before the first page.
 --- @field on_rtl_changed fun(viewer: MangaViewer): nil Function to be called when the RTL setting is toggled.
@@ -50,6 +52,7 @@ local MangaReader = {
 --- @param options MangaReaderOptions
 function MangaReader:show(options)
   self.on_return_callback = options.on_return_callback
+  self.on_back_to_library_callback = options.on_back_to_library_callback
   self.on_end_of_book_callback = options.on_end_of_book_callback
   self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
   self.on_rtl_changed = options.on_rtl_changed
@@ -92,7 +95,42 @@ function MangaReader:show(options)
 
   -- re set because hook end book
   self.is_showing = true
+
+  -- Apply the user's reader preferences (reading direction / page turn style)
+  -- once the reader has finished initializing.
+  UIManager:nextTick(function()
+    self:applyReaderPreferences()
+  end)
+
   Testing:emitEvent('manga_reader_shown')
+end
+
+--- Applies the user's local reader preferences to the active reader. This is a
+--- best-effort operation: any failure is swallowed so it never prevents the
+--- chapter from being read.
+--- @private
+function MangaReader:applyReaderPreferences()
+  -- Only apply preferences the user has explicitly set, so the viewer mode
+  -- coming from the source/global viewer setting is not overridden otherwise.
+  local page_turn_style = G_reader_settings:readSetting("rakuyomi_page_turn_style")
+  if page_turn_style ~= nil then
+    pcall(function()
+      UIManager:broadcastEvent(Event:new("SetScrollMode", page_turn_style == "scroll"))
+    end)
+  end
+
+  local reading_direction = G_reader_settings:readSetting("rakuyomi_reading_direction")
+  if reading_direction ~= nil then
+    pcall(function()
+      local paging = ReaderUI.instance and ReaderUI.instance.paging
+      if paging then
+        local want_inverse = reading_direction == "rtl"
+        if (paging.inverse_reading_order or false) ~= want_inverse then
+          UIManager:broadcastEvent(Event:new("ToggleReadingOrder"))
+        end
+      end
+    end)
+  end
 end
 
 --- @param ui unknown The `ReaderUI` instance we're being called from.
@@ -175,10 +213,17 @@ end
 --- @private
 function MangaReader:addToMainMenu(menu_items)
   menu_items.go_back_to_rakuyomi = {
-    text = _("Go back to Rakuyomi..."),
+    text = _("Back to chapter list..."),
     sorting_hint = "main",
     callback = function()
       self:onReturn()
+    end
+  }
+  menu_items.go_back_to_rakuyomi_library = {
+    text = _("Back to library..."),
+    sorting_hint = "main",
+    callback = function()
+      self:onReturnToLibrary()
     end
   }
 end
@@ -187,6 +232,17 @@ end
 function MangaReader:onReturn()
   self:closeReaderUi(function()
     self.on_return_callback()
+  end)
+end
+
+--- Closes the reader and returns directly to the Rakuyomi library, skipping the
+--- chapter listing. Falls back to the regular return callback if no library
+--- callback was provided.
+--- @private
+function MangaReader:onReturnToLibrary()
+  local callback = self.on_back_to_library_callback or self.on_return_callback
+  self:closeReaderUi(function()
+    callback()
   end)
 end
 

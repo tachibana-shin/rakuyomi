@@ -163,11 +163,10 @@ fn extract_update(zip_path: &Path, plugin_dir: &Path) -> anyhow::Result<()> {
     // 3. Attempt to install the new files
     let install_result = perform_installation(temp_dir.path(), plugin_dir);
 
-    // 4. Handle result: Cleanup on success, Rollback on failure
+    // 4. Handle result: leave backup on success (startup will clean it up), rollback on failure.
     match install_result {
         Ok(_) => {
             info!("Update installed successfully to: {}", plugin_dir.display());
-            cleanup_backup(&backup_dir);
             Ok(())
         }
         Err(install_err) => {
@@ -281,21 +280,6 @@ fn perform_installation(temp_dir_path: &Path, plugin_dir: &Path) -> anyhow::Resu
         }
     }
     Ok(())
-}
-
-/// Cleans up the backup directory after a successful installation.
-fn cleanup_backup(backup_dir: &Path) {
-    if backup_dir.exists() {
-        if let Err(e) = fs::remove_dir_all(backup_dir) {
-            warn!(
-                "Failed to remove backup directory {}: {}",
-                backup_dir.display(),
-                e
-            );
-        } else {
-            info!("Removed backup directory: {}", backup_dir.display());
-        }
-    }
 }
 
 /// Rolls back a failed update attempt.

@@ -63,6 +63,12 @@ async fn main() -> anyhow::Result<()> {
             .unwrap_or_else(|| "unknown".into())
     );
 
+    if let Ok(exe) = current_exe() {
+        if let Some(plugin_dir) = exe.parent() {
+            cleanup_update_backup(plugin_dir);
+        }
+    }
+
     let args = Args::parse();
     fs::create_dir_all(&args.home_path)
         .context("while trying to ensure rakuyomi's home folder exists")?;
@@ -161,6 +167,16 @@ struct BuildInfo {
 impl BuildInfo {
     fn format_display(&self) -> String {
         format!("{} ({})", self.version, self.build)
+    }
+}
+
+fn cleanup_update_backup(plugin_dir: &std::path::Path) {
+    let backup_dir = plugin_dir.with_extension("koplugin.bak");
+    if backup_dir.exists() {
+        info!("Removing leftover update backup: {}", backup_dir.display());
+        if let Err(e) = fs::remove_dir_all(&backup_dir) {
+            warn!("Failed to remove update backup: {}", e);
+        }
     }
 }
 

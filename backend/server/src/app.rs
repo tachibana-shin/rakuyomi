@@ -10,8 +10,11 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 
+#[cfg(feature = "ffi")]
 use axum::extract::Request;
+#[cfg(feature = "ffi")]
 use axum::middleware::{self, Next};
+#[cfg(feature = "ffi")]
 use axum::response::Response;
 use axum::{routing::get, Json, Router};
 use shared::chapter_storage::ChapterStorage;
@@ -47,15 +50,16 @@ pub fn build_router(state: State) -> Router {
         .merge(settings::routes())
         .merge(source::routes())
         .merge(update::routes());
-    if cfg!(feature = "ffi") {
-        router
-            .layer(middleware::from_fn(request_logger))
-            .with_state(state)
-    } else {
-        router.with_state(state)
-    }
+    #[cfg(feature = "ffi")]
+    let router = router
+        .layer(middleware::from_fn(request_logger))
+        .with_state(state);
+    #[cfg(not(feature = "ffi"))]
+    let router = router.with_state(state);
+    router
 }
 
+#[cfg(feature = "ffi")]
 async fn request_logger(req: Request, next: Next) -> Response {
     let method = req.method().to_string();
     let path = req.uri().path().to_string();

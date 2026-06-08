@@ -29,12 +29,11 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
     };
 
     #[cfg(not(target_os = "android"))]
-    let plugin_dir = {
-        let current_exe = std::env::current_exe().context("Could not get current executable")?;
-        current_exe
-            .parent()
-            .context("Could not get rakuyomi's plugin directory")?
-    };
+    let current_exe = std::env::current_exe().context("Could not get current executable")?;
+    #[cfg(not(target_os = "android"))]
+    let plugin_dir = current_exe
+        .parent()
+        .context("Could not get rakuyomi's plugin directory")?;
 
     // Get the path of the temporary file
     let zip_path = update_zip_file.path().to_path_buf();

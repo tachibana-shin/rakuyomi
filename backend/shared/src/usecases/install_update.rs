@@ -25,7 +25,7 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
             .cloned()
             .unwrap_or(paths[0]);
 
-        std::path::PathBuf::from(chosen_path)
+        Path::new(chosen_path)
     };
 
     #[cfg(not(target_os = "android"))]
@@ -34,7 +34,6 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
         current_exe
             .parent()
             .context("Could not get rakuyomi's plugin directory")?
-            .to_path_buf()
     };
 
     // Get the path of the temporary file

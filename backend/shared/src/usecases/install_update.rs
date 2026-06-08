@@ -25,7 +25,7 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
             .cloned()
             .unwrap_or(paths[0]);
 
-        PathBuf::from(chosen_path)
+        std::path::PathBuf::from(chosen_path)
     };
 
     #[cfg(not(target_os = "android"))]

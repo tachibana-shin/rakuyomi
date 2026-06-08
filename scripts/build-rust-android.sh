@@ -87,13 +87,19 @@ for target in "${TARGETS[@]}"; do
   esac
 
   echo "  Android API level: $PLATFORM"
+  if [[ "$PLATFORM" -lt 21 ]]; then
+    FEATURES="ffi,api_18"
+  else
+    FEATURES="ffi"
+  fi
+
   cargo ndk \
       --target "$target" \
       --platform "$PLATFORM" \
       build \
       --release \
       --package server \
-      --features ffi
+      --features "$FEATURES"
 
   LIB_PATH="$BACKEND_DIR/target/$target/release/libserver.so"
   if [[ ! -f "$LIB_PATH" ]]; then

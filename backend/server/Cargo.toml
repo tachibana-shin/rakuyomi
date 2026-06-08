@@ -16,6 +16,7 @@ path = "src/main.rs"
 
 [features]
 ffi = ["dep:serde_bytes", "dep:reqwest", "dep:jni", "shared/ffi"]
+api_18 = []
 
 [dependencies]
 anyhow = "1.0.102"

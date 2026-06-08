@@ -38,6 +38,33 @@ fn shutdown_pair() -> (ShutdownSignal, ShutdownReceiver) {
     oneshot::channel()
 }
 
+#[cfg(feature = "api_18")]
+mod android_polyfills {
+    use std::os::raw::{c_int, c_void};
+
+    #[no_mangle]
+    pub unsafe extern "C" fn epoll_create1(flags: c_int) -> c_int {
+        let fd = libc::syscall(libc::SYS_epoll_create, 1) as c_int;
+        if fd >= 0 && (flags & libc::O_CLOEXEC) != 0 {
+            libc::fcntl(fd, libc::F_SETFD, libc::FD_CLOEXEC);
+        }
+        fd
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn dl_iterate_phdr(
+        _callback: Option<unsafe extern "C" fn(*mut c_void, usize, *mut c_void) -> c_int>,
+        _data: *mut c_void,
+    ) -> c_int {
+        0
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn signal(signum: c_int, handler: usize) -> usize {
+        0
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct PendingRequest {
     pub id: u64,

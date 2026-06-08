@@ -16,7 +16,7 @@ path = "src/main.rs"
 
 [features]
 ffi = ["dep:serde_bytes", "dep:reqwest", "dep:jni", "shared/ffi"]
-api_18 = []
+api_18 = ["dep:libc"]
 
 [dependencies]
 anyhow = "1.0.102"
@@ -37,3 +37,4 @@ humansize = "2.1.3"
 url = "2.5.8"
 reqwest = { version = "0.12.28", optional = true, default-features = false, features = ["json", "rustls-tls"] }
 jni = { version = "0.22", optional = true }
+libc = { version = "0.2.186", optional = true }

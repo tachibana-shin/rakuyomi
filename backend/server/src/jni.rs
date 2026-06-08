@@ -60,7 +60,7 @@ mod android_polyfills {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn signal(signum: c_int, handler: usize) -> usize {
+    pub unsafe extern "C" fn signal(_signum: c_int, _handler: usize) -> usize {
         0
     }
 }

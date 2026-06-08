@@ -74,6 +74,26 @@ jobs:
         name: ${{ matrix.target }} build
         path: build/rakuyomi-${{ matrix.target }}.zip
 
+    - uses: actions/setup-java@v4
+      if: ${{ matrix.target == 'android' }}
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - uses: android-actions/setup-android@v3
+      if: ${{ matrix.target == 'android' }}
+
+    - name: Install Android NDK
+      if: ${{ matrix.target == 'android' }}
+      run: |
+        sdkmanager "ndk;27.0.12077973"
+
+    - name: Configure NDK
+      if: ${{ matrix.target == 'android' }}
+      run: |
+        echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+        echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+
     - name: Install cargo-ndk
       if: ${{ matrix.target == 'android' }}
       run: cargo install cargo-ndk && rustup target install aarch64-linux-android armv7-linux-androideabi x86_64-linux-android

@@ -79,7 +79,7 @@ for target in "${TARGETS[@]}"; do
       PLATFORM=21
       ;;
     armv7-linux-androideabi)
-      PLATFORM=19
+      PLATFORM=18
       ;;
     *)
       PLATFORM=21

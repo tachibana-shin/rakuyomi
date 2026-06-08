@@ -66,7 +66,7 @@ async fn request_logger(req: Request, next: Next) -> Response {
     let duration = start.elapsed().as_millis();
     let status = response.status().as_u16();
 
-    #[cfg(target_os = "android")]
+    #[cfg(all(target_os = "android", feature = "ffi"))]
     {
         // Format as CSV-like string for Kotlin to parse easily
         // method|path|status|duration

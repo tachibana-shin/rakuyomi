@@ -29,7 +29,10 @@ impl ResolvedListener {
 /// 2. `RAKUYOMI_UNIX_SOCKET_PATH` — custom Unix domain socket
 /// 3. Default Unix domain socket at `/tmp/rakuyomi.sock`
 pub async fn pick_listener() -> Result<ResolvedListener> {
-    if let Some(port) = std::env::var("RAKUYOMI_TCP_PORT").ok().and_then(|s| s.parse::<u16>().ok()) {
+    if let Some(port) = std::env::var("RAKUYOMI_TCP_PORT")
+        .ok()
+        .and_then(|s| s.parse::<u16>().ok())
+    {
         let listener = TcpListener::bind(("127.0.0.1", port))
             .await
             .with_context(|| format!("failed to bind TCP 127.0.0.1:{}", port))?;

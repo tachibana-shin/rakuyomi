@@ -52,8 +52,7 @@ pub fn build_router(state: State) -> Router {
             .layer(middleware::from_fn(request_logger))
             .with_state(state)
     } else {
-        router
-            .with_state(state)
+        router.with_state(state)
     }
 }
 

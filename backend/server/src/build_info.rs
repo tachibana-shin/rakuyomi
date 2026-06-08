@@ -14,16 +14,42 @@ impl BuildInfo {
     }
 }
 
-#[cfg(feature = "ffi")]
+#[cfg(target_os = "android")]
 pub fn get_build_info() -> Option<BuildInfo> {
-    let contents = include_str!("../../../BUILD_INFO.json");
+    use std::fs;
+    use std::path::Path;
 
-    let build_info: BuildInfo = serde_json::from_str(contents).ok()?;
+    let paths = [
+        "/sdcard/koreader/plugins/rakuyomi.koplugin/BUILD_INFO.json",
+        "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin/BUILD_INFO.json",
+    ];
+
+    let mut contents = None;
+
+    for path in &paths {
+        if Path::new(path).exists() {
+            if let Ok(data) = fs::read_to_string(path) {
+                contents = Some(data);
+                break;
+            }
+        }
+    }
+
+    let contents = contents.or_else(|| {
+        let home = std::env::var("HOME").ok()?;
+        let path = format!(
+            "{}/koreader/plugins/rakuyomi.koplugin/BUILD_INFO.json",
+            home
+        );
+        fs::read_to_string(path).ok()
+    })?;
+
+    let build_info: BuildInfo = serde_json::from_str(&contents).ok()?;
 
     Some(build_info)
 }
 
-#[cfg(not(feature = "ffi"))]
+#[cfg(not(target_os = "android"))]
 pub fn get_build_info() -> Option<BuildInfo> {
     let build_info_path = env::current_exe().ok()?.with_file_name("BUILD_INFO.json");
     let contents = fs::read_to_string(build_info_path).ok()?;

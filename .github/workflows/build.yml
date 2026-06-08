@@ -53,6 +53,12 @@ jobs:
     - name: Install cross
       run: cargo install cross
 
+    - name: Cache Rust Dependencies
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: "backend -> target"
+        prefix-key: "rust-cache-${{ matrix.target }}"
+
     - name: Get next version
       run: |
         npm install -D semantic-release-export-data

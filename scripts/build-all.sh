@@ -57,7 +57,7 @@ if [[ $# -eq 1 ]]; then
   key="$1"
 
   if [[ "$key" == "android" ]]; then
-    bash ./scripts/build-android.sh
+    bash ./scripts/build-plugin.sh "none" "rakuyomi.koplugin" "android"
   elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"
   else

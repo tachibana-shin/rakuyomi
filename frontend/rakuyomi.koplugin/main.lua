@@ -19,6 +19,7 @@ function getBackend()
   backendInitialized, logs = Backend.initialize()
 end
 
+local ok, android = pcall(require, "android")
 local Rakuyomi = InputContainer:extend({
   name = "rakuyomi"
 })
@@ -34,7 +35,9 @@ function Rakuyomi:init()
     self.ui.menu:registerToMainMenu(self)
   end
 
-  CbzDocument:register(DocumentRegistry)
+  if not ok or not android then
+    CbzDocument:register(DocumentRegistry)
+  end
   Dispatcher:registerAction("start_library_view", {
     category = "none",
     event = "StartLibraryView",

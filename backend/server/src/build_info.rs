@@ -51,8 +51,8 @@ pub fn get_build_info() -> Option<BuildInfo> {
 
 #[cfg(not(target_os = "android"))]
 pub fn get_build_info() -> Option<BuildInfo> {
-    let build_info_path = env::current_exe().ok()?.with_file_name("BUILD_INFO.json");
-    let contents = fs::read_to_string(build_info_path).ok()?;
+    let build_info_path = std::env::current_exe().ok()?.with_file_name("BUILD_INFO.json");
+    let contents = std::fs::read_to_string(build_info_path).ok()?;
     let build_info: BuildInfo = serde_json::from_str(&contents).ok()?;
 
     Some(build_info)

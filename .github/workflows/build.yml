@@ -73,7 +73,11 @@ jobs:
       with:
         name: ${{ matrix.target }} build
         path: build/rakuyomi-${{ matrix.target }}.zip
-  
+
+    - name: Build plugin for android
+      if: ${{ matrix.target == 'android' }}
+      run: bash scripts/build-rust-android.sh
+
   generate-settings-schema:
     runs-on: ubuntu-latest
     steps:

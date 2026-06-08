@@ -1,4 +1,4 @@
-use crate::get_build_info;
+use crate::build_info::get_build_info;
 use axum::{
     routing::{get, post},
     Json, Router,

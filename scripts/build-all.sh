@@ -56,8 +56,9 @@ if [[ $# -eq 1 ]]; then
   # Single argument → must be a valid build key
   key="$1"
 
-  if [[ -n "${TARGETS[$key]}" ]]; then
-    # Valid key → build only this one
+  if [[ "$key" == "android" ]]; then
+    bash ./scripts/build-android.sh
+  elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"
   else
     echo "❌ Unknown build target: '$key'"
@@ -65,6 +66,7 @@ if [[ $# -eq 1 ]]; then
     for k in "${!TARGETS[@]}"; do
       echo "  - $k"
     done
+    echo "  - android"
     exit 1
   fi
 

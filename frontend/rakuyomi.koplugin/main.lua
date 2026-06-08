@@ -1,7 +1,5 @@
 local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
-local FileManager = require("apps/filemanager/filemanager")
-local UIManager = require("ui/uimanager")
 local Dispatcher = require("dispatcher")
 local logger = require("logger")
 local _ = require("gettext+")
@@ -15,7 +13,11 @@ local MangaReader = require("MangaReader")
 local Testing = require("testing")
 
 logger.info("Loading Rakuyomi plugin...")
-local backendInitialized, logs = Backend.initialize()
+local backendInitialized, logs
+function getBackend() 
+  if backendInitialized then return end
+  backendInitialized, logs = Backend.initialize()
+end
 
 local Rakuyomi = InputContainer:extend({
   name = "rakuyomi"
@@ -48,6 +50,7 @@ function Rakuyomi:onStartLibraryView()
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
   else
+    getBackend()
     if not backendInitialized then
       self:showErrorDialog()
 
@@ -63,6 +66,7 @@ function Rakuyomi:addToMainMenu(menu_items)
     text = _("Rakuyomi"),
     sorting_hint = "search",
     callback = function()
+      getBackend()
       if not backendInitialized then
         self:showErrorDialog()
 
@@ -81,7 +85,8 @@ function Rakuyomi:showErrorDialog()
     logs,
     function()
       Backend.cleanup()
-      backendInitialized, logs = Backend.initialize()
+      backendInitialized, logs = nil, nil
+      getBackend()
     end
   )
 end

@@ -3,7 +3,7 @@
 use anyhow::{Context, Result};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasm_shared::{get_memory, memory_reader::write_bytes};
-use wasmi::{F64, Caller, Linker};
+use wasmi::{Caller, Linker, F64};
 
 use crate::source::wasm_store::{self, Value, WasmStore};
 

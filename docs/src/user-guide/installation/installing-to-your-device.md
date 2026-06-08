@@ -64,4 +64,4 @@ To ensure **Rakuyomi Bridge** maintains a stable background connection and is no
 *   **Disable App Hibernation:** Turn off the **"Pause app activity if unused"** option.
 *   **Adjust Battery Settings:** Change the Battery Saver profile to **"No restrictions"**.
 
-rakuyomi is now installed on your device! Ready to get started? Check out the [Quickstart Guide](../quickstart.md) to learn how to use it effectively.
+rakuyomi is now installed on your device! Ready to get started? Check out the [Quickstart Guide](./user-guide/quickstart.md) to learn how to use it effectively.

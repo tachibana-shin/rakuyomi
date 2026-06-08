@@ -5,10 +5,10 @@
 # Usage:
 #
 #   # Release build (All targets)
-#   ./scripts/build-android.sh
+#   ./scripts/build-rust-android.sh
 #
 #   # Fast development build (arm64 only)
-#   ./scripts/build-android.sh dev
+#   ./scripts/build-rust-android.sh dev
 #
 
 set -e

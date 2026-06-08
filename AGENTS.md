@@ -55,7 +55,10 @@ scripts/build-all.sh <target>   # cross-compile + package plugin
 scripts/build-android.sh        # build libserver.so + APK
 ```
 
-CI: `.github/workflows/build.yml` — 5 targets via `cross` + Podman.
+CI (root): `.github/workflows/build.yml` — 5 targets via `cross` + Podman.
+CI (bridge): `bridge/.github/workflows/android-ci.yml` — clones rakuyomi,
+builds Rust `.so` via `scripts/build-rust-android.sh`, then runs Gradle
+lint/test/assemble for the Android companion app.
 Versioning: `semantic-release` from commit messages.
 
 ## Platform Architecture

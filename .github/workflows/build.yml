@@ -76,7 +76,7 @@ jobs:
 
     - name: Install cargo-ndk
       if: ${{ matrix.target == 'android' }}
-      run: cargo install cargo-ndk
+      run: cargo install cargo-ndk && rustup target install aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
     - name: Build plugin for android
       if: ${{ matrix.target == 'android' }}

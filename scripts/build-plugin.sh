@@ -17,9 +17,11 @@ cd ../../..
 
 cp -r frontend/rakuyomi.koplugin/* "$OUT/"
 
-cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
-cp backend/target/$TARGET/release/server "$OUT/"
-cp backend/target/$TARGET/release/uds_http_request "$OUT/"
+if [ "$TARGET" != "none" ]; then
+    cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
+    cp backend/target/$TARGET/release/server "$OUT/"
+    cp backend/target/$TARGET/release/uds_http_request "$OUT/"
+fi
 
 VERSION="${SEMANTIC_RELEASE_VERSION:-1.0.0}"
 echo "{ \"version\": \"$VERSION\", \"build\": \"$TYPE_BUILD\" }" \

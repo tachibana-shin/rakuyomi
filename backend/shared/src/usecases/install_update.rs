@@ -12,8 +12,25 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
     // Download the asset to a temporary file
     let update_zip_file = download_update_zip(&version, &build_name).await?;
 
-    // Get plugin directory (parent of the executable)
+    #[cfg(target_os = "android")]
+    let plugin_dir = {
+        let paths = [
+            "/sdcard/koreader/plugins/rakuyomi.koplugin",
+            "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin",
+        ];
+
+        let chosen_path = paths
+            .iter()
+            .find(|&&p| std::path::Path::new(p).exists())
+            .cloned()
+            .unwrap_or(paths[0]);
+
+        Path::new(chosen_path)
+    };
+
+    #[cfg(not(target_os = "android"))]
     let current_exe = std::env::current_exe().context("Could not get current executable")?;
+    #[cfg(not(target_os = "android"))]
     let plugin_dir = current_exe
         .parent()
         .context("Could not get rakuyomi's plugin directory")?;

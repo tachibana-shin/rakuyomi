@@ -54,6 +54,17 @@ This fork:
 >
 > Now support plugin image DRM
 
+## Android Support
+
+rakuyomi runs on Android via the **Rakuyomi Bridge** companion app ([Rakuyomi Bridge](https://github.com/tachibana-shin/rakuyomi_bridge/)), which loads the Rust server via JNI and runs it as a foreground service.
+
+| Variant | Android Support |
+|---|---|
+| Rakuyomi Bridge (Compose) | Android 5.0+ (API 21+) |
+| Rakuyomi Bridge (Headless) | Android 4.3+ (API 18+) |
+
+Both are available on the [Releases](https://github.com/tachibana-shin/rakuyomi_bridge/releases) page.
+
 ## Installation & Usage
 
 For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/README.html) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!

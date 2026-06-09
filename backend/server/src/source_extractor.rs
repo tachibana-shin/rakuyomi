@@ -5,7 +5,8 @@ use axum::{
 use serde::Deserialize;
 use shared::{model::SourceId, source::Source, source_collection::SourceCollection};
 
-use crate::{AppError, State};
+use crate::state::State;
+use crate::AppError;
 
 pub struct SourceExtractor(pub Source);
 

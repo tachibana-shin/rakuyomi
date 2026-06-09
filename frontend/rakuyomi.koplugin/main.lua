@@ -95,6 +95,7 @@ function Rakuyomi:showErrorDialog()
 end
 
 function Rakuyomi:openLibraryView()
+  getBackend()
   LibraryView:fetchAndShow()
   OfflineAlertDialog:showIfOffline()
 end

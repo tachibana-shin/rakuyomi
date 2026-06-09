@@ -4,6 +4,7 @@ local Screen = require("device").screen
 local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext+")
 local addToPlaylist = require("handlers/addToPlaylist")
+local NetworkMgr = require("ui/network/manager")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -381,28 +382,30 @@ function MangaSearchResults:onContextMenuChoice(item)
             manga.in_library = not added
 
             if manga.in_library and Backend.getSettings().body.library_view_mode ~= 'base' then
-              local cancel_id = Backend.createCancelId()
-              local response, cancelled = LoadingDialog:showAndRun(
-                _("Refreshing details..."),
-                function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
-                function()
-                  Backend.cancel(cancel_id)
+              if NetworkMgr:isConnected() then
+                local cancel_id = Backend.createCancelId()
+                local response, cancelled = LoadingDialog:showAndRun(
+                  _("Refreshing details..."),
+                  function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
+                  function()
+                    Backend.cancel(cancel_id)
 
-                  local cancelledMessage = InfoMessage:new {
-                    text = _("Refresh details cancelled."),
-                  }
-                  UIManager:show(cancelledMessage)
+                    local cancelledMessage = InfoMessage:new {
+                      text = _("Refresh details cancelled."),
+                    }
+                    UIManager:show(cancelledMessage)
+                  end
+                )
+
+                if cancelled then
+                  return false
                 end
-              )
 
-              if cancelled then
-                return false
-              end
+                if response.type == 'ERROR' then
+                  ErrorDialog:show(response.message)
 
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
-
-                return false
+                  return false
+                end
               end
             end
 

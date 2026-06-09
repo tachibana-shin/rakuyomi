@@ -25,6 +25,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local Trapper = require("ui/trapper")
 local _ = require("gettext+")
+local NetworkMgr = require("ui/network/manager")
 local Screen = Device.screen
 local T = require("ffi/util").template
 
@@ -552,6 +553,19 @@ end
 --- @param manga_id string
 --- @return SuccessfulResponse<[MManga, number]>|ErrorResponse|nil
 function MangaInfoWidget:refreshDetails(source_id, manga_id)
+  if not NetworkMgr:isConnected() then
+    local cancel_id = Backend.createCancelId()
+    local response = Backend.cachedMangaDetails(cancel_id, source_id, manga_id)
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+
+      return
+    end
+
+    return { type = 'SUCCESS', body = response.body }
+  end
+
   local cancel_id_1 = Backend.createCancelId()
   local cancel_id_2 = Backend.createCancelId()
 

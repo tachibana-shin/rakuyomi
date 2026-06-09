@@ -18,6 +18,7 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local addToPlaylist = require("handlers/addToPlaylist")
+local NetworkMgr = require("ui/network/manager")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -1129,6 +1130,10 @@ end
 --- @param cancel_id number
 --- @param manga Manga
 function LibraryView:_refreshManga(cancel_id, manga)
+  if not NetworkMgr:isConnected() then
+    return { type = 'ERROR', message = _("Cannot refresh while offline") }
+  end
+
   local response = Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
   return response
 end
@@ -1136,6 +1141,14 @@ end
 --- @private
 --- @private
 function LibraryView:refreshAllChapters()
+  if not NetworkMgr:isConnected() then
+    UIManager:show(InfoMessage:new {
+      text = _("Cannot refresh while offline"),
+    })
+
+    return
+  end
+
   local job = RefreshLibraryChapters:new()
   if job then
     self:_runLibraryJob(
@@ -1149,6 +1162,14 @@ end
 
 --- @private
 function LibraryView:refreshAllDetails()
+  if not NetworkMgr:isConnected() then
+    UIManager:show(InfoMessage:new {
+      text = _("Cannot refresh while offline"),
+    })
+
+    return
+  end
+
   local job = RefreshLibraryDetails:new()
   if job then
     self:_runLibraryJob(

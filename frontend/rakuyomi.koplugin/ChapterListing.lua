@@ -18,6 +18,7 @@ local Button = require("ui/widget/button")
 local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
 local LuaSettings = require("luasettings")
+local NetworkMgr = require("ui/network/manager")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -428,32 +429,34 @@ end
 function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
   accept_cached_results = accept_cached_results or false
 
-  local cancel_id = Backend.createCancelId()
-  local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
-    _("Refreshing chapters..."),
-    function()
-      return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
-    end,
-    function()
-      Backend.cancel(cancel_id)
+  if NetworkMgr:isConnected() then
+    local cancel_id = Backend.createCancelId()
+    local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
+      _("Refreshing chapters..."),
+      function()
+        return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
+      end,
+      function()
+        Backend.cancel(cancel_id)
 
-      local cancelledMessage = InfoMessage:new {
-        text = _("Cancelled."),
-      }
-      UIManager:show(cancelledMessage)
-    end,
-    nil
-  )
+        local cancelledMessage = InfoMessage:new {
+          text = _("Cancelled."),
+        }
+        UIManager:show(cancelledMessage)
+      end,
+      nil
+    )
 
-  if cancelled then
-    return false
-  end
-
-  if refresh_chapters_response.type == 'ERROR' then
-    ErrorDialog:show(_("Refresh chapter error") .. "\n\n" .. refresh_chapters_response.message)
-
-    if not accept_cached_results then
+    if cancelled then
       return false
+    end
+
+    if refresh_chapters_response.type == 'ERROR' then
+      ErrorDialog:show(_("Refresh chapter error") .. "\n\n" .. refresh_chapters_response.message)
+
+      if not accept_cached_results then
+        return false
+      end
     end
   end
 
@@ -628,6 +631,14 @@ end
 --- @private
 function ChapterListing:refreshChapters()
   Trapper:wrap(function()
+    if not NetworkMgr:isConnected() then
+      UIManager:show(InfoMessage:new {
+        text = _("Cannot refresh chapters while offline"),
+      })
+
+      return
+    end
+
     local cancel_id = Backend.createCancelId()
     local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
       _("Refreshing chapters..."),

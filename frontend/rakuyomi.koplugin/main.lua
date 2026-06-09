@@ -1,6 +1,5 @@
 local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
-local FileManager = require("apps/filemanager/filemanager")
 local UIManager = require("ui/uimanager")
 local Dispatcher = require("dispatcher")
 local logger = require("logger")
@@ -21,8 +20,6 @@ function getBackend()
   backendInitialized, logs = Backend.initialize()
 end
 
-local _start_with_rakuyomi = nil
-
 local ok, android = pcall(require, "android")
 local Rakuyomi = InputContainer:extend({
   name = "rakuyomi"
@@ -41,15 +38,19 @@ function Rakuyomi:init()
     local orig_onShow = self.ui.onShow
     self.ui.onShow = function(fm_self, ...)
       if orig_onShow then orig_onShow(fm_self, ...) end
-      if _start_with_rakuyomi == nil then
-        _start_with_rakuyomi = G_reader_settings:readSetting("start_with") == "rakuyomi"
-      end
-      if _start_with_rakuyomi then
-        UIManager:scheduleIn(0, function()
-          getBackend()
-          LibraryView:fetchAndShow()
-          OfflineAlertDialog:showIfOffline()
-        end)
+      if not self._rakuyomi_started then
+        self._rakuyomi_started = true
+        if G_reader_settings:readSetting("start_with") == "rakuyomi" then
+          UIManager:scheduleIn(0, function()
+            getBackend()
+            if not backendInitialized then
+              self:showErrorDialog()
+              return
+            end
+            LibraryView:fetchAndShow()
+            OfflineAlertDialog:showIfOffline()
+          end)
+        end
       end
     end
 
@@ -70,20 +71,6 @@ function Rakuyomi:init()
           local sub    = result.sub_item_table
           if type(sub) ~= "table" then return result end
 
-          -- Wrap every native item's callback to clear _start_with_rakuyomi when a
-          -- native option is selected. Without this, selecting e.g. "file browser"
-          -- writes the setting directly but leaves _start_with_rakuyomi=true, causing
-          -- Rakuyomi to keep opening on boot even after the user switched away.
-          for _, item in ipairs(sub) do
-            if item.radio and type(item.callback) == "function" then
-              local orig_cb = item.callback
-              item.callback = function()
-                _start_with_rakuyomi = false
-                orig_cb()
-              end
-            end
-          end
-
           -- Add the entry only if it is not already present.
           local rakuyomi_label = _("Rakuyomi")
           local found = false
@@ -100,7 +87,6 @@ function Rakuyomi:init()
               end,
               callback = function()
                 G_reader_settings:saveSetting("start_with", "rakuyomi")
-                _start_with_rakuyomi = true
               end,
               radio = true,
             })
@@ -108,11 +94,11 @@ function Rakuyomi:init()
 
           -- Update the parent item label when Rakuyomi is the active choice.
           local orig_text_func = result.text_func
-          result.text_func = function()
+          result.text_func = function(...)
             if G_reader_settings:readSetting("start_with") == "rakuyomi" then
               return _("Start with") .. ": " .. _("Rakuyomi")
             end
-            return orig_text_func and orig_text_func() or _("Start with")
+            return orig_text_func and orig_text_func(...) or _("Start with")
           end
 
           return result

@@ -548,9 +548,11 @@ function LibraryView:onContextMenuChoice(item)
           self:fetchAndShow(self.current_playlist)
         end
 
-        if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-          self:onClose()
-        end
+        Trapper:wrap(function()
+          if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+            self:onClose()
+          end
+        end)
       end
     }})
   end

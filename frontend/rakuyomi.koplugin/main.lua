@@ -66,6 +66,9 @@ function Rakuyomi:init()
         FileManagerMenu._rakuyomi_startwith_patched = true
         FileManagerMenu._rakuyomi_startwith_orig    = orig_fn
 
+        --- Overrides the default Start With menu table to inject a Rakuyomi option.
+        --- @param fmm_self FileManagerMenu The FileManagerMenu instance.
+        --- @return table result The modified menu table with the Rakuyomi entry added.
         FileManagerMenu.getStartWithMenuTable = function(fmm_self)
           local result = orig_fn(fmm_self)
           local sub    = result.sub_item_table

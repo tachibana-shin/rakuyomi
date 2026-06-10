@@ -21,6 +21,9 @@ rakuyomi runs on Android via the **Rakuyomi Bridge** companion app ([Rakuyomi Br
 
 Both are available on the [Releases](https://github.com/tachibana-shin/rakuyomi_bridge/releases) page.
 
+> [!TIP]
+> If you want to run Rakuyomi as soon as you open Koreader, use this plugin: https://github.com/mgrimace/startrakuyomi.koplugin
+
 This fork:
 - Added last read time for manga, chapter
 - Improved UI now you can see exactly which source manga belongs to

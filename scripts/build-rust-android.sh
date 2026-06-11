@@ -37,10 +37,8 @@ BRIDGE_DIR="$PROJECT_DIR/.."
 BACKEND_DIR="$PROJECT_DIR/backend"
 
 JNILIBS_BASE="$BRIDGE_DIR/androidApp/src/main/jniLibs"
-HEADLESS_JNILIBS_BASE="$BRIDGE_DIR/androidHeadless/src/main/jniLibs"
 
 mkdir -p "$JNILIBS_BASE/arm64-v8a" "$JNILIBS_BASE/armeabi-v7a" "$JNILIBS_BASE/x86_64"
-mkdir -p "$HEADLESS_JNILIBS_BASE/arm64-v8a" "$HEADLESS_JNILIBS_BASE/armeabi-v7a" "$HEADLESS_JNILIBS_BASE/x86_64"
 
 echo "========================================"
 echo "Build mode      : $MODE"
@@ -111,15 +109,12 @@ for target in "${TARGETS[@]}"; do
   case "$target" in
     aarch64-linux-android)
       cp "$LIB_PATH" "$JNILIBS_BASE/arm64-v8a/librakuyomi_server.so"
-      cp "$LIB_PATH" "$HEADLESS_JNILIBS_BASE/arm64-v8a/librakuyomi_server.so"
       ;;
     armv7-linux-androideabi)
       cp "$LIB_PATH" "$JNILIBS_BASE/armeabi-v7a/librakuyomi_server.so"
-      cp "$LIB_PATH" "$HEADLESS_JNILIBS_BASE/armeabi-v7a/librakuyomi_server.so"
       ;;
     x86_64-linux-android)
       cp "$LIB_PATH" "$JNILIBS_BASE/x86_64/librakuyomi_server.so"
-      cp "$LIB_PATH" "$HEADLESS_JNILIBS_BASE/x86_64/librakuyomi_server.so"
       ;;
   esac
 done

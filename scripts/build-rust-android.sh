@@ -33,7 +33,7 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-BRIDGE_DIR="$PROJECT_DIR/../bridge"
+BRIDGE_DIR="$PROJECT_DIR/.."
 BACKEND_DIR="$PROJECT_DIR/backend"
 
 JNILIBS_BASE="$BRIDGE_DIR/androidApp/src/main/jniLibs"

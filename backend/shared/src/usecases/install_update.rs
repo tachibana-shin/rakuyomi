@@ -12,7 +12,7 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
     // Download the asset to a temporary file
     let update_zip_file = download_update_zip(&version, &build_name).await?;
 
-    let plugin_dir = plugin_dir().context("Could not get rakuyomi's plugin directory")?;
+    let plugin_dir = resolve_plugin_dir().context("Could not get rakuyomi's plugin directory")?;
 
     // Get the path of the temporary file
     let zip_path = update_zip_file.path().to_path_buf();
@@ -26,7 +26,7 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
 
 /// Remove the backup directory left behind after a successful update.
 pub fn cleanup_update_backup() {
-    let plugin_dir = match plugin_dir() {
+    let plugin_dir = match resolve_plugin_dir() {
         Ok(path) => path,
         Err(e) => {
             warn!("Failed to locate rakuyomi plugin directory: {}", e);
@@ -34,40 +34,41 @@ pub fn cleanup_update_backup() {
         }
     };
 
-    let backup_dir = plugin_dir.with_extension("koplugin.bak");
-    if backup_dir.exists() {
-        info!("Removing leftover update backup: {}", backup_dir.display());
-        if let Err(e) = fs::remove_dir_all(&backup_dir) {
-            warn!("Failed to remove update backup: {}", e);
-        }
-    }
+    cleanup_backup(&plugin_dir.with_extension("koplugin.bak"));
 }
 
-fn plugin_dir() -> anyhow::Result<PathBuf> {
-    #[cfg(target_os = "android")]
-    {
-        let paths = [
-            "/sdcard/koreader/plugins/rakuyomi.koplugin",
-            "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin",
-        ];
+#[cfg(target_os = "android")]
+fn resolve_plugin_dir() -> anyhow::Result<PathBuf> {
+    let paths = [
+        "/sdcard/koreader/plugins/rakuyomi.koplugin",
+        "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin",
+    ];
 
-        let chosen_path = paths
-            .iter()
-            .find(|&&p| Path::new(p).exists())
-            .cloned()
-            .unwrap_or(paths[0]);
+    let chosen_path = paths
+        .iter()
+        .find(|&&p| std::path::Path::new(p).exists())
+        .cloned()
+        .unwrap_or(paths[0]);
 
-        Ok(PathBuf::from(chosen_path))
-    }
+    Ok(PathBuf::from(chosen_path))
+}
 
-    #[cfg(not(target_os = "android"))]
-    {
-        let current_exe = std::env::current_exe().context("Could not get current executable")?;
-        current_exe
+#[cfg(not(target_os = "android"))]
+fn resolve_plugin_dir() -> anyhow::Result<PathBuf> {
+    if let Some(path) = std::env::args().next().and_then(|arg| {
+        PathBuf::from(arg)
             .parent()
+            .filter(|path| !path.as_os_str().is_empty())
             .map(Path::to_path_buf)
-            .context("Could not get rakuyomi's plugin directory")
+    }) {
+        return Ok(path);
     }
+
+    let current_exe = std::env::current_exe().context("Could not get current executable")?;
+    current_exe
+        .parent()
+        .map(Path::to_path_buf)
+        .context("Could not get rakuyomi's plugin directory")
 }
 
 fn cleanup_tmp() -> anyhow::Result<()> {
@@ -322,6 +323,20 @@ fn perform_installation(temp_dir_path: &Path, plugin_dir: &Path) -> anyhow::Resu
         }
     }
     Ok(())
+}
+
+fn cleanup_backup(backup_dir: &Path) {
+    if backup_dir.exists() {
+        if let Err(e) = fs::remove_dir_all(backup_dir) {
+            warn!(
+                "Failed to remove backup directory {}: {}",
+                backup_dir.display(),
+                e
+            );
+        } else {
+            info!("Removed backup directory: {}", backup_dir.display());
+        }
+    }
 }
 
 /// Rolls back a failed update attempt.

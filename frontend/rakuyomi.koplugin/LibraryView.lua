@@ -127,23 +127,23 @@ end
 --- Schedule server kill after delay (cancelled if library view reopens)
 function LibraryView:scheduleServerKill(seconds)
   -- Cancel any existing timer
-  if self._kill_server_timer then
-    UIManager:unschedule(self._kill_server_timer)
-    self._kill_server_timer = nil
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
   end
   logger.info("Server will be killed in " .. seconds .. " seconds")
-  self._kill_server_timer = UIManager:scheduleIn(seconds, function()
+  LibraryView._kill_server_timer = UIManager:scheduleIn(seconds, function()
     logger.info("Killing server...")
     Backend.cleanup()
-    self._kill_server_timer = nil
+    LibraryView._kill_server_timer = nil
   end)
 end
 
 --- Cancel scheduled server kill (called when library view reopens)
 function LibraryView:cancelServerKill()
-  if self._kill_server_timer then
-    UIManager:unschedule(self._kill_server_timer)
-    self._kill_server_timer = nil
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
   end
 end
 

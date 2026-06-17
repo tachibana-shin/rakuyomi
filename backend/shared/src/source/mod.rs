@@ -57,13 +57,13 @@ mod next_reader;
 pub mod source_settings;
 #[cfg(feature = "all")]
 mod source_settings;
-#[cfg(not(feature = "all"))]
+#[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_imports;
-#[cfg(feature = "all")]
+#[cfg(not(any(feature = "ffi", feature = "all")))]
 mod wasm_imports;
-#[cfg(not(feature = "all"))]
+#[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_store;
-#[cfg(feature = "all")]
+#[cfg(not(any(feature = "ffi", feature = "all")))]
 mod wasm_store;
 
 /**

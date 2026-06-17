@@ -10,6 +10,20 @@
 > 
 > `rakuyomi` currently supports all [Aidoku](https://github.com/Aidoku) sources including sources written with legacy SDK or next SDK ([Aidoku Community Sources](https://github.com/Aidoku-Community/sources), [Tachibana Shin Sources](https://github.com/tachibana-shin/aidoku-community-sources)...)
 
+## Android Support
+
+rakuyomi runs on Android via the **Rakuyomi Bridge** companion app ([Rakuyomi Bridge](https://github.com/tachibana-shin/rakuyomi_bridge/)), which loads the Rust server via JNI and runs it as a foreground service.
+
+| Variant | Android Support |
+|---|---|
+| Rakuyomi Bridge (Compose) | Android 5.0+ (API 21+) |
+| Rakuyomi Bridge (Headless) | Android 4.3+ (API 18+) |
+
+Both are available on the [Releases](https://github.com/tachibana-shin/rakuyomi_bridge/releases) page.
+
+> [!TIP]
+> If you want to run Rakuyomi as soon as you open Koreader, use this plugin: https://github.com/mgrimace/startrakuyomi.koplugin
+
 This fork:
 - Added last read time for manga, chapter
 - Improved UI now you can see exactly which source manga belongs to

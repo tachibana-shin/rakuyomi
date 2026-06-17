@@ -42,4 +42,26 @@ Steps 6 and 7 are only needed if you customised the snippet above. Otherwise, sk
 7. Copy your `settings.json` file into the new `rakuyomi` folder:
 ![settings file](./user-guide/installation/images/settings-file.png)
 
-rakuyomi is now installed on your device! Ready to get started? Check out the [Quickstart Guide](../quickstart.md) to learn how to use it effectively.
+## Android Devices
+
+Android (BOOX, Onyx, etc.) requires an extra step — an active **companion app** is needed to run the rakuyomi server, because Android does not allow KOReader to launch arbitrary binaries directly.
+
+1. Follow the normal steps above to copy `rakuyomi.koplugin` into KOReader's `plugins` folder.
+2. Sideload `RakuyomiBridge.apk` from the [releases page](https://github.com/tachibana-shin/rakuyomi/releases/latest). You can do this via:
+   - **ADB**: `adb install RakuyomiBridge.apk`
+   - A file manager app on the device
+3. Open the **Rakuyomi Bridge** app.
+4. Grant the **"All files access"** special permission if your device runs Android 11 or newer (Settings → Apps → Special access → All files access).
+5. Tap **"Start Server"**. The app will run a foreground service with a persistent notification.
+6. Open KOReader. The rakuyomi plugin will detect the companion app automatically.
+
+> The companion app shares the same data directory (`/storage/emulated/0/koreader/rakuyomi/`) as KOReader's rakuyomi plugin. Books downloaded through the companion app are immediately available in KOReader, and vice-versa
+.
+### ⚠️ Important Note for Xiaomi Devices (MIUI / HyperOS)
+
+To ensure **Rakuyomi Bridge** maintains a stable background connection and is not aggressively terminated by the system, you must adjust the following settings in the **App Info** page of the Rakuyomi Bridge app:
+
+*   **Disable App Hibernation:** Turn off the **"Pause app activity if unused"** option.
+*   **Adjust Battery Settings:** Change the Battery Saver profile to **"No restrictions"**.
+
+rakuyomi is now installed on your device! Ready to get started? Check out the [Quickstart Guide](./user-guide/quickstart.md) to learn how to use it effectively.

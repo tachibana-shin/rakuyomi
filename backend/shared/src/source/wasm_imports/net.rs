@@ -2,7 +2,7 @@ use crate::{source::html_element::HTMLElement, util::has_internet_connection};
 use anyhow::{Context, Result};
 use dom_query::Document;
 use futures::executor;
-#[cfg(feature = "all")]
+#[cfg(not(any(feature = "ffi", not(feature = "all"))))]
 use log::warn;
 use num_enum::FromPrimitive;
 use reqwest::Method;
@@ -15,7 +15,7 @@ use wasmi::{Caller, Linker};
 use crate::source::wasm_store::ResponseData;
 use crate::source::wasm_store::{RequestState, Value, WasmStore};
 
-#[cfg(not(feature = "all"))]
+#[cfg(any(feature = "ffi", not(feature = "all")))]
 pub static NET_SEND: std::sync::OnceLock<
     fn(
         &tokio_util::sync::CancellationToken,
@@ -203,13 +203,13 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         anyhow::bail!("no internet connection available");
     }
 
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let client = reqwest::Client::new();
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let request =
         reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let warn_cancellation = || {
         warn!(
             "request to {:?} was cancelled mid-flight!",
@@ -217,7 +217,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         );
     };
 
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let response =
         match executor::block_on(cancellation_token.run_until_cancelled(client.execute(request))) {
             Some(response) => response
@@ -231,7 +231,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                 anyhow::bail!("request was cancelled mid-flight");
             }
         };
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let response_data = ResponseData {
         url: response.url().clone(),
         headers: response.headers().clone(),
@@ -249,7 +249,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         bytes_read: 0,
     };
 
-    #[cfg(not(feature = "all"))]
+    #[cfg(any(feature = "ffi", not(feature = "all")))]
     let response_data =
         (NET_SEND.get().context("Please set NET_SEND")?)(&cancellation_token, &request_builder)
             .map_err(|err| {

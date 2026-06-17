@@ -145,6 +145,11 @@ function Backend.initialize()
   return true, nil
 end
 
+---@return boolean
+function Backend.running()
+  return Backend.server ~= nil
+end
+
 --- @class SourceInformation
 --- @field id string The ID of the source.
 --- @field name string The name of the source.

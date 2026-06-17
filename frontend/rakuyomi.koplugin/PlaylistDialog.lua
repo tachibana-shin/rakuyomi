@@ -109,13 +109,11 @@ function PlaylistItem:init()
 end
 
 function PlaylistItem:onTapSelect()
-  print("hello item")
   if self.on_tap then self.on_tap() end
   return true
 end
 
 function PlaylistItem:onHoldSelect()
-  print("hello item")
   if self.on_hold then self.on_hold() end
   return true
 end

@@ -15,7 +15,7 @@ local Testing = require("testing")
 logger.info("Loading Rakuyomi plugin...")
 local backendInitialized, logs
 function getBackend() 
-  if backendInitialized then return end
+  if backendInitialized and Backend.running() then return end
   backendInitialized, logs = Backend.initialize()
 end
 

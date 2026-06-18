@@ -71,9 +71,9 @@ function UnixServer:request(request)
   local responseJson = output:read('*a')
   output:close()
 
-  local response, err = rapidjson.decode(responseJson)
-  if err ~= nil then
-    return { type = 'ERROR', message = err }
+  local response, err2 = rapidjson.decode(responseJson)
+  if err2 ~= nil then
+    return { type = 'ERROR', message = err2 }
   end
 
   return response
@@ -128,7 +128,7 @@ function GenericUnixPlatform:startServer()
     os.execute("ifconfig lo 127.0.0.1")
   end
 
-  local serverCommand = nil
+  local serverCommand
   if SERVER_COMMAND_OVERRIDE ~= nil then
     serverCommand = util.splitToArray(SERVER_COMMAND_OVERRIDE, ' ')
   else

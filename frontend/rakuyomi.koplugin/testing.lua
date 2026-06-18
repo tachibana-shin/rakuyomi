@@ -10,7 +10,7 @@ local logger = require("logger")
 local NullTesting = {
   init = function() end,
   dumpVisibleUI = function() end,
-  emitEvent = function(name, params) end
+  emitEvent = function(_, _) end
 }
 
 local Testing = {}
@@ -46,7 +46,7 @@ local function describeCurrentUI()
 
   local keyignore = {}
   local metatable = {}
-  metatable.__index = function(table, key)
+  metatable.__index = function(_, key)
     if ignored_keys[key] then
       return true
     end

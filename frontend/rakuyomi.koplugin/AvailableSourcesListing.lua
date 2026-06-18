@@ -72,7 +72,7 @@ end
 ---@param source_information SourceInformation
 ---@param installed_info SourceInformation
 function AvailableSourcesListing:makeItem(source_information, installed_info)
-  local mandatory = ""
+  local mandatory
   local callback = nil
 
   if installed_info then
@@ -93,7 +93,8 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
     source_information = source_information,
     text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
     mandatory = mandatory,
-    post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 1, 6) .. "..." or
+    post_text = source_information.source_of_source
+        and string.sub(source_information.source_of_source, 1, 6) .. "..." or
         _("Unknown"),
     callback = callback,
   }

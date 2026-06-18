@@ -524,7 +524,7 @@ function ChapterListing:onContextMenuChoice(item)
           UIManager:close(dialog_context_menu)
 
           self:revokeChapter(chapter, false)
-          self:downloadChapter(chapter, nil, function(manga_path)
+          self:downloadChapter(chapter, nil, function(_)
             UIManager:show(InfoMessage:new { text = _("Chapter refreshed") })
           end)
         end
@@ -550,7 +550,7 @@ function ChapterListing:onContextMenuChoice(item)
           if chapter.downloaded then
             self:revokeChapter(chapter)
           else
-            self:downloadChapter(chapter, nil, function(manga_path)
+            self:downloadChapter(chapter, nil, function(_)
               UIManager:show(InfoMessage:new { text = _("Chapter downloaded") })
             end)
           end
@@ -836,7 +836,7 @@ end
 --- @private
 --- @param chapter Chapter
 function ChapterListing:preloadChapters(chapter)
-  for i = 1, self.preload_count do
+  for _ = 1, self.preload_count do
     local preloadChapter = findNextChapter(self.chapters, chapter)
     if preloadChapter == nil then
       logger.info("No more chapters to preload.")
@@ -937,12 +937,12 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
       chapter = chapter,
-      on_close_book_callback = function(chapter)
+      on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()
           Backend.updateLastReadChapter(
-            chapter.source_id,
-            chapter.manga_id,
-            chapter.id
+            chapter_self.source_id,
+            chapter_self.manga_id,
+            chapter_self.id
           )
         end)
       end,
@@ -1307,9 +1307,9 @@ function ChapterListing:onDownloadAllChapters()
 
     local cancellationRequested = false
     local onCancellationRequested = function()
-      local response = Backend.cancelDownloadAllChapters(self.manga.source.id, self.manga.id)
+      local response_s = Backend.cancelDownloadAllChapters(self.manga.source.id, self.manga.id)
       -- FIXME is it ok to assume there are no errors here?
-      assert(response.type == 'SUCCESS')
+      assert(response_s.type == 'SUCCESS')
 
       cancellationRequested = true
 
@@ -1333,14 +1333,14 @@ function ChapterListing:onDownloadAllChapters()
       UIManager:unschedule(updateProgress)
       UIManager:close(downloadingMessage)
 
-      local response = Backend.getDownloadAllChaptersProgress(self.manga.source.id, self.manga.id)
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
+      local response_s = Backend.getDownloadAllChaptersProgress(self.manga.source.id, self.manga.id)
+      if response_s.type == 'ERROR' then
+        ErrorDialog:show(response_s.message)
 
         return
       end
 
-      local downloadProgress = response.body
+      local downloadProgress = response_s.body
 
       local messageText = nil
       local isCancellable = false

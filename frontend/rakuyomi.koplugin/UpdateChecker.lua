@@ -8,7 +8,6 @@ local beforeWifi = require("utils/beforeWifi")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
-local Icons = require("Icons")
 local LoadingDialog = require("LoadingDialog")
 
 local UpdateChecker = {}

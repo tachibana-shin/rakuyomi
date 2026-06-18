@@ -18,6 +18,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local addToPlaylist = require("handlers/addToPlaylist")
 local NetworkMgr = require("ui/network/manager")
+local logger = require("logger")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -90,6 +91,59 @@ function LibraryView:init()
 
   -- fix bottom bar size
   self:updateItems()
+end
+
+--- @private
+--- @param no_exit boolean
+function LibraryView:onClose(no_exit)
+  MenuCustom.onClose(self)
+
+  if no_exit then
+    return
+  end
+
+  -- if close from playlist view, do not stop server
+  if self.current_playlist ~= nil then
+    return
+  end
+
+  local delay = G_reader_settings:readSetting("rakuyomi_auto_kill_server_delay", "disabled")
+  if delay == "immediate" then
+    logger.info("Cleaning up server...")
+    Backend.cleanup()
+  elseif delay ~= "disabled" then
+    local seconds = tonumber(delay)
+    if seconds and seconds > 0 then
+      self:scheduleServerKill(seconds)
+    end
+  end
+end
+
+function LibraryView:onReturn()
+  self:onClose(false)
+end
+
+--- Schedule server kill after delay (cancelled if library view reopens)
+function LibraryView:scheduleServerKill(seconds)
+  -- Cancel any existing timer
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
+  end
+  logger.info("Server will be killed in " .. seconds .. " seconds")
+  LibraryView._kill_server_timer = UIManager:scheduleIn(seconds, function()
+    logger.info("Killing server...")
+    Backend.cleanup()
+    LibraryView._kill_server_timer = nil
+  end)
+end
+
+--- Cancel scheduled server kill (called when library view reopens)
+function LibraryView:cancelServerKill()
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
+  end
 end
 
 --- @private
@@ -258,7 +312,7 @@ function LibraryView:patchTitleBar(count_notify)
 
             NotificationView:fetchAndShow(onReturnCallback)
 
-            self:onClose()
+            self:onClose(true)
           end)
         end
       },
@@ -393,6 +447,10 @@ end
 function LibraryView:fetchAndShow(playlist, on_after_open)
   local old = self.current_playlist
   self.current_playlist = playlist
+
+  -- Cancel any pending server kill since user is reopening library view
+  self:cancelServerKill()
+
   local settings = Backend.getSettings()
 
   if settings.type == 'ERROR' then
@@ -441,7 +499,7 @@ function LibraryView:onPrimaryMenuChoice(item)
       end
 
       if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-        self:onClose()
+        self:onClose(true)
       end
     end
   end)
@@ -539,7 +597,7 @@ function LibraryView:onContextMenuChoice(item)
 
   local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
   if tap_action == "continue_reading" then
-    table.insert(context_menu_buttons, 1, {{
+    table.insert(context_menu_buttons, 1, { {
       text = _("List chapters"),
       callback = function()
         local onReturnCallback = function()
@@ -548,11 +606,11 @@ function LibraryView:onContextMenuChoice(item)
 
         Trapper:wrap(function()
           if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-            self:onClose()
+            self:onClose(true)
           end
         end)
       end
-    }})
+    } })
   end
 
   if self.current_playlist == nil then
@@ -672,7 +730,7 @@ function LibraryView:_handleContinueReading(manga)
       temp_listing.on_return_callback = onReturnCallback
       temp_listing.chapters = chapters
       temp_listing:openChapterOnReader(chapter_to_open, nil, function()
-        self:onClose()
+        self:onClose(true)
       end)
     end
 
@@ -711,7 +769,7 @@ function LibraryView:_handleRemoveFromLibrary(manga)
         return
       end
       self:fetchAndShow(self.current_playlist)
-      self:onClose()
+      self:onClose(true)
     end
   })
 end
@@ -731,7 +789,7 @@ function LibraryView:_handleRemoveFromPlaylist(manga)
         return
       end
       self:fetchAndShow(self.current_playlist)
-      self:onClose()
+      self:onClose(true)
     end
   })
 end
@@ -932,7 +990,7 @@ function LibraryView:openPlaylistDialog()
     local need_close = self.current_playlist ~= nil
     LibraryView:fetchAndShow(playlist, function()
       if need_close then
-        self:onClose()
+        self:onClose(true)
       end
     end)
   end)
@@ -1238,7 +1296,7 @@ function LibraryView:searchMangas(search_text, exclude)
     end
 
     if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
-      self:onClose()
+      self:onClose(true)
     end
   end)
 end
@@ -1252,7 +1310,7 @@ function LibraryView:openInstalledSourcesListing()
 
     InstalledSourcesListing:fetchAndShow(onReturnCallback)
 
-    self:onClose()
+    self:onClose(true)
   end)
 end
 
@@ -1265,7 +1323,7 @@ function LibraryView:openSettings()
 
     Settings:fetchAndShow(onReturnCallback)
 
-    self:onClose()
+    self:onClose(true)
   end)
 end
 

@@ -251,6 +251,27 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    nil,
+    { type = 'divider', title = _("Server") }
+  },
+  {
+    'rakuyomi_auto_kill_server_delay',
+    {
+      type = 'enum',
+      title = _("Auto-stop server when leaving library view"),
+      options = {
+        { label = _("Disabled"), value = "disabled" },
+        { label = _("Immediate"), value = "immediate" },
+        { label = _("After 30 seconds"), value = "30" },
+        { label = _("After 1 minute"), value = "60" },
+        { label = _("After 5 minutes"), value = "300" },
+        { label = _("After 10 minutes"), value = "600" },
+      },
+      is_local = true,
+      default = "disabled",
+    }
+  },
+  {
     'rakuyomi_show_download_progress',
     {
       type = 'boolean',

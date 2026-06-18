@@ -3,6 +3,10 @@ name = "uds_http_request"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "uds_http_request"
+crate-type = ["cdylib"]
+
 [dependencies]
 anyhow = "1.0.102"
 http-body-util = "0.1.3"

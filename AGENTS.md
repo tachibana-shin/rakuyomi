@@ -63,7 +63,7 @@ Versioning: `semantic-release` from commit messages.
 
 ## Platform Architecture
 
-- **Unix** (Kindle, Kobo, etc.): fork/exec `server` binary, UDS (`/tmp/rakuyomi.sock`), `uds_http_request` binary bridges HTTP→UDS
+- **Unix** (Kindle, Kobo, etc.): fork/exec `server` binary, UDS (`/tmp/rakuyomi.sock`), `libuds_http_request.dylib` on macOS, `libuds_http_request.so` on Linux, `libuds_http_request.so` on Android, bridges HTTP→UDS
 - **Android**: `libserver.so` loaded via JNI in companion app (`bridge/`), TCP `127.0.0.1:8787`
 - **Linux (bridge mode)**: systemd user service runs `server` with TCP on `127.0.0.1:8787`, Lua plugin connects via LuaSocket when `RAKUYOMI_USE_BRIDGE=1`
 

@@ -13,10 +13,17 @@ local rapidjson = require("rapidjson")
 
 local SERVER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_SERVER_WORKING_DIRECTORY')
 local SERVER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_SERVER_COMMAND_OVERRIDE')
-local REQUEST_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_WORKING_DIRECTORY')
 local REQUEST_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_COMMAND_OVERRIDE')
 
 local SOCKET_PATH = '/tmp/rakuyomi.sock'
+
+pcall(ffi.cdef, [[
+  char* uds_request(const char* request_json);
+  void free_rust_string(char* ptr);
+]])
+
+local rust_lib_path = REQUEST_COMMAND_OVERRIDE or Paths.getPluginDirectory() .. "/libuds_http_request." .. (ffi.os == "OSX" and "dylib" or "so")
+local rust_lib = ffi.load(rust_lib_path)
 
 ---@class UnixServer: Server
 ---@field private pid number
@@ -56,24 +63,23 @@ function UnixServer:request(request)
 
   local requestJson = rapidjson.encode(requestWithDefaults)
 
-  local udsHttpRequestCommand = REQUEST_COMMAND_OVERRIDE or Paths.getPluginDirectory() .. "/uds_http_request"
+  -- FFI call on
+  local c_res_ptr = rust_lib.uds_request(requestJson)
 
-  local command = udsHttpRequestCommand .. " '" .. requestJson .. "'"
-  if REQUEST_COMMAND_WORKING_DIRECTORY ~= nil then
-    command = 'cd ' .. REQUEST_COMMAND_WORKING_DIRECTORY .. ' && ' .. command
+  if c_res_ptr == nil then
+    return { type = 'ERROR', message = "FFI result null pointer!" }
   end
 
-  local output, err = io.popen(command, 'r')
-  if output == nil then
-    return { type = 'ERROR', message = err }
-  end
+  -- move pointer C char* from Rust to Lua
+  local responseJson = ffi.string(c_res_ptr)
 
-  local responseJson = output:read('*a')
-  output:close()
+  -- free pointer in Rust
+  rust_lib.free_rust_string(c_res_ptr)
 
+  -- Decode JSON from Rust
   local response, err = rapidjson.decode(responseJson)
   if err ~= nil then
-    return { type = 'ERROR', message = err }
+    return { type = 'ERROR', message = "JSON decode error: " .. tostring(err) }
   end
 
   return response

@@ -4,6 +4,7 @@ use reqwest::{redirect::Policy, Client};
 use std::{
     io::{Cursor, Seek, Write},
     path::{Path, PathBuf},
+    sync::Arc,
 };
 use tempfile::NamedTempFile;
 use tokio_util::sync::CancellationToken;
@@ -42,7 +43,7 @@ pub async fn ensure_chapter_is_in_storage(
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
     optimize_image: bool,
-    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
+    on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id)? {
         return Ok((
@@ -96,14 +97,13 @@ pub async fn ensure_chapter_is_in_storage(
             source,
             pages,
             chapter,
-            #[cfg(not(feature = "all"))]
-            on_progress,
+            on_progress.clone(),
         )
         .await
         .with_context(|| "Failed to download chapter pages")
         .map_err(Error::DownloadError)?;
 
-        Vec::<DownloadError>::from([])
+        Vec::<DownloadError>::new()
     } else {
         download_chapter_pages_as_cbz(
             token,
@@ -113,8 +113,7 @@ pub async fn ensure_chapter_is_in_storage(
             pages,
             concurrent_requests_pages,
             optimize_image,
-            #[cfg(not(feature = "all"))]
-            on_progress,
+            on_progress.clone(),
         )
         .await
         .map_err(|err| {
@@ -157,14 +156,12 @@ pub async fn download_chapter_pages_as_cbz<W>(
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
     optimize_image: bool,
-    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
+    on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
 ) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
     W: Write + Seek,
 {
-    #[cfg(not(feature = "all"))]
     let total = pages.len() as f32;
-    #[cfg(not(feature = "all"))]
     let mut processed = 0f32;
 
     let mut writer = ZipWriter::new(output);
@@ -363,10 +360,9 @@ where
         }
 
         writer.start_file(filename, file_options)?;
-        #[cfg(not(feature = "all"))]
-        {
-            processed += 1.0;
-            on_progress(processed, total);
+        processed += 1.0;
+        if let Some(ref cb) = on_progress {
+            cb(processed, total);
         }
         writer.write_all(&data)?;
     }
@@ -381,18 +377,15 @@ pub async fn download_chapter_novel_as_epub<W>(
     source: &Source,
     pages: Vec<Page>,
     chapter: &ChapterInformation,
-    #[cfg(not(feature = "all"))] on_progress: fn(f32, f32),
+    on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
 ) -> anyhow::Result<()>
 where
     W: Write + Seek,
 {
-    #[cfg(not(feature = "all"))]
     let total = pages.len() as f32;
-    #[cfg(not(feature = "all"))]
     let stored_process_images = std::sync::Arc::new(std::sync::Mutex::new(
         std::collections::HashMap::<usize, f32>::new(),
     ));
-    #[cfg(not(feature = "all"))]
     let stored_process_images_clone = stored_process_images.clone();
 
     let client = Client::builder().build()?;
@@ -431,7 +424,9 @@ where
 
             if let Ok(mut stored) = stored_process_images.lock() {
                 stored.insert(idx, progress);
-                on_progress(stored.values().copied().sum(), total);
+                if let Some(ref cb) = on_progress {
+                    cb(stored.values().copied().sum(), total);
+                }
             }
         },
     )
@@ -485,10 +480,11 @@ where
                 };
                 index_image += 1;
 
-                #[cfg(not(feature = "all"))]
                 if let Ok(mut stored) = stored_process_images_clone.lock() {
                     stored.insert(idx, 1.0);
-                    on_progress(stored.values().copied().sum(), total);
+                    if let Some(ref cb) = on_progress {
+                        cb(stored.values().copied().sum(), total);
+                    }
                 }
 
                 epub.add_content(

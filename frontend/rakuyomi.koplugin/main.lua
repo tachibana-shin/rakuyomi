@@ -12,9 +12,12 @@ local LibraryView = require("LibraryView")
 local MangaReader = require("MangaReader")
 local Testing = require("testing")
 
+local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
+if disable_logging then logger:setLevel(logger.levels.err) end
+
 logger.info("Loading Rakuyomi plugin...")
 local backendInitialized, logs
-function getBackend() 
+local function getBackend()
   if backendInitialized and Backend.running() then return end
   backendInitialized, logs = Backend.initialize()
 end

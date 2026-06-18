@@ -39,7 +39,7 @@ end
 --- @return string|nil The JSON string or nil if an error occurred.
 function CbzDocument:_getComicBookInfoJSONFromBinary()
   local file_path = self.file
-  local json_content = nil
+  local json_content
 
   -- Determine the command to run
   local command_path
@@ -69,7 +69,7 @@ function CbzDocument:_getComicBookInfoJSONFromBinary()
 
   -- Read all output from the command (should be the JSON string or '{}').
   json_content = handle:read("*a")
-  local status, exit_code_or_signal, exit_code = handle:close() -- Check exit status
+  local status, _, exit_code = handle:close() -- Check exit status
 
   -- Check status and output
   if not status or (exit_code and exit_code ~= 0) then

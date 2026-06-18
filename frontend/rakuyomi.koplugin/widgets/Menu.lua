@@ -49,7 +49,7 @@ end
 
 --- Defaults to calling the entry's callback.
 --- Override this function to change the behavior.
-function Menu:onPrimaryMenuChoice(entry, pos)
+function Menu:onPrimaryMenuChoice(entry, _)
   if entry.callback then
     entry.callback()
   end
@@ -57,7 +57,7 @@ function Menu:onPrimaryMenuChoice(entry, pos)
   return true
 end
 
-function Menu:onContextMenuChoice(entry, pos)
+function Menu:onContextMenuChoice(_, _)
 end
 
 ---@private

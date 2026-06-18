@@ -271,6 +271,28 @@ Settings.setting_value_definitions = {
       default = "disabled",
     }
   },
+  {
+    'rakuyomi_show_download_progress',
+    {
+      type = 'boolean',
+      title = _("Show chapter download progress"),
+      is_local = true,
+      default = true
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Logging") }
+  },
+  {
+    'rakuyomi_disable_logging',
+    {
+      type = 'boolean',
+      title = _("Disable logging"),
+      default = false,
+      is_local = true,
+    }
+  },
 }
 
 

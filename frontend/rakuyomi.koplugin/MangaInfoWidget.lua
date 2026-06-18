@@ -10,7 +10,6 @@ local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local ImageWidget = require("ui/widget/imagewidget")
 local ScrollTextWidget = require("ui/widget/scrolltextwidget")
-local InputText = require("ui/widget/inputtext")
 local TextViewer = require("ui/widget/textviewer")
 local LeftContainer = require("ui/widget/container/leftcontainer")
 local LineWidget = require("ui/widget/linewidget")
@@ -508,7 +507,7 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   }
 end
 
-function MangaInfoWidget:onSwipe(arg, ges_ev)
+function MangaInfoWidget:onSwipe(_, ges_ev)
   if ges_ev.direction == "south" then
     -- Allow easier closing with swipe down
     self:onClose()
@@ -529,7 +528,7 @@ function MangaInfoWidget:onSwipe(arg, ges_ev)
   end
 end
 
-function MangaInfoWidget:onMultiSwipe(arg, ges_ev)
+function MangaInfoWidget:onMultiSwipe(_, _)
   -- For consistency with other fullscreen widgets where swipe south can't be
   -- used to close and where we then allow any multiswipe to close, allow any
   -- multiswipe to close this widget too.

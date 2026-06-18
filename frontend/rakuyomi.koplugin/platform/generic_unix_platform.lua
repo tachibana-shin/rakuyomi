@@ -22,14 +22,18 @@ local SOCKET_PATH = '/tmp/rakuyomi.sock'
 ---@field private pid number
 ---@field private outputCapturer SubprocessOutputCapturer
 ---@field private logBuffer string[]
+---@field private disable_logging boolean
 local UnixServer = {}
 
 function UnixServer:new(pid, outputCapturer)
+  local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
+
   local server = {
     pid = pid,
     outputCapturer = outputCapturer,
     logBuffer = {},
     maxLogLines = 100,
+    disable_logging = disable_logging,
   }
   setmetatable(server, { __index = UnixServer })
 
@@ -71,9 +75,9 @@ function UnixServer:request(request)
   local responseJson = output:read('*a')
   output:close()
 
-  local response, err = rapidjson.decode(responseJson)
-  if err ~= nil then
-    return { type = 'ERROR', message = err }
+  local response, err2 = rapidjson.decode(responseJson)
+  if err2 ~= nil then
+    return { type = 'ERROR', message = err2 }
   end
 
   return response
@@ -90,6 +94,7 @@ function UnixServer:stop()
 end
 
 function UnixServer:startLogCapture()
+  if self.disable_logging then return end
   local onOutput = function(contents)
     self:handleLogOutput(contents)
   end
@@ -98,6 +103,7 @@ function UnixServer:startLogCapture()
 end
 
 function UnixServer:flushLogBuffer()
+  if self.disable_logging then return end
   local onOutput = function(contents)
     self:handleLogOutput(contents)
   end
@@ -106,6 +112,7 @@ function UnixServer:flushLogBuffer()
 end
 
 function UnixServer:handleLogOutput(contents)
+  if self.disable_logging then return end
   local newLines = util.splitToArray(contents, '\n')
   for _, line in ipairs(newLines) do
     logger.info("Server output: " .. line)
@@ -128,7 +135,7 @@ function GenericUnixPlatform:startServer()
     os.execute("ifconfig lo 127.0.0.1")
   end
 
-  local serverCommand = nil
+  local serverCommand
   if SERVER_COMMAND_OVERRIDE ~= nil then
     serverCommand = util.splitToArray(SERVER_COMMAND_OVERRIDE, ' ')
   else

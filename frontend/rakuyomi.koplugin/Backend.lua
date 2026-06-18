@@ -662,11 +662,13 @@ function Backend.refreshLibraryDetailsJob()
   })
 end
 
+--- @class DownloadProgress: { type: 'INITIALIZING' }|{ type: 'DOWNLOADING', processed: number, total: number }
+
 --- @class PendingJob<T>: { type: 'PENDING', data: T }
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
+--- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse

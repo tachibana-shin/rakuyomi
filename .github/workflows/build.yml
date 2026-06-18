@@ -9,6 +9,10 @@ permissions:
   issues: write
   pull-requests: write
 jobs:
+  luacheck:
+    uses: ./.github/workflows/luacheck.yml
+  test:
+    uses: ./.github/workflows/test.yml
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -59,10 +63,10 @@ jobs:
         workspaces: "backend -> target"
         prefix-key: "rust-cache-${{ matrix.target }}"
 
+    - name: Install dependencies
+      run: npm install
     - name: Get next version
-      run: |
-        npm install -D semantic-release-export-data
-        npx semantic-release --dry-run
+      run: npx semantic-release --dry-run
       id: get-next-version
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -149,11 +153,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        persist-credentials: false
+        persist-credentials: true
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: "lts/*"
+    - name: Install dependencies
+      run: npm install
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
@@ -162,6 +168,4 @@ jobs:
     - name: Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        npm install -D semantic-release-export-data
-        npx semantic-release
+      run: npx semantic-release

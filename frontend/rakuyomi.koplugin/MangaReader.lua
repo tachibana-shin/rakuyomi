@@ -3,6 +3,7 @@ local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
 local logger = require("logger")
+local ReaderMenu = require("apps/reader/modules/readermenu")
 local _ = require("gettext+")
 
 local Testing = require('testing')
@@ -159,12 +160,13 @@ function MangaReader:onReaderUiCloseWidget()
   self.is_showing = false
 end
 
+local setUpdateItemTablePatched = nil
 --- @private
 function MangaReader:overrideBtnFileManager(menu)
   local old_callback = menu.menu_items.filemanager.callback
 
   if self.is_showing then
-    menu.menu_items.filemanager.callback = function()
+    local function rakuyomi_callback(old_callback_param)
       local key = "allow_commaneer_filemanager"
       if G_reader_settings:nilOrFalse(key) then
         local confirm_dialog
@@ -182,13 +184,30 @@ function MangaReader:overrideBtnFileManager(menu)
           cancel_callback = function()
             UIManager:close(confirm_dialog)
 
-            old_callback()
+            old_callback_param()
           end
         }
 
         UIManager:show(confirm_dialog)
       else
         self:onReturn()
+      end
+    end
+    menu.menu_items.filemanager.callback = function()
+      rakuyomi_callback(old_callback)
+    end
+
+    if ReaderMenu.__zen_ui_tab_patched and not setUpdateItemTablePatched then
+      setUpdateItemTablePatched = ReaderMenu.setUpdateItemTable
+    end
+    if setUpdateItemTablePatched then
+      ReaderMenu.setUpdateItemTable = function(ui)
+        setUpdateItemTablePatched(ui)
+
+        local origin_callback = ui._zen_home_tab_item.callback
+        ui._zen_home_tab_item.callback = function()
+          rakuyomi_callback(origin_callback)
+        end
       end
     end
   end

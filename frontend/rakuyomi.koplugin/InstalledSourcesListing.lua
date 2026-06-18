@@ -131,15 +131,15 @@ function InstalledSourcesListing:onContextMenuChoice(item)
         return
       end
 
-      local response = Backend.listInstalledSources()
+      local response_s = Backend.listInstalledSources()
 
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
+      if response_s.type == 'ERROR' then
+        ErrorDialog:show(response_s.message)
 
         return
       end
 
-      self.installed_sources = response.body
+      self.installed_sources = response_s.body
 
       self:updateItems()
     end

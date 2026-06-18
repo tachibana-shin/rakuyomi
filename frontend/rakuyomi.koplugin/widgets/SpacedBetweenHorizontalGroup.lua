@@ -1,6 +1,5 @@
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local Screen = require("device").screen
-local logger = require("logger")
 
 local SpacedBetweenHorizontalGroup = HorizontalGroup:extend {
   width = nil,

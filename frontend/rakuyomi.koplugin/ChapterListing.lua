@@ -778,8 +778,6 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
         function(onProgress)
           local response_start = download_job:start()
           if response_start.type == 'ERROR' then
-            ErrorDialog:show(_('Could not download chapter.'))
-
             return response_start
           end
 

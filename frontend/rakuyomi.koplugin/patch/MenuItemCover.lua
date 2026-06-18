@@ -218,7 +218,7 @@ function MenuItemCover:init()
       -- risk being shifted later and becoming misaligned
       local name_baseline = item_name[1]:getBaseline()
       local mdtr_baseline = mandatory_widget:getBaseline()
-      local name_height = item_name[1]:getSize().h
+      -- local name_height = item_name[1]:getSize().h
       local mdtr_height = mandatory_widget:getSize().h
       -- Make all the TextWidgets be self.dimen.h
       item_name.forced_height = self.dimen.h
@@ -229,15 +229,15 @@ function MenuItemCover:init()
       -- And adjust their baselines for proper centering and alignment
       -- (We made sure the font sizes wouldn't exceed self.dimen.h, so we
       -- get only non-negative pad_top here, and we're moving them down.)
-      local name_missing_pad_top = math.floor((self.dimen.h - name_height) / 2)
+      -- local name_missing_pad_top = math.floor((self.dimen.h - name_height) / 2)
       local mdtr_missing_pad_top = math.floor((self.dimen.h - mdtr_height) / 2)
-      name_baseline = name_baseline + name_missing_pad_top
+      -- name_baseline = name_baseline + name_missing_pad_top
       mdtr_baseline = mdtr_baseline + mdtr_missing_pad_top
       local baselines_diff = Math.round(name_baseline - mdtr_baseline)
       if baselines_diff > 0 then
         mdtr_baseline = mdtr_baseline + baselines_diff
-      else
-        name_baseline = name_baseline - baselines_diff
+      -- else
+      --   name_baseline = name_baseline - baselines_diff
       end
       -- item_name[1].forced_baseline = name_baseline
       mandatory_widget.forced_baseline = mdtr_baseline

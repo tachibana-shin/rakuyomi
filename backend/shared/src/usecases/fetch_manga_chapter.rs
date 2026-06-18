@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::anyhow;
 use tokio_util::sync::CancellationToken;
@@ -21,6 +22,7 @@ pub async fn fetch_manga_chapter(
     chapter_id: &ChapterId,
     concurrent_requests_pages: usize,
     optimize_image: bool,
+    on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
@@ -40,6 +42,7 @@ pub async fn fetch_manga_chapter(
         &chapter,
         concurrent_requests_pages,
         optimize_image,
+        on_progress,
     )
     .await
     .map_err(|e| match e {

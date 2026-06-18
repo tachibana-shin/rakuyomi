@@ -225,6 +225,7 @@ pub extern "system" fn Java_git_shin_rakuyomi_1bridge_RakuyomiServer_nativeStart
     port: jint,
 ) -> jint {
     crate::init_logging();
+    shared::usecases::install_update::cleanup_update_backup();
 
     // Store JVM for callbacks
     unowned_env

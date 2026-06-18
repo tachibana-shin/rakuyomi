@@ -17,7 +17,7 @@ if disable_logging then logger:setLevel(logger.levels.err) end
 
 logger.info("Loading Rakuyomi plugin...")
 local backendInitialized, logs
-function getBackend() 
+local function getBackend()
   if backendInitialized then return end
   backendInitialized, logs = Backend.initialize()
 end

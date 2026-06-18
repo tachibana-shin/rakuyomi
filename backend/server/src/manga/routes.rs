@@ -622,6 +622,7 @@ async fn download_manga_chapter(
         &chapter_id,
         concurrent_requests_pages,
         settings.optimize_image,
+        None,
     )
     .await
     .map_err(AppError::from_fetch_manga_chapters_error)?;

@@ -170,9 +170,9 @@ function NotificationView:onMenuHold(item)
         return
       end
 
-      local response = Backend.getNotifications()
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
+      local response_n = Backend.getNotifications()
+      if response_n.type == 'ERROR' then
+        ErrorDialog:show(response_n.message)
 
         return
       end

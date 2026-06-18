@@ -1,6 +1,5 @@
 -- FIXME make class names have _some_ kind of logic
 local ConfirmBox = require("ui/widget/confirmbox")
-local ffiutil = require("ffi/util")
 local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
@@ -212,9 +211,9 @@ function LibraryView:patchTitleBar(count_notify)
 
               settings[key] = radio.provider
 
-              local response = Backend.setSettings(settings)
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
+              local response_s = Backend.setSettings(settings)
+              if response_s.type == 'ERROR' then
+                ErrorDialog:show(response_s.message)
                 return
               end
 
@@ -342,10 +341,8 @@ function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   local is_cover = self:getLibraryViewMode() == "cover"
 
-  local mandatory_parts = {}
-
   for _, manga in ipairs(mangas) do
-    mandatory_parts = {}
+    local mandatory_parts = {}
 
     if is_cover then
       table.insert(mandatory_parts, manga.source.name)
@@ -653,13 +650,13 @@ function LibraryView:_handleContinueReading(manga)
     end
 
     local function openContinueReading()
-      local response = Backend.getSettings()
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
+      local response_s = Backend.getSettings()
+      if response_s.type == 'ERROR' then
+        ErrorDialog:show(response_s.message)
         return
       end
 
-      local settings = response.body
+      local settings = response_s.body
 
       local onReturnCallback = function()
         self:fetchAndShow(self.current_playlist)
@@ -674,7 +671,7 @@ function LibraryView:_handleContinueReading(manga)
       }
       temp_listing.on_return_callback = onReturnCallback
       temp_listing.chapters = chapters
-      temp_listing:openChapterOnReader(chapter_to_open, nil, function(onReturnCallback)
+      temp_listing:openChapterOnReader(chapter_to_open, nil, function()
         self:onClose()
       end)
     end
@@ -848,13 +845,13 @@ function LibraryView:openMenu()
               ok_text = _("Migrate"),
               ok_callback = function()
                 Trapper:wrap(function()
-                  local response = LoadingDialog:showAndRun(
+                  local response_m = LoadingDialog:showAndRun(
                     _("Migrating database..."),
                     function() return Backend.syncDatabase(true, false) end
                   )
 
-                  if response.type == 'ERROR' then
-                    ErrorDialog:show(response.message)
+                  if response_m.type == 'ERROR' then
+                    ErrorDialog:show(response_m.message)
 
                     return
                   end
@@ -874,12 +871,12 @@ function LibraryView:openMenu()
                     text = _("Replace Cloud"),
                     callback = function()
                       Trapper:wrap(function()
-                        local response = LoadingDialog:showAndRun(
+                        local response_r = LoadingDialog:showAndRun(
                           _("Replacing cloud..."),
                           function() return Backend.syncDatabase(false, true) end
                         )
-                        if response.type == 'ERROR' then
-                          ErrorDialog:show(response.message)
+                        if response_r.type == 'ERROR' then
+                          ErrorDialog:show(response_r.message)
 
                           return
                         end
@@ -901,7 +898,7 @@ function LibraryView:openMenu()
             return
           end
 
-          local msg = '';
+          local msg
           if response.body == 'up_to_date' then
             msg = _("Database is already up to date!")
           elseif response.body == 'updated_to_server' then
@@ -1106,9 +1103,9 @@ function LibraryView:startCleaner(modeInvalid)
         UIManager:show(progressbar_dialog)
 
         for i, filename in ipairs(filenames) do
-          local response = Backend.removeFile(filename)
-          if response.type == 'ERROR' then
-            ErrorDialog:show(response.message)
+          local response_f = Backend.removeFile(filename)
+          if response_f.type == 'ERROR' then
+            ErrorDialog:show(response_f.message)
             return
           end
           progressbar_dialog:reportProgress(i)

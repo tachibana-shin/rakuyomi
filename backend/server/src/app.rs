@@ -21,6 +21,7 @@ use shared::chapter_storage::ChapterStorage;
 use shared::database::Database;
 use shared::settings::Settings;
 use shared::source_manager::SourceManager;
+use shared::usecases::install_update::cleanup_update_backup;
 
 use crate::build_info::{get_build_info, DEFAULT_SETTINGS_JSON};
 use crate::listener::{pick_listener, ResolvedListener};
@@ -161,6 +162,7 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
 /// This is the main entry point used by the standalone binary. Blocks
 /// until the listener is closed or an error occurs.
 pub async fn run(home_path: PathBuf) -> Result<()> {
+    cleanup_update_backup();
     let listener = pick_listener().await?;
     let state = build_state(home_path).await?;
     let version = get_build_info()

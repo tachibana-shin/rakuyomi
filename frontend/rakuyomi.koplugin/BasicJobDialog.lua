@@ -1,9 +1,7 @@
 local InfoMessage = require("ui/widget/infomessage")
-local InputContainer = require("ui/widget/container/inputcontainer")
 local UIManager = require("ui/uimanager")
 local ErrorDialog = require("ErrorDialog")
 local _ = require("gettext+")
-local ffiutil = require("ffi/util")
 
 --- @class BasicJobDialog
 --- @field job Job|nil

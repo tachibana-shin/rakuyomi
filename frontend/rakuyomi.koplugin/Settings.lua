@@ -259,6 +259,19 @@ Settings.setting_value_definitions = {
       default = true
     }
   },
+  {
+    nil,
+    { type = 'divider', title = _("Logging") }
+  },
+  {
+    'rakuyomi_disable_logging',
+    {
+      type = 'boolean',
+      title = _("Disable logging"),
+      default = false,
+      is_local = true,
+    }
+  },
 }
 
 

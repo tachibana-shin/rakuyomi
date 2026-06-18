@@ -2,6 +2,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local ConfirmBox = require("ui/widget/confirmbox")
 local UIManager = require("ui/uimanager")
 local Trapper = require("ui/trapper")
+local _ = require("gettext+")
 
 local LoadingDialog = {}
 
@@ -47,6 +48,73 @@ function LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
   UIManager:forceRePaint()
 
   local completed, return_values = Trapper:dismissableRunInSubprocess(runnable, message_dialog)
+  if onCancel == nil then
+    assert(completed, "Expected runnable to run to completion")
+  end
+
+  if conConfirmCancel ~= nil then
+    UIManager:close(conConfirmCancel)
+  end
+  UIManager:close(message_dialog)
+
+  return return_values, cancelled
+end
+
+--- Shows a message with progress updates in a dialog, while running the given `runnable` function.
+--- Must be called from inside a function wrapped with `Trapper:wrap()`.
+---
+--- @generic T: any
+--- @param message string The message to be shown on the dialog.
+--- @param runnable fun(onProgress: fun(progress: { type: string, processed: number?, total: number? })): T The function to be ran while showing the dialog. Receives a callback to report progress.
+--- @param onCancel fun()?: T An optional function to be called if the dialog is dismissed/cancelled.
+--- @param onConfirmCancel (fun(any): any) | nil
+--- @return T, boolean
+function LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onConfirmCancel)
+  assert(Trapper:isWrapped(), "expected to be called inside a function wrapped with `Trapper:wrap()`")
+
+  local cancelled = false
+  local conConfirmCancel = nil
+  local message_dialog
+  local function createDialog(message)
+    message_dialog = ConfirmBox:new {
+      text = message,
+      icon = "notice-info",
+      no_ok_button = true,
+      cancel_callback = function()
+        local cancel = function()
+          cancelled = true
+          if onCancel ~= nil then
+            onCancel()
+          end
+        end
+
+        if onConfirmCancel ~= nil then
+          conConfirmCancel = onConfirmCancel(cancel)
+        else
+          cancel()
+        end
+      end
+    }
+  end
+
+  createDialog(message)
+  UIManager:show(message_dialog)
+  UIManager:forceRePaint()
+
+  local completed, return_values = true, runnable(function(progress)
+    if not progress then return end
+
+    if progress.type == 'DOWNLOADING' then
+      UIManager:close(message_dialog)
+      createDialog(message ..
+      "\n\n" ..
+      math.floor(progress.processed / progress.total * 100) ..
+      "% (" .. progress.processed .. "/" .. progress.total .. ")")
+      UIManager:show(message_dialog)
+      UIManager:forceRePaint()
+    end
+  end)
+
   if onCancel == nil then
     assert(completed, "Expected runnable to run to completion")
   end

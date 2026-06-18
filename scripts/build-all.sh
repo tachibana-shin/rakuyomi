@@ -42,7 +42,18 @@ panic = "abort"
 EOF
 
   # Build all required crates
-  RUSTFLAGS="$base_flags" cross build --release --target "$target"
+  RUSTFLAGS="$base_flags" cross build --release -p server -p cbz_metadata_reader --target "$target"
+
+  local gnu_target="$target"
+  if [[ "$target" == *"musleabihf"* ]]; then
+      gnu_target="arm-unknown-linux-gnueabihf.2.19"
+  elif [[ "$target" == *"musleabi"* ]]; then
+      gnu_target="arm-unknown-linux-gnueabi.2.19"
+  elif [[ "$target" == *"musl"* ]]; then
+      gnu_target="${target/-musl/-gnu.2.17}"
+  fi
+
+  RUSTFLAGS="$base_flags" cargo zigbuild --release -p uds_http_request --lib --target "$gnu_target"
   cd ..
 
   # Package osh output

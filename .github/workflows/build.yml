@@ -26,6 +26,19 @@ jobs:
     - name: Install system deps
       run: sudo apt update && sudo apt install -y pkg-config libfontconfig1-dev libfreetype6-dev podman gettext && echo "CROSS_CONTAINER_ENGINE=podman" >> $GITHUB_ENV
 
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: |
+          arm-unknown-linux-gnueabi
+          arm-unknown-linux-musleabi
+
+    - name: Setup Zig
+      uses: mlugg/setup-zig@v2
+      with:
+        version: 0.13.0
+    - name: Install cargo-zigbuild
+      uses: taiki-e/install-action@cargo-zigbuild
     - name: Cache Cargo
       uses: actions/cache@v4
       with:

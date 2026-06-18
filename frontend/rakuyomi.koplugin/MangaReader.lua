@@ -166,7 +166,7 @@ function MangaReader:overrideBtnFileManager(menu)
   local old_callback = menu.menu_items.filemanager.callback
 
   if self.is_showing then
-    local function rakuyomi_callback(old_callback)
+    local function rakuyomi_callback(old_callback_param)
       local key = "allow_commaneer_filemanager"
       if G_reader_settings:nilOrFalse(key) then
         local confirm_dialog
@@ -184,7 +184,7 @@ function MangaReader:overrideBtnFileManager(menu)
           cancel_callback = function()
             UIManager:close(confirm_dialog)
 
-            old_callback()
+            old_callback_param()
           end
         }
 

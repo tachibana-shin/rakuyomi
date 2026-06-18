@@ -23,6 +23,4 @@ jobs:
           sudo luarocks install luacheck
 
       - name: Run luacheck
-        run: |
-          cd frontend/rakuyomi.koplugin
-          luacheck --std=luajit --globals KOReader .
+        run: luacheck frontend/

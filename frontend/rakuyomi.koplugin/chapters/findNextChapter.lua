@@ -30,7 +30,7 @@ end
 local function findNextChapter(chapters, current_chapter)
   local best_candidate = nil
 
-  for i, candidate in ipairs(chapters) do
+  for _, candidate in ipairs(chapters) do
     if candidate.chapter_num == nil or current_chapter.chapter_num == nil then
       goto continue
     end

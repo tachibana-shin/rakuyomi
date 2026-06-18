@@ -9,6 +9,10 @@ permissions:
   issues: write
   pull-requests: write
 jobs:
+  luacheck:
+    uses: ./.github/workflows/luacheck.yml
+  test:
+    uses: ./.github/workflows/test.yml
   build:
     runs-on: ubuntu-latest
     strategy:

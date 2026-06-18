@@ -365,7 +365,7 @@ function MangaSearchResults:onContextMenuChoice(item)
 
           Trapper:wrap(function()
             --- @type ErrorResponse
-            local err = nil
+            local err
             if manga.in_library then
               err = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
             else

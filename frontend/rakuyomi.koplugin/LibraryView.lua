@@ -851,7 +851,7 @@ function LibraryView:openMenu()
                   )
 
                   if response_m.type == 'ERROR' then
-                    ErrorDialog:show(response.message)
+                    ErrorDialog:show(response_m.message)
 
                     return
                   end
@@ -876,7 +876,7 @@ function LibraryView:openMenu()
                           function() return Backend.syncDatabase(false, true) end
                         )
                         if response_r.type == 'ERROR' then
-                          ErrorDialog:show(response.message)
+                          ErrorDialog:show(response_r.message)
 
                           return
                         end

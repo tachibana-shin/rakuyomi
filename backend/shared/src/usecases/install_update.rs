@@ -3,7 +3,7 @@ use futures_util::StreamExt;
 use log::{error, info, warn};
 use std::fs;
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 use tempfile::{NamedTempFile, TempDir};
 use walkdir::WalkDir;
@@ -12,37 +12,63 @@ pub async fn install_update(version: String, build_name: String) -> anyhow::Resu
     // Download the asset to a temporary file
     let update_zip_file = download_update_zip(&version, &build_name).await?;
 
-    #[cfg(target_os = "android")]
-    let plugin_dir = {
-        let paths = [
-            "/sdcard/koreader/plugins/rakuyomi.koplugin",
-            "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin",
-        ];
-
-        let chosen_path = paths
-            .iter()
-            .find(|&&p| std::path::Path::new(p).exists())
-            .cloned()
-            .unwrap_or(paths[0]);
-
-        Path::new(chosen_path)
-    };
-
-    #[cfg(not(target_os = "android"))]
-    let current_exe = std::env::current_exe().context("Could not get current executable")?;
-    #[cfg(not(target_os = "android"))]
-    let plugin_dir = current_exe
-        .parent()
-        .context("Could not get rakuyomi's plugin directory")?;
+    let plugin_dir = resolve_plugin_dir().context("Could not get rakuyomi's plugin directory")?;
 
     // Get the path of the temporary file
     let zip_path = update_zip_file.path().to_path_buf();
 
     // Extract the update - the zip contains a rakuyomi.koplugin folder
-    extract_update(&zip_path, plugin_dir).context("Could not extract update")?;
+    extract_update(&zip_path, &plugin_dir).context("Could not extract update")?;
 
     // The update_zip_file (TempFile) will be automatically cleaned up when it goes out of scope here
     Ok(())
+}
+
+/// Remove the backup directory left behind after a successful update.
+pub fn cleanup_update_backup() {
+    let plugin_dir = match resolve_plugin_dir() {
+        Ok(path) => path,
+        Err(e) => {
+            warn!("Failed to locate rakuyomi plugin directory: {}", e);
+            return;
+        }
+    };
+
+    cleanup_backup(&plugin_dir.with_extension("koplugin.bak"));
+}
+
+#[cfg(target_os = "android")]
+fn resolve_plugin_dir() -> anyhow::Result<PathBuf> {
+    let paths = [
+        "/sdcard/koreader/plugins/rakuyomi.koplugin",
+        "/storage/emulated/0/koreader/plugins/rakuyomi.koplugin",
+    ];
+
+    let chosen_path = paths
+        .iter()
+        .find(|&&p| std::path::Path::new(p).exists())
+        .cloned()
+        .unwrap_or(paths[0]);
+
+    Ok(PathBuf::from(chosen_path))
+}
+
+#[cfg(not(target_os = "android"))]
+fn resolve_plugin_dir() -> anyhow::Result<PathBuf> {
+    if let Some(path) = std::env::args().next().and_then(|arg| {
+        PathBuf::from(arg)
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty())
+            .map(Path::to_path_buf)
+    }) {
+        return Ok(path);
+    }
+
+    let current_exe = std::env::current_exe().context("Could not get current executable")?;
+    current_exe
+        .parent()
+        .map(Path::to_path_buf)
+        .context("Could not get rakuyomi's plugin directory")
 }
 
 fn cleanup_tmp() -> anyhow::Result<()> {
@@ -180,11 +206,10 @@ fn extract_update(zip_path: &Path, plugin_dir: &Path) -> anyhow::Result<()> {
     // 3. Attempt to install the new files
     let install_result = perform_installation(temp_dir.path(), plugin_dir);
 
-    // 4. Handle result: Cleanup on success, Rollback on failure
+    // 4. Handle result: leave backup on success (startup will clean it up), rollback on failure.
     match install_result {
         Ok(_) => {
             info!("Update installed successfully to: {}", plugin_dir.display());
-            cleanup_backup(&backup_dir);
             Ok(())
         }
         Err(install_err) => {
@@ -300,7 +325,6 @@ fn perform_installation(temp_dir_path: &Path, plugin_dir: &Path) -> anyhow::Resu
     Ok(())
 }
 
-/// Cleans up the backup directory after a successful installation.
 fn cleanup_backup(backup_dir: &Path) {
     if backup_dir.exists() {
         if let Err(e) = fs::remove_dir_all(backup_dir) {

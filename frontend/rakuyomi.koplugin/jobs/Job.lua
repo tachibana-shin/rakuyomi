@@ -71,10 +71,15 @@ function Job:requestCancellation()
   return true
 end
 
+--- @param onProgress fun(progress: DownloadProgress)|nil
 --- @return SuccessfulResponse<unknown>|ErrorResponse
-function Job:runUntilCompletion()
+function Job:runUntilCompletion(onProgress)
   while true do
     local result = self:poll()
+
+    if result.type == 'PENDING' and onProgress ~= nil then
+      onProgress(result.body)
+    end
 
     if result.type ~= 'PENDING' then
       return result

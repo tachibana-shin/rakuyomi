@@ -57,8 +57,8 @@ function DownloadChapter:start()
 end
 
 --- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
-function DownloadChapter:runUntilCompletion()
-  return Job.runUntilCompletion(self)
+function DownloadChapter:runUntilCompletion(onProgress)
+  return Job.runUntilCompletion(self, onProgress)
 end
 
 return DownloadChapter

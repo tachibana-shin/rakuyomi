@@ -250,6 +250,15 @@ Settings.setting_value_definitions = {
       default = true
     }
   },
+  {
+    'rakuyomi_show_download_progress',
+    {
+      type = 'boolean',
+      title = _("Show chapter download progress"),
+      is_local = true,
+      default = true
+    }
+  },
 }
 
 

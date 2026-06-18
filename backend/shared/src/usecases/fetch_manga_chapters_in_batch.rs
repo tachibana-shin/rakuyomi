@@ -71,6 +71,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     &information,
                     concurrent_requests_pages,
                     optimize_image,
+                    None,
                 ) => result
             };
 

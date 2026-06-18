@@ -769,41 +769,48 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
 
     local time = require("ui/time")
     local start_time = time.now()
-    local response, cancelled = LoadingDialog:showAndRun(
-      _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
-      .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
-      .. ' '
-      .. (chapter.title or ''),
-      function()
-        local response_start = download_job:start()
-        if response_start.type == 'ERROR' then
-          ErrorDialog:show(_('Could not download chapter.'))
 
-          return response_start
+    local message = _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
+        .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
+        .. ' '
+        .. (chapter.title or '')
+    local runnable, onCancel, onConfirmCancel =
+        function(onProgress)
+          local response_start = download_job:start()
+          if response_start.type == 'ERROR' then
+            return response_start
+          end
+
+          return download_job:runUntilCompletion(onProgress)
+        end,
+        function()
+          if download_job.started then
+            download_job:requestCancellation()
+          end
+
+          local cancelledMessage = InfoMessage:new {
+            text = _("Download cancelled."),
+          }
+          UIManager:show(cancelledMessage)
+        end,
+        function(cancel)
+          local confirm = ConfirmBox:new {
+            text = _("Are you sure you want to cancel the download?"),
+            ok_callback = cancel
+          }
+          UIManager:show(confirm)
+
+          return confirm
         end
 
-        return download_job:runUntilCompletion()
-      end,
-      function()
-        if download_job.started then
-          download_job:requestCancellation()
-        end
+    local show_progress = G_reader_settings:isTrue("rakuyomi_show_download_progress", true)
 
-        local cancelledMessage = InfoMessage:new {
-          text = _("Download cancelled."),
-        }
-        UIManager:show(cancelledMessage)
-      end,
-      function(cancel)
-        local confirm = ConfirmBox:new {
-          text = _("Are you sure you want to cancel the download?"),
-          ok_callback = cancel
-        }
-        UIManager:show(confirm)
-
-        return confirm
-      end
-    )
+    local response, cancelled
+    if show_progress then
+      response, cancelled = LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onConfirmCancel)
+    else
+      response, cancelled = LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
+    end
 
     if cancelled then
       return

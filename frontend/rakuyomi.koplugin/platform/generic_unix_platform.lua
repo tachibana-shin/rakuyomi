@@ -146,9 +146,6 @@ function GenericUnixPlatform:startServer()
     capturer:setupChildProcess()
 
     if SERVER_COMMAND_WORKING_DIRECTORY ~= nil then
-      ffi.cdef([[
-        int chdir(const char *) __attribute__((nothrow, leaf));
-      ]])
       logger.info('changing directory to', SERVER_COMMAND_WORKING_DIRECTORY)
       C.chdir(SERVER_COMMAND_WORKING_DIRECTORY)
     end

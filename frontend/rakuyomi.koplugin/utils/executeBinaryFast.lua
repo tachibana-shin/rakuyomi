@@ -75,6 +75,11 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
       if ffi.errno() ~= EINTR then break end
     end
 
+    local exit_code = math.floor(status[0] / 256) % 256
+    if exit_code ~= 0 then
+      return nil, "Binary exited with non-zero status: " .. exit_code
+    end
+
     return table.concat(chunks)
   end
 end

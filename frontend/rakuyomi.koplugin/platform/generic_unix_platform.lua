@@ -10,6 +10,7 @@ local platformUtil = require('platform/util')
 local must = platformUtil.must
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
+local execute_binary_fast = require("utils/executeBinaryFast")
 
 local SERVER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_SERVER_WORKING_DIRECTORY')
 local SERVER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_SERVER_COMMAND_OVERRIDE')
@@ -59,21 +60,13 @@ function UnixServer:request(request)
   }
 
   local requestJson = rapidjson.encode(requestWithDefaults)
+  local udsHttpRequestCommand = REQUEST_COMMAND_OVERRIDE or (Paths.getPluginDirectory() .. "/uds_http_request")
 
-  local udsHttpRequestCommand = REQUEST_COMMAND_OVERRIDE or Paths.getPluginDirectory() .. "/uds_http_request"
+  local responseJson, err = execute_binary_fast(udsHttpRequestCommand, requestJson, REQUEST_COMMAND_WORKING_DIRECTORY)
 
-  local command = udsHttpRequestCommand .. " '" .. requestJson .. "'"
-  if REQUEST_COMMAND_WORKING_DIRECTORY ~= nil then
-    command = 'cd ' .. REQUEST_COMMAND_WORKING_DIRECTORY .. ' && ' .. command
+  if not responseJson or responseJson == "" then
+    return { type = 'ERROR', message = err or "Rust binary returned empty output or crashed" }
   end
-
-  local output, err = io.popen(command, 'r')
-  if output == nil then
-    return { type = 'ERROR', message = err }
-  end
-
-  local responseJson = output:read('*a')
-  output:close()
 
   local response, err2 = rapidjson.decode(responseJson)
   if err2 ~= nil then

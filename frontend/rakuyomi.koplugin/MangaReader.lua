@@ -204,9 +204,11 @@ function MangaReader:overrideBtnFileManager(menu)
       ReaderMenu.setUpdateItemTable = function(ui)
         setUpdateItemTablePatched(ui)
 
-        local origin_callback = ui._zen_home_tab_item.callback
-        ui._zen_home_tab_item.callback = function()
-          rakuyomi_callback(origin_callback)
+        if ui._zen_home_tab_item then
+          local origin_callback = ui._zen_home_tab_item.callback
+          ui._zen_home_tab_item.callback = function()
+            rakuyomi_callback(origin_callback)
+          end
         end
       end
     end

@@ -490,7 +490,10 @@ pub async fn download_all_images(
     };
 
     #[cfg(feature = "all")]
-    let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(concurrent_requests).collect().await;
+    let store: HashMap<_, _> = stream::iter(tasks)
+        .buffer_unordered(concurrent_requests)
+        .collect()
+        .await;
 
     Ok(store)
 }

@@ -19,7 +19,7 @@ pub enum SyncResult {
 }
 
 pub async fn sync_database(
-    db: &mut Database,
+    db: &Database,
     settings: &mut Settings,
     accept_migrate_local: bool,
     accept_replace_remote: bool,

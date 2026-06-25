@@ -139,7 +139,7 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
 
     let state = State {
         source_manager: Arc::new(Mutex::new(source_manager)),
-        database: Arc::new(Mutex::new(database)),
+        database: Arc::new(database),
         chapter_storage: Arc::new(Mutex::new(chapter_storage)),
         settings: Arc::new(Mutex::new(settings)),
         settings_path,

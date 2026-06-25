@@ -1,5 +1,7 @@
 use shared::{
-    chapter_downloader::{ensure_chapter_is_in_storage, DownloadError, Error as ChapterDownloaderError},
+    chapter_downloader::{
+        ensure_chapter_is_in_storage, DownloadError, Error as ChapterDownloaderError,
+    },
     chapter_storage::ChapterStorage,
     database::Database,
     model::ChapterId,
@@ -40,7 +42,7 @@ pub struct DownloadChapterJob {
 impl DownloadChapterJob {
     pub fn spawn_new(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<tokio::sync::Mutex<Database>>,
+        db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
@@ -87,7 +89,7 @@ impl DownloadChapterJob {
     async fn do_job(
         cancellation_token: CancellationToken,
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<tokio::sync::Mutex<Database>>,
+        db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
@@ -102,7 +104,6 @@ impl DownloadChapterJob {
         };
 
         let (manga, chapter) = {
-            let db = db.lock().await;
             let manga = db
                 .find_cached_manga_information(chapter_id.manga_id())
                 .await

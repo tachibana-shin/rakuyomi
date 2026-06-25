@@ -424,9 +424,7 @@ where
     ));
     let stored_process_images_clone = stored_process_images.clone();
 
-    let client = Client::builder()
-        .timeout(Duration::from_secs(30))
-        .build()?;
+    let client = Client::builder().timeout(Duration::from_secs(30)).build()?;
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();

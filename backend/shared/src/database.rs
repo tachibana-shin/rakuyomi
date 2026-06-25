@@ -6,7 +6,12 @@ use std::{
 };
 
 use anyhow::Result;
-use sqlx::{sqlite::SqliteConnectOptions, Error, Pool, QueryBuilder, Sqlite};
+use sqlx::{
+    pool::PoolOptions,
+    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous},
+    Error, Pool, QueryBuilder, Sqlite,
+};
+use tokio::sync::RwLock;
 use url::Url;
 
 use crate::{
@@ -18,10 +23,18 @@ use crate::{
     source_collection::SourceCollection,
 };
 
-#[derive(Clone)]
 pub struct Database {
     pub filename: PathBuf,
-    pool: Pool<Sqlite>,
+    pool: RwLock<Pool<Sqlite>>,
+}
+
+impl Clone for Database {
+    fn clone(&self) -> Self {
+        Self {
+            filename: self.filename.clone(),
+            pool: RwLock::new(self.pool.blocking_read().clone()),
+        }
+    }
 }
 
 const BIND_LIMIT: usize = 32766;
@@ -31,30 +44,42 @@ impl Database {
     pub async fn new(filename: &Path) -> Result<Self> {
         let options = SqliteConnectOptions::new()
             .filename(filename)
-            .create_if_missing(true);
-        let pool = Pool::connect_with(options).await?;
+            .create_if_missing(true)
+            .journal_mode(SqliteJournalMode::Wal)
+            .synchronous(SqliteSynchronous::Normal)
+            .foreign_keys(true);
+
+        let pool = PoolOptions::new()
+            .max_connections(4)
+            .min_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(5))
+            .connect_with(options)
+            .await?;
 
         sqlx::migrate!().run(&pool).await?;
 
         Ok(Self {
-            pool,
+            pool: RwLock::new(pool),
             filename: filename.to_path_buf(),
         })
     }
 
-    pub async fn hot_replace(&mut self, buf: &[u8]) -> Result<()> {
-        self.pool.close().await;
+    pub async fn hot_replace(&self, buf: &[u8]) -> Result<()> {
+        {
+            let pool = self.pool.write().await;
+            pool.close().await;
+        }
 
         tokio::fs::write(&self.filename, buf).await?;
 
         let options = SqliteConnectOptions::new()
             .filename(&self.filename)
             .create_if_missing(true);
-        let pool = Pool::<Sqlite>::connect_with(options).await?;
+        let new_pool = Pool::<Sqlite>::connect_with(options).await?;
 
-        sqlx::migrate!().run(&pool).await?;
+        sqlx::migrate!().run(&new_pool).await?;
 
-        self.pool = pool;
+        *self.pool.write().await = new_pool;
 
         Ok(())
     }
@@ -66,7 +91,7 @@ impl Database {
                 SELECT * FROM manga_library;
             "#
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.manga_id()).collect())
@@ -85,7 +110,7 @@ impl Database {
             AND ml.source_id = md.source_id
             "#
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -176,7 +201,7 @@ impl Database {
                     ORDER BY ml.rowid
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::Descending => {
@@ -246,7 +271,7 @@ impl Database {
                     ORDER BY ml.rowid DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleAsc => {
@@ -316,7 +341,7 @@ impl Database {
                     ORDER BY mi.title COLLATE NOCASE ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleDesc => {
@@ -386,7 +411,7 @@ impl Database {
                     ORDER BY mi.title COLLATE NOCASE DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadAsc => {
@@ -456,7 +481,7 @@ impl Database {
                     ORDER BY unread_chapters_count ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadDesc => {
@@ -526,7 +551,7 @@ impl Database {
                     ORDER BY unread_chapters_count DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadAsc => {
@@ -596,7 +621,7 @@ impl Database {
                     ORDER BY lti.last_read_time ASC NULLS LAST
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadDesc => {
@@ -666,7 +691,7 @@ impl Database {
                     ORDER BY lti.last_read_time DESC NULLS LAST
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceAsc => {
@@ -736,7 +761,7 @@ impl Database {
                     ORDER BY ml.source_id COLLATE NOCASE ASC, mi.title COLLATE NOCASE ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceDesc => {
@@ -806,7 +831,7 @@ impl Database {
                     ORDER BY ml.source_id COLLATE NOCASE DESC, mi.title COLLATE NOCASE DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
         };
@@ -850,7 +875,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -868,7 +893,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -911,7 +936,7 @@ impl Database {
             "#,
             source_id, manga_id, preferred_scanlator
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&*self.pool.read().await)
         .await?;
 
         if !row.has_chapters.unwrap_or(false) {
@@ -990,10 +1015,13 @@ impl Database {
             query_builder = query_builder.bind(id.source_id().value()).bind(id.value());
         }
 
-        let rows = query_builder.fetch_all(&self.pool).await.map_err(|e| {
-            eprintln!("🔥 SQL query failed: {}", e);
-            e
-        })?;
+        let rows = query_builder
+            .fetch_all(&*self.pool.read().await)
+            .await
+            .map_err(|e| {
+                eprintln!("🔥 SQL query failed: {}", e);
+                e
+            })?;
 
         for row in rows {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
@@ -1030,7 +1058,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1054,7 +1082,7 @@ impl Database {
             manga_id,
             chapter_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1068,11 +1096,12 @@ impl Database {
         if invalid_mode {
             let mut remaining = chapter_storage.collect_all_files(1);
 
+            let pool_lock = self.pool.read().await;
             let mut stream = sqlx::query_as!(
                 ChapterInformationsRow,
                 r#"SELECT * FROM chapter_informations"#
             )
-            .fetch(&self.pool);
+            .fetch(&*pool_lock);
 
             while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
@@ -1100,6 +1129,7 @@ impl Database {
         } else {
             let mut paths = Vec::new();
 
+            let pool_lock = self.pool.read().await;
             let mut stream = sqlx::query!(
                 r#"
                 SELECT source_id, manga_id, chapter_id
@@ -1107,7 +1137,7 @@ impl Database {
                 WHERE read = 1
                 "#
             )
-            .fetch(&self.pool);
+            .fetch(&*pool_lock);
 
             while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
@@ -1151,7 +1181,7 @@ impl Database {
             source_id,
             manga_id_value
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -1177,7 +1207,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.into()).collect())
@@ -1219,7 +1249,7 @@ impl Database {
             source_id,
             manga_id_val,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -1311,7 +1341,7 @@ impl Database {
                 query = query.bind(info.cover_url.as_ref().map(|url| url.to_string()));
             }
 
-            query.execute(&self.pool).await?;
+            query.execute(&*self.pool.read().await).await?;
         }
 
         Ok(())
@@ -1346,7 +1376,7 @@ impl Database {
                     b.push_bind(chapter_id.value());
                 });
 
-            builder.build().execute(&self.pool).await?;
+            builder.build().execute(&*self.pool.read().await).await?;
         }
 
         const INSERT_FIELD_COUNT: usize = 8;
@@ -1390,7 +1420,7 @@ impl Database {
                 last_updated = excluded.last_updated",
             );
 
-            builder.build().execute(&self.pool).await?;
+            builder.build().execute(&*self.pool.read().await).await?;
         }
 
         Ok(())
@@ -1423,7 +1453,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(row.map(|v| {
@@ -1512,7 +1542,7 @@ impl Database {
             last_opened,
             date_added,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1532,7 +1562,7 @@ impl Database {
             source_id,
             manga_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1553,7 +1583,7 @@ impl Database {
             manga_id,
             state.preferred_scanlator,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1576,7 +1606,7 @@ impl Database {
             manga_id,
             chapter_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1598,7 +1628,7 @@ impl Database {
             source_id,
             manga_id,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -1630,7 +1660,7 @@ impl Database {
             state.read,
             state.last_read,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1665,7 +1695,7 @@ impl Database {
             value,
             now,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1690,7 +1720,7 @@ impl Database {
             chapter_id,
             now,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1705,7 +1735,7 @@ impl Database {
             source_id,
             manga_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| (row.last_check, row.next_ts_arima)))
@@ -1737,7 +1767,7 @@ impl Database {
             value,
             next_ts_arima
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1754,7 +1784,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1796,7 +1826,7 @@ impl Database {
         }
 
         // Execute
-        query.execute(&self.pool).await?;
+        query.execute(&*self.pool.read().await).await?;
 
         Ok(())
     }
@@ -1833,7 +1863,7 @@ impl Database {
             query = query.bind(s);
         }
 
-        let row = query.fetch_optional(&self.pool).await?;
+        let row = query.fetch_optional(&*self.pool.read().await).await?;
 
         use sqlx::Row;
         Ok(row.map(|row| {
@@ -1862,7 +1892,7 @@ impl Database {
             "#,
             now
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(due_mangas
@@ -1890,7 +1920,7 @@ impl Database {
             WHERE is_read = 0
             "#
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&*self.pool.read().await)
         .await?;
 
         Ok(value.count)
@@ -1925,7 +1955,7 @@ impl Database {
                 n.created_at DESC
             "#,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.into()).collect())
@@ -1938,7 +1968,7 @@ impl Database {
             "#,
             id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1950,7 +1980,7 @@ impl Database {
             DELETE FROM notifications WHERE 1 = 1
             "#,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -2004,14 +2034,14 @@ impl Database {
                 .bind(read);
         }
 
-        query.execute(&self.pool).await?;
+        query.execute(&*self.pool.read().await).await?;
 
         self.count_unread_chapters(manga_id).await
     }
 
     pub async fn get_playlists(&self) -> Result<Vec<Playlist>> {
         let playlists = sqlx::query_as!(Playlist, "SELECT id, name FROM playlists")
-            .fetch_all(&self.pool)
+            .fetch_all(&*self.pool.read().await)
             .await?;
 
         Ok(playlists)
@@ -2020,7 +2050,7 @@ impl Database {
     pub async fn create_playlist(&self, name: String) -> Result<Playlist> {
         let row: (i64,) = sqlx::query_as("INSERT INTO playlists (name) VALUES (?1) RETURNING id")
             .bind(&name)
-            .fetch_one(&self.pool)
+            .fetch_one(&*self.pool.read().await)
             .await?;
 
         Ok(Playlist { id: row.0, name })
@@ -2028,7 +2058,7 @@ impl Database {
 
     pub async fn delete_playlist(&self, id: i64) -> Result<()> {
         sqlx::query!("DELETE FROM playlists WHERE id = ?1", id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2036,7 +2066,7 @@ impl Database {
 
     pub async fn rename_playlist(&self, id: i64, name: String) -> Result<()> {
         sqlx::query!("UPDATE playlists SET name = ?1 WHERE id = ?2", name, id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2047,7 +2077,7 @@ impl Database {
         let manga_id = manga_id.value();
 
         sqlx::query!("INSERT INTO playlist_mangas (playlist_id, source_id, manga_id) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING", playlist_id, source_id, manga_id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2062,7 +2092,7 @@ impl Database {
         let manga_id = manga_id.value();
 
         sqlx::query!("DELETE FROM playlist_mangas WHERE playlist_id = ?1 AND source_id = ?2 AND manga_id = ?3", playlist_id, source_id, manga_id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2144,7 +2174,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
              crate::settings::LibrarySortingMode::Descending => {
@@ -2216,7 +2246,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleAsc => {
@@ -2288,7 +2318,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleDesc => {
@@ -2360,7 +2390,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadAsc => {
@@ -2432,7 +2462,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadDesc => {
@@ -2504,7 +2534,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadAsc => {
@@ -2576,7 +2606,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadDesc => {
@@ -2648,7 +2678,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceAsc => {
@@ -2720,7 +2750,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceDesc => {
@@ -2792,7 +2822,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
         };

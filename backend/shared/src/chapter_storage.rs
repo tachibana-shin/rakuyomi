@@ -289,9 +289,7 @@ impl ChapterStorage {
 
             let evicted_bytes = evicted_size.bytes() as u64;
             let current_bytes = current_size.bytes() as u64;
-            current_size = Size::from_bytes(
-                current_bytes.saturating_sub(evicted_bytes),
-            );
+            current_size = Size::from_bytes(current_bytes.saturating_sub(evicted_bytes));
             self.cached_storage_size
                 .fetch_sub(evicted_bytes, Ordering::Relaxed);
         }

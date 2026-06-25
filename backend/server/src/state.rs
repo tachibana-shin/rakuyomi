@@ -5,7 +5,7 @@ use shared::{
     chapter_storage::ChapterStorage, database::Database, settings::Settings,
     source_manager::SourceManager,
 };
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tokio_util::sync::CancellationToken;
 
 use crate::job::State as JobState;
@@ -19,4 +19,5 @@ pub struct State {
     pub settings_path: PathBuf,
     pub job_state: JobState,
     pub cancel_token_store: Arc<Mutex<HashMap<usize, CancellationToken>>>,
+    pub download_semaphore: Arc<Semaphore>,
 }

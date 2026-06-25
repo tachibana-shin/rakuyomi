@@ -607,21 +607,23 @@ async fn download_manga_chapter(
     Path(params): Path<DownloadMangaChapterParams>,
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
-    let database = database.lock().await;
-    let chapter_storage = &*chapter_storage.lock().await;
-    let settings = settings.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
+    let (db, cs, concurrent_requests_pages, optimize_image) = {
+        let db = database.lock().await;
+        let cs = chapter_storage.lock().await;
+        let settings = settings.lock().await;
+        (db.clone(), cs.clone(), settings.concurrent_requests_pages.unwrap_or(4), settings.optimize_image)
+    };
 
     let chapter_id = ChapterId::from(params);
-    let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap_or(4);
     let output_path = usecases::fetch_manga_chapter(
         &token.0,
-        &database,
+        &db,
         &source,
-        chapter_storage,
+        &cs,
         &chapter_id,
         concurrent_requests_pages,
-        settings.optimize_image,
+        optimize_image,
         None,
     )
     .await

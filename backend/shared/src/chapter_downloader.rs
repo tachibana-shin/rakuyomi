@@ -5,6 +5,7 @@ use std::{
     io::{Cursor, Seek, Write},
     path::{Path, PathBuf},
     sync::Arc,
+    time::Duration,
 };
 use tempfile::NamedTempFile;
 use tokio_util::sync::CancellationToken;
@@ -173,6 +174,7 @@ where
     writer.write_all(metadata.to_xml()?.as_bytes())?;
 
     let client = Client::builder()
+        .timeout(Duration::from_secs(30))
         .danger_accept_invalid_certs(true)
         .danger_accept_invalid_hostnames(true)
         .redirect(Policy::none())
@@ -270,10 +272,9 @@ where
                                             eprintln!("Error = {err}");
                                             err
                                         })?
-                                } else {
-                                    let data = response_bytes.to_vec();
-
-                                    if optimize_image {
+                                } else if optimize_image {
+                                    tokio::task::spawn_blocking(move || -> anyhow::Result<Vec<u8>> {
+                                        let data = response_bytes.to_vec();
                                         if let Some(image) =
                                             crate::source::decode_image::decode_image_fast(&data)
                                         {
@@ -296,35 +297,39 @@ where
                                                         let mut comp = comp.start_compress(Vec::new())?;
                                                         comp.write_scanlines(&rgb_pixels)?;
 
-                                                        comp.finish()?
+                                                        Ok(comp.finish()?)
                                                     }
                                                     Err(e) => {
                                                         eprintln!("failed to convert ARGB to RGB: {e}");
-                                                        data
+                                                        Ok(data)
                                                     }
                                                 }
                                             } else {
-                                                data
+                                                Ok(data)
                                             }
                                         } else {
-                                            data
+                                            Ok(data)
                                         }
-                                    } else {
-                                        data
-                                    }
+                                    })
+                                    .await??
+                                } else {
+                                    response_bytes.to_vec()
                                 };
 
                                 let final_image = if let Some(blocks_json) = page.base64.as_ref() {
                                     let blocks: Vec<Block> = serde_json::from_str(blocks_json)
                                         .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
 
-                                    match unscrable_image(response_bytes.to_vec(), blocks) {
-                                        Ok(result) => result,
-                                        Err(e) => {
-                                            eprintln!("unscrable_image failed: {}", e);
-                                            anyhow::bail!(e)
+                                    tokio::task::spawn_blocking(move || {
+                                        match unscrable_image(response_bytes.to_vec(), blocks) {
+                                            Ok(result) => Ok(result),
+                                            Err(e) => {
+                                                eprintln!("unscrable_image failed: {}", e);
+                                                anyhow::bail!(e)
+                                            }
                                         }
-                                    }
+                                    })
+                                    .await??
                                 } else {
                                     response_bytes.to_vec()
                                 };
@@ -388,7 +393,9 @@ where
     ));
     let stored_process_images_clone = stored_process_images.clone();
 
-    let client = Client::builder().build()?;
+    let client = Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()?;
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();

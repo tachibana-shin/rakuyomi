@@ -111,7 +111,9 @@ impl ChapterStorage {
             return Ok(file);
         }
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()?;
         let bytes = tokio::select! {
             _ = token.cancelled() => Err(anyhow::anyhow!("cancelled")),
             result = async {
@@ -242,7 +244,10 @@ impl ChapterStorage {
         temporary_file: NamedTempFile,
         errors: &Vec<crate::chapter_downloader::DownloadError>,
     ) -> Result<PathBuf> {
-        let mut current_size = self.calculate_storage_size();
+        let mut current_size = {
+            let storage = self.clone();
+            tokio::task::spawn_blocking(move || storage.calculate_storage_size()).await?
+        };
         let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.size());
 
         while current_size + persisted_chapter_size > self.storage_size_limit {
@@ -261,7 +266,9 @@ impl ChapterStorage {
                     persisted_chapter_size,
                 ))?;
 
-            current_size = self.calculate_storage_size();
+            let storage = self.clone();
+            current_size =
+                tokio::task::spawn_blocking(move || storage.calculate_storage_size()).await?;
         }
 
         // Persist using the new path format

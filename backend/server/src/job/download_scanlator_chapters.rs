@@ -60,14 +60,14 @@ impl DownloadScanlatorChaptersJob {
                 scanlator: scanlator_filter.scanlator,
                 amount: scanlator_filter.amount,
             };
-            let database = { database.lock().await };
+            let db_clone = database.lock().await.clone();
             let lang_refs: Vec<&str> = langs.iter().map(|s| s.as_str()).collect();
 
             let stream =
                 shared::usecases::fetch_manga_chapters_in_batch::fetch_manga_chapters_in_batch(
                     cancellation_token_clone,
                     &source,
-                    &database,
+                    &db_clone,
                     &chapter_storage,
                     manga_id,
                     filter,

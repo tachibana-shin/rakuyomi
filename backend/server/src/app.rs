@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use log::info;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
@@ -145,6 +145,7 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         settings_path,
         job_state: Default::default(),
         cancel_token_store: Arc::new(Mutex::new(HashMap::new())),
+        download_semaphore: Arc::new(Semaphore::new(3)),
     };
 
     {

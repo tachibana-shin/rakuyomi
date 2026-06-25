@@ -204,7 +204,10 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     }
 
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(60))
+        .build()
+        .context("failed to build HTTP client")?;
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let request =
         reqwest::Request::try_from(&*request_builder).context("failed to build request")?;

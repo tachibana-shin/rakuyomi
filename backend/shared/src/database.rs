@@ -3,6 +3,7 @@ use futures::TryStreamExt;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use anyhow::Result;
@@ -25,14 +26,14 @@ use crate::{
 
 pub struct Database {
     pub filename: PathBuf,
-    pool: RwLock<Pool<Sqlite>>,
+    pool: Arc<RwLock<Pool<Sqlite>>>,
 }
 
 impl Clone for Database {
     fn clone(&self) -> Self {
         Self {
             filename: self.filename.clone(),
-            pool: RwLock::new(self.pool.blocking_read().clone()),
+            pool: Arc::clone(&self.pool),
         }
     }
 }
@@ -61,27 +62,37 @@ impl Database {
         sqlx::migrate!().run(&pool).await?;
 
         Ok(Self {
-            pool: RwLock::new(pool),
+            pool: Arc::new(RwLock::new(pool)),
             filename: filename.to_path_buf(),
         })
     }
 
     pub async fn hot_replace(&self, buf: &[u8]) -> Result<()> {
-        {
-            let pool = self.pool.write().await;
-            pool.close().await;
-        }
-
         tokio::fs::write(&self.filename, buf).await?;
 
         let options = SqliteConnectOptions::new()
             .filename(&self.filename)
-            .create_if_missing(true);
-        let new_pool = Pool::<Sqlite>::connect_with(options).await?;
+            .create_if_missing(true)
+            .journal_mode(SqliteJournalMode::Wal)
+            .synchronous(SqliteSynchronous::Normal)
+            .pragma("cache_size", "-2000")
+            .pragma("temp_store", "MEMORY")
+            .foreign_keys(true);
+
+        let new_pool = PoolOptions::new()
+            .max_connections(4)
+            .min_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(5))
+            .connect_with(options)
+            .await?;
 
         sqlx::migrate!().run(&new_pool).await?;
 
-        *self.pool.write().await = new_pool;
+        let mut pool = self.pool.write().await;
+        let old_pool = std::mem::replace(&mut *pool, new_pool);
+        drop(pool);
+
+        old_pool.close().await;
 
         Ok(())
     }

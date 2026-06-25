@@ -384,6 +384,9 @@ pub async fn download_all_images(
         Mutex,
     };
 
+    // Ensure concurrent_requests is at least 1 to prevent deadlock
+    let concurrent_requests = concurrent_requests.max(1);
+
     let mut seen = HashSet::<String>::new();
     type Task = std::pin::Pin<
         Box<

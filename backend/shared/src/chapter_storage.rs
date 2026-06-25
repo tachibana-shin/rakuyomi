@@ -2,6 +2,7 @@ use std::io::Cursor;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::{fs, future::Future};
 
 use anyhow::{anyhow, Context, Result};
@@ -25,7 +26,7 @@ const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 pub struct ChapterStorage {
     downloads_folder_path: PathBuf,
     storage_size_limit: Size,
-    cached_storage_size: AtomicU64,
+    cached_storage_size: Arc<AtomicU64>,
 }
 
 impl Clone for ChapterStorage {
@@ -33,7 +34,7 @@ impl Clone for ChapterStorage {
         Self {
             downloads_folder_path: self.downloads_folder_path.clone(),
             storage_size_limit: self.storage_size_limit,
-            cached_storage_size: AtomicU64::new(self.cached_storage_size.load(Ordering::Relaxed)),
+            cached_storage_size: Arc::clone(&self.cached_storage_size),
         }
     }
 }
@@ -46,7 +47,7 @@ impl ChapterStorage {
         let storage = Self {
             downloads_folder_path,
             storage_size_limit,
-            cached_storage_size: AtomicU64::new(0),
+            cached_storage_size: Arc::new(AtomicU64::new(0)),
         };
         storage.cached_storage_size.store(
             storage.calculate_storage_size().bytes() as u64,
@@ -83,12 +84,19 @@ impl ChapterStorage {
                 "path traversal denied",
             ));
         }
-        // Update cache before removal
-        if let Ok(metadata) = std::fs::metadata(&file_path) {
+        // Get metadata before removal
+        let file_size = std::fs::metadata(&file_path).ok().map(|m| m.len());
+
+        // Perform the deletion
+        tokio::fs::remove_file(file_path).await?;
+
+        // Update cache only after successful removal
+        if let Some(size) = file_size {
             self.cached_storage_size
-                .fetch_sub(metadata.len(), Ordering::Relaxed);
+                .fetch_sub(size, Ordering::Relaxed);
         }
-        tokio::fs::remove_file(file_path).await
+
+        Ok(())
     }
 
     fn path_for_poster(&self, manga_id: &MangaId) -> PathBuf {

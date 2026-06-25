@@ -1,3 +1,10 @@
+## [1.35.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.1...v1.35.2) (2026-06-25)
+
+
+### Performance Improvements
+
+* optimize server ([#210](https://github.com/tachibana-shin/rakuyomi/issues/210)) ([8917d5e](https://github.com/tachibana-shin/rakuyomi/commit/8917d5ee27ba7365d7cd7b09c32a2afab3e01805))
+
 ## [1.35.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.0...v1.35.1) (2026-06-25)
 
 

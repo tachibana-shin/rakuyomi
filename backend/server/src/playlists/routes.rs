@@ -26,7 +26,6 @@ pub fn routes() -> Router<State> {
 async fn get_playlists(
     StateExtractor(State { database, .. }): StateExtractor<State>,
 ) -> Result<Json<Vec<shared::model::Playlist>>, AppError> {
-    let database = database.lock().await;
     let playlists = usecases::get_playlists(&database).await?;
 
     Ok(Json(playlists))
@@ -41,7 +40,6 @@ async fn create_playlist(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     Json(body): Json<CreatePlaylistBody>,
 ) -> Result<Json<shared::model::Playlist>, AppError> {
-    let database = database.lock().await;
     let playlist = usecases::create_playlist(&database, body.name).await?;
 
     Ok(Json(playlist))
@@ -56,7 +54,6 @@ async fn delete_playlist(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     Path(params): Path<PlaylistIdPath>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
     usecases::delete_playlist(&database, params.id).await?;
 
     Ok(Json(()))
@@ -67,7 +64,6 @@ async fn rename_playlist(
     Path(params): Path<PlaylistIdPath>,
     Json(body): Json<CreatePlaylistBody>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
     usecases::rename_playlist(&database, params.id, body.name).await?;
 
     Ok(Json(()))
@@ -84,7 +80,7 @@ async fn get_mangas_in_playlist(
     Path(params): Path<PlaylistIdPath>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
     let settings = settings.lock().await;
-    let database = database.lock().await;
+
     let chapter_storage = chapter_storage.lock().await;
     let library_sorting_mode = &settings.library_sorting_mode;
 
@@ -134,7 +130,6 @@ async fn add_manga_to_playlist(
     Path(params): Path<PlaylistIdPath>,
     Json(body): Json<AddMangaToPlaylistBody>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
     let manga_id = MangaId::from_strings(body.source_id, body.manga_id);
 
     usecases::add_manga_to_playlist(&database, params.id, manga_id).await?;
@@ -153,7 +148,6 @@ async fn remove_manga_from_playlist(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     Path(params): Path<RemoveMangaFromPlaylistPath>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
     let manga_id = MangaId::from_strings(params.source_id, params.manga_id);
 
     usecases::remove_manga_from_playlist(&database, params.id, manga_id).await?;

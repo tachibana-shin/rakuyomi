@@ -51,6 +51,7 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
                 pages.clone(),
                 4,
                 false,
+                None,
             )
             .await;
         })

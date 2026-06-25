@@ -69,6 +69,7 @@ async fn create_download_chapter_job(
         settings,
         source_manager,
         chapter_storage,
+        download_semaphore,
         ..
     }): StateExtractor<AppState>,
     StateExtractor(State { job_registry }): StateExtractor<State>,
@@ -85,6 +86,7 @@ async fn create_download_chapter_job(
         body.into(),
         settings.concurrent_requests_pages.unwrap_or(4),
         settings.optimize_image,
+        download_semaphore,
     );
 
     job_registry

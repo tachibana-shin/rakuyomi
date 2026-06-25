@@ -110,7 +110,6 @@ async fn get_manga_library(
         ..
     }): StateExtractor<State>,
 ) -> Result<Json<Vec<Manga>>, AppError> {
-    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let settings = settings.lock().await;
     let source_manager = source_manager.lock().await;
@@ -142,7 +141,6 @@ async fn find_orphan_or_read_files(
     }): StateExtractor<State>,
     Query(GetCleanerQuery { invalid }): Query<GetCleanerQuery>,
 ) -> Result<Json<FileSummary>, AppError> {
-    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
 
     let paths =
@@ -192,11 +190,10 @@ async fn sync_database(
     let accept_migrate_local = args.first().cloned().unwrap_or(false);
     let accept_replace_remote = args.get(1).cloned().unwrap_or(false);
 
-    let mut database = database.lock().await;
     let mut settings = settings.lock().await;
 
     let state = usecases::sync_database(
-        &mut database,
+        &*database,
         &mut settings,
         accept_migrate_local,
         accept_replace_remote,
@@ -220,7 +217,6 @@ async fn check_mangas_update(
     }): StateExtractor<State>,
     Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let source_manager = source_manager.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
@@ -267,7 +263,6 @@ async fn get_mangas(
         page,
     }): Query<GetMangasQuery>,
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
-    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
     let settings = settings.lock().await;
     let source_manager = source_manager.lock().await;
@@ -365,8 +360,6 @@ async fn add_manga_to_library(
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
 
-    let database = database.lock().await;
-
     let settings = settings.lock().await;
 
     usecases::add_manga_to_library(&database, manga_id).await?;
@@ -388,8 +381,6 @@ async fn add_manga_to_library(
 async fn get_count_notifications(
     StateExtractor(State { database, .. }): StateExtractor<State>,
 ) -> Result<Json<i32>, AppError> {
-    let database = database.lock().await;
-
     let count = usecases::get_count_notifications(&database).await?;
 
     Ok(Json(count))
@@ -402,7 +393,6 @@ async fn get_notifications(
         ..
     }): StateExtractor<State>,
 ) -> Result<Json<Vec<NotificationInformation>>, AppError> {
-    let database = database.lock().await;
     let chapter_storage = chapter_storage.lock().await;
 
     let rows = usecases::get_notifications(&database, &chapter_storage).await?;
@@ -414,8 +404,6 @@ async fn delete_notification(
     StateExtractor(State { database, .. }): StateExtractor<State>,
     Path(params): Path<NotificationParams>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
-
     usecases::delete_notification(&database, params.id).await?;
 
     Ok(Json(()))
@@ -424,8 +412,6 @@ async fn delete_notification(
 async fn clear_notifications(
     StateExtractor(State { database, .. }): StateExtractor<State>,
 ) -> Result<Json<()>, AppError> {
-    let database = database.lock().await;
-
     usecases::clear_notifications(&database).await?;
 
     Ok(Json(()))
@@ -458,7 +444,6 @@ async fn remove_manga_from_library(
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
 
     usecases::remove_manga_from_library(&database, manga_id).await?;
 
@@ -475,7 +460,7 @@ async fn get_cached_manga_chapters(
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<Vec<Chapter>>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
+
     let chapter_storage = &*chapter_storage.lock().await;
     let chapters =
         usecases::get_cached_manga_chapters(&database, chapter_storage, &manga_id).await?;
@@ -496,7 +481,7 @@ async fn refresh_manga_chapters(
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
+
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let _ = usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await;
@@ -517,7 +502,7 @@ async fn get_cached_manga_details(
     Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
 ) -> Result<Json<(shared::source::model::Manga, f64)>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
+
     let chapter_storage = &*chapter_storage.lock().await;
 
     let token = create_token(cancel_token_store, cancel_id).await;
@@ -545,7 +530,7 @@ async fn refresh_manga_details(
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
+
     let chapter_storage = &*chapter_storage.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
@@ -572,7 +557,7 @@ async fn mark_chapters_as_read(
     Json(MangaMarkChaptersAsRead { range, state }): Json<MangaMarkChaptersAsRead>,
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
+
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count =
@@ -607,21 +592,27 @@ async fn download_manga_chapter(
     Path(params): Path<DownloadMangaChapterParams>,
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
-    let database = database.lock().await;
-    let chapter_storage = &*chapter_storage.lock().await;
-    let settings = settings.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
+    let (db, cs, concurrent_requests_pages, optimize_image) = {
+        let cs = chapter_storage.lock().await;
+        let settings = settings.lock().await;
+        (
+            database.clone(),
+            cs.clone(),
+            settings.concurrent_requests_pages.unwrap_or(4),
+            settings.optimize_image,
+        )
+    };
 
     let chapter_id = ChapterId::from(params);
-    let concurrent_requests_pages = settings.concurrent_requests_pages.unwrap_or(4);
     let output_path = usecases::fetch_manga_chapter(
         &token.0,
-        &database,
+        &db,
         &source,
-        chapter_storage,
+        &cs,
         &chapter_id,
         concurrent_requests_pages,
-        settings.optimize_image,
+        optimize_image,
         None,
     )
     .await
@@ -658,7 +649,6 @@ async fn mark_chapter_as_read(
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
-    let database = database.lock().await;
 
     usecases::mark_chapter_as_read(&database, &chapter_id, state).await?;
 
@@ -671,7 +661,6 @@ async fn update_last_read(
     Path(params): Path<DownloadMangaChapterParams>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
-    let database = database.lock().await;
 
     usecases::update_last_read_chapter(&database, &chapter_id).await?;
 
@@ -690,7 +679,6 @@ async fn get_manga_preferred_scanlator(
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<Option<String>>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
 
     let preferred_scanlator = usecases::get_manga_preferred_scanlator(&database, &manga_id).await?;
 
@@ -704,7 +692,6 @@ async fn set_manga_preferred_scanlator(
     Json(body): Json<SetPreferredScanlatorBody>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
-    let database = database.lock().await;
 
     usecases::set_manga_preferred_scanlator(&database, manga_id, body.preferred_scanlator).await?;
 

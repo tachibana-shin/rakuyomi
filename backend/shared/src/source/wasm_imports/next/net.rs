@@ -188,7 +188,10 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
 
         let request_builder = get_building_request(store, request_descriptor_i32)?;
         #[cfg(all(not(feature = "ffi"), feature = "all"))]
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(60))
+            .build()
+            .context("failed to build HTTP client")?;
         #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let request =
             reqwest::Request::try_from(&*request_builder).context("failed to build request")?;

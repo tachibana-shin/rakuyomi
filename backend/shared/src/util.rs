@@ -295,7 +295,9 @@ pub async fn download_image(
             .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
         let req_url = request.url().clone();
 
-        let client = Client::builder().build()?;
+        let client = Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()?;
         let response = request_with_forced_referer_from_request(&client, request, 10)
             .await
             .map_err(|err| anyhow!(format!("Request error: {err}")))?;
@@ -373,6 +375,7 @@ pub async fn download_all_images(
     pages: Vec<Page>,
     source: &Source,
     token: &CancellationToken,
+    concurrent_requests: usize,
     #[cfg(not(feature = "all"))] on_progress: impl FnMut(usize, f32, f32) + Send + 'static,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
     #[cfg(not(feature = "all"))]
@@ -380,6 +383,9 @@ pub async fn download_all_images(
         atomic::{AtomicUsize, Ordering},
         Mutex,
     };
+
+    // Ensure concurrent_requests is at least 1 to prevent deadlock
+    let concurrent_requests = concurrent_requests.max(1);
 
     let mut seen = HashSet::<String>::new();
     type Task = std::pin::Pin<
@@ -450,7 +456,7 @@ pub async fn download_all_images(
         let progress = Arc::new(AtomicUsize::new(0));
         let on_progress = Arc::new(Mutex::new(on_progress));
 
-        let semaphore = Arc::new(Semaphore::new(4));
+        let semaphore = Arc::new(Semaphore::new(concurrent_requests));
         let mut results = HashMap::new();
         if tasks.len() > 0 {
             let (tx, mut rx) = mpsc::channel(tasks.len());
@@ -487,7 +493,10 @@ pub async fn download_all_images(
     };
 
     #[cfg(feature = "all")]
-    let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(4).collect().await;
+    let store: HashMap<_, _> = stream::iter(tasks)
+        .buffer_unordered(concurrent_requests)
+        .collect()
+        .await;
 
     Ok(store)
 }

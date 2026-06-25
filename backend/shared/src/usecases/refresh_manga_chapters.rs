@@ -16,10 +16,11 @@ pub async fn refresh_manga_chapters<'a>(
     seconds: u64,
 ) -> Result<Vec<ChapterInformation>> {
     let duration = Duration::from_secs(seconds);
+    let child_token = token.child_token();
 
     let fetch_task = async {
         source
-            .get_chapter_list(token.clone(), id.value().clone())
+            .get_chapter_list(child_token.clone(), id.value().clone())
             .await
     };
 
@@ -29,8 +30,7 @@ pub async fn refresh_manga_chapters<'a>(
         Ok(Err(e)) => return Err(anyhow!("source error: {}", e)),
 
         Err(_) => {
-            // Cancel the operation
-            token.cancel();
+            child_token.cancel();
             return Err(anyhow!("timeout when refreshing chapters"));
         }
     };

@@ -41,7 +41,7 @@ pub struct DownloadUnreadChaptersJob {
 impl DownloadUnreadChaptersJob {
     pub fn spawn_new(
         source: Source,
-        database: Arc<tokio::sync::Mutex<Database>>,
+        database: Arc<Database>,
         chapter_storage: ChapterStorage,
         manga_id: MangaId,
         filter: ChapterToDownloadFilter,
@@ -58,13 +58,13 @@ impl DownloadUnreadChaptersJob {
         tokio::spawn(async move {
             let status = status_clone;
             let cancellation_token = cancellation_token_clone;
-            let database = { database.lock().await };
+            let db_clone = database.clone();
             let lang_refs: Vec<&str> = langs.iter().map(|s| s.as_str()).collect();
 
             let progress_report_stream = usecases::fetch_manga_chapters_in_batch(
                 cancellation_token.clone(),
                 &source,
-                &database,
+                &db_clone,
                 &chapter_storage,
                 manga_id,
                 filter,

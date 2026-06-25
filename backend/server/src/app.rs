@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use log::info;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
@@ -139,12 +139,13 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
 
     let state = State {
         source_manager: Arc::new(Mutex::new(source_manager)),
-        database: Arc::new(Mutex::new(database)),
+        database: Arc::new(database),
         chapter_storage: Arc::new(Mutex::new(chapter_storage)),
         settings: Arc::new(Mutex::new(settings)),
         settings_path,
         job_state: Default::default(),
         cancel_token_store: Arc::new(Mutex::new(HashMap::new())),
+        download_semaphore: Arc::new(Semaphore::new(3)),
     };
 
     {

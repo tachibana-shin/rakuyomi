@@ -1,9 +1,15 @@
 use shared::{
-    chapter_downloader::DownloadError, chapter_storage::ChapterStorage, database::Database,
-    model::ChapterId, source_collection::SourceCollection, source_manager::SourceManager, usecases,
+    chapter_downloader::{
+        ensure_chapter_is_in_storage, DownloadError, Error as ChapterDownloaderError,
+    },
+    chapter_storage::ChapterStorage,
+    database::Database,
+    model::ChapterId,
+    source_collection::SourceCollection,
+    source_manager::SourceManager,
 };
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::watch;
+use tokio::sync::{watch, Semaphore};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
@@ -36,11 +42,12 @@ pub struct DownloadChapterJob {
 impl DownloadChapterJob {
     pub fn spawn_new(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<tokio::sync::Mutex<Database>>,
+        db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
         optimize_image: bool,
+        download_semaphore: Arc<Semaphore>,
     ) -> Self {
         let (tx, rx) = watch::channel::<
             Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>,
@@ -53,6 +60,7 @@ impl DownloadChapterJob {
         let progress_tx_clone = progress_tx.clone();
         let token_clone = cancellation_token.clone();
         let handle = tokio::spawn(async move {
+            let _permit = download_semaphore.acquire().await;
             let result = Self::do_job(
                 token_clone,
                 source_manager,
@@ -81,7 +89,7 @@ impl DownloadChapterJob {
     async fn do_job(
         cancellation_token: CancellationToken,
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        db: Arc<tokio::sync::Mutex<Database>>,
+        db: Arc<Database>,
         chapter_storage: ChapterStorage,
         chapter_id: ChapterId,
         concurrent_requests_pages: usize,
@@ -94,7 +102,28 @@ impl DownloadChapterJob {
                 .cloned()
                 .ok_or(AppError::SourceNotFound)?
         };
-        let db: tokio::sync::MutexGuard<'_, Database> = { db.lock().await };
+
+        let (manga, chapter) = {
+            let manga = db
+                .find_cached_manga_information(chapter_id.manga_id())
+                .await
+                .map_err(|e| ErrorResponse {
+                    message: format!("Failed to fetch manga: {e}"),
+                })?
+                .ok_or_else(|| ErrorResponse {
+                    message: "Manga not found in database".into(),
+                })?;
+            let chapter = db
+                .find_cached_chapter_information(&chapter_id)
+                .await
+                .map_err(|e| ErrorResponse {
+                    message: format!("Failed to fetch chapter: {e}"),
+                })?
+                .ok_or_else(|| ErrorResponse {
+                    message: "Chapter not found in database".into(),
+                })?;
+            (manga, chapter)
+        };
 
         let progress_callback = {
             let progress_tx = progress_tx.clone();
@@ -106,18 +135,26 @@ impl DownloadChapterJob {
             })
         };
 
-        Ok(usecases::fetch_manga_chapter(
+        let (path, errors) = ensure_chapter_is_in_storage(
             &cancellation_token,
-            &db,
-            &source,
             &chapter_storage,
-            &chapter_id,
+            &source,
+            &manga,
+            &chapter,
             concurrent_requests_pages,
             optimize_image,
             Some(progress_callback),
         )
         .await
-        .map_err(AppError::from)?)
+        .map_err(|e| {
+            let app_error = match e {
+                ChapterDownloaderError::DownloadError(e) => AppError::NetworkFailure(e),
+                ChapterDownloaderError::Other(e) => AppError::Other(e),
+            };
+            ErrorResponse::from(app_error)
+        })?;
+
+        Ok((path, errors))
     }
 }
 

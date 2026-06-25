@@ -68,8 +68,32 @@ impl Database {
     }
 
     pub async fn hot_replace(&self, buf: &[u8]) -> Result<()> {
-        tokio::fs::write(&self.filename, buf).await?;
+        // Acquire write lock first to prevent any concurrent access
+        let mut pool = self.pool.write().await;
 
+        // Close and drain the current pool before file operations
+        let old_pool = std::mem::replace(&mut *pool, Pool::connect("sqlite::memory:").await?);
+        drop(pool);
+        old_pool.close().await;
+
+        // Replace database file via temporary backup swap
+        let backup_path = self.filename.with_extension("db.backup");
+        if self.filename.exists() {
+            tokio::fs::rename(&self.filename, &backup_path).await?;
+        }
+
+        // Write new database file
+        let write_result = tokio::fs::write(&self.filename, buf).await;
+
+        // If write fails, restore backup
+        if write_result.is_err() {
+            if backup_path.exists() {
+                let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+            }
+            write_result?;
+        }
+
+        // Create new pool with proper configuration
         let options = SqliteConnectOptions::new()
             .filename(&self.filename)
             .create_if_missing(true)
@@ -84,15 +108,40 @@ impl Database {
             .min_connections(1)
             .acquire_timeout(std::time::Duration::from_secs(5))
             .connect_with(options)
-            .await?;
+            .await;
 
-        sqlx::migrate!().run(&new_pool).await?;
+        // If connection fails, restore backup
+        let new_pool = match new_pool {
+            Ok(p) => p,
+            Err(e) => {
+                if backup_path.exists() {
+                    let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+                }
+                return Err(e.into());
+            }
+        };
 
+        // Run migrations on the new pool
+        let migration_result = sqlx::migrate!().run(&new_pool).await;
+
+        // If migrations fail, restore backup
+        if let Err(e) = migration_result {
+            new_pool.close().await;
+            if backup_path.exists() {
+                let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+            }
+            return Err(e.into());
+        }
+
+        // Swap new pool into shared reference
         let mut pool = self.pool.write().await;
-        let old_pool = std::mem::replace(&mut *pool, new_pool);
+        *pool = new_pool;
         drop(pool);
 
-        old_pool.close().await;
+        // Clean up backup file on success
+        if backup_path.exists() {
+            let _ = tokio::fs::remove_file(&backup_path).await;
+        }
 
         Ok(())
     }

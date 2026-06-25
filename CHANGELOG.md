@@ -1,3 +1,10 @@
+## [1.35.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.0...v1.35.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* callback assignment for zen home tab item ([#208](https://github.com/tachibana-shin/rakuyomi/issues/208)) ([4b6d1d0](https://github.com/tachibana-shin/rakuyomi/commit/4b6d1d0e253635e303c35f481dd7ace418539330))
+
 # [1.35.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.34.1...v1.35.0) (2026-06-19)
 
 

@@ -375,6 +375,7 @@ pub async fn download_all_images(
     pages: Vec<Page>,
     source: &Source,
     token: &CancellationToken,
+    concurrent_requests: usize,
     #[cfg(not(feature = "all"))] on_progress: impl FnMut(usize, f32, f32) + Send + 'static,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
     #[cfg(not(feature = "all"))]
@@ -452,7 +453,7 @@ pub async fn download_all_images(
         let progress = Arc::new(AtomicUsize::new(0));
         let on_progress = Arc::new(Mutex::new(on_progress));
 
-        let semaphore = Arc::new(Semaphore::new(4));
+        let semaphore = Arc::new(Semaphore::new(concurrent_requests));
         let mut results = HashMap::new();
         if tasks.len() > 0 {
             let (tx, mut rx) = mpsc::channel(tasks.len());
@@ -489,7 +490,7 @@ pub async fn download_all_images(
     };
 
     #[cfg(feature = "all")]
-    let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(4).collect().await;
+    let store: HashMap<_, _> = stream::iter(tasks).buffer_unordered(concurrent_requests).collect().await;
 
     Ok(store)
 }

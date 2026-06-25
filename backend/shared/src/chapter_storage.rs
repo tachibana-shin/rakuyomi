@@ -1,6 +1,7 @@
 use std::io::Cursor;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fs, future::Future};
 
 use anyhow::{anyhow, Context, Result};
@@ -21,10 +22,20 @@ use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
-#[derive(Clone)]
 pub struct ChapterStorage {
     downloads_folder_path: PathBuf,
     storage_size_limit: Size,
+    cached_storage_size: AtomicU64,
+}
+
+impl Clone for ChapterStorage {
+    fn clone(&self) -> Self {
+        Self {
+            downloads_folder_path: self.downloads_folder_path.clone(),
+            storage_size_limit: self.storage_size_limit,
+            cached_storage_size: AtomicU64::new(self.cached_storage_size.load(Ordering::Relaxed)),
+        }
+    }
 }
 
 impl ChapterStorage {
@@ -32,10 +43,17 @@ impl ChapterStorage {
         fs::create_dir_all(&downloads_folder_path)
             .with_context(|| "while trying to ensure chapter storage exists")?;
 
-        Ok(Self {
+        let storage = Self {
             downloads_folder_path,
             storage_size_limit,
-        })
+            cached_storage_size: AtomicU64::new(0),
+        };
+        storage.cached_storage_size.store(
+            storage.calculate_storage_size().bytes() as u64,
+            Ordering::Relaxed,
+        );
+
+        Ok(storage)
     }
 
     pub fn collect_all_files(&self, depth: usize) -> std::collections::HashSet<PathBuf> {
@@ -64,6 +82,11 @@ impl ChapterStorage {
                 std::io::ErrorKind::PermissionDenied,
                 "path traversal denied",
             ));
+        }
+        // Update cache before removal
+        if let Ok(metadata) = std::fs::metadata(&file_path) {
+            self.cached_storage_size
+                .fetch_sub(metadata.len(), Ordering::Relaxed);
         }
         tokio::fs::remove_file(file_path).await
     }
@@ -244,10 +267,7 @@ impl ChapterStorage {
         temporary_file: NamedTempFile,
         errors: &Vec<crate::chapter_downloader::DownloadError>,
     ) -> Result<PathBuf> {
-        let mut current_size = {
-            let storage = self.clone();
-            tokio::task::spawn_blocking(move || storage.calculate_storage_size()).await?
-        };
+        let mut current_size = self.cached_storage_size();
         let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.size());
 
         while current_size + persisted_chapter_size > self.storage_size_limit {
@@ -257,7 +277,8 @@ impl ChapterStorage {
                 self.storage_size_limit
             );
 
-            self.evict_least_recently_modified_chapter()
+            let evicted_size = self
+                .evict_least_recently_modified_chapter()
                 .await
                 .with_context(|| format!(
                     "while attempting to bring the storage size under the {} limit (current size: {}, persisted chapter size: {})",
@@ -266,14 +287,24 @@ impl ChapterStorage {
                     persisted_chapter_size,
                 ))?;
 
-            let storage = self.clone();
-            current_size =
-                tokio::task::spawn_blocking(move || storage.calculate_storage_size()).await?;
+            let evicted_bytes = evicted_size.bytes() as u64;
+            let current_bytes = current_size.bytes() as u64;
+            current_size = Size::from_bytes(
+                current_bytes.saturating_sub(evicted_bytes),
+            );
+            self.cached_storage_size
+                .fetch_sub(evicted_bytes, Ordering::Relaxed);
         }
 
         // Persist using the new path format
         let path = self.path_for_chapter(id, is_novel);
         temporary_file.persist(&path)?;
+
+        // Update cache with new file size
+        if let Ok(metadata) = std::fs::metadata(&path) {
+            self.cached_storage_size
+                .fetch_add(metadata.len(), Ordering::Relaxed);
+        }
 
         if !errors.is_empty() {
             let _ = std::fs::write(
@@ -306,7 +337,18 @@ impl ChapterStorage {
         Size::from_bytes(size_in_bytes)
     }
 
-    async fn evict_least_recently_modified_chapter(&self) -> Result<()> {
+    fn cached_storage_size(&self) -> Size {
+        Size::from_bytes(self.cached_storage_size.load(Ordering::Relaxed))
+    }
+
+    pub fn refresh_storage_size(&self) {
+        self.cached_storage_size.store(
+            self.calculate_storage_size().bytes() as u64,
+            Ordering::Relaxed,
+        );
+    }
+
+    async fn evict_least_recently_modified_chapter(&self) -> Result<Size> {
         let chapter_to_evict = self
             .find_least_recently_modified_chapter()?
             .ok_or_else(|| anyhow!("couldn't find any chapters to evict from storage"))?;
@@ -314,6 +356,12 @@ impl ChapterStorage {
         debug!(
             "evict_least_recently_modified_chapter: evicting {}",
             chapter_to_evict.display()
+        );
+
+        let evicted_size = Size::from_bytes(
+            std::fs::metadata(&chapter_to_evict)
+                .map(|m| m.len())
+                .unwrap_or(0),
         );
 
         let cloned_path = chapter_to_evict.clone();
@@ -327,7 +375,7 @@ impl ChapterStorage {
             )),
         };
 
-        Ok(())
+        Ok(evicted_size)
     }
 
     fn find_least_recently_modified_chapter(&self) -> Result<Option<PathBuf>> {

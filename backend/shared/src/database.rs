@@ -47,6 +47,8 @@ impl Database {
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(SqliteSynchronous::Normal)
+            .pragma("cache_size", "-2000")
+            .pragma("temp_store", "MEMORY")
             .foreign_keys(true);
 
         let pool = PoolOptions::new()

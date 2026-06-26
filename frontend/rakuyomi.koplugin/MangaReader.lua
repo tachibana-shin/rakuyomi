@@ -99,7 +99,8 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
   -- GotoViewRel is handled locally by ReaderPaging via key_events/gestures and
   -- never broadcast through the widget tree, so a child event listener cannot
   -- catch it. Monkey-patch ReaderPaging directly instead.
-  if ui.paging then
+  -- Guard against re-patching on every chapter switch.
+  if ui.paging and not ui.paging._rakuyomi_patched then
     local orig_onGotoViewRel = ui.paging.onGotoViewRel
     ui.paging.onGotoViewRel = function(paging_self, diff, ...)
       if diff < 0 then
@@ -124,6 +125,7 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
       end
       return orig_onGotoViewRel(paging_self, diff, ...)
     end
+    ui.paging._rakuyomi_patched = true
   end
 end
 

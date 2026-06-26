@@ -79,6 +79,7 @@ function Backend.requestJson(request)
       method = request.method or "GET",
       headers = headers,
       body = serialized_body,
+      timeout = request.timeout,
     }
   )
 
@@ -502,7 +503,7 @@ end
 --- @param source_id string
 --- @param manga_id string
 --- @param chapter_id string
---- @parma use_ram boolean|nil
+--- @param use_ram boolean|nil
 --- @return SuccessfulResponse<boolean>|ErrorResponse
 function Backend.revokeChapter(source_id, manga_id, chapter_id, use_ram)
   local query_params = {}

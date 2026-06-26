@@ -83,6 +83,12 @@ async fn mount_tmpfs(
         *settings = updated_settings;
     } else {
         chapter_storage.disable_ram();
+
+        let mut updated_settings = settings.clone();
+        updated_settings.ram_storage_enabled = false;
+        updated_settings.save_to_file(&settings_path)?;
+
+        *settings = updated_settings;
     }
 
     Ok(Json(()))

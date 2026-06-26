@@ -242,7 +242,10 @@ impl ChapterStorage {
 
     /// tmpfs mount path — sibling of `downloads_folder_path`.
     pub fn tmpfs_path(&self) -> PathBuf {
-        self.downloads_folder_path.parent().unwrap().join("tmpfs")
+        self.downloads_folder_path
+            .parent()
+            .unwrap_or(&self.downloads_folder_path)
+            .join("tmpfs")
     }
 
     /// Persistent downloads storage path.
@@ -663,7 +666,7 @@ impl ChapterStorage {
 
         let output_filename = format!("{}.{}", encoded_hash, if is_novel { "epub" } else { "cbz" });
 
-        if use_ram {
+        if use_ram && self.ram_enabled {
             self.tmpfs_path().join(output_filename)
         } else {
             self.downloads_folder_path.join(output_filename)

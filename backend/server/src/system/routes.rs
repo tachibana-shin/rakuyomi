@@ -194,7 +194,15 @@ async fn system_stats(
         chapter_storage, ..
     }): StateExtractor<State>,
 ) -> Result<Json<SystemStats>, crate::AppError> {
-    let cs = chapter_storage.lock().await;
+    let (downloads_path, is_ram_enabled, tmpfs_path, tmpfs_mount_error) = {
+        let cs = chapter_storage.lock().await;
+        (
+            cs.downloads_path().clone(),
+            cs.is_ram_enabled(),
+            cs.tmpfs_path(),
+            cs.tmpfs_mount_error().map(|s| s.to_string()),
+        )
+    };
 
     let (cpu_model, cpu_cores) = read_cpuinfo().unwrap_or_else(|e| {
         warn!("failed to read cpuinfo: {e}");
@@ -214,12 +222,10 @@ async fn system_stats(
     });
 
     // Storage path: settings.storage_path or default
-    let downloads_path = cs.downloads_path().clone();
     let storage = read_filesystem_info(&downloads_path)
         .map_err(|e| crate::AppError::Other(anyhow::anyhow!("failed to stat storage: {e}")))?;
 
-    let tmpfs = if cs.is_ram_enabled() {
-        let tmpfs_path = cs.tmpfs_path();
+    let tmpfs = if is_ram_enabled {
         if tmpfs_path.exists() {
             match read_filesystem_info(&tmpfs_path) {
                 Ok(info) => Some(info),
@@ -246,7 +252,7 @@ async fn system_stats(
             available_bytes: mem_avail,
             used_bytes: mem_total.saturating_sub(mem_avail),
         },
-        tmpfs_mount_error: cs.tmpfs_mount_error().map(|s| s.to_string()),
+        tmpfs_mount_error,
         tmpfs,
         storage,
         process: ProcessInfo {

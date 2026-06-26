@@ -259,9 +259,9 @@ Settings.setting_value_definitions = {
     'ram_storage_size_mb',
     {
       type = 'integer',
-      title = _("RAM storage size. Your RAM is: " .. (ram_info and ram_info.total_mb or 0) .. " MB"),
+      title = ram_info and (_("RAM storage size") .. " (" .. ram_info.total_mb .. " MB total)") or _("RAM storage size"),
       min_value = 8,
-      max_value = math.floor((ram_info and ram_info.total_mb or 0) / 2) or 32,
+      max_value = ram_info and math.floor(ram_info.total_mb / 2) or 32,
       unit = 'MB',
       default = 32,
     }
@@ -504,7 +504,9 @@ function Settings:updateSetting(key, value)
     })
 
     if response.type == 'ERROR' then
-      self.settings.ram_storage_enabled = false;
+      if key == 'ram_storage_enabled' then
+        self.settings.ram_storage_enabled = false
+      end
       ErrorDialog:show(response.message)
       return false
     end

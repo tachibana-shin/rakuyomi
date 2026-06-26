@@ -87,6 +87,7 @@ async fn create_download_chapter_job(
         settings.concurrent_requests_pages.unwrap_or(4),
         settings.optimize_image,
         download_semaphore,
+        settings.ram_storage_enabled,
     );
 
     job_registry

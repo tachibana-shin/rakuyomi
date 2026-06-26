@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use log::info;
+use log::{info, warn};
 use tokio::sync::{Mutex, Semaphore};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -123,8 +123,20 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         .clone()
         .unwrap_or(default_downloads_folder_path);
 
-    let chapter_storage = ChapterStorage::new(downloads_folder_path, settings.storage_size_limit.0)
-        .context("couldn't initialize chapter storage")?;
+    let mut chapter_storage = ChapterStorage::new(
+        downloads_folder_path,
+        settings.storage_size_limit.0,
+        settings.ram_storage_enabled,
+    )
+    .context("couldn't initialize chapter storage")?;
+
+    if settings.ram_storage_enabled {
+        // Clean up old files on startup
+        let _ = chapter_storage.clean_tmpfs().await;
+        if let Err(e) = chapter_storage.enable_ram(settings.ram_storage_size_mb) {
+            warn!("RAM storage unavailable at startup: {e:#}");
+        }
+    }
 
     if settings.enabled_cron_check_mangas_update {
         let db_clone = database.clone();

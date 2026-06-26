@@ -17,6 +17,7 @@ pub enum AppError {
     DownloadAllChaptersProgressNotFound,
     NetworkFailure(anyhow::Error),
     Other(anyhow::Error),
+    MountTmpFs(anyhow::Error),
 }
 
 #[derive(Serialize, Clone)]
@@ -61,6 +62,7 @@ impl From<&AppError> for ErrorResponse {
             AppError::NetworkFailure(_) => {
                 "There was a network error. Check your connection and try again.".to_string()
             }
+            AppError::MountTmpFs(ref e) => format!("Failed to mount tmpfs: {}", e),
             AppError::Other(ref e) => {
                 eprintln!("Unexpected error: {:?}", e);
 

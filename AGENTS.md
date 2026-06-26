@@ -26,7 +26,6 @@ Architecture: `Backend.lua` (Lua) → HTTP/JSON → `server` (axum, Rust) → SQ
   - `l10n/` — translations (40+ languages)
 - `docs/` — mdBook documentation
 - `scripts/` — build scripts
-- `bridge/` — **separate project**: Android companion app (KMP + Android)
 
 ## Rust Conventions
 
@@ -56,7 +55,6 @@ scripts/build-android.sh        # build libserver.so + APK
 ```
 
 CI (root): `.github/workflows/build.yml` — 5 targets via `cross` + Podman.
-CI (bridge): `bridge/.github/workflows/android-ci.yml` — clones rakuyomi,
 builds Rust `.so` via `scripts/build-rust-android.sh`, then runs Gradle
 lint/test/assemble for the Android companion app.
 Versioning: `semantic-release` from commit messages.
@@ -64,7 +62,7 @@ Versioning: `semantic-release` from commit messages.
 ## Platform Architecture
 
 - **Unix** (Kindle, Kobo, etc.): fork/exec `server` binary, UDS (`/tmp/rakuyomi.sock`), `uds_http_request` binary bridges HTTP→UDS
-- **Android**: `libserver.so` loaded via JNI in companion app (`bridge/`), TCP `127.0.0.1:8787`
+- **Android**: `libserver.so` loaded via JNI in companion app TCP `127.0.0.1:8787`
 - **Linux (bridge mode)**: systemd user service runs `server` with TCP on `127.0.0.1:8787`, Lua plugin connects via LuaSocket when `RAKUYOMI_USE_BRIDGE=1`
 
 Data directory: `$KOREARCHIVE_DIR/rakuyomi/` (Unix) or `/storage/emulated/0/koreader/rakuyomi` (Android)
@@ -74,4 +72,3 @@ Data directory: `$KOREARCHIVE_DIR/rakuyomi/` (Unix) or `/storage/emulated/0/kore
 - No emojis in code or comments
 - KDoc/Javadoc for all Rust public APIs, EmmyLua for Lua
 - Keep Rust backend + Lua frontend loosely coupled via JSON API
-- The `bridge/` directory is a **separate KMP project** with its own AGENTS.md (includes `androidApp` + `cli`)

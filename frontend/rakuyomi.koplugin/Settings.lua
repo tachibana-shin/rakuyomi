@@ -23,6 +23,43 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
 
+local ffi = require("ffi")
+
+ffi.cdef [[
+  struct sysinfo {
+      long uptime;
+      unsigned long loads[3];
+      unsigned long totalram;
+      unsigned long freeram;
+      unsigned long sharedram;
+      unsigned long bufferram;
+      unsigned long totalswap;
+      unsigned long freeswap;
+      unsigned short procs;
+      unsigned short pad;
+      unsigned long totalhigh;
+      unsigned long freehigh;
+      unsigned int mem_unit;
+      char _f[20-2*sizeof(long)-sizeof(int)];
+  };
+  int sysinfo(struct sysinfo *info);
+]]
+
+local function get_ram_via_ffi()
+  local info = ffi.new("struct sysinfo")
+  if ffi.C.sysinfo(info) == 0 then
+    local mem_unit = info.mem_unit > 0 and info.mem_unit or 1
+    local total_bytes = tonumber(info.totalram) * mem_unit
+    local free_bytes = tonumber(info.freeram) * mem_unit
+
+    return {
+      total_mb = math.floor(total_bytes / 1024 / 1024),
+      free_mb = math.floor(free_bytes / 1024 / 1024)
+    }
+  end
+  return nil
+end
+
 -- REFACT This is duplicated from `SourceSettings` (pretty much all of it actually)
 local Settings = FocusManager:extend {
   settings = {},
@@ -30,6 +67,7 @@ local Settings = FocusManager:extend {
   paths = { 0 }
 }
 
+local ram_info = get_ram_via_ffi()
 
 --- @type [string, ValueDefinition][]
 Settings.setting_value_definitions = {
@@ -210,6 +248,25 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'ram_storage_enabled',
+    {
+      type = 'boolean',
+      title = _("Write chapters to RAM (protect eMMC)"),
+      default = false,
+    }
+  },
+  {
+    'ram_storage_size_mb',
+    {
+      type = 'integer',
+      title = _("RAM storage size. Your RAM is: " .. (ram_info and ram_info.total_mb or 0) .. " MB"),
+      min_value = 8,
+      max_value = math.floor((ram_info and ram_info.total_mb or 0) / 2) or 32,
+      unit = 'MB',
+      default = 32,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Sync & Updates") }
   },
@@ -260,11 +317,11 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Auto-stop server when leaving library view"),
       options = {
-        { label = _("Disabled"), value = "disabled" },
-        { label = _("Immediate"), value = "immediate" },
+        { label = _("Disabled"),         value = "disabled" },
+        { label = _("Immediate"),        value = "immediate" },
         { label = _("After 30 seconds"), value = "30" },
-        { label = _("After 1 minute"), value = "60" },
-        { label = _("After 5 minutes"), value = "300" },
+        { label = _("After 1 minute"),   value = "60" },
+        { label = _("After 5 minutes"),  value = "300" },
         { label = _("After 10 minutes"), value = "600" },
       },
       is_local = true,
@@ -357,7 +414,7 @@ function Settings:init()
         value_definition = definition,
         value = value,
         on_value_changed_callback = function(new_value)
-          self:updateSetting(key, new_value)
+          return self:updateSetting(key, new_value)
         end
       })
     end
@@ -436,6 +493,27 @@ end
 
 --- @private
 function Settings:updateSetting(key, value)
+  -- fallback control ram_storage_enabled, ram_storage_size_mb
+  if key == 'ram_storage_enabled' or key == 'ram_storage_size_mb' then
+    local enabled = key == 'ram_storage_enabled' and value or self.settings.ram_storage_enabled
+    local ram_storage_size_mb = key == 'ram_storage_size_mb' and value or self.settings.ram_storage_size_mb
+
+    local response = Backend.mountFS({
+      enabled = enabled,
+      ram_storage_size_mb = ram_storage_size_mb,
+    })
+
+    if response.type == 'ERROR' then
+      self.settings.ram_storage_enabled = false;
+      ErrorDialog:show(response.message)
+      return false
+    end
+
+    self.settings[key] = value
+
+    return
+  end
+
   self.settings[key] = value
 
   local response = Backend.setSettings(self.settings)

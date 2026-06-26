@@ -48,6 +48,7 @@ impl DownloadChapterJob {
         concurrent_requests_pages: usize,
         optimize_image: bool,
         download_semaphore: Arc<Semaphore>,
+        use_ram: bool,
     ) -> Self {
         let (tx, rx) = watch::channel::<
             Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>,
@@ -70,6 +71,7 @@ impl DownloadChapterJob {
                 concurrent_requests_pages,
                 optimize_image,
                 progress_tx_clone,
+                use_ram,
             )
             .await
             .map(Arc::new);
@@ -95,6 +97,7 @@ impl DownloadChapterJob {
         concurrent_requests_pages: usize,
         optimize_image: bool,
         progress_tx: ProgressSender,
+        use_ram: bool,
     ) -> Result<(PathBuf, Vec<DownloadError>), ErrorResponse> {
         let source = {
             let mgr = source_manager.lock().await;
@@ -144,6 +147,7 @@ impl DownloadChapterJob {
             concurrent_requests_pages,
             optimize_image,
             Some(progress_callback),
+            use_ram,
         )
         .await
         .map_err(|e| {

@@ -596,6 +596,19 @@ function Backend.setSettings(settings)
   })
 end
 
+--- @class MountTmpFSConfig
+--- @field enabled boolean
+--- @field ram_storage_size_mb number
+--- @param config MountTmpFSConfig
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.mountFS(config)
+  return Backend.requestJson({
+    path = "/settings/mount-tmpfs",
+    method = 'POST',
+    body = config
+  })
+end
+
 --- Creates a new download chapter job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
 function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num)

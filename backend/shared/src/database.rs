@@ -1169,7 +1169,7 @@ impl Database {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         remaining.remove(&path);
                     }
@@ -1205,7 +1205,7 @@ impl Database {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         paths.push(path.clone());
                     }

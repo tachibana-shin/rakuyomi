@@ -259,9 +259,9 @@ Settings.setting_value_definitions = {
     'ram_storage_size_mb',
     {
       type = 'integer',
-      title = ram_info and (_("RAM storage size") .. " (" .. ram_info.total_mb .. " MB total)") or _("RAM storage size"),
+      title = _("RAM storage size. Your RAM is: " .. (ram_info and ram_info.total_mb or 0) .. " MB"),
       min_value = 8,
-      max_value = ram_info and math.floor(ram_info.total_mb / 2) or 32,
+      max_value = ram_info and math.max(8, math.floor(ram_info.total_mb / 2)) or 32,
       unit = 'MB',
       default = 32,
     }

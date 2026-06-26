@@ -177,8 +177,8 @@ fn read_process_status() -> Result<(u64, u64), String> {
 fn read_filesystem_info(path: &Path) -> Result<FilesystemInfo, String> {
     let stat = nix::sys::statvfs::statvfs(path).map_err(|e| e.to_string())?;
     let frsize = stat.fragment_size() as u64;
-    let total = stat.blocks() * frsize;
-    let free = stat.blocks_free() * frsize;
+    let total = (stat.blocks() as u64) * frsize;
+    let free = (stat.blocks_free() as u64) * frsize;
     let used = total.saturating_sub(free);
 
     Ok(FilesystemInfo {

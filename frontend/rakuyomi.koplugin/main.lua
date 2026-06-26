@@ -1,9 +1,11 @@
 local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local Dispatcher = require("dispatcher")
+local InfoMessage = require("ui/widget/infomessage")
 local logger = require("logger")
 local _ = require("gettext+")
 local OfflineAlertDialog = require("OfflineAlertDialog")
+local UIManager = require("ui/uimanager")
 
 local Backend = require("Backend")
 local CbzDocument = require("extensions/CbzDocument")
@@ -20,6 +22,14 @@ local backendInitialized, logs
 local function getBackend()
   if backendInitialized and Backend.running() then return end
   backendInitialized, logs = Backend.initialize()
+  if backendInitialized then
+    local messages = Backend.drainStartupLog()
+    if #messages > 0 then
+      UIManager:show(InfoMessage:new {
+        text = table.concat(messages, "\n\n"),
+      })
+    end
+  end
 end
 
 local ok, android = pcall(require, "android")

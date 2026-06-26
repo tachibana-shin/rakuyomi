@@ -30,6 +30,7 @@ pub struct ChapterStorage {
     /// Always the persistent download path — never changes.
     downloads_folder_path: PathBuf,
     ram_enabled: bool,
+    tmpfs_mount_error: Option<String>,
     storage_size_limit: Size,
     cached_storage_size: Arc<AtomicU64>,
 }
@@ -39,6 +40,7 @@ impl Clone for ChapterStorage {
         Self {
             downloads_folder_path: self.downloads_folder_path.clone(),
             ram_enabled: self.ram_enabled,
+            tmpfs_mount_error: self.tmpfs_mount_error.clone(),
             storage_size_limit: self.storage_size_limit,
             cached_storage_size: Arc::clone(&self.cached_storage_size),
         }
@@ -57,6 +59,7 @@ impl ChapterStorage {
         let storage = Self {
             downloads_folder_path,
             ram_enabled,
+            tmpfs_mount_error: None,
             storage_size_limit,
             cached_storage_size: Arc::new(AtomicU64::new(0)),
         };
@@ -83,7 +86,7 @@ impl ChapterStorage {
 
         let mount_opts = format!("size={size_mb}M");
 
-        match mount(
+        let result = match mount(
             Some("tmpfs"),
             &ram_path,
             Some("tmpfs"),
@@ -92,6 +95,7 @@ impl ChapterStorage {
         ) {
             Ok(_) => {
                 info!("mounted tmpfs at {}", ram_path.display());
+                self.tmpfs_mount_error = None;
                 self.ram_enabled = true;
                 Ok(())
             }
@@ -107,25 +111,32 @@ impl ChapterStorage {
                 ) {
                     Ok(_) => {
                         info!("remounted tmpfs at {}", ram_path.display());
+                        self.tmpfs_mount_error = None;
                         self.ram_enabled = true;
                         Ok(())
                     }
                     Err(e) => {
+                        let msg = format!("remount failed: {e}");
                         warn!("failed to remount tmpfs at {}: {e}", ram_path.display());
+                        self.tmpfs_mount_error = Some(msg.clone());
                         self.ram_enabled = false;
 
-                        return Err(e.into());
+                        Err(anyhow::anyhow!(msg))
                     }
                 }
             }
 
             Err(e) => {
+                let msg = format!("mount failed: {e}");
                 warn!("failed to mount tmpfs at {}: {e}", ram_path.display());
+                self.tmpfs_mount_error = Some(msg.clone());
                 self.ram_enabled = false;
 
-                return Err(e.into());
+                Err(anyhow::anyhow!(msg))
             }
-        }
+        };
+
+        result
     }
 
     /// Switch back to persistent disk storage.
@@ -142,11 +153,17 @@ impl ChapterStorage {
         }
         let _ = fs::remove_dir(&ram_path);
         self.ram_enabled = false;
+        self.tmpfs_mount_error = None;
     }
 
     /// Returns `true` when writing to tmpfs instead of persistent storage.
     pub fn is_ram_enabled(&self) -> bool {
         self.ram_enabled
+    }
+
+    /// Returns the last tmpfs mount error, if any.
+    pub fn tmpfs_mount_error(&self) -> Option<&str> {
+        self.tmpfs_mount_error.as_deref()
     }
 
     pub async fn clean_tmpfs(&self) -> Result<()> {
@@ -224,8 +241,13 @@ impl ChapterStorage {
     }
 
     /// tmpfs mount path — sibling of `downloads_folder_path`.
-    fn tmpfs_path(&self) -> PathBuf {
+    pub fn tmpfs_path(&self) -> PathBuf {
         self.downloads_folder_path.parent().unwrap().join("tmpfs")
+    }
+
+    /// Persistent downloads storage path.
+    pub fn downloads_path(&self) -> &PathBuf {
+        &self.downloads_folder_path
     }
 
     pub fn collect_all_files(&self, depth: usize) -> std::collections::HashSet<PathBuf> {

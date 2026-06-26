@@ -26,7 +26,7 @@ use shared::usecases::install_update::cleanup_update_backup;
 use crate::build_info::{get_build_info, DEFAULT_SETTINGS_JSON};
 use crate::listener::{pick_listener, ResolvedListener};
 use crate::state::State;
-use crate::{job, manga, playlists, settings, source, update};
+use crate::{job, manga, playlists, settings, source, system, update};
 
 /// Initialize logging. Safe to call multiple times; only the first invocation
 /// actually installs the subscriber.
@@ -50,7 +50,8 @@ pub fn build_router(state: State) -> Router {
         .merge(job::routes())
         .merge(settings::routes())
         .merge(source::routes())
-        .merge(update::routes());
+        .merge(update::routes())
+        .merge(system::routes());
     #[cfg(feature = "ffi")]
     let router = router
         .layer(middleware::from_fn(request_logger))
@@ -123,6 +124,8 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         .clone()
         .unwrap_or(default_downloads_folder_path);
 
+    let startup_log = crate::state::StartupLog::new();
+
     let mut chapter_storage = ChapterStorage::new(
         downloads_folder_path,
         settings.storage_size_limit.0,
@@ -134,7 +137,10 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         // Clean up old files on startup
         let _ = chapter_storage.clean_tmpfs().await;
         if let Err(e) = chapter_storage.enable_ram(settings.ram_storage_size_mb) {
-            warn!("RAM storage unavailable at startup: {e:#}");
+            let hint = crate::error::setcap_hint();
+            let msg = format!("RAM storage unavailable at startup: {e:#}{hint}");
+            warn!("{msg}");
+            startup_log.push(msg).await;
         }
     }
 
@@ -158,6 +164,7 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         job_state: Default::default(),
         cancel_token_store: Arc::new(Mutex::new(HashMap::new())),
         download_semaphore: Arc::new(Semaphore::new(3)),
+        startup_log,
     };
 
     {

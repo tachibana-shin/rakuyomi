@@ -145,6 +145,20 @@ function Backend.initialize()
   return true, nil
 end
 
+--- Drain any startup warnings from the server.
+---@return string[] messages
+function Backend.drainStartupLog()
+  local response = Backend.requestJson({
+    path = '/system/startup-log',
+    timeout = 5,
+  })
+  if response.type == 'SUCCESS' then
+    ---@diagnostic disable-next-line: undefined-field
+    return response.body.messages or {}
+  end
+  return {}
+end
+
 ---@return boolean
 function Backend.running()
   return Backend.server ~= nil
@@ -188,6 +202,34 @@ end
 --- @field filenames string[] The names
 --- @field total_size number The total size
 --- @field total_text string The total size text format kb, mb...
+
+--- @class CpuInfo
+--- @field model string CPU model name.
+--- @field cores number Number of CPU cores.
+--- @field usage_percent number Overall CPU usage percentage.
+
+--- @class MemoryInfo
+--- @field total_bytes number Total physical memory in bytes.
+--- @field available_bytes number Available memory in bytes.
+--- @field used_bytes number Used memory in bytes.
+
+--- @class FilesystemInfo
+--- @field path string Mount point path.
+--- @field total_bytes number Total size in bytes.
+--- @field used_bytes number Used size in bytes.
+--- @field free_bytes number Free size in bytes.
+
+--- @class ProcessInfo
+--- @field memory_rss_bytes number Resident set size of the server process in bytes.
+--- @field memory_virtual_bytes number Virtual memory size of the server process in bytes.
+
+--- @class SystemStats
+--- @field cpu CpuInfo CPU information.
+--- @field memory MemoryInfo System memory information.
+--- @field tmpfs FilesystemInfo|nil Tmpfs filesystem information, if available.
+--- @field tmpfs_mount_error string|nil Error message if tmpfs mount failed.
+--- @field storage FilesystemInfo Data storage filesystem information.
+--- @field process ProcessInfo Server process memory usage.
 
 --- Publishing status of a manga.
 ---
@@ -277,6 +319,15 @@ function Backend.removeFile(filename)
     path = "/delete-file",
     body = filename,
     method = "POST"
+  })
+end
+
+--- Get system resource statistics.
+--- @return SuccessfulResponse<SystemStats>|ErrorResponse
+function Backend.getSystemStats()
+  return Backend.requestJson({
+    path = "/system/stats",
+    method = "GET"
   })
 end
 

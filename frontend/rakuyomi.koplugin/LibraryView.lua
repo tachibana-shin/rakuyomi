@@ -52,6 +52,18 @@ local MenuItemGrid = require("patch/MenuItemGrid")
 local MenuCustom = require("patch/MenuCustom")
 local PlaylistDialog = require("PlaylistDialog")
 
+local function humanizeBytes(bytes)
+  if bytes < 1024 then
+    return bytes .. " B"
+  elseif bytes < 1024 * 1024 then
+    return string.format("%.1f KiB", bytes / 1024)
+  elseif bytes < 1024 * 1024 * 1024 then
+    return string.format("%.1f MiB", bytes / (1024 * 1024))
+  else
+    return string.format("%.1f GiB", bytes / (1024 * 1024 * 1024))
+  end
+end
+
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
 local LibraryView = MenuCustom:extend {
@@ -972,7 +984,51 @@ function LibraryView:openMenu()
           })
         end)
       end
-    } }
+    } },
+    {
+      {
+        text = Icons.INFO .. " " .. _("System resources"),
+        callback = function()
+          UIManager:close(dialog)
+
+          Trapper:wrap(function()
+            local response = Backend.getSystemStats()
+
+            if response.type == 'ERROR' then
+              ErrorDialog:show(response.message)
+
+              return
+            end
+
+            local s = response.body
+            local parts = {}
+            table.insert(parts, _("CPU") .. ": " .. s.cpu.model .. "\n"
+              .. _("Cores") .. ": " .. s.cpu.cores .. " | "
+              .. _("Usage") .. ": " .. string.format("%.1f", s.cpu.usage_percent) .. "%")
+            table.insert(parts, _("Memory") .. ": "
+              .. humanizeBytes(s.memory.used_bytes) .. " / " .. humanizeBytes(s.memory.total_bytes) .. " ("
+              .. string.format("%.1f", s.memory.used_bytes / math.max(s.memory.total_bytes, 1) * 100) .. "%)")
+            table.insert(parts, _("Storage") .. ": "
+              .. humanizeBytes(s.storage.used_bytes) .. " / " .. humanizeBytes(s.storage.total_bytes) .. " ("
+              .. string.format("%.1f", s.storage.used_bytes / math.max(s.storage.total_bytes, 1) * 100) .. "%)")
+            if s.tmpfs then
+              table.insert(parts, _("Tmpfs") .. ": "
+                .. humanizeBytes(s.tmpfs.used_bytes) .. " / " .. humanizeBytes(s.tmpfs.total_bytes) .. " ("
+                .. string.format("%.1f", s.tmpfs.used_bytes / math.max(s.tmpfs.total_bytes, 1) * 100) .. "%)")
+            elseif s.tmpfs_mount_error then
+              table.insert(parts, _("Tmpfs") .. ": " .. _("unavailable") .. "\n"
+                .. s.tmpfs_mount_error)
+            end
+            table.insert(parts, _("Process RSS") .. ": " .. humanizeBytes(s.process.memory_rss_bytes)
+              .. " | " .. _("Virtual") .. ": " .. humanizeBytes(s.process.memory_virtual_bytes))
+
+            UIManager:show(InfoMessage:new {
+              text = table.concat(parts, "\n\n"),
+            })
+          end)
+        end
+      },
+    },
   }
 
   dialog = ButtonDialog:new {

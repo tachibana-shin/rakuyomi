@@ -132,7 +132,7 @@ async fn cpu_usage_percent() -> f64 {
         return 0.0;
     }
 
-    ((total_delta - idle_delta) as f64 / total_delta as f64) * 100.0
+    (total_delta.saturating_sub(idle_delta) as f64 / total_delta as f64) * 100.0
 }
 
 fn read_meminfo() -> Result<(u64, u64), String> {

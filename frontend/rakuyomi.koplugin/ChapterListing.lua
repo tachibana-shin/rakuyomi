@@ -939,7 +939,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
         logger.info("opening previous chapter", prevChapter)
         local prevChapterDownloadJob = self.preload_jobs[prevChapter.id] or nil
         self:openChapterOnReader(prevChapter, prevChapterDownloadJob)
+        return true
       end
+
+      return false
     end
 
     Trapper:wrap(function()

@@ -185,8 +185,7 @@ function MangaReader:onBeginningOfBook()
   if self.is_showing and self.on_beginning_of_book_callback ~= nil then
     logger.info("Got beginning of book")
 
-    self.on_beginning_of_book_callback()
-    return true
+    return self.on_beginning_of_book_callback()
   end
 end
 

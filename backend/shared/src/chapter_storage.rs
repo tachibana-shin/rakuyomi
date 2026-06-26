@@ -8,7 +8,7 @@ use std::{fs, future::Future};
 use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use image::ImageReader;
-use log::{debug, info, warn};
+use log::{debug};
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
@@ -76,6 +76,7 @@ impl ChapterStorage {
     pub fn enable_ram(&mut self, size_mb: usize) -> Result<()> {
         use nix::errno::Errno;
         use nix::mount::{mount, MsFlags};
+        use log::{info, warn};
 
         let ram_path = self.tmpfs_path();
         fs::create_dir_all(&ram_path).with_context(|| {
@@ -150,6 +151,7 @@ impl ChapterStorage {
     #[cfg(not(target_os = "android"))]
     pub fn disable_ram(&mut self) {
         use nix::mount::umount;
+        use log::{info, warn};
         if !self.ram_enabled {
             return;
         }
@@ -243,10 +245,9 @@ impl ChapterStorage {
         if !self.ram_enabled {
             return Ok(false);
         }
-        let ram_path = self.tmpfs_path();
 
         #[cfg(not(target_os = "android"))]
-        match nix::sys::statfs::statfs(&ram_path) {
+        match nix::sys::statfs::statfs(&self.tmpfs_path()) {
             Ok(stats) => Ok((stats.blocks_available() * (stats.block_size() as u64)) < 4096),
             Err(_) => Ok(false),
         }

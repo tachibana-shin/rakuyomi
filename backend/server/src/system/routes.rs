@@ -175,7 +175,7 @@ fn read_process_status() -> Result<(u64, u64), String> {
 }
 
 fn read_filesystem_info(path: &Path) -> Result<FilesystemInfo, String> {
-    #[cfg(target_os = "android")]
+    #[cfg(feature = "api_18")]
     let (total, free, used) = unsafe {
         use std::ffi::CString;
         use std::mem::MaybeUninit;
@@ -198,7 +198,7 @@ fn read_filesystem_info(path: &Path) -> Result<FilesystemInfo, String> {
         }
     };
 
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(feature = "api_18"))]
     let (total, free, used) = {
         let stat = nix::sys::statvfs::statvfs(path).map_err(|e| e.to_string())?;
         let frsize = stat.fragment_size() as u64;

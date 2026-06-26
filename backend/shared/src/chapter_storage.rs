@@ -11,6 +11,7 @@ use image::ImageReader;
 use log::{debug, info, warn};
 use nix::errno::Errno;
 use nix::mount::{mount, umount, MsFlags};
+use nix::sys::statfs::statfs;
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
@@ -168,6 +169,58 @@ impl ChapterStorage {
         }
 
         Ok(())
+    }
+
+    pub async fn evict_tmpfs_older_than_current(
+        &self,
+        current_chapter_id: &ChapterId,
+        is_novel: bool,
+    ) -> Result<u64> {
+        if !self.ram_enabled {
+            return Ok(0);
+        }
+        let current_path = self.path_for_chapter(current_chapter_id, is_novel, true);
+        if !current_path.exists() {
+            return Ok(0);
+        }
+        let current_mtime = tokio::fs::metadata(&current_path).await?.modified()?;
+
+        let mut freed = 0u64;
+        for entry in WalkDir::new(self.tmpfs_path())
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            if !entry.file_type().is_file() {
+                continue;
+            }
+            let path = entry.path();
+            if path == current_path {
+                continue;
+            }
+            if let Ok(meta) = tokio::fs::metadata(path).await {
+                if let Ok(mtime) = meta.modified() {
+                    if mtime < current_mtime {
+                        let size = meta.len();
+                        let _ = tokio::fs::remove_file(path).await;
+                        freed += size;
+                    }
+                }
+            }
+        }
+        Ok(freed)
+    }
+
+    pub async fn tmpfs_full_storage(&self) -> Result<bool> {
+        // if tmpfs free < 4kb return true
+        if !self.ram_enabled {
+            return Ok(false);
+        }
+        let ram_path = self.tmpfs_path();
+
+        match statfs(&ram_path) {
+            Ok(stats) => Ok((stats.blocks_available() * (stats.block_size() as u64)) < 4096),
+            Err(_) => Ok(false),
+        }
     }
 
     /// tmpfs mount path — sibling of `downloads_folder_path`.
@@ -332,13 +385,14 @@ impl ChapterStorage {
     pub fn get_stored_chapter_and_errors(
         &self,
         id: &ChapterId,
+        use_ram: bool,
     ) -> anyhow::Result<
         Option<(
             PathBuf,
             Option<Vec<crate::chapter_downloader::DownloadError>>,
         )>,
     > {
-        if let Some(path) = self.get_stored_chapter(id) {
+        if let Some(path) = self.get_stored_chapter(id, use_ram) {
             let file_errors = self.errors_source_path(&path)?;
 
             let errors = match std::fs::read(&file_errors) {
@@ -355,15 +409,19 @@ impl ChapterStorage {
         Ok(None)
     }
 
-    pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {
-        let new_path = self.path_for_chapter(id, false, false);
+    pub fn get_stored_chapter(&self, id: &ChapterId, use_ram: bool) -> Option<PathBuf> {
+        let new_path = self.path_for_chapter(id, false, use_ram);
         if new_path.exists() {
             return Some(new_path);
         }
 
-        let new_path_novel = self.path_for_chapter(id, true, false);
+        let new_path_novel = self.path_for_chapter(id, true, use_ram);
         if new_path_novel.exists() {
             return Some(new_path_novel);
+        }
+
+        if use_ram {
+            return None;
         }
 
         // Backwards compatibility: check the old path format

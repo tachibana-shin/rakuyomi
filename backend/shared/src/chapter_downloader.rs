@@ -19,7 +19,7 @@ use epub_builder::{EpubBuilder, EpubContent, ReferenceType, ZipLibrary};
 use crate::{
     cbz_metadata::ComicInfo,
     chapter_storage::ChapterStorage,
-    model::{ChapterInformation, MangaInformation},
+    model::{ChapterId, ChapterInformation, MangaInformation},
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
@@ -46,8 +46,17 @@ pub async fn ensure_chapter_is_in_storage(
     optimize_image: bool,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
     use_ram: bool,
+    current_chapter_id: Option<&ChapterId>,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
-    if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id)? {
+    if use_ram {
+        if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, true)? {
+            return Ok((
+                output.0,
+                output.1.unwrap_or_else(|| Vec::<DownloadError>::from([])),
+            ));
+        }
+    }
+    if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, false)? {
         return Ok((
             output.0,
             output.1.unwrap_or_else(|| Vec::<DownloadError>::from([])),
@@ -77,7 +86,8 @@ pub async fn ensure_chapter_is_in_storage(
     // FIXME this logic should be contained entirely within the storage..? maybe we could return something that's writable
     // and then commit it into the storage (or maybe a implicit commit on drop, but i dont think it works well as there
     // could be errors while committing it)
-    let output_path: PathBuf = chapter_storage.get_path_to_store_chapter(&chapter.id, is_novel, use_ram);
+    let output_path: PathBuf =
+        chapter_storage.get_path_to_store_chapter(&chapter.id, is_novel, use_ram);
 
     let metadata = ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages);
 
@@ -88,6 +98,12 @@ pub async fn ensure_chapter_is_in_storage(
         .ok_or_else(|| Error::Other(anyhow::anyhow!("Output path has no parent")))?;
     let temporary_file = NamedTempFile::new_in(parent).map_err(|e| Error::Other(e.into()))?;
 
+    // in mode write to RAM before download to free memory
+    if use_ram && current_chapter_id.is_some() {
+        let _ = chapter_storage
+            .evict_tmpfs_older_than_current(current_chapter_id.unwrap(), is_novel)
+            .await;
+    }
     let errors = if is_novel {
         // is novel
         let temp_path = temporary_file.path().to_path_buf();

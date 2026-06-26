@@ -178,6 +178,7 @@ end
 --- @field title string? The title of this chapter, if any.
 --- @field locked boolean The locked
 --- @field lang string? The language code
+--- @field on_tmpfs boolean? The chapter is stored in tmpfs.
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.
@@ -450,11 +451,19 @@ end
 --- @param source_id string
 --- @param manga_id string
 --- @param chapter_id string
+--- @parma use_ram boolean|nil
 --- @return SuccessfulResponse<boolean>|ErrorResponse
-function Backend.revokeChapter(source_id, manga_id, chapter_id)
+function Backend.revokeChapter(source_id, manga_id, chapter_id, use_ram)
+  local query_params = {}
+
+  if use_ram ~= nil then
+    query_params.use_ram = use_ram and "true" or "false"
+  end
+
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    query_params = query_params,
     method = "POST",
   })
 end
@@ -611,7 +620,7 @@ end
 
 --- Creates a new download chapter job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num)
+function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num, current_chapter_id)
   return Backend.requestJson({
     path = "/jobs/download-chapter",
     method = 'POST',
@@ -620,6 +629,7 @@ function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapt
       manga_id = manga_id,
       chapter_id = chapter_id,
       chapter_num = chapter_num,
+      current_chapter_id = current_chapter_id,
     }
   })
 end
@@ -681,7 +691,8 @@ end
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
+--- @alias DownloadChapterJobCompleted [string, DownloadError[], boolean]
+--- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<DownloadChapterJobCompleted> |ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse

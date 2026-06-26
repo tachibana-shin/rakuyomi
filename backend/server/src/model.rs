@@ -64,6 +64,7 @@ pub struct Chapter {
     downloaded: bool,
     locked: bool,
     lang: Option<String>,
+    on_tmpfs: bool,
 }
 
 impl From<DomainChapter> for Chapter {
@@ -72,6 +73,7 @@ impl From<DomainChapter> for Chapter {
             information: chapter_information,
             state,
             downloaded,
+            on_tmpfs,
         }: DomainChapter,
     ) -> Self {
         Self {
@@ -88,6 +90,7 @@ impl From<DomainChapter> for Chapter {
             downloaded,
             locked: chapter_information.locked.unwrap_or_default(),
             lang: chapter_information.lang,
+            on_tmpfs,
         }
     }
 }

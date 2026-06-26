@@ -73,6 +73,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     optimize_image,
                     None,
                     false, // batch download never use RAM
+                    None,
                 ) => result
             };
 

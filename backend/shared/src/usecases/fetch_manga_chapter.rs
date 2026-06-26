@@ -45,11 +45,14 @@ pub async fn fetch_manga_chapter(
         optimize_image,
         on_progress.clone(),
         use_ram,
+        None,
     )
     .await
     {
         Ok(v) => Ok(v),
-        Err(ChapterDownloaderError::Other(_)) if use_ram => {
+        Err(ChapterDownloaderError::Other(_))
+            if use_ram && chapter_storage.tmpfs_full_storage().await? =>
+        {
             return ensure_chapter_is_in_storage(
                 token,
                 chapter_storage,
@@ -60,6 +63,7 @@ pub async fn fetch_manga_chapter(
                 optimize_image,
                 on_progress.clone(),
                 false,
+                None,
             )
             .await
             .map_err(|e| match e {

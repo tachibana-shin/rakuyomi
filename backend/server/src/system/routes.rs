@@ -175,11 +175,38 @@ fn read_process_status() -> Result<(u64, u64), String> {
 }
 
 fn read_filesystem_info(path: &Path) -> Result<FilesystemInfo, String> {
-    let stat = nix::sys::statvfs::statvfs(path).map_err(|e| e.to_string())?;
-    let frsize = stat.fragment_size() as u64;
-    let total = (stat.blocks() as u64) * frsize;
-    let free = (stat.blocks_free() as u64) * frsize;
-    let used = total.saturating_sub(free);
+    #[cfg(target_os = "android")]
+    let (total, free, used) = unsafe {
+        use std::ffi::CString;
+        use std::mem::MaybeUninit;
+
+        let c_path = CString::new(path.display().to_string()).map_err(|e| e.to_string())?;
+
+        let mut stat = MaybeUninit::<libc::statfs>::uninit();
+
+        if libc::statfs(c_path.as_ptr(), stat.as_mut_ptr()) == 0 {
+            let stat = stat.assume_init();
+
+            let bsize = stat.f_bsize as u64;
+            let total = (stat.f_blocks as u64) * bsize;
+            let free = (stat.f_bfree as u64) * bsize;
+            let used = total.saturating_sub(free);
+
+            (total, free, used)
+        } else {
+            return Err("Android statfs failed".to_string());
+        }
+    };
+
+    #[cfg(not(target_os = "android"))]
+    let (total, free, used) = {
+        let stat = nix::sys::statvfs::statvfs(path).map_err(|e| e.to_string())?;
+        let frsize = stat.fragment_size() as u64;
+        let total = (stat.blocks() as u64) * frsize;
+        let free = (stat.blocks_free() as u64) * frsize;
+        let used = total.saturating_sub(free);
+        (total, free, used)
+    };
 
     Ok(FilesystemInfo {
         path: path.display().to_string(),

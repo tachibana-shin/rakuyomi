@@ -9,9 +9,6 @@ use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use image::ImageReader;
 use log::{debug, info, warn};
-use nix::errno::Errno;
-use nix::mount::{mount, umount, MsFlags};
-use nix::sys::statfs::statfs;
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
@@ -75,7 +72,11 @@ impl ChapterStorage {
     /// tmpfs is mounted at `<parent_of_downloads>/tmpfs/`.
     /// If already mounted, remounts with the new size.
     /// Returns an error (e.g. `EPERM` — need root) on failure.
+    #[cfg(not(target_os = "android"))]
     pub fn enable_ram(&mut self, size_mb: usize) -> Result<()> {
+        use nix::errno::Errno;
+        use nix::mount::{mount, MsFlags};
+
         let ram_path = self.tmpfs_path();
         fs::create_dir_all(&ram_path).with_context(|| {
             format!(
@@ -139,9 +140,16 @@ impl ChapterStorage {
         result
     }
 
+    #[cfg(target_os = "android")]
+    pub fn enable_ram(&mut self, _size_mb: usize) -> Result<()> {
+        Err(anyhow::anyhow!("Not implemented for Android"))
+    }
+
     /// Switch back to persistent disk storage.
     /// Unmounts the tmpfs if it was mounted.
+    #[cfg(not(target_os = "android"))]
     pub fn disable_ram(&mut self) {
+        use nix::mount::umount;
         if !self.ram_enabled {
             return;
         }
@@ -155,6 +163,9 @@ impl ChapterStorage {
         self.ram_enabled = false;
         self.tmpfs_mount_error = None;
     }
+
+    #[cfg(target_os = "android")]
+    pub fn disable_ram(&mut self) {}
 
     /// Returns `true` when writing to tmpfs instead of persistent storage.
     pub fn is_ram_enabled(&self) -> bool {
@@ -234,10 +245,14 @@ impl ChapterStorage {
         }
         let ram_path = self.tmpfs_path();
 
-        match statfs(&ram_path) {
+        #[cfg(not(target_os = "android"))]
+        match nix::sys::statfs::statfs(&ram_path) {
             Ok(stats) => Ok((stats.blocks_available() * (stats.block_size() as u64)) < 4096),
             Err(_) => Ok(false),
         }
+
+        #[cfg(target_os = "android")]
+        Ok(false)
     }
 
     /// tmpfs mount path — sibling of `downloads_folder_path`.

@@ -157,7 +157,7 @@ impl DownloadChapterJob {
         .await
         {
             Ok(v) => (v, use_ram),
-            Err(ChapterDownloaderError::Other(_))
+            Err(_)
                 if use_ram
                     && chapter_storage
                         .tmpfs_full_storage()

@@ -79,7 +79,7 @@ function Backend.requestJson(request)
       method = request.method or "GET",
       headers = headers,
       body = serialized_body,
-      timeout = request.timeout,
+      timeout_seconds = request.timeout,
     }
   )
 

@@ -38,6 +38,7 @@ local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local findNextChapter = require("chapters/findNextChapter")
+local findPreviousChapter = require("chapters/findPreviousChapter")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local Font = require("ui/font")
@@ -931,6 +932,16 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       end
     end
 
+    local onBeginningOfBookCallback = function()
+      local prevChapter = findPreviousChapter(self.chapters, chapter)
+
+      if prevChapter ~= nil then
+        logger.info("opening previous chapter", prevChapter)
+        local prevChapterDownloadJob = self.preload_jobs[prevChapter.id] or nil
+        self:openChapterOnReader(prevChapter, prevChapterDownloadJob)
+      end
+    end
+
     Trapper:wrap(function()
       Backend.updateLastReadChapter(
         chapter.source_id,
@@ -943,6 +954,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
+      on_beginning_of_book_callback = onBeginningOfBookCallback,
       chapter = chapter,
       on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()

@@ -13,6 +13,7 @@ local Testing = require('testing')
 local MangaReader = {
   on_return_callback = nil,
   on_end_of_book_callback = nil,
+  on_beginning_of_book_callback = nil,
   chapter = nil,
   on_close_book_callback = nil,
   is_showing = false,
@@ -23,6 +24,7 @@ local MangaReader = {
 --- @field path string Path to the file to be displayed.
 --- @field on_return_callback fun(): nil Function to be called when the user selects "Go back to Rakuyomi".
 --- @field on_end_of_book_callback fun(): nil Function to be called when the user reaches the end of the file.
+--- @field on_beginning_of_book_callback? fun(): nil Function to be called when the user navigates before the first page.
 --- @field chapter? Chapter The chapter being read.
 --- @field on_close_book_callback? fun(Chapter): nil Function to be called when the user closes the manga reader.
 
@@ -33,6 +35,7 @@ local MangaReader = {
 function MangaReader:show(options)
   self.on_return_callback = options.on_return_callback
   self.on_end_of_book_callback = options.on_end_of_book_callback
+  self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
   self.chapter = options.chapter
   self.on_close_book_callback = options.on_close_book_callback
   local c_showing = self.is_showing
@@ -92,6 +95,38 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
   end
 
   table.insert(ui, 2, eventListener)
+
+  -- GotoViewRel is handled locally by ReaderPaging via key_events/gestures and
+  -- never broadcast through the widget tree, so a child event listener cannot
+  -- catch it. Monkey-patch ReaderPaging directly instead.
+  -- Guard against re-patching on every chapter switch.
+  if ui.paging and not ui.paging._rakuyomi_patched then
+    local orig_onGotoViewRel = ui.paging.onGotoViewRel
+    ui.paging.onGotoViewRel = function(paging_self, diff, ...)
+      if diff < 0 then
+        local at_beginning = false
+        if paging_self.view and paging_self.view.page_scroll then
+          -- Scroll mode: only trigger if the first visible page is page 1
+          -- and it is scrolled to its very top (visible_area.y == 0)
+          local page_states = paging_self.view.page_states
+          if page_states and page_states[1] then
+            local first = page_states[1]
+            at_beginning = (first.page == 1 and first.visible_area and first.visible_area.y == 0)
+          end
+        else
+          -- Page mode: trigger when on page 1
+          at_beginning = (paging_self.current_page == 1)
+        end
+        if at_beginning then
+          if self:onBeginningOfBook() then
+            return true
+          end
+        end
+      end
+      return orig_onGotoViewRel(paging_self, diff, ...)
+    end
+    ui.paging._rakuyomi_patched = true
+  end
 end
 
 --- Used to add the "Go back to Rakuyomi" menu item. Is called from `ReaderUI`, via the
@@ -144,6 +179,15 @@ function MangaReader:onEndOfBook()
 
     self.on_end_of_book_callback()
     return true
+  end
+end
+
+--- To be called when the user navigates before the first page of the manga.
+function MangaReader:onBeginningOfBook()
+  if self.is_showing and self.on_beginning_of_book_callback ~= nil then
+    logger.info("Got beginning of book")
+
+    return self.on_beginning_of_book_callback()
   end
 end
 

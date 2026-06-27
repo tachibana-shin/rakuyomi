@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-02 18:27+0000\n"
+"POT-Creation-Date: 2026-06-27 11:24+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -32,336 +32,340 @@ msgstr "Može se instalirati"
 msgid "version"
 msgstr "verzija"
 
-#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:275
-#: ../ChapterListing.lua:335 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:278
+#: ../ChapterListing.lua:338 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "Nepoznato"
 
-#: ../AvailableSourcesListing.lua:144
+#: ../AvailableSourcesListing.lua:145
 msgid "No available sources found."
 msgstr "Nema dostupnih izvora."
 
-#: ../AvailableSourcesListing.lua:144
+#: ../AvailableSourcesListing.lua:145
 msgid "Try adding some source lists by looking at our README!"
 msgstr "Pokušajte dodati popise izvora gledajući naš README!"
 
-#: ../AvailableSourcesListing.lua:162
+#: ../AvailableSourcesListing.lua:163
 msgid "Installing source..."
 msgstr "Instaliranje izvora..."
 
-#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Otkazano!"
 
-#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Završeno!"
 
-#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Čeka se do otkazivanja…"
 
-#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
-#: ../BasicJobDialog.lua:165
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Obrada..."
 
-#: ../BasicJobDialog.lua:92
+#: ../BasicJobDialog.lua:90
 msgid "An error occurred"
 msgstr "Došlo je do pogreške"
 
-#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Nepoznata greška"
 
-#: ../BasicJobDialog.lua:250
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Greška"
 
-#: ../ChapterListing.lua:55
+#: ../ChapterListing.lua:57
 msgid "Chapter listing"
 msgstr "Popis poglavlja"
 
-#: ../ChapterListing.lua:232 ../ChapterListing.lua:1052
+#: ../ChapterListing.lua:235 ../ChapterListing.lua:1097
 msgid "Languages"
 msgstr "jezici"
 
-#: ../ChapterListing.lua:321
+#: ../ChapterListing.lua:324
 msgid "No chapters found"
 msgstr "Nisu pronađena poglavlja"
 
-#: ../ChapterListing.lua:321
+#: ../ChapterListing.lua:324
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Pokušajte prijeći prstom prema dolje da biste osvježili popis poglavlja."
 
-#: ../ChapterListing.lua:366
+#: ../ChapterListing.lua:369
 msgid "Volume"
 msgstr "Volumen"
 
-#: ../ChapterListing.lua:370 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:373 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "Poglavlje"
 
-#: ../ChapterListing.lua:397
+#: ../ChapterListing.lua:400
 msgid "Locked"
 msgstr "Zaključan"
 
-#: ../ChapterListing.lua:433 ../ChapterListing.lua:633
+#: ../ChapterListing.lua:437 ../ChapterListing.lua:646
 msgid "Refreshing chapters..."
 msgstr "Osvježavanje poglavlja..."
 
-#: ../ChapterListing.lua:441 ../ChapterListing.lua:640
-#: ../ChapterListing.lua:1310
+#: ../ChapterListing.lua:445 ../ChapterListing.lua:653
+#: ../ChapterListing.lua:1355
 msgid "Cancelled."
 msgstr "Otkazano."
 
-#: ../ChapterListing.lua:453
+#: ../ChapterListing.lua:457
 msgid "Refresh chapter error"
 msgstr "Pogreška osvježavanja poglavlja"
 
-#: ../ChapterListing.lua:492
+#: ../ChapterListing.lua:497
 msgid "Chapter is locked"
 msgstr "Poglavlje je zaključano"
 
-#: ../ChapterListing.lua:509 ../PlaylistDialog.lua:220
+#: ../ChapterListing.lua:514 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "Otvoriti"
 
-#: ../ChapterListing.lua:519 ../ChapterListing.lua:972 ../LibraryView.lua:464
+#: ../ChapterListing.lua:524 ../ChapterListing.lua:1017 ../LibraryView.lua:532
 msgid "Refresh"
 msgstr "Osvježiti"
 
-#: ../ChapterListing.lua:525
+#: ../ChapterListing.lua:530
 msgid "Chapter refreshed"
 msgstr "Poglavlje osvježeno"
 
-#: ../ChapterListing.lua:531 ../ChapterListing.lua:666
-#: ../ChapterListing.lua:1008 ../LibraryView.lua:511
+#: ../ChapterListing.lua:536 ../ChapterListing.lua:679
+#: ../ChapterListing.lua:1053 ../LibraryView.lua:579
 msgid "Mark unread"
 msgstr "Označi kao nepročitano"
 
-#: ../ChapterListing.lua:542 ../ChapterListing.lua:1206
+#: ../ChapterListing.lua:547 ../ChapterListing.lua:1251
 msgid "Download"
 msgstr "preuzimanje"
 
-#: ../ChapterListing.lua:542 ../LibraryView.lua:704 ../LibraryView.lua:724
+#: ../ChapterListing.lua:547 ../LibraryView.lua:774 ../LibraryView.lua:794
 msgid "Remove"
 msgstr "Ukloniti"
 
-#: ../ChapterListing.lua:551
+#: ../ChapterListing.lua:556
 msgid "Chapter downloaded"
 msgstr "Poglavlje preuzeto"
 
-#: ../ChapterListing.lua:570
+#: ../ChapterListing.lua:575
 msgid "Revoke chapter..."
 msgstr "Opozovi poglavlje..."
 
-#: ../ChapterListing.lua:588
+#: ../ChapterListing.lua:593
 msgid "Removed chapter"
 msgstr "Uklonjeno poglavlje"
 
-#: ../ChapterListing.lua:599
+#: ../ChapterListing.lua:604
 msgid "Marking"
 msgstr "Označavanje"
 
-#: ../ChapterListing.lua:599
+#: ../ChapterListing.lua:604
 msgid "Un-marking"
 msgstr "Un-označavanje"
 
-#: ../ChapterListing.lua:599
+#: ../ChapterListing.lua:604
 msgid "chapter..."
 msgstr "poglavlje..."
 
-#: ../ChapterListing.lua:666 ../ChapterListing.lua:998 ../LibraryView.lua:500
+#: ../ChapterListing.lua:638
+msgid "Cannot refresh chapters while offline"
+msgstr "Nije moguće osvježiti poglavlja dok ste izvan mreže"
+
+#: ../ChapterListing.lua:679 ../ChapterListing.lua:1043 ../LibraryView.lua:568
 msgid "Mark read"
 msgstr "Mark je pročitao"
 
-#: ../ChapterListing.lua:667
+#: ../ChapterListing.lua:680
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:668
+#: ../ChapterListing.lua:681
 msgid "Leaving blank will select all"
 msgstr "Ako ostavite prazno, odabrat ćete sve"
 
-#: ../ChapterListing.lua:668
+#: ../ChapterListing.lua:681
 msgid "Mark chapters as read or unread"
 msgstr "Označite poglavlja kao pročitana ili nepročitana"
 
-#: ../ChapterListing.lua:672 ../ChapterListing.lua:1124
-#: ../ChapterListing.lua:1199 ../LibraryView.lua:686 ../LibraryView.lua:979
-#: ../LibraryView.lua:1027 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:135 ../PlaylistDialog.lua:255
+#: ../ChapterListing.lua:685 ../ChapterListing.lua:1169
+#: ../ChapterListing.lua:1244 ../LibraryView.lua:756 ../LibraryView.lua:1093
+#: ../LibraryView.lua:1141 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
 #: ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "Otkazati"
 
-#: ../ChapterListing.lua:679
+#: ../ChapterListing.lua:692
 msgid "Mark"
 msgstr "Ocjena"
 
-#: ../ChapterListing.lua:689
+#: ../ChapterListing.lua:702
 msgid "Marking..."
 msgstr "Označavanje..."
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:712
 msgid "Marked"
 msgstr "Označeno"
 
-#: ../ChapterListing.lua:718 ../MangaSearchResults.lua:180
+#: ../ChapterListing.lua:731 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "Nema grešaka"
 
-#: ../ChapterListing.lua:727
+#: ../ChapterListing.lua:740
 #, lua-format
 msgid "Page"
 msgstr "Stranica"
 
-#: ../ChapterListing.lua:727
+#: ../ChapterListing.lua:740
 #, lua-format
 msgid "attempts"
 msgstr "pokušaja"
 
-#: ../ChapterListing.lua:735 ../MangaSearchResults.lua:196
+#: ../ChapterListing.lua:748 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… i još %d pogreške"
 
-#: ../ChapterListing.lua:754 ../ChapterListing.lua:769
+#: ../ChapterListing.lua:767
 msgid "Could not download chapter."
 msgstr "Nije moguće preuzeti poglavlje."
 
-#: ../ChapterListing.lua:762
+#: ../ChapterListing.lua:775
 msgid "Loading chapter..."
 msgstr "Učitavanje poglavlja..."
 
-#: ../ChapterListing.lua:763
+#: ../ChapterListing.lua:776
 msgid "unknown"
 msgstr "nepoznato"
 
-#: ../ChapterListing.lua:782
+#: ../ChapterListing.lua:794
 msgid "Download cancelled."
 msgstr "Preuzimanje otkazano."
 
-#: ../ChapterListing.lua:788
+#: ../ChapterListing.lua:800
 msgid "Are you sure you want to cancel the download?"
 msgstr "Jeste li sigurni da želite otkazati preuzimanje?"
 
-#: ../ChapterListing.lua:962 ../MangaSearchResults.lua:360
+#: ../ChapterListing.lua:1007 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "Dodaj u biblioteku"
 
-#: ../ChapterListing.lua:980 ../LibraryView.lua:484
-#: ../MangaSearchResults.lua:430
+#: ../ChapterListing.lua:1025 ../LibraryView.lua:552
+#: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "pojedinosti"
 
-#: ../ChapterListing.lua:1020
+#: ../ChapterListing.lua:1065
 msgid "Resume"
 msgstr "Nastavi"
 
-#: ../ChapterListing.lua:1028
+#: ../ChapterListing.lua:1073
 msgid "Next Chapter"
 msgstr "Sljedeće poglavlje"
 
-#: ../ChapterListing.lua:1038
+#: ../ChapterListing.lua:1083
 msgid "Download unread chapters…"
 msgstr "Preuzmi nepročitana poglavlja..."
 
-#: ../ChapterListing.lua:1065
+#: ../ChapterListing.lua:1110
 msgid "Group"
 msgstr "Skupina"
 
-#: ../ChapterListing.lua:1066 ../ChapterListing.lua:1180
+#: ../ChapterListing.lua:1111 ../ChapterListing.lua:1225
 msgid "Filter by Group"
 msgstr "Filtriraj po grupi"
 
-#: ../ChapterListing.lua:1089
+#: ../ChapterListing.lua:1134
 msgid "Adding to library..."
 msgstr "Dodavanje u knjižnicu..."
 
-#: ../ChapterListing.lua:1096
+#: ../ChapterListing.lua:1141
 msgid "Failed to add to library"
 msgstr "Dodavanje u knjižnicu nije uspjelo"
 
-#: ../ChapterListing.lua:1101
+#: ../ChapterListing.lua:1146
 msgid "Added to library."
 msgstr "Dodano u knjižnicu."
 
-#: ../ChapterListing.lua:1113 ../LibraryView.lua:648
+#: ../ChapterListing.lua:1158 ../LibraryView.lua:718
 msgid "Sadly, no next chapter available! :c"
 msgstr "Nažalost, sljedeće poglavlje nije dostupno! "
 
-#: ../ChapterListing.lua:1122
+#: ../ChapterListing.lua:1167
 msgid "Next"
 msgstr "Sljedeći"
 
-#: ../ChapterListing.lua:1122
+#: ../ChapterListing.lua:1167
 msgid "reading with"
 msgstr "čitanje sa"
 
-#: ../ChapterListing.lua:1123 ../LibraryView.lua:685
+#: ../ChapterListing.lua:1168 ../LibraryView.lua:755
 msgid "Read"
 msgstr "čitati"
 
-#: ../ChapterListing.lua:1145
+#: ../ChapterListing.lua:1190
 msgid "Show All"
 msgstr "Prikaži sve"
 
-#: ../ChapterListing.lua:1153
+#: ../ChapterListing.lua:1198
 msgid "Showing all groups"
 msgstr "Prikaz svih grupa"
 
-#: ../ChapterListing.lua:1173
+#: ../ChapterListing.lua:1218
 msgid "Filtered to"
 msgstr "Filtrirano na"
 
-#: ../ChapterListing.lua:1190
+#: ../ChapterListing.lua:1235
 msgid "Download unread chapters..."
 msgstr "Preuzmi nepročitana poglavlja..."
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1237
 msgid "Amount of unread chapters (default: all)"
 msgstr "Količina nepročitanih poglavlja (zadano: sva)"
 
-#: ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1239
 msgid "Specify amount or leave empty for all."
 msgstr "Navedite iznos ili ostavite prazno za sve."
 
-#: ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1239
 msgid "Will download from"
 msgstr "Preuzet će se s"
 
-#: ../ChapterListing.lua:1195
+#: ../ChapterListing.lua:1240
 msgid "Specify the amount of unread chapters to download"
 msgstr "Odredite količinu nepročitanih poglavlja za preuzimanje"
 
-#: ../ChapterListing.lua:1195
+#: ../ChapterListing.lua:1240
 msgid "or leave empty to download all of them."
 msgstr "ili ostavite prazno za preuzimanje svih."
 
-#: ../ChapterListing.lua:1216
+#: ../ChapterListing.lua:1261
 msgid "Invalid amount of chapters!"
 msgstr "Nevažeći broj poglavlja!"
 
-#: ../ChapterListing.lua:1237
+#: ../ChapterListing.lua:1282
 msgid "No unread chapters found for"
 msgstr "Nema nepročitanih poglavlja za"
 
-#: ../ChapterListing.lua:1262 ../ChapterListing.lua:1337
+#: ../ChapterListing.lua:1307 ../ChapterListing.lua:1382
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Preuzimanje svih poglavlja, ovo će potrajati..."
 
-#: ../ChapterListing.lua:1347
+#: ../ChapterListing.lua:1392
 msgid "Waiting for download to be cancelled…"
 msgstr "Čeka se otkazivanje preuzimanja..."
 
-#: ../ChapterListing.lua:1349
+#: ../ChapterListing.lua:1394
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Preuzimanje svih poglavlja, ovo će potrajati... ("
 
-#: ../ChapterListing.lua:1352
+#: ../ChapterListing.lua:1397
 msgid "Tap outside this message to cancel."
 msgstr "Dodirnite izvan ove poruke za odustajanje."
 
@@ -409,268 +413,312 @@ msgstr "Želite li ukloniti"
 msgid "source?"
 msgstr "izvor?"
 
-#: ../LibraryView.lua:60 ../Settings.lua:38
+#: ../LibraryView.lua:73 ../Settings.lua:76
 msgid "Library"
 msgstr "Knjižnica"
 
-#: ../LibraryView.lua:388
+#: ../LibraryView.lua:452
 msgid "No mangas found in library"
 msgstr "U knjižnici nisu pronađene mange"
 
-#: ../LibraryView.lua:388
+#: ../LibraryView.lua:452
 msgid "Try adding some by holding their name on the search results!"
 msgstr "Pokušajte ih dodati držeći njihovo ime u rezultatima pretraživanja!"
 
-#: ../LibraryView.lua:475
+#: ../LibraryView.lua:543
 msgid "Refreshed manga"
 msgstr "Osvježena manga"
 
-#: ../LibraryView.lua:524
+#: ../LibraryView.lua:592
 msgid "Continue Reading"
 msgstr "Nastavite čitati"
 
-#: ../LibraryView.lua:533 ../MangaSearchResults.lua:421
+#: ../LibraryView.lua:601 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "Dodaj na popis za reprodukciju"
 
-#: ../LibraryView.lua:545
+#: ../LibraryView.lua:613
 msgid "List chapters"
 msgstr "Navedite poglavlja"
 
-#: ../LibraryView.lua:561 ../MangaSearchResults.lua:357
+#: ../LibraryView.lua:631 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "Ukloni iz knjižnice"
 
-#: ../LibraryView.lua:571
+#: ../LibraryView.lua:641
 msgid "Remove from Playlist"
 msgstr "Ukloni s popisa za reprodukciju"
 
-#: ../LibraryView.lua:604
+#: ../LibraryView.lua:674
 msgid "Finding next chapter..."
 msgstr "Traženje sljedećeg poglavlja..."
 
-#: ../LibraryView.lua:615
+#: ../LibraryView.lua:685
 msgid "No chapters found for this manga."
 msgstr "Nisu pronađena poglavlja za ovu mangu."
 
-#: ../LibraryView.lua:684
+#: ../LibraryView.lua:754
 msgid "Resume reading with:"
 msgstr "Nastavite čitati s:"
 
-#: ../LibraryView.lua:703 ../LibraryView.lua:723
+#: ../LibraryView.lua:773 ../LibraryView.lua:793
 msgid "Do you want to remove"
 msgstr "Želite li ukloniti"
 
-#: ../LibraryView.lua:703
+#: ../LibraryView.lua:773
 msgid "from your library?"
 msgstr "iz vaše knjižnice?"
 
-#: ../LibraryView.lua:723
+#: ../LibraryView.lua:793
 msgid "from your playlist?"
 msgstr "sa svoje liste za reprodukciju?"
 
-#: ../LibraryView.lua:746
+#: ../LibraryView.lua:816
 msgid "Search for mangas"
 msgstr "Potražite mange"
 
-#: ../LibraryView.lua:756
+#: ../LibraryView.lua:826
 msgid "Search favorites"
 msgstr "Pretražite favorite"
 
-#: ../LibraryView.lua:766 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:836 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "Popisi pjesama"
 
-#: ../LibraryView.lua:775
+#: ../LibraryView.lua:845
 msgid "Refresh mangas"
 msgstr "Osvježi mange"
 
-#: ../LibraryView.lua:783
+#: ../LibraryView.lua:853
 msgid "Refresh details"
 msgstr "Osvježi detalje"
 
-#: ../LibraryView.lua:793
+#: ../LibraryView.lua:863
 msgid "Cleaner chapters"
 msgstr "Čišća poglavlja"
 
-#: ../LibraryView.lua:801
+#: ../LibraryView.lua:871
 msgid "Manage sources"
 msgstr "Upravljanje izvorima"
 
-#: ../LibraryView.lua:811 ../LibraryView.lua:973 ../Settings.lua:324
+#: ../LibraryView.lua:881 ../LibraryView.lua:1087 ../Settings.lua:442
 msgid "Settings"
 msgstr "postavke"
 
-#: ../LibraryView.lua:819
+#: ../LibraryView.lua:889
 msgid "Check for updates"
 msgstr "Provjerite ima li ažuriranja"
 
-#: ../LibraryView.lua:828
+#: ../LibraryView.lua:898
 msgid "Sync Database (Beta)"
 msgstr "Sinkronizacija baze podataka (Beta)"
 
-#: ../LibraryView.lua:832
+#: ../LibraryView.lua:902
 msgid "Sync to WebDAV..."
 msgstr "Sinkronizacija na WebDAV..."
 
-#: ../LibraryView.lua:844
+#: ../LibraryView.lua:914
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Želite li migrirati svoju lokalnu bazu podataka s poslužitelja?"
 
-#: ../LibraryView.lua:844
+#: ../LibraryView.lua:914
 msgid "The remote database is newer than the local one."
 msgstr "Udaljena baza podataka je novija od lokalne."
 
-#: ../LibraryView.lua:844
+#: ../LibraryView.lua:914
 msgid "This action cannot be undone."
 msgstr "Ova se radnja ne može poništiti."
 
-#: ../LibraryView.lua:845
+#: ../LibraryView.lua:915
 msgid "Migrate"
 msgstr "Migrirati"
 
-#: ../LibraryView.lua:849
+#: ../LibraryView.lua:919
 msgid "Migrating database..."
 msgstr "Migracija baze podataka..."
 
-#: ../LibraryView.lua:860 ../LibraryView.lua:907
+#: ../LibraryView.lua:930 ../LibraryView.lua:977
 msgid "Local database has been migrated from the server!"
 msgstr "Lokalna baza podataka je migrirana s poslužitelja!"
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:941
 msgid "Replace Cloud"
 msgstr "Zamijeni Cloud"
 
-#: ../LibraryView.lua:875
+#: ../LibraryView.lua:945
 msgid "Replacing cloud..."
 msgstr "Zamjena oblaka..."
 
-#: ../LibraryView.lua:885
+#: ../LibraryView.lua:955
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Cloud baza podataka je prisilno zamijenjena lokalnom!"
 
-#: ../LibraryView.lua:903
+#: ../LibraryView.lua:973
 msgid "Database is already up to date!"
 msgstr "Baza podataka je već ažurirana!"
 
-#: ../LibraryView.lua:905
+#: ../LibraryView.lua:975
 msgid "Database has been synced to the server!"
 msgstr "Baza podataka je sinkronizirana s poslužiteljem!"
 
-#: ../LibraryView.lua:909
+#: ../LibraryView.lua:979
 msgid "Sync completed!"
 msgstr "Sinkronizacija dovršena!"
 
-#: ../LibraryView.lua:945
+#: ../LibraryView.lua:990
+msgid "System resources"
+msgstr "Resursi sustava"
+
+#: ../LibraryView.lua:1005
+msgid "CPU"
+msgstr "CPU"
+
+#: ../LibraryView.lua:1006
+msgid "Cores"
+msgstr "Jezgre"
+
+#: ../LibraryView.lua:1007
+msgid "Usage"
+msgstr "Korištenje"
+
+#: ../LibraryView.lua:1008
+msgid "Memory"
+msgstr "Memorija"
+
+#: ../LibraryView.lua:1011 ../Settings.lua:247
+msgid "Storage"
+msgstr "Skladištenje"
+
+#: ../LibraryView.lua:1015 ../LibraryView.lua:1019
+msgid "Tmpfs"
+msgstr "Tmpfs"
+
+#: ../LibraryView.lua:1019
+msgid "unavailable"
+msgstr "nedostupan"
+
+#: ../LibraryView.lua:1022
+msgid "Process RSS"
+msgstr "Obradi RSS"
+
+#: ../LibraryView.lua:1023
+msgid "Virtual"
+msgstr "Virtualni"
+
+#: ../LibraryView.lua:1059
 msgid "Manga search..."
 msgstr "Pretraživanje manga..."
 
-#: ../LibraryView.lua:946
+#: ../LibraryView.lua:1060
 msgid "Houseki no Kuni"
 msgstr "Houseki no Kuni"
 
-#: ../LibraryView.lua:947 ../LibraryView.lua:1023
+#: ../LibraryView.lua:1061 ../LibraryView.lua:1137
 msgid "Type the manga name to search for"
 msgstr "Upišite naziv mange za pretraživanje"
 
-#: ../LibraryView.lua:951 ../LibraryView.lua:960 ../LibraryView.lua:1005
-#: ../LibraryView.lua:1034 ../Settings.lua:129
+#: ../LibraryView.lua:1065 ../LibraryView.lua:1074 ../LibraryView.lua:1119
+#: ../LibraryView.lua:1148 ../Settings.lua:185
 msgid "Search"
 msgstr "Pretraživanje"
 
-#: ../LibraryView.lua:1005
+#: ../LibraryView.lua:1119
 msgid "Exclude source search for"
 msgstr "Isključi traženje izvora"
 
-#: ../LibraryView.lua:1020
+#: ../LibraryView.lua:1134
 msgid "Favorite search..."
 msgstr "Omiljena pretraga..."
 
-#: ../LibraryView.lua:1022
+#: ../LibraryView.lua:1136
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:1074
+#: ../LibraryView.lua:1188
 msgid "Scaning files..."
 msgstr "Skeniranje datoteka..."
 
-#: ../LibraryView.lua:1089
+#: ../LibraryView.lua:1203
 #, lua-format
 msgid "Found %d files."
 msgstr "Pronađeno %d datoteka."
 
-#: ../LibraryView.lua:1090
+#: ../LibraryView.lua:1204
 #, lua-format
 msgid "Total size %s."
 msgstr "Ukupna veličina %s."
 
-#: ../LibraryView.lua:1091
+#: ../LibraryView.lua:1205
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly skeniranje datoteke .cbz i .epub."
 
-#: ../LibraryView.lua:1095
+#: ../LibraryView.lua:1209
 msgid "Clean"
 msgstr "Čist"
 
-#: ../LibraryView.lua:1100
+#: ../LibraryView.lua:1214
 msgid "Deleting..."
 msgstr "Brisanje..."
 
-#: ../LibraryView.lua:1118
+#: ../LibraryView.lua:1232
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Očišćena besplatna %s pohrana"
 
-#: ../LibraryView.lua:1143
+#: ../LibraryView.lua:1247 ../LibraryView.lua:1259 ../LibraryView.lua:1280
+msgid "Cannot refresh while offline"
+msgstr "Nije moguće osvježiti dok ste izvan mreže"
+
+#: ../LibraryView.lua:1269
 msgid "Refresh mangas..."
 msgstr "Osvježi mange..."
 
-#: ../LibraryView.lua:1144
+#: ../LibraryView.lua:1270
 msgid "All chapters manga updated!"
 msgstr "Sva poglavlja mange ažurirana!"
 
-#: ../LibraryView.lua:1145
+#: ../LibraryView.lua:1271
 msgid "Some manga updates fail:"
 msgstr "Neka ažuriranja mange ne uspijevaju:"
 
-#: ../LibraryView.lua:1156
+#: ../LibraryView.lua:1290
 msgid "Refresh manga details..."
 msgstr "Osvježi detalje mange..."
 
-#: ../LibraryView.lua:1157
+#: ../LibraryView.lua:1291
 msgid "All manga details refresh!"
 msgstr "Svi detalji mange osvježeni!"
 
-#: ../LibraryView.lua:1158
+#: ../LibraryView.lua:1292
 msgid "Some manga details refresh fail:"
 msgstr "Osvježavanje nekih detalja mange nije uspjelo:"
 
-#: ../LibraryView.lua:1174
+#: ../LibraryView.lua:1308
 msgid "Progress"
 msgstr "Napredak"
 
-#: ../LibraryView.lua:1192
+#: ../LibraryView.lua:1326
 msgid "Cleaner"
 msgstr "Čistač"
 
-#: ../LibraryView.lua:1193
+#: ../LibraryView.lua:1327
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Pronađite i izbrišite nevažeće datoteke uključujući datoteke iz izbrisanih izvora"
 
-#: ../LibraryView.lua:1193 ../LibraryView.lua:1196
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1330
 msgid "Normal"
 msgstr "Normalan"
 
-#: ../LibraryView.lua:1194 ../LibraryView.lua:1202
+#: ../LibraryView.lua:1328 ../LibraryView.lua:1336
 msgid "Chapter read done"
 msgstr "Pročitano poglavlje završeno"
 
-#: ../LibraryView.lua:1194
+#: ../LibraryView.lua:1328
 msgid "Find and delete chapters that have been read"
 msgstr "Pronađite i izbrišite poglavlja koja ste pročitali"
 
-#: ../LibraryView.lua:1195
+#: ../LibraryView.lua:1329
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "VAŽNO: Meta datoteke (bookmark, povijest) se ne čuvaju!"
 
@@ -735,47 +783,47 @@ msgstr "Sef"
 msgid "Suggestive"
 msgstr "Sugestivno"
 
-#: ../MangaInfoWidget.lua:559 ../MangaSearchResults.lua:386
+#: ../MangaInfoWidget.lua:572 ../MangaSearchResults.lua:388
 msgid "Refreshing details..."
 msgstr "Osvježavanje detalja..."
 
-#: ../MangaInfoWidget.lua:571 ../MangaSearchResults.lua:392
+#: ../MangaInfoWidget.lua:584 ../MangaSearchResults.lua:394
 msgid "Refresh details cancelled."
 msgstr "Osvježavanje pojedinosti je otkazano."
 
-#: ../MangaReader.lua:101
+#: ../MangaReader.lua:137
 msgid "Go back to Rakuyomi..."
 msgstr "Vrati se u Rakuyomi..."
 
-#: ../MangaReader.lua:172
+#: ../MangaReader.lua:218
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "Želiš li da Rakuyomi preuzme ovaj gumb kada ga otvoriš?"
 
-#: ../MangaReader.lua:172
+#: ../MangaReader.lua:218
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "Ova postavka djeluje samo kada je otvorite pomoću Rakuyomija."
 
-#: ../MangaReader.lua:174
+#: ../MangaReader.lua:220
 msgid "Yes"
 msgstr "Da"
 
-#: ../MangaReader.lua:175
+#: ../MangaReader.lua:221
 msgid "No"
 msgstr "Ne"
 
-#: ../MangaSearchResults.lua:29
+#: ../MangaSearchResults.lua:30
 msgid "Search results..."
 msgstr "Rezultati pretraživanja..."
 
-#: ../MangaSearchResults.lua:157
+#: ../MangaSearchResults.lua:158
 msgid "Next page"
 msgstr "Sljedeća stranica"
 
-#: ../MangaSearchResults.lua:209 ../MangaSearchResults.lua:269
+#: ../MangaSearchResults.lua:210 ../MangaSearchResults.lua:270
 msgid "Searching for"
 msgstr "Traženje"
 
-#: ../MangaSearchResults.lua:214 ../MangaSearchResults.lua:275
+#: ../MangaSearchResults.lua:215 ../MangaSearchResults.lua:276
 msgid "Search cancelled."
 msgstr "Pretraga otkazana."
 
@@ -795,8 +843,8 @@ msgstr "Nema obavijesti"
 msgid "Delete this notification?"
 msgstr "Izbrisati ovu obavijest?"
 
-#: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
-#: ../PlaylistDialog.lua:232
+#: ../NotificationView.lua:161 ../PlaylistDialog.lua:157
+#: ../PlaylistDialog.lua:230
 msgid "Delete"
 msgstr "Izbrisati"
 
@@ -828,270 +876,326 @@ msgstr "Zatvoriti"
 msgid "Do not show this message again"
 msgstr "Ne prikazuj više ovu poruku"
 
-#: ../PlaylistDialog.lua:131
+#: ../PlaylistDialog.lua:129
 msgid "Rename Playlist"
 msgstr "Preimenuj popis za reprodukciju"
 
-#: ../PlaylistDialog.lua:136
+#: ../PlaylistDialog.lua:134
 msgid "Save"
 msgstr "Uštedjeti"
 
-#: ../PlaylistDialog.lua:158
+#: ../PlaylistDialog.lua:156
 msgid "Delete playlist"
 msgstr "Izbriši popis za reprodukciju"
 
-#: ../PlaylistDialog.lua:227
+#: ../PlaylistDialog.lua:225
 msgid "Rename"
 msgstr "Preimenovati"
 
-#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
+#: ../PlaylistDialog.lua:248 ../PlaylistDialog.lua:310
 msgid "New Playlist"
 msgstr "Novi popis za reprodukciju"
 
-#: ../PlaylistDialog.lua:251
+#: ../PlaylistDialog.lua:249
 msgid "Playlist name"
 msgstr "Naziv popisa za reprodukciju"
 
-#: ../PlaylistDialog.lua:264
+#: ../PlaylistDialog.lua:262
 msgid "Create"
 msgstr "Stvoriti"
 
-#: ../PlaylistDialog.lua:324
+#: ../PlaylistDialog.lua:322
 msgid "No playlists yet."
 msgstr "Još nema popisa za reprodukciju."
 
-#: ../Settings.lua:44
+#: ../Settings.lua:82
 msgid "Library view mode"
 msgstr "Način prikaza biblioteke"
 
-#: ../Settings.lua:46 ../Settings.lua:137
+#: ../Settings.lua:84 ../Settings.lua:193
 msgid "Base"
 msgstr "Baza"
 
-#: ../Settings.lua:47 ../Settings.lua:138
+#: ../Settings.lua:85 ../Settings.lua:194
 msgid "Cover"
 msgstr "Poklopac"
 
-#: ../Settings.lua:48 ../Settings.lua:139
+#: ../Settings.lua:86 ../Settings.lua:195
 msgid "Grid"
 msgstr "Mreža"
 
-#: ../Settings.lua:57
+#: ../Settings.lua:95
 msgid "Library sorting mode"
 msgstr "Način sortiranja biblioteke"
 
-#: ../Settings.lua:59
+#: ../Settings.lua:97
 msgid "Order added ascending (Default)"
 msgstr "Poredak dodan uzlazno (zadano)"
 
-#: ../Settings.lua:60
+#: ../Settings.lua:98
 msgid "Order added descending"
 msgstr "Dodan silazni poredak"
 
-#: ../Settings.lua:61
+#: ../Settings.lua:99
 msgid "Title manga ascending"
 msgstr "Naslov mange uzlazno"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:100
 msgid "Title manga descending"
 msgstr "Silazni naslov mange"
 
-#: ../Settings.lua:63
+#: ../Settings.lua:101
 msgid "Count unread chapters ascending"
 msgstr "Broj nepročitanih poglavlja uzlazno"
 
-#: ../Settings.lua:64
+#: ../Settings.lua:102
 msgid "Count unread chapters descending"
 msgstr "Broj nepročitanih poglavlja silaznim redom"
 
-#: ../Settings.lua:65
+#: ../Settings.lua:103
 msgid "Last read ascending"
 msgstr "Zadnje čitanje uzlazno"
 
-#: ../Settings.lua:66
+#: ../Settings.lua:104
 msgid "Last read descending"
 msgstr "Zadnje čitanje silazno"
 
-#: ../Settings.lua:67
+#: ../Settings.lua:105
 msgid "Source ascending"
 msgstr "Izvor uzlazno"
 
-#: ../Settings.lua:68
+#: ../Settings.lua:106
 msgid "Source descending"
 msgstr "Izvor pada"
 
-#: ../Settings.lua:76
+#: ../Settings.lua:114
 msgid "Items per page (0 = auto)"
 msgstr "Stavki po stranici (0 = automatski)"
 
-#: ../Settings.lua:87
+#: ../Settings.lua:125
 msgid "Grid columns"
 msgstr "Mrežni stupci"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:136
 msgid "Grid rows"
 msgstr "Redovi mreže"
 
-#: ../Settings.lua:109
+#: ../Settings.lua:147
+msgid "Show title in grid mode"
+msgstr "Prikaži naslov u mrežnom načinu"
+
+#: ../Settings.lua:156
+msgid "Show metadata in grid mode"
+msgstr "Prikaži metapodatke u mrežnom načinu"
+
+#: ../Settings.lua:165
 msgid "Tap manga action"
 msgstr "Dodirnite manga akciju"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:167
 msgid "Open chapter list"
 msgstr "Otvaranje popisa poglavlja"
 
-#: ../Settings.lua:112
+#: ../Settings.lua:168
 msgid "Continue reading"
 msgstr "Nastavite čitati"
 
-#: ../Settings.lua:122
+#: ../Settings.lua:178
 msgid "Skip resume reading confirmation"
 msgstr "Preskoči potvrdu za nastavak čitanja"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:191
 msgid "Search view mode"
 msgstr "Način prikaza pretraživanja"
 
-#: ../Settings.lua:146
+#: ../Settings.lua:202
 msgid "Reader"
 msgstr "Čitač"
 
-#: ../Settings.lua:152
+#: ../Settings.lua:208
 msgid "Chapter sorting mode"
 msgstr "Način sortiranja poglavlja"
 
-#: ../Settings.lua:154
+#: ../Settings.lua:210
 msgid "By chapter ascending"
 msgstr "Po poglavlju uzlazno"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:211
 msgid "By chapter descending"
 msgstr "Po poglavlju silazno"
 
-#: ../Settings.lua:163
+#: ../Settings.lua:219
 msgid "Preload chapters on reader open"
 msgstr "Unaprijed učitaj poglavlja na otvorenom čitaču"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:230
 msgid "Optimize page images (experimental)"
 msgstr "Optimizirajte slike stranica (eksperimentalno)"
 
-#: ../Settings.lua:182
+#: ../Settings.lua:238
 msgid "Concurrent page requests"
 msgstr "Istovremeni zahtjevi za stranicu"
 
-#: ../Settings.lua:191
-msgid "Storage"
-msgstr "Skladištenje"
-
-#: ../Settings.lua:197
+#: ../Settings.lua:253
 msgid "Chapter storage path"
 msgstr "Putanja za pohranjivanje poglavlja"
 
-#: ../Settings.lua:206
+#: ../Settings.lua:262
 msgid "Storage size limit"
 msgstr "Ograničenje veličine pohrane"
 
-#: ../Settings.lua:214
+#: ../Settings.lua:272
+msgid "Write chapters to RAM (protect eMMC)"
+msgstr "Pisanje poglavlja u RAM (zaštitite eMMC)"
+
+#: ../Settings.lua:280
+msgid "RAM storage size. Your RAM is: "
+msgstr "Veličina RAM memorije. "
+
+#: ../Settings.lua:289
 msgid "Sync & Updates"
 msgstr "Sinkronizacija i ažuriranja"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:295
 msgid "WebDAV Sync"
 msgstr "WebDAV sinkronizacija"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:303
 msgid "Enabled cron check for manga updates"
 msgstr "Omogućena cron provjera ažuriranja mange"
 
-#: ../Settings.lua:236
+#: ../Settings.lua:311
 msgid "Source IDs skip check update"
 msgstr "ID-ovi izvora preskaču ažuriranje provjere"
 
-#: ../Settings.lua:242
+#: ../Settings.lua:317
 msgid "System"
 msgstr "sustav"
 
-#: ../Settings.lua:248
+#: ../Settings.lua:323
 msgid "Allow requisition of the back button"
 msgstr "Dopusti traženje gumba za povratak"
+
+#: ../Settings.lua:330
+msgid "Server"
+msgstr "poslužitelj"
+
+#: ../Settings.lua:336
+msgid "Auto-stop server when leaving library view"
+msgstr "Automatsko zaustavljanje poslužitelja pri napuštanju prikaza knjižnice"
+
+#: ../Settings.lua:338
+msgid "Disabled"
+msgstr "Onesposobljeno"
+
+#: ../Settings.lua:339
+msgid "Immediate"
+msgstr "Odmah"
+
+#: ../Settings.lua:340
+msgid "After 30 seconds"
+msgstr "Nakon 30 sekundi"
+
+#: ../Settings.lua:341
+msgid "After 1 minute"
+msgstr "Nakon 1 minute"
+
+#: ../Settings.lua:342
+msgid "After 5 minutes"
+msgstr "Nakon 5 minuta"
+
+#: ../Settings.lua:343
+msgid "After 10 minutes"
+msgstr "Nakon 10 minuta"
+
+#: ../Settings.lua:353
+msgid "Show chapter download progress"
+msgstr "Prikaži napredak preuzimanja poglavlja"
+
+#: ../Settings.lua:360
+msgid "Logging"
+msgstr "Sječa drva"
+
+#: ../Settings.lua:366
+msgid "Disable logging"
+msgstr "Onemogući bilježenje"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "Postavke izvora"
 
-#: ../UpdateChecker.lua:24
+#: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
 msgstr "Nije moguće provjeriti ažuriranja dok ste izvan mreže"
 
-#: ../UpdateChecker.lua:39
+#: ../UpdateChecker.lua:38
 msgid "You're running the latest version!"
 msgstr "Imate najnoviju verziju!"
 
-#: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
+#: ../UpdateChecker.lua:49 ../UpdateChecker.lua:73
 #, lua-format
 msgid "Version"
 msgstr "Verzija"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "Would you like to update now?"
 msgstr "Želite li ažurirati sada?"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "You're currently running version "
 msgstr "Trenutno koristite verziju"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "is available"
 msgstr "je dostupan"
 
-#: ../UpdateChecker.lua:58
+#: ../UpdateChecker.lua:57
 msgid "Later"
 msgstr "Kasnije"
 
-#: ../UpdateChecker.lua:64
+#: ../UpdateChecker.lua:63
 msgid "Update Now"
 msgstr "Ažurirajte sada"
 
-#: ../UpdateChecker.lua:74
+#: ../UpdateChecker.lua:73
 #, lua-format
 msgid "is available. You're currently running version "
 msgstr "je dostupan. "
 
-#: ../UpdateChecker.lua:75
+#: ../UpdateChecker.lua:74
 #, lua-format
 msgid "This update cannot be installed automatically"
 msgstr "Ovo se ažuriranje ne može automatski instalirati"
 
-#: ../UpdateChecker.lua:75
+#: ../UpdateChecker.lua:74
 #, lua-format
 msgid "please visit the user guide for instructions."
 msgstr "upute potražite u korisničkom priručniku."
 
-#: ../UpdateChecker.lua:83
+#: ../UpdateChecker.lua:82
 msgid "OK"
 msgstr "U REDU"
 
-#: ../UpdateChecker.lua:103
+#: ../UpdateChecker.lua:102
 msgid "Updating rakuyomi, please wait..."
 msgstr "Ažuriranje rakuyomija, pričekajte..."
 
-#: ../UpdateChecker.lua:119
+#: ../UpdateChecker.lua:118
 msgid "Restart Now"
 msgstr "Ponovno pokrenite sada"
 
-#: ../UpdateChecker.lua:130
+#: ../UpdateChecker.lua:129
 msgid "KOReader needs to be restarted to apply the changes."
 msgstr "KOReader treba ponovno pokrenuti da bi se primijenile promjene."
 
-#: ../UpdateChecker.lua:130
+#: ../UpdateChecker.lua:129
 msgid "The update has been installed successfully"
 msgstr "Ažuriranje je uspješno instalirano"
 
-#: ../UpdateChecker.lua:140
+#: ../UpdateChecker.lua:139
 msgid "Restarting..."
 msgstr "Ponovno pokretanje..."
 
@@ -1107,19 +1211,19 @@ msgstr "Preuzmite mange na svoj čitač e-knjiga!"
 msgid "Added to"
 msgstr "Dodano u"
 
-#: ../main.lua:39 ../main.lua:63
+#: ../main.lua:57 ../main.lua:82
 msgid "Rakuyomi"
 msgstr "Rakuyomi"
 
-#: ../main.lua:79
+#: ../main.lua:99
 msgid "Oops!"
 msgstr "Ups!"
 
-#: ../main.lua:79
+#: ../main.lua:99
 msgid "Rakuyomi encountered an issue while starting up!"
 msgstr "Rakuyomi je naišao na problem prilikom pokretanja!"
 
-#: ../main.lua:80
+#: ../main.lua:100
 msgid "Here are some messages that might help identify the problem:"
 msgstr "Evo nekoliko poruka koje bi mogle pomoći u prepoznavanju problema:"
 

@@ -31,6 +31,15 @@ translate:
 	@echo "\nTranslation process completed successfully!"
 	@$(MAKE) fmt
 
+update-trans:
+	@$(MAKE) clean
+	@$(MAKE) update
+	@$(MAKE) extract-untranslated
+	@$(MAKE) g-translate
+	@$(MAKE) import-translation
+	@$(MAKE) check
+	@$(MAKE) fmt
+
 DOMAIN = koreader
 TEMPLATE_DIR = templates
 MSGINIT_BIN = msginit

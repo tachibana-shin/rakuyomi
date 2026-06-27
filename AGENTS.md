@@ -72,3 +72,10 @@ Data directory: `$KOREARCHIVE_DIR/rakuyomi/` (Unix) or `/storage/emulated/0/kore
 - No emojis in code or comments
 - KDoc/Javadoc for all Rust public APIs, EmmyLua for Lua
 - Keep Rust backend + Lua frontend loosely coupled via JSON API
+
+## Update translation texts
+
+```sh
+cd frontend/rakuyomi.koplugin/l10n
+make update-trans
+```

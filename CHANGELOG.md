@@ -1,3 +1,12 @@
+# [1.36.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.2...v1.36.0) (2026-06-27)
+
+
+### Features
+
+* Add backward navigation through chapters ([#212](https://github.com/tachibana-shin/rakuyomi/issues/212)) ([b22523e](https://github.com/tachibana-shin/rakuyomi/commit/b22523e30219ec373d560b5ded0d48fe653a3c6d))
+* add configurable visibility settings for title and metadata in grid mode ([#211](https://github.com/tachibana-shin/rakuyomi/issues/211)) ([4b6cb10](https://github.com/tachibana-shin/rakuyomi/commit/4b6cb10206500b0ca1d2105999628cdc79ac23fa))
+* add mode write to ram for protect emmc ([#213](https://github.com/tachibana-shin/rakuyomi/issues/213)) ([9d883a9](https://github.com/tachibana-shin/rakuyomi/commit/9d883a9f28527d8501b7176223d1e175357a6408))
+
 ## [1.35.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.1...v1.35.2) (2026-06-25)
 
 

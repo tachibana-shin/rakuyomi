@@ -103,6 +103,24 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_grid_show_title',
+    {
+      type = 'boolean',
+      title = _("Show title in grid mode"),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_grid_show_metadata',
+    {
+      type = 'boolean',
+      title = _("Show metadata in grid mode"),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
     'rakuyomi_tap_manga_action',
     {
       type = 'enum',

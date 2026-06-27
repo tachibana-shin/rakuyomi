@@ -183,16 +183,27 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
   local perpage
   local columns = self.grid_columns or 1
   if columns > 1 then
+    local show_title = G_reader_settings:readSetting("rakuyomi_grid_show_title", true)
+    local show_metadata = G_reader_settings:readSetting("rakuyomi_grid_show_metadata", true)
+    local grid_text_height
+    if show_title then
+      grid_text_height = Screen:scaleBySize(44)
+    elseif show_metadata then
+      grid_text_height = Screen:scaleBySize(20)
+    else
+      grid_text_height = 0
+    end
+
     local rows = G_reader_settings:readSetting("rakuyomi_grid_rows")
     if rows == nil or rows < 1 then
-      rows = math.floor(available_height / ((self.inner_dimen.w / columns) * 4 / 3 + Screen:scaleBySize(44)))
+      rows = math.floor(available_height / ((self.inner_dimen.w / columns) * 4 / 3 + grid_text_height))
       if rows < 2 then rows = 2 end
     end
 
     if not self.portrait_mode then
       local portrait_available_height = Screen:getWidth() - self.others_height - Size.line.thin
       local portrait_rows = math.floor(portrait_available_height /
-        ((self.inner_dimen.w / columns) * 4 / 3 + Screen:scaleBySize(44)))
+        ((self.inner_dimen.w / columns) * 4 / 3 + grid_text_height))
       if portrait_rows < 2 then portrait_rows = 2 end
       rows = Math.floor(available_height / (portrait_available_height / portrait_rows))
     end

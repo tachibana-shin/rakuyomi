@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.0...v1.36.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **l10n:** add update-trans Makefile target ([93eb38c](https://github.com/tachibana-shin/rakuyomi/commit/93eb38cb8f1a0203508f0f6cc7a5874b3cfb50cc))
+
 # [1.36.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.35.2...v1.36.0) (2026-06-27)
 
 

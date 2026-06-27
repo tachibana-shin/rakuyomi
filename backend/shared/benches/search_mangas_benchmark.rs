@@ -32,6 +32,7 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
             let chapter_storage = shared::chapter_storage::ChapterStorage::new(
                 PathBuf::from("test.db"),
                 Size::from_mebibytes(100.0),
+                false,
             )
             .unwrap();
             let settings = Settings::default();

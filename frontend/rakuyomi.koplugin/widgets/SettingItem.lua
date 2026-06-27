@@ -40,7 +40,7 @@ function SettingItem:init()
     value = self.value,
     source_id = self.source_id,
     on_value_changed_callback = function(new_value)
-      self:onValueChanged(new_value)
+      return self:onValueChanged(new_value)
     end,
   }
 
@@ -58,7 +58,7 @@ function SettingItem:onValueChanged(new_value)
 
   UIManager:setDirty(self.show_parent, "ui")
 
-  self.on_value_changed_callback(new_value)
+  return self.on_value_changed_callback(new_value)
 end
 
 return SettingItem

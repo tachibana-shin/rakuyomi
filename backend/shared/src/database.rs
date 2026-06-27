@@ -1169,7 +1169,7 @@ impl Database {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         remaining.remove(&path);
                     }
@@ -1205,7 +1205,7 @@ impl Database {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         paths.push(path.clone());
                     }
@@ -1279,6 +1279,7 @@ impl Database {
         &self,
         manga_id: &MangaId,
         chapter_storage: &crate::chapter_storage::ChapterStorage,
+        ram_mode_enabled: bool,
     ) -> Result<Vec<Chapter>> {
         let source_id = manga_id.source_id().value();
         let manga_id_val = manga_id.value();
@@ -1343,12 +1344,18 @@ impl Database {
                     last_read: row.last_read,
                 };
 
-                let downloaded = chapter_storage.get_stored_chapter(&id).is_some();
+                let mut downloaded = chapter_storage.get_stored_chapter(&id, false).is_some();
+                let on_tmpfs =
+                    ram_mode_enabled && chapter_storage.get_stored_chapter(&id, true).is_some();
+                if on_tmpfs {
+                    downloaded = true;
+                }
 
                 Chapter {
                     information,
                     state,
                     downloaded,
+                    on_tmpfs,
                 }
             })
             .collect())

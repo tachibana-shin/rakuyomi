@@ -24,9 +24,10 @@ pub enum Progress {
     Downloading { processed: u32, total: u32 },
 }
 
-type JobSender = watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>;
+type JobSender =
+    watch::Sender<Option<Result<Arc<(PathBuf, Vec<DownloadError>, bool)>, ErrorResponse>>>;
 type JobReceiver =
-    watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>>;
+    watch::Receiver<Option<Result<Arc<(PathBuf, Vec<DownloadError>, bool)>, ErrorResponse>>>;
 
 type ProgressSender = watch::Sender<Progress>;
 type ProgressReceiver = watch::Receiver<Progress>;
@@ -48,9 +49,11 @@ impl DownloadChapterJob {
         concurrent_requests_pages: usize,
         optimize_image: bool,
         download_semaphore: Arc<Semaphore>,
+        use_ram: bool,
+        current_chapter_id: Option<ChapterId>,
     ) -> Self {
         let (tx, rx) = watch::channel::<
-            Option<Result<Arc<(PathBuf, Vec<DownloadError>)>, ErrorResponse>>,
+            Option<Result<Arc<(PathBuf, Vec<DownloadError>, bool)>, ErrorResponse>>,
         >(None);
 
         let (progress_tx, progress_rx) = watch::channel(Progress::Initializing);
@@ -70,6 +73,8 @@ impl DownloadChapterJob {
                 concurrent_requests_pages,
                 optimize_image,
                 progress_tx_clone,
+                use_ram,
+                current_chapter_id,
             )
             .await
             .map(Arc::new);
@@ -95,7 +100,9 @@ impl DownloadChapterJob {
         concurrent_requests_pages: usize,
         optimize_image: bool,
         progress_tx: ProgressSender,
-    ) -> Result<(PathBuf, Vec<DownloadError>), ErrorResponse> {
+        use_ram: bool,
+        current_chapter_id: Option<ChapterId>,
+    ) -> Result<(PathBuf, Vec<DownloadError>, bool), ErrorResponse> {
         let source = {
             let mgr = source_manager.lock().await;
             mgr.get_by_id(chapter_id.source_id())
@@ -135,7 +142,7 @@ impl DownloadChapterJob {
             })
         };
 
-        let (path, errors) = ensure_chapter_is_in_storage(
+        let ((path, errors), chapter_use_ram) = match ensure_chapter_is_in_storage(
             &cancellation_token,
             &chapter_storage,
             &source,
@@ -143,24 +150,60 @@ impl DownloadChapterJob {
             &chapter,
             concurrent_requests_pages,
             optimize_image,
-            Some(progress_callback),
+            Some(progress_callback.clone()),
+            use_ram,
+            current_chapter_id.as_ref(),
         )
         .await
-        .map_err(|e| {
-            let app_error = match e {
-                ChapterDownloaderError::DownloadError(e) => AppError::NetworkFailure(e),
-                ChapterDownloaderError::Other(e) => AppError::Other(e),
-            };
-            ErrorResponse::from(app_error)
-        })?;
+        {
+            Ok(v) => (v, use_ram),
+            Err(_)
+                if use_ram
+                    && chapter_storage
+                        .tmpfs_full_storage()
+                        .await
+                        .unwrap_or_default() =>
+            {
+                (
+                    ensure_chapter_is_in_storage(
+                        &cancellation_token,
+                        &chapter_storage,
+                        &source,
+                        &manga,
+                        &chapter,
+                        concurrent_requests_pages,
+                        optimize_image,
+                        Some(progress_callback),
+                        false,
+                        current_chapter_id.as_ref(),
+                    )
+                    .await
+                    .map_err(|e| {
+                        let app_error = match e {
+                            ChapterDownloaderError::DownloadError(e) => AppError::NetworkFailure(e),
+                            ChapterDownloaderError::Other(e) => AppError::Other(e),
+                        };
+                        ErrorResponse::from(app_error)
+                    })?,
+                    false,
+                )
+            }
+            Err(e) => {
+                let app_error = match e {
+                    ChapterDownloaderError::DownloadError(e) => AppError::NetworkFailure(e),
+                    ChapterDownloaderError::Other(e) => AppError::Other(e),
+                };
+                return Err(ErrorResponse::from(app_error));
+            }
+        };
 
-        Ok((path, errors))
+        Ok((path, errors, chapter_use_ram))
     }
 }
 
 impl Job for DownloadChapterJob {
     type Progress = Progress;
-    type Output = Arc<(PathBuf, Vec<DownloadError>)>;
+    type Output = Arc<(PathBuf, Vec<DownloadError>, bool)>;
     type Error = ErrorResponse;
 
     async fn cancel(&self) -> Result<(), AppError> {

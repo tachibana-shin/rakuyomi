@@ -340,13 +340,19 @@ end
 
 --- @private
 function SettingItemValue:updateCurrentValue(new_value)
+  local old = self.value
   self.value = new_value
   self[1] = self:createValueWidget()
   -- our dimensions are cached? i mean what the actual fuck
   self.dimen = nil
   UIManager:setDirty(self.show_parent, "ui")
 
-  self.on_value_changed_callback(new_value)
+  if self.on_value_changed_callback(new_value) == false then
+    self.value = old
+    self[1] = self:createValueWidget()
+    self.dimen = nil
+    UIManager:setDirty(self.show_parent, "ui")
+  end
 end
 
 return SettingItemValue

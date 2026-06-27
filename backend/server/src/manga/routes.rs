@@ -177,7 +177,7 @@ async fn delete_file(
 ) -> Result<Json<()>, AppError> {
     let chapter_storage = chapter_storage.lock().await;
 
-    let _ = chapter_storage.delete_filename(filename).await;
+    let _ = chapter_storage.delete_filename(filename, false).await;
 
     Ok(Json(()))
 }
@@ -454,6 +454,7 @@ async fn get_cached_manga_chapters(
     StateExtractor(State {
         database,
         chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
@@ -462,8 +463,13 @@ async fn get_cached_manga_chapters(
     let manga_id = MangaId::from(params);
 
     let chapter_storage = &*chapter_storage.lock().await;
-    let chapters =
-        usecases::get_cached_manga_chapters(&database, chapter_storage, &manga_id).await?;
+    let chapters = usecases::get_cached_manga_chapters(
+        &database,
+        chapter_storage,
+        &manga_id,
+        settings.lock().await.ram_storage_enabled,
+    )
+    .await?;
 
     let chapters = chapters.into_iter().map(Chapter::from).collect();
 
@@ -580,6 +586,11 @@ impl From<DownloadMangaChapterParams> for ChapterId {
     }
 }
 
+#[derive(Deserialize, Default)]
+struct DownloadQuery {
+    offline: Option<bool>,
+}
+
 async fn download_manga_chapter(
     StateExtractor(State {
         database,
@@ -590,15 +601,17 @@ async fn download_manga_chapter(
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
+    Query(query): Query<DownloadQuery>,
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
     let token = create_token(cancel_token_store, cancel_id).await;
-    let (db, cs, concurrent_requests_pages, optimize_image) = {
+    let (db, cs, use_ram, concurrent_requests_pages, optimize_image) = {
         let cs = chapter_storage.lock().await;
         let settings = settings.lock().await;
         (
             database.clone(),
             cs.clone(),
+            !query.offline.unwrap_or_default() && settings.ram_storage_enabled,
             settings.concurrent_requests_pages.unwrap_or(4),
             settings.optimize_image,
         )
@@ -614,6 +627,7 @@ async fn download_manga_chapter(
         concurrent_requests_pages,
         optimize_image,
         None,
+        use_ram,
     )
     .await
     .map_err(AppError::from_fetch_manga_chapters_error)?;
@@ -624,16 +638,26 @@ async fn download_manga_chapter(
     )))
 }
 
+#[derive(Deserialize)]
+struct RevokeMangaChapterQuery {
+    use_ram: Option<bool>,
+}
 async fn revoke_manga_chapter(
     StateExtractor(State {
         chapter_storage, ..
     }): StateExtractor<State>,
     Path(params): Path<DownloadMangaChapterParams>,
+    Query(query): Query<RevokeMangaChapterQuery>,
 ) -> Result<Json<bool>, AppError> {
     let chapter_id = ChapterId::from(params);
     let chapter_storage = &*chapter_storage.lock().await;
 
-    let result = usecases::revoke_manga_chapter(chapter_storage, &chapter_id).await?;
+    let result = usecases::revoke_manga_chapter(
+        chapter_storage,
+        &chapter_id,
+        query.use_ram.unwrap_or(false),
+    )
+    .await?;
 
     Ok(Json(result))
 }

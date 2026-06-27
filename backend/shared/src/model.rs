@@ -139,6 +139,7 @@ pub struct Chapter {
     pub information: ChapterInformation,
     pub state: ChapterState,
     pub downloaded: bool,
+    pub on_tmpfs: bool,
 }
 
 pub struct Manga {

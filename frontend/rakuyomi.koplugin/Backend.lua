@@ -79,6 +79,7 @@ function Backend.requestJson(request)
       method = request.method or "GET",
       headers = headers,
       body = serialized_body,
+      timeout_seconds = request.timeout,
     }
   )
 
@@ -145,6 +146,20 @@ function Backend.initialize()
   return true, nil
 end
 
+--- Drain any startup warnings from the server.
+---@return string[] messages
+function Backend.drainStartupLog()
+  local response = Backend.requestJson({
+    path = '/system/startup-log',
+    timeout = 5,
+  })
+  if response.type == 'SUCCESS' then
+    ---@diagnostic disable-next-line: undefined-field
+    return response.body.messages or {}
+  end
+  return {}
+end
+
 ---@return boolean
 function Backend.running()
   return Backend.server ~= nil
@@ -178,6 +193,7 @@ end
 --- @field title string? The title of this chapter, if any.
 --- @field locked boolean The locked
 --- @field lang string? The language code
+--- @field on_tmpfs boolean? The chapter is stored in tmpfs.
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.
@@ -187,6 +203,34 @@ end
 --- @field filenames string[] The names
 --- @field total_size number The total size
 --- @field total_text string The total size text format kb, mb...
+
+--- @class CpuInfo
+--- @field model string CPU model name.
+--- @field cores number Number of CPU cores.
+--- @field usage_percent number Overall CPU usage percentage.
+
+--- @class MemoryInfo
+--- @field total_bytes number Total physical memory in bytes.
+--- @field available_bytes number Available memory in bytes.
+--- @field used_bytes number Used memory in bytes.
+
+--- @class FilesystemInfo
+--- @field path string Mount point path.
+--- @field total_bytes number Total size in bytes.
+--- @field used_bytes number Used size in bytes.
+--- @field free_bytes number Free size in bytes.
+
+--- @class ProcessInfo
+--- @field memory_rss_bytes number Resident set size of the server process in bytes.
+--- @field memory_virtual_bytes number Virtual memory size of the server process in bytes.
+
+--- @class SystemStats
+--- @field cpu CpuInfo CPU information.
+--- @field memory MemoryInfo System memory information.
+--- @field tmpfs FilesystemInfo|nil Tmpfs filesystem information, if available.
+--- @field tmpfs_mount_error string|nil Error message if tmpfs mount failed.
+--- @field storage FilesystemInfo Data storage filesystem information.
+--- @field process ProcessInfo Server process memory usage.
 
 --- Publishing status of a manga.
 ---
@@ -276,6 +320,15 @@ function Backend.removeFile(filename)
     path = "/delete-file",
     body = filename,
     method = "POST"
+  })
+end
+
+--- Get system resource statistics.
+--- @return SuccessfulResponse<SystemStats>|ErrorResponse
+function Backend.getSystemStats()
+  return Backend.requestJson({
+    path = "/system/stats",
+    method = "GET"
   })
 end
 
@@ -450,11 +503,19 @@ end
 --- @param source_id string
 --- @param manga_id string
 --- @param chapter_id string
+--- @param use_ram boolean|nil
 --- @return SuccessfulResponse<boolean>|ErrorResponse
-function Backend.revokeChapter(source_id, manga_id, chapter_id)
+function Backend.revokeChapter(source_id, manga_id, chapter_id, use_ram)
+  local query_params = {}
+
+  if use_ram ~= nil then
+    query_params.use_ram = use_ram and "true" or "false"
+  end
+
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    query_params = query_params,
     method = "POST",
   })
 end
@@ -596,9 +657,22 @@ function Backend.setSettings(settings)
   })
 end
 
+--- @class MountTmpFSConfig
+--- @field enabled boolean
+--- @field ram_storage_size_mb number
+--- @param config MountTmpFSConfig
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.mountFS(config)
+  return Backend.requestJson({
+    path = "/settings/mount-tmpfs",
+    method = 'POST',
+    body = config
+  })
+end
+
 --- Creates a new download chapter job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num)
+function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num, current_chapter_id)
   return Backend.requestJson({
     path = "/jobs/download-chapter",
     method = 'POST',
@@ -607,6 +681,7 @@ function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapt
       manga_id = manga_id,
       chapter_id = chapter_id,
       chapter_num = chapter_num,
+      current_chapter_id = current_chapter_id,
     }
   })
 end
@@ -668,7 +743,8 @@ end
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
+--- @alias DownloadChapterJobCompleted [string, DownloadError[], boolean]
+--- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<DownloadChapterJobCompleted> |ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse

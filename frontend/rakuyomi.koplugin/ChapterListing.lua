@@ -117,20 +117,21 @@ end
 
 --- Fetches the cached chapter list from the backend and updates the menu items.
 function ChapterListing:updateChapterList()
-  local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
+  if #self.raw_chapters < 1 then
+    local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
 
-  if response.type == 'ERROR' then
-    ErrorDialog:show(response.message)
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
 
-    return
+      return
+    else
+      self.raw_chapters = response.body
+    end
   end
-
-  local chapter_results = response.body
-  self.raw_chapters = chapter_results
 
   local langs_set = {}
   local langs_list = {}
-  for _, chapter in ipairs(chapter_results) do
+  for _, chapter in ipairs(self.raw_chapters) do
     local lang = chapter.lang or "unknown"
     if not langs_set[lang] then
       langs_set[lang] = true
@@ -302,19 +303,19 @@ function ChapterListing:updateItems()
   Menu.updateItems(self)
 end
 
----@private
----@param chapter Chapter
----@return Chapter
-function ChapterListing:findRootChapter(chapter)
-  for _, root in ipairs(self.chapters) do
-    if root.id == chapter.id then
-      return root
-    end
-  end
+-- ---@private
+-- ---@param chapter Chapter
+-- ---@return Chapter
+-- function ChapterListing:findRootChapter(chapter)
+--   for _, root in ipairs(self.chapters) do
+--     if root.id == chapter.id then
+--       return root
+--     end
+--   end
 
-  ---@diagnostic disable-next-line: missing-return
-  assert(false, "not found chapter reference")
-end
+--   ---@diagnostic disable-next-line: missing-return
+--   assert(false, "not found chapter reference")
+-- end
 
 --- @private
 function ChapterListing:generateEmptyViewItemTable()
@@ -584,7 +585,7 @@ function ChapterListing:revokeChapter(chapter, hide_notify)
     end
 
     if revoke_chapter_response then
-      self:findRootChapter(chapter).downloaded = false
+      chapter.downloaded = false
       self:updateItems()
     end
 
@@ -612,7 +613,7 @@ function ChapterListing:markChapterAs(chapter, value)
       return
     end
 
-    self:findRootChapter(chapter).read = value
+    chapter.read = value
     self:updateItems()
   end)
 end
@@ -823,7 +824,8 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
       return
     end
 
-    self:findRootChapter(chapter).downloaded = true
+    chapter.downloaded = true
+    chapter.on_tmpfs = response.body[3]
 
     if #response.body[2] > 0 then
       logger.err("Download job errors: ", response.body[1])
@@ -865,7 +867,8 @@ function ChapterListing:preloadChapters(chapter)
         preloadChapter.source_id,
         preloadChapter.manga_id,
         preloadChapter.id,
-        preloadChapter.chapter_num
+        preloadChapter.chapter_num,
+        chapter.id -- current_chapter_id: chapter user is reading
       )
 
       local job_status = preload_job:start()
@@ -889,9 +892,11 @@ function ChapterListing:prunePreloadJobs()
       self.preload_jobs[chapter_id] = nil
 
       if status.type == 'SUCCESS' then
+        local body = status.data
         for __, chapter in ipairs(self.chapters) do
           if chapter.id == chapter_id then
             chapter.downloaded = true
+            chapter.on_tmpfs = body[3]
             break
           end
         end
@@ -914,7 +919,14 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
     end
 
     local onEndOfBookCallback = function()
-      Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+      chapter.read = true -- good man
+      Trapper:wrap(function()
+        Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+        if chapter.on_tmpfs then
+          print("revoking chapter", chapter.id)
+          Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)
+        end
+      end)
 
       self:updateChapterList()
       self:prunePreloadJobs()
@@ -1317,7 +1329,7 @@ function ChapterListing:onDownloadAllChapters()
       -- - return the chapter list from the backend on the `downloadAllChapters` call
       -- - biting the bullet and making the API call
       for __, chapter in ipairs(self.chapters) do
-        self:findRootChapter(chapter).downloaded = true
+        chapter.downloaded = true
       end
 
       logger.info("Downloaded all chapters in ", time.to_ms(time.since(startTime)), "ms")

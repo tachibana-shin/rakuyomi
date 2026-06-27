@@ -55,6 +55,7 @@ struct CreateDownloadChapterJobBody {
     manga_id: String,
     chapter_id: String,
     // chapter_num: Option<f64>,
+    current_chapter_id: Option<String>,
 }
 
 impl From<CreateDownloadChapterJobBody> for ChapterId {
@@ -79,6 +80,15 @@ async fn create_download_chapter_job(
     // let chapter_num = body.chapter_num;
     let chapter_storage = chapter_storage.lock().await.clone();
     let settings = settings.lock().await;
+    let current_chapter_id = if let Some(v) = body.current_chapter_id.clone() {
+        Some(ChapterId::from_strings(
+            body.source_id.clone(),
+            body.manga_id.clone(),
+            v,
+        ))
+    } else {
+        None
+    };
     let job = DownloadChapterJob::spawn_new(
         source_manager,
         database,
@@ -87,6 +97,8 @@ async fn create_download_chapter_job(
         settings.concurrent_requests_pages.unwrap_or(4),
         settings.optimize_image,
         download_semaphore,
+        settings.ram_storage_enabled,
+        current_chapter_id,
     );
 
     job_registry

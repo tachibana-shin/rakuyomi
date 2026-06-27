@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -11,12 +13,21 @@ use shared::usecases::{
     search_mangas::Error as SearchMangasError,
 };
 
+pub(crate) fn setcap_hint() -> String {
+    let bin_path = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("./server"));
+    let display = bin_path.display();
+    format!(
+        "\n\nHint: Run the following command to grant mount capability:\n  sudo setcap cap_sys_admin+ep {display}\n\nThen restart the server."
+    )
+}
+
 pub enum AppError {
     SourceNotFound,
     NotFound,
     DownloadAllChaptersProgressNotFound,
     NetworkFailure(anyhow::Error),
     Other(anyhow::Error),
+    MountTmpFs(anyhow::Error),
 }
 
 #[derive(Serialize, Clone)]
@@ -61,6 +72,7 @@ impl From<&AppError> for ErrorResponse {
             AppError::NetworkFailure(_) => {
                 "There was a network error. Check your connection and try again.".to_string()
             }
+            AppError::MountTmpFs(ref e) => format!("Failed to mount tmpfs: {}{}", e, setcap_hint()),
             AppError::Other(ref e) => {
                 eprintln!("Unexpected error: {:?}", e);
 

@@ -1,6 +1,6 @@
 use anyhow::Context;
 use axum::extract::State as StateExtractor;
-use axum::routing::{get, put};
+use axum::routing::{get, post, put};
 use axum::{Json, Router};
 use shared::usecases;
 use shared::usecases::update_settings::UpdateableSettings;
@@ -12,6 +12,7 @@ pub fn routes() -> Router<State> {
     Router::new()
         .route("/settings", get(get_settings))
         .route("/settings", put(update_settings))
+        .route("/settings/mount-tmpfs", post(mount_tmpfs))
 }
 
 async fn get_settings(
@@ -46,4 +47,49 @@ async fn update_settings(
     }
 
     Ok(Json(UpdateableSettings::from(&*settings)))
+}
+
+#[derive(serde::Deserialize)]
+struct MountTmpFSBody {
+    enabled: bool,
+    ram_storage_size_mb: usize,
+}
+
+async fn mount_tmpfs(
+    StateExtractor(State {
+        chapter_storage,
+        settings,
+        settings_path,
+        ..
+    }): StateExtractor<State>,
+    Json(MountTmpFSBody {
+        enabled,
+        ram_storage_size_mb,
+    }): Json<MountTmpFSBody>,
+) -> Result<Json<()>, AppError> {
+    let mut chapter_storage = chapter_storage.lock().await;
+    let mut settings = settings.lock().await;
+
+    if enabled {
+        chapter_storage
+            .enable_ram(ram_storage_size_mb)
+            .map_err(AppError::MountTmpFs)?;
+
+        let mut updated_settings = settings.clone();
+        updated_settings.ram_storage_enabled = enabled;
+        updated_settings.ram_storage_size_mb = ram_storage_size_mb;
+        updated_settings.save_to_file(&settings_path)?;
+
+        *settings = updated_settings;
+    } else {
+        chapter_storage.disable_ram();
+
+        let mut updated_settings = settings.clone();
+        updated_settings.ram_storage_enabled = false;
+        updated_settings.save_to_file(&settings_path)?;
+
+        *settings = updated_settings;
+    }
+
+    Ok(Json(()))
 }

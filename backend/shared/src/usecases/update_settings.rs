@@ -39,6 +39,8 @@ pub struct UpdateableSettings {
     optimize_image: bool,
     library_view_mode: LibraryViewMode,
     search_view_mode: SearchViewMode,
+    ram_storage_enabled: bool, // readonly not allow UpdateableSettings update value
+    ram_storage_size_mb: usize, // readonly not allow UpdateableSettings update value
 }
 
 impl UpdateableSettings {
@@ -76,6 +78,8 @@ impl From<&Settings> for UpdateableSettings {
             optimize_image: value.optimize_image,
             library_view_mode: value.library_view_mode,
             search_view_mode: value.search_view_mode,
+            ram_storage_enabled: value.ram_storage_enabled,
+            ram_storage_size_mb: value.ram_storage_size_mb,
         }
     }
 }

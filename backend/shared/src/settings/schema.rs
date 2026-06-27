@@ -126,6 +126,19 @@ pub struct Settings {
 
     #[serde(default)]
     pub search_view_mode: SearchViewMode,
+
+    /// When enabled, downloaded chapters are stored in a RAM-backed tmpfs.
+    /// Data is lost on power off.
+    #[serde(default)]
+    pub ram_storage_enabled: bool,
+
+    /// Size of the RAM storage in MB.
+    #[serde(default = "default_ram_storage_size_mb")]
+    pub ram_storage_size_mb: usize,
+}
+
+fn default_ram_storage_size_mb() -> usize {
+    32
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {

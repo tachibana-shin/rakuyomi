@@ -1,3 +1,15 @@
+## [1.36.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.1...v1.36.2) (2026-06-28)
+
+
+### Performance Improvements
+
+* add file path support to chapters to enable direct access to preloaded content ([ff5c85b](https://github.com/tachibana-shin/rakuyomi/commit/ff5c85b288b59c9ee325be24d4a04e60ede420db))
+
+
+### Reverts
+
+* Revert "fix(manga-reader): apply file manager override to zen UI ([#198](https://github.com/tachibana-shin/rakuyomi/issues/198))" ([012fff7](https://github.com/tachibana-shin/rakuyomi/commit/012fff7ac4f1f31865330888f6f69ef05185b8d5))
+
 ## [1.36.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.0...v1.36.1) (2026-06-27)
 
 

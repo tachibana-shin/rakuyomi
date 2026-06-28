@@ -50,6 +50,7 @@ local SMALL_FONT_FACE = Font:getFace("smallffont")
 --- @field chapters Chapter[]
 --- @field langs BaseOption[]
 --- @field chapter_sorting_mode ChapterSortingMode
+--- @field preload_jobs {[string]: DownloadChapter}
 local ChapterListing = Menu:extend {
   name = "chapter_listing",
   is_enable_shortcut = false,
@@ -757,6 +758,9 @@ end
 --- @param callback fun(manga_path)
 function ChapterListing:downloadChapter(chapter, download_job, callback)
   Trapper:wrap(function()
+    if chapter.file ~= nil then
+      return callback(chapter.file)
+    end
     -- If the download job we have is already invalid (internet problems, for example),
     -- spawn a new job before proceeding.
     if download_job == nil or (download_job.started and download_job:poll().type == 'ERROR') then
@@ -886,16 +890,18 @@ end
 
 function ChapterListing:prunePreloadJobs()
   for chapter_id, job in pairs(self.preload_jobs) do
+    ---@type SuccessfulResponse<DownloadChapterJobCompleted>|PendingResponse<unknown>|ErrorResponse
     local status = job:poll()
     if status.type == 'SUCCESS' or status.type == 'ERROR' then
       logger.info("Pruning finished preload job for chapter: ", chapter_id)
       self.preload_jobs[chapter_id] = nil
 
       if status.type == 'SUCCESS' then
-        local body = status.data
+        local body = status.body
         for __, chapter in ipairs(self.chapters) do
           if chapter.id == chapter_id then
             chapter.downloaded = true
+            chapter.file = body[1]
             chapter.on_tmpfs = body[3]
             break
           end

@@ -194,6 +194,7 @@ end
 --- @field locked boolean The locked
 --- @field lang string? The language code
 --- @field on_tmpfs boolean? The chapter is stored in tmpfs.
+--- @field file string? The file path of the chapter (only use in frontend).
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.

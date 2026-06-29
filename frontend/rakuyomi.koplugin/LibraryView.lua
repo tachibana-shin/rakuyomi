@@ -321,7 +321,7 @@ function LibraryView:patchTitleBar(count_notify)
         callback = function()
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow(self.current_playlist)
+              self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
             end
 
             NotificationView:fetchAndShow(onReturnCallback)
@@ -519,7 +519,7 @@ function LibraryView:onPrimaryMenuChoice(item)
       self:_handleContinueReading(manga)
     else
       local onReturnCallback = function()
-        self:fetchAndShow(self.current_playlist)
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
       end
 
       if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
@@ -556,7 +556,7 @@ function LibraryView:onContextMenuChoice(item)
             })
           end
 
-          self:fetchAndShow(self.current_playlist)
+          self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
           UIManager:close(self)
         end
       },
@@ -567,7 +567,7 @@ function LibraryView:onContextMenuChoice(item)
 
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow(self.current_playlist)
+              self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
             end
             MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
             UIManager:close(self)
@@ -625,7 +625,7 @@ function LibraryView:onContextMenuChoice(item)
       text = _("List chapters"),
       callback = function()
         local onReturnCallback = function()
-          self:fetchAndShow(self.current_playlist)
+          self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
         end
 
         Trapper:wrap(function()
@@ -741,7 +741,7 @@ function LibraryView:_handleContinueReading(manga)
       local settings = response_s.body
 
       local onReturnCallback = function()
-        self:fetchAndShow(self.current_playlist)
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
       end
       local temp_listing = ChapterListing:new {
         manga = manga,
@@ -792,7 +792,7 @@ function LibraryView:_handleRemoveFromLibrary(manga)
 
         return
       end
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
       self:onClose(true)
     end
   })
@@ -812,7 +812,7 @@ function LibraryView:_handleRemoveFromPlaylist(manga)
 
         return
       end
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
       self:onClose(true)
     end
   })
@@ -944,7 +944,7 @@ function LibraryView:openMenu()
 
                   UIManager:close(self)
                   UIManager:close(dialog)
-                  self:fetchAndShow(self.current_playlist)
+                  self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
                 end)
               end,
               other_buttons = {
@@ -969,7 +969,7 @@ function LibraryView:openMenu()
 
                         UIManager:close(self)
                         UIManager:close(dialog)
-                        self:fetchAndShow(self.current_playlist)
+                        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
                       end)
                     end,
                   }
@@ -1060,7 +1060,7 @@ function LibraryView:openPlaylistDialog()
       if need_close then
         self:onClose(true)
       end
-    end)
+    end, { hideTopClose = true })
   end)
 end
 
@@ -1322,7 +1322,7 @@ function LibraryView:_runLibraryJob(job, title, success_msg, error_prefix)
         return nil
       end,
       dismiss_callback = function()
-        self:fetchAndShow(self.current_playlist)
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
         UIManager:close(self)
       end
     })
@@ -1360,7 +1360,7 @@ end
 function LibraryView:searchMangas(search_text, exclude)
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
@@ -1373,7 +1373,7 @@ end
 function LibraryView:openInstalledSourcesListing()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     InstalledSourcesListing:fetchAndShow(onReturnCallback)
@@ -1386,7 +1386,7 @@ end
 function LibraryView:openSettings()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     Settings:fetchAndShow(onReturnCallback)

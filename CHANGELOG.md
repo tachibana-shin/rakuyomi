@@ -1,3 +1,10 @@
+## [1.36.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.2...v1.36.3) (2026-06-29)
+
+
+### Performance Improvements
+
+* add hideTopClose option to LibraryView and refactor backend initialization logic ([8d4337f](https://github.com/tachibana-shin/rakuyomi/commit/8d4337f9a2980c17be7b7f215298403091d42d8e))
+
 ## [1.36.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.1...v1.36.2) (2026-06-28)
 
 

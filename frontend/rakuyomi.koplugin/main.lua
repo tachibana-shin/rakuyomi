@@ -66,13 +66,6 @@ function Rakuyomi:onStartLibraryView()
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
   else
-    getBackend()
-    if not backendInitialized then
-      self:showErrorDialog()
-
-      return
-    end
-
     self:openLibraryView()
   end
 end
@@ -82,13 +75,6 @@ function Rakuyomi:addToMainMenu(menu_items)
     text = _("Rakuyomi"),
     sorting_hint = "search",
     callback = function()
-      getBackend()
-      if not backendInitialized then
-        self:showErrorDialog()
-
-        return
-      end
-
       self:openLibraryView()
     end
   }
@@ -107,9 +93,18 @@ function Rakuyomi:showErrorDialog()
   )
 end
 
-function Rakuyomi:openLibraryView()
+---@class OpenOptions
+---@field hideTopClose? boolean - Whether to hide the top close button
+---@param options OpenOptions?
+function Rakuyomi:openLibraryView(options)
   getBackend()
-  LibraryView:fetchAndShow()
+  if not backendInitialized then
+    self:showErrorDialog()
+
+    return
+  end
+
+  LibraryView:fetchAndShow(nil, nil, options)
   OfflineAlertDialog:showIfOffline()
 end
 

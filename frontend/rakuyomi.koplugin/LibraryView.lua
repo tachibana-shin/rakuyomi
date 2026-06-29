@@ -304,9 +304,11 @@ function LibraryView:patchTitleBar(count_notify)
     },
   }
 
-  self.title_bar.right_button = HorizontalGroup:new {
+  ---@type boolean
+  local hide_top_close = self.hide_top_close or false
+  local right_widgets = {
     HorizontalSpan:new {
-      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - right_icon_size - button_padding, -- extend button tap zone
+      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - (not hide_top_close and (right_icon_size + button_padding) or 0),
     },
     VerticalGroup:new {
       Button:new {
@@ -342,7 +344,9 @@ function LibraryView:patchTitleBar(count_notify)
         self:openSearchMangasDialog()
       end,
     },
-    IconButton:new {
+  }
+  if not hide_top_close then
+    table.insert(right_widgets, IconButton:new {
       icon = "close",
       icon_rotation_angle = right_icon_rotation_angle,
       width = right_icon_size,
@@ -351,8 +355,11 @@ function LibraryView:patchTitleBar(count_notify)
       padding_bottom = right_icon_size,
       callback = self.title_bar.right_icon_tap_callback,
       hold_callback = self.title_bar.right_icon_hold_callback,
-    },
-  }
+    })
+  end
+
+  self.title_bar.right_button = HorizontalGroup:new(right_widgets)
+
   --- [1] title
   --- [2] left button
   --- [3] right button
@@ -456,7 +463,11 @@ function LibraryView:generateEmptyViewItemTable()
   }
 end
 
-function LibraryView:fetchAndShow(playlist, on_after_open)
+---@class FetchAndShowOptions
+---@field playlist any? - Playlist to fetch mangas from
+---@field on_after_open function? - Callback to execute after opening the library view
+---@param options OpenOptions?
+function LibraryView:fetchAndShow(playlist, on_after_open, options)
   local old = self.current_playlist
   self.current_playlist = playlist
 
@@ -485,6 +496,7 @@ function LibraryView:fetchAndShow(playlist, on_after_open)
     page = self.page,
     library_view_mode = settings.body.library_view_mode,
     current_playlist = self.current_playlist,
+    hide_top_close = options and options.hideTopClose,
   })
 
   self.current_playlist = old

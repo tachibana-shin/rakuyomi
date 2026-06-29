@@ -1,3 +1,10 @@
+## [1.36.4](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.3...v1.36.4) (2026-06-29)
+
+
+### Performance Improvements
+
+* maintain hideTopClose state when refreshing LibraryView after callbacks ([8b31fa9](https://github.com/tachibana-shin/rakuyomi/commit/8b31fa973094e43907fde394927008c943ca7f5f))
+
 ## [1.36.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.2...v1.36.3) (2026-06-29)
 
 

@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local closeInheritedFDs = require("utils/closeInheritedFDs")
 
 ffi.cdef [[
   int pipe(int pipefd[2]);
@@ -40,6 +41,8 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
     ffi.C.close(pipefd[0])
     ffi.C.dup2(pipefd[1], 1)
     ffi.C.close(pipefd[1])
+
+    closeInheritedFDs(3)
 
     if working_dir then
       ffi.C.chdir(working_dir)

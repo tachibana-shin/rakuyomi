@@ -11,6 +11,7 @@ local must = platformUtil.must
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
 local execute_binary_fast = require("utils/executeBinaryFast")
+local hasCloseRange = require("utils/hasCloseRange")
 
 local SERVER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_SERVER_WORKING_DIRECTORY')
 local SERVER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_SERVER_COMMAND_OVERRIDE')
@@ -144,6 +145,20 @@ function GenericUnixPlatform:startServer()
   local pid = must("fork", C.fork())
   if pid == 0 then
     capturer:setupChildProcess()
+
+    local success = false
+    if hasCloseRange then
+      if C.close_range(3, 0xffffffff, 0) == 0 then
+        success = true
+      end
+    end
+
+    if not success then
+      for i = 0x03, 0x40 do
+        C.close(i)
+      end
+    end
+    -- =========================================
 
     if SERVER_COMMAND_WORKING_DIRECTORY ~= nil then
       ffi.cdef([[

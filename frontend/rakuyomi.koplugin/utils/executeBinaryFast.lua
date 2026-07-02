@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local hasCloseRange = require("utils/hasCloseRange")
 
 ffi.cdef [[
   int pipe(int pipefd[2]);
@@ -40,6 +41,18 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
     ffi.C.close(pipefd[0])
     ffi.C.dup2(pipefd[1], 1)
     ffi.C.close(pipefd[1])
+
+    local success = false
+    if hasCloseRange then
+      if ffi.C.close_range(3, 0xffffffff, 0) == 0 then
+        success = true
+      end
+    end
+    if not success then
+      for i = 0x03, 0x40 do
+        ffi.C.close(i)
+      end
+    end
 
     if working_dir then
       ffi.C.chdir(working_dir)

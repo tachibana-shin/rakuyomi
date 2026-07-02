@@ -3,7 +3,6 @@ local has_close_range = require("utils/hasCloseRange")
 
 ffi.cdef [[
   int close_range(unsigned int first, unsigned int last, unsigned int flags);
-  int close(int fd);
 ]]
 
 local FALLBACK_MAX_FD = 0x40

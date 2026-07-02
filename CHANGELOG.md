@@ -1,3 +1,10 @@
+## [1.36.5](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.4...v1.36.5) (2026-07-02)
+
+
+### Bug Fixes
+
+* **platform:** close FDs in child processes ([#216](https://github.com/tachibana-shin/rakuyomi/issues/216)) ([f53c2f2](https://github.com/tachibana-shin/rakuyomi/commit/f53c2f2d6eaf1c75862be06ae269b7d9ad591cd0))
+
 ## [1.36.4](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.3...v1.36.4) (2026-06-29)
 
 

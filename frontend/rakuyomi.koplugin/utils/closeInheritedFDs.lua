@@ -1,11 +1,14 @@
 local ffi = require("ffi")
-local has_close_range = require("utils/hasCloseRange")
 
 ffi.cdef [[
   int close_range(unsigned int first, unsigned int last, unsigned int flags);
 ]]
 
 local FALLBACK_MAX_FD = 0x40
+
+local has_close_range = pcall(function()
+  local _ = ffi.C.close_range
+end)
 
 --- Closes file descriptors inherited from the parent process, to avoid leaking
 --- them into a child process that's about to exec another binary.

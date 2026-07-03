@@ -1,3 +1,10 @@
+## [1.36.6](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.5...v1.36.6) (2026-07-03)
+
+
+### Bug Fixes
+
+* close_range file not found lua ([3886625](https://github.com/tachibana-shin/rakuyomi/commit/3886625127572e50a555c55a9fe1fb83beeda155))
+
 ## [1.36.5](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.4...v1.36.5) (2026-07-02)
 
 

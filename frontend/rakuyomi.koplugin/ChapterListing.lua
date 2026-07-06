@@ -127,45 +127,49 @@ function ChapterListing:updateChapterList()
       return
     else
       self.raw_chapters = response.body
+      self._refresh_langs_selected = false
     end
   end
 
-  local langs_set = {}
-  local langs_list = {}
-  for _, chapter in ipairs(self.raw_chapters) do
-    local lang = chapter.lang or "unknown"
-    if not langs_set[lang] then
-      langs_set[lang] = true
-      table.insert(langs_list, lang)
+  if self._refresh_langs_selected ~= true then
+    local langs_set = {}
+    local langs_list = {}
+    for _, chapter in ipairs(self.raw_chapters) do
+      local lang = chapter.lang or "unknown"
+      if not langs_set[lang] then
+        langs_set[lang] = true
+        table.insert(langs_list, lang)
+      end
     end
+
+    -- Load / initialize language preferences only when it matters (2+ langs)
+    if #langs_list >= 2 then
+      table.sort(langs_list)
+      self.langs = {}
+      for _, lang in ipairs(langs_list) do
+        table.insert(self.langs, { id = lang, name = lang })
+      end
+      local key = self:hashMangaId() .. "_lang"
+      self.langs_selected = self:readSettings():readSetting(key, {})
+      -- If no preferences are set, default to selecting all available languages
+      if not self.langs_selected or #self.langs_selected == 0 then
+        self.langs_selected = langs_list
+      end
+      self:patchTitleBar(#self.langs_selected)
+      UIManager:setDirty(self.show_parent, "ui", self.dimen)
+      self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
+    else
+      -- Single-language manga: no language UI/filtering needed
+      self.langs = {}
+      self.langs_selected = {}
+      self.chapters = self.raw_chapters
+    end
+
+    self._refresh_langs_selected = false
+
+    self:extractAvailableScanlators()
+    self:loadSavedScanlatorPreference()
   end
-
-  -- Load / initialize language preferences only when it matters (2+ langs)
-  if #langs_list >= 2 then
-    table.sort(langs_list)
-    self.langs = {}
-    for _, lang in ipairs(langs_list) do
-      table.insert(self.langs, { id = lang, name = lang })
-    end
-    local key = self:hashMangaId() .. "_lang"
-    self.langs_selected = self:readSettings():readSetting(key, {})
-    -- If no preferences are set, default to selecting all available languages
-    if not self.langs_selected or #self.langs_selected == 0 then
-      self.langs_selected = langs_list
-    end
-    self:patchTitleBar(#self.langs_selected)
-    UIManager:setDirty(self.show_parent, "ui", self.dimen)
-    self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
-  else
-    -- Single-language manga: no language UI/filtering needed
-    self.langs = {}
-    self.langs_selected = {}
-    self.chapters = self.raw_chapters
-  end
-
-  self:extractAvailableScanlators()
-
-  self:loadSavedScanlatorPreference()
 
   self:updateItems()
 end
@@ -238,6 +242,7 @@ function ChapterListing:showSelectLanguage()
     options = self.langs,
     update_callback = function(value)
       self.langs_selected = value
+      self._refresh_langs_selected = true
       self:readSettings():saveSetting(key, value)
       self:readSettings():flush()
 
@@ -256,9 +261,11 @@ end
 
 -- Load saved scanlator preference from backend
 function ChapterListing:loadSavedScanlatorPreference()
+  if self._scanlator_loaded then return end
   local response = Backend.getPreferredScanlator(self.manga.source.id, self.manga.id)
 
   self.selected_scanlator = nil
+  self._scanlator_loaded = true
 
   if response.type == 'SUCCESS' and response.body then
     for _, available_scanlator in ipairs(self.available_scanlators) do
@@ -1199,6 +1206,7 @@ function ChapterListing:showScanlatorDialog()
         self.selected_scanlator = nil
 
         Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, nil)
+        self._scanlator_loaded = false
 
         self:updateItems()
         UIManager:show(InfoMessage:new { text = _("Showing all groups"), timeout = 1 })
@@ -1219,6 +1227,7 @@ function ChapterListing:showScanlatorDialog()
           self.selected_scanlator = scanlator
 
           Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, scanlator)
+          self._scanlator_loaded = false
 
           self:updateItems()
           UIManager:show(InfoMessage:new { text = _("Filtered to") .. ": " .. scanlator, timeout = 1 })

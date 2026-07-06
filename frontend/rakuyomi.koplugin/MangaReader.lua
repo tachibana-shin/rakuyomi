@@ -43,9 +43,17 @@ function MangaReader:show(options)
   self.is_showing = true
   if c_showing and ReaderUI.instance ~= nil then
     -- if we're showing, just switch the document
+    -- Defer to nextTick to avoid calling switchDocument synchronously from
+    -- within an event handler chain (e.g. onEndOfBook → onGotoPageRel),
+    -- which would set ReaderUI.document to nil while a pending page-turn
+    -- event (from the same tap) is still being processed and tries to
+    -- access self.ui.document via getChapterProgress. (issue #__)
     self.is_switching_document = true
-    ReaderUI.instance:switchDocument(options.path, nil, function()
-      self.is_switching_document = false
+    UIManager:nextTick(function()
+      if ReaderUI.instance == nil then return end
+      ReaderUI.instance:switchDocument(options.path, nil, function()
+        self.is_switching_document = false
+      end)
     end)
   else
     -- took this from opds reader
@@ -139,12 +147,14 @@ end
 
 --- @private
 function MangaReader:onReturn()
+  print("on retrn called")
   self:closeReaderUi(function()
     self.on_return_callback()
   end)
 end
 
 function MangaReader:closeReaderUi(done_callback)
+  print("close reader ui")
   -- Let all event handlers run before closing the ReaderUI, because
   -- some stuff might break if we just remove it ASAP
   UIManager:nextTick(function()

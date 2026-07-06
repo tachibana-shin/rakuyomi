@@ -44,11 +44,7 @@ function MangaReader:show(options)
   if c_showing and ReaderUI.instance ~= nil then
     -- if we're showing, just switch the document
     self.is_switching_document = true
-    ReaderUI.instance:switchDocument(options.path)
-
-    -- `switchDocument` closes/reopens the document internally, which triggers
-    -- `onCloseWidget`. Keep Rakuyomi in "showing" state while that happens.
-    UIManager:nextTick(function()
+    ReaderUI.instance:switchDocument(options.path, nil, function()
       self.is_switching_document = false
     end)
   else

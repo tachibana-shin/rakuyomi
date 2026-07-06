@@ -850,6 +850,7 @@ end
 --- @private
 --- @param chapter Chapter
 function ChapterListing:preloadChapters(chapter)
+  local current_chapter_id = chapter.id
   for _ = 1, self.preload_count do
     local preloadChapter = findNextChapter(self.chapters, chapter)
     if preloadChapter == nil then
@@ -872,7 +873,7 @@ function ChapterListing:preloadChapters(chapter)
         preloadChapter.manga_id,
         preloadChapter.id,
         preloadChapter.chapter_num,
-        chapter.id -- current_chapter_id: chapter user is reading
+        current_chapter_id -- current_chapter_id: chapter user is reading
       )
 
       local job_status = preload_job:start()

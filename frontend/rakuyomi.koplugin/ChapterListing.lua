@@ -292,6 +292,7 @@ function ChapterListing:extractAvailableScanlators()
   table.sort(scanlators)
 
   self.available_scanlators = scanlators
+  self._scanlator_loaded = false
 end
 
 --- Updates the menu item contents with the chapter information

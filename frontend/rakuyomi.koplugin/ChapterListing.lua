@@ -127,11 +127,11 @@ function ChapterListing:updateChapterList()
       return
     else
       self.raw_chapters = response.body
-      self._refresh_langs_selected = false
+      self._refresh_langs_selected = true
     end
   end
 
-  if self._refresh_langs_selected ~= true then
+  if self._refresh_langs_selected == true then
     local langs_set = {}
     local langs_list = {}
     for _, chapter in ipairs(self.raw_chapters) do
@@ -165,10 +165,9 @@ function ChapterListing:updateChapterList()
       self.chapters = self.raw_chapters
     end
 
-    self._refresh_langs_selected = false
-
     self:extractAvailableScanlators()
     self:loadSavedScanlatorPreference()
+    self._refresh_langs_selected = false
   end
 
   self:updateItems()

@@ -14,6 +14,8 @@ local LibraryView = require("LibraryView")
 local MangaReader = require("MangaReader")
 local Testing = require("testing")
 
+require("RakuyomiShared")
+
 local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
 if disable_logging then logger:setLevel(logger.levels.err) end
 

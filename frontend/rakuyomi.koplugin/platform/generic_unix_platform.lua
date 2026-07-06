@@ -11,7 +11,6 @@ local must = platformUtil.must
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
 local execute_binary_fast = require("utils/executeBinaryFast")
-local closeInheritedFDs = require("utils/closeInheritedFDs")
 
 local SERVER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_SERVER_WORKING_DIRECTORY')
 local SERVER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_SERVER_COMMAND_OVERRIDE')
@@ -145,8 +144,6 @@ function GenericUnixPlatform:startServer()
   local pid = must("fork", C.fork())
   if pid == 0 then
     capturer:setupChildProcess()
-
-    closeInheritedFDs(3)
 
     if SERVER_COMMAND_WORKING_DIRECTORY ~= nil then
       ffi.cdef([[

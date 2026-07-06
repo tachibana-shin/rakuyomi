@@ -1,3 +1,10 @@
+## [1.36.7](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.6...v1.36.7) (2026-07-06)
+
+
+### Performance Improvements
+
+* update Rust dependencies, implement ZIP comment metadata for chapter origin, and enforce SQL query safety ([#219](https://github.com/tachibana-shin/rakuyomi/issues/219)) ([3f3b2f4](https://github.com/tachibana-shin/rakuyomi/commit/3f3b2f4b384ef61a473c87ae39d6236118566ba4))
+
 ## [1.36.6](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.5...v1.36.6) (2026-07-03)
 
 

@@ -1072,7 +1072,8 @@ impl Database {
         );
 
         // Bind params
-        let mut query_builder = sqlx::query_as::<_, UnreadChaptersRowFull>(&query);
+        let mut query_builder =
+            sqlx::query_as::<_, UnreadChaptersRowFull>(sqlx::AssertSqlSafe(&*query));
         for id in manga_ids {
             query_builder = query_builder.bind(id.source_id().value()).bind(id.value());
         }
@@ -1400,7 +1401,7 @@ impl Database {
                 "#
             );
 
-            let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
             for info in chunk {
                 query = query.bind(info.id.source_id().value());
                 query = query.bind(info.id.value());
@@ -1883,7 +1884,7 @@ impl Database {
         }
 
         // Create query
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         // Bind all values in order
         for ch in new_chapters {
@@ -1926,7 +1927,7 @@ impl Database {
             "#
         );
 
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         for s in skip_sources {
             query = query.bind(s);
@@ -2093,7 +2094,7 @@ impl Database {
             "#,
         );
 
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         for id in ids {
             query = query

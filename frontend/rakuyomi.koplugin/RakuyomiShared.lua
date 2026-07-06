@@ -54,6 +54,12 @@ function Shared:getOrigin(filepath)
   end)
 
   if not ok then return nil end
+  if type(data) ~= "table"
+      or type(data.chapter_id) ~= "string"
+      or type(data.manga_id) ~= "string"
+      or type(data.source_id) ~= "string" then
+    return nil
+  end
 
   return {
     chapter_id = data.chapter_id,

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [build-dependencies]
-regex = "1.12.3"
+regex = "1.12.4"
 schemars = { version = "1.2.1", features = ["url2"] }
 size = "0.5.0"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -18,32 +18,37 @@ ffi = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-anyhow = "1.0.102"
-chrono = { version = "0.4.44", default-features = true, features = ["serde"] }
+anyhow = "1.0.103"
+chrono = { version = "0.4.45", default-features = true, features = ["serde"] }
 chrono-tz = "0.10.4"
 num_enum = "0.7.6"
 url = { version = "2.5.8", features = ["serde"] }
 wasm_macros = { path = "../wasm_macros" }
 wasm_shared = { path = "../wasm_shared" }
 serde_json = "1.0.150"
-html-escape = "0.2.13"
-reqwest = { version = "0.12.28", default-features = false, features = ["blocking", "json", "rustls-tls", "stream"] }
+html-escape = "0.2.14"
+reqwest = { version = "0.13.4", default-features = false, features = [
+  "blocking",
+  "json",
+  "rustls",
+  "stream",
+] }
 semver = "1.0"
-zip = { version = "6.0.0", default-features = false, features = ["deflate", "bzip2"] }
+zip = { version = "8.6.0", default-features = false, features = ["deflate", "bzip2"] }
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.52.3", features = ["full"] }
 wasmi.workspace = true
 futures = "0.3.32"
-sqlx = { version = "0.8.6", optional = true, features = ["sqlite", "runtime-tokio"] }
+sqlx = { version = "0.9.0", optional = true, features = ["sqlite", "runtime-tokio"] }
 thiserror = "2.0.18"
 async-stream = "0.3.6"
 tokio-util = "0.7.18"
 tempfile = "3.27.0"
-log = "0.4.30"
+log = "0.4.33"
 derive_more = { version = "2.1.1", features = ["from", "try_unwrap", "deref"] }
 size = "0.5.0"
 walkdir = "2.5.0"
-regex = "1.12.3"
+regex = "1.12.4"
 schemars = { version = "1.2.1", features = ["url2"] }
 pared = { git = "https://github.com/hanatsumi/pared.git", branch = "feat/unwrap-or-clone" }
 sanitize-filename = "0.6.0"
@@ -52,7 +57,7 @@ futures-util = "0.3.32"
 sha2 = "0.11.0"
 base64 = "0.22"
 epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }
-quick-xml = { version = "0.40.1", features = ["serialize"] }
+quick-xml = { version = "0.41.0", features = ["serialize"] }
 image = "0.25.10"
 percent-encoding = "2.3.2"
 once_cell = "1.21.4"
@@ -61,7 +66,7 @@ aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default
 raqote = "0.8.5"
 font-kit = "0.14.3"
 boa_engine = "0.21.1"
-imageproc = "0.26.2"
+imageproc = "0.27.0"
 ab_glyph = "0.2.32"
 markdown = "1.0.0"
 unicode-normalization = "0.1.25"
@@ -74,7 +79,7 @@ mozjpeg = { version = "0.10.13", default-features = false }
 nix = { version = "0.31.3", default-features = false, features = ["mount", "fs"] }
 
 [dev-dependencies]
-criterion = { version = "0.5.1", features = ["async_tokio"] }
+criterion = { version = "0.8.2", features = ["async_tokio"] }
 pprof = { version = "0.15", features = ["criterion", "flamegraph"] }
 
 [[bench]]

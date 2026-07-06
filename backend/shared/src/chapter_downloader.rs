@@ -133,6 +133,7 @@ pub async fn ensure_chapter_is_in_storage(
             concurrent_requests_pages,
             optimize_image,
             on_progress.clone(),
+            &chapter.id,
         )
         .await
         .map_err(|err| {
@@ -167,6 +168,15 @@ pub enum Error {
     Other(#[from] anyhow::Error),
 }
 
+fn zip_comment(chapter_id: &ChapterId) -> String {
+    serde_json::json!({
+        "source_id": chapter_id.source_id().value(),
+        "manga_id": chapter_id.manga_id().value(),
+        "chapter_id": chapter_id.value(),
+    })
+    .to_string()
+}
+
 pub async fn download_chapter_pages_as_cbz<W>(
     cancel_token: &CancellationToken,
     output: W,
@@ -176,6 +186,7 @@ pub async fn download_chapter_pages_as_cbz<W>(
     concurrent_requests_pages: usize,
     optimize_image: bool,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
+    chapter_id: &ChapterId,
 ) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
     W: Write + Seek,
@@ -193,8 +204,8 @@ where
 
     let client = Client::builder()
         .timeout(Duration::from_secs(30))
-        .danger_accept_invalid_certs(true)
-        .danger_accept_invalid_hostnames(true)
+        .tls_danger_accept_invalid_certs(true)
+        .tls_danger_accept_invalid_hostnames    (true)
         .redirect(Policy::none())
         .build()?;
 
@@ -419,6 +430,7 @@ where
         writer.write_all(&data)?;
     }
 
+    let _ = writer.set_comment(zip_comment(chapter_id));
     Ok(errors)
 }
 
@@ -487,6 +499,7 @@ where
     .await?;
 
     let chapter_url = chapter.url.clone();
+    let comment = zip_comment(&chapter.id);
     tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
         let mut output = std::fs::OpenOptions::new()
             .create(true)
@@ -611,6 +624,7 @@ where
             }
         }
 
+        epub.set_zip_comment(&comment);
         epub.generate(&mut output)?;
 
         Ok(())

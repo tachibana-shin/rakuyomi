@@ -87,8 +87,10 @@ for target in "${TARGETS[@]}"; do
   echo "  Android API level: $PLATFORM"
   if [[ "$PLATFORM" -lt 21 ]]; then
     FEATURES="ffi,api_18"
+    DEFAULT_FLAG="--no-default-features"
   else
     FEATURES="ffi"
+    DEFAULT_FLAG=""
   fi
 
   cargo ndk \
@@ -97,6 +99,7 @@ for target in "${TARGETS[@]}"; do
       build \
       --release \
       --package server \
+      $DEFAULT_FLAG \
       --features "$FEATURES"
 
   LIB_PATH="$BACKEND_DIR/target/$target/release/libserver.so"

@@ -45,7 +45,7 @@ end
 ---@param filepath string
 ---@return ChapterId | nil
 function Shared:getOrigin(filepath)
-  local comment = self:getZipComment(filepath)
+  local comment = Shared:getZipComment(filepath)
   if not comment or comment == "" then return nil end
 
   -- if exits comment is json format {"chapter_id":"321","manga_id":"tom-lai-la-em-de-thuong-duoc-chua-4746","source_id":"vi.truyenqq"}

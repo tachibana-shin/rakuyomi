@@ -1,3 +1,10 @@
+## [1.36.8](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.7...v1.36.8) (2026-07-07)
+
+
+### Bug Fixes
+
+* method call to use Shared namespace ([487e396](https://github.com/tachibana-shin/rakuyomi/commit/487e3967df880f884a10c4c3996387c5f8e59a43))
+
 ## [1.36.7](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.6...v1.36.7) (2026-07-06)
 
 

@@ -1,3 +1,15 @@
+## [1.36.9](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.8...v1.36.9) (2026-07-07)
+
+
+### Bug Fixes
+
+* resolve race conditions by capturing chapter ID during preloadin… ([#218](https://github.com/tachibana-shin/rakuyomi/issues/218)) ([0eb10ff](https://github.com/tachibana-shin/rakuyomi/commit/0eb10ff52e0cb28e41748f12fc9f7923b3e8e33a))
+
+
+### Performance Improvements
+
+* revert fix fork because koreader fixed ([#221](https://github.com/tachibana-shin/rakuyomi/issues/221)) ([dcdb820](https://github.com/tachibana-shin/rakuyomi/commit/dcdb8201b7101e646ae92a4c612093585c4add19)), closes [#216](https://github.com/tachibana-shin/rakuyomi/issues/216)
+
 ## [1.36.8](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.7...v1.36.8) (2026-07-07)
 
 

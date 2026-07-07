@@ -147,14 +147,12 @@ end
 
 --- @private
 function MangaReader:onReturn()
-  print("on retrn called")
   self:closeReaderUi(function()
     self.on_return_callback()
   end)
 end
 
 function MangaReader:closeReaderUi(done_callback)
-  print("close reader ui")
   -- Let all event handlers run before closing the ReaderUI, because
   -- some stuff might break if we just remove it ASAP
   UIManager:nextTick(function()

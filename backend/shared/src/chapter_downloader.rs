@@ -202,7 +202,7 @@ where
     writer.start_file("ComicInfo.xml", file_options)?;
     writer.write_all(metadata.to_xml()?.as_bytes())?;
 
-    let client = crate::tls::client_builder_insecure()
+    let client = crate::tls::client_builder()
         .timeout(Duration::from_secs(30))
         .redirect(Policy::none())
         .build()?;

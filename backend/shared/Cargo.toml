@@ -87,7 +87,7 @@ mozjpeg = { version = "0.10.13", default-features = false }
 nix = { version = "0.31.3", default-features = false, features = ["mount", "fs"] }
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["async_futures"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
 pprof = { version = "0.15", features = ["criterion", "flamegraph"] }
 
 [[bench]]

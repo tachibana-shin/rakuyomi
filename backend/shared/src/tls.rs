@@ -13,6 +13,10 @@ fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::
         .expect("ring supports all safe default protocol versions")
 }
 
+/// Creates a reqwest ClientBuilder configured with the standard WebPKI root trust store.
+///
+/// This builder uses `webpki_roots::TLS_SERVER_ROOTS` for certificate validation,
+/// providing secure TLS connections for production use.
 pub fn client_builder() -> reqwest::ClientBuilder {
     static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
         let mut root_store = rustls::RootCertStore::empty();
@@ -24,6 +28,12 @@ pub fn client_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone())
 }
 
+/// Creates a reqwest ClientBuilder that disables certificate validation.
+///
+/// # Warning
+/// This builder accepts all certificates without verification and should **only** be used
+/// for testing or non-production scenarios where certificate validation is not required.
+/// Using this in production bypasses critical security checks.
 pub fn client_builder_insecure() -> reqwest::ClientBuilder {
     static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
         base_config_builder()

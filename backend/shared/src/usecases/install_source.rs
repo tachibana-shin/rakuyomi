@@ -24,7 +24,10 @@ pub async fn install_source(
         .then(|source_list| async move {
             let domain = source_list.domain().unwrap_or("").to_string();
 
-            let response = reqwest::get(source_list.clone())
+            let client = crate::tls::client_builder().build()
+                .with_context(|| format!("failed to create HTTP client"))?;
+            let response = client.get(source_list.clone())
+                .send()
                 .await
                 .with_context(|| format!("failed to fetch source list at {}", &source_list))?;
 
@@ -66,7 +69,8 @@ pub async fn install_source(
             .join(&format!("sources/{}", &source_list_item.file))
             .unwrap()
     };
-    let aix_content = reqwest::get(aix_url).await?.bytes().await?;
+    let client = crate::tls::client_builder().build()?;
+    let aix_content = client.get(aix_url).send().await?.bytes().await?;
 
     source_manager.install_source(&source_id, aix_content, source_of_source, arc_manager)?;
 

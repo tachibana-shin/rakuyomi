@@ -295,7 +295,7 @@ pub async fn download_image(
             .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
         let req_url = request.url().clone();
 
-        let client = Client::builder()
+        let client = crate::tls::client_builder()
             .timeout(std::time::Duration::from_secs(30))
             .build()?;
         let response = request_with_forced_referer_from_request(&client, request, 10)

@@ -90,7 +90,7 @@ fn cleanup_tmp() -> anyhow::Result<()> {
 }
 /// Downloads the update zip file and saves it to a temporary file.
 async fn download_update_zip(version: &str, build_name: &str) -> anyhow::Result<NamedTempFile> {
-    let client = reqwest::Client::new();
+    let client = crate::tls::client_builder().build()?;
     let asset_name = format!("rakuyomi-{}.zip", build_name);
     let url = format!(
         "https://github.com/tachibana-shin/rakuyomi/releases/download/v{}/{}",

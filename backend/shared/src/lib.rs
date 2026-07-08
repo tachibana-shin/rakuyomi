@@ -13,4 +13,5 @@ pub mod source_manager;
 pub(crate) mod unscrable_image;
 #[cfg(feature = "all")]
 pub mod usecases;
+pub mod tls;
 pub mod util;

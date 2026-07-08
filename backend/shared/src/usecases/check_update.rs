@@ -24,7 +24,7 @@ pub async fn check_update(current_version: String) -> anyhow::Result<CheckUpdate
     let current_version = Version::parse(current_version.trim_start_matches("v"))
         .context("Failed to parse current version")?;
     // Get latest release from GitHub API
-    let client = reqwest::Client::new();
+    let client = crate::tls::client_builder().build()?;
     let response = client
         .get("https://api.github.com/repos/tachibana-shin/rakuyomi/releases/latest")
         .header("User-Agent", "rakuyomi")

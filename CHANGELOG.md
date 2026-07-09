@@ -1,3 +1,15 @@
+## [1.36.11](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.10...v1.36.11) (2026-07-09)
+
+
+### Bug Fixes
+
+* correct property name for on_return_callback in MangaSearchResults.lua ([#229](https://github.com/tachibana-shin/rakuyomi/issues/229)) ([686d809](https://github.com/tachibana-shin/rakuyomi/commit/686d809d5dd9315925cfab79fad08ab22304e8ae))
+
+
+### Performance Improvements
+
+* implement navigation to specific manga and chapters via file metadata and refactor backend state management ([#231](https://github.com/tachibana-shin/rakuyomi/issues/231)) ([f33e750](https://github.com/tachibana-shin/rakuyomi/commit/f33e750ac94fa178473188ca85cb6415f13395e8))
+
 ## [1.36.10](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.9...v1.36.10) (2026-07-09)
 
 

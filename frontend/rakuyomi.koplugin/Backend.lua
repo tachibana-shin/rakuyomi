@@ -146,6 +146,36 @@ function Backend.initialize()
   return true, nil
 end
 
+---@return boolean, string|nil
+local backendInitialized, logs
+function Backend.getBackend()
+  if backendInitialized and Backend.running() then return true, nil end
+  backendInitialized, logs = Backend.initialize()
+  if backendInitialized then
+    local messages = Backend.drainStartupLog()
+    if #messages > 0 then
+      local UIManager = require('ui/uimanager')
+      local InfoMessage = require('ui/widget/infomessage')
+
+      UIManager:show(InfoMessage:new {
+        text = table.concat(messages, "\n\n"),
+      })
+    end
+  end
+end
+
+function Backend.resetState()
+  backendInitialized, logs = nil, nil
+end
+
+function Backend.getLogs()
+  return logs
+end
+
+function Backend.getInitialized()
+  return backendInitialized
+end
+
 --- Drain any startup warnings from the server.
 ---@return string[] messages
 function Backend.drainStartupLog()

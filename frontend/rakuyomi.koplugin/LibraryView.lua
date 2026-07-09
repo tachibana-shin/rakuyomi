@@ -490,14 +490,26 @@ function LibraryView:fetchAndShow(playlist, on_after_open, options)
     return
   end
 
-  UIManager:show(LibraryView:new {
+  local lv = LibraryView:new {
     mangas = mangas,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page,
     library_view_mode = settings.body.library_view_mode,
     current_playlist = self.current_playlist,
     hide_top_close = options and options.hideTopClose,
-  })
+  }
+  UIManager:show(lv)
+
+  if options and options.focus_manga_id then
+    for i, item in ipairs(lv.mangas or {}) do
+      if item.id == options.focus_manga_id
+        and item.source and item.source.id == options.focus_manga_source_id then
+        lv.itemnumber = i
+        lv:switchItemTable(nil, nil, i)
+        break
+      end
+    end
+  end
 
   self.current_playlist = old
   if on_after_open then

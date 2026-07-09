@@ -1,11 +1,9 @@
 local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local Dispatcher = require("dispatcher")
-local InfoMessage = require("ui/widget/infomessage")
 local logger = require("logger")
 local _ = require("gettext+")
 local OfflineAlertDialog = require("OfflineAlertDialog")
-local UIManager = require("ui/uimanager")
 
 local Backend = require("Backend")
 local CbzDocument = require("extensions/CbzDocument")
@@ -18,21 +16,6 @@ require("RakuyomiShared")
 
 local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
 if disable_logging then logger:setLevel(logger.levels.err) end
-
-logger.info("Loading Rakuyomi plugin...")
-local backendInitialized, logs
-local function getBackend()
-  if backendInitialized and Backend.running() then return end
-  backendInitialized, logs = Backend.initialize()
-  if backendInitialized then
-    local messages = Backend.drainStartupLog()
-    if #messages > 0 then
-      UIManager:show(InfoMessage:new {
-        text = table.concat(messages, "\n\n"),
-      })
-    end
-  end
-end
 
 local ok, android = pcall(require, "android")
 local Rakuyomi = InputContainer:extend({
@@ -86,21 +69,23 @@ function Rakuyomi:showErrorDialog()
   ErrorDialog:show(
     _("Oops!") .. _("Rakuyomi encountered an issue while starting up!") .. "\n" ..
     _("Here are some messages that might help identify the problem:") .. "\n\n" ..
-    logs,
+    Backend.getLogs(),
     function()
       Backend.cleanup()
-      backendInitialized, logs = nil, nil
-      getBackend()
+      Backend.resetState()
+      Backend.getBackend()
     end
   )
 end
 
 ---@class OpenOptions
 ---@field hideTopClose? boolean - Whether to hide the top close button
+---@field focus_manga_id? string
+---@field focus_manga_source_id? string
 ---@param options OpenOptions?
 function Rakuyomi:openLibraryView(options)
-  getBackend()
-  if not backendInitialized then
+  Backend.getBackend()
+  if not Backend.getInitialized() then
     self:showErrorDialog()
 
     return

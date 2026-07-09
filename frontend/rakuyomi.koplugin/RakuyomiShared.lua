@@ -1,4 +1,8 @@
 local rapidjson = require("rapidjson")
+local ChapterListing = require("ChapterListing")
+local LibraryView = require("LibraryView")
+local Backend = require("Backend")
+local Trapper = require("ui/trapper")
 
 local Shared = {}
 
@@ -68,6 +72,49 @@ function Shared:getOrigin(filepath)
       source_id = data.source_id,
     },
   }
+end
+
+--- Opens the ChapterListing view for the manga owning a CBZ file.
+--- When the user closes ChapterListing, returns to LibraryView.
+--- Called from other plugins via the filepath of a Rakuyomi-downloaded CBZ.
+--- @param filepath string Path to a CBZ file with Rakuyomi ZIP comment
+--- @param hideTopClose boolean? If set, the top close button will be hidden.
+--- @return boolean true if ChapterListing was opened, false if file has no origin metadata
+function Shared:openChapterListingFromFile(filepath, hideTopClose)
+  Backend.getBackend()
+
+  if not Backend.getInitialized() then
+    self:showErrorDialog()
+
+    return false
+  end
+
+  local origin = Shared:getOrigin(filepath)
+  if not origin then return false end
+
+  ---@type Manga
+  ---@description The fake data
+  local manga = {
+    id = origin.manga_id.manga_id,
+    source = { id = origin.manga_id.source_id, name = "", version = 0 },
+    title = "",
+    in_library = false,
+  }
+
+  local focus_manga_id = origin.manga_id.manga_id
+  local focus_manga_source_id = origin.manga_id.source_id
+
+  Trapper:wrap(function()
+    ChapterListing:fetchAndShow(manga, function()
+      LibraryView:fetchAndShow(nil, nil, {
+        hideTopClose = hideTopClose,
+        focus_manga_id = focus_manga_id,
+        focus_manga_source_id = focus_manga_source_id,
+      })
+    end, true, origin.chapter_id)
+  end)
+
+  return true
 end
 
 return Shared

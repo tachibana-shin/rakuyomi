@@ -435,8 +435,9 @@ end
 --- @param onReturnCallback fun(): nil
 --- @param accept_cached_results? boolean If set, failing to refresh the list of chapters from the source
 --- will not show an error. Defaults to false.
+--- @param focus_chapter_id? string If set, the chapter listing will scroll to and highlight the chapter with this ID.
 --- @return boolean
-function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
+function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results, focus_chapter_id)
   accept_cached_results = accept_cached_results or false
 
   if NetworkMgr:isConnected() then
@@ -490,6 +491,16 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)
+
+  if focus_chapter_id and ui.item_table then
+    for i, item in ipairs(ui.item_table) do
+      if item.chapter and item.chapter.id == focus_chapter_id then
+        ui.itemnumber = i
+        ui:switchItemTable(nil, nil, i)
+        break
+      end
+    end
+  end
 
   Testing:emitEvent("chapter_listing_shown")
 

@@ -4,9 +4,16 @@ local rapidjson = require("rapidjson")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
+local Device = require("device")
 local Platform = require("Platform")
 
-local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or 5)
+local device_is_slow = Device:isKobo()
+
+-- Seconds before we log a warning (slow devices) or kill the server (others)
+local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or (device_is_slow and 10 or 5))
+
+-- Hard cap for slow devices; only used when device_is_slow
+local SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_ABSOLUTE_TIMEOUT') or 180)
 
 --- @class Backend
 --- @field private server Server
@@ -109,8 +116,9 @@ end
 ---@return boolean
 local function waitUntilHttpServerIsReady()
   local start_time = os.time()
+  local patience_warned = false
 
-  while os.time() - start_time < SERVER_STARTUP_TIMEOUT_SECONDS do
+  while true do
     local ok, response = pcall(function()
       return Backend.requestJson({
         path = '/health-check',
@@ -122,10 +130,24 @@ local function waitUntilHttpServerIsReady()
       return true
     end
 
+    local elapsed = os.time() - start_time
+    local deadline = device_is_slow and SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS
+                   or SERVER_STARTUP_TIMEOUT_SECONDS
+
+    if elapsed >= deadline then
+      return false
+    end
+
+    if device_is_slow
+      and not patience_warned
+      and elapsed >= SERVER_STARTUP_TIMEOUT_SECONDS then
+      patience_warned = true
+      logger.warn("Backend not ready after", SERVER_STARTUP_TIMEOUT_SECONDS,
+        "s; continuing to wait (max", SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS, "s)")
+    end
+
     ffiutil.sleep(1)
   end
-
-  return false
 end
 
 ---@return boolean success Whether the backend was initialized successfully.

@@ -1,3 +1,10 @@
+## [1.36.10](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.9...v1.36.10) (2026-07-09)
+
+
+### Bug Fixes
+
+* replace system TLS with manual rustls implementation for ce… ([#225](https://github.com/tachibana-shin/rakuyomi/issues/225)) ([f5a8bd2](https://github.com/tachibana-shin/rakuyomi/commit/f5a8bd24e30e2b2915f561ce9702af38d5a5a518))
+
 ## [1.36.9](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.8...v1.36.9) (2026-07-07)
 
 

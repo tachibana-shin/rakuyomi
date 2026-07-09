@@ -10,7 +10,10 @@ pub async fn list_available_sources(source_lists: Vec<Url>) -> Result<Vec<Source
         .then(|source_list| async move {
             let domain = source_list.domain().unwrap_or("").to_string();
 
-            let response = reqwest::get(source_list.clone())
+            let client = crate::tls::client_builder().build()
+                .with_context(|| format!("failed to create HTTP client"))?;
+            let response = client.get(source_list.clone())
+                .send()
                 .await
                 .with_context(|| format!("failed to fetch source list at {}", &source_list))?;
 

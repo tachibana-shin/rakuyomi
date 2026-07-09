@@ -34,7 +34,7 @@ pub async fn sync_database(
         bail!("Failed to parse endpoint URL");
     };
 
-    let client = Client::new();
+    let client = crate::tls::client_builder().build()?;
     let dav_base = format!("https://{}/{}", host_path, root.trim_matches('/'));
 
     let mut t = std::time::Instant::now();
@@ -134,7 +134,7 @@ pub async fn sync_database(
 }
 
 async fn get_current_time() -> Result<i64> {
-    let client = Client::new();
+    let client = crate::tls::client_builder().build()?;
     let text = client.get(URL_CDN_TRACE).send().await?.text().await?;
 
     let mut ts: Option<f64> = None;

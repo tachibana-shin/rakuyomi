@@ -1,6 +1,6 @@
 use dom_query::Document;
 use futures::{stream, StreamExt};
-use reqwest::{redirect::Policy, Client};
+use reqwest::redirect::Policy;
 use std::{
     io::{Cursor, Seek, Write},
     path::{Path, PathBuf},
@@ -202,10 +202,8 @@ where
     writer.start_file("ComicInfo.xml", file_options)?;
     writer.write_all(metadata.to_xml()?.as_bytes())?;
 
-    let client = Client::builder()
+    let client = crate::tls::client_builder()
         .timeout(Duration::from_secs(30))
-        .tls_danger_accept_invalid_certs(true)
-        .tls_danger_accept_invalid_hostnames    (true)
         .redirect(Policy::none())
         .build()?;
 
@@ -453,7 +451,7 @@ where
     ));
     let stored_process_images_clone = stored_process_images.clone();
 
-    let client = Client::builder().timeout(Duration::from_secs(30)).build()?;
+    let client = crate::tls::client_builder().timeout(Duration::from_secs(30)).build()?;
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();

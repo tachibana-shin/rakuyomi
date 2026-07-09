@@ -370,7 +370,7 @@ impl ChapterStorage {
             return Ok(file);
         }
 
-        let client = reqwest::Client::builder()
+        let client = crate::tls::client_builder()
             .timeout(std::time::Duration::from_secs(30))
             .build()?;
         let bytes = tokio::select! {

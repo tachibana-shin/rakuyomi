@@ -325,11 +325,11 @@ function MangaSearchResults:onPrimaryMenuChoice(item)
         exclude = self.exclude,
         result_page = self.result_page,
         has_next_page = self.has_next_page,
-        on_return_callback = self.onReturnCallback,
+        on_return_callback = self.on_return_callback,
         covers_fullscreen = true, -- hint for UIManager:_repaint()
         page = self.page
       }
-      ui.on_return_callback = self.onReturnCallback
+      ui.on_return_callback = self.on_return_callback
       UIManager:show(ui)
     end
 

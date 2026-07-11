@@ -46,7 +46,9 @@ pub fn client_builder_insecure() -> reqwest::ClientBuilder {
 
 static VERIFIER: Lazy<Arc<AcceptAllVerifier>> = Lazy::new(|| {
     let provider = rustls::crypto::ring::default_provider();
-    Arc::new(AcceptAllVerifier(provider.signature_verification_algorithms))
+    Arc::new(AcceptAllVerifier(
+        provider.signature_verification_algorithms,
+    ))
 });
 
 #[derive(Debug)]

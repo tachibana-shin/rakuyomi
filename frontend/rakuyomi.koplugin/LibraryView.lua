@@ -37,6 +37,7 @@ local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
 local LuaSettings = require("luasettings")
 local NotificationView = require("NotificationView")
+local CookieSyncView = require("CookieSyncView")
 local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 
 local LoadingDialog = require("LoadingDialog")
@@ -1011,6 +1012,13 @@ function LibraryView:openMenu()
     } },
     {
       {
+        text = Icons.SYNC .. " " .. _("Cookie Sync"),
+        callback = function()
+          UIManager:close(dialog)
+          self:openCookieSyncView()
+        end
+      },
+      {
         text = Icons.INFO .. " " .. _("System resources"),
         callback = function()
           UIManager:close(dialog)
@@ -1403,6 +1411,19 @@ function LibraryView:openSettings()
 
     Settings:fetchAndShow(onReturnCallback)
 
+    self:onClose(true)
+  end)
+end
+
+function LibraryView:openCookieSyncView()
+  Trapper:wrap(function()
+    local playlist = self.current_playlist
+    local hide_top = self.hide_top_close
+    CookieSyncView:new {
+      on_return_callback = function()
+        LibraryView:new{}:fetchAndShow(playlist, nil, { hideTopClose = hide_top })
+      end,
+    }:fetchAndShow()
     self:onClose(true)
   end)
 end

@@ -1,0 +1,272 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:@hono/zod-openapi@^1.4.0": "1.4.0_hono@4.12.28_zod@3.25.76",
+    "npm:@hono/zod-validator@0.4": "0.4.3_hono@4.12.28_zod@3.25.76",
+    "npm:@libsql/client@0.14": "0.14.0",
+    "npm:grammy@1.34.1": "1.34.1",
+    "npm:hono@^4.12.28": "4.12.28",
+    "npm:zod@^3.24.4": "3.25.76"
+  },
+  "npm": {
+    "@asteasolutions/zod-to-openapi@8.5.0_zod@3.25.76": {
+      "integrity": "sha512-SABbKiObg5dLRiTFnqiW1WWwGcg1BJfmHtT2asIBnBHg6Smy/Ms2KHc650+JI4Hw7lSkdiNebEGXpwoxfben8Q==",
+      "dependencies": [
+        "openapi3-ts",
+        "zod"
+      ]
+    },
+    "@grammyjs/types@3.18.0": {
+      "integrity": "sha512-/VpQcT6Z0+Lw6H6jv2JvnDmqB1/9rjbFdDBlPBPUW3kQ1bWfjzfaiVk2+J2eiid3o3sLaPp3ZK0XjEI1gWNc3g=="
+    },
+    "@hono/zod-openapi@1.4.0_hono@4.12.28_zod@3.25.76": {
+      "integrity": "sha512-AFchqR1N/NxfI4hUOSGI2/g8zLROxA1OE7Oh5JJFlTaGxhrdRyH+93gd0tIBpb0z8s9r8hUoNnaOBfHbdb4NMw==",
+      "dependencies": [
+        "@asteasolutions/zod-to-openapi",
+        "@hono/zod-validator@0.8.0_hono@4.12.28_zod@3.25.76",
+        "hono",
+        "openapi3-ts",
+        "zod"
+      ]
+    },
+    "@hono/zod-validator@0.4.3_hono@4.12.28_zod@3.25.76": {
+      "integrity": "sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==",
+      "dependencies": [
+        "hono",
+        "zod"
+      ]
+    },
+    "@hono/zod-validator@0.8.0_hono@4.12.28_zod@3.25.76": {
+      "integrity": "sha512-5uS4S1/LKtZQYvD4BtpPUFkOv8d1wNxHHrChm26buMiEYc1FrHWvDUaKVBwkiVtvSExHSpLGDvcnpI2Copyj9w==",
+      "dependencies": [
+        "hono",
+        "zod"
+      ]
+    },
+    "@libsql/client@0.14.0": {
+      "integrity": "sha512-/9HEKfn6fwXB5aTEEoMeFh4CtG0ZzbncBb1e++OCdVpgKZ/xyMsIVYXm0w7Pv4RUel803vE6LwniB3PqD72R0Q==",
+      "dependencies": [
+        "@libsql/core",
+        "@libsql/hrana-client",
+        "js-base64",
+        "libsql",
+        "promise-limit"
+      ]
+    },
+    "@libsql/core@0.14.0": {
+      "integrity": "sha512-nhbuXf7GP3PSZgdCY2Ecj8vz187ptHlZQ0VRc751oB2C1W8jQUXKKklvt7t1LJiUTQBVJuadF628eUk+3cRi4Q==",
+      "dependencies": [
+        "js-base64"
+      ]
+    },
+    "@libsql/darwin-arm64@0.4.7": {
+      "integrity": "sha512-yOL742IfWUlUevnI5PdnIT4fryY3LYTdLm56bnY0wXBw7dhFcnjuA7jrH3oSVz2mjZTHujxoITgAE7V6Z+eAbg==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@libsql/darwin-x64@0.4.7": {
+      "integrity": "sha512-ezc7V75+eoyyH07BO9tIyJdqXXcRfZMbKcLCeF8+qWK5nP8wWuMcfOVywecsXGRbT99zc5eNra4NEx6z5PkSsA==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@libsql/hrana-client@0.7.0": {
+      "integrity": "sha512-OF8fFQSkbL7vJY9rfuegK1R7sPgQ6kFMkDamiEccNUvieQ+3urzfDFI616oPl8V7T9zRmnTkSjMOImYCAVRVuw==",
+      "dependencies": [
+        "@libsql/isomorphic-fetch",
+        "@libsql/isomorphic-ws",
+        "js-base64",
+        "node-fetch@3.3.2"
+      ]
+    },
+    "@libsql/isomorphic-fetch@0.3.1": {
+      "integrity": "sha512-6kK3SUK5Uu56zPq/Las620n5aS9xJq+jMBcNSOmjhNf/MUvdyji4vrMTqD7ptY7/4/CAVEAYDeotUz60LNQHtw=="
+    },
+    "@libsql/isomorphic-ws@0.1.5": {
+      "integrity": "sha512-DtLWIH29onUYR00i0GlQ3UdcTRC6EP4u9w/h9LxpUZJWRMARk6dQwZ6Jkd+QdwVpuAOrdxt18v0K2uIYR3fwFg==",
+      "dependencies": [
+        "@types/ws",
+        "ws"
+      ]
+    },
+    "@libsql/linux-arm64-gnu@0.4.7": {
+      "integrity": "sha512-WlX2VYB5diM4kFfNaYcyhw5y+UJAI3xcMkEUJZPtRDEIu85SsSFrQ+gvoKfcVh76B//ztSeEX2wl9yrjF7BBCA==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@libsql/linux-arm64-musl@0.4.7": {
+      "integrity": "sha512-6kK9xAArVRlTCpWeqnNMCoXW1pe7WITI378n4NpvU5EJ0Ok3aNTIC2nRPRjhro90QcnmLL1jPcrVwO4WD1U0xw==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@libsql/linux-x64-gnu@0.4.7": {
+      "integrity": "sha512-CMnNRCmlWQqqzlTw6NeaZXzLWI8bydaXDke63JTUCvu8R+fj/ENsLrVBtPDlxQ0wGsYdXGlrUCH8Qi9gJep0yQ==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@libsql/linux-x64-musl@0.4.7": {
+      "integrity": "sha512-nI6tpS1t6WzGAt1Kx1n1HsvtBbZ+jHn0m7ogNNT6pQHZQj7AFFTIMeDQw/i/Nt5H38np1GVRNsFe99eSIMs9XA==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@libsql/win32-x64-msvc@0.4.7": {
+      "integrity": "sha512-7pJzOWzPm6oJUxml+PCDRzYQ4A1hTMHAciTAHfFK4fkbDZX33nWPVG7Y3vqdKtslcwAzwmrNDc6sXy2nwWnbiw==",
+      "os": ["win32"],
+      "cpu": ["x64"]
+    },
+    "@neon-rs/load@0.0.4": {
+      "integrity": "sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw=="
+    },
+    "@types/node@26.1.1": {
+      "integrity": "sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
+    "@types/ws@8.18.1": {
+      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
+      "dependencies": [
+        "@types/node"
+      ]
+    },
+    "abort-controller@3.0.0": {
+      "integrity": "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==",
+      "dependencies": [
+        "event-target-shim"
+      ]
+    },
+    "data-uri-to-buffer@4.0.1": {
+      "integrity": "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A=="
+    },
+    "debug@4.4.3": {
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+      "dependencies": [
+        "ms"
+      ]
+    },
+    "detect-libc@2.0.2": {
+      "integrity": "sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw=="
+    },
+    "event-target-shim@5.0.1": {
+      "integrity": "sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ=="
+    },
+    "fetch-blob@3.2.0": {
+      "integrity": "sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==",
+      "dependencies": [
+        "node-domexception",
+        "web-streams-polyfill"
+      ]
+    },
+    "formdata-polyfill@4.0.10": {
+      "integrity": "sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==",
+      "dependencies": [
+        "fetch-blob"
+      ]
+    },
+    "grammy@1.34.1": {
+      "integrity": "sha512-0ypt5d1bna8CqSANlDCg2ce1sx87oDm9gjyPRHWYpAgvjy3WYW9oEmMllAYCWCZ3vHDULW5x14jBMXai51ar0Q==",
+      "dependencies": [
+        "@grammyjs/types",
+        "abort-controller",
+        "debug",
+        "node-fetch@2.7.0"
+      ]
+    },
+    "hono@4.12.28": {
+      "integrity": "sha512-YwUvVpSF7m1yOblFPrU3Hbo8XhPheBoiyfGuII6z19LnOr6JpDnyyp7LFNrfV56wS8tpvtBFGRISHN02pDdLOA=="
+    },
+    "js-base64@3.8.1": {
+      "integrity": "sha512-5xVjhUZlHHeuO2W7w2rDFj/Kl1xLX+HjZxdOQwCsUOifl6UaoH1o1wsbsTMz+r0aeC7gCijvru02j6TfKZWzKg=="
+    },
+    "libsql@0.4.7": {
+      "integrity": "sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==",
+      "dependencies": [
+        "@neon-rs/load",
+        "detect-libc"
+      ],
+      "optionalDependencies": [
+        "@libsql/darwin-arm64",
+        "@libsql/darwin-x64",
+        "@libsql/linux-arm64-gnu",
+        "@libsql/linux-arm64-musl",
+        "@libsql/linux-x64-gnu",
+        "@libsql/linux-x64-musl",
+        "@libsql/win32-x64-msvc"
+      ],
+      "os": ["darwin", "linux", "win32"],
+      "cpu": ["x64", "arm64", "wasm32"]
+    },
+    "ms@2.1.3": {
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+    },
+    "node-domexception@1.0.0": {
+      "integrity": "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==",
+      "deprecated": true
+    },
+    "node-fetch@2.7.0": {
+      "integrity": "sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==",
+      "dependencies": [
+        "whatwg-url"
+      ]
+    },
+    "node-fetch@3.3.2": {
+      "integrity": "sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==",
+      "dependencies": [
+        "data-uri-to-buffer",
+        "fetch-blob",
+        "formdata-polyfill"
+      ]
+    },
+    "openapi3-ts@4.6.0": {
+      "integrity": "sha512-a4sfn6L2sIShhtzJqmjGrARvxAW/3F2BJDdyRVvNF9VhAsZSh5hSyI3a9TNvmzBxXmq66nY5LNT5bQcBxYAZZg==",
+      "dependencies": [
+        "yaml"
+      ]
+    },
+    "promise-limit@2.7.0": {
+      "integrity": "sha512-7nJ6v5lnJsXwGprnGXga4wx6d1POjvi5Qmf1ivTRxTjH4Z/9Czja/UCMLVmB9N93GeWOU93XaFaEt6jbuoagNw=="
+    },
+    "tr46@0.0.3": {
+      "integrity": "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="
+    },
+    "undici-types@8.3.0": {
+      "integrity": "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="
+    },
+    "web-streams-polyfill@3.3.3": {
+      "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="
+    },
+    "webidl-conversions@3.0.1": {
+      "integrity": "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="
+    },
+    "whatwg-url@5.0.0": {
+      "integrity": "sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==",
+      "dependencies": [
+        "tr46",
+        "webidl-conversions"
+      ]
+    },
+    "ws@8.21.0": {
+      "integrity": "sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g=="
+    },
+    "yaml@2.9.0": {
+      "integrity": "sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==",
+      "bin": true
+    },
+    "zod@3.25.76": {
+      "integrity": "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="
+    }
+  },
+  "remote": {
+    "https://deno.land/std@0.224.0/encoding/_util.ts": "beacef316c1255da9bc8e95afb1fa56ed69baef919c88dc06ae6cb7a6103d376",
+    "https://deno.land/std@0.224.0/encoding/hex.ts": "6270f25e5d85f99fcf315278670ba012b04b7c94b67715b53f30d03249687c07"
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@hono/zod-openapi@^1.4.0",
+      "npm:@hono/zod-validator@0.4",
+      "npm:@libsql/client@0.14",
+      "npm:grammy@1.34.1",
+      "npm:hono@^4.12.28",
+      "npm:zod@^3.24.4"
+    ]
+  }
+}

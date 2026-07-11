@@ -998,6 +998,84 @@ function Backend.removeMangaFromPlaylist(playlist_id, source_id, manga_id)
   })
 end
 
+--- @class CookieSyncStatus
+--- @field paired boolean
+--- @field server_url string|nil
+--- @field device_name string|nil
+--- @field chat_id number|nil
+--- @field cookie_count number
+
+--- @return SuccessfulResponse<CookieSyncStatus>|ErrorResponse
+function Backend.getCookieSyncStatus()
+  return Backend.requestJson({
+    path = "/cookie-sync/status",
+    method = "GET",
+  })
+end
+
+--- @class GenerateCodeResponse
+--- @field pairing_code string
+
+--- @return SuccessfulResponse<GenerateCodeResponse>|ErrorResponse
+function Backend.generatePairingCode(server_url)
+  return Backend.requestJson({
+    path = "/cookie-sync/generate-code",
+    method = "POST",
+    body = { server_url = server_url },
+    timeout = 15,
+  })
+end
+
+--- @class PollPairingResponse
+--- @field paired boolean
+--- @field chat_id number|nil
+--- @field device_name string|nil
+
+--- @return SuccessfulResponse<PollPairingResponse>|ErrorResponse
+function Backend.pollPairingStatus(server_url, pairing_code)
+  return Backend.requestJson({
+    path = "/cookie-sync/poll-pairing",
+    method = "POST",
+    body = {
+      server_url = server_url,
+      pairing_code = pairing_code,
+    },
+    timeout = 15,
+  })
+end
+
+--- @class SyncResponse
+--- @field status string
+--- @field domains string[]
+
+--- @return SuccessfulResponse<SyncResponse>|ErrorResponse
+function Backend.syncCookies()
+  return Backend.requestJson({
+    path = "/cookie-sync/sync",
+    method = "POST",
+    timeout = 30,
+  })
+end
+
+--- @return SuccessfulResponse<{status: string}>|ErrorResponse
+function Backend.unpairDevice()
+  return Backend.requestJson({
+    path = "/cookie-sync/unpair",
+    method = "POST",
+  })
+end
+
+--- @class ListCookiesResponse
+--- @field domains table
+
+--- @return SuccessfulResponse<ListCookiesResponse>|ErrorResponse
+function Backend.listCookies()
+  return Backend.requestJson({
+    path = "/cookie-sync/cookies",
+    method = "GET",
+  })
+end
+
 -- we can't really rely upon Koreader informing us it has terminated because
 -- the plugin lifecycle is really obscure, so use the garbage collector to
 -- detect we're done and cleanup

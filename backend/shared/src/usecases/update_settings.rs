@@ -41,6 +41,9 @@ pub struct UpdateableSettings {
     search_view_mode: SearchViewMode,
     ram_storage_enabled: bool, // readonly not allow UpdateableSettings update value
     ram_storage_size_mb: usize, // readonly not allow UpdateableSettings update value
+    cookie_sync_server_url: Option<String>,
+    cookie_sync_device_name: Option<String>,
+    cookie_sync_chat_id: Option<i64>,
 }
 
 impl UpdateableSettings {
@@ -58,6 +61,9 @@ impl UpdateableSettings {
         settings.optimize_image = self.optimize_image;
         settings.library_view_mode = self.library_view_mode;
         settings.search_view_mode = self.search_view_mode;
+        settings.cookie_sync_server_url = self.cookie_sync_server_url;
+        settings.cookie_sync_device_name = self.cookie_sync_device_name;
+        settings.cookie_sync_chat_id = self.cookie_sync_chat_id;
     }
 }
 
@@ -80,6 +86,9 @@ impl From<&Settings> for UpdateableSettings {
             search_view_mode: value.search_view_mode,
             ram_storage_enabled: value.ram_storage_enabled,
             ram_storage_size_mb: value.ram_storage_size_mb,
+            cookie_sync_server_url: value.cookie_sync_server_url.clone(),
+            cookie_sync_device_name: value.cookie_sync_device_name.clone(),
+            cookie_sync_chat_id: value.cookie_sync_chat_id,
         }
     }
 }

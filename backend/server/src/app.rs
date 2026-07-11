@@ -26,7 +26,7 @@ use shared::usecases::install_update::cleanup_update_backup;
 use crate::build_info::{get_build_info, DEFAULT_SETTINGS_JSON};
 use crate::listener::{pick_listener, ResolvedListener};
 use crate::state::State;
-use crate::{job, manga, playlists, settings, source, system, update};
+use crate::{cookie, job, manga, playlists, settings, source, system, update};
 
 /// Initialize logging. Safe to call multiple times; only the first invocation
 /// actually installs the subscriber.
@@ -45,6 +45,7 @@ pub fn init_logging() {
 pub fn build_router(state: State) -> Router {
     let router = Router::new()
         .route("/health-check", get(health_check))
+        .merge(cookie::routes())
         .merge(manga::routes())
         .merge(playlists::routes())
         .merge(job::routes())
@@ -114,6 +115,9 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
             )
         })?;
     }
+    let cookies_path = home_path.join("cookies.json");
+    shared::cookie_store::init_cookie_store_with_path(&cookies_path)
+        .context("couldn't initialize cookie store")?;
     let settings = Settings::from_file(&settings_path)
         .with_context(|| format!("couldn't read settings file at {}", settings_path.display()))?;
     let source_manager = SourceManager::from_folder(sources_path, settings.clone())

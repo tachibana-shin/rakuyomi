@@ -135,6 +135,18 @@ pub struct Settings {
     /// Size of the RAM storage in MB.
     #[serde(default = "default_ram_storage_size_mb")]
     pub ram_storage_size_mb: usize,
+
+    /// Cookie sync server URL (Telegram Bot Deno server).
+    #[serde(default)]
+    pub cookie_sync_server_url: Option<String>,
+
+    /// Device name after pairing with the cookie sync bot.
+    #[serde(default)]
+    pub cookie_sync_device_name: Option<String>,
+
+    /// Telegram chat_id after pairing.
+    #[serde(default)]
+    pub cookie_sync_chat_id: Option<i64>,
 }
 
 fn default_ram_storage_size_mb() -> usize {

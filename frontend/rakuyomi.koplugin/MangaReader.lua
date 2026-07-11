@@ -2,6 +2,7 @@ local ReaderUI = require("apps/reader/readerui")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
+local DocSettings = require("docsettings")
 local logger = require("logger")
 local _ = require("gettext+")
 
@@ -27,6 +28,18 @@ local MangaReader = {
 --- @field chapter? Chapter The chapter being read.
 --- @field on_close_book_callback? fun(Chapter): nil Function to be called when the user closes the manga reader.
 
+--- Applies the "natural reading" setting to the chapter's document sidecar,
+--- so `ReaderView` picks up the correct `inverse_reading_order` value as soon
+--- as it initializes.
+--- @private
+--- @param path string Path to the chapter file about to be opened.
+function MangaReader:applyNaturalReading(path)
+  local enabled = G_reader_settings:isTrue("natural_reading")
+  local doc_settings = DocSettings:open(path)
+  doc_settings:saveSetting("inverse_reading_order", enabled)
+  doc_settings:flush()
+end
+
 --- Displays the file located in `path` in the KOReader's reader.
 --- If a file is already being displayed, it will be replaced.
 ---
@@ -38,6 +51,8 @@ function MangaReader:show(options)
   self.chapter = options.chapter
   self.on_close_book_callback = options.on_close_book_callback
   local c_showing = self.is_showing
+
+  self:applyNaturalReading(options.path)
 
   -- move set self.is_showing function Rakuyomi:init call initializeFromReaderUI maybe random call sort
   self.is_showing = true

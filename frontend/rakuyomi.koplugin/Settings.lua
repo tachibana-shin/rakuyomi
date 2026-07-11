@@ -243,6 +243,15 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'natural_reading',
+    {
+      type = 'boolean',
+      title = _("Natural reading (invert page turns for manga)"),
+      is_local = true,
+      default = false,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Storage") }
   },

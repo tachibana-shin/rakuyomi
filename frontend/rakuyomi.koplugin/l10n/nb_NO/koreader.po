@@ -372,47 +372,47 @@ msgstr "Trykk utenfor denne meldingen for å avbryte."
 
 #: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
 msgid "Cookie Sync"
-msgstr ""
+msgstr "Cookie Sync"
 
 #: ../CookieSyncView.lua:164
 msgid "Unable to fetch cookie sync status."
-msgstr ""
+msgstr "Kan ikke hente synkroniseringsstatus for informasjonskapsler."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr ""
+msgstr "Enhet paret som:"
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr ""
+msgstr "Chat-ID:"
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr ""
+msgstr "Cached domains: "
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
-msgstr ""
+msgstr "Ikke sammenkoblet. "
 
 #: ../CookieSyncView.lua:214
 msgid "Sync Cookies Now"
-msgstr ""
+msgstr "Synkroniser informasjonskapsler nå"
 
 #: ../CookieSyncView.lua:225
 msgid "View Cached Cookies"
-msgstr ""
+msgstr "Se bufrede informasjonskapsler"
 
 #: ../CookieSyncView.lua:236
 msgid "Unpair Device"
-msgstr ""
+msgstr "Koble fra enheten"
 
 #: ../CookieSyncView.lua:255
 msgid "Pair Device"
-msgstr ""
+msgstr "Par enhet"
 
 #: ../CookieSyncView.lua:270
 msgid "Enter Telegram Bot Server URL"
-msgstr ""
+msgstr "Skriv inn Telegram Bot Server URL"
 
 #: ../CookieSyncView.lua:271
 msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
@@ -420,47 +420,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:274
 msgid "https://your-bot.deno.dev"
-msgstr ""
+msgstr "https://din-bot.deno.dev"
 
 #: ../CookieSyncView.lua:284
 msgid "Generate Code"
-msgstr ""
+msgstr "Generer kode"
 
 #: ../CookieSyncView.lua:305
 msgid "Generating pairing code..."
-msgstr ""
+msgstr "Genererer sammenkoblingskode ..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr ""
+msgstr "Kunne ikke generere sammenkoblingskode:"
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr ""
+msgstr "Paringskode:"
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
-msgstr ""
+msgstr "1. Åpne Telegram på Android-telefonen din"
 
 #: ../CookieSyncView.lua:327
 msgid "2. Send this command to the bot:"
-msgstr ""
+msgstr "2. Send denne kommandoen til roboten:"
 
 #: ../CookieSyncView.lua:328
 msgid "DEVICE_NAME"
-msgstr ""
+msgstr "DEVICE_NAME"
 
 #: ../CookieSyncView.lua:329
 msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
-msgstr ""
+msgstr "(Erstatt DEVICE_NAME med et navn for denne enheten, f.eks. kindle_bedroom)"
 
 #: ../CookieSyncView.lua:330
 msgid "3. Come back here and tap 'Check Pairing'"
-msgstr ""
+msgstr "3. Come back here and tap 'Check Pairing'"
 
 #: ../CookieSyncView.lua:334
 msgid "Check Pairing"
-msgstr ""
+msgstr "Sjekk sammenkobling"
 
 #: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
 #: ../OfflineAlertDialog.lua:54
@@ -469,15 +469,15 @@ msgstr "Lukke"
 
 #: ../CookieSyncView.lua:344
 msgid "Checking pairing status..."
-msgstr ""
+msgstr "Sjekker sammenkoblingsstatus..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr ""
+msgstr "Kunne ikke sjekke sammenkobling:"
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr ""
+msgstr "Enheten ble sammenkoblet som:"
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -485,49 +485,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:371
 msgid "Check Again"
-msgstr ""
+msgstr "Sjekk igjen"
 
 #: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
-#, fuzzy
 msgid "Syncing cookies..."
-msgstr "Skanner filer..."
+msgstr "Synkroniserer informasjonskapsler ..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
 msgid "Failed to sync cookies: "
-msgstr ""
+msgstr "Kunne ikke synkronisere informasjonskapsler:"
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
 msgid " domain(s)."
-msgstr ""
+msgstr "domene(r)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
 msgid "Synced cookies for "
-msgstr ""
+msgstr "Synkroniserte informasjonskapsler for"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr ""
+msgstr "Vil du koble fra denne enheten? "
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"
-msgstr ""
+msgstr "Fjern paring"
 
 #: ../CookieSyncView.lua:414
-#, fuzzy
 msgid "Failed to unpair: "
-msgstr "Kunne ikke legge til i biblioteket"
+msgstr "Kunne ikke oppheve sammenkoblingen:"
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
-msgstr ""
+msgstr "Enheten er koblet fra."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr ""
+msgstr "Kunne ikke liste informasjonskapsler:"
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
-msgstr ""
+msgstr "Ingen informasjonskapsler lagret."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -727,7 +725,7 @@ msgstr "Synkronisering fullført!"
 
 #: ../LibraryView.lua:1022
 msgid "Sync Cookies"
-msgstr ""
+msgstr "Synkroniser informasjonskapsler"
 
 #: ../LibraryView.lua:1052
 msgid "System resources"

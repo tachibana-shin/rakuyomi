@@ -16,7 +16,8 @@ Deno.test("pairing — full lifecycle: create -> resolve -> status -> remove", a
   assert.strictEqual(unpaired.paired, false)
 
   const resolved = await resolvePairingCode(code, 100, "test_device")
-  assert.strictEqual(resolved, true)
+  assert.ok(typeof resolved === "string")
+  assert.ok(resolved!.length > 0)
 
   const paired = await getPairingStatus(code)
   assert.strictEqual(paired.paired, true)
@@ -30,9 +31,9 @@ Deno.test("pairing — full lifecycle: create -> resolve -> status -> remove", a
   assert.strictEqual(afterRemove.paired, false)
 })
 
-Deno.test("pairing — resolve non-existent code returns false", async () => {
+Deno.test("pairing — resolve non-existent code returns null", async () => {
   const result = await resolvePairingCode("NONEXISTENT", 999, "ghost_device")
-  assert.strictEqual(result, false)
+  assert.strictEqual(result, null)
 })
 
 Deno.test("pairing — status for non-existent code returns unpaired", async () => {

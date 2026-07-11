@@ -1,6 +1,7 @@
 interface PairingEntry {
   chat_id?: number
   device_name?: string
+  api_token?: string
   created: number
 }
 
@@ -102,25 +103,31 @@ export async function resolvePairingCode(
   code: string,
   chat_id: number,
   device_name: string,
-): Promise<boolean> {
+): Promise<string | null> {
   const kv = await getKv()
   const res = await kv.get<PairingEntry>(["pairing", code])
-  if (!res.value) return false
+  if (!res.value) return null
   if (Date.now() - res.value.created >= PAIRING_TTL) {
     await kv.delete(["pairing", code])
-    return false
+    return null
   }
+  const tokenBytes = new Uint8Array(32)
+  crypto.getRandomValues(tokenBytes)
+  const api_token = Array.from(tokenBytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
   await kv.set(["pairing", code], {
     ...res.value,
     chat_id,
     device_name,
+    api_token,
   } as PairingEntry, { expireIn: PAIRING_TTL })
-  return true
+  return api_token
 }
 
 export async function getPairingStatus(
   code: string,
-): Promise<{ paired: boolean; chat_id?: number; device_name?: string }> {
+): Promise<{ paired: boolean; chat_id?: number; device_name?: string; api_token?: string }> {
   const kv = await getKv()
   const res = await kv.get<PairingEntry>(["pairing", code])
   if (!res.value) return { paired: false }
@@ -133,6 +140,7 @@ export async function getPairingStatus(
       paired: true,
       chat_id: res.value.chat_id,
       device_name: res.value.device_name,
+      api_token: res.value.api_token,
     }
   }
   return { paired: false }

@@ -26,7 +26,7 @@ app.post(
     }
 
     const chatId = result.userId
-    const domains = ingestCookies(chatId, device, cookies, user_agent)
+    const domains = await ingestCookies(chatId, device, cookies, user_agent)
 
     if (domains.length === 0) {
       return c.json({ error: "Invalid cookie JSON format" }, 400)

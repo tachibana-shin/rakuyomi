@@ -1,5 +1,7 @@
 const encoder = new TextEncoder()
 
+const AUTH_AGE_MAX_MS = 15 * 60 * 1000
+
 function bytesToHex(bytes: ArrayBuffer): string {
   return Array.from(new Uint8Array(bytes))
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -13,6 +15,12 @@ export async function verifyTelegramWebAppData(
   const params = new URLSearchParams(initData)
   const hash = params.get("hash")
   if (!hash) return null
+
+  const authDateStr = params.get("auth_date")
+  if (!authDateStr) return null
+  const authDate = parseInt(authDateStr, 10)
+  if (isNaN(authDate)) return null
+  if (Date.now() - authDate * 1000 > AUTH_AGE_MAX_MS) return null
 
   params.delete("hash")
 

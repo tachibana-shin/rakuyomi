@@ -19,43 +19,43 @@ Deno.test("ingestCookies — valid JSON stores cookies grouped by domain", async
     { name: "token", value: "xyz", domain: "example.com" },
     { name: "cf_clearance", value: "clr", domain: ".cf.com" },
   ])
-  const domains = ingestCookies(CHAT_ID, "/all", raw)
+  const domains = await ingestCookies(CHAT_ID, "/all", raw)
 
   assert.strictEqual(domains.length, 2)
   assert.ok(domains.includes("example.com"))
-  assert.ok(domains.includes("cf.com"))
+  assert.ok(domains.includes(".cf.com"))
 
   const deviceMap = await getDeviceCookies(CHAT_ID, "/all")
   assert.strictEqual(deviceMap.size, 2)
   assert.strictEqual(deviceMap.get("example.com")!.cookies.length, 2)
-  assert.strictEqual(deviceMap.get("cf.com")!.cookies.length, 1)
+  assert.strictEqual(deviceMap.get(".cf.com")!.cookies.length, 1)
 })
 
-Deno.test("ingestCookies — invalid JSON returns empty array", () => {
-  const result = ingestCookies(CHAT_ID, "/all", "not json")
+Deno.test("ingestCookies — invalid JSON returns empty array", async () => {
+  const result = await ingestCookies(CHAT_ID, "/all", "not json")
   assert.deepStrictEqual(result, [])
 })
 
-Deno.test("ingestCookies — non-array JSON returns empty array", () => {
-  const result = ingestCookies(CHAT_ID, "/all", '{"name":"x"}')
+Deno.test("ingestCookies — non-array JSON returns empty array", async () => {
+  const result = await ingestCookies(CHAT_ID, "/all", '{"name":"x"}')
   assert.deepStrictEqual(result, [])
 })
 
-Deno.test("ingestCookies — strips leading dot from domain", async () => {
+Deno.test("ingestCookies — preserves leading dot from domain", async () => {
   const raw = JSON.stringify([
     { name: "s", value: "v", domain: ".sub.example.com" },
   ])
-  ingestCookies(CHAT_ID, "device_a", raw)
+  await ingestCookies(CHAT_ID, "device_a", raw)
 
   const domains = await getDeviceDomains(CHAT_ID, "device_a")
-  assert.deepStrictEqual(domains, ["sub.example.com"])
+  assert.deepStrictEqual(domains, [".sub.example.com"])
 })
 
 Deno.test("ingestCookies — stores user agent", async () => {
   const raw = JSON.stringify([
     { name: "s", value: "v", domain: "x.com" },
   ])
-  ingestCookies(CHAT_ID, "device_b", raw, "Mozilla/5.0 Test")
+  await ingestCookies(CHAT_ID, "device_b", raw, "Mozilla/5.0 Test")
 
   const deviceMap = await getDeviceCookies(CHAT_ID, "device_b")
   assert.strictEqual(deviceMap.get("x.com")!.user_agent, "Mozilla/5.0 Test")
@@ -74,7 +74,7 @@ Deno.test("getDevices — unknown chat returns empty array", async () => {
 
 Deno.test("getDeviceDomains — returns domains for device", async () => {
   const domains = await getDeviceDomains(CHAT_ID, "/all")
-  assert.deepStrictEqual(domains.sort(), ["cf.com", "example.com"])
+  assert.deepStrictEqual(domains.sort(), [".cf.com", "example.com"])
 })
 
 Deno.test("getDeviceDomains — unknown device returns empty array", async () => {
@@ -107,7 +107,7 @@ Deno.test("getDeviceCookies — fallback from unknown device to /all", async () 
   const raw = JSON.stringify([
     { name: "fallback", value: "ok", domain: "fallback.com" },
   ])
-  ingestCookies(CHAT_ID, "/all", raw)
+  await ingestCookies(CHAT_ID, "/all", raw)
 
   const map = await getDeviceCookies(CHAT_ID, "nonexistent_device")
   assert.ok(map.has("fallback.com"))

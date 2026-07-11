@@ -2,6 +2,7 @@ import { Context } from "grammy"
 import { t } from "../../i18n.ts"
 import { resolvePairingCode } from "../../kv.ts"
 import { registerDevice } from "../../turso.ts"
+import { storeChatToken } from "../../store.ts"
 import { getChatId } from "./utils.ts"
 
 export async function linkCommand(ctx: Context) {
@@ -27,12 +28,13 @@ export async function linkCommand(ctx: Context) {
 
   const deviceName = parts.slice(2).join("_")
 
-  const ok = await resolvePairingCode(code, chatId, deviceName)
-  if (!ok) {
+  const apiToken = await resolvePairingCode(code, chatId, deviceName)
+  if (!apiToken) {
     await ctx.reply(locale.link_invalid_code)
     return
   }
 
+  await storeChatToken(chatId, apiToken)
   await registerDevice(chatId, deviceName)
   await ctx.reply(locale.link_success(deviceName))
 }

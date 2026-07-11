@@ -15,7 +15,7 @@ export function parseCookieArray(jsonStr: string): CookieEntry[] | null {
     return data.map((c: Record<string, unknown>) => ({
       name: String(c.name ?? ""),
       value: String(c.value ?? ""),
-      domain: String(c.domain ?? "").replace(/^\./, ""),
+      domain: String(c.domain ?? ""),
       path: c.path ? String(c.path) : undefined,
       secure: typeof c.secure === "boolean" ? c.secure : undefined,
       httpOnly: typeof c.httpOnly === "boolean" ? c.httpOnly : undefined,

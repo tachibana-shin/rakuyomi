@@ -90,6 +90,7 @@ async fn poll_pairing(
         settings.cookie_sync_server_url = Some(req.server_url);
         settings.cookie_sync_chat_id = status.chat_id;
         settings.cookie_sync_device_name = status.device_name.clone();
+        settings.cookie_sync_api_token = status.api_token.clone();
         settings.save_to_file(&settings_path)?;
     }
 
@@ -109,12 +110,13 @@ struct SyncResponse {
 async fn sync_all(
     StateExtractor(State { settings, .. }): StateExtractor<State>,
 ) -> Result<Json<SyncResponse>, AppError> {
-    let (server_url, chat_id, device_name) = {
+    let (server_url, chat_id, device_name, api_token) = {
         let s = settings.lock().await;
         (
             s.cookie_sync_server_url.clone(),
             s.cookie_sync_chat_id,
             s.cookie_sync_device_name.clone(),
+            s.cookie_sync_api_token.clone(),
         )
     };
 
@@ -125,7 +127,7 @@ async fn sync_all(
     let device_name = device_name
         .ok_or_else(|| AppError::from(anyhow::anyhow!("not paired: no device name")))?;
 
-    let data = cookie_store::sync_all_cookies(&server_url, chat_id, &device_name)
+    let data = cookie_store::sync_all_cookies(&server_url, chat_id, &device_name, api_token.as_deref())
         .await
         .map_err(|e| AppError::from(e))?;
 
@@ -159,6 +161,7 @@ async fn unpair(
         if let Ok(mut s) = store.write() {
             s.clear();
         }
+        cookie_store::recompute_sync_hash();
     }
     cookie_store::save_cookies_to_disk();
     Ok(Json(UnpairResponse {

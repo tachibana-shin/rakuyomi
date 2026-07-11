@@ -9,15 +9,15 @@ Deno.test("parseCookieArray — parses valid array", () => {
   ])
   const result = parseCookieArray(json)
   assert.strictEqual(result!.length, 2)
-  assert.strictEqual(result![0].domain, "x.com")
+  assert.strictEqual(result![0].domain, ".x.com")
   assert.strictEqual(result![1].domain, "y.com")
   assert.strictEqual(result![1].secure, true)
   assert.strictEqual(result![1].path, "/")
 })
 
-Deno.test("parseCookieArray — strips leading dot from domain", () => {
+Deno.test("parseCookieArray — preserves leading dot in domain", () => {
   const result = parseCookieArray('[{"name":"a","value":"1","domain":".example.com"}]')
-  assert.strictEqual(result![0].domain, "example.com")
+  assert.strictEqual(result![0].domain, ".example.com")
 })
 
 Deno.test("parseCookieArray — returns null for invalid JSON", () => {

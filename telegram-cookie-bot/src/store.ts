@@ -6,6 +6,10 @@ import {
   saveDeviceData,
   deleteDeviceData,
   deleteAllDeviceData,
+  storeChatTokenHash,
+  getChatTokenHash,
+  storeDeviceHash,
+  getDeviceHash as getDeviceHashDb,
 } from "./turso.ts"
 
 interface CookieData {
@@ -105,12 +109,12 @@ export async function getDomainCookieCount(
   return deviceCookies.get(chatId)?.get(device)?.get(domain)?.cookies.length ?? 0
 }
 
-export function ingestCookies(
+export async function ingestCookies(
   chatId: number,
   device: string,
   rawJson: string,
   userAgent?: string,
-): string[] {
+): Promise<string[]> {
   const cookies = parseCookieArray(rawJson)
   if (!cookies) return []
 
@@ -136,6 +140,10 @@ export function ingestCookies(
   if (device !== "/all") registerDevice(chatId, device)
   persistDevice(chatId, device)
 
+  const hash = await sha256(rawJson)
+  deviceHashes.set(`${chatId}:${device}`, hash)
+  await storeDeviceHash(chatId, device, hash)
+
   return domains
 }
 
@@ -144,6 +152,7 @@ export function clearDeviceCookies(
   device: string,
 ): boolean {
   const ok = deviceCookies.get(chatId)?.delete(device) ?? false
+  deviceHashes.delete(`${chatId}:${device}`)
   deleteDeviceData(chatId, device)
   return ok
 }
@@ -162,6 +171,10 @@ export function clearDeviceDomainCookies(
 
 export async function clearAllCookies(chatId: number): Promise<boolean> {
   const ok = deviceCookies.delete(chatId)
+  // Clear all device hashes for this chat
+  for (const key of deviceHashes.keys()) {
+    if (key.startsWith(`${chatId}:`)) deviceHashes.delete(key)
+  }
   await deleteAllDeviceData(chatId)
   return ok
 }
@@ -175,7 +188,7 @@ function parseCookieArray(jsonStr: string): CookieEntry[] | null {
     return data.map((c: Record<string, unknown>) => ({
       name: String(c.name ?? ""),
       value: String(c.value ?? ""),
-      domain: String(c.domain ?? "").replace(/^\./, ""),
+      domain: String(c.domain ?? ""),
       path: c.path ? String(c.path) : undefined,
       secure: typeof c.secure === "boolean" ? c.secure : undefined,
       httpOnly: typeof c.httpOnly === "boolean" ? c.httpOnly : undefined,
@@ -184,4 +197,49 @@ function parseCookieArray(jsonStr: string): CookieEntry[] | null {
   } catch {
     return null
   }
+}
+
+async function sha256(plain: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(plain)
+  const hash = await crypto.subtle.digest("SHA-256", data)
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+const chatTokenHashes = new Map<number, string>()
+
+export async function storeChatToken(chatId: number, token: string): Promise<void> {
+  const hash = await sha256(token)
+  chatTokenHashes.set(chatId, hash)
+  await storeChatTokenHash(chatId, hash)
+}
+
+
+export async function verifyChatToken(chatId: number, token: string): Promise<boolean> {
+  const hash = await sha256(token)
+  let stored = chatTokenHashes.get(chatId)
+  if (!stored) {
+    const dbHash = await getChatTokenHash(chatId)
+    if (dbHash) {
+      chatTokenHashes.set(chatId, dbHash)
+      stored = dbHash
+    }
+  }
+  return stored === hash
+}
+
+const deviceHashes = new Map<string, string>() // key: "chatId:device"
+
+export async function getDeviceHash(
+  chatId: number,
+  device: string,
+): Promise<string | null> {
+  const key = `${chatId}:${device}`
+  const hash = deviceHashes.get(key)
+  if (hash) return hash
+  const dbHash = await getDeviceHashDb(chatId, device)
+  if (dbHash) deviceHashes.set(key, dbHash)
+  return dbHash
 }

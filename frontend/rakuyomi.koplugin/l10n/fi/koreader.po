@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-27 11:24+0700\n"
+"POT-Creation-Date: 2026-07-11 16:01+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -32,8 +32,8 @@ msgstr "Asennettavissa"
 msgid "version"
 msgstr "versio"
 
-#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:278
-#: ../ChapterListing.lua:338 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:285
+#: ../ChapterListing.lua:346 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "Tuntematon"
@@ -79,295 +79,453 @@ msgstr "Tuntematon virhe"
 msgid "Error"
 msgstr "Virhe"
 
-#: ../ChapterListing.lua:57
+#: ../ChapterListing.lua:58
 msgid "Chapter listing"
 msgstr "Lukujen luettelo"
 
-#: ../ChapterListing.lua:235 ../ChapterListing.lua:1097
+#: ../ChapterListing.lua:239 ../ChapterListing.lua:1122
 msgid "Languages"
 msgstr "Kielet"
 
-#: ../ChapterListing.lua:324
+#: ../ChapterListing.lua:332
 msgid "No chapters found"
 msgstr "Lukuja ei löytynyt"
 
-#: ../ChapterListing.lua:324
+#: ../ChapterListing.lua:332
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Yritä päivittää lukuluettelo pyyhkäisemällä alas."
 
-#: ../ChapterListing.lua:369
+#: ../ChapterListing.lua:377
 msgid "Volume"
 msgstr "Äänenvoimakkuus"
 
-#: ../ChapterListing.lua:373 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:381 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "Luku"
 
-#: ../ChapterListing.lua:400
+#: ../ChapterListing.lua:408
 msgid "Locked"
 msgstr "Lukittu"
 
-#: ../ChapterListing.lua:437 ../ChapterListing.lua:646
+#: ../ChapterListing.lua:446 ../ChapterListing.lua:665
 msgid "Refreshing chapters..."
 msgstr "Päivitetään lukuja..."
 
-#: ../ChapterListing.lua:445 ../ChapterListing.lua:653
-#: ../ChapterListing.lua:1355
+#: ../ChapterListing.lua:454 ../ChapterListing.lua:672
+#: ../ChapterListing.lua:1382
 msgid "Cancelled."
 msgstr "Peruutettu."
 
-#: ../ChapterListing.lua:457
+#: ../ChapterListing.lua:466
 msgid "Refresh chapter error"
 msgstr "Päivitä lukuvirhe"
 
-#: ../ChapterListing.lua:497
+#: ../ChapterListing.lua:516
 msgid "Chapter is locked"
 msgstr "Luku on lukittu"
 
-#: ../ChapterListing.lua:514 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:533 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "Avata"
 
-#: ../ChapterListing.lua:524 ../ChapterListing.lua:1017 ../LibraryView.lua:532
+#: ../ChapterListing.lua:543 ../ChapterListing.lua:1042 ../LibraryView.lua:557
 msgid "Refresh"
 msgstr "Päivitä"
 
-#: ../ChapterListing.lua:530
+#: ../ChapterListing.lua:549
 msgid "Chapter refreshed"
 msgstr "Lukua päivitetty"
 
-#: ../ChapterListing.lua:536 ../ChapterListing.lua:679
-#: ../ChapterListing.lua:1053 ../LibraryView.lua:579
+#: ../ChapterListing.lua:555 ../ChapterListing.lua:698
+#: ../ChapterListing.lua:1078 ../LibraryView.lua:604
 msgid "Mark unread"
 msgstr "Merkitse lukemattomaksi"
 
-#: ../ChapterListing.lua:547 ../ChapterListing.lua:1251
+#: ../ChapterListing.lua:566 ../ChapterListing.lua:1278
 msgid "Download"
 msgstr "Lataa"
 
-#: ../ChapterListing.lua:547 ../LibraryView.lua:774 ../LibraryView.lua:794
+#: ../ChapterListing.lua:566 ../LibraryView.lua:799 ../LibraryView.lua:819
 msgid "Remove"
 msgstr "Poistaa"
 
-#: ../ChapterListing.lua:556
+#: ../ChapterListing.lua:575
 msgid "Chapter downloaded"
 msgstr "Luku ladattu"
 
-#: ../ChapterListing.lua:575
+#: ../ChapterListing.lua:594
 msgid "Revoke chapter..."
 msgstr "Peruuta luku..."
 
-#: ../ChapterListing.lua:593
+#: ../ChapterListing.lua:612
 msgid "Removed chapter"
 msgstr "Poistettu luku"
 
-#: ../ChapterListing.lua:604
+#: ../ChapterListing.lua:623
 msgid "Marking"
 msgstr "Merkintä"
 
-#: ../ChapterListing.lua:604
+#: ../ChapterListing.lua:623
 msgid "Un-marking"
 msgstr "Merkinnän poistaminen"
 
-#: ../ChapterListing.lua:604
+#: ../ChapterListing.lua:623
 msgid "chapter..."
 msgstr "luku..."
 
-#: ../ChapterListing.lua:638
+#: ../ChapterListing.lua:657
 msgid "Cannot refresh chapters while offline"
 msgstr "Lukuja ei voi päivittää offline-tilassa"
 
-#: ../ChapterListing.lua:679 ../ChapterListing.lua:1043 ../LibraryView.lua:568
+#: ../ChapterListing.lua:698 ../ChapterListing.lua:1068 ../LibraryView.lua:593
 msgid "Mark read"
 msgstr "Merkitse luetuksi"
 
-#: ../ChapterListing.lua:680
+#: ../ChapterListing.lua:699
 msgid "1 - 10.5, 20 - 100"
 msgstr "1-10,5, 20-100"
 
-#: ../ChapterListing.lua:681
+#: ../ChapterListing.lua:700
 msgid "Leaving blank will select all"
 msgstr "Tyhjäksi jättäminen valitsee kaikki"
 
-#: ../ChapterListing.lua:681
+#: ../ChapterListing.lua:700
 msgid "Mark chapters as read or unread"
 msgstr "Merkitse luvut luetuiksi tai lukemattomiksi"
 
-#: ../ChapterListing.lua:685 ../ChapterListing.lua:1169
-#: ../ChapterListing.lua:1244 ../LibraryView.lua:756 ../LibraryView.lua:1093
-#: ../LibraryView.lua:1141 ../NotificationView.lua:162
+#: ../ChapterListing.lua:704 ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1271 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
 #: ../widgets/SettingItemValue.lua:163
 msgid "Cancel"
 msgstr "Peruuttaa"
 
-#: ../ChapterListing.lua:692
+#: ../ChapterListing.lua:711
 msgid "Mark"
 msgstr "Mark"
 
-#: ../ChapterListing.lua:702
+#: ../ChapterListing.lua:721
 msgid "Marking..."
 msgstr "Merkitään..."
 
-#: ../ChapterListing.lua:712
+#: ../ChapterListing.lua:731
 msgid "Marked"
 msgstr "Merkitty"
 
-#: ../ChapterListing.lua:731 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "Ei virheitä"
 
-#: ../ChapterListing.lua:740
+#: ../ChapterListing.lua:759
 #, lua-format
 msgid "Page"
 msgstr "Sivu"
 
-#: ../ChapterListing.lua:740
+#: ../ChapterListing.lua:759
 #, lua-format
 msgid "attempts"
 msgstr "yrityksiä"
 
-#: ../ChapterListing.lua:748 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… ja %d muuta virhettä"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:789
 msgid "Could not download chapter."
 msgstr "Lukua ei voitu ladata."
 
-#: ../ChapterListing.lua:775
+#: ../ChapterListing.lua:797
 msgid "Loading chapter..."
 msgstr "Ladataan lukua..."
 
-#: ../ChapterListing.lua:776
+#: ../ChapterListing.lua:798
 msgid "unknown"
 msgstr "tuntematon"
 
-#: ../ChapterListing.lua:794
+#: ../ChapterListing.lua:816
 msgid "Download cancelled."
 msgstr "Lataus peruutettu."
 
-#: ../ChapterListing.lua:800
+#: ../ChapterListing.lua:822
 msgid "Are you sure you want to cancel the download?"
 msgstr "Haluatko varmasti peruuttaa latauksen?"
 
-#: ../ChapterListing.lua:1007 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1032 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "Lisää kirjastoon"
 
-#: ../ChapterListing.lua:1025 ../LibraryView.lua:552
+#: ../ChapterListing.lua:1050 ../LibraryView.lua:577
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "Yksityiskohdat"
 
-#: ../ChapterListing.lua:1065
+#: ../ChapterListing.lua:1090
 msgid "Resume"
 msgstr "Jatkaa"
 
-#: ../ChapterListing.lua:1073
+#: ../ChapterListing.lua:1098
 msgid "Next Chapter"
 msgstr "Seuraava luku"
 
-#: ../ChapterListing.lua:1083
+#: ../ChapterListing.lua:1108
 msgid "Download unread chapters…"
 msgstr "Lataa lukemattomat luvut…"
 
-#: ../ChapterListing.lua:1110
+#: ../ChapterListing.lua:1135
 msgid "Group"
 msgstr "ryhmä"
 
-#: ../ChapterListing.lua:1111 ../ChapterListing.lua:1225
+#: ../ChapterListing.lua:1136 ../ChapterListing.lua:1252
 msgid "Filter by Group"
 msgstr "Suodata ryhmän mukaan"
 
-#: ../ChapterListing.lua:1134
+#: ../ChapterListing.lua:1159
 msgid "Adding to library..."
 msgstr "Lisätään kirjastoon..."
 
-#: ../ChapterListing.lua:1141
+#: ../ChapterListing.lua:1166
 msgid "Failed to add to library"
 msgstr "Kirjastoon lisääminen epäonnistui"
 
-#: ../ChapterListing.lua:1146
+#: ../ChapterListing.lua:1171
 msgid "Added to library."
 msgstr "Lisätty kirjastoon."
 
-#: ../ChapterListing.lua:1158 ../LibraryView.lua:718
+#: ../ChapterListing.lua:1183 ../LibraryView.lua:743
 msgid "Sadly, no next chapter available! :c"
 msgstr "Valitettavasti seuraavaa osaa ei ole saatavilla! "
 
-#: ../ChapterListing.lua:1167
+#: ../ChapterListing.lua:1192
 msgid "Next"
 msgstr "Seuraavaksi"
 
-#: ../ChapterListing.lua:1167
+#: ../ChapterListing.lua:1192
 msgid "reading with"
 msgstr "kanssa lukeminen"
 
-#: ../ChapterListing.lua:1168 ../LibraryView.lua:755
+#: ../ChapterListing.lua:1193 ../LibraryView.lua:780
 msgid "Read"
 msgstr "Lukea"
 
-#: ../ChapterListing.lua:1190
+#: ../ChapterListing.lua:1215
 msgid "Show All"
 msgstr "Näytä kaikki"
 
-#: ../ChapterListing.lua:1198
+#: ../ChapterListing.lua:1224
 msgid "Showing all groups"
 msgstr "Näytetään kaikki ryhmät"
 
-#: ../ChapterListing.lua:1218
+#: ../ChapterListing.lua:1245
 msgid "Filtered to"
 msgstr "Suodatettu kohteeseen"
 
-#: ../ChapterListing.lua:1235
+#: ../ChapterListing.lua:1262
 msgid "Download unread chapters..."
 msgstr "Lataa lukemattomat luvut..."
 
-#: ../ChapterListing.lua:1237
+#: ../ChapterListing.lua:1264
 msgid "Amount of unread chapters (default: all)"
 msgstr "Lukemattomien lukujen määrä (oletus: kaikki)"
 
-#: ../ChapterListing.lua:1239
+#: ../ChapterListing.lua:1266
 msgid "Specify amount or leave empty for all."
 msgstr "Määritä määrä tai jätä tyhjäksi kaikille."
 
-#: ../ChapterListing.lua:1239
+#: ../ChapterListing.lua:1266
 msgid "Will download from"
 msgstr "Ladataan osoitteesta"
 
-#: ../ChapterListing.lua:1240
+#: ../ChapterListing.lua:1267
 msgid "Specify the amount of unread chapters to download"
 msgstr "Määritä ladattavien lukemattomien lukujen määrä"
 
-#: ../ChapterListing.lua:1240
+#: ../ChapterListing.lua:1267
 msgid "or leave empty to download all of them."
 msgstr "tai jätä tyhjäksi ladataksesi ne kaikki."
 
-#: ../ChapterListing.lua:1261
+#: ../ChapterListing.lua:1288
 msgid "Invalid amount of chapters!"
 msgstr "Virheellinen lukujen määrä!"
 
-#: ../ChapterListing.lua:1282
+#: ../ChapterListing.lua:1309
 msgid "No unread chapters found for"
 msgstr "Ei lukemattomia lukuja haulle"
 
-#: ../ChapterListing.lua:1307 ../ChapterListing.lua:1382
+#: ../ChapterListing.lua:1334 ../ChapterListing.lua:1409
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Ladataan kaikkia lukuja, tämä kestää jonkin aikaa…"
 
-#: ../ChapterListing.lua:1392
+#: ../ChapterListing.lua:1419
 msgid "Waiting for download to be cancelled…"
 msgstr "Odotetaan latauksen peruuttamista…"
 
-#: ../ChapterListing.lua:1394
+#: ../ChapterListing.lua:1421
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Ladataan kaikkia lukuja, tämä kestää jonkin aikaa… ("
 
-#: ../ChapterListing.lua:1397
+#: ../ChapterListing.lua:1424
 msgid "Tap outside this message to cancel."
 msgstr "Peruuta napauttamalla tämän viestin ulkopuolella."
+
+#: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
+msgid "Cookie Sync"
+msgstr "Evästeiden synkronointi"
+
+#: ../CookieSyncView.lua:164
+msgid "Unable to fetch cookie sync status."
+msgstr "Evästeiden synkronoinnin tilaa ei voi noutaa."
+
+#: ../CookieSyncView.lua:183
+msgid "Device paired as: "
+msgstr "Laite pariksi liitetty seuraavasti:"
+
+#: ../CookieSyncView.lua:185
+msgid "Chat ID: "
+msgstr "Chat ID:"
+
+#: ../CookieSyncView.lua:187
+msgid "Cached domains: "
+msgstr "Välimuistissa olevat verkkotunnukset:"
+
+#: ../CookieSyncView.lua:190
+msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
+msgstr "Ei pariksi. "
+
+#: ../CookieSyncView.lua:214
+msgid "Sync Cookies Now"
+msgstr "Synkronoi evästeet nyt"
+
+#: ../CookieSyncView.lua:225
+msgid "View Cached Cookies"
+msgstr "Näytä välimuistissa olevat evästeet"
+
+#: ../CookieSyncView.lua:236
+msgid "Unpair Device"
+msgstr "Pura laitepari"
+
+#: ../CookieSyncView.lua:255
+msgid "Pair Device"
+msgstr "Yhdistä laite"
+
+#: ../CookieSyncView.lua:270
+msgid "Enter Telegram Bot Server URL"
+msgstr "Anna Telegram Bot -palvelimen URL-osoite"
+
+#: ../CookieSyncView.lua:271
+msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
+msgstr ""
+
+#: ../CookieSyncView.lua:274
+msgid "https://your-bot.deno.dev"
+msgstr "https://your-bot.deno.dev"
+
+#: ../CookieSyncView.lua:284
+msgid "Generate Code"
+msgstr "Luo koodi"
+
+#: ../CookieSyncView.lua:305
+msgid "Generating pairing code..."
+msgstr "Luodaan pariliitoskoodia..."
+
+#: ../CookieSyncView.lua:317
+msgid "Failed to generate pairing code: "
+msgstr "Pariliitoskoodin luominen epäonnistui:"
+
+#: ../CookieSyncView.lua:325
+msgid "Pairing Code: "
+msgstr "Pariliitoskoodi:"
+
+#: ../CookieSyncView.lua:326
+msgid "1. Open Telegram on your Android phone"
+msgstr "1. Avaa Telegram Android-puhelimellasi"
+
+#: ../CookieSyncView.lua:327
+msgid "2. Send this command to the bot:"
+msgstr "2. Lähetä tämä komento botille:"
+
+#: ../CookieSyncView.lua:328
+msgid "DEVICE_NAME"
+msgstr "DEVICE_NAME"
+
+#: ../CookieSyncView.lua:329
+msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
+msgstr "(Korvaa DEVICE_NAME tämän laitteen nimellä, esim. kindle_bedroom)"
+
+#: ../CookieSyncView.lua:330
+msgid "3. Come back here and tap 'Check Pairing'"
+msgstr "3. Palaa tänne ja napauta Tarkista pariliitos."
+
+#: ../CookieSyncView.lua:334
+msgid "Check Pairing"
+msgstr "Tarkista pariliitos"
+
+#: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
+#: ../OfflineAlertDialog.lua:54
+msgid "Close"
+msgstr "Lähellä"
+
+#: ../CookieSyncView.lua:344
+msgid "Checking pairing status..."
+msgstr "Tarkistetaan pariliitoksen tilaa..."
+
+#: ../CookieSyncView.lua:356
+msgid "Failed to check pairing: "
+msgstr "Pariliitoksen tarkistaminen epäonnistui:"
+
+#: ../CookieSyncView.lua:363
+msgid "Device paired successfully as: "
+msgstr "Laitteen pariliitos onnistui seuraavasti:"
+
+#: ../CookieSyncView.lua:368
+msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
+msgstr ""
+
+#: ../CookieSyncView.lua:371
+msgid "Check Again"
+msgstr "Tarkista uudelleen"
+
+#: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
+msgid "Syncing cookies..."
+msgstr "Synkronoidaan evästeitä..."
+
+#: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
+msgid "Failed to sync cookies: "
+msgstr "Evästeiden synkronointi epäonnistui:"
+
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+msgid " domain(s)."
+msgstr "verkkotunnukset."
+
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+msgid "Synced cookies for "
+msgstr "Synkronoidut evästeet kohteelle"
+
+#: ../CookieSyncView.lua:408
+msgid "Unpair this device? This will clear all synced cookies."
+msgstr "Poistetaanko laitepari? "
+
+#: ../CookieSyncView.lua:409
+msgid "Unpair"
+msgstr "Poista pariliitos"
+
+#: ../CookieSyncView.lua:414
+msgid "Failed to unpair: "
+msgstr "Parin purkaminen epäonnistui:"
+
+#: ../CookieSyncView.lua:419
+msgid "Device unpaired."
+msgstr "Laite on paritettu."
+
+#: ../CookieSyncView.lua:432
+msgid "Failed to list cookies: "
+msgstr "Evästeiden luettelointi epäonnistui:"
+
+#: ../CookieSyncView.lua:445
+msgid "No cookies cached."
+msgstr "Välimuistissa ei ole evästeitä."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -413,312 +571,316 @@ msgstr "Haluatko poistaa"
 msgid "source?"
 msgstr "lähde?"
 
-#: ../LibraryView.lua:73 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:76
 msgid "Library"
 msgstr "Kirjasto"
 
-#: ../LibraryView.lua:452
+#: ../LibraryView.lua:460
 msgid "No mangas found in library"
 msgstr "Mangaa ei löytynyt kirjastosta"
 
-#: ../LibraryView.lua:452
+#: ../LibraryView.lua:460
 msgid "Try adding some by holding their name on the search results!"
 msgstr "Yritä lisätä joitakin pitämällä heidän nimensä hakutuloksissa!"
 
-#: ../LibraryView.lua:543
+#: ../LibraryView.lua:568
 msgid "Refreshed manga"
 msgstr "Päivitetty manga"
 
-#: ../LibraryView.lua:592
+#: ../LibraryView.lua:617
 msgid "Continue Reading"
 msgstr "Jatka lukemista"
 
-#: ../LibraryView.lua:601 ../MangaSearchResults.lua:424
+#: ../LibraryView.lua:626 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "Lisää soittolistaan"
 
-#: ../LibraryView.lua:613
+#: ../LibraryView.lua:638
 msgid "List chapters"
 msgstr "Listaa luvut"
 
-#: ../LibraryView.lua:631 ../MangaSearchResults.lua:358
+#: ../LibraryView.lua:656 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "Poista kirjastosta"
 
-#: ../LibraryView.lua:641
+#: ../LibraryView.lua:666
 msgid "Remove from Playlist"
 msgstr "Poista soittolistasta"
 
-#: ../LibraryView.lua:674
+#: ../LibraryView.lua:699
 msgid "Finding next chapter..."
 msgstr "Etsitään seuraava luku..."
 
-#: ../LibraryView.lua:685
+#: ../LibraryView.lua:710
 msgid "No chapters found for this manga."
 msgstr "Tälle mangalle ei löytynyt lukuja."
 
-#: ../LibraryView.lua:754
+#: ../LibraryView.lua:779
 msgid "Resume reading with:"
 msgstr "Jatka lukemista:"
 
-#: ../LibraryView.lua:773 ../LibraryView.lua:793
+#: ../LibraryView.lua:798 ../LibraryView.lua:818
 msgid "Do you want to remove"
 msgstr "Haluatko poistaa"
 
-#: ../LibraryView.lua:773
+#: ../LibraryView.lua:798
 msgid "from your library?"
 msgstr "kirjastostasi?"
 
-#: ../LibraryView.lua:793
+#: ../LibraryView.lua:818
 msgid "from your playlist?"
 msgstr "soittolistaltasi?"
 
-#: ../LibraryView.lua:816
+#: ../LibraryView.lua:841
 msgid "Search for mangas"
 msgstr "Hae mangaa"
 
-#: ../LibraryView.lua:826
+#: ../LibraryView.lua:851
 msgid "Search favorites"
 msgstr "Hae suosikkeja"
 
-#: ../LibraryView.lua:836 ../PlaylistDialog.lua:304
+#: ../LibraryView.lua:861 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "Soittolistat"
 
-#: ../LibraryView.lua:845
+#: ../LibraryView.lua:870
 msgid "Refresh mangas"
 msgstr "Päivitä mangat"
 
-#: ../LibraryView.lua:853
+#: ../LibraryView.lua:878
 msgid "Refresh details"
 msgstr "Päivitä tiedot"
 
-#: ../LibraryView.lua:863
+#: ../LibraryView.lua:888
 msgid "Cleaner chapters"
 msgstr "Puhtaat luvut"
 
-#: ../LibraryView.lua:871
+#: ../LibraryView.lua:896
 msgid "Manage sources"
 msgstr "Hallinnoi lähteitä"
 
-#: ../LibraryView.lua:881 ../LibraryView.lua:1087 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
 msgid "Settings"
 msgstr "Asetukset"
 
-#: ../LibraryView.lua:889
+#: ../LibraryView.lua:914
 msgid "Check for updates"
 msgstr "Tarkista päivitykset"
 
-#: ../LibraryView.lua:898
+#: ../LibraryView.lua:923
 msgid "Sync Database (Beta)"
 msgstr "Synkronoi tietokanta (beta)"
 
-#: ../LibraryView.lua:902
+#: ../LibraryView.lua:927
 msgid "Sync to WebDAV..."
 msgstr "Synkronoi WebDAV:iin..."
 
-#: ../LibraryView.lua:914
+#: ../LibraryView.lua:939
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Haluatko siirtää paikallisen tietokantasi palvelimelta?"
 
-#: ../LibraryView.lua:914
+#: ../LibraryView.lua:939
 msgid "The remote database is newer than the local one."
 msgstr "Etätietokanta on uudempi kuin paikallinen tietokanta."
 
-#: ../LibraryView.lua:914
+#: ../LibraryView.lua:939
 msgid "This action cannot be undone."
 msgstr "Tätä toimintoa ei voi kumota."
 
-#: ../LibraryView.lua:915
+#: ../LibraryView.lua:940
 msgid "Migrate"
 msgstr "Siirrä"
 
-#: ../LibraryView.lua:919
+#: ../LibraryView.lua:944
 msgid "Migrating database..."
 msgstr "Siirretään tietokantaa..."
 
-#: ../LibraryView.lua:930 ../LibraryView.lua:977
+#: ../LibraryView.lua:955 ../LibraryView.lua:1002
 msgid "Local database has been migrated from the server!"
 msgstr "Paikallinen tietokanta on siirretty palvelimelta!"
 
-#: ../LibraryView.lua:941
+#: ../LibraryView.lua:966
 msgid "Replace Cloud"
 msgstr "Korvaa pilvi"
 
-#: ../LibraryView.lua:945
+#: ../LibraryView.lua:970
 msgid "Replacing cloud..."
 msgstr "Vaihdetaan pilvi..."
 
-#: ../LibraryView.lua:955
+#: ../LibraryView.lua:980
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Pilvitietokanta on pakotettu korvattu paikallisella!"
 
-#: ../LibraryView.lua:973
+#: ../LibraryView.lua:998
 msgid "Database is already up to date!"
 msgstr "Tietokanta on jo ajan tasalla!"
 
-#: ../LibraryView.lua:975
+#: ../LibraryView.lua:1000
 msgid "Database has been synced to the server!"
 msgstr "Tietokanta on synkronoitu palvelimelle!"
 
-#: ../LibraryView.lua:979
+#: ../LibraryView.lua:1004
 msgid "Sync completed!"
 msgstr "Synkronointi valmis!"
 
-#: ../LibraryView.lua:990
+#: ../LibraryView.lua:1022
+msgid "Sync Cookies"
+msgstr "Synkronoi evästeet"
+
+#: ../LibraryView.lua:1052
 msgid "System resources"
 msgstr "Järjestelmäresurssit"
 
-#: ../LibraryView.lua:1005
+#: ../LibraryView.lua:1067
 msgid "CPU"
 msgstr "CPU"
 
-#: ../LibraryView.lua:1006
+#: ../LibraryView.lua:1068
 msgid "Cores"
 msgstr "ytimet"
 
-#: ../LibraryView.lua:1007
+#: ../LibraryView.lua:1069
 msgid "Usage"
 msgstr "Käyttö"
 
-#: ../LibraryView.lua:1008
+#: ../LibraryView.lua:1070
 msgid "Memory"
 msgstr "Muisti"
 
-#: ../LibraryView.lua:1011 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:247
 msgid "Storage"
 msgstr "Varastointi"
 
-#: ../LibraryView.lua:1015 ../LibraryView.lua:1019
+#: ../LibraryView.lua:1077 ../LibraryView.lua:1081
 msgid "Tmpfs"
 msgstr "Tmpfs"
 
-#: ../LibraryView.lua:1019
+#: ../LibraryView.lua:1081
 msgid "unavailable"
 msgstr "ei ole saatavilla"
 
-#: ../LibraryView.lua:1022
+#: ../LibraryView.lua:1084
 msgid "Process RSS"
 msgstr "Käsittele RSS"
 
-#: ../LibraryView.lua:1023
+#: ../LibraryView.lua:1085
 msgid "Virtual"
 msgstr "Virtuaalinen"
 
-#: ../LibraryView.lua:1059
+#: ../LibraryView.lua:1121
 msgid "Manga search..."
 msgstr "Manga haku..."
 
-#: ../LibraryView.lua:1060
+#: ../LibraryView.lua:1122
 msgid "Houseki no Kuni"
 msgstr "Houseki ei Kuni"
 
-#: ../LibraryView.lua:1061 ../LibraryView.lua:1137
+#: ../LibraryView.lua:1123 ../LibraryView.lua:1199
 msgid "Type the manga name to search for"
 msgstr "Kirjoita etsittävän mangan nimi"
 
-#: ../LibraryView.lua:1065 ../LibraryView.lua:1074 ../LibraryView.lua:1119
-#: ../LibraryView.lua:1148 ../Settings.lua:185
+#: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
+#: ../LibraryView.lua:1210 ../Settings.lua:185
 msgid "Search"
 msgstr "Haku"
 
-#: ../LibraryView.lua:1119
+#: ../LibraryView.lua:1181
 msgid "Exclude source search for"
 msgstr "Sulje pois lähdehaku"
 
-#: ../LibraryView.lua:1134
+#: ../LibraryView.lua:1196
 msgid "Favorite search..."
 msgstr "Suosikkihaku..."
 
-#: ../LibraryView.lua:1136
+#: ../LibraryView.lua:1198
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii"
 
-#: ../LibraryView.lua:1188
+#: ../LibraryView.lua:1250
 msgid "Scaning files..."
 msgstr "Skannaa tiedostoja..."
 
-#: ../LibraryView.lua:1203
+#: ../LibraryView.lua:1265
 #, lua-format
 msgid "Found %d files."
 msgstr "Löytyi %d tiedostoa."
 
-#: ../LibraryView.lua:1204
+#: ../LibraryView.lua:1266
 #, lua-format
 msgid "Total size %s."
 msgstr "Kokonaiskoko %s."
 
-#: ../LibraryView.lua:1205
+#: ../LibraryView.lua:1267
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly-tiedostojen .cbz- ja .epub-skannaus."
 
-#: ../LibraryView.lua:1209
+#: ../LibraryView.lua:1271
 msgid "Clean"
 msgstr "Puhdas"
 
-#: ../LibraryView.lua:1214
+#: ../LibraryView.lua:1276
 msgid "Deleting..."
 msgstr "Poistetaan..."
 
-#: ../LibraryView.lua:1232
+#: ../LibraryView.lua:1294
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Puhdistettu ilmainen %s tallennustila"
 
-#: ../LibraryView.lua:1247 ../LibraryView.lua:1259 ../LibraryView.lua:1280
+#: ../LibraryView.lua:1309 ../LibraryView.lua:1321 ../LibraryView.lua:1342
 msgid "Cannot refresh while offline"
 msgstr "Ei voi päivittää offline-tilassa"
 
-#: ../LibraryView.lua:1269
+#: ../LibraryView.lua:1331
 msgid "Refresh mangas..."
 msgstr "Päivitä mangat..."
 
-#: ../LibraryView.lua:1270
+#: ../LibraryView.lua:1332
 msgid "All chapters manga updated!"
 msgstr "Kaikki luvut manga päivitetty!"
 
-#: ../LibraryView.lua:1271
+#: ../LibraryView.lua:1333
 msgid "Some manga updates fail:"
 msgstr "Jotkut mangapäivitykset epäonnistuvat:"
 
-#: ../LibraryView.lua:1290
+#: ../LibraryView.lua:1352
 msgid "Refresh manga details..."
 msgstr "Päivitä mangan tiedot..."
 
-#: ../LibraryView.lua:1291
+#: ../LibraryView.lua:1353
 msgid "All manga details refresh!"
 msgstr "Kaikki mangan yksityiskohdat päivittyvät!"
 
-#: ../LibraryView.lua:1292
+#: ../LibraryView.lua:1354
 msgid "Some manga details refresh fail:"
 msgstr "Joidenkin mangan yksityiskohtien päivitys epäonnistuu:"
 
-#: ../LibraryView.lua:1308
+#: ../LibraryView.lua:1370
 msgid "Progress"
 msgstr "Edistyminen"
 
-#: ../LibraryView.lua:1326
+#: ../LibraryView.lua:1388
 msgid "Cleaner"
 msgstr "Siivooja"
 
-#: ../LibraryView.lua:1327
+#: ../LibraryView.lua:1389
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Etsi ja poista virheellisiä tiedostoja, mukaan lukien tiedostot poistetuista lähteistä"
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1330
+#: ../LibraryView.lua:1389 ../LibraryView.lua:1392
 msgid "Normal"
 msgstr "Normaali"
 
-#: ../LibraryView.lua:1328 ../LibraryView.lua:1336
+#: ../LibraryView.lua:1390 ../LibraryView.lua:1398
 msgid "Chapter read done"
 msgstr "Luku luettu valmis"
 
-#: ../LibraryView.lua:1328
+#: ../LibraryView.lua:1390
 msgid "Find and delete chapters that have been read"
 msgstr "Etsi ja poista luettuja lukuja"
 
-#: ../LibraryView.lua:1329
+#: ../LibraryView.lua:1391
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "TÄRKEÄÄ: Metatiedostoja (kirjanmerkki, historia) ei säilytetä!"
 
@@ -791,23 +953,23 @@ msgstr "Virkistäviä yksityiskohtia..."
 msgid "Refresh details cancelled."
 msgstr "Päivitystiedot peruutettu."
 
-#: ../MangaReader.lua:137
+#: ../MangaReader.lua:140
 msgid "Go back to Rakuyomi..."
 msgstr "Mene takaisin Rakuyomiin..."
 
-#: ../MangaReader.lua:218
+#: ../MangaReader.lua:220
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "Haluatko, että Rakuyomi ohjaa tätä painiketta, kun avaat sen?"
 
-#: ../MangaReader.lua:218
+#: ../MangaReader.lua:220
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "Tämä asetus vaikuttaa vain, kun avaat sen Rakuyomilla."
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:222
 msgid "Yes"
 msgstr "Kyllä"
 
-#: ../MangaReader.lua:221
+#: ../MangaReader.lua:223
 msgid "No"
 msgstr "Ei"
 
@@ -867,10 +1029,6 @@ msgstr "• Kirjastosi sisältö on saatavilla"
 #: ../OfflineAlertDialog.lua:47
 msgid "• New content and updates require a connection"
 msgstr "• Uusi sisältö ja päivitykset vaativat yhteyden"
-
-#: ../OfflineAlertDialog.lua:54
-msgid "Close"
-msgstr "Lähellä"
 
 #: ../OfflineAlertDialog.lua:64
 msgid "Do not show this message again"
@@ -1211,19 +1369,19 @@ msgstr "Lataa mangaja e-kirjanlukijallesi!"
 msgid "Added to"
 msgstr "Lisätty"
 
-#: ../main.lua:57 ../main.lua:82
+#: ../main.lua:42 ../main.lua:60
 msgid "Rakuyomi"
 msgstr "Rakuyomi"
 
-#: ../main.lua:99
+#: ../main.lua:70
 msgid "Oops!"
 msgstr "Oho!"
 
-#: ../main.lua:99
+#: ../main.lua:70
 msgid "Rakuyomi encountered an issue while starting up!"
 msgstr "Rakuyomi kohtasi ongelman käynnistyksessä!"
 
-#: ../main.lua:100
+#: ../main.lua:71
 msgid "Here are some messages that might help identify the problem:"
 msgstr "Tässä on joitain viestejä, jotka voivat auttaa tunnistamaan ongelman:"
 

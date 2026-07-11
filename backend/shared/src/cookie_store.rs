@@ -272,7 +272,7 @@ pub async fn sync_all_cookies(
         url.query_pairs_mut().append_pair("hash", &h);
     }
     let mut client_builder = client_builder()
-        .timeout(std::time::Duration::from_secs(10));
+        .timeout(std::time::Duration::from_secs(30));
     if let Some(token) = api_token {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(

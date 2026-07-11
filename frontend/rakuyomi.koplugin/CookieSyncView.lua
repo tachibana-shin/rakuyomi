@@ -270,7 +270,7 @@ function CookieSyncView:startPairing()
     title = _("Enter Telegram Bot Server URL"),
     description = _("Enter the URL of your Telegram Bot server. "
       .. "You will get a pairing code to send to the bot."),
-    input = self.server_url or "https://b8b5-149-88-103-35.ngrok-free.app",
+    input = self.server_url or "https://rakuyomi.tachibana-shin.deno.net",
     input_hint = _("https://your-bot.deno.dev"),
     buttons = {
       {

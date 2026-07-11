@@ -51,11 +51,11 @@ async function ensureChatLoaded(chatId: number): Promise<void> {
   }
 }
 
-function persistDevice(chatId: number, device: string): void {
+async function persistDevice(chatId: number, device: string): Promise<void> {
   const deviceMap = deviceCookies.get(chatId)?.get(device)
   if (deviceMap) {
     const json = JSON.stringify(Object.fromEntries(deviceMap))
-    saveDeviceData(chatId, device, json)
+    await saveDeviceData(chatId, device, json)
   }
 }
 
@@ -137,8 +137,8 @@ export async function ingestCookies(
     })
   }
 
-  if (device !== "/all") registerDevice(chatId, device)
-  persistDevice(chatId, device)
+  if (device !== "/all") await registerDevice(chatId, device)
+  await persistDevice(chatId, device)
 
   const hash = await sha256(rawJson)
   deviceHashes.set(`${chatId}:${device}`, hash)
@@ -147,25 +147,25 @@ export async function ingestCookies(
   return domains
 }
 
-export function clearDeviceCookies(
+export async function clearDeviceCookies(
   chatId: number,
   device: string,
-): boolean {
+): Promise<boolean> {
   const ok = deviceCookies.get(chatId)?.delete(device) ?? false
   deviceHashes.delete(`${chatId}:${device}`)
-  deleteDeviceData(chatId, device)
+  await deleteDeviceData(chatId, device)
   return ok
 }
 
-export function clearDeviceDomainCookies(
+export async function clearDeviceDomainCookies(
   chatId: number,
   device: string,
   domain: string,
-): boolean {
+): Promise<boolean> {
   const deviceMap = deviceCookies.get(chatId)?.get(device)
   if (!deviceMap) return false
   const ok = deviceMap.delete(domain)
-  if (ok) persistDevice(chatId, device)
+  if (ok) await persistDevice(chatId, device)
   return ok
 }
 

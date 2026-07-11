@@ -31,9 +31,9 @@ app.post(
     const chatId = result.userId
 
     if (device && domain) {
-      clearDeviceDomainCookies(chatId, device, domain)
+      await clearDeviceDomainCookies(chatId, device, domain)
     } else if (device) {
-      clearDeviceCookies(chatId, device)
+      await clearDeviceCookies(chatId, device)
     } else {
       await clearAllCookies(chatId)
     }

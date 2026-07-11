@@ -19,7 +19,7 @@ export async function unlinkCommand(ctx: Context) {
     return
   }
 
-  const removedCookies = clearDeviceCookies(chatId, deviceName)
+  const removedCookies = await clearDeviceCookies(chatId, deviceName)
 
   const removedPairing = await removePairingByDevice(chatId, deviceName)
   await removeDevice(chatId, deviceName)

@@ -27,7 +27,7 @@ app.post(
 
     const chatId = result.userId
 
-    clearDeviceCookies(chatId, device)
+    await clearDeviceCookies(chatId, device)
     await removeDevice(chatId, device)
     await removePairingByDevice(chatId, device)
 

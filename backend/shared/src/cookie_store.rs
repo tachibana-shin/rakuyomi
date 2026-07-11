@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::{OnceLock, RwLock};
 
@@ -129,7 +129,16 @@ static COOKIE_STORE_PATH: OnceLock<String> = OnceLock::new();
 static SYNC_HASH: OnceLock<RwLock<Option<String>>> = OnceLock::new();
 
 fn sync_hash_from_store(store: &CookieStoreData) -> Option<String> {
-    let json = serde_json::to_string(store).ok()?;
+    // Convert HashMaps to BTreeMaps for deterministic serialization
+    let domains: BTreeMap<_, _> = store.domains.iter().collect();
+    let user_agents: BTreeMap<_, _> = store.user_agents.iter().collect();
+
+    let canonical = serde_json::json!({
+        "domains": domains,
+        "user_agents": user_agents,
+    });
+
+    let json = serde_json::to_string(&canonical).ok()?;
     let mut hasher = Sha256::new();
     hasher.update(json.as_bytes());
     let result = hasher.finalize();
@@ -262,7 +271,8 @@ pub async fn sync_all_cookies(
     if let Some(h) = SYNC_HASH.get().and_then(|s| s.read().ok()).and_then(|h| h.clone()) {
         url.query_pairs_mut().append_pair("hash", &h);
     }
-    let mut client_builder = client_builder();
+    let mut client_builder = client_builder()
+        .timeout(std::time::Duration::from_secs(10));
     if let Some(token) = api_token {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(

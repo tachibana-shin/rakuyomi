@@ -115,13 +115,13 @@ Deno.test("getDeviceCookies — fallback from unknown device to /all", async () 
 })
 
 Deno.test("clearDeviceDomainCookies — removes single domain", async () => {
-  const ok = clearDeviceDomainCookies(CHAT_ID, "/all", "fallback.com")
+  const ok = await clearDeviceDomainCookies(CHAT_ID, "/all", "fallback.com")
   assert.strictEqual(ok, true)
   assert.strictEqual(await getDomainCookieCount(CHAT_ID, "/all", "fallback.com"), 0)
 })
 
 Deno.test("clearDeviceCookies — removes entire device", async () => {
-  const ok = clearDeviceCookies(CHAT_ID, "device_b")
+  const ok = await clearDeviceCookies(CHAT_ID, "device_b")
   assert.strictEqual(ok, true)
   assert.strictEqual((await getDevices(CHAT_ID)).includes("device_b"), false)
 })

@@ -16,14 +16,14 @@ export async function clearcookiesCommand(ctx: Context) {
   const domain = args[1]
 
   if (deviceName && domain) {
-    const ok = clearDeviceDomainCookies(chatId, deviceName, domain)
+    const ok = await clearDeviceDomainCookies(chatId, deviceName, domain)
     if (ok) {
       await ctx.reply(t(chatId).clearcookies_domain_done(domain, deviceName))
     } else {
       await ctx.reply(t(chatId).clearcookies_none)
     }
   } else if (deviceName) {
-    const ok = clearDeviceCookies(chatId, deviceName)
+    const ok = await clearDeviceCookies(chatId, deviceName)
     if (ok) {
       await ctx.reply(t(chatId).clearcookies_device_done(deviceName))
     } else {

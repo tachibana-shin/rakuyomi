@@ -4,7 +4,6 @@ use std::sync::{OnceLock, RwLock};
 
 use anyhow::{Context, Result};
 use log::info;
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -158,6 +157,7 @@ pub struct PairingStatus {
     pub paired: bool,
     pub chat_id: Option<i64>,
     pub device_name: Option<String>,
+    pub token: Option<String>,
 }
 
 pub async fn poll_pairing_status(server_url: &str, code: &str) -> Result<PairingStatus> {
@@ -178,6 +178,7 @@ pub async fn poll_pairing_status(server_url: &str, code: &str) -> Result<Pairing
         paired: data["paired"].as_bool().unwrap_or(false),
         chat_id: data["chat_id"].as_i64(),
         device_name: data["device_name"].as_str().map(String::from),
+        token: data["token"].as_str().map(String::from),
     })
 }
 
@@ -192,12 +193,14 @@ pub async fn sync_all_cookies(
     server_url: &str,
     chat_id: i64,
     device_name: &str,
+    token: &str,
 ) -> Result<Vec<SyncCookieData>> {
     let base = server_url.trim_end_matches('/');
     let mut url = Url::parse(&format!("{base}/api/cookie/sync-all"))?;
     url.query_pairs_mut()
         .append_pair("chat_id", &chat_id.to_string())
-        .append_pair("device", device_name);
+        .append_pair("device", device_name)
+        .append_pair("token", token);
     let client = client_builder().build()?;
     let resp = client
         .get(url)
@@ -248,15 +251,20 @@ pub async fn notify_cookie_needs_update(
     server_url: &str,
     chat_id: i64,
     device_name: &str,
+    token: &str,
     request_url: &str,
 ) -> Result<()> {
     let base = server_url.trim_end_matches('/');
-    let encoded_url = utf8_percent_encode(request_url, NON_ALPHANUMERIC);
-    let url = format!("{base}/api/cookie/notify-needs-update?chat_id={chat_id}&device={device_name}&url={encoded_url}");
+    let mut url = Url::parse(&format!("{base}/api/cookie/notify-needs-update"))?;
+    url.query_pairs_mut()
+        .append_pair("chat_id", &chat_id.to_string())
+        .append_pair("device", device_name)
+        .append_pair("token", token)
+        .append_pair("url", request_url);
     let client = client_builder()
         .timeout(std::time::Duration::from_secs(10))
         .build()?;
-    client.get(&url).send().await?;
+    client.get(url).send().await?;
     Ok(())
 }
 

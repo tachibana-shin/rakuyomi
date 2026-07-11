@@ -147,6 +147,12 @@ pub struct Settings {
     /// Telegram chat_id after pairing.
     #[serde(default)]
     pub cookie_sync_chat_id: Option<i64>,
+
+    /// Secret token issued by the cookie sync bot after pairing. Required to
+    /// authenticate cookie sync requests, since `cookie_sync_chat_id` alone is
+    /// not a secret.
+    #[serde(default)]
+    pub cookie_sync_token: Option<String>,
 }
 
 fn default_ram_storage_size_mb() -> usize {

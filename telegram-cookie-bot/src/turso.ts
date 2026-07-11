@@ -19,9 +19,15 @@ async function migrate(db: Awaited<ReturnType<typeof createClient>>) {
     CREATE TABLE IF NOT EXISTS devices (
       chat_id INTEGER NOT NULL,
       device  TEXT    NOT NULL,
+      token   TEXT,
       PRIMARY KEY (chat_id, device)
     )
   `)
+  try {
+    await db.execute(`ALTER TABLE devices ADD COLUMN token TEXT`)
+  } catch {
+    // column already exists
+  }
   await db.execute(`
     CREATE TABLE IF NOT EXISTS cookie_data (
       chat_id INTEGER NOT NULL,
@@ -51,16 +57,39 @@ export async function listDevices(chatId: number): Promise<string[]> {
 export async function registerDevice(
   chatId: number,
   device: string,
+  token?: string,
 ): Promise<void> {
   const db = await getTurso()
   if (!db) return
   try {
     await db.execute({
-      sql: "INSERT OR IGNORE INTO devices (chat_id, device) VALUES (?, ?)",
-      args: [chatId, device],
+      sql: `INSERT INTO devices (chat_id, device, token) VALUES (?, ?, ?)
+            ON CONFLICT(chat_id, device) DO UPDATE
+              SET token = COALESCE(excluded.token, devices.token)`,
+      args: [chatId, device, token ?? null],
     })
   } catch {
     // ignore
+  }
+}
+
+export async function verifyDeviceToken(
+  chatId: number,
+  device: string,
+  token: string,
+): Promise<boolean> {
+  const db = await getTurso()
+  if (!db) return false
+  try {
+    const result = await db.execute({
+      sql: "SELECT token FROM devices WHERE chat_id = ? AND device = ?",
+      args: [chatId, device],
+    })
+    if (result.rows.length === 0) return false
+    const stored = result.rows[0].token as string | null
+    return stored !== null && stored === token
+  } catch {
+    return false
   }
 }
 

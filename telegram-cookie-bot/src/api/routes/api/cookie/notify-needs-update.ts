@@ -3,12 +3,14 @@ import { zValidator } from "@hono/zod-validator"
 import { getBot } from "../../../../bot/shared.ts"
 import { t } from "../../../../i18n.ts"
 import { getDevices } from "../../../../store.ts"
+import { verifyDeviceToken } from "../../../../turso.ts"
 
 const app = new OpenAPIHono()
 
 const NotifyQuery = z.object({
   chat_id: z.coerce.number(),
   device: z.string().min(1),
+  token: z.string().min(1),
   url: z.string().optional(),
 })
 
@@ -16,7 +18,11 @@ app.get(
   "/api/cookie/notify-needs-update",
   zValidator("query", NotifyQuery),
   async (c) => {
-    const { chat_id, device, url } = c.req.valid("query")
+    const { chat_id, device, token, url } = c.req.valid("query")
+
+    if (!await verifyDeviceToken(chat_id, device, token)) {
+      return c.json({ status: "error", reason: "invalid_token" }, 403)
+    }
 
     const bot = getBot()
     const devices = await getDevices(chat_id)

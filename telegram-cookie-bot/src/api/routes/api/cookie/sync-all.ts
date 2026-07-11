@@ -1,5 +1,6 @@
 import { OpenAPIHono, z } from "@hono/zod-openapi"
 import { zValidator } from "@hono/zod-validator"
+import { verifyDeviceToken } from "../../../../turso.ts"
 import { getDeviceCookies } from "../../../../store.ts"
 
 const app = new OpenAPIHono()
@@ -7,13 +8,18 @@ const app = new OpenAPIHono()
 const SyncAllQuery = z.object({
   chat_id: z.coerce.number(),
   device: z.string().min(1),
+  token: z.string().min(1),
 })
 
 app.get(
   "/api/cookie/sync-all",
   zValidator("query", SyncAllQuery),
   async (c) => {
-    const { chat_id, device } = c.req.valid("query")
+    const { chat_id, device, token } = c.req.valid("query")
+
+    if (!await verifyDeviceToken(chat_id, device, token)) {
+      return c.json({ status: "error", reason: "invalid_token" }, 403)
+    }
 
     const globalData = device !== "/all"
       ? await getDeviceCookies(chat_id, "/all")

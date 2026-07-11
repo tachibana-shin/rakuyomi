@@ -27,12 +27,12 @@ export async function linkCommand(ctx: Context) {
 
   const deviceName = parts.slice(2).join("_")
 
-  const ok = await resolvePairingCode(code, chatId, deviceName)
-  if (!ok) {
+  const token = await resolvePairingCode(code, chatId, deviceName)
+  if (!token) {
     await ctx.reply(locale.link_invalid_code)
     return
   }
 
-  await registerDevice(chatId, deviceName)
+  await registerDevice(chatId, deviceName, token)
   await ctx.reply(locale.link_success(deviceName))
 }

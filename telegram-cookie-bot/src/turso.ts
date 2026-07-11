@@ -141,6 +141,10 @@ export async function deleteAllDeviceData(chatId: number): Promise<void> {
       sql: "DELETE FROM cookie_data WHERE chat_id = ?",
       args: [chatId],
     })
+    await db.execute({
+      sql: "DELETE FROM devices WHERE chat_id = ?",
+      args: [chatId],
+    })
   } catch {
     // ignore
   }

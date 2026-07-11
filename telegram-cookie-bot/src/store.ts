@@ -160,9 +160,9 @@ export function clearDeviceDomainCookies(
   return ok
 }
 
-export function clearAllCookies(chatId: number): boolean {
+export async function clearAllCookies(chatId: number): Promise<boolean> {
   const ok = deviceCookies.delete(chatId)
-  deleteAllDeviceData(chatId)
+  await deleteAllDeviceData(chatId)
   return ok
 }
 

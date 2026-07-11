@@ -8,7 +8,9 @@
   },
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-env --env-file main.ts",
-    "test": "deno test --allow-env --allow-net"
+    "check": "deno check main.ts",
+    "lint": "deno lint",
+    "test": "deno test --allow-env --allow-net --env-file=.env"
   },
   "imports": {
     "@libsql/client": "npm:@libsql/client@^0.14.0",

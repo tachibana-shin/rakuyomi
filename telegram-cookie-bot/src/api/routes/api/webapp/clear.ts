@@ -35,7 +35,7 @@ app.post(
     } else if (device) {
       clearDeviceCookies(chatId, device)
     } else {
-      clearAllCookies(chatId)
+      await clearAllCookies(chatId)
     }
 
     return c.json({ ok: true })

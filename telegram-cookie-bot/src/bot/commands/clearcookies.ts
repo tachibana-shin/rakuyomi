@@ -35,7 +35,7 @@ export async function clearcookiesCommand(ctx: Context) {
       await ctx.reply(t(chatId).clearcookies_none)
       return
     }
-    clearAllCookies(chatId)
+    await clearAllCookies(chatId)
     await ctx.reply(t(chatId).clearcookies_all_done)
   }
 }

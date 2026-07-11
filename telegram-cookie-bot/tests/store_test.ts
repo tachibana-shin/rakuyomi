@@ -127,6 +127,6 @@ Deno.test("clearDeviceCookies — removes entire device", async () => {
 })
 
 Deno.test("clearAllCookies — removes all devices for chat", async () => {
-  clearAllCookies(CHAT_ID)
+  await clearAllCookies(CHAT_ID)
   assert.deepStrictEqual(await getDevices(CHAT_ID), [])
 })

@@ -504,7 +504,7 @@ function LibraryView:fetchAndShow(playlist, on_after_open, options)
   if options and options.focus_manga_id then
     for i, item in ipairs(lv.mangas or {}) do
       if item.id == options.focus_manga_id
-        and item.source and item.source.id == options.focus_manga_source_id then
+          and item.source and item.source.id == options.focus_manga_source_id then
         lv.itemnumber = i
         lv:switchItemTable(nil, nil, i)
         break
@@ -1019,6 +1019,36 @@ function LibraryView:openMenu()
         end
       },
       {
+        text = Icons.REFRESHING .. " " .. _("Sync Cookies"),
+        enabled_func = function()
+          local resp = Backend.getCookieSyncStatus().body
+          return resp and resp.paired
+        end,
+        callback = function()
+          UIManager:close(dialog)
+          local loading = InfoMessage:new {
+            text = _("Syncing cookies..."),
+            dismissable = false,
+          }
+          UIManager:show(loading)
+          UIManager:forceRePaint()
+          local resp = Backend.syncCookies()
+          UIManager:close(loading)
+          if resp.type == 'ERROR' then
+            UIManager:show(InfoMessage:new {
+              text = _("Failed to sync cookies: ") .. (resp.message or "unknown error"),
+            })
+            return
+          end
+          local count = #(resp.body.domains or {})
+          UIManager:show(InfoMessage:new {
+            text = _("Synced cookies for ") .. count .. _(" domain(s)."),
+          })
+        end
+      },
+    },
+    {
+      {
         text = Icons.INFO .. " " .. _("System resources"),
         callback = function()
           UIManager:close(dialog)
@@ -1421,7 +1451,7 @@ function LibraryView:openCookieSyncView()
     local hide_top = self.hide_top_close
     CookieSyncView:new {
       on_return_callback = function()
-        LibraryView:new{}:fetchAndShow(playlist, nil, { hideTopClose = hide_top })
+        LibraryView:new {}:fetchAndShow(playlist, nil, { hideTopClose = hide_top })
       end,
     }:fetchAndShow()
     self:onClose(true)

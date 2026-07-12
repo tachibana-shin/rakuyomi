@@ -451,7 +451,9 @@ where
     ));
     let stored_process_images_clone = stored_process_images.clone();
 
-    let client = crate::tls::client_builder().timeout(Duration::from_secs(30)).build()?;
+    let client = crate::tls::client_builder()
+        .timeout(Duration::from_secs(30))
+        .build()?;
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();

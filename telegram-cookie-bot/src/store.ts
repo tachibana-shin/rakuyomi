@@ -1,15 +1,15 @@
 import { type CookieEntry } from "./utils/cookie.ts"
 import {
-  listDevices,
-  registerDevice,
-  loadDeviceData,
-  saveDeviceData,
-  deleteDeviceData,
   deleteAllDeviceData,
-  storeChatTokenHash,
+  deleteDeviceData,
   getChatTokenHash,
-  storeDeviceHash,
   getDeviceHash as getDeviceHashDb,
+  listDevices,
+  loadDeviceData,
+  registerDevice,
+  saveDeviceData,
+  storeChatTokenHash,
+  storeDeviceHash,
 } from "./turso.ts"
 
 interface CookieData {
@@ -106,7 +106,8 @@ export async function getDomainCookieCount(
   domain: string,
 ): Promise<number> {
   await ensureChatLoaded(chatId)
-  return deviceCookies.get(chatId)?.get(device)?.get(domain)?.cookies.length ?? 0
+  return deviceCookies.get(chatId)?.get(device)?.get(domain)?.cookies.length ??
+    0
 }
 
 export async function ingestCookies(
@@ -210,14 +211,19 @@ async function sha256(plain: string): Promise<string> {
 
 const chatTokenHashes = new Map<number, string>()
 
-export async function storeChatToken(chatId: number, token: string): Promise<void> {
+export async function storeChatToken(
+  chatId: number,
+  token: string,
+): Promise<void> {
   const hash = await sha256(token)
   chatTokenHashes.set(chatId, hash)
   await storeChatTokenHash(chatId, hash)
 }
 
-
-export async function verifyChatToken(chatId: number, token: string): Promise<boolean> {
+export async function verifyChatToken(
+  chatId: number,
+  token: string,
+): Promise<boolean> {
   const hash = await sha256(token)
   let stored = chatTokenHashes.get(chatId)
   if (!stored) {

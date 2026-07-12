@@ -11,9 +11,9 @@ pub mod settings;
 pub mod source;
 pub mod source_collection;
 pub mod source_manager;
+/// TLS configuration utilities for creating reqwest clients with custom certificate handling.
+pub mod tls;
 pub(crate) mod unscrable_image;
 #[cfg(feature = "all")]
 pub mod usecases;
-/// TLS configuration utilities for creating reqwest clients with custom certificate handling.
-pub mod tls;
 pub mod util;

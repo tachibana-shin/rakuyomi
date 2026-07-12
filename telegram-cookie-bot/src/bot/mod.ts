@@ -41,7 +41,9 @@ export function createBot(): Bot {
 
   // Default parse_mode for all outgoing messages
   bot.api.config.use((prev, method, payload) => {
-    if (["sendMessage", "editMessageText", "answerInlineQuery"].includes(method)) {
+    if (
+      ["sendMessage", "editMessageText", "answerInlineQuery"].includes(method)
+    ) {
       return prev(method, { ...payload, parse_mode: "HTML" })
     }
     return prev(method, payload)

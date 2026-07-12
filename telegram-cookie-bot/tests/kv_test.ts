@@ -1,10 +1,10 @@
 import { strict as assert } from "node:assert"
 import {
   createPairingCode,
-  resolvePairingCode,
+  getPairingPendingCount,
   getPairingStatus,
   removePairingByDevice,
-  getPairingPendingCount,
+  resolvePairingCode,
 } from "../src/kv.ts"
 
 Deno.test("pairing — full lifecycle: create -> resolve -> status -> remove", async () => {

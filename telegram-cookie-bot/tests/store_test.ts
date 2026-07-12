@@ -1,14 +1,14 @@
 import { strict as assert } from "node:assert"
 import {
-  getDevices,
-  getDeviceDomains,
-  getDeviceCookies,
-  getDeviceCookieCount,
-  getDomainCookieCount,
-  ingestCookies,
+  clearAllCookies,
   clearDeviceCookies,
   clearDeviceDomainCookies,
-  clearAllCookies,
+  getDeviceCookieCount,
+  getDeviceCookies,
+  getDeviceDomains,
+  getDevices,
+  getDomainCookieCount,
+  ingestCookies,
 } from "../src/store.ts"
 
 const CHAT_ID = 12345
@@ -88,7 +88,10 @@ Deno.test("getDeviceCookieCount — counts domains and cookies", async () => {
 })
 
 Deno.test("getDeviceCookieCount — unknown device returns zeros", async () => {
-  const { domains, cookies } = await getDeviceCookieCount(CHAT_ID, "nonexistent")
+  const { domains, cookies } = await getDeviceCookieCount(
+    CHAT_ID,
+    "nonexistent",
+  )
   assert.strictEqual(domains, 0)
   assert.strictEqual(cookies, 0)
 })
@@ -117,7 +120,10 @@ Deno.test("getDeviceCookies — fallback from unknown device to /all", async () 
 Deno.test("clearDeviceDomainCookies — removes single domain", async () => {
   const ok = await clearDeviceDomainCookies(CHAT_ID, "/all", "fallback.com")
   assert.strictEqual(ok, true)
-  assert.strictEqual(await getDomainCookieCount(CHAT_ID, "/all", "fallback.com"), 0)
+  assert.strictEqual(
+    await getDomainCookieCount(CHAT_ID, "/all", "fallback.com"),
+    0,
+  )
 })
 
 Deno.test("clearDeviceCookies — removes entire device", async () => {

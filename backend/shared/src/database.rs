@@ -1401,7 +1401,7 @@ impl Database {
                 "#
             );
 
-        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
             for info in chunk {
                 query = query.bind(info.id.source_id().value());
                 query = query.bind(info.id.value());

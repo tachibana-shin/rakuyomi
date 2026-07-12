@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert"
-import { parseCookieArray, extractUserAgent } from "../src/utils/cookie.ts"
+import { extractUserAgent, parseCookieArray } from "../src/utils/cookie.ts"
 import { parseRegistryMessage } from "../src/utils/registry.ts"
 
 Deno.test("parseCookieArray — parses valid array", () => {
@@ -16,7 +16,9 @@ Deno.test("parseCookieArray — parses valid array", () => {
 })
 
 Deno.test("parseCookieArray — preserves leading dot in domain", () => {
-  const result = parseCookieArray('[{"name":"a","value":"1","domain":".example.com"}]')
+  const result = parseCookieArray(
+    '[{"name":"a","value":"1","domain":".example.com"}]',
+  )
   assert.strictEqual(result![0].domain, ".example.com")
 })
 
@@ -37,7 +39,9 @@ Deno.test("parseCookieArray — fills missing fields with defaults", () => {
 })
 
 Deno.test("extractUserAgent — extracts Mozilla UA", () => {
-  const ua = extractUserAgent("some text\nMozilla/5.0 (Linux; Android 14)\nmore text")
+  const ua = extractUserAgent(
+    "some text\nMozilla/5.0 (Linux; Android 14)\nmore text",
+  )
   assert.strictEqual(ua, "Mozilla/5.0 (Linux; Android 14)")
 })
 
@@ -51,7 +55,8 @@ Deno.test("extractUserAgent — returns null if not found", () => {
 })
 
 Deno.test("parseRegistryMessage — parses valid registry data", () => {
-  const msg = '#REGISTRY_DATA:{"chat_id":1,"device_code":"ABC123","device_name":"kindle"}'
+  const msg =
+    '#REGISTRY_DATA:{"chat_id":1,"device_code":"ABC123","device_name":"kindle"}'
   const result = parseRegistryMessage(msg)
   assert.ok(result !== null)
   assert.strictEqual(result.chat_id, 1)

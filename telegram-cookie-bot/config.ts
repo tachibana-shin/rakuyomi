@@ -11,5 +11,12 @@ export function getConfig() {
   const TURSO_DB_URL = Deno.env.get("TURSO_DB_URL") ?? ""
   const TURSO_AUTH_TOKEN = Deno.env.get("TURSO_AUTH_TOKEN") ?? ""
 
-  return { BOT_TOKEN, USE_WEBHOOK, WEBHOOK_URL, PUBLIC_URL, TURSO_DB_URL, TURSO_AUTH_TOKEN }
+  return {
+    BOT_TOKEN,
+    USE_WEBHOOK,
+    WEBHOOK_URL,
+    PUBLIC_URL,
+    TURSO_DB_URL,
+    TURSO_AUTH_TOKEN,
+  }
 }

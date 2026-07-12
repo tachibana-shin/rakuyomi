@@ -8,7 +8,7 @@ use std::{fs, future::Future};
 use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose, Engine as _};
 use image::ImageReader;
-use log::{debug};
+use log::debug;
 use sha2::{Digest, Sha256};
 use size::Size;
 use tempfile::NamedTempFile;
@@ -74,9 +74,9 @@ impl ChapterStorage {
     /// Returns an error (e.g. `EPERM` — need root) on failure.
     #[cfg(not(target_os = "android"))]
     pub fn enable_ram(&mut self, size_mb: usize) -> Result<()> {
+        use log::{info, warn};
         use nix::errno::Errno;
         use nix::mount::{mount, MsFlags};
-        use log::{info, warn};
 
         let ram_path = self.tmpfs_path();
         fs::create_dir_all(&ram_path).with_context(|| {
@@ -150,8 +150,8 @@ impl ChapterStorage {
     /// Unmounts the tmpfs if it was mounted.
     #[cfg(not(target_os = "android"))]
     pub fn disable_ram(&mut self) {
-        use nix::mount::umount;
         use log::{info, warn};
+        use nix::mount::umount;
         if !self.ram_enabled {
             return;
         }

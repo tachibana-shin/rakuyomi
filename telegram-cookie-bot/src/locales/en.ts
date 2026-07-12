@@ -87,7 +87,7 @@ const en: Locale = {
     "/help — Show this help\n" +
     "/language — Change language",
 
-  link_usage:     "<b>Usage:</b> /link CODE DEVICE_NAME\n\n" +
+  link_usage: "<b>Usage:</b> /link CODE DEVICE_NAME\n\n" +
     "Example: <code>/link A8F27K9X kindle_bedroom</code>",
 
   link_invalid_code: "Invalid or expired pairing code.\n" +
@@ -132,7 +132,8 @@ const en: Locale = {
     "https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc",
 
   cookies_none: "No cookies stored for this chat.",
-  cookies_header: (device: string) => `<b>Cookies for</b> <code>${device}</code>`,
+  cookies_header: (device: string) =>
+    `<b>Cookies for</b> <code>${device}</code>`,
   cookies_list: (domains: string) => `<b>Domains:</b>\n${domains}`,
   cookies_device_list: (lines: string) => `<b>Stored cookies:</b>\n${lines}`,
 
@@ -189,7 +190,8 @@ const en: Locale = {
 
   language_prompt: "Choose your language:",
 
-  language_set: (lang: string) => `<b>Language set to</b> <code>${lang}</code>.`,
+  language_set: (lang: string) =>
+    `<b>Language set to</b> <code>${lang}</code>.`,
 
   unlink_usage: "<b>Usage:</b> /unlink DEVICE_NAME",
   unlink_not_found: (device: string) =>

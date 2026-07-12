@@ -39,7 +39,7 @@ const vi: Locale = {
     "/help — Trợ giúp\n" +
     "/language — Đổi ngôn ngữ",
 
-  link_usage:     "<b>Cú pháp:</b> /link MÃ_SỐ TÊN_THIẾT_BỊ\n\n" +
+  link_usage: "<b>Cú pháp:</b> /link MÃ_SỐ TÊN_THIẾT_BỊ\n\n" +
     "Ví dụ: <code>/link A8F27K9X kindle_phong_ngu</code>",
 
   link_invalid_code: "Mã ghép đôi không hợp lệ hoặc đã hết hạn.\n" +
@@ -66,7 +66,8 @@ const vi: Locale = {
     `Thiết bị: <code>${device}</code>\n` +
     `Tên miền: <code>${domains}</code>`,
 
-  cookie_syntax: "Để gửi cookie từ Get cookies.txt LOCALLY, dán JSON array vào chat:\n" +
+  cookie_syntax:
+    "Để gửi cookie từ Get cookies.txt LOCALLY, dán JSON array vào chat:\n" +
     "<code>[{...}]</code>\n\n" +
     "Gán cho thiết bị cụ thể, thêm tên làm prefix:\n" +
     "<code>TÊN_THIẾT_BỊ [{...}]</code>",
@@ -83,7 +84,8 @@ const vi: Locale = {
     "https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc",
 
   cookies_none: "Chưa có cookie nào được lưu.",
-  cookies_header: (device: string) => `<b>Cookie cho</b> <code>${device}</code>`,
+  cookies_header: (device: string) =>
+    `<b>Cookie cho</b> <code>${device}</code>`,
   cookies_list: (domains: string) => `<b>Tên miền:</b>\n${domains}`,
   cookies_device_list: (lines: string) => `<b>Cookie đã lưu:</b>\n${lines}`,
   cookies_view_in_webapp: "Xem trong Web App",

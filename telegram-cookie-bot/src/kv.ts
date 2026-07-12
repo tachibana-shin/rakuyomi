@@ -127,7 +127,14 @@ export async function resolvePairingCode(
 
 export async function getPairingStatus(
   code: string,
-): Promise<{ paired: boolean; chat_id?: number; device_name?: string; api_token?: string }> {
+): Promise<
+  {
+    paired: boolean
+    chat_id?: number
+    device_name?: string
+    api_token?: string
+  }
+> {
   const kv = await getKv()
   const res = await kv.get<PairingEntry>(["pairing", code])
   if (!res.value) return { paired: false }

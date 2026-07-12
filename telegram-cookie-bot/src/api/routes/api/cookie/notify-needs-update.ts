@@ -26,7 +26,10 @@ app.get(
       return c.json({ status: "skipped", reason: "device_not_linked" })
     }
 
-    await bot.api.sendMessage(chat_id, locale.cookie_needs_update(device, url ?? ""))
+    await bot.api.sendMessage(
+      chat_id,
+      locale.cookie_needs_update(device, url ?? ""),
+    )
     return c.json({ status: "success" })
   },
 )

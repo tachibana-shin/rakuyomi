@@ -38,16 +38,16 @@ impl CookieStoreData {
     /// `request` is the host from the URL (without leading dot).
     fn domain_matches(stored: &str, request: &str) -> bool {
         if stored == request {
-            return true
+            return true;
         }
         if stored.starts_with('.') {
             let parent = &stored[1..];
             // Domain cookie: match parent itself or any subdomain
             if request == parent {
-                return true
+                return true;
             }
             if request.ends_with(stored) {
-                return true
+                return true;
             }
         }
         false
@@ -179,13 +179,20 @@ pub fn global_cookie_store() -> Option<&'static RwLock<CookieStoreData>> {
 }
 
 pub fn save_cookies_to_disk() {
-    let Some(path) = COOKIE_STORE_PATH.get() else { return };
-    let Some(Ok(store)) = global_cookie_store().map(|s| s.read()) else { return };
+    let Some(path) = COOKIE_STORE_PATH.get() else {
+        return;
+    };
+    let Some(Ok(store)) = global_cookie_store().map(|s| s.read()) else {
+        return;
+    };
     let _ = store.save_to_file(Path::new(path));
 }
 
 pub fn get_sync_hash() -> Option<String> {
-    SYNC_HASH.get().and_then(|s| s.read().ok()).and_then(|h| h.clone())
+    SYNC_HASH
+        .get()
+        .and_then(|s| s.read().ok())
+        .and_then(|h| h.clone())
 }
 
 impl CookieStoreData {
@@ -233,11 +240,10 @@ pub async fn poll_pairing_status(server_url: &str, code: &str) -> Result<Pairing
     let mut url = Url::parse(&format!("{base}/api/pairing/status"))?;
     url.query_pairs_mut().append_pair("code", code);
     let client = client_builder().build()?;
-    let resp = client
-        .get(url)
-        .send()
-        .await
-        .with_context(|| format!("failed to poll pairing status at {base}/api/pairing/status"))?;
+    let resp =
+        client.get(url).send().await.with_context(|| {
+            format!("failed to poll pairing status at {base}/api/pairing/status")
+        })?;
     let data: serde_json::Value = resp
         .json()
         .await
@@ -268,11 +274,14 @@ pub async fn sync_all_cookies(
     url.query_pairs_mut()
         .append_pair("chat_id", &chat_id.to_string())
         .append_pair("device", device_name);
-    if let Some(h) = SYNC_HASH.get().and_then(|s| s.read().ok()).and_then(|h| h.clone()) {
+    if let Some(h) = SYNC_HASH
+        .get()
+        .and_then(|s| s.read().ok())
+        .and_then(|h| h.clone())
+    {
         url.query_pairs_mut().append_pair("hash", &h);
     }
-    let mut client_builder = client_builder()
-        .timeout(std::time::Duration::from_secs(30));
+    let mut client_builder = client_builder().timeout(std::time::Duration::from_secs(30));
     if let Some(token) = api_token {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
@@ -296,7 +305,13 @@ pub async fn sync_all_cookies(
         .with_context(|| "failed to parse sync-all response")?;
 
     let changed = data["changed"].as_bool().unwrap_or(true);
-    let new_hash = data["hash"].as_str().and_then(|h| if h.is_empty() { None } else { Some(h.to_string()) });
+    let new_hash = data["hash"].as_str().and_then(|h| {
+        if h.is_empty() {
+            None
+        } else {
+            Some(h.to_string())
+        }
+    });
     if let Some(ref h) = new_hash {
         if let Some(Ok(mut hash_stored)) = SYNC_HASH.get().map(|s| s.write()) {
             *hash_stored = Some(h.clone());
@@ -321,10 +336,7 @@ pub async fn sync_all_cookies(
                         Some(SyncCookieEntry {
                             name: c["name"].as_str()?.to_string(),
                             value: c["value"].as_str()?.to_string(),
-                            domain: c["domain"]
-                                .as_str()
-                                .unwrap_or(domain)
-                                .to_string(),
+                            domain: c["domain"].as_str().unwrap_or(domain).to_string(),
                         })
                     })
                     .collect::<Vec<_>>()
@@ -357,8 +369,7 @@ pub async fn notify_cookie_needs_update(
         .append_pair("chat_id", &chat_id.to_string())
         .append_pair("device", device_name)
         .append_pair("url", request_url);
-    let mut client_builder = client_builder()
-        .timeout(std::time::Duration::from_secs(10));
+    let mut client_builder = client_builder().timeout(std::time::Duration::from_secs(10));
     if let Some(token) = api_token {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
@@ -414,24 +425,45 @@ mod tests {
 
     #[test]
     fn test_domain_matches_exact() {
-        assert!(CookieStoreData::domain_matches("example.com", "example.com"));
-        assert!(CookieStoreData::domain_matches(".example.com", "example.com"));
-        assert!(CookieStoreData::domain_matches(".example.com", "sub.example.com"));
+        assert!(CookieStoreData::domain_matches(
+            "example.com",
+            "example.com"
+        ));
+        assert!(CookieStoreData::domain_matches(
+            ".example.com",
+            "example.com"
+        ));
+        assert!(CookieStoreData::domain_matches(
+            ".example.com",
+            "sub.example.com"
+        ));
     }
 
     #[test]
     fn test_domain_matches_no_match() {
         assert!(!CookieStoreData::domain_matches("example.com", "other.com"));
-        assert!(!CookieStoreData::domain_matches("example.com", "sub.example.com"));
-        assert!(!CookieStoreData::domain_matches("anotherexample.com", "example.com"));
+        assert!(!CookieStoreData::domain_matches(
+            "example.com",
+            "sub.example.com"
+        ));
+        assert!(!CookieStoreData::domain_matches(
+            "anotherexample.com",
+            "example.com"
+        ));
     }
 
     #[test]
     fn test_domain_matches_deep_subdomain() {
         // Domain cookie .example.com should match a.b.c.d.example.com
-        assert!(CookieStoreData::domain_matches(".example.com", "a.b.c.d.example.com"));
+        assert!(CookieStoreData::domain_matches(
+            ".example.com",
+            "a.b.c.d.example.com"
+        ));
         // Host-only cookie example.com should NOT match subdomain
-        assert!(!CookieStoreData::domain_matches("example.com", "a.b.c.d.example.com"));
+        assert!(!CookieStoreData::domain_matches(
+            "example.com",
+            "a.b.c.d.example.com"
+        ));
     }
 
     #[test]
@@ -444,9 +476,15 @@ mod tests {
     #[test]
     fn test_get_cookies_for_domain_host_only() {
         let mut store = CookieStoreData::default();
-        store.set_cookies_for_domain("exact.com".into(), vec![
-            CookieEntry { name: "sess".into(), value: "abc".into(), domain: "exact.com".into(), path: None },
-        ]);
+        store.set_cookies_for_domain(
+            "exact.com".into(),
+            vec![CookieEntry {
+                name: "sess".into(),
+                value: "abc".into(),
+                domain: "exact.com".into(),
+                path: None,
+            }],
+        );
         // Host-only cookie matches exact domain
         assert_eq!(store.get_cookies_for_domain("exact.com").len(), 1);
         // Host-only cookie does NOT match subdomain
@@ -456,9 +494,15 @@ mod tests {
     #[test]
     fn test_get_cookies_for_domain_domain_cookie() {
         let mut store = CookieStoreData::default();
-        store.set_cookies_for_domain(".example.com".into(), vec![
-            CookieEntry { name: "cf".into(), value: "clearance".into(), domain: ".example.com".into(), path: None },
-        ]);
+        store.set_cookies_for_domain(
+            ".example.com".into(),
+            vec![CookieEntry {
+                name: "cf".into(),
+                value: "clearance".into(),
+                domain: ".example.com".into(),
+                path: None,
+            }],
+        );
         // Domain cookie matches the parent domain itself
         assert_eq!(store.get_cookies_for_domain("example.com").len(), 1);
         // Domain cookie matches subdomain
@@ -470,12 +514,24 @@ mod tests {
     #[test]
     fn test_get_cookies_for_domain_merges_multiple_match() {
         let mut store = CookieStoreData::default();
-        store.set_cookies_for_domain(".example.com".into(), vec![
-            CookieEntry { name: "cf".into(), value: "clr".into(), domain: ".example.com".into(), path: None },
-        ]);
-        store.set_cookies_for_domain("sub.example.com".into(), vec![
-            CookieEntry { name: "session".into(), value: "tok".into(), domain: "sub.example.com".into(), path: None },
-        ]);
+        store.set_cookies_for_domain(
+            ".example.com".into(),
+            vec![CookieEntry {
+                name: "cf".into(),
+                value: "clr".into(),
+                domain: ".example.com".into(),
+                path: None,
+            }],
+        );
+        store.set_cookies_for_domain(
+            "sub.example.com".into(),
+            vec![CookieEntry {
+                name: "session".into(),
+                value: "tok".into(),
+                domain: "sub.example.com".into(),
+                path: None,
+            }],
+        );
         let cookies = store.get_cookies_for_domain("sub.example.com");
         assert_eq!(cookies.len(), 2);
         let names: Vec<&str> = cookies.iter().map(|c| c.name.as_str()).collect();
@@ -489,8 +545,14 @@ mod tests {
         store.set_user_agent(".example.com".into(), "Mozilla/5.0 Generic".into());
         store.set_user_agent("sub.example.com".into(), "Mozilla/5.0 Specific".into());
         // Should pick the most specific (longest stored domain)
-        assert_eq!(store.get_user_agent("sub.example.com"), Some("Mozilla/5.0 Specific"));
-        assert_eq!(store.get_user_agent("other.example.com"), Some("Mozilla/5.0 Generic"));
+        assert_eq!(
+            store.get_user_agent("sub.example.com"),
+            Some("Mozilla/5.0 Specific")
+        );
+        assert_eq!(
+            store.get_user_agent("other.example.com"),
+            Some("Mozilla/5.0 Generic")
+        );
     }
 
     #[test]

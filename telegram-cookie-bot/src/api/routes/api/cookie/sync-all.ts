@@ -37,7 +37,12 @@ app.get(
       payload[domain] = { cookies: data.cookies, user_agent: data.user_agent }
     }
 
-    return c.json({ status: "success", changed: true, hash: currentHash, payload })
+    return c.json({
+      status: "success",
+      changed: true,
+      hash: currentHash,
+      payload,
+    })
   },
 )
 

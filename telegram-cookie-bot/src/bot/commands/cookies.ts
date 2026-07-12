@@ -1,5 +1,10 @@
 import { Context, InlineKeyboard } from "grammy"
-import { getDeviceDomains, getDevices, getDeviceCookieCount, getDomainCookieCount } from "../../store.ts"
+import {
+  getDeviceCookieCount,
+  getDeviceDomains,
+  getDevices,
+  getDomainCookieCount,
+} from "../../store.ts"
 import { t } from "../../i18n.ts"
 import { getConfig } from "../../../config.ts"
 

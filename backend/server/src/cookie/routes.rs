@@ -77,7 +77,9 @@ struct PollPairingResponse {
 
 async fn poll_pairing(
     StateExtractor(State {
-        settings, settings_path, ..
+        settings,
+        settings_path,
+        ..
     }): StateExtractor<State>,
     Json(req): Json<PollPairingRequest>,
 ) -> Result<Json<PollPairingResponse>, AppError> {
@@ -124,12 +126,13 @@ async fn sync_all(
         server_url.ok_or_else(|| AppError::from(anyhow::anyhow!("not paired: no server URL")))?;
     let chat_id =
         chat_id.ok_or_else(|| AppError::from(anyhow::anyhow!("not paired: no chat_id")))?;
-    let device_name = device_name
-        .ok_or_else(|| AppError::from(anyhow::anyhow!("not paired: no device name")))?;
+    let device_name =
+        device_name.ok_or_else(|| AppError::from(anyhow::anyhow!("not paired: no device name")))?;
 
-    let data = cookie_store::sync_all_cookies(&server_url, chat_id, &device_name, api_token.as_deref())
-        .await
-        .map_err(|e| AppError::from(e))?;
+    let data =
+        cookie_store::sync_all_cookies(&server_url, chat_id, &device_name, api_token.as_deref())
+            .await
+            .map_err(|e| AppError::from(e))?;
 
     let domains: Vec<String> = data.iter().map(|d| d.domain.clone()).collect();
     cookie_store::apply_synced_cookies(&data);
@@ -147,7 +150,9 @@ struct UnpairResponse {
 
 async fn unpair(
     StateExtractor(State {
-        settings, settings_path, ..
+        settings,
+        settings_path,
+        ..
     }): StateExtractor<State>,
 ) -> Result<Json<UnpairResponse>, AppError> {
     {

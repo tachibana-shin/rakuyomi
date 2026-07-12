@@ -218,14 +218,18 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
-    let (override_ua, cookie_value) = request.url().host_str()
+    let (override_ua, cookie_value) = request
+        .url()
+        .host_str()
         .map(crate::cookie_store::get_user_agent_and_cookie_header)
         .unwrap_or((None, None));
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     if let Some(ref ua) = override_ua {
         if let Ok(header_val) = reqwest::header::HeaderValue::from_str(ua) {
             // println!("[cookie] overriding User-Agent for {}: {}", request.url().host_str().unwrap_or("?"), ua);
-            request.headers_mut().insert(reqwest::header::USER_AGENT, header_val);
+            request
+                .headers_mut()
+                .insert(reqwest::header::USER_AGENT, header_val);
         }
     }
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
@@ -236,7 +240,9 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
             //     request.url().host_str().unwrap_or("?"),
             //     cval.matches(';').count() + 1
             // );
-            request.headers_mut().insert(reqwest::header::COOKIE, header_val);
+            request
+                .headers_mut()
+                .insert(reqwest::header::COOKIE, header_val);
         }
     }
 
@@ -280,8 +286,13 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
             //     chat_id,
             //     device_name
             // );
-                if let Some(Ok(data)) = executor::block_on(cancellation_token.run_until_cancelled(
-                crate::cookie_store::sync_all_cookies(server_url, chat_id, device_name, cookie_sync_api_token.as_deref()),
+            if let Some(Ok(data)) = executor::block_on(cancellation_token.run_until_cancelled(
+                crate::cookie_store::sync_all_cookies(
+                    server_url,
+                    chat_id,
+                    device_name,
+                    cookie_sync_api_token.as_deref(),
+                ),
             )) {
                 // println!("[cookie] sync success, applying {} domains", data.len());
                 crate::cookie_store::apply_synced_cookies(&data);
@@ -294,13 +305,16 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                     .context("failed to build retry request")?;
                 let retry_url = retry_request.url().to_string();
                 let host = retry_request.url().host_str().map(String::from);
-                let (override_ua, cookie_value) = host.as_deref()
+                let (override_ua, cookie_value) = host
+                    .as_deref()
                     .map(crate::cookie_store::get_user_agent_and_cookie_header)
                     .unwrap_or((None, None));
                 if let Some(ref ua) = override_ua {
                     if let Ok(header_val) = reqwest::header::HeaderValue::from_str(ua) {
                         // println!("[cookie] overriding User-Agent for {} (retry): {}", host.as_deref().unwrap_or("?"), ua);
-                        retry_request.headers_mut().insert(reqwest::header::USER_AGENT, header_val);
+                        retry_request
+                            .headers_mut()
+                            .insert(reqwest::header::USER_AGENT, header_val);
                     }
                 }
                 if let Some(ref cval) = cookie_value {
@@ -310,27 +324,29 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                         //     host.as_deref().unwrap_or("?"),
                         //     cval.matches(';').count() + 1
                         // );
-                        retry_request.headers_mut().insert(reqwest::header::COOKIE, header_val);
+                        retry_request
+                            .headers_mut()
+                            .insert(reqwest::header::COOKIE, header_val);
                     }
                 }
                 // println!("[cookie] retry request headers for {}:", retry_url);
                 // for (name, value) in retry_request.headers() {
                 //     println!("  {}: {}", name, value.to_str().unwrap_or("<binary>"));
                 // }
-                if let Some(Some(retry_resp)) =
-                    executor::block_on(cancellation_token.run_until_cancelled(
-                        retry_client.execute(retry_request),
-                    ))
-                    .map(|r| r.ok())
+                if let Some(Some(retry_resp)) = executor::block_on(
+                    cancellation_token.run_until_cancelled(retry_client.execute(retry_request)),
+                )
+                .map(|r| r.ok())
                 {
                     if retry_resp.status() == reqwest::StatusCode::FORBIDDEN {
-                        info!(
-                            "[cookie] retry still 403 for {}, notifying",
-                            retry_url
-                        );
+                        info!("[cookie] retry still 403 for {}, notifying", retry_url);
                         let _ = executor::block_on(cancellation_token.run_until_cancelled(
                             crate::cookie_store::notify_cookie_needs_update(
-                                server_url, chat_id, device_name, &retry_url, cookie_sync_api_token.as_deref(),
+                                server_url,
+                                chat_id,
+                                device_name,
+                                &retry_url,
+                                cookie_sync_api_token.as_deref(),
                             ),
                         ));
                     }

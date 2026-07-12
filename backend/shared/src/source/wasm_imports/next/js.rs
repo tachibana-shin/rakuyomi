@@ -90,27 +90,8 @@ fn context_eval_async(
     ctx_id: i32,
     src: Option<String>,
 ) -> FFIResult {
-    let store = caller.data_mut();
-    let Some(context) = store.get_js_context(ctx_id as usize).map(|ctx| &mut ctx.0) else {
-        return Ok(ResultContext::InvalidContext.into());
-    };
-
-    let Some(src) = src else {
-        return Ok(ResultContext::InvalidString.into());
-    };
-
-    let Ok(result) = context.eval(Source::from_bytes(&src)) else {
-        return Ok(ResultContext::MissingResult.into());
-    };
-    let Some(result_string) = result
-        .to_string(context)
-        .ok()
-        .and_then(|s| s.to_std_string().ok())
-    else {
-        return Ok(ResultContext::MissingResult.into());
-    };
-
-    Ok(store.store_std_value(Value::String(result_string).into(), None) as i32)
+    
+    context_eval(caller, ctx_id, src)
 }
 
 #[aidoku_wasm_function]
@@ -276,26 +257,7 @@ fn webview_eval_async(
     webview_ptr: i32,
     code: Option<String>,
 ) -> FFIResult {
-    #[cfg(not(feature = "all"))]
-    {
-        use futures::executor;
-
-        let store = caller.data_mut();
-
-        let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext.into());
-        };
-        let Some(code) = code else {
-            return Ok(ResultContext::InvalidString.into());
-        };
-
-        let value = executor::block_on(webview.eval(&code))?;
-
-        Ok(store.store_std_value(Value::String(value).into(), None) as i32)
-    }
-
-    #[cfg(feature = "all")]
-    Ok(-1)
+    webview_eval(caller, webview_ptr, code)
 }
 #[aidoku_wasm_function]
 fn webview_add_user_script(

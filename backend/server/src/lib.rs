@@ -13,6 +13,7 @@
 //! See [`listener::pick_listener`] for the exact resolution rules.
 
 pub mod build_info;
+pub mod cookie;
 pub mod error;
 pub mod job;
 pub mod listener;

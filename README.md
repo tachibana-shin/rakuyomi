@@ -72,6 +72,24 @@ This fork:
 
 For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/README.html) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
 
+## Cookie Sync Bot
+
+Rakuyomi includes a Telegram bot for syncing Cloudflare cookies from your Android browser to your e-reader.
+
+### Setup
+
+1. Open Telegram and start the bot: [t.me/rakuyomi_bot](https://t.me/rakuyomi_bot) (or your self-hosted instance)
+2. In KOReader, go to **Rakuyomi → Settings → Cookie Sync**
+3. Tap **Pair Device** → enter the bot URL → send `/link CODE NAME` to the bot
+4. Install [Get cookies.txt LOCALLY](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) in Kiwi Browser
+5. When a source returns 403, export cookies via the extension and paste the JSON array into the bot chat
+
+The Rust backend automatically syncs cookies on 403 and retries. If the retry also fails, the bot sends a notification so you know to refresh cookies.
+
+### Self-hosting
+
+See [telegram-cookie-bot/README.md](telegram-cookie-bot/README.md) for deployment instructions.
+
 ## Contributing
 
 For information on how to contribute to rakuyomi, please check out the [Setting up the Environment](https://tachibana-shin.github.io/rakuyomi/contributing/setting-up-the-environment.html) section on our guide!

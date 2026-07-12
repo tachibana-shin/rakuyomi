@@ -258,7 +258,6 @@ function SettingItemValue:onTap()
     UIManager:show(dialog)
   elseif self.value_definition.type == "string" then
     local dialog
-    print("shlow")
     dialog = InputDialog:new {
       title = self.value_definition.title,
       input = self:getCurrentValue() or "",
@@ -266,14 +265,14 @@ function SettingItemValue:onTap()
       buttons = {
         {
           {
-            text = "Cancel",
+            text = _("Cancel"),
             id = "close",
             callback = function()
               UIManager:close(dialog)
             end,
           },
           {
-            text = "Save",
+            text = _("Save"),
             is_enter_default = true,
             callback = function()
               UIManager:close(dialog)
@@ -285,8 +284,15 @@ function SettingItemValue:onTap()
       }
     }
 
+    -- Prevent the tap that opened this dialog from reaching InputDialog:onTap,
+    -- which would close it immediately (dialog_frame.dimen is nil before first paint,
+    -- so notIntersectWith(nil) returns true, triggering onCloseDialog).
+    dialog.deny_keyboard_hiding = true
     UIManager:show(dialog)
-    dialog:onShowKeyboard()
+    UIManager:nextTick(function()
+      dialog.deny_keyboard_hiding = nil
+      dialog:onShowKeyboard()
+    end)
   elseif self.value_definition.type == "list" then
     local dialog
     dialog = InputDialog:new {
@@ -315,8 +321,13 @@ function SettingItemValue:onTap()
       }
     }
 
+    -- Same fix as "string" type: block the originating tap from closing the dialog.
+    dialog.deny_keyboard_hiding = true
     UIManager:show(dialog)
-    dialog:onShowKeyboard()
+    UIManager:nextTick(function()
+      dialog.deny_keyboard_hiding = nil
+      dialog:onShowKeyboard()
+    end)
   elseif self.value_definition.type == "path" then
     local path_chooser
     path_chooser = PathChooser:new({

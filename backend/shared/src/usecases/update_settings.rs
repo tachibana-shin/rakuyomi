@@ -65,7 +65,14 @@ impl UpdateableSettings {
         settings.cookie_sync_server_url = self.cookie_sync_server_url;
         settings.cookie_sync_device_name = self.cookie_sync_device_name;
         settings.cookie_sync_chat_id = self.cookie_sync_chat_id;
-        settings.proxy_url = self.proxy_url;
+        settings.proxy_url = self.proxy_url.and_then(|s| {
+            let trimmed = s.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
     }
 }
 

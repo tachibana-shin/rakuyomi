@@ -64,7 +64,8 @@ local function validate_proxy_url(value)
   if value == nil or value == "" then
     return true
   end
-  return value:match("^https?://") ~= nil or value:match("^socks5://") ~= nil
+  local lower_value = value:lower()
+  return lower_value:match("^https?://") ~= nil or lower_value:match("^socks5://") ~= nil
 end
 
 -- REFACT This is duplicated from `SourceSettings` (pretty much all of it actually)
@@ -558,8 +559,8 @@ function Settings:updateSetting(key, value)
   -- Test proxy before saving
   if key == 'proxy_url' and value ~= nil and value ~= '' then
     local test_response = Backend.testProxy(value)
-    if test_response.type == 'ERROR' then
-      ErrorDialog:show(test_response.message)
+    if not test_response or test_response.type == 'ERROR' then
+      ErrorDialog:show(test_response and test_response.message or _("Failed to test proxy"))
       return false
     end
   end

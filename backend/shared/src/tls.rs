@@ -4,38 +4,51 @@ use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, Server
 use rustls::crypto::{verify_tls12_signature, verify_tls13_signature, WebPkiSupportedAlgorithms};
 use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
 use rustls::SignatureScheme;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, RwLock};
 
 /// Global proxy URL configuration. When set, all reqwest clients created
 /// through [`client_builder`] will route traffic through this proxy.
-static PROXY_URL: OnceLock<Option<String>> = OnceLock::new();
+static PROXY_URL: RwLock<Option<String>> = RwLock::new(None);
 
 /// Set the global HTTP proxy URL. Pass `None` to disable the proxy.
 ///
 /// This is typically called once at startup from the persisted settings,
 /// and again whenever the user updates the proxy setting at runtime.
-///
-/// Maybe work?
 pub fn set_proxy_url(url: Option<String>) {
-    let _ = PROXY_URL.set(url);
+    if let Ok(mut guard) = PROXY_URL.write() {
+        *guard = url;
+    }
 }
 
 /// Read the currently configured proxy URL, if any.
-pub fn proxy_url() -> Option<&'static str> {
-    PROXY_URL.get().and_then(|o| o.as_deref())
+pub fn proxy_url() -> Option<String> {
+    PROXY_URL.read().ok().and_then(|guard| guard.clone())
 }
 
 fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
-    match PROXY_URL.get() {
-        Some(Some(url)) => match reqwest::Proxy::all(url) {
+    match PROXY_URL.read().ok().as_ref().and_then(|o| o.as_ref()) {
+        Some(url) => match reqwest::Proxy::all(url) {
             Ok(proxy) => builder.proxy(proxy),
             Err(e) => {
-                warn!("invalid proxy URL '{}': {e}", url);
+                warn!("invalid proxy URL: {e}");
                 builder
             }
         },
         _ => builder,
     }
+}
+
+fn base_tls_config() -> Arc<rustls::ClientConfig> {
+    static CONFIG: Lazy<Arc<rustls::ClientConfig>> = Lazy::new(|| {
+        let mut root_store = rustls::RootCertStore::empty();
+        root_store.roots = webpki_roots::TLS_SERVER_ROOTS.to_vec();
+        Arc::new(
+            base_config_builder()
+                .with_root_certificates(root_store)
+                .with_no_client_auth(),
+        )
+    });
+    CONFIG.clone()
 }
 
 fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::WantsVerifier> {
@@ -46,19 +59,10 @@ fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::
         .expect("ring supports all safe default protocol versions")
 }
 
-/// Creates a reqwest ClientBuilder configured with the standard WebPKI root trust store.
-///
-/// This builder uses `webpki_roots::TLS_SERVER_ROOTS` for certificate validation,
-/// providing secure TLS connections for production use.
+/// Creates a reqwest ClientBuilder configured with the standard WebPKI root trust store
+/// and the currently configured global proxy.
 pub fn client_builder() -> reqwest::ClientBuilder {
-    static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
-        let mut root_store = rustls::RootCertStore::empty();
-        root_store.roots = webpki_roots::TLS_SERVER_ROOTS.to_vec();
-        base_config_builder()
-            .with_root_certificates(root_store)
-            .with_no_client_auth()
-    });
-    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
+    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(base_tls_config()))
 }
 
 /// Creates a reqwest ClientBuilder that disables certificate validation.
@@ -68,20 +72,26 @@ pub fn client_builder() -> reqwest::ClientBuilder {
 /// for testing or non-production scenarios where certificate validation is not required.
 /// Using this in production bypasses critical security checks.
 pub fn client_builder_insecure() -> reqwest::ClientBuilder {
-    static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
-        base_config_builder()
-            .dangerous()
-            .with_custom_certificate_verifier(VERIFIER.clone())
-            .with_no_client_auth()
+    static CONFIG: Lazy<Arc<rustls::ClientConfig>> = Lazy::new(|| {
+        Arc::new(
+            base_config_builder()
+                .dangerous()
+                .with_custom_certificate_verifier(VERIFIER.clone())
+                .with_no_client_auth(),
+        )
     });
     apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
 }
 
 /// Test whether a given proxy URL is reachable by making a lightweight HTTP request
 /// through it. Returns `Ok(())` on success, or an error describing what went wrong.
+///
+/// Uses a clean client without the global proxy to ensure the candidate proxy
+/// is tested in isolation.
 pub async fn test_proxy(proxy_url: &str) -> anyhow::Result<()> {
     let proxy = reqwest::Proxy::all(proxy_url)?;
-    let client = client_builder()
+    let client = reqwest::Client::builder()
+        .use_preconfigured_tls(base_tls_config())
         .proxy(proxy)
         .timeout(std::time::Duration::from_secs(15))
         .build()?;

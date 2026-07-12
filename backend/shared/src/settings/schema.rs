@@ -151,6 +151,11 @@ pub struct Settings {
     /// API token for authenticating with the cookie sync bot.
     #[serde(default)]
     pub cookie_sync_api_token: Option<String>,
+
+    /// An optional HTTP/HTTPS/SOCKS5 proxy URL used for all outgoing requests.
+    /// Examples: `http://proxy.local:8080`, `socks5://127.0.0.1:1080`
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proxy_url: Option<String>,
 }
 
 fn default_ram_storage_size_mb() -> usize {

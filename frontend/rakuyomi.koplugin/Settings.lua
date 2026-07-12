@@ -60,6 +60,13 @@ local function get_ram_via_ffi()
   return nil
 end
 
+local function validate_proxy_url(value)
+  if value == nil or value == "" then
+    return true
+  end
+  return value:match("^https?://") ~= nil or value:match("^socks5://") ~= nil
+end
+
 -- REFACT This is duplicated from `SourceSettings` (pretty much all of it actually)
 local Settings = FocusManager:extend {
   settings = {},
@@ -282,6 +289,20 @@ Settings.setting_value_definitions = {
       max_value = ram_info and math.max(8, math.floor(ram_info.total_mb / 2)) or 32,
       unit = 'MB',
       default = 32,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Network") }
+  },
+  {
+    'proxy_url',
+    {
+      type = 'string',
+      title = _("HTTP, HTTPS or SOCKS5 Proxy"),
+      placeholder = 'http://user:pass@host:port',
+      validate = validate_proxy_url,
+      validate_error = _("Proxy URL must start with http://, https://, or socks5://"),
     }
   },
   {
@@ -532,6 +553,15 @@ function Settings:updateSetting(key, value)
     self.settings[key] = value
 
     return
+  end
+
+  -- Test proxy before saving
+  if key == 'proxy_url' and value ~= nil and value ~= '' then
+    local test_response = Backend.testProxy(value)
+    if test_response.type == 'ERROR' then
+      ErrorDialog:show(test_response.message)
+      return false
+    end
   end
 
   self.settings[key] = value

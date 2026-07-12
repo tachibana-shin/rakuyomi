@@ -44,6 +44,7 @@ pub struct UpdateableSettings {
     cookie_sync_server_url: Option<String>,
     cookie_sync_device_name: Option<String>,
     cookie_sync_chat_id: Option<i64>,
+    proxy_url: Option<String>,
 }
 
 impl UpdateableSettings {
@@ -64,6 +65,7 @@ impl UpdateableSettings {
         settings.cookie_sync_server_url = self.cookie_sync_server_url;
         settings.cookie_sync_device_name = self.cookie_sync_device_name;
         settings.cookie_sync_chat_id = self.cookie_sync_chat_id;
+        settings.proxy_url = self.proxy_url;
     }
 }
 
@@ -89,6 +91,7 @@ impl From<&Settings> for UpdateableSettings {
             cookie_sync_server_url: value.cookie_sync_server_url.clone(),
             cookie_sync_device_name: value.cookie_sync_device_name.clone(),
             cookie_sync_chat_id: value.cookie_sync_chat_id,
+            proxy_url: value.proxy_url.clone(),
         }
     }
 }

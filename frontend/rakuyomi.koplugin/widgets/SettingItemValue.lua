@@ -29,7 +29,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[], default: string|nil }
 --- @class MultiEnumValueDefinition: { type: 'multi-enum', title: string, options: EnumValueDefinitionOption[] }
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
---- @class StringValueDefinition: { type: 'string', title: string, placeholder: string }
+--- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate?: fun(value: string): boolean, validate_error?: string }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
@@ -258,9 +258,10 @@ function SettingItemValue:onTap()
     UIManager:show(dialog)
   elseif self.value_definition.type == "string" then
     local dialog
+    print("shlow")
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue(),
+      input = self:getCurrentValue() or "",
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -340,6 +341,16 @@ end
 
 --- @private
 function SettingItemValue:updateCurrentValue(new_value)
+  if self.value_definition.validate then
+    local input = type(new_value) == "string" and new_value or ""
+    if not self.value_definition.validate(input) then
+      UIManager:show(InfoMessage:new {
+        text = self.value_definition.validate_error or _("Invalid value"),
+      })
+      return false
+    end
+  end
+
   local old = self.value
   self.value = new_value
   self[1] = self:createValueWidget()

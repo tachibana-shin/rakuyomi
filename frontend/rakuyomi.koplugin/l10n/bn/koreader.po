@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 12:54+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -570,7 +570,7 @@ msgstr "আপনি কি অপসারণ করতে চান"
 msgid "source?"
 msgstr "উৎস?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "লাইব্রেরি"
 
@@ -658,7 +658,7 @@ msgstr "ক্লিনার অধ্যায়"
 msgid "Manage sources"
 msgstr "উত্স পরিচালনা করুন"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "সেটিংস"
 
@@ -746,7 +746,7 @@ msgstr "ব্যবহার"
 msgid "Memory"
 msgstr "স্মৃতি"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "স্টোরেজ"
 
@@ -779,7 +779,7 @@ msgid "Type the manga name to search for"
 msgstr "অনুসন্ধান করতে মাঙ্গা নাম টাইপ করুন"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "অনুসন্ধান করুন"
 
@@ -1065,215 +1065,227 @@ msgstr "তৈরি করুন"
 msgid "No playlists yet."
 msgstr "এখনো কোনো প্লেলিস্ট নেই।"
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "লাইব্রেরি ভিউ মোড"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "বেস"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "আবরণ"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "গ্রিড"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "লাইব্রেরি সাজানোর মোড"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "ক্রম আরোহী যোগ করা হয়েছে (ডিফল্ট)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "অর্ডার সাজানো যোগ করা হয়েছে"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "শিরোনাম মাঙ্গা আরোহী"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "শিরোনাম মাঙ্গা অবরোহী"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা করুন"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "শেষ পঠিত আরোহী"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "শেষ পঠিত অবরোহন"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "উৎস আরোহী"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "উৎস অবরোহ"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "পৃষ্ঠা প্রতি আইটেম (0 = স্বয়ংক্রিয়)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "গ্রিড কলাম"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "গ্রিড সারি"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "গ্রিড মোডে শিরোনাম দেখান"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "গ্রিড মোডে মেটাডেটা দেখান"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "মাঙ্গা অ্যাকশনে ট্যাপ করুন"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "অধ্যায়ের তালিকা খুলুন"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "পড়া চালিয়ে যান"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "রিজিউমে পড়া নিশ্চিতকরণ এড়িয়ে যান"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "সার্চ ভিউ মোড"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "পাঠক"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "অধ্যায় বাছাই মোড"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "অধ্যায় আরোহী দ্বারা"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "অধ্যায় অবরোহ দ্বারা"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "পাঠক খোলা অধ্যায় প্রিলোড"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "পৃষ্ঠার ছবি অপ্টিমাইজ করুন (পরীক্ষামূলক)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "সমবর্তী পৃষ্ঠা অনুরোধ"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "অধ্যায় স্টোরেজ পাথ"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "স্টোরেজ সাইজ সীমা"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM এ অধ্যায় লিখুন (eMMC রক্ষা করুন)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM স্টোরেজ সাইজ। "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr "নেটওয়ার্ক"
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr "HTTP, HTTPS বা SOCKS5 প্রক্সি"
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr "প্রক্সি URL অবশ্যই http://, https://, অথবা socks5:// দিয়ে শুরু হতে হবে"
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "সিঙ্ক এবং আপডেট"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "WebDAV সিঙ্ক"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "মাঙ্গা আপডেটের জন্য ক্রন চেক সক্ষম করা হয়েছে"
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "সোর্স আইডি চেক আপডেট এড়িয়ে যান"
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "সিস্টেম"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "পিছনের বোতামের অনুরোধের অনুমতি দিন"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "সার্ভার"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "লাইব্রেরি ভিউ ছেড়ে যাওয়ার সময় অটো-স্টপ সার্ভার"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "অক্ষম"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "তাৎক্ষণিক"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "30 সেকেন্ড পর"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "১ মিনিট পর"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "৫ মিনিট পর"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "10 মিনিট পর"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "অধ্যায় ডাউনলোডের অগ্রগতি দেখান"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "লগিং"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "লগিং অক্ষম করুন"
 
@@ -1473,3 +1485,7 @@ msgstr "সম্পন্ন"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "নির্বাচন করুন"
+
+#: ../widgets/SettingItemValue.lua:347
+msgid "Invalid value"
+msgstr "অবৈধ মান"

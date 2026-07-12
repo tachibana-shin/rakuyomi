@@ -2,6 +2,7 @@ use anyhow::Context;
 use axum::extract::State as StateExtractor;
 use axum::routing::{get, post, put};
 use axum::{Json, Router};
+use serde::{Deserialize, Serialize};
 use shared::usecases;
 use shared::usecases::update_settings::UpdateableSettings;
 
@@ -13,6 +14,7 @@ pub fn routes() -> Router<State> {
         .route("/settings", get(get_settings))
         .route("/settings", put(update_settings))
         .route("/settings/mount-tmpfs", post(mount_tmpfs))
+        .route("/settings/test-proxy", post(test_proxy))
 }
 
 async fn get_settings(
@@ -33,6 +35,8 @@ async fn update_settings(
     let mut chapter_storage = chapter_storage.lock().await;
     let mut settings = settings.lock().await;
     usecases::update_settings(&mut settings, &settings_path, updateable_settings)?;
+
+    shared::tls::set_proxy_url(settings.proxy_url.clone());
 
     // Update the chapter storage for the new storage path
     if let Some(storage_path) = settings.storage_path.as_ref() {
@@ -92,4 +96,27 @@ async fn mount_tmpfs(
     }
 
     Ok(Json(()))
+}
+
+#[derive(Deserialize)]
+struct TestProxyBody {
+    proxy_url: String,
+}
+
+#[derive(Serialize)]
+struct TestProxyResponse {
+    ok: bool,
+    message: String,
+}
+
+async fn test_proxy(
+    Json(TestProxyBody { proxy_url }): Json<TestProxyBody>,
+) -> Result<Json<TestProxyResponse>, AppError> {
+    match shared::tls::test_proxy(&proxy_url).await {
+        Ok(()) => Ok(Json(TestProxyResponse {
+            ok: true,
+            message: "Proxy connection successful".to_string(),
+        })),
+        Err(e) => Err(AppError::Other(anyhow::anyhow!("proxy test failed: {e}"))),
+    }
 }

@@ -1,9 +1,42 @@
+use log::warn;
 use once_cell::sync::Lazy;
 use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
 use rustls::crypto::{verify_tls12_signature, verify_tls13_signature, WebPkiSupportedAlgorithms};
 use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
 use rustls::SignatureScheme;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
+
+/// Global proxy URL configuration. When set, all reqwest clients created
+/// through [`client_builder`] will route traffic through this proxy.
+static PROXY_URL: OnceLock<Option<String>> = OnceLock::new();
+
+/// Set the global HTTP proxy URL. Pass `None` to disable the proxy.
+///
+/// This is typically called once at startup from the persisted settings,
+/// and again whenever the user updates the proxy setting at runtime.
+///
+/// Maybe work?
+pub fn set_proxy_url(url: Option<String>) {
+    let _ = PROXY_URL.set(url);
+}
+
+/// Read the currently configured proxy URL, if any.
+pub fn proxy_url() -> Option<&'static str> {
+    PROXY_URL.get().and_then(|o| o.as_deref())
+}
+
+fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    match PROXY_URL.get() {
+        Some(Some(url)) => match reqwest::Proxy::all(url) {
+            Ok(proxy) => builder.proxy(proxy),
+            Err(e) => {
+                warn!("invalid proxy URL '{}': {e}", url);
+                builder
+            }
+        },
+        _ => builder,
+    }
+}
 
 fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::WantsVerifier> {
     static PROVIDER: Lazy<Arc<rustls::crypto::CryptoProvider>> =
@@ -25,7 +58,7 @@ pub fn client_builder() -> reqwest::ClientBuilder {
             .with_root_certificates(root_store)
             .with_no_client_auth()
     });
-    reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone())
+    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
 }
 
 /// Creates a reqwest ClientBuilder that disables certificate validation.
@@ -41,7 +74,23 @@ pub fn client_builder_insecure() -> reqwest::ClientBuilder {
             .with_custom_certificate_verifier(VERIFIER.clone())
             .with_no_client_auth()
     });
-    reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone())
+    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
+}
+
+/// Test whether a given proxy URL is reachable by making a lightweight HTTP request
+/// through it. Returns `Ok(())` on success, or an error describing what went wrong.
+pub async fn test_proxy(proxy_url: &str) -> anyhow::Result<()> {
+    let proxy = reqwest::Proxy::all(proxy_url)?;
+    let client = client_builder()
+        .proxy(proxy)
+        .timeout(std::time::Duration::from_secs(15))
+        .build()?;
+    let resp = client.get("https://example.com").send().await?;
+    if resp.status().is_success() {
+        Ok(())
+    } else {
+        anyhow::bail!("proxy returned HTTP {}", resp.status());
+    }
 }
 
 static VERIFIER: Lazy<Arc<AcceptAllVerifier>> = Lazy::new(|| {

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 12:54+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -570,7 +570,7 @@ msgstr "คุณต้องการลบ"
 msgid "source?"
 msgstr "แหล่งที่มา?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "ห้องสมุด"
 
@@ -658,7 +658,7 @@ msgstr "บทที่สะอาดกว่า"
 msgid "Manage sources"
 msgstr "จัดการแหล่งที่มา"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "การตั้งค่า"
 
@@ -746,7 +746,7 @@ msgstr "การใช้งาน"
 msgid "Memory"
 msgstr "หน่วยความจำ"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "พื้นที่จัดเก็บ"
 
@@ -779,7 +779,7 @@ msgid "Type the manga name to search for"
 msgstr "พิมพ์ชื่อมังงะที่จะค้นหา"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "ค้นหา"
 
@@ -1065,215 +1065,227 @@ msgstr "สร้าง"
 msgid "No playlists yet."
 msgstr "ยังไม่มีเพลย์ลิสต์"
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "โหมดมุมมองห้องสมุด"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "ฐาน"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "ปิดบัง"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "กริด"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "โหมดการเรียงลำดับห้องสมุด"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "คำสั่งซื้อที่เพิ่มจากน้อยไปหามาก (ค่าเริ่มต้น)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "ลำดับเพิ่มจากมากไปหาน้อย"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "ชื่อเรื่องมังงะจากน้อยไปหามาก"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "ชื่อเรื่องมังงะจากมากไปน้อย"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "นับบทที่ยังไม่ได้อ่านจากน้อยไปมาก"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "นับบทที่ยังไม่ได้อ่านจากมากไปน้อย"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "อ่านครั้งสุดท้ายจากน้อยไปหามาก"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "อ่านครั้งสุดท้ายจากมากไปน้อย"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "แหล่งที่มาจากน้อยไปหามาก"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "แหล่งที่มาจากมากไปน้อย"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "รายการต่อหน้า (0 = อัตโนมัติ)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "คอลัมน์ตาราง"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "แถวตาราง"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "แสดงชื่อในโหมดกริด"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "แสดงข้อมูลเมตาในโหมดตาราง"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "แตะการกระทำของมังงะ"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "เปิดรายการบท"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "อ่านต่อ"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "ข้ามการยืนยันการอ่านต่อ"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "โหมดมุมมองการค้นหา"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "ผู้อ่าน"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "โหมดการเรียงลำดับบท"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "โดยบทจากน้อยไปหามาก"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "ตามบทจากมากไปน้อย"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "โหลดบทล่วงหน้าเมื่อเปิดโปรแกรมอ่าน"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "ปรับภาพหน้าให้เหมาะสม (ทดลอง)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "การร้องขอเพจพร้อมกัน"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "เส้นทางการจัดเก็บบท"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "ขีดจำกัดขนาดพื้นที่เก็บข้อมูล"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "เขียนบทลง RAM (ป้องกัน eMMC)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "ขนาดพื้นที่เก็บข้อมูลแรม "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr "เครือข่าย"
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr "HTTP, HTTPS หรือพร็อกซี SOCKS5"
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr "URL ของพร็อกซีต้องขึ้นต้นด้วย http://, https:// หรือ Socks5://"
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "ซิงค์และอัปเดต"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "การซิงค์ WebDAV"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "เปิดใช้งานการตรวจสอบ cron สำหรับการอัพเดตมังงะ"
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "รหัสแหล่งที่มาข้ามการอัปเดตการตรวจสอบ"
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "ระบบ"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "อนุญาตให้มีใบขอซื้อปุ่มย้อนกลับ"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "เซิร์ฟเวอร์"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "หยุดเซิร์ฟเวอร์อัตโนมัติเมื่อออกจากมุมมองไลบรารี"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "พิการ"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "ทันที"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "หลังจากผ่านไป 30 วินาที"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "หลังจากผ่านไป 1 นาที"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "หลังจากผ่านไป 5 นาที"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "หลังจากผ่านไป 10 นาที"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "แสดงความคืบหน้าการดาวน์โหลดบท"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "การบันทึก"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "ปิดการใช้งานการบันทึก"
 
@@ -1473,3 +1485,7 @@ msgstr "เสร็จแล้ว"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "เลือก"
+
+#: ../widgets/SettingItemValue.lua:347
+msgid "Invalid value"
+msgstr "ค่าไม่ถูกต้อง"

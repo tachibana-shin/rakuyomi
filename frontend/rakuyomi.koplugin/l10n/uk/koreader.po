@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 12:54+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -198,7 +198,7 @@ msgstr "Позначайте розділи як прочитані чи неп�
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -1038,7 +1038,7 @@ msgstr "Більше не показувати це повідомлення"
 msgid "Rename Playlist"
 msgstr "Перейменувати список відтворення"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "зберегти"
 
@@ -1487,6 +1487,6 @@ msgstr "Готово"
 msgid "Select"
 msgstr "Виберіть"
 
-#: ../widgets/SettingItemValue.lua:347
+#: ../widgets/SettingItemValue.lua:359
 msgid "Invalid value"
 msgstr "Недійсне значення"

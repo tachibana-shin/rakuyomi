@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 12:54+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -203,7 +203,7 @@ msgstr "Đánh dấu chương đã đọc hoặc chưa đọc"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "Hủy"
 
@@ -1048,7 +1048,7 @@ msgstr "Không hiển thị thông báo này nữa"
 msgid "Rename Playlist"
 msgstr "Đổi tên Danh sách phát"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "Lưu"
 
@@ -1497,6 +1497,6 @@ msgstr "Xong"
 msgid "Select"
 msgstr "Chọn"
 
-#: ../widgets/SettingItemValue.lua:347
+#: ../widgets/SettingItemValue.lua:359
 msgid "Invalid value"
 msgstr "Giá trị không hợp lệ"

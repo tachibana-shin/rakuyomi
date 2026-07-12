@@ -1220,7 +1220,7 @@ msgstr "HTTP, HTTPS veya SOCKS5 Proxy'si"
 
 #: ../Settings.lua:305
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr "Proxy URL'si http://, https:// veya çorap5:// ile başlamalıdır"
+msgstr "Proxy URL'si http://, https:// veya socks5:// ile başlamalıdır"
 
 #: ../Settings.lua:310
 msgid "Sync & Updates"

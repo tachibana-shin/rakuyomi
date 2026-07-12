@@ -1220,7 +1220,7 @@ msgstr "Serwer proxy HTTP, HTTPS lub SOCKS5"
 
 #: ../Settings.lua:305
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr "Adres URL serwera proxy musi zaczynać się od http://, https:// lub skarpetki5://"
+msgstr "Adres URL serwera proxy musi zaczynać się od http://, https:// lub socks5://"
 
 #: ../Settings.lua:310
 msgid "Sync & Updates"

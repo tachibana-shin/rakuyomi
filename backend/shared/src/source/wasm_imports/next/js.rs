@@ -162,10 +162,10 @@ fn webview_set_rule_list(
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
         let Some(json) = json else {
-            return Ok(ResultContext::InvalidString as i32);
+            return Ok(ResultContext::InvalidString.into());
         };
 
         if let Err(e) = webview.set_rule_list(&json) {
@@ -209,10 +209,10 @@ fn webview_load_html(
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
         let Some(url) = url.and_then(|s| url::Url::parse(&s).ok()) else {
-            return Ok(ResultContext::InvalidString as i32);
+            return Ok(ResultContext::InvalidString.into());
         };
 
         webview.load(html, &url)?;
@@ -232,7 +232,7 @@ fn webview_wait_for_load(mut caller: Caller<'_, WasmStore>, webview_ptr: i32) ->
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
 
         executor::block_on(webview.wait_for_load())?;
@@ -256,10 +256,10 @@ fn webview_eval(
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
         let Some(code) = code else {
-            return Ok(ResultContext::InvalidString as i32);
+            return Ok(ResultContext::InvalidString.into());
         };
 
         let value = executor::block_on(webview.eval(&code))?;
@@ -283,10 +283,10 @@ fn webview_eval_async(
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
         let Some(code) = code else {
-            return Ok(ResultContext::InvalidString as i32);
+            return Ok(ResultContext::InvalidString.into());
         };
 
         let value = executor::block_on(webview.eval(&code))?;
@@ -310,10 +310,10 @@ fn webview_add_user_script(
         let store = caller.data_mut();
 
         let Some(webview) = store.get_webview(webview_ptr as usize) else {
-            return Ok(ResultContext::InvalidContext as i32);
+            return Ok(ResultContext::InvalidContext.into());
         };
         let Some(source) = source else {
-            return Ok(ResultContext::InvalidString as i32);
+            return Ok(ResultContext::InvalidString.into());
         };
 
         if let Err(e) = webview.add_user_script(&source, at_document_end != 0, for_main_frame_only != 0) {

@@ -243,6 +243,64 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_never_rtl',
+    {
+      type = 'boolean',
+      title = _('Never turn on RTL, even for Japanese manga'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_auto_viewer_mode',
+    {
+      type = 'boolean',
+      title = _('Automatically set the viewer to manga mode'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _('Recommended reader settings') }
+  },
+  {
+    'rakuyomi_page_margin',
+    {
+      type = 'boolean',
+      title = _('Turn off all margins'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_trim_page',
+    {
+      type = 'boolean',
+      title = _('Automatically crop excess edges from photos (a little slow)'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_type',
+    {
+      type = 'boolean',
+      title = _('Zoom to full screen'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_genus',
+    {
+      type = 'boolean',
+      title = _('Zoom to fit image size'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Storage") }
   },

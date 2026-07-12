@@ -186,10 +186,6 @@ function Backend.getBackend()
   end
 end
 
-function Backend.resetState()
-  backendInitialized, logs = nil, nil
-end
-
 function Backend.getLogs()
   return logs
 end
@@ -231,6 +227,8 @@ end
 --- @field unread_chapters_count number|nil The number of unread chapters for this manga, or `nil` if we do not know how many chapters this manga has.
 --- @field last_read number|nil The timestamp (in seconds since epoch) of when this manga was last read, or `nil` if we don't know.
 --- @field in_library boolean Whether this manga is in the user's library.
+--- @field viewer MangaViewer The preferred viewer mode from the source ("DefaultViewer", "Rtl", "Ltr", "Vertical", "Scroll").
+--- @field state_viewer boolean The viewer mode set by user?
 
 --- @class Chapter
 --- @field id string The ID of this chapter.
@@ -317,6 +315,10 @@ MangaViewer = {
   Vertical      = 3, -- Vertical strip reading (webtoons, long-strip manga)
   Scroll        = 4, -- Free scrolling mode (continuous scroll)
 }
+_G.MangaViewerName = {}
+for name, id in pairs(MangaViewer) do
+  _G.MangaViewerName[id] = name
+end
 
 --- Represents a manga entry returned by a source or stored locally.
 --- This table contains all metadata used to describe a manga.
@@ -687,6 +689,21 @@ function Backend.setPreferredScanlator(source_id, manga_id, preferred_scanlator)
   })
 end
 
+--- Sets the viewer override for a manga.
+---@param source_id string
+---@param manga_id string
+---@param viewer MangaViewer
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.setViewer(source_id, manga_id, viewer)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/viewer",
+    method = "POST",
+    body = {
+      viewer = viewer
+    }
+  })
+end
+
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
 --- @alias SearchViewMode 'base' | 'cover' | 'grid'
@@ -853,6 +870,7 @@ function Backend.cleanup()
   if Backend.server ~= nil then
     Backend.server:stop()
     Backend.server = nil
+    backendInitialized, logs = nil, nil
   end
 end
 

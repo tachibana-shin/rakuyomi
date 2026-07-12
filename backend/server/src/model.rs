@@ -1,7 +1,11 @@
 use serde::Serialize;
 
-use shared::model::{
-    Chapter as DomainChapter, Manga as DomainManga, SourceInformation as DomainSourceInformation,
+use shared::{
+    model::{
+        Chapter as DomainChapter, Manga as DomainManga,
+        SourceInformation as DomainSourceInformation,
+    },
+    source::model::MangaViewer,
 };
 
 #[derive(Serialize)]
@@ -34,6 +38,8 @@ pub struct Manga {
     last_read: Option<i64>,
     in_library: bool,
     manga_cover: Option<url::Url>,
+    viewer: MangaViewer,
+    state_viewer: boolean,
 }
 
 impl From<DomainManga> for Manga {
@@ -46,6 +52,8 @@ impl From<DomainManga> for Manga {
             last_read: value.last_read,
             in_library: value.in_library,
             manga_cover: value.information.cover_url,
+            viewer: value.information.viewer,
+            state_viewer: boolean,
         }
     }
 }

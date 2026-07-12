@@ -99,6 +99,10 @@ pub fn routes() -> Router<State> {
             "/mangas/{source_id}/{manga_id}/preferred-scanlator",
             post(set_manga_preferred_scanlator),
         )
+        .route(
+            "/mangas/{source_id}/{manga_id}/viewer",
+            post(set_manga_viewer),
+        )
 }
 
 async fn get_manga_library(
@@ -718,6 +722,25 @@ async fn set_manga_preferred_scanlator(
     let manga_id = MangaId::from(params);
 
     usecases::set_manga_preferred_scanlator(&database, manga_id, body.preferred_scanlator).await?;
+
+    Ok(Json(()))
+}
+
+// Viewer preference handlers
+#[derive(Deserialize)]
+struct SetViewerBody {
+    viewer: Option<i64>,
+}
+
+async fn set_manga_viewer(
+    StateExtractor(State { database, .. }): StateExtractor<State>,
+    SourceExtractor(_source): SourceExtractor,
+    Path(params): Path<MangaChaptersPathParams>,
+    Json(body): Json<SetViewerBody>,
+) -> Result<Json<()>, AppError> {
+    let manga_id = MangaId::from(params);
+
+    usecases::set_manga_viewer(&database, manga_id, body.viewer).await?;
 
     Ok(Json(()))
 }

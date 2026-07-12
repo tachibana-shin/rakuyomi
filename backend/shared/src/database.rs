@@ -20,7 +20,7 @@ use crate::{
         Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation,
         MangaState, NotificationInformation, Playlist, SourceId, SourceInformation,
     },
-    source::model::PublishingStatus,
+    source::model::{PublishingStatus, MangaViewer},
     source_collection::SourceCollection,
 };
 
@@ -244,12 +244,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -314,12 +318,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -384,12 +392,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -454,12 +466,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -524,12 +540,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -594,12 +614,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -664,12 +688,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -734,12 +762,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -804,12 +836,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -874,12 +910,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -908,6 +948,7 @@ impl Database {
                     author: row.author,
                     artist: row.artist,
                     cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
                 };
 
                 Some(Manga {
@@ -1507,12 +1548,23 @@ impl Database {
             MangaDetailsRow,
             r#"
             SELECT 
-                md.*, 
-                COALESCE(AVG(cs.read), 0) AS "per_read: f64",
-                COALESCE(
-                    MAX(cs.last_read),
-                    0
-                ) AS "last_read: i64"
+                md.source_id AS "source_id!",
+                md.id AS "id!", 
+                md.title,
+                md.author,
+                md.artist,
+                md.description,
+                md.tags,
+                md.cover_url,
+                md.url,
+                md.status AS "status!",
+                md.nsfw AS "nsfw!",
+                md.viewer AS "viewer!",
+                md.last_updated,
+                md.last_opened,
+                COALESCE(MAX(cs.last_read), 0) AS "last_read: i64",
+                md.date_added,
+                COALESCE(AVG(cs.read), 0) AS "per_read: f64"
             FROM manga_details md
             LEFT JOIN chapter_state cs
                 ON cs.source_id = md.source_id
@@ -1625,7 +1677,7 @@ impl Database {
         let maybe_row = sqlx::query_as!(
             MangaStateRow,
             r#"
-                SELECT source_id, manga_id, preferred_scanlator 
+                SELECT source_id, manga_id, preferred_scanlator
                 FROM manga_state
                 WHERE source_id = ?1 AND manga_id = ?2;
             "#,
@@ -1651,7 +1703,32 @@ impl Database {
             "#,
             source_id,
             manga_id,
-            state.preferred_scanlator,
+            state.preferred_scanlator
+        )
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn upsert_manga_viewer(
+        &self,
+        manga_id: &MangaId,
+        viewer: Option<i64>,
+    ) -> Result<()> {
+        let source_id = manga_id.source_id().value();
+        let manga_id = manga_id.value();
+
+        sqlx::query!(
+            r#"
+                INSERT INTO manga_state (source_id, manga_id, viewer)
+                VALUES (?1, ?2, ?3)
+                ON CONFLICT DO UPDATE SET
+                    viewer = excluded.viewer
+            "#,
+            source_id,
+            manga_id,
+            viewer,
         )
         .execute(&*self.pool.read().await)
         .await?;
@@ -2223,12 +2300,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2295,12 +2376,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2367,12 +2452,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2439,12 +2528,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2511,12 +2604,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2583,12 +2680,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2655,12 +2756,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2727,12 +2832,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2799,12 +2908,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2871,12 +2984,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2907,6 +3024,7 @@ impl Database {
                     author: row.author,
                     artist: row.artist,
                     cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
                 };
 
                 Some(Manga {
@@ -2952,6 +3070,10 @@ pub struct MangaLibraryRowWithReadCount {
 
     /// Timestamp of the last read chapter (nullable in DB)
     pub last_read: Option<i64>,
+
+    /// Effective viewer: COALESCE(manga_state.viewer, manga_informations.viewer, 0)
+    pub viewer: Option<i64>,
+    pub state_viewer: i64
 }
 
 #[derive(sqlx::FromRow)]
@@ -2974,6 +3096,7 @@ impl From<MangaInformationsRow> for MangaInformation {
             cover_url: value
                 .cover_url
                 .map(|url_string| url_string.as_str().try_into().unwrap()),
+            viewer: MangaViewer::default(),
         }
     }
 }
@@ -3005,7 +3128,7 @@ impl From<MangaDetailsRow> for crate::source::model::Manga {
         // Parse enums (SQLite returns INTEGER as i64)
         let status = crate::source::model::PublishingStatus::from(row.status as u8);
         let nsfw = crate::source::model::MangaContentRating::from(row.nsfw as u8);
-        let viewer = crate::source::model::MangaViewer::from(row.viewer as u8);
+        let viewer = MangaViewer::from(row.viewer as u8);
 
         // Parse tags JSON
         let tags = row.tags.map(|json| serde_json::from_str(&json).unwrap());

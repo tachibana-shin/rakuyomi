@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::source::{
-    model::{Chapter as SourceChapter, Manga as SourceManga},
+    model::{Chapter as SourceChapter, Manga as SourceManga, MangaViewer},
     SourceManifest,
 };
 
@@ -108,6 +108,7 @@ pub struct MangaInformation {
     pub author: Option<String>,
     pub artist: Option<String>,
     pub cover_url: Option<Url>,
+    pub viewer: MangaViewer,
 }
 
 #[derive(Clone, Debug)]
@@ -170,6 +171,7 @@ impl From<SourceManga> for MangaInformation {
             author: value.author,
             artist: value.artist,
             cover_url: value.cover_url,
+            viewer: value.viewer,
         }
     }
 }

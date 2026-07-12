@@ -948,7 +948,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       Trapper:wrap(function()
         Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
         if chapter.on_tmpfs then
-          print("revoking chapter", chapter.id)
+          logger.info("revoking chapter", chapter.id)
           Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)
         end
       end)
@@ -996,6 +996,9 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       on_end_of_book_callback = onEndOfBookCallback,
       on_beginning_of_book_callback = onBeginningOfBookCallback,
       chapter = chapter,
+      viewer = self.manga.viewer,
+      state_viewer = self.manga.state_viewer,
+      on_rtl_changed = function(viewer) self.manga.viewer, self.manga.state_viewer = _G.MangaViewerName[viewer], true end,
       on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()
           Backend.updateLastReadChapter(

@@ -6,32 +6,68 @@
       {
         "name": "source_id",
         "ordinal": 0,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "source_id"
+          }
+        }
       },
       {
         "name": "manga_id",
         "ordinal": 1,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "manga_id"
+          }
+        }
       },
       {
         "name": "title",
         "ordinal": 2,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "title"
+          }
+        }
       },
       {
         "name": "author",
         "ordinal": 3,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "author"
+          }
+        }
       },
       {
         "name": "artist",
         "ordinal": 4,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "artist"
+          }
+        }
       },
       {
         "name": "cover_url",
         "ordinal": 5,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "cover_url"
+          }
+        }
       }
     ],
     "parameters": {

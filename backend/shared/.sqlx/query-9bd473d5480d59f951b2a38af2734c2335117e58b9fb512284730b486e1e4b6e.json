@@ -6,67 +6,145 @@
       {
         "name": "source_id",
         "ordinal": 0,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "source_id"
+          }
+        }
       },
       {
         "name": "manga_id",
         "ordinal": 1,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "manga_id"
+          }
+        }
       },
       {
         "name": "chapter_id",
         "ordinal": 2,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "chapter_id"
+          }
+        }
       },
       {
         "name": "title",
         "ordinal": 3,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "title"
+          }
+        }
       },
       {
         "name": "scanlator",
         "ordinal": 4,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "scanlator"
+          }
+        }
       },
       {
         "name": "chapter_number",
         "ordinal": 5,
-        "type_info": "Float"
+        "type_info": "Float",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "chapter_number"
+          }
+        }
       },
       {
         "name": "volume_number",
         "ordinal": 6,
-        "type_info": "Float"
+        "type_info": "Float",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "volume_number"
+          }
+        }
       },
       {
         "name": "last_updated",
         "ordinal": 7,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "last_updated"
+          }
+        }
       },
       {
         "name": "thumbnail",
         "ordinal": 8,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "thumbnail"
+          }
+        }
       },
       {
         "name": "lang",
         "ordinal": 9,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "lang"
+          }
+        }
       },
       {
         "name": "locked: bool",
         "ordinal": 10,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "locked"
+          }
+        }
       },
       {
         "name": "read?: bool",
         "ordinal": 11,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "chapter_state",
+            "name": "read"
+          }
+        }
       },
       {
         "name": "last_read?: i64",
         "ordinal": 12,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "chapter_state",
+            "name": "last_read"
+          }
+        }
       }
     ],
     "parameters": {
@@ -84,7 +162,7 @@
       true,
       true,
       false,
-      false,
+      true,
       true
     ]
   },

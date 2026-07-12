@@ -15,18 +15,32 @@ static PROXY_URL: RwLock<Option<String>> = RwLock::new(None);
 /// This is typically called once at startup from the persisted settings,
 /// and again whenever the user updates the proxy setting at runtime.
 pub fn set_proxy_url(url: Option<String>) {
-    if let Ok(mut guard) = PROXY_URL.write() {
-        *guard = url;
+    match PROXY_URL.write() {
+        Ok(mut guard) => *guard = url,
+        Err(e) => warn!("PROXY_URL lock poisoned, cannot update proxy setting: {e}"),
     }
 }
 
 /// Read the currently configured proxy URL, if any.
 pub fn proxy_url() -> Option<String> {
-    PROXY_URL.read().ok().and_then(|guard| guard.clone())
+    match PROXY_URL.read() {
+        Ok(guard) => guard.clone(),
+        Err(e) => {
+            warn!("PROXY_URL lock poisoned, returning None: {e}");
+            None
+        }
+    }
 }
 
 fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
-    match PROXY_URL.read().ok().as_ref().and_then(|o| o.as_ref()) {
+    let url = match PROXY_URL.read() {
+        Ok(guard) => guard.clone(),
+        Err(e) => {
+            warn!("PROXY_URL lock poisoned, skipping proxy configuration: {e}");
+            return builder;
+        }
+    };
+    match url.as_ref() {
         Some(url) => match reqwest::Proxy::all(url) {
             Ok(proxy) => builder.proxy(proxy),
             Err(e) => {
@@ -34,7 +48,7 @@ fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
                 builder
             }
         },
-        _ => builder,
+        None => builder,
     }
 }
 

@@ -46,7 +46,13 @@ function MangaReader:show(options)
   self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
   self.on_rtl_changed = options.on_rtl_changed
   self.chapter = options.chapter
-  self.viewer = MangaViewer[options.viewer] or MangaViewer.DefaultViewer
+  -- Global viewer override takes priority over per-manga/source viewer.
+  local global_viewer = G_reader_settings:readSetting('rakuyomi_global_viewer')
+  if global_viewer ~= nil and MangaViewer[global_viewer] ~= nil then
+    self.viewer = MangaViewer[global_viewer]
+  else
+    self.viewer = MangaViewer[options.viewer] or MangaViewer.DefaultViewer
+  end
   self.state_viewer = options.state_viewer
   self.on_close_book_callback = options.on_close_book_callback
   local c_showing = self.is_showing
@@ -307,8 +313,43 @@ function MangaReader:addRakuOptionsToReader(ui)
           values = { MangaViewer.DefaultViewer, MangaViewer.Rtl, MangaViewer.Ltr, MangaViewer.Vertical, MangaViewer.Scroll },
           default_value = self.viewer,
           event = "SetRakuViewMode",
-          help_text = _([[Toggle right-to-left reading mode for manga.
-When enabled, page turning and zoom direction are set for Japanese manga (right-to-left, top-to-bottom).]]),
+          help_text = _([[Choose how pages are displayed and navigated.
+Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll).]]),
+          name_text_hold_callback = function()
+            local dialog
+
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local current = G_reader_settings:readSetting('rakuyomi_global_viewer')
+
+            local buttons = {
+              { {
+                text = _("Off") .. ((current == nil or current == '') and " *" or ""),
+                callback = function()
+                  UIManager:close(dialog)
+                  G_reader_settings:saveSetting('rakuyomi_global_viewer', '')
+                end
+              } },
+            }
+            for __, name in ipairs({ "Default", "Rtl", "Ltr", "Vertical", "Scroll" }) do
+              local label = _(name)
+              local suffix = current == name and " *" or ""
+              table.insert(buttons, { {
+                text = label .. suffix,
+                callback = function()
+                  UIManager:close(dialog)
+                  G_reader_settings:saveSetting('rakuyomi_global_viewer', name)
+                  self.viewer = MangaViewer[name]
+                  self:applyViewMode(ui)
+                  self.on_rtl_changed(self.viewer)
+                end
+              } })
+            end
+            dialog = ButtonDialog:new {
+              title = _("Global Viewer Override"),
+              buttons = buttons,
+            }
+            UIManager:show(dialog)
+          end,
         })
         panel.options = new_panel_options
       end
@@ -318,7 +359,9 @@ When enabled, page turning and zoom direction are set for Japanese manga (right-
 
   config.options = new_options
 
-  if self.state_viewer or G_reader_settings:nilOrTrue('rakuyomi_auto_viewer_mode') then
+  local global_viewer_val = G_reader_settings:readSetting('rakuyomi_global_viewer')
+  local has_global_override = global_viewer_val ~= nil and MangaViewer[global_viewer_val] ~= nil
+  if has_global_override or self.state_viewer or G_reader_settings:nilOrTrue('rakuyomi_auto_viewer_mode') then
     self:applyViewMode(ui)
   else
     ui.document.configurable.rakuyomi_view_mode = 0

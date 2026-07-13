@@ -120,6 +120,9 @@ pub async fn build_state(home_path: PathBuf) -> Result<State> {
         .context("couldn't initialize cookie store")?;
     let settings = Settings::from_file(&settings_path)
         .with_context(|| format!("couldn't read settings file at {}", settings_path.display()))?;
+
+    shared::tls::set_proxy_url(settings.proxy_url.clone());
+
     let source_manager = SourceManager::from_folder(sources_path, settings.clone())
         .context("couldn't create source manager")?;
 

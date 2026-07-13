@@ -22,6 +22,8 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
+local Trapper = require("ui/trapper")
+local LoadingDialog = require("LoadingDialog")
 
 local ffi = require("ffi")
 
@@ -58,6 +60,14 @@ local function get_ram_via_ffi()
     }
   end
   return nil
+end
+
+local function validate_proxy_url(value)
+  if value == nil or value == "" then
+    return true
+  end
+  local lower_value = value:lower()
+  return lower_value:match("^https?://") ~= nil or lower_value:match("^socks5://") ~= nil
 end
 
 -- REFACT This is duplicated from `SourceSettings` (pretty much all of it actually)
@@ -282,6 +292,20 @@ Settings.setting_value_definitions = {
       max_value = ram_info and math.max(8, math.floor(ram_info.total_mb / 2)) or 32,
       unit = 'MB',
       default = 32,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Network") }
+  },
+  {
+    'proxy_url',
+    {
+      type = 'string',
+      title = _("HTTP, HTTPS or SOCKS5 Proxy"),
+      placeholder = 'http://user:pass@host:port',
+      validate = validate_proxy_url,
+      validate_error = _("Proxy URL must start with http://, https://, or socks5://"),
     }
   },
   {
@@ -532,6 +556,32 @@ function Settings:updateSetting(key, value)
     self.settings[key] = value
 
     return
+  end
+
+  -- Test proxy before saving
+  if key == 'proxy_url' and value ~= nil and value ~= '' then
+    local test_success = false
+    local test_error_msg = nil
+
+    Trapper:wrap(function()
+      local test_response = LoadingDialog:showAndRun(
+        _("Testing proxy..."),
+        function()
+          return Backend.testProxy(value)
+        end
+      )
+
+      if test_response and test_response.type ~= 'ERROR' then
+        test_success = true
+      else
+        test_error_msg = test_response and test_response.message or _("Failed to test proxy")
+      end
+    end)()
+
+    if not test_success then
+      ErrorDialog:show(test_error_msg)
+      return false
+    end
   end
 
   self.settings[key] = value

@@ -710,6 +710,19 @@ function Backend.setSettings(settings)
   })
 end
 
+--- @class TestProxyResponse: { ok: boolean, message: string }
+--- Tests whether a proxy URL is reachable.
+--- @param proxy_url string
+--- @return SuccessfulResponse<TestProxyResponse>|ErrorResponse
+function Backend.testProxy(proxy_url)
+  return Backend.requestJson({
+    path = "/settings/test-proxy",
+    method = 'POST',
+    body = { proxy_url = proxy_url },
+    timeout = 20,
+  })
+end
+
 --- @class MountTmpFSConfig
 --- @field enabled boolean
 --- @field ram_storage_size_mb number

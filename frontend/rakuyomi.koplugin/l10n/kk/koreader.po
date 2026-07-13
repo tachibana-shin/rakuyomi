@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -197,7 +197,7 @@ msgstr "Тарауларды оқылған немесе оқылмаған де
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "Болдырмау"
 
@@ -572,7 +572,7 @@ msgstr "жоюды қалайсыз ба"
 msgid "source?"
 msgstr "көзі?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "Кітапхана"
 
@@ -660,7 +660,7 @@ msgstr "Таза тараулар"
 msgid "Manage sources"
 msgstr "Дереккөздерді басқару"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "Параметрлер"
 
@@ -748,7 +748,7 @@ msgstr "Қолданылуы"
 msgid "Memory"
 msgstr "Жад"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "Сақтау"
 
@@ -781,7 +781,7 @@ msgid "Type the manga name to search for"
 msgstr "Іздеу үшін манга атын теріңіз"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "Іздеу"
 
@@ -1039,7 +1039,7 @@ msgstr "Бұл хабарды қайта көрсетпеңіз"
 msgid "Rename Playlist"
 msgstr "Ойнату тізімінің атын өзгерту"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "Сақтау"
 
@@ -1067,215 +1067,227 @@ msgstr "Жасау"
 msgid "No playlists yet."
 msgstr "Әзірге ойнату тізімдері жоқ."
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "Кітапхананы қарау режимі"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "Негіз"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "Қақпақ"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "Тор"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "Кітапхананы сұрыптау режимі"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "Өсу бойынша қосылған реттілік (әдепкі)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "Тапсырыс кему бойынша қосылды"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "Манга тақырыбы көтерілуде"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "Манганың атауы төмендеуде"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "Оқылмаған тарауларды өсу бойынша санаңыз"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "Оқылмаған тарауларды кему бойынша санаңыз"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "Соңғы оқылған өсу"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "Соңғы оқылған кему"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "Дереккөздің жоғарылауы"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "Дереккөз төмендеу"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "Бір беттегі элементтер (0 = авто)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "Тор бағандары"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "Тор жолдары"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "Тақырыпты тор режимінде көрсету"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "Метадеректерді тор режимінде көрсету"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "Манга әрекетін түртіңіз"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "Тараулар тізімін ашыңыз"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "Оқуды жалғастыру"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "Түйіндемені оқуды растауды өткізіп жіберіңіз"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "Іздеу көру режимі"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "Оқырман"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "Тарауларды сұрыптау режимі"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "Тараудың жоғарылауы бойынша"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "Төменгі тарау бойынша"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "Оқырманға ашық тарауларды алдын ала жүктеңіз"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "Бет кескіндерін оңтайландыру (эксперименттік)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "Бір мезгілде бет сұраулары"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "Тарауларды сақтау жолы"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "Жад көлемінің шегі"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "ЖЖҚ-ға тарауларды жазу (eMMC-ті қорғау)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "ЖЖҚ сақтау көлемі. "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr ""
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr ""
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr ""
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "Синхрондау және жаңартулар"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "WebDAV синхрондау"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "Манга жаңартуларын cron тексеруі қосылды"
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "Бастапқы идентификаторлар тексеру жаңартуын өткізіп жібереді"
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "Жүйе"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "Артқа түймешігін сұрауға рұқсат беріңіз"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "Сервер"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "Кітапхана көрінісінен шыққан кезде серверді автоматты түрде тоқтату"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "Өшірілген"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "Дереу"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "30 секундтан кейін"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "1 минуттан кейін"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "5 минуттан кейін"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "10 минуттан кейін"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "Тарауды жүктеп алу барысын көрсету"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "Тіркеу"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "Тіркеуді өшіру"
 
@@ -1475,3 +1487,7 @@ msgstr "Дайын"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "таңдаңыз"
+
+#: ../widgets/SettingItemValue.lua:359
+msgid "Invalid value"
+msgstr ""

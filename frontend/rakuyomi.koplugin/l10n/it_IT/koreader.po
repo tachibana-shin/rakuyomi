@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -198,7 +198,7 @@ msgstr "Segna i capitoli come letti o non letti"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "Cancellare"
 
@@ -573,7 +573,7 @@ msgstr "Vuoi rimuovere il"
 msgid "source?"
 msgstr "fonte?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "Biblioteca"
 
@@ -661,7 +661,7 @@ msgstr "Capitoli più puliti"
 msgid "Manage sources"
 msgstr "Gestisci le fonti"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -749,7 +749,7 @@ msgstr "Utilizzo"
 msgid "Memory"
 msgstr "Memoria"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "Magazzinaggio"
 
@@ -782,7 +782,7 @@ msgid "Type the manga name to search for"
 msgstr "Digita il nome del manga da cercare"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "Ricerca"
 
@@ -1040,7 +1040,7 @@ msgstr "Non mostrare più questo messaggio"
 msgid "Rename Playlist"
 msgstr "Rinomina playlist"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "Salva"
 
@@ -1068,215 +1068,227 @@ msgstr "Creare"
 msgid "No playlists yet."
 msgstr "Nessuna playlist ancora."
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "Modalità di visualizzazione della libreria"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "Base"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "Copertina"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "Griglia"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "Modalità di ordinamento della libreria"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "Ordine aggiunto crescente (predefinito)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "Ordine aggiunto discendente"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "Titolo manga ascendente"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "Titolo manga discendente"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "Conta i capitoli non letti in ordine crescente"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "Conta i capitoli non letti in ordine decrescente"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "Ultima lettura ascendente"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "Ultima lettura discendente"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "Sorgente ascendente"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "Sorgente discendente"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "Elementi per pagina (0 = automatico)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "Colonne della griglia"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "Righe della griglia"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "Mostra il titolo in modalità griglia"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "Mostra i metadati in modalità griglia"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "Tocca l'azione manga"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "Apri l'elenco dei capitoli"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "Continua a leggere"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "Salta la conferma di ripresa della lettura"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "Modalità di visualizzazione ricerca"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "Lettore"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "Modalità di ordinamento dei capitoli"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "Per capitolo ascendente"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "Per capitolo discendente"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "Precaricare i capitoli sul lettore aperto"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "Ottimizza le immagini delle pagine (sperimentale)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "Richieste di pagine simultanee"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "Percorso di archiviazione del capitolo"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "Limite della dimensione di archiviazione"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Scrivi capitoli nella RAM (proteggi eMMC)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "Dimensioni di archiviazione della RAM. "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr ""
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr ""
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr ""
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "Sincronizzazione e aggiornamenti"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "Sincronizzazione WebDAV"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "Abilitato il controllo cron per gli aggiornamenti manga"
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "Gli ID di origine saltano il controllo dell'aggiornamento"
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "Sistema"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "Consenti la richiesta del pulsante Indietro"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "Server"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "Arresto automatico del server quando si esce dalla visualizzazione della libreria"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "Disabilitato"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "Immediato"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "Dopo 30 secondi"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "Dopo 1 minuto"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "Dopo 5 minuti"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "Dopo 10 minuti"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "Mostra l'avanzamento del download del capitolo"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "Registrazione"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "Disabilita la registrazione"
 
@@ -1476,3 +1488,7 @@ msgstr "Fatto"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "Selezionare"
+
+#: ../widgets/SettingItemValue.lua:359
+msgid "Invalid value"
+msgstr ""

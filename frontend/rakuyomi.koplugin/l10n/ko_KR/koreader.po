@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -198,7 +198,7 @@ msgstr "챕터를 읽음 또는 읽지 않음으로 표시"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "취소"
 
@@ -571,7 +571,7 @@ msgstr "제거하시겠습니까?"
 msgid "source?"
 msgstr "원천?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "도서관"
 
@@ -659,7 +659,7 @@ msgstr "클리너 챕터"
 msgid "Manage sources"
 msgstr "소스 관리"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "설정"
 
@@ -747,7 +747,7 @@ msgstr "용법"
 msgid "Memory"
 msgstr "메모리"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "저장"
 
@@ -780,7 +780,7 @@ msgid "Type the manga name to search for"
 msgstr "검색할 만화 이름을 입력하세요."
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "찾다"
 
@@ -1038,7 +1038,7 @@ msgstr "이 메시지를 다시 표시하지 않음"
 msgid "Rename Playlist"
 msgstr "재생목록 이름 바꾸기"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "구하다"
 
@@ -1066,215 +1066,227 @@ msgstr "만들다"
 msgid "No playlists yet."
 msgstr "아직 재생목록이 없습니다."
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "라이브러리 보기 모드"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "베이스"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "씌우다"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "그리드"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "라이브러리 정렬 모드"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "오름차순으로 추가됨(기본값)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "내림차순으로 추가됨"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "제목 만화 오름차순"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "제목 만화 내림차순"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "읽지 않은 장을 오름차순으로 계산"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "읽지 않은 장 수를 내림차순으로 계산"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "마지막 읽기 오름차순"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "마지막 읽기 내림차순"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "소스 오름차순"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "소스 내림차순"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "페이지당 항목 수(0 = 자동)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "그리드 열"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "그리드 행"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "그리드 모드에서 제목 표시"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "그리드 모드에서 메타데이터 표시"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "탭 만화 액션"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "챕터 목록 열기"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "계속 읽기"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "이력서 읽기 확인 건너뛰기"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "검색 보기 모드"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "리더"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "챕터 정렬 모드"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "장별 오름차순"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "장 내림차순"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "동시 페이지 요청"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "챕터 저장 경로"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "저장소 크기 제한"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM에 챕터 쓰기(eMMC 보호)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM 저장 크기. "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr "회로망"
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr "HTTP, HTTPS 또는 SOCKS5 프록시"
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr "프록시 URL은 http://, https:// 또는 socks5://로 시작해야 합니다."
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "동기화 및 업데이트"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "WebDAV 동기화"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "체계"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "뒤로 버튼 요청 허용"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "섬기는 사람"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "라이브러리 보기를 나갈 때 서버 자동 중지"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "장애가 있는"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "즉각적인"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "30초 후"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "1분 후"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "5분 후"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "10분 후"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "챕터 다운로드 진행률 표시"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "벌채 반출"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "로깅 비활성화"
 
@@ -1474,3 +1486,7 @@ msgstr "완료"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "선택하다"
+
+#: ../widgets/SettingItemValue.lua:359
+msgid "Invalid value"
+msgstr "잘못된 값"

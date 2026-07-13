@@ -29,7 +29,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[], default: string|nil }
 --- @class MultiEnumValueDefinition: { type: 'multi-enum', title: string, options: EnumValueDefinitionOption[] }
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
---- @class StringValueDefinition: { type: 'string', title: string, placeholder: string }
+--- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate?: fun(value: string): boolean, validate_error?: string }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
@@ -260,19 +260,19 @@ function SettingItemValue:onTap()
     local dialog
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue(),
+      input = self:getCurrentValue() or "",
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
           {
-            text = "Cancel",
+            text = _("Cancel"),
             id = "close",
             callback = function()
               UIManager:close(dialog)
             end,
           },
           {
-            text = "Save",
+            text = _("Save"),
             is_enter_default = true,
             callback = function()
               UIManager:close(dialog)
@@ -284,8 +284,15 @@ function SettingItemValue:onTap()
       }
     }
 
+    -- Prevent the tap that opened this dialog from reaching InputDialog:onTap,
+    -- which would close it immediately (dialog_frame.dimen is nil before first paint,
+    -- so notIntersectWith(nil) returns true, triggering onCloseDialog).
+    dialog.deny_keyboard_hiding = true
     UIManager:show(dialog)
-    dialog:onShowKeyboard()
+    UIManager:nextTick(function()
+      dialog.deny_keyboard_hiding = nil
+      dialog:onShowKeyboard()
+    end)
   elseif self.value_definition.type == "list" then
     local dialog
     dialog = InputDialog:new {
@@ -314,8 +321,13 @@ function SettingItemValue:onTap()
       }
     }
 
+    -- Same fix as "string" type: block the originating tap from closing the dialog.
+    dialog.deny_keyboard_hiding = true
     UIManager:show(dialog)
-    dialog:onShowKeyboard()
+    UIManager:nextTick(function()
+      dialog.deny_keyboard_hiding = nil
+      dialog:onShowKeyboard()
+    end)
   elseif self.value_definition.type == "path" then
     local path_chooser
     path_chooser = PathChooser:new({
@@ -340,6 +352,16 @@ end
 
 --- @private
 function SettingItemValue:updateCurrentValue(new_value)
+  if self.value_definition.validate then
+    local input = type(new_value) == "string" and new_value or ""
+    if not self.value_definition.validate(input) then
+      UIManager:show(InfoMessage:new {
+        text = self.value_definition.validate_error or _("Invalid value"),
+      })
+      return false
+    end
+  end
+
   local old = self.value
   self.value = new_value
   self[1] = self:createValueWidget()

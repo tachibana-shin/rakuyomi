@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-11 16:01+0700\n"
+"POT-Creation-Date: 2026-07-12 14:35+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -198,7 +198,7 @@ msgstr "Markera kapitel som lästa eller olästa"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
 #: ../LibraryView.lua:1203 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "Avboka"
 
@@ -573,7 +573,7 @@ msgstr "Vill du ta bort"
 msgid "source?"
 msgstr "källa?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:76
+#: ../LibraryView.lua:74 ../Settings.lua:83
 msgid "Library"
 msgstr "Bibliotek"
 
@@ -661,7 +661,7 @@ msgstr "Renare kapitel"
 msgid "Manage sources"
 msgstr "Hantera källor"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:442
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
 msgid "Settings"
 msgstr "Inställningar"
 
@@ -749,7 +749,7 @@ msgstr "Användande"
 msgid "Memory"
 msgstr "Minne"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:247
+#: ../LibraryView.lua:1073 ../Settings.lua:254
 msgid "Storage"
 msgstr "Lagring"
 
@@ -782,7 +782,7 @@ msgid "Type the manga name to search for"
 msgstr "Skriv in manganamnet att söka efter"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:185
+#: ../LibraryView.lua:1210 ../Settings.lua:192
 msgid "Search"
 msgstr "Söka"
 
@@ -1040,7 +1040,7 @@ msgstr "Visa inte detta meddelande igen"
 msgid "Rename Playlist"
 msgstr "Byt namn på spellistan"
 
-#: ../PlaylistDialog.lua:134
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "Spara"
 
@@ -1068,215 +1068,227 @@ msgstr "Skapa"
 msgid "No playlists yet."
 msgstr "Inga spellistor än."
 
-#: ../Settings.lua:82
+#: ../Settings.lua:89
 msgid "Library view mode"
 msgstr "Biblioteksvisningsläge"
 
-#: ../Settings.lua:84 ../Settings.lua:193
+#: ../Settings.lua:91 ../Settings.lua:200
 msgid "Base"
 msgstr "Bas"
 
-#: ../Settings.lua:85 ../Settings.lua:194
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Cover"
 msgstr "Täcka"
 
-#: ../Settings.lua:86 ../Settings.lua:195
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Grid"
 msgstr "Rutnät"
 
-#: ../Settings.lua:95
+#: ../Settings.lua:102
 msgid "Library sorting mode"
 msgstr "Sorteringsläge för bibliotek"
 
-#: ../Settings.lua:97
+#: ../Settings.lua:104
 msgid "Order added ascending (Default)"
 msgstr "Ordning tillagd stigande (standard)"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:105
 msgid "Order added descending"
 msgstr "Ordning tillagd fallande"
 
-#: ../Settings.lua:99
+#: ../Settings.lua:106
 msgid "Title manga ascending"
 msgstr "Titel manga stigande"
 
-#: ../Settings.lua:100
+#: ../Settings.lua:107
 msgid "Title manga descending"
 msgstr "Titel manga fallande"
 
-#: ../Settings.lua:101
+#: ../Settings.lua:108
 msgid "Count unread chapters ascending"
 msgstr "Räkna olästa kapitel stigande"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:109
 msgid "Count unread chapters descending"
 msgstr "Räkna olästa kapitel fallande"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:110
 msgid "Last read ascending"
 msgstr "Senast lästa stigande"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:111
 msgid "Last read descending"
 msgstr "Senast läst fallande"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:112
 msgid "Source ascending"
 msgstr "Källa stigande"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:113
 msgid "Source descending"
 msgstr "Källa fallande"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:121
 msgid "Items per page (0 = auto)"
 msgstr "Objekt per sida (0 = auto)"
 
-#: ../Settings.lua:125
+#: ../Settings.lua:132
 msgid "Grid columns"
 msgstr "Rutnätskolumner"
 
-#: ../Settings.lua:136
+#: ../Settings.lua:143
 msgid "Grid rows"
 msgstr "Rutnätsrader"
 
-#: ../Settings.lua:147
+#: ../Settings.lua:154
 msgid "Show title in grid mode"
 msgstr "Visa titel i rutnätsläge"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:163
 msgid "Show metadata in grid mode"
 msgstr "Visa metadata i rutnätsläge"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:172
 msgid "Tap manga action"
 msgstr "Tryck på manga action"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:174
 msgid "Open chapter list"
 msgstr "Öppna kapitellistan"
 
-#: ../Settings.lua:168
+#: ../Settings.lua:175
 msgid "Continue reading"
 msgstr "Fortsätt läsa"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:185
 msgid "Skip resume reading confirmation"
 msgstr "Hoppa över bekräftelse på att fortsätta läsa"
 
-#: ../Settings.lua:191
+#: ../Settings.lua:198
 msgid "Search view mode"
 msgstr "Sökvyläge"
 
-#: ../Settings.lua:202
+#: ../Settings.lua:209
 msgid "Reader"
 msgstr "Läsare"
 
-#: ../Settings.lua:208
+#: ../Settings.lua:215
 msgid "Chapter sorting mode"
 msgstr "Kapitelsorteringsläge"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:217
 msgid "By chapter ascending"
 msgstr "Efter kapitel stigande"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:218
 msgid "By chapter descending"
 msgstr "Efter kapitel fallande"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:226
 msgid "Preload chapters on reader open"
 msgstr "Förladda kapitel på läsaren öppen"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:237
 msgid "Optimize page images (experimental)"
 msgstr "Optimera sidbilder (experimentell)"
 
-#: ../Settings.lua:238
+#: ../Settings.lua:245
 msgid "Concurrent page requests"
 msgstr "Samtidiga sidförfrågningar"
 
-#: ../Settings.lua:253
+#: ../Settings.lua:260
 msgid "Chapter storage path"
 msgstr "Kapitellagringsväg"
 
-#: ../Settings.lua:262
+#: ../Settings.lua:269
 msgid "Storage size limit"
 msgstr "Storleksgräns för lagring"
 
-#: ../Settings.lua:272
+#: ../Settings.lua:279
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Skriv kapitel till RAM (skydda eMMC)"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:287
 msgid "RAM storage size. Your RAM is: "
 msgstr "Storlek på RAM-lagring. "
 
-#: ../Settings.lua:289
+#: ../Settings.lua:296
+msgid "Network"
+msgstr ""
+
+#: ../Settings.lua:302
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr ""
+
+#: ../Settings.lua:305
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr ""
+
+#: ../Settings.lua:310
 msgid "Sync & Updates"
 msgstr "Synkronisera och uppdateringar"
 
-#: ../Settings.lua:295
+#: ../Settings.lua:316
 msgid "WebDAV Sync"
 msgstr "WebDAV Sync"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:324
 msgid "Enabled cron check for manga updates"
 msgstr "Aktiverad cron-kontroll efter mangauppdateringar"
 
-#: ../Settings.lua:311
+#: ../Settings.lua:332
 msgid "Source IDs skip check update"
 msgstr "Käll-ID:n hoppar över kontrolluppdatering"
 
-#: ../Settings.lua:317
+#: ../Settings.lua:338
 msgid "System"
 msgstr "System"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:344
 msgid "Allow requisition of the back button"
 msgstr "Tillåt rekvisition av bakåtknappen"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:351
 msgid "Server"
 msgstr "Server"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:357
 msgid "Auto-stop server when leaving library view"
 msgstr "Autostopp server när du lämnar biblioteksvyn"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:359
 msgid "Disabled"
 msgstr "Inaktiverad"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:360
 msgid "Immediate"
 msgstr "Omedelbar"
 
-#: ../Settings.lua:340
+#: ../Settings.lua:361
 msgid "After 30 seconds"
 msgstr "Efter 30 sekunder"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:362
 msgid "After 1 minute"
 msgstr "Efter 1 minut"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:363
 msgid "After 5 minutes"
 msgstr "Efter 5 minuter"
 
-#: ../Settings.lua:343
+#: ../Settings.lua:364
 msgid "After 10 minutes"
 msgstr "Efter 10 minuter"
 
-#: ../Settings.lua:353
+#: ../Settings.lua:374
 msgid "Show chapter download progress"
 msgstr "Visa kapitelnedladdningsförlopp"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:381
 msgid "Logging"
 msgstr "Skogsavverkning"
 
-#: ../Settings.lua:366
+#: ../Settings.lua:387
 msgid "Disable logging"
 msgstr "Inaktivera loggning"
 
@@ -1476,3 +1488,7 @@ msgstr "Gjort"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "Välja"
+
+#: ../widgets/SettingItemValue.lua:359
+msgid "Invalid value"
+msgstr ""

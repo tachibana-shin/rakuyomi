@@ -8,6 +8,7 @@ local util = require('frontend/util')
 ---@diagnostic disable-next-line: different-requires
 local platformUtil = require('platform/util')
 local must = platformUtil.must
+local must0 = platformUtil.must0
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
 local execute_binary_fast = require("utils/executeBinaryFast")
@@ -23,7 +24,7 @@ ffi.cdef([[
   char *getcwd(char *buf, size_t size);
   extern char **environ;
 
-  typedef struct { char __pad[128]; } posix_spawn_file_actions_t;
+  typedef struct { uint64_t __pad[16]; } posix_spawn_file_actions_t;
   int posix_spawn(int *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const void *attrp, const char *const argv[], char *const envp[]);
   int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions);
   int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *actions, int fd, int newfd);
@@ -168,17 +169,17 @@ function GenericUnixPlatform:startServer()
   end
 
   local actions = t_file_actions()
-  must("posix_spawn_file_actions_init", C.posix_spawn_file_actions_init(actions))
+  must0("posix_spawn_file_actions_init", C.posix_spawn_file_actions_init(actions))
 
   if capturer.stdout_pipe and capturer.stderr_pipe then
-    must("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
-    must("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))
+    must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
+    must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))
 
-    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[0]))
-    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[0]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[0]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[0]))
 
-    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[1]))
-    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[1]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[1]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[1]))
   end
 
   local old_dir = nil
@@ -200,7 +201,8 @@ function GenericUnixPlatform:startServer()
   C.posix_spawn_file_actions_destroy(actions)
 
 
-  local pid = must("posix_spawn", spawn_res == 0 and pid_ptr[0] or -1)
+  must0("posix_spawn", spawn_res)
+  local pid = pid_ptr[0]
 
   capturer:setupParentProcess()
 

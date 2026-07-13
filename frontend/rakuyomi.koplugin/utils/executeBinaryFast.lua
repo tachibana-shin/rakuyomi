@@ -9,7 +9,7 @@ ffi.cdef [[
   int chdir(const char *path);
   extern char **environ;
 
-  typedef struct { char __pad[128]; } posix_spawn_file_actions_t;
+  typedef struct { uint64_t __pad[16]; } posix_spawn_file_actions_t;
   int posix_spawnp(int *pid, const char *file, const posix_spawn_file_actions_t *file_actions, const void *attrp, const char *const argv[], char *const envp[]);
   int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions);
   int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *actions, int fd, int newfd);
@@ -44,9 +44,26 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
     return nil, "Failed to init file actions"
   end
 
-  ffi.C.posix_spawn_file_actions_adddup2(actions, pipefd[1], 1) -- redirect stdout to the write end of pipe
-  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[0])   -- close read end in child process
-  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[1])   -- close original write end after dup2
+  if ffi.C.posix_spawn_file_actions_adddup2(actions, pipefd[1], 1) ~= 0 then
+    ffi.C.posix_spawn_file_actions_destroy(actions)
+    ffi.C.close(pipefd[0])
+    ffi.C.close(pipefd[1])
+    return nil, "Failed to redirect stdout in file actions"
+  end
+
+  if ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[0]) ~= 0 then
+    ffi.C.posix_spawn_file_actions_destroy(actions)
+    ffi.C.close(pipefd[0])
+    ffi.C.close(pipefd[1])
+    return nil, "Failed to close read end in file actions"
+  end
+
+  if ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[1]) ~= 0 then
+    ffi.C.posix_spawn_file_actions_destroy(actions)
+    ffi.C.close(pipefd[0])
+    ffi.C.close(pipefd[1])
+    return nil, "Failed to close write end in file actions"
+  end
 
   argv[0] = cmd_path
   argv[1] = json_payload

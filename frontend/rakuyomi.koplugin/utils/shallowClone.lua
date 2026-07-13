@@ -12,7 +12,7 @@ if not table_move then
 end
 
 local function shallow_clone(arr)
-    return table_move(arr, 1, `#arr`, 1, {})
+    return table_move(arr, 1, #arr, 1, {})
 end
 
 return shallow_clone

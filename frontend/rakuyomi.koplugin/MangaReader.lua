@@ -459,6 +459,7 @@ function MangaReader:applyViewMode(ui)
   end
 end
 
+--patch frontend/apps/reader/modules/readerconfig.lua
 function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
   local manga_reader = self
   local ConfigDialog = require("ui/widget/configdialog")

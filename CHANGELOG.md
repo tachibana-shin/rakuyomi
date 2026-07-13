@@ -1,3 +1,18 @@
+# [1.37.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.11...v1.37.0) (2026-07-13)
+
+
+### Features
+
+* add new js apis from aidoku-rs SDK ([#238](https://github.com/tachibana-shin/rakuyomi/issues/238)) ([09a972d](https://github.com/tachibana-shin/rakuyomi/commit/09a972d6c6942249b35a01c474580d22a774ff2e))
+* implement Telegram bot for cookie management ([#233](https://github.com/tachibana-shin/rakuyomi/issues/233)) ([148a069](https://github.com/tachibana-shin/rakuyomi/commit/148a06930b1eb72476c07d830ac4f1f5ce82ed2a))
+* **manga:** add per-manga viewer preference ([#241](https://github.com/tachibana-shin/rakuyomi/issues/241)) ([2553704](https://github.com/tachibana-shin/rakuyomi/commit/2553704bbc8bfbca868ecf9f2684e6091d463515))
+* **proxy:** add global proxy support ([#239](https://github.com/tachibana-shin/rakuyomi/issues/239)) ([21a73ae](https://github.com/tachibana-shin/rakuyomi/commit/21a73aef5a65235f12f2a23839761fd1d380ab14))
+
+
+### Performance Improvements
+
+* **unix:** replace fork with posix_spawn ([#242](https://github.com/tachibana-shin/rakuyomi/issues/242)) ([cef20bc](https://github.com/tachibana-shin/rakuyomi/commit/cef20bc1af2b14af645b33dce301696788975ec0))
+
 ## [1.36.11](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.10...v1.36.11) (2026-07-09)
 
 

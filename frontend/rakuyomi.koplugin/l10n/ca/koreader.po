@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 14:35+0700\n"
+"POT-Creation-Date: 2026-07-14 00:12+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -78,11 +78,44 @@ msgstr "Error desconegut"
 msgid "Error"
 msgstr "Error"
 
+#: ../ChapterListPopup.lua:129
+#, fuzzy
+msgid "Chapters"
+msgstr "Capítol"
+
+#: ../ChapterListPopup.lua:354
+#, fuzzy
+msgid "Search chapters"
+msgstr "Capítols més nets"
+
+#: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
+#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1203 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+msgid "Cancel"
+msgstr "Cancel·la"
+
+#: ../ChapterListPopup.lua:361
+msgid "Apply"
+msgstr ""
+
+#: ../ChapterListPopup.lua:384
+#, fuzzy
+msgid "Go to page"
+msgstr "Pàgina següent"
+
+#: ../ChapterListPopup.lua:391
+msgid "Go"
+msgstr ""
+
 #: ../ChapterListing.lua:58
 msgid "Chapter listing"
 msgstr "Llistat de capítols"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1122
+#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
 msgid "Languages"
 msgstr "Idiomes"
 
@@ -94,278 +127,269 @@ msgstr "No s'han trobat capítols"
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Proveu de lliscar cap avall per actualitzar la llista de capítols."
 
-#: ../ChapterListing.lua:377
+#: ../ChapterListing.lua:389
 msgid "Volume"
 msgstr "Volum"
 
-#: ../ChapterListing.lua:381 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "Capítol"
 
-#: ../ChapterListing.lua:408
+#: ../ChapterListing.lua:420
 msgid "Locked"
 msgstr "Tancat"
 
-#: ../ChapterListing.lua:446 ../ChapterListing.lua:665
+#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
 msgid "Refreshing chapters..."
 msgstr "Refrescant capítols..."
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:672
-#: ../ChapterListing.lua:1382
+#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
+#: ../ChapterListing.lua:1417
 msgid "Cancelled."
 msgstr "Cancel·lat."
 
-#: ../ChapterListing.lua:466
+#: ../ChapterListing.lua:474
 msgid "Refresh chapter error"
 msgstr "Error d'actualització del capítol"
 
-#: ../ChapterListing.lua:516
+#: ../ChapterListing.lua:524
 msgid "Chapter is locked"
 msgstr "El capítol està bloquejat"
 
-#: ../ChapterListing.lua:533 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "Obert"
 
-#: ../ChapterListing.lua:543 ../ChapterListing.lua:1042 ../LibraryView.lua:557
+#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
 msgid "Refresh"
 msgstr "Actualitzar"
 
-#: ../ChapterListing.lua:549
+#: ../ChapterListing.lua:557
 msgid "Chapter refreshed"
 msgstr "Capítol actualitzat"
 
-#: ../ChapterListing.lua:555 ../ChapterListing.lua:698
-#: ../ChapterListing.lua:1078 ../LibraryView.lua:604
+#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
+#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
 msgid "Mark unread"
 msgstr "Marca com no llegit"
 
-#: ../ChapterListing.lua:566 ../ChapterListing.lua:1278
+#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
 msgid "Download"
 msgstr "Descarregar"
 
-#: ../ChapterListing.lua:566 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
 msgid "Remove"
 msgstr "Eliminar"
 
-#: ../ChapterListing.lua:575
+#: ../ChapterListing.lua:583
 msgid "Chapter downloaded"
 msgstr "Capítol descarregat"
 
-#: ../ChapterListing.lua:594
+#: ../ChapterListing.lua:602
 msgid "Revoke chapter..."
 msgstr "Revoca el capítol..."
 
-#: ../ChapterListing.lua:612
+#: ../ChapterListing.lua:620
 msgid "Removed chapter"
 msgstr "Capítol eliminat"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Marking"
 msgstr "Marcatge"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Un-marking"
 msgstr "Desmarcació"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "chapter..."
 msgstr "capítol..."
 
-#: ../ChapterListing.lua:657
+#: ../ChapterListing.lua:665
 msgid "Cannot refresh chapters while offline"
 msgstr "No es poden actualitzar els capítols sense connexió"
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:1068 ../LibraryView.lua:593
+#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
 msgid "Mark read"
 msgstr "Mark va llegir"
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:707
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Leaving blank will select all"
 msgstr "Si ho deixes en blanc, es seleccionaran tots"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Mark chapters as read or unread"
 msgstr "Marca els capítols com a llegits o no llegits"
 
-#: ../ChapterListing.lua:704 ../ChapterListing.lua:1194
-#: ../ChapterListing.lua:1271 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
-msgid "Cancel"
-msgstr "Cancel·la"
-
-#: ../ChapterListing.lua:711
+#: ../ChapterListing.lua:719
 msgid "Mark"
 msgstr "Marc"
 
-#: ../ChapterListing.lua:721
+#: ../ChapterListing.lua:729
 msgid "Marking..."
 msgstr "Marcant..."
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:739
 msgid "Marked"
 msgstr "Marcat"
 
-#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "Sense errors"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "Page"
 msgstr "Pàgina"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "attempts"
 msgstr "intents"
 
-#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "... i %d errors més"
 
-#: ../ChapterListing.lua:789
+#: ../ChapterListing.lua:797
 msgid "Could not download chapter."
 msgstr "No s'ha pogut descarregar el capítol."
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:805
 msgid "Loading chapter..."
 msgstr "S'està carregant el capítol..."
 
-#: ../ChapterListing.lua:798
+#: ../ChapterListing.lua:806
 msgid "unknown"
 msgstr "desconegut"
 
-#: ../ChapterListing.lua:816
+#: ../ChapterListing.lua:824
 msgid "Download cancelled."
 msgstr "Descàrrega cancel·lada."
 
-#: ../ChapterListing.lua:822
+#: ../ChapterListing.lua:830
 msgid "Are you sure you want to cancel the download?"
 msgstr "Esteu segur que voleu cancel·lar la baixada?"
 
-#: ../ChapterListing.lua:1032 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "Afegeix a la biblioteca"
 
-#: ../ChapterListing.lua:1050 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "Detalls"
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1125
 msgid "Resume"
 msgstr "Currículum"
 
-#: ../ChapterListing.lua:1098
+#: ../ChapterListing.lua:1133
 msgid "Next Chapter"
 msgstr "Capítol següent"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1143
 msgid "Download unread chapters…"
 msgstr "Descarrega els capítols no llegits..."
 
-#: ../ChapterListing.lua:1135
+#: ../ChapterListing.lua:1170
 msgid "Group"
 msgstr "Grup"
 
-#: ../ChapterListing.lua:1136 ../ChapterListing.lua:1252
+#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
 msgid "Filter by Group"
 msgstr "Filtra per grup"
 
-#: ../ChapterListing.lua:1159
+#: ../ChapterListing.lua:1194
 msgid "Adding to library..."
 msgstr "S'està afegint a la biblioteca..."
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1201
 msgid "Failed to add to library"
 msgstr "No s'ha pogut afegir a la biblioteca"
 
-#: ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1206
 msgid "Added to library."
 msgstr "S'ha afegit a la biblioteca."
 
-#: ../ChapterListing.lua:1183 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
 msgid "Sadly, no next chapter available! :c"
 msgstr "Malauradament, no hi ha cap capítol següent disponible! "
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "Next"
 msgstr "A continuació"
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "reading with"
 msgstr "llegint amb"
 
-#: ../ChapterListing.lua:1193 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
 msgid "Read"
 msgstr "Llegeix"
 
-#: ../ChapterListing.lua:1215
+#: ../ChapterListing.lua:1250
 msgid "Show All"
 msgstr "Mostra-ho tot"
 
-#: ../ChapterListing.lua:1224
+#: ../ChapterListing.lua:1259
 msgid "Showing all groups"
 msgstr "Es mostren tots els grups"
 
-#: ../ChapterListing.lua:1245
+#: ../ChapterListing.lua:1280
 msgid "Filtered to"
 msgstr "Filtrat a"
 
-#: ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1297
 msgid "Download unread chapters..."
 msgstr "Descarrega els capítols no llegits..."
 
-#: ../ChapterListing.lua:1264
+#: ../ChapterListing.lua:1299
 msgid "Amount of unread chapters (default: all)"
 msgstr "Quantitat de capítols no llegits (per defecte: tots)"
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Specify amount or leave empty for all."
 msgstr "Especifiqueu la quantitat o deixeu-ho buit per a tots."
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Will download from"
 msgstr "Es baixarà de"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "Specify the amount of unread chapters to download"
 msgstr "Especifiqueu la quantitat de capítols no llegits per descarregar"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "or leave empty to download all of them."
 msgstr "o deixa buit per descarregar-los tots."
 
-#: ../ChapterListing.lua:1288
+#: ../ChapterListing.lua:1323
 msgid "Invalid amount of chapters!"
 msgstr "Quantitat de capítols no vàlida!"
 
-#: ../ChapterListing.lua:1309
+#: ../ChapterListing.lua:1344
 msgid "No unread chapters found for"
 msgstr "No s'han trobat capítols no llegits per a"
 
-#: ../ChapterListing.lua:1334 ../ChapterListing.lua:1409
+#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
 msgid "Downloading all chapters, this will take a while…"
 msgstr "S'estan baixant tots els capítols, això trigarà una estona..."
 
-#: ../ChapterListing.lua:1419
+#: ../ChapterListing.lua:1454
 msgid "Waiting for download to be cancelled…"
 msgstr "S'està esperant que es cancel·li la descàrrega..."
 
-#: ../ChapterListing.lua:1421
+#: ../ChapterListing.lua:1456
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "En baixar tots els capítols, això trigarà una estona... ("
 
-#: ../ChapterListing.lua:1424
+#: ../ChapterListing.lua:1459
 msgid "Tap outside this message to cancel."
 msgstr "Toca fora d'aquest missatge per cancel·lar-lo."
 
@@ -572,7 +596,7 @@ msgstr "Vols eliminar el"
 msgid "source?"
 msgstr "font?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:83
+#: ../LibraryView.lua:74 ../Settings.lua:86
 msgid "Library"
 msgstr "Biblioteca"
 
@@ -660,7 +684,7 @@ msgstr "Capítols més nets"
 msgid "Manage sources"
 msgstr "Gestionar les fonts"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
 msgid "Settings"
 msgstr "Configuració"
 
@@ -748,7 +772,7 @@ msgstr "Ús"
 msgid "Memory"
 msgstr "Memòria"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:254
+#: ../LibraryView.lua:1073 ../Settings.lua:364
 msgid "Storage"
 msgstr "Emmagatzematge"
 
@@ -781,7 +805,7 @@ msgid "Type the manga name to search for"
 msgstr "Escriu el nom del manga per cercar"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:192
+#: ../LibraryView.lua:1210 ../Settings.lua:195
 msgid "Search"
 msgstr "Cerca"
 
@@ -954,25 +978,71 @@ msgstr "S'estan actualitzant els detalls..."
 msgid "Refresh details cancelled."
 msgstr "S'han cancel·lat els detalls d'actualització."
 
-#: ../MangaReader.lua:140
+#: ../MangaReader.lua:178
 msgid "Go back to Rakuyomi..."
 msgstr "Torna a Rakuyomi..."
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "Voleu que Rakuyomi prengui aquest botó quan l'obris?"
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "Aquesta configuració només afecta quan l'obres amb Rakuyomi."
 
-#: ../MangaReader.lua:222
+#: ../MangaReader.lua:276
 msgid "Yes"
 msgstr "Sí"
 
-#: ../MangaReader.lua:223
+#: ../MangaReader.lua:277
 msgid "No"
 msgstr "No"
+
+#: ../MangaReader.lua:332
+msgid "View Mode"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+msgid "Default"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+msgid "LTR"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+msgid "RTL"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+msgid "Scroll"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+msgid "Vertical"
+msgstr ""
+
+#: ../MangaReader.lua:337
+msgid ""
+"Choose how pages are displayed and navigated.\n"
+"Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
+msgstr ""
+
+#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+msgid "Off"
+msgstr ""
+
+#: ../MangaReader.lua:378
+msgid "Global Viewer Override"
+msgstr ""
+
+#: ../MangaReader.lua:571
+msgid "Set default %1 to %2?"
+msgstr ""
+
+#: ../MangaReader.lua:575
+msgid "Set as default"
+msgstr ""
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1067,229 +1137,291 @@ msgstr "Crear"
 msgid "No playlists yet."
 msgstr "Encara no hi ha llistes de reproducció."
 
-#: ../Settings.lua:89
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "Mode de visualització de la biblioteca"
 
-#: ../Settings.lua:91 ../Settings.lua:200
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "Base"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "Portada"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "Quadrícula"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "Mode d'ordenació de la biblioteca"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:107
 msgid "Order added ascending (Default)"
 msgstr "Ordre afegit ascendent (per defecte)"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:108
 msgid "Order added descending"
 msgstr "Ordre afegit descendent"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:109
 msgid "Title manga ascending"
 msgstr "Títol manga ascendent"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:110
 msgid "Title manga descending"
 msgstr "Títol manga descendent"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:111
 msgid "Count unread chapters ascending"
 msgstr "Comptar els capítols no llegits ascendent"
 
-#: ../Settings.lua:109
+#: ../Settings.lua:112
 msgid "Count unread chapters descending"
 msgstr "Comptar capítols no llegits descendent"
 
-#: ../Settings.lua:110
+#: ../Settings.lua:113
 msgid "Last read ascending"
 msgstr "Última lectura ascendent"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:114
 msgid "Last read descending"
 msgstr "Última lectura descendent"
 
-#: ../Settings.lua:112
+#: ../Settings.lua:115
 msgid "Source ascending"
 msgstr "Font ascendent"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:116
 msgid "Source descending"
 msgstr "Font descendent"
 
-#: ../Settings.lua:121
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "Elements per pàgina (0 = automàtic)"
 
-#: ../Settings.lua:132
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "Columnes de quadrícula"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "Files de graella"
 
-#: ../Settings.lua:154
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "Mostra el títol en mode de quadrícula"
 
-#: ../Settings.lua:163
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "Mostra les metadades en mode de quadrícula"
 
-#: ../Settings.lua:172
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "Toca l'acció de manga"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "Obre la llista de capítols"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "Continua llegint"
 
-#: ../Settings.lua:185
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "Omet la confirmació de lectura del currículum"
 
-#: ../Settings.lua:198
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "Mode de visualització de cerca"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "Lector"
 
-#: ../Settings.lua:215
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "Mode d'ordenació de capítols"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "Per capítol ascendent"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "Per capítol descendent"
 
-#: ../Settings.lua:226
+#: ../Settings.lua:229
 msgid "Preload chapters on reader open"
 msgstr "Carregueu prèviament els capítols al lector obert"
 
-#: ../Settings.lua:237
+#: ../Settings.lua:240
 msgid "Optimize page images (experimental)"
 msgstr "Optimitzar les imatges de la pàgina (experimental)"
 
-#: ../Settings.lua:245
+#: ../Settings.lua:248
 msgid "Concurrent page requests"
 msgstr "Sol·licituds de pàgines concurrents"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:259
+msgid "Never turn on RTL, even for Japanese manga"
+msgstr ""
+
+#: ../Settings.lua:268
+msgid "Automatically set the viewer to manga mode"
+msgstr ""
+
+#: ../Settings.lua:277
+msgid "Global viewer override"
+msgstr ""
+
+#: ../Settings.lua:294
+msgid "Show button previous chapter in toolbar reader"
+msgstr ""
+
+#: ../Settings.lua:303
+msgid "Show button next chapter in toolbar reader"
+msgstr ""
+
+#: ../Settings.lua:312
+msgid "Display the expanded rakuyomi bottom toolbar in the reader"
+msgstr ""
+
+#: ../Settings.lua:315
+msgid "On bottom toolbar"
+msgstr ""
+
+#: ../Settings.lua:316
+msgid "On top toolbar"
+msgstr ""
+
+#: ../Settings.lua:324
+msgid "Recommended reader settings"
+msgstr ""
+
+#: ../Settings.lua:330
+msgid "Turn off all margins"
+msgstr ""
+
+#: ../Settings.lua:339
+msgid "Automatically crop excess edges from photos (a little slow)"
+msgstr ""
+
+#: ../Settings.lua:348
+msgid "Zoom to full screen"
+msgstr ""
+
+#: ../Settings.lua:357
+msgid "Zoom to fit image size"
+msgstr ""
+
+#: ../Settings.lua:370
 msgid "Chapter storage path"
 msgstr "Camí d'emmagatzematge del capítol"
 
-#: ../Settings.lua:269
+#: ../Settings.lua:379
 msgid "Storage size limit"
 msgstr "Límit de mida d'emmagatzematge"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:389
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Escriure capítols a la memòria RAM (protegir eMMC)"
 
-#: ../Settings.lua:287
+#: ../Settings.lua:397
 msgid "RAM storage size. Your RAM is: "
 msgstr "Mida d'emmagatzematge RAM. "
 
-#: ../Settings.lua:296
+#: ../Settings.lua:406
 msgid "Network"
 msgstr ""
 
-#: ../Settings.lua:302
+#: ../Settings.lua:412
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr ""
 
-#: ../Settings.lua:305
+#: ../Settings.lua:415
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr ""
 
-#: ../Settings.lua:310
+#: ../Settings.lua:420
 msgid "Sync & Updates"
 msgstr "Sincronització i actualitzacions"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:426
 msgid "WebDAV Sync"
 msgstr "Sincronització WebDAV"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:434
 msgid "Enabled cron check for manga updates"
 msgstr "S'ha habilitat la comprovació cron per a actualitzacions de manga"
 
-#: ../Settings.lua:332
+#: ../Settings.lua:442
 msgid "Source IDs skip check update"
 msgstr "Els identificadors d'origen omet l'actualització de la comprovació"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:448
 msgid "System"
 msgstr "Sistema"
 
-#: ../Settings.lua:344
+#: ../Settings.lua:454
 msgid "Allow requisition of the back button"
 msgstr "Permet la demanda del botó enrere"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:461
 msgid "Server"
 msgstr "Servidor"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:467
 msgid "Auto-stop server when leaving library view"
 msgstr "Atura automàticament el servidor en sortir de la vista de biblioteca"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:469
 msgid "Disabled"
 msgstr "Inhabilitat"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:470
 msgid "Immediate"
 msgstr "Immediatament"
 
-#: ../Settings.lua:361
+#: ../Settings.lua:471
 msgid "After 30 seconds"
 msgstr "Després de 30 segons"
 
-#: ../Settings.lua:362
+#: ../Settings.lua:472
 msgid "After 1 minute"
 msgstr "Després d'1 minut"
 
-#: ../Settings.lua:363
+#: ../Settings.lua:473
 msgid "After 5 minutes"
 msgstr "Després de 5 minuts"
 
-#: ../Settings.lua:364
+#: ../Settings.lua:474
 msgid "After 10 minutes"
 msgstr "Després de 10 minuts"
 
-#: ../Settings.lua:374
+#: ../Settings.lua:484
 msgid "Show chapter download progress"
 msgstr "Mostra el progrés de baixada del capítol"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:491
 msgid "Logging"
 msgstr "Enregistrament"
 
-#: ../Settings.lua:387
+#: ../Settings.lua:497
 msgid "Disable logging"
 msgstr "Desactiva el registre"
+
+#: ../Settings.lua:675
+#, fuzzy
+msgid "Testing proxy..."
+msgstr "S'està reiniciant..."
+
+#: ../Settings.lua:684
+#, fuzzy
+msgid "Failed to test proxy"
+msgstr "No s'ha pogut afegir a la biblioteca"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"

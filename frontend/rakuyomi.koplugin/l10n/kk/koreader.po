@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 14:35+0700\n"
+"POT-Creation-Date: 2026-07-14 00:12+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -78,11 +78,44 @@ msgstr "Белгісіз қате"
 msgid "Error"
 msgstr "Қате"
 
+#: ../ChapterListPopup.lua:129
+#, fuzzy
+msgid "Chapters"
+msgstr "тарау"
+
+#: ../ChapterListPopup.lua:354
+#, fuzzy
+msgid "Search chapters"
+msgstr "Таза тараулар"
+
+#: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
+#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1203 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+msgid "Cancel"
+msgstr "Болдырмау"
+
+#: ../ChapterListPopup.lua:361
+msgid "Apply"
+msgstr ""
+
+#: ../ChapterListPopup.lua:384
+#, fuzzy
+msgid "Go to page"
+msgstr "Келесі бет"
+
+#: ../ChapterListPopup.lua:391
+msgid "Go"
+msgstr ""
+
 #: ../ChapterListing.lua:58
 msgid "Chapter listing"
 msgstr "Бөлім тізімі"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1122
+#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
 msgid "Languages"
 msgstr "Тілдер"
 
@@ -94,278 +127,269 @@ msgstr "Ешбір тарау табылмады"
 msgid "Try swiping down to refresh the chapter list."
 msgstr "Тараулар тізімін жаңарту үшін төмен сырғытып көріңіз."
 
-#: ../ChapterListing.lua:377
+#: ../ChapterListing.lua:389
 msgid "Volume"
 msgstr "Көлемі"
 
-#: ../ChapterListing.lua:381 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "тарау"
 
-#: ../ChapterListing.lua:408
+#: ../ChapterListing.lua:420
 msgid "Locked"
 msgstr "Құлыпталған"
 
-#: ../ChapterListing.lua:446 ../ChapterListing.lua:665
+#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
 msgid "Refreshing chapters..."
 msgstr "Тараулар жаңартылуда..."
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:672
-#: ../ChapterListing.lua:1382
+#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
+#: ../ChapterListing.lua:1417
 msgid "Cancelled."
 msgstr "Бас тартылды."
 
-#: ../ChapterListing.lua:466
+#: ../ChapterListing.lua:474
 msgid "Refresh chapter error"
 msgstr "Жаңарту тарау қатесі"
 
-#: ../ChapterListing.lua:516
+#: ../ChapterListing.lua:524
 msgid "Chapter is locked"
 msgstr "Бөлім құлыпталған"
 
-#: ../ChapterListing.lua:533 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "Ашық"
 
-#: ../ChapterListing.lua:543 ../ChapterListing.lua:1042 ../LibraryView.lua:557
+#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
 msgid "Refresh"
 msgstr "Жаңарту"
 
-#: ../ChapterListing.lua:549
+#: ../ChapterListing.lua:557
 msgid "Chapter refreshed"
 msgstr "Бөлім жаңартылды"
 
-#: ../ChapterListing.lua:555 ../ChapterListing.lua:698
-#: ../ChapterListing.lua:1078 ../LibraryView.lua:604
+#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
+#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
 msgid "Mark unread"
 msgstr "Оқылмаған деп белгілеңіз"
 
-#: ../ChapterListing.lua:566 ../ChapterListing.lua:1278
+#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
 msgid "Download"
 msgstr "Жүктеп алу"
 
-#: ../ChapterListing.lua:566 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
 msgid "Remove"
 msgstr "Жою"
 
-#: ../ChapterListing.lua:575
+#: ../ChapterListing.lua:583
 msgid "Chapter downloaded"
 msgstr "Бөлім жүктелді"
 
-#: ../ChapterListing.lua:594
+#: ../ChapterListing.lua:602
 msgid "Revoke chapter..."
 msgstr "Тарауды жою..."
 
-#: ../ChapterListing.lua:612
+#: ../ChapterListing.lua:620
 msgid "Removed chapter"
 msgstr "Жойылған тарау"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Marking"
 msgstr "Белгілеу"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Un-marking"
 msgstr "Белгіні алып тастау"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "chapter..."
 msgstr "тарау..."
 
-#: ../ChapterListing.lua:657
+#: ../ChapterListing.lua:665
 msgid "Cannot refresh chapters while offline"
 msgstr "Офлайн режимде тарауларды жаңарту мүмкін емес"
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:1068 ../LibraryView.lua:593
+#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
 msgid "Mark read"
 msgstr "Оқылған деп белгілеңіз"
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:707
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10,5, 20 - 100"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Leaving blank will select all"
 msgstr "Бос қалдырсаңыз, барлығы таңдалады"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Mark chapters as read or unread"
 msgstr "Тарауларды оқылған немесе оқылмаған деп белгілеңіз"
 
-#: ../ChapterListing.lua:704 ../ChapterListing.lua:1194
-#: ../ChapterListing.lua:1271 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
-msgid "Cancel"
-msgstr "Болдырмау"
-
-#: ../ChapterListing.lua:711
+#: ../ChapterListing.lua:719
 msgid "Mark"
 msgstr "Белгілеу"
 
-#: ../ChapterListing.lua:721
+#: ../ChapterListing.lua:729
 msgid "Marking..."
 msgstr "Белгіленуде..."
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:739
 msgid "Marked"
 msgstr "Белгіленген"
 
-#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "Қателер жоқ"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "Page"
 msgstr "Бет"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "attempts"
 msgstr "әрекеттері"
 
-#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… және тағы %d қате"
 
-#: ../ChapterListing.lua:789
+#: ../ChapterListing.lua:797
 msgid "Could not download chapter."
 msgstr "Бөлімді жүктеп алу мүмкін болмады."
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:805
 msgid "Loading chapter..."
 msgstr "Бөлім жүктелуде..."
 
-#: ../ChapterListing.lua:798
+#: ../ChapterListing.lua:806
 msgid "unknown"
 msgstr "белгісіз"
 
-#: ../ChapterListing.lua:816
+#: ../ChapterListing.lua:824
 msgid "Download cancelled."
 msgstr "Жүктеп алу тоқтатылды."
 
-#: ../ChapterListing.lua:822
+#: ../ChapterListing.lua:830
 msgid "Are you sure you want to cancel the download?"
 msgstr "Жүктеп алудан бас тартқыңыз келетініне сенімдісіз бе?"
 
-#: ../ChapterListing.lua:1032 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "Кітапханаға қосу"
 
-#: ../ChapterListing.lua:1050 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "Мәліметтер"
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1125
 msgid "Resume"
 msgstr "Резюме"
 
-#: ../ChapterListing.lua:1098
+#: ../ChapterListing.lua:1133
 msgid "Next Chapter"
 msgstr "Келесі тарау"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1143
 msgid "Download unread chapters…"
 msgstr "Оқылмаған тарауларды жүктеп алу…"
 
-#: ../ChapterListing.lua:1135
+#: ../ChapterListing.lua:1170
 msgid "Group"
 msgstr "Топ"
 
-#: ../ChapterListing.lua:1136 ../ChapterListing.lua:1252
+#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
 msgid "Filter by Group"
 msgstr "Топ бойынша сүзу"
 
-#: ../ChapterListing.lua:1159
+#: ../ChapterListing.lua:1194
 msgid "Adding to library..."
 msgstr "Кітапханаға қосылуда..."
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1201
 msgid "Failed to add to library"
 msgstr "Кітапханаға қосу мүмкін болмады"
 
-#: ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1206
 msgid "Added to library."
 msgstr "Кітапханаға қосылды."
 
-#: ../ChapterListing.lua:1183 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
 msgid "Sadly, no next chapter available! :c"
 msgstr "Өкінішке орай, келесі бөлім жоқ! "
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "Next"
 msgstr "Келесі"
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "reading with"
 msgstr "бірге оқу"
 
-#: ../ChapterListing.lua:1193 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
 msgid "Read"
 msgstr "Оқыңыз"
 
-#: ../ChapterListing.lua:1215
+#: ../ChapterListing.lua:1250
 msgid "Show All"
 msgstr "Барлығын көрсету"
 
-#: ../ChapterListing.lua:1224
+#: ../ChapterListing.lua:1259
 msgid "Showing all groups"
 msgstr "Барлық топтарды көрсету"
 
-#: ../ChapterListing.lua:1245
+#: ../ChapterListing.lua:1280
 msgid "Filtered to"
 msgstr "сүзгіден өткен"
 
-#: ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1297
 msgid "Download unread chapters..."
 msgstr "Оқылмаған тарауларды жүктеп алу..."
 
-#: ../ChapterListing.lua:1264
+#: ../ChapterListing.lua:1299
 msgid "Amount of unread chapters (default: all)"
 msgstr "Оқылмаған тараулар саны (әдепкі: барлығы)"
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Specify amount or leave empty for all."
 msgstr "соманы көрсетіңіз немесе барлығы үшін бос қалдырыңыз."
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Will download from"
 msgstr "бастап жүктеп алады"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "Specify the amount of unread chapters to download"
 msgstr "Жүктеп алынатын оқылмаған тараулар санын көрсетіңіз"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "or leave empty to download all of them."
 msgstr "немесе олардың барлығын жүктеп алу үшін бос қалдырыңыз."
 
-#: ../ChapterListing.lua:1288
+#: ../ChapterListing.lua:1323
 msgid "Invalid amount of chapters!"
 msgstr "Тараулардың саны жарамсыз!"
 
-#: ../ChapterListing.lua:1309
+#: ../ChapterListing.lua:1344
 msgid "No unread chapters found for"
 msgstr "үшін оқылмаған тараулар табылмады"
 
-#: ../ChapterListing.lua:1334 ../ChapterListing.lua:1409
+#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Барлық тараулар жүктелуде, бұл біраз уақыт алады…"
 
-#: ../ChapterListing.lua:1419
+#: ../ChapterListing.lua:1454
 msgid "Waiting for download to be cancelled…"
 msgstr "Жүктеп алудан бас тарту күтілуде…"
 
-#: ../ChapterListing.lua:1421
+#: ../ChapterListing.lua:1456
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Барлық тарауларды жүктеп алу, бұл біраз уақыт алады… ("
 
-#: ../ChapterListing.lua:1424
+#: ../ChapterListing.lua:1459
 msgid "Tap outside this message to cancel."
 msgstr "Бас тарту үшін осы хабардың сыртын түртіңіз."
 
@@ -572,7 +596,7 @@ msgstr "жоюды қалайсыз ба"
 msgid "source?"
 msgstr "көзі?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:83
+#: ../LibraryView.lua:74 ../Settings.lua:86
 msgid "Library"
 msgstr "Кітапхана"
 
@@ -660,7 +684,7 @@ msgstr "Таза тараулар"
 msgid "Manage sources"
 msgstr "Дереккөздерді басқару"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
 msgid "Settings"
 msgstr "Параметрлер"
 
@@ -748,7 +772,7 @@ msgstr "Қолданылуы"
 msgid "Memory"
 msgstr "Жад"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:254
+#: ../LibraryView.lua:1073 ../Settings.lua:364
 msgid "Storage"
 msgstr "Сақтау"
 
@@ -781,7 +805,7 @@ msgid "Type the manga name to search for"
 msgstr "Іздеу үшін манга атын теріңіз"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:192
+#: ../LibraryView.lua:1210 ../Settings.lua:195
 msgid "Search"
 msgstr "Іздеу"
 
@@ -954,25 +978,71 @@ msgstr "Мәліметтер жаңартылуда..."
 msgid "Refresh details cancelled."
 msgstr "Мәліметтерді жаңарту тоқтатылды."
 
-#: ../MangaReader.lua:140
+#: ../MangaReader.lua:178
 msgid "Go back to Rakuyomi..."
 msgstr "Ракуёмиге оралу..."
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "Сіз оны ашқан кезде Ракуёмидің осы түймені басқаруын қалайсыз ба?"
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "Бұл параметр оны Rakuyomi арқылы ашқанда ғана әсер етеді."
 
-#: ../MangaReader.lua:222
+#: ../MangaReader.lua:276
 msgid "Yes"
 msgstr "Иә"
 
-#: ../MangaReader.lua:223
+#: ../MangaReader.lua:277
 msgid "No"
 msgstr "Жоқ"
+
+#: ../MangaReader.lua:332
+msgid "View Mode"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+msgid "Default"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+msgid "LTR"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+msgid "RTL"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+msgid "Scroll"
+msgstr ""
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+msgid "Vertical"
+msgstr ""
+
+#: ../MangaReader.lua:337
+msgid ""
+"Choose how pages are displayed and navigated.\n"
+"Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
+msgstr ""
+
+#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+msgid "Off"
+msgstr ""
+
+#: ../MangaReader.lua:378
+msgid "Global Viewer Override"
+msgstr ""
+
+#: ../MangaReader.lua:571
+msgid "Set default %1 to %2?"
+msgstr ""
+
+#: ../MangaReader.lua:575
+msgid "Set as default"
+msgstr ""
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1067,229 +1137,291 @@ msgstr "Жасау"
 msgid "No playlists yet."
 msgstr "Әзірге ойнату тізімдері жоқ."
 
-#: ../Settings.lua:89
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "Кітапхананы қарау режимі"
 
-#: ../Settings.lua:91 ../Settings.lua:200
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "Негіз"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "Қақпақ"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "Тор"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "Кітапхананы сұрыптау режимі"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:107
 msgid "Order added ascending (Default)"
 msgstr "Өсу бойынша қосылған реттілік (әдепкі)"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:108
 msgid "Order added descending"
 msgstr "Тапсырыс кему бойынша қосылды"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:109
 msgid "Title manga ascending"
 msgstr "Манга тақырыбы көтерілуде"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:110
 msgid "Title manga descending"
 msgstr "Манганың атауы төмендеуде"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:111
 msgid "Count unread chapters ascending"
 msgstr "Оқылмаған тарауларды өсу бойынша санаңыз"
 
-#: ../Settings.lua:109
+#: ../Settings.lua:112
 msgid "Count unread chapters descending"
 msgstr "Оқылмаған тарауларды кему бойынша санаңыз"
 
-#: ../Settings.lua:110
+#: ../Settings.lua:113
 msgid "Last read ascending"
 msgstr "Соңғы оқылған өсу"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:114
 msgid "Last read descending"
 msgstr "Соңғы оқылған кему"
 
-#: ../Settings.lua:112
+#: ../Settings.lua:115
 msgid "Source ascending"
 msgstr "Дереккөздің жоғарылауы"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:116
 msgid "Source descending"
 msgstr "Дереккөз төмендеу"
 
-#: ../Settings.lua:121
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "Бір беттегі элементтер (0 = авто)"
 
-#: ../Settings.lua:132
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "Тор бағандары"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "Тор жолдары"
 
-#: ../Settings.lua:154
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "Тақырыпты тор режимінде көрсету"
 
-#: ../Settings.lua:163
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "Метадеректерді тор режимінде көрсету"
 
-#: ../Settings.lua:172
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "Манга әрекетін түртіңіз"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "Тараулар тізімін ашыңыз"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "Оқуды жалғастыру"
 
-#: ../Settings.lua:185
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "Түйіндемені оқуды растауды өткізіп жіберіңіз"
 
-#: ../Settings.lua:198
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "Іздеу көру режимі"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "Оқырман"
 
-#: ../Settings.lua:215
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "Тарауларды сұрыптау режимі"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "Тараудың жоғарылауы бойынша"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "Төменгі тарау бойынша"
 
-#: ../Settings.lua:226
+#: ../Settings.lua:229
 msgid "Preload chapters on reader open"
 msgstr "Оқырманға ашық тарауларды алдын ала жүктеңіз"
 
-#: ../Settings.lua:237
+#: ../Settings.lua:240
 msgid "Optimize page images (experimental)"
 msgstr "Бет кескіндерін оңтайландыру (эксперименттік)"
 
-#: ../Settings.lua:245
+#: ../Settings.lua:248
 msgid "Concurrent page requests"
 msgstr "Бір мезгілде бет сұраулары"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:259
+msgid "Never turn on RTL, even for Japanese manga"
+msgstr ""
+
+#: ../Settings.lua:268
+msgid "Automatically set the viewer to manga mode"
+msgstr ""
+
+#: ../Settings.lua:277
+msgid "Global viewer override"
+msgstr ""
+
+#: ../Settings.lua:294
+msgid "Show button previous chapter in toolbar reader"
+msgstr ""
+
+#: ../Settings.lua:303
+msgid "Show button next chapter in toolbar reader"
+msgstr ""
+
+#: ../Settings.lua:312
+msgid "Display the expanded rakuyomi bottom toolbar in the reader"
+msgstr ""
+
+#: ../Settings.lua:315
+msgid "On bottom toolbar"
+msgstr ""
+
+#: ../Settings.lua:316
+msgid "On top toolbar"
+msgstr ""
+
+#: ../Settings.lua:324
+msgid "Recommended reader settings"
+msgstr ""
+
+#: ../Settings.lua:330
+msgid "Turn off all margins"
+msgstr ""
+
+#: ../Settings.lua:339
+msgid "Automatically crop excess edges from photos (a little slow)"
+msgstr ""
+
+#: ../Settings.lua:348
+msgid "Zoom to full screen"
+msgstr ""
+
+#: ../Settings.lua:357
+msgid "Zoom to fit image size"
+msgstr ""
+
+#: ../Settings.lua:370
 msgid "Chapter storage path"
 msgstr "Тарауларды сақтау жолы"
 
-#: ../Settings.lua:269
+#: ../Settings.lua:379
 msgid "Storage size limit"
 msgstr "Жад көлемінің шегі"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:389
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "ЖЖҚ-ға тарауларды жазу (eMMC-ті қорғау)"
 
-#: ../Settings.lua:287
+#: ../Settings.lua:397
 msgid "RAM storage size. Your RAM is: "
 msgstr "ЖЖҚ сақтау көлемі. "
 
-#: ../Settings.lua:296
+#: ../Settings.lua:406
 msgid "Network"
 msgstr ""
 
-#: ../Settings.lua:302
+#: ../Settings.lua:412
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr ""
 
-#: ../Settings.lua:305
+#: ../Settings.lua:415
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr ""
 
-#: ../Settings.lua:310
+#: ../Settings.lua:420
 msgid "Sync & Updates"
 msgstr "Синхрондау және жаңартулар"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:426
 msgid "WebDAV Sync"
 msgstr "WebDAV синхрондау"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:434
 msgid "Enabled cron check for manga updates"
 msgstr "Манга жаңартуларын cron тексеруі қосылды"
 
-#: ../Settings.lua:332
+#: ../Settings.lua:442
 msgid "Source IDs skip check update"
 msgstr "Бастапқы идентификаторлар тексеру жаңартуын өткізіп жібереді"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:448
 msgid "System"
 msgstr "Жүйе"
 
-#: ../Settings.lua:344
+#: ../Settings.lua:454
 msgid "Allow requisition of the back button"
 msgstr "Артқа түймешігін сұрауға рұқсат беріңіз"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:461
 msgid "Server"
 msgstr "Сервер"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:467
 msgid "Auto-stop server when leaving library view"
 msgstr "Кітапхана көрінісінен шыққан кезде серверді автоматты түрде тоқтату"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:469
 msgid "Disabled"
 msgstr "Өшірілген"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:470
 msgid "Immediate"
 msgstr "Дереу"
 
-#: ../Settings.lua:361
+#: ../Settings.lua:471
 msgid "After 30 seconds"
 msgstr "30 секундтан кейін"
 
-#: ../Settings.lua:362
+#: ../Settings.lua:472
 msgid "After 1 minute"
 msgstr "1 минуттан кейін"
 
-#: ../Settings.lua:363
+#: ../Settings.lua:473
 msgid "After 5 minutes"
 msgstr "5 минуттан кейін"
 
-#: ../Settings.lua:364
+#: ../Settings.lua:474
 msgid "After 10 minutes"
 msgstr "10 минуттан кейін"
 
-#: ../Settings.lua:374
+#: ../Settings.lua:484
 msgid "Show chapter download progress"
 msgstr "Тарауды жүктеп алу барысын көрсету"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:491
 msgid "Logging"
 msgstr "Тіркеу"
 
-#: ../Settings.lua:387
+#: ../Settings.lua:497
 msgid "Disable logging"
 msgstr "Тіркеуді өшіру"
+
+#: ../Settings.lua:675
+#, fuzzy
+msgid "Testing proxy..."
+msgstr "Қайта іске қосылуда..."
+
+#: ../Settings.lua:684
+#, fuzzy
+msgid "Failed to test proxy"
+msgstr "Кітапханаға қосу мүмкін болмады"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"

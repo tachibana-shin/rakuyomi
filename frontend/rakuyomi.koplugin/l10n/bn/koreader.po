@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 14:35+0700\n"
+"POT-Creation-Date: 2026-07-14 00:12+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -78,11 +78,41 @@ msgstr "অজানা ত্রুটি"
 msgid "Error"
 msgstr "ত্রুটি"
 
+#: ../ChapterListPopup.lua:129
+msgid "Chapters"
+msgstr "অধ্যায়"
+
+#: ../ChapterListPopup.lua:354
+msgid "Search chapters"
+msgstr "অধ্যায় অনুসন্ধান করুন"
+
+#: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
+#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1203 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+msgid "Cancel"
+msgstr "বাতিল করুন"
+
+#: ../ChapterListPopup.lua:361
+msgid "Apply"
+msgstr "আবেদন করুন"
+
+#: ../ChapterListPopup.lua:384
+msgid "Go to page"
+msgstr "পৃষ্ঠায় যান"
+
+#: ../ChapterListPopup.lua:391
+msgid "Go"
+msgstr "যাও"
+
 #: ../ChapterListing.lua:58
 msgid "Chapter listing"
 msgstr "অধ্যায় তালিকা"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1122
+#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
 msgid "Languages"
 msgstr "ভাষা"
 
@@ -94,278 +124,269 @@ msgstr "কোন অধ্যায় পাওয়া যায়নি"
 msgid "Try swiping down to refresh the chapter list."
 msgstr "অধ্যায় তালিকা রিফ্রেশ করতে নিচে সোয়াইপ করার চেষ্টা করুন."
 
-#: ../ChapterListing.lua:377
+#: ../ChapterListing.lua:389
 msgid "Volume"
 msgstr "আয়তন"
 
-#: ../ChapterListing.lua:381 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "অধ্যায়"
 
-#: ../ChapterListing.lua:408
+#: ../ChapterListing.lua:420
 msgid "Locked"
 msgstr "তালাবদ্ধ"
 
-#: ../ChapterListing.lua:446 ../ChapterListing.lua:665
+#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
 msgid "Refreshing chapters..."
 msgstr "রিফ্রেশ করা অধ্যায়..."
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:672
-#: ../ChapterListing.lua:1382
+#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
+#: ../ChapterListing.lua:1417
 msgid "Cancelled."
 msgstr "বাতিল"
 
-#: ../ChapterListing.lua:466
+#: ../ChapterListing.lua:474
 msgid "Refresh chapter error"
 msgstr "রিফ্রেশ অধ্যায় ত্রুটি"
 
-#: ../ChapterListing.lua:516
+#: ../ChapterListing.lua:524
 msgid "Chapter is locked"
 msgstr "অধ্যায় তালাবদ্ধ"
 
-#: ../ChapterListing.lua:533 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "খোলা"
 
-#: ../ChapterListing.lua:543 ../ChapterListing.lua:1042 ../LibraryView.lua:557
+#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
 msgid "Refresh"
 msgstr "রিফ্রেশ"
 
-#: ../ChapterListing.lua:549
+#: ../ChapterListing.lua:557
 msgid "Chapter refreshed"
 msgstr "অধ্যায় রিফ্রেশ"
 
-#: ../ChapterListing.lua:555 ../ChapterListing.lua:698
-#: ../ChapterListing.lua:1078 ../LibraryView.lua:604
+#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
+#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
 msgid "Mark unread"
 msgstr "অপঠিত চিহ্নিত করুন"
 
-#: ../ChapterListing.lua:566 ../ChapterListing.lua:1278
+#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
 msgid "Download"
 msgstr "ডাউনলোড করুন"
 
-#: ../ChapterListing.lua:566 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
 msgid "Remove"
 msgstr "সরান"
 
-#: ../ChapterListing.lua:575
+#: ../ChapterListing.lua:583
 msgid "Chapter downloaded"
 msgstr "অধ্যায় ডাউনলোড করা হয়েছে"
 
-#: ../ChapterListing.lua:594
+#: ../ChapterListing.lua:602
 msgid "Revoke chapter..."
 msgstr "অধ্যায় প্রত্যাহার করুন..."
 
-#: ../ChapterListing.lua:612
+#: ../ChapterListing.lua:620
 msgid "Removed chapter"
 msgstr "অপসারিত অধ্যায়"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Marking"
 msgstr "চিহ্নিত করা"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "Un-marking"
 msgstr "আন-মার্কিং"
 
-#: ../ChapterListing.lua:623
+#: ../ChapterListing.lua:631
 msgid "chapter..."
 msgstr "অধ্যায়..."
 
-#: ../ChapterListing.lua:657
+#: ../ChapterListing.lua:665
 msgid "Cannot refresh chapters while offline"
 msgstr "অফলাইনে থাকা অবস্থায় অধ্যায় রিফ্রেশ করা যাবে না"
 
-#: ../ChapterListing.lua:698 ../ChapterListing.lua:1068 ../LibraryView.lua:593
+#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
 msgid "Mark read"
 msgstr "পড়া চিহ্নিত করুন"
 
-#: ../ChapterListing.lua:699
+#: ../ChapterListing.lua:707
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Leaving blank will select all"
 msgstr "ফাঁকা রেখে সব নির্বাচন করা হবে"
 
-#: ../ChapterListing.lua:700
+#: ../ChapterListing.lua:708
 msgid "Mark chapters as read or unread"
 msgstr "অধ্যায়গুলিকে পঠিত বা অপঠিত হিসাবে চিহ্নিত করুন"
 
-#: ../ChapterListing.lua:704 ../ChapterListing.lua:1194
-#: ../ChapterListing.lua:1271 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
-msgid "Cancel"
-msgstr "বাতিল করুন"
-
-#: ../ChapterListing.lua:711
+#: ../ChapterListing.lua:719
 msgid "Mark"
 msgstr "মার্ক"
 
-#: ../ChapterListing.lua:721
+#: ../ChapterListing.lua:729
 msgid "Marking..."
 msgstr "চিহ্নিত করা হচ্ছে..."
 
-#: ../ChapterListing.lua:731
+#: ../ChapterListing.lua:739
 msgid "Marked"
 msgstr "চিহ্নিত"
 
-#: ../ChapterListing.lua:750 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "কোন ত্রুটি নেই"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "Page"
 msgstr "পাতা"
 
-#: ../ChapterListing.lua:759
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "attempts"
 msgstr "প্রচেষ্টা"
 
-#: ../ChapterListing.lua:767 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… এবং আরও %dটি ত্রুটি৷"
 
-#: ../ChapterListing.lua:789
+#: ../ChapterListing.lua:797
 msgid "Could not download chapter."
 msgstr "অধ্যায় ডাউনলোড করা যায়নি."
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:805
 msgid "Loading chapter..."
 msgstr "অধ্যায় লোড হচ্ছে..."
 
-#: ../ChapterListing.lua:798
+#: ../ChapterListing.lua:806
 msgid "unknown"
 msgstr "অজানা"
 
-#: ../ChapterListing.lua:816
+#: ../ChapterListing.lua:824
 msgid "Download cancelled."
 msgstr "ডাউনলোড বাতিল হয়েছে৷"
 
-#: ../ChapterListing.lua:822
+#: ../ChapterListing.lua:830
 msgid "Are you sure you want to cancel the download?"
 msgstr "আপনি কি নিশ্চিত আপনি ডাউনলোড বাতিল করতে চান?"
 
-#: ../ChapterListing.lua:1032 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "লাইব্রেরিতে যোগ করুন"
 
-#: ../ChapterListing.lua:1050 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "বিস্তারিত"
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1125
 msgid "Resume"
 msgstr "পুনরায় শুরু করুন"
 
-#: ../ChapterListing.lua:1098
+#: ../ChapterListing.lua:1133
 msgid "Next Chapter"
 msgstr "পরবর্তী অধ্যায়"
 
-#: ../ChapterListing.lua:1108
+#: ../ChapterListing.lua:1143
 msgid "Download unread chapters…"
 msgstr "অপঠিত অধ্যায়গুলি ডাউনলোড করুন..."
 
-#: ../ChapterListing.lua:1135
+#: ../ChapterListing.lua:1170
 msgid "Group"
 msgstr "গ্রুপ"
 
-#: ../ChapterListing.lua:1136 ../ChapterListing.lua:1252
+#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
 msgid "Filter by Group"
 msgstr "গ্রুপ দ্বারা ফিল্টার"
 
-#: ../ChapterListing.lua:1159
+#: ../ChapterListing.lua:1194
 msgid "Adding to library..."
 msgstr "লাইব্রেরিতে যোগ করা হচ্ছে..."
 
-#: ../ChapterListing.lua:1166
+#: ../ChapterListing.lua:1201
 msgid "Failed to add to library"
 msgstr "লাইব্রেরিতে যোগ করতে ব্যর্থ হয়েছে৷"
 
-#: ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1206
 msgid "Added to library."
 msgstr "লাইব্রেরিতে যোগ করা হয়েছে।"
 
-#: ../ChapterListing.lua:1183 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
 msgid "Sadly, no next chapter available! :c"
 msgstr "দুঃখের বিষয়, কোন পরবর্তী অধ্যায় উপলব্ধ! "
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "Next"
 msgstr "পরবর্তী"
 
-#: ../ChapterListing.lua:1192
+#: ../ChapterListing.lua:1227
 msgid "reading with"
 msgstr "সঙ্গে পড়া"
 
-#: ../ChapterListing.lua:1193 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
 msgid "Read"
 msgstr "পড়ুন"
 
-#: ../ChapterListing.lua:1215
+#: ../ChapterListing.lua:1250
 msgid "Show All"
 msgstr "সব দেখান"
 
-#: ../ChapterListing.lua:1224
+#: ../ChapterListing.lua:1259
 msgid "Showing all groups"
 msgstr "সব গ্রুপ দেখাচ্ছে"
 
-#: ../ChapterListing.lua:1245
+#: ../ChapterListing.lua:1280
 msgid "Filtered to"
 msgstr "এ ফিল্টার করা হয়েছে"
 
-#: ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1297
 msgid "Download unread chapters..."
 msgstr "অপঠিত অধ্যায়গুলি ডাউনলোড করুন..."
 
-#: ../ChapterListing.lua:1264
+#: ../ChapterListing.lua:1299
 msgid "Amount of unread chapters (default: all)"
 msgstr "অপঠিত অধ্যায়ের পরিমাণ (ডিফল্ট: সব)"
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Specify amount or leave empty for all."
 msgstr "পরিমাণ নির্দিষ্ট করুন বা সবার জন্য খালি রাখুন।"
 
-#: ../ChapterListing.lua:1266
+#: ../ChapterListing.lua:1301
 msgid "Will download from"
 msgstr "থেকে ডাউনলোড হবে"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "Specify the amount of unread chapters to download"
 msgstr "ডাউনলোড করার জন্য অপঠিত অধ্যায়ের পরিমাণ উল্লেখ করুন"
 
-#: ../ChapterListing.lua:1267
+#: ../ChapterListing.lua:1302
 msgid "or leave empty to download all of them."
 msgstr "অথবা তাদের সব ডাউনলোড করতে খালি ছেড়ে দিন।"
 
-#: ../ChapterListing.lua:1288
+#: ../ChapterListing.lua:1323
 msgid "Invalid amount of chapters!"
 msgstr "অধ্যায় পরিমাণ অবৈধ!"
 
-#: ../ChapterListing.lua:1309
+#: ../ChapterListing.lua:1344
 msgid "No unread chapters found for"
 msgstr "এর জন্য কোনো অপঠিত অধ্যায় পাওয়া যায়নি"
 
-#: ../ChapterListing.lua:1334 ../ChapterListing.lua:1409
+#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
 msgid "Downloading all chapters, this will take a while…"
 msgstr "সমস্ত অধ্যায় ডাউনলোড করা হচ্ছে, এতে একটু সময় লাগবে..."
 
-#: ../ChapterListing.lua:1419
+#: ../ChapterListing.lua:1454
 msgid "Waiting for download to be cancelled…"
 msgstr "ডাউনলোড বাতিল হওয়ার জন্য অপেক্ষা করা হচ্ছে..."
 
-#: ../ChapterListing.lua:1421
+#: ../ChapterListing.lua:1456
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "সমস্ত অধ্যায় ডাউনলোড করা হচ্ছে, এতে একটু সময় লাগবে...("
 
-#: ../ChapterListing.lua:1424
+#: ../ChapterListing.lua:1459
 msgid "Tap outside this message to cancel."
 msgstr "বাতিল করতে এই বার্তার বাইরে আলতো চাপুন।"
 
@@ -570,7 +591,7 @@ msgstr "আপনি কি অপসারণ করতে চান"
 msgid "source?"
 msgstr "উৎস?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:83
+#: ../LibraryView.lua:74 ../Settings.lua:86
 msgid "Library"
 msgstr "লাইব্রেরি"
 
@@ -658,7 +679,7 @@ msgstr "ক্লিনার অধ্যায়"
 msgid "Manage sources"
 msgstr "উত্স পরিচালনা করুন"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:463
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
 msgid "Settings"
 msgstr "সেটিংস"
 
@@ -746,7 +767,7 @@ msgstr "ব্যবহার"
 msgid "Memory"
 msgstr "স্মৃতি"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:254
+#: ../LibraryView.lua:1073 ../Settings.lua:364
 msgid "Storage"
 msgstr "স্টোরেজ"
 
@@ -779,7 +800,7 @@ msgid "Type the manga name to search for"
 msgstr "অনুসন্ধান করতে মাঙ্গা নাম টাইপ করুন"
 
 #: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:192
+#: ../LibraryView.lua:1210 ../Settings.lua:195
 msgid "Search"
 msgstr "অনুসন্ধান করুন"
 
@@ -952,25 +973,71 @@ msgstr "বিশদ বিবরণ রিফ্রেশ করা হচ্�
 msgid "Refresh details cancelled."
 msgstr "রিফ্রেশ বিবরণ বাতিল করা হয়েছে."
 
-#: ../MangaReader.lua:140
+#: ../MangaReader.lua:178
 msgid "Go back to Rakuyomi..."
 msgstr "রাকুয়োমিতে ফিরে যান..."
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "আপনি কি চান যে আপনি যখন এটি খুলবেন তখন রাকুয়োমি এই বোতামটি পরিচালনা করুক?"
 
-#: ../MangaReader.lua:220
+#: ../MangaReader.lua:274
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "আপনি যখন Rakuyomi-এর সাথে এটি খুলবেন তখনই এই সেটিং প্রভাবিত হবে।"
 
-#: ../MangaReader.lua:222
+#: ../MangaReader.lua:276
 msgid "Yes"
 msgstr "হ্যাঁ"
 
-#: ../MangaReader.lua:223
+#: ../MangaReader.lua:277
 msgid "No"
 msgstr "না"
+
+#: ../MangaReader.lua:332
+msgid "View Mode"
+msgstr "দেখুন মোড"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+msgid "Default"
+msgstr "ডিফল্ট"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+msgid "LTR"
+msgstr "LTR"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+msgid "RTL"
+msgstr "আরটিএল"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+msgid "Scroll"
+msgstr "স্ক্রল করুন"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+msgid "Vertical"
+msgstr "উল্লম্ব"
+
+#: ../MangaReader.lua:337
+msgid ""
+"Choose how pages are displayed and navigated.\n"
+"Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
+msgstr ""
+
+#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+msgid "Off"
+msgstr "বন্ধ"
+
+#: ../MangaReader.lua:378
+msgid "Global Viewer Override"
+msgstr "গ্লোবাল ভিউয়ার ওভাররাইড"
+
+#: ../MangaReader.lua:571
+msgid "Set default %1 to %2?"
+msgstr "ডিফল্ট %1 থেকে %2 সেট করবেন?"
+
+#: ../MangaReader.lua:575
+msgid "Set as default"
+msgstr "ডিফল্ট হিসেবে সেট করুন"
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1065,229 +1132,289 @@ msgstr "তৈরি করুন"
 msgid "No playlists yet."
 msgstr "এখনো কোনো প্লেলিস্ট নেই।"
 
-#: ../Settings.lua:89
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "লাইব্রেরি ভিউ মোড"
 
-#: ../Settings.lua:91 ../Settings.lua:200
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "বেস"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "আবরণ"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "গ্রিড"
 
-#: ../Settings.lua:102
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "লাইব্রেরি সাজানোর মোড"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:107
 msgid "Order added ascending (Default)"
 msgstr "ক্রম আরোহী যোগ করা হয়েছে (ডিফল্ট)"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:108
 msgid "Order added descending"
 msgstr "অর্ডার সাজানো যোগ করা হয়েছে"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:109
 msgid "Title manga ascending"
 msgstr "শিরোনাম মাঙ্গা আরোহী"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:110
 msgid "Title manga descending"
 msgstr "শিরোনাম মাঙ্গা অবরোহী"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:111
 msgid "Count unread chapters ascending"
 msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা"
 
-#: ../Settings.lua:109
+#: ../Settings.lua:112
 msgid "Count unread chapters descending"
 msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা করুন"
 
-#: ../Settings.lua:110
+#: ../Settings.lua:113
 msgid "Last read ascending"
 msgstr "শেষ পঠিত আরোহী"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:114
 msgid "Last read descending"
 msgstr "শেষ পঠিত অবরোহন"
 
-#: ../Settings.lua:112
+#: ../Settings.lua:115
 msgid "Source ascending"
 msgstr "উৎস আরোহী"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:116
 msgid "Source descending"
 msgstr "উৎস অবরোহ"
 
-#: ../Settings.lua:121
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "পৃষ্ঠা প্রতি আইটেম (0 = স্বয়ংক্রিয়)"
 
-#: ../Settings.lua:132
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "গ্রিড কলাম"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "গ্রিড সারি"
 
-#: ../Settings.lua:154
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "গ্রিড মোডে শিরোনাম দেখান"
 
-#: ../Settings.lua:163
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "গ্রিড মোডে মেটাডেটা দেখান"
 
-#: ../Settings.lua:172
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "মাঙ্গা অ্যাকশনে ট্যাপ করুন"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "অধ্যায়ের তালিকা খুলুন"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "পড়া চালিয়ে যান"
 
-#: ../Settings.lua:185
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "রিজিউমে পড়া নিশ্চিতকরণ এড়িয়ে যান"
 
-#: ../Settings.lua:198
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "সার্চ ভিউ মোড"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "পাঠক"
 
-#: ../Settings.lua:215
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "অধ্যায় বাছাই মোড"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "অধ্যায় আরোহী দ্বারা"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "অধ্যায় অবরোহ দ্বারা"
 
-#: ../Settings.lua:226
+#: ../Settings.lua:229
 msgid "Preload chapters on reader open"
 msgstr "পাঠক খোলা অধ্যায় প্রিলোড"
 
-#: ../Settings.lua:237
+#: ../Settings.lua:240
 msgid "Optimize page images (experimental)"
 msgstr "পৃষ্ঠার ছবি অপ্টিমাইজ করুন (পরীক্ষামূলক)"
 
-#: ../Settings.lua:245
+#: ../Settings.lua:248
 msgid "Concurrent page requests"
 msgstr "সমবর্তী পৃষ্ঠা অনুরোধ"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:259
+msgid "Never turn on RTL, even for Japanese manga"
+msgstr "RTL চালু করবেন না, এমনকি জাপানি মাঙ্গার জন্যও"
+
+#: ../Settings.lua:268
+msgid "Automatically set the viewer to manga mode"
+msgstr "স্বয়ংক্রিয়ভাবে দর্শককে মাঙ্গা মোডে সেট করুন"
+
+#: ../Settings.lua:277
+msgid "Global viewer override"
+msgstr "গ্লোবাল ভিউয়ার ওভাররাইড"
+
+#: ../Settings.lua:294
+msgid "Show button previous chapter in toolbar reader"
+msgstr "টুলবার রিডারে বোতামের আগের অধ্যায় দেখান"
+
+#: ../Settings.lua:303
+msgid "Show button next chapter in toolbar reader"
+msgstr "টুলবার রিডারে পরবর্তী অধ্যায় বোতাম দেখান"
+
+#: ../Settings.lua:312
+msgid "Display the expanded rakuyomi bottom toolbar in the reader"
+msgstr "রিডারে প্রসারিত rakuyomi নিচের টুলবারটি প্রদর্শন করুন"
+
+#: ../Settings.lua:315
+msgid "On bottom toolbar"
+msgstr "নিচের টুলবারে"
+
+#: ../Settings.lua:316
+msgid "On top toolbar"
+msgstr "উপরের টুলবারে"
+
+#: ../Settings.lua:324
+msgid "Recommended reader settings"
+msgstr "প্রস্তাবিত পাঠক সেটিংস"
+
+#: ../Settings.lua:330
+msgid "Turn off all margins"
+msgstr "সমস্ত মার্জিন বন্ধ করুন"
+
+#: ../Settings.lua:339
+msgid "Automatically crop excess edges from photos (a little slow)"
+msgstr "ফটো থেকে অতিরিক্ত প্রান্তগুলি স্বয়ংক্রিয়ভাবে কাটুন (একটু ধীর গতিতে)"
+
+#: ../Settings.lua:348
+msgid "Zoom to full screen"
+msgstr "পূর্ণ পর্দায় জুম করুন"
+
+#: ../Settings.lua:357
+msgid "Zoom to fit image size"
+msgstr "চিত্রের আকার ফিট করতে জুম করুন"
+
+#: ../Settings.lua:370
 msgid "Chapter storage path"
 msgstr "অধ্যায় স্টোরেজ পাথ"
 
-#: ../Settings.lua:269
+#: ../Settings.lua:379
 msgid "Storage size limit"
 msgstr "স্টোরেজ সাইজ সীমা"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:389
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM এ অধ্যায় লিখুন (eMMC রক্ষা করুন)"
 
-#: ../Settings.lua:287
+#: ../Settings.lua:397
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM স্টোরেজ সাইজ। "
 
-#: ../Settings.lua:296
+#: ../Settings.lua:406
 msgid "Network"
 msgstr "নেটওয়ার্ক"
 
-#: ../Settings.lua:302
+#: ../Settings.lua:412
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS বা SOCKS5 প্রক্সি"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:415
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "প্রক্সি URL অবশ্যই http://, https://, অথবা socks5:// দিয়ে শুরু হতে হবে"
 
-#: ../Settings.lua:310
+#: ../Settings.lua:420
 msgid "Sync & Updates"
 msgstr "সিঙ্ক এবং আপডেট"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:426
 msgid "WebDAV Sync"
 msgstr "WebDAV সিঙ্ক"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:434
 msgid "Enabled cron check for manga updates"
 msgstr "মাঙ্গা আপডেটের জন্য ক্রন চেক সক্ষম করা হয়েছে"
 
-#: ../Settings.lua:332
+#: ../Settings.lua:442
 msgid "Source IDs skip check update"
 msgstr "সোর্স আইডি চেক আপডেট এড়িয়ে যান"
 
-#: ../Settings.lua:338
+#: ../Settings.lua:448
 msgid "System"
 msgstr "সিস্টেম"
 
-#: ../Settings.lua:344
+#: ../Settings.lua:454
 msgid "Allow requisition of the back button"
 msgstr "পিছনের বোতামের অনুরোধের অনুমতি দিন"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:461
 msgid "Server"
 msgstr "সার্ভার"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:467
 msgid "Auto-stop server when leaving library view"
 msgstr "লাইব্রেরি ভিউ ছেড়ে যাওয়ার সময় অটো-স্টপ সার্ভার"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:469
 msgid "Disabled"
 msgstr "অক্ষম"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:470
 msgid "Immediate"
 msgstr "তাৎক্ষণিক"
 
-#: ../Settings.lua:361
+#: ../Settings.lua:471
 msgid "After 30 seconds"
 msgstr "30 সেকেন্ড পর"
 
-#: ../Settings.lua:362
+#: ../Settings.lua:472
 msgid "After 1 minute"
 msgstr "১ মিনিট পর"
 
-#: ../Settings.lua:363
+#: ../Settings.lua:473
 msgid "After 5 minutes"
 msgstr "৫ মিনিট পর"
 
-#: ../Settings.lua:364
+#: ../Settings.lua:474
 msgid "After 10 minutes"
 msgstr "10 মিনিট পর"
 
-#: ../Settings.lua:374
+#: ../Settings.lua:484
 msgid "Show chapter download progress"
 msgstr "অধ্যায় ডাউনলোডের অগ্রগতি দেখান"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:491
 msgid "Logging"
 msgstr "লগিং"
 
-#: ../Settings.lua:387
+#: ../Settings.lua:497
 msgid "Disable logging"
 msgstr "লগিং অক্ষম করুন"
+
+#: ../Settings.lua:675
+msgid "Testing proxy..."
+msgstr "প্রক্সি পরীক্ষা করা হচ্ছে..."
+
+#: ../Settings.lua:684
+msgid "Failed to test proxy"
+msgstr "প্রক্সি পরীক্ষা করতে ব্যর্থ হয়েছে৷"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"

@@ -943,10 +943,13 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       UIManager:show(self)
     end
 
-    local onEndOfBookCallback = function()
+    ---@param no_as_read boolean
+    local onEndOfBookCallback = function(no_as_read)
       chapter.read = true -- good man
       Trapper:wrap(function()
-        Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+        if not no_as_read then
+          Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+        end
         if chapter.on_tmpfs then
           logger.info("revoking chapter", chapter.id)
           Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)

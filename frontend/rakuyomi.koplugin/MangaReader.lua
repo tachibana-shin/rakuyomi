@@ -348,18 +348,27 @@ Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (l
                 callback = function()
                   UIManager:close(dialog)
                   G_reader_settings:saveSetting('rakuyomi_global_viewer', '')
+                  self.viewer = MangaViewer[self.viewer] or MangaViewer.DefaultViewer
+                  self:applyViewMode(ui)
+                  self.on_rtl_changed(self.viewer)
                 end
               } },
             }
-            for __, name in ipairs({ "Default", "Rtl", "Ltr", "Vertical", "Scroll" }) do
-              local label = _(name)
-              local suffix = current == name and " *" or ""
+            local viewer_options = {
+              { name = "DefaultViewer", label = _("Default") },
+              { name = "Rtl",           label = _("RTL") },
+              { name = "Ltr",           label = _("LTR") },
+              { name = "Vertical",      label = _("Vertical") },
+              { name = "Scroll",        label = _("Scroll") },
+            }
+            for _, opt in ipairs(viewer_options) do
+              local suffix = current == opt.name and " *" or ""
               table.insert(buttons, { {
-                text = label .. suffix,
+                text = opt.label .. suffix,
                 callback = function()
                   UIManager:close(dialog)
-                  G_reader_settings:saveSetting('rakuyomi_global_viewer', name)
-                  self.viewer = MangaViewer[name]
+                  G_reader_settings:saveSetting('rakuyomi_global_viewer', opt.name)
+                  self.viewer = MangaViewer[opt.name]
                   self:applyViewMode(ui)
                   self.on_rtl_changed(self.viewer)
                 end

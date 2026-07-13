@@ -8,6 +8,7 @@ local util = require('frontend/util')
 ---@diagnostic disable-next-line: different-requires
 local platformUtil = require('platform/util')
 local must = platformUtil.must
+local must0 = platformUtil.must0
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
 local rapidjson = require("rapidjson")
 local execute_binary_fast = require("utils/executeBinaryFast")
@@ -18,6 +19,18 @@ local REQUEST_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_W
 local REQUEST_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_COMMAND_OVERRIDE')
 
 local SOCKET_PATH = '/tmp/rakuyomi.sock'
+
+ffi.cdef([[
+  char *getcwd(char *buf, size_t size);
+  extern char **environ;
+
+  typedef struct { uint64_t __pad[16]; } posix_spawn_file_actions_t;
+  int posix_spawn(int *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const void *attrp, const char *const argv[], char *const envp[]);
+  int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions);
+  int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *actions, int fd, int newfd);
+  int posix_spawn_file_actions_addclose(posix_spawn_file_actions_t *actions, int fd);
+  int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *actions);
+]])
 
 ---@class UnixServer: Server
 ---@field private pid number
@@ -122,45 +135,74 @@ end
 ---@class GenericUnixPlatform: Platform
 local GenericUnixPlatform = {}
 
+
+local t_int_array = ffi.typeof("int[1]")
+local t_file_actions = ffi.typeof("posix_spawn_file_actions_t")
+
 function GenericUnixPlatform:startServer()
-  -- setup loopback on Kobo devices (see #22)
   if Device:isKobo() then
     os.execute("ifconfig lo 127.0.0.1")
   end
 
-  local serverCommand
+  local capturer = SubprocessOutputCapturer:new()
+  local binaryPath
+  local argv
+
   if SERVER_COMMAND_OVERRIDE ~= nil then
-    serverCommand = util.splitToArray(SERVER_COMMAND_OVERRIDE, ' ')
+    local serverCommand = util.splitToArray(SERVER_COMMAND_OVERRIDE, ' ')
+    local args = {}
+    util.arrayAppend(args, serverCommand)
+    util.arrayAppend(args, { Paths.getHomeDirectory() })
+
+    binaryPath = args[1]
+    argv = ffi.new("const char *[?]", #args + 1)
+    for i, arg in ipairs(args) do
+      argv[i - 1] = arg
+    end
+    argv[#args] = nil
   else
-    serverCommand = { Paths.getPluginDirectory() .. "/server" }
+    binaryPath = Paths.getPluginDirectory() .. "/server"
+    argv = ffi.new("const char *[3]")
+    argv[0] = binaryPath
+    argv[1] = Paths.getHomeDirectory()
+    argv[2] = nil
   end
 
-  local serverCommandWithArgs = {}
-  util.arrayAppend(serverCommandWithArgs, serverCommand)
-  util.arrayAppend(serverCommandWithArgs, { Paths.getHomeDirectory() })
+  local actions = t_file_actions()
+  must0("posix_spawn_file_actions_init", C.posix_spawn_file_actions_init(actions))
 
-  local capturer = SubprocessOutputCapturer:new()
+  if capturer.stdout_pipe and capturer.stderr_pipe then
+    must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
+    must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))
 
-  local pid = must("fork", C.fork())
-  if pid == 0 then
-    capturer:setupChildProcess()
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[0]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[0]))
 
-    if SERVER_COMMAND_WORKING_DIRECTORY ~= nil then
-      ffi.cdef([[
-        int chdir(const char *) __attribute__((nothrow, leaf));
-      ]])
-      logger.info('changing directory to', SERVER_COMMAND_WORKING_DIRECTORY)
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[1]))
+    must0("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[1]))
+  end
+
+  local old_dir = nil
+  if SERVER_COMMAND_WORKING_DIRECTORY ~= nil then
+    local buf = ffi.new("char[4096]")
+    if C.getcwd(buf, 4096) ~= nil then
+      old_dir = ffi.string(buf)
       C.chdir(SERVER_COMMAND_WORKING_DIRECTORY)
     end
-
-    local exitCode = must(
-      "execl",
-      ---@diagnostic disable-next-line: deprecated
-      C.execl(serverCommandWithArgs[1], unpack(serverCommandWithArgs, 1, #serverCommandWithArgs + 1))
-    )
-
-    logger.info("server exited with code " .. exitCode)
   end
+
+  local pid_ptr = t_int_array()
+  local spawn_res = C.posix_spawn(pid_ptr, binaryPath, actions, nil, argv, C.environ)
+
+  if old_dir ~= nil then
+    C.chdir(old_dir)
+  end
+
+  C.posix_spawn_file_actions_destroy(actions)
+
+
+  must0("posix_spawn", spawn_res)
+  local pid = pid_ptr[0]
 
   capturer:setupParentProcess()
 

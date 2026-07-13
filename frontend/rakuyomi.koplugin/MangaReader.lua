@@ -13,10 +13,14 @@ local Testing = require('testing')
 
 --- @class MangaReader
 --- @field chapter Chapter
+--- @field chapters Chapter[]
 --- @field viewer MangaViewer
 --- @field state_viewer boolean
 --- @field on_rtl_changed fun(viewer: MangaViewer): nil
+--- @field on_open_chapter fun(chapter: Chapter): nil
 --- @field on_end_of_book_callback? fun(no_as_read: boolean): nil
+--- @field on_beginning_of_book_callback? fun(): nil
+--- @field on_close_book_callback? fun(Chapter): nil
 --- This is a singleton that contains a simpler interface with ReaderUI.
 local MangaReader = {
   on_return_callback = nil,
@@ -33,7 +37,9 @@ local MangaReader = {
 --- @field on_end_of_book_callback fun(no_as_read: boolean): nil Function to be called when the user reaches the end of the file.
 --- @field on_beginning_of_book_callback? fun(): nil Function to be called when the user navigates before the first page.
 --- @field on_rtl_changed fun(viewer: MangaViewer): nil Function to be called when the RTL setting is toggled.
+--- @field on_open_chapter fun(chapter: Chapter): nil Function to be called when the user opens a chapter.
 --- @field chapter Chapter The chapter being read.
+--- @field chapters Chapter[] List chapters filtered by ChapterListing
 --- @field viewer MangaViewer The preferred viewer mode from the source ("DefaultViewer", "Rtl", "Ltr", "Vertical", "Scroll").
 --- @field state_viewer boolean The viewer set by user?
 --- @field on_close_book_callback? fun(Chapter): nil Function to be called when the user closes the manga reader.
@@ -47,7 +53,9 @@ function MangaReader:show(options)
   self.on_end_of_book_callback = options.on_end_of_book_callback
   self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
   self.on_rtl_changed = options.on_rtl_changed
+  self.on_open_chapter = options.on_open_chapter
   self.chapter = options.chapter
+  self.chapters = options.chapters
   -- Global viewer override takes priority over per-manga/source viewer.
   local global_viewer = G_reader_settings:readSetting('rakuyomi_global_viewer')
   if global_viewer ~= nil and MangaViewer[global_viewer] ~= nil then
@@ -202,7 +210,23 @@ function MangaReader:closeReaderUi(done_callback)
     end
 
     (done_callback or function() end)()
+
+    MangaReader:clean()
   end)
+end
+
+--- @private
+function MangaReader:clean()
+  self.on_return_callback = nil
+  self.chapter = nil
+  self.chapters = nil
+  self.viewer = nil
+  self.state_viewer = nil
+  self.on_rtl_changed = nil
+  self.on_open_chapter = nil
+  self.on_end_of_book_callback = nil
+  self.on_beginning_of_book_callback = nil
+  self.on_close_book_callback = nil
 end
 
 --- To be called when the last page of the manga is read.
@@ -470,8 +494,10 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
     local options = shallow_clone(self.options)
     options.prefix = self.options.prefix
 
-    local show_btn_prev = G_reader_settings:nilOrTrue('rakuyomi_hide_btn_prev')
-    local show_btn_next = G_reader_settings:nilOrTrue('rakuyomi_show_btn_next')
+    local show_toolbar_extend = G_reader_settings:readSetting('rakuyomi_reader_extend') or 'bottom'
+
+    local show_btn_prev = show_toolbar_extend == 'off' and G_reader_settings:nilOrTrue('rakuyomi_hide_btn_prev')
+    local show_btn_next = show_toolbar_extend == 'off' and G_reader_settings:nilOrTrue('rakuyomi_show_btn_next')
     if show_btn_prev then
       table.insert(options, 1, {
         icon = "chevron.first",
@@ -509,18 +535,20 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
 
     --- @patch code
     --- @description override onShowConfigPanel for listen chevron.right
-    local onShowConfigPanel = self.config_dialog.onShowConfigPanel
-    function self.config_dialog:onShowConfigPanel(index) -- luacheck: ignore self
-      local name = self.config_options[index].name
-      if name == "btn_next" then
-        manga_reader.on_end_of_book_callback(true)
-        return
-      elseif name == "btn_prev" then
-        manga_reader.on_beginning_of_book_callback()
-        return
-      end
+    if show_btn_prev or show_btn_next then
+      local onShowConfigPanel = self.config_dialog.onShowConfigPanel
+      function self.config_dialog:onShowConfigPanel(index) -- luacheck: ignore self
+        local name = self.config_options[index].name
+        if name == "btn_next" then
+          manga_reader.on_end_of_book_callback(true)
+          return
+        elseif name == "btn_prev" then
+          manga_reader.on_beginning_of_book_callback()
+          return
+        end
 
-      return onShowConfigPanel(self, index)
+        return onShowConfigPanel(self, index)
+      end
     end
     --- @/patch code
 
@@ -549,6 +577,47 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
       end
       return onMakeDefault(self, name, name_text, values, labels, position, ...)
     end
+
+    --- @/patch
+
+    --- @patch
+    if show_toolbar_extend ~= 'off' then
+      local MangaReaderExtend = require("MangaReaderExtend")
+      local ChapterListPopup = require("ChapterListPopup")
+      local update = self.config_dialog.update
+      function self.config_dialog:update(...) -- luacheck: ignore self
+        update(self, ...)
+
+        if self.menu_extend then
+          self.menu_extend:clear()
+          self.menu_extend:init()
+        else
+          self.menu_extend = MangaReaderExtend:create {
+            chapter = manga_reader.chapter,
+            position = show_toolbar_extend == 'top' and 'top' or 'bottom',
+            on_prev_callback = manga_reader.on_beginning_of_book_callback,
+            on_next_callback = function()
+              manga_reader.on_end_of_book_callback(true)
+            end,
+            on_chapter_name_callback = function()
+              -- not need call UIManager:open because in `init` called
+              ChapterListPopup:create {
+                chapter = manga_reader.chapter,
+                chapters = manga_reader.chapters,
+                on_chapter_selected = manga_reader.on_open_chapter,
+              }
+            end,
+          }
+        end
+
+        if show_toolbar_extend == 'top' then
+          table.insert(self.dialog_frame[1], 1, self.menu_extend)
+        else
+          table.insert(self.dialog_frame[1], self.menu_extend)
+        end
+      end
+    end
+
     --- @/patch
 
     --- @original

@@ -296,6 +296,20 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_reader_extend',
+    {
+      type = 'enum',
+      title = _('Display the expanded rakuyomi bottom toolbar in the reader'),
+      options = {
+        { label = _('Off'),               value = 'off' },
+        { label = _('On bottom toolbar'), value = 'bottom' },
+        { label = _('On top toolbar'),    value = 'top' },
+      },
+      default = 'bottom',
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _('Recommended reader settings') }
   },

@@ -315,10 +315,12 @@ MangaViewer = {
   Vertical      = 3, -- Vertical strip reading (webtoons, long-strip manga)
   Scroll        = 4, -- Free scrolling mode (continuous scroll)
 }
-_G.MangaViewerName = {}
+--- Reverse map: numeric viewer id -> name string.
+local MangaViewerName = {}
 for name, id in pairs(MangaViewer) do
-  _G.MangaViewerName[id] = name
+  MangaViewerName[id] = name
 end
+Backend.MangaViewerName = MangaViewerName
 
 --- Represents a manga entry returned by a source or stored locally.
 --- This table contains all metadata used to describe a manga.

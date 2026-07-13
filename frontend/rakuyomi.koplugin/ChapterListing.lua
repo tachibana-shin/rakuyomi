@@ -998,7 +998,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       chapter = chapter,
       viewer = self.manga.viewer,
       state_viewer = self.manga.state_viewer,
-      on_rtl_changed = function(viewer) self.manga.viewer, self.manga.state_viewer = _G.MangaViewerName[viewer], true end,
+      on_rtl_changed = function(viewer) self.manga.viewer, self.manga.state_viewer = Backend.MangaViewerName[viewer], true end,
       on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()
           Backend.updateLastReadChapter(

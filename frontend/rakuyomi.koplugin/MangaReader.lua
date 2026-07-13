@@ -46,7 +46,7 @@ function MangaReader:show(options)
   self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
   self.on_rtl_changed = options.on_rtl_changed
   self.chapter = options.chapter
-  self.viewer = MangaViewer[options.viewer]
+  self.viewer = MangaViewer[options.viewer] or MangaViewer.DefaultViewer
   self.state_viewer = options.state_viewer
   self.on_close_book_callback = options.on_close_book_callback
   local c_showing = self.is_showing

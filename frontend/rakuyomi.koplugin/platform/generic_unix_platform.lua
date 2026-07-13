@@ -21,6 +21,7 @@ local SOCKET_PATH = '/tmp/rakuyomi.sock'
 
 ffi.cdef([[
   char *getcwd(char *buf, size_t size);
+  extern char **environ;
 
   typedef struct { char __pad[128]; } posix_spawn_file_actions_t;
   int posix_spawn(int *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const void *attrp, const char *const argv[], char *const envp[]);
@@ -170,14 +171,14 @@ function GenericUnixPlatform:startServer()
   must("posix_spawn_file_actions_init", C.posix_spawn_file_actions_init(actions))
 
   if capturer.stdout_pipe and capturer.stderr_pipe then
-    C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1)
-    C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2)
+    must("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
+    must("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))
 
-    C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[0])
-    C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[0])
+    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[0]))
+    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[0]))
 
-    C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[1])
-    C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[1])
+    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stdout_pipe[1]))
+    must("posix_spawn_file_actions_addclose", C.posix_spawn_file_actions_addclose(actions, capturer.stderr_pipe[1]))
   end
 
   local old_dir = nil
@@ -185,12 +186,12 @@ function GenericUnixPlatform:startServer()
     local buf = ffi.new("char[4096]")
     if C.getcwd(buf, 4096) ~= nil then
       old_dir = ffi.string(buf)
+      C.chdir(SERVER_COMMAND_WORKING_DIRECTORY)
     end
-    C.chdir(SERVER_COMMAND_WORKING_DIRECTORY)
   end
 
   local pid_ptr = t_int_array()
-  local spawn_res = C.posix_spawn(pid_ptr, binaryPath, actions, nil, argv, nil)
+  local spawn_res = C.posix_spawn(pid_ptr, binaryPath, actions, nil, argv, C.environ)
 
   if old_dir ~= nil then
     C.chdir(old_dir)

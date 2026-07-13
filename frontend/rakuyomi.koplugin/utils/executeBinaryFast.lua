@@ -7,6 +7,7 @@ ffi.cdef [[
   int waitpid(int pid, int *wstatus, int options);
   char *getcwd(char *buf, size_t size);
   int chdir(const char *path);
+  extern char **environ;
 
   typedef struct { char __pad[128]; } posix_spawn_file_actions_t;
   int posix_spawnp(int *pid, const char *file, const posix_spawn_file_actions_t *file_actions, const void *attrp, const char *const argv[], char *const envp[]);
@@ -43,9 +44,9 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
     return nil, "Failed to init file actions"
   end
 
-  ffi.C.posix_spawn_file_actions_adddup2(actions, pipefd[1], 1) -- redirect stdout vào đầu ghi của pipe
-  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[0])   -- đóng đầu đọc ở tiến trình con
-  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[1])   -- đóng đầu ghi gốc sau khi đã dup2
+  ffi.C.posix_spawn_file_actions_adddup2(actions, pipefd[1], 1) -- redirect stdout to the write end of pipe
+  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[0])   -- close read end in child process
+  ffi.C.posix_spawn_file_actions_addclose(actions, pipefd[1])   -- close original write end after dup2
 
   argv[0] = cmd_path
   argv[1] = json_payload
@@ -55,12 +56,12 @@ local function execute_binary_fast(cmd_path, json_payload, working_dir)
   if working_dir then
     if ffi.C.getcwd(path_buf, 4096) ~= nil then
       old_dir = ffi.string(path_buf)
+      ffi.C.chdir(working_dir)
     end
-    ffi.C.chdir(working_dir)
   end
 
 
-  local spawn_res = ffi.C.posix_spawnp(pid_ptr, cmd_path, actions, nil, argv, nil)
+  local spawn_res = ffi.C.posix_spawnp(pid_ptr, cmd_path, actions, nil, argv, ffi.C.environ)
 
   if old_dir then
     ffi.C.chdir(old_dir)

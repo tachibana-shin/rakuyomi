@@ -39,7 +39,7 @@ pub struct Manga {
     in_library: bool,
     manga_cover: Option<url::Url>,
     viewer: MangaViewer,
-    state_viewer: boolean,
+    state_viewer: bool,
 }
 
 impl From<DomainManga> for Manga {
@@ -53,7 +53,7 @@ impl From<DomainManga> for Manga {
             in_library: value.in_library,
             manga_cover: value.information.cover_url,
             viewer: value.information.viewer,
-            state_viewer: boolean,
+            state_viewer: value.state_viewer,
         }
     }
 }

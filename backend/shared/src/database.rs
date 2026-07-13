@@ -958,6 +958,7 @@ impl Database {
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
                     in_library: true,
+                    state_viewer: row.state_viewer != 0,
                 })
             })
             .collect();
@@ -3034,6 +3035,7 @@ impl Database {
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
                     in_library: false,
+                    state_viewer: row.state_viewer != 0,
                 })
             })
             .collect();

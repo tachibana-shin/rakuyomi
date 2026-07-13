@@ -209,6 +209,7 @@ pub async fn search_mangas(
                     unread_chapters_count: unread_count,
                     last_read,
                     in_library,
+                    state_viewer: false,
                 }
             })
         })

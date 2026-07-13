@@ -740,6 +740,16 @@ async fn set_manga_viewer(
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
 
+    // Validate viewer is within valid MangaViewer range (0..=4) if provided
+    if let Some(viewer) = body.viewer {
+        if viewer < 0 || viewer > 4 {
+            return Err(AppError::Other(anyhow::anyhow!(
+                "Invalid viewer value: {}. Must be between 0 and 4.",
+                viewer
+            )));
+        }
+    }
+
     usecases::set_manga_viewer(&database, manga_id, body.viewer).await?;
 
     Ok(Json(()))

@@ -150,6 +150,7 @@ pub struct Manga {
     pub unread_chapters_count: Option<usize>,
     pub last_read: Option<i64>,
     pub in_library: bool,
+    pub state_viewer: bool,
 }
 
 impl From<SourceManifest> for SourceInformation {

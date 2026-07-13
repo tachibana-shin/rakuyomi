@@ -261,6 +261,23 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_global_viewer',
+    {
+      type = 'enum',
+      title = _('Global viewer override'),
+      options = {
+        { label = _("Off"),      value = '' },
+        { label = _("Default"),  value = 'Default' },
+        { label = _("RTL"),      value = 'Rtl' },
+        { label = _("LTR"),      value = 'Ltr' },
+        { label = _("Vertical"), value = 'Vertical' },
+        { label = _("Scroll"),   value = 'Scroll' },
+      },
+      default = '',
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _('Recommended reader settings') }
   },

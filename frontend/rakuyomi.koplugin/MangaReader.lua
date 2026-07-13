@@ -7,6 +7,7 @@ local Trapper = require("ui/trapper")
 local logger = require("logger")
 local _ = require("gettext+")
 local Backend = require("Backend")
+local shallow_clone = require("utils/shallowClone")
 
 local Testing = require('testing')
 
@@ -15,6 +16,7 @@ local Testing = require('testing')
 --- @field viewer MangaViewer
 --- @field state_viewer boolean
 --- @field on_rtl_changed fun(viewer: MangaViewer): nil
+--- @field on_end_of_book_callback? fun(no_as_read: boolean): nil
 --- This is a singleton that contains a simpler interface with ReaderUI.
 local MangaReader = {
   on_return_callback = nil,
@@ -28,7 +30,7 @@ local MangaReader = {
 --- @class MangaReaderOptions
 --- @field path string Path to the file to be displayed.
 --- @field on_return_callback fun(): nil Function to be called when the user selects "Go back to Rakuyomi".
---- @field on_end_of_book_callback fun(): nil Function to be called when the user reaches the end of the file.
+--- @field on_end_of_book_callback fun(no_as_read: boolean): nil Function to be called when the user reaches the end of the file.
 --- @field on_beginning_of_book_callback? fun(): nil Function to be called when the user navigates before the first page.
 --- @field on_rtl_changed fun(viewer: MangaViewer): nil Function to be called when the RTL setting is toggled.
 --- @field chapter Chapter The chapter being read.
@@ -208,7 +210,7 @@ function MangaReader:onEndOfBook()
   if self.is_showing then
     logger.info("Got end of book")
 
-    self.on_end_of_book_callback()
+    self.on_end_of_book_callback(false)
     return true
   end
 end
@@ -283,10 +285,8 @@ function MangaReader:addRakuOptionsToReader(ui)
   local config = ui.config
 
   -- Shallow-copy the options table to avoid mutating the shared KoptOptions module.
-  local new_options = {}
-  for k, v in pairs(config.options) do
-    new_options[k] = v
-  end
+  local new_options = shallow_clone(config.options)
+  new_options.prefix = config.options.prefix
 
   -- Find the pageview panel (contains page_scroll / View Mode) and insert our option at position 2.
   for __, panel in ipairs(new_options) do
@@ -302,10 +302,7 @@ function MangaReader:addRakuOptionsToReader(ui)
 
       if not already_added then
         -- Create a copy of the panel's options array to avoid mutating KoptOptions.
-        local new_panel_options = {}
-        for _, opt in ipairs(panel.options) do
-          table.insert(new_panel_options, opt)
-        end
+        local new_panel_options = shallow_clone(panel.options)
         table.insert(new_panel_options, 2, {
           name = "rakuyomi_view_mode",
           name_text = _("View Mode"),
@@ -366,6 +363,8 @@ Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (l
   else
     ui.document.configurable.rakuyomi_view_mode = 0
   end
+
+  self:patchPressAsDefaultAndAddBtnNext(ui)
 end
 
 function MangaReader:applyViewMode(ui)
@@ -439,7 +438,6 @@ function MangaReader:applyViewMode(ui)
     end
   end
 
-
   if self.viewer ~= MangaViewer.DefaultViewer then
     if G_reader_settings:nilOrTrue('rakuyomi_page_margin') and doc.configurable.page_margin > 0 then
       -- -- recommend option
@@ -458,6 +456,100 @@ function MangaReader:applyViewMode(ui)
       ui:handleEvent(Event:new("ConfigChange", "zoom_mode_genus", 3))
       ui:handleEvent(Event:new("DefineZoom", "content"))
     end
+  end
+end
+
+function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
+  local manga_reader = self
+  local ConfigDialog = require("ui/widget/configdialog")
+  local T = require("ffi/util").template
+
+  function ui.config:onShowConfigMenu() -- luacheck: ignore self
+    --- @patch code
+    local options = shallow_clone(self.options)
+    options.prefix = self.options.prefix
+    table.insert(options, 1, {
+      icon = "chevron.first",
+      name = "btn_prev",
+      options = {},
+    })
+    table.insert(options, {
+      icon = "chevron.last",
+      name = "btn_next",
+      options = {},
+    })
+    if self.last_panel_index == 1 then
+      self.last_panel_index = 2
+    elseif self.last_panel_index == #options then
+      self.last_panel_index = #options - 1
+    end
+    --- @/patch code
+
+    --- @original
+    self.config_dialog = ConfigDialog:new {
+      document = self.document,
+      ui = self.ui,
+      configurable = self.configurable,
+      config_options = options, --- @patch
+      is_always_active = true,
+      covers_footer = true,
+      close_callback = function() self:onCloseCallback() end,
+    }
+    self.ui.keyselection:stopHighlightIndicator(true) -- stop any text selection in progress, if applicable
+    self.ui:handleEvent(Event:new("DisableHinting"))
+    --- @/original
+
+    --- @patch code
+    --- @description override onShowConfigPanel for listen chevron.right
+    local onShowConfigPanel = self.config_dialog.onShowConfigPanel
+    function self.config_dialog:onShowConfigPanel(index) -- luacheck: ignore self
+      local name = self.config_options[index].name
+      if name == "btn_next" then
+        manga_reader.on_end_of_book_callback(true)
+        return
+      elseif name == "btn_prev" then
+        manga_reader.on_beginning_of_book_callback()
+        return
+      end
+
+      return onShowConfigPanel(self, index)
+    end
+    --- @/patch code
+
+    --- @patch code
+    --- @description override press to make as default for rakuyomi_view_mode
+    local onMakeDefault = self.config_dialog.onMakeDefault
+    function self.config_dialog:onMakeDefault(name, name_text, values, labels, position, ...) -- luacheck: ignore self
+      if name == "rakuyomi_view_mode" then
+        UIManager:show(ConfirmBox:new {
+          text = T(
+            _("Set default %1 to %2?"),
+            (name_text or ""),
+            labels[position]
+          ),
+          ok_text = T(_("Set as default")),
+          ok_callback = function()
+            G_reader_settings:saveSetting('rakuyomi_global_viewer', Backend.MangaViewerName[values[position]] or '')
+
+            self:update()
+            UIManager:setDirty(self, function()
+              return "ui", self.dialog_frame.dimen
+            end)
+          end,
+        })
+        return true
+      end
+      return onMakeDefault(self, name, name_text, values, labels, position, ...)
+    end
+    --- @/patch
+
+    --- @original
+    -- show last used panel when opening config dialog
+    self.config_dialog:onShowConfigPanel(self.last_panel_index)
+    UIManager:show(self.config_dialog)
+    self.ui:handleEvent(Event:new("HandledAsSwipe")) -- cancel any pan scroll made
+    --- @/original
+    return true
   end
 end
 

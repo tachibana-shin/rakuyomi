@@ -370,57 +370,65 @@ function ChapterListing:generateItemTableFromChapters(chapters)
 
   for __, entry in ipairs(indexed) do
     local chapter = entry.ch
-    local text_parts = {}
-    if chapter.volume_num ~= nil then
-      -- FIXME we assume there's a chapter number if there's a volume number
-      -- might not be true but who knows
-      table.insert(text_parts, _("Volume") .. " " .. chapter.volume_num .. ", ")
-    end
-
-    if chapter.chapter_num ~= nil then
-      table.insert(text_parts, _("Chapter") .. " " .. chapter.chapter_num .. " - ")
-    end
-
-    table.insert(text_parts, chapter.title)
-
-    -- Only show scanlator if not filtering by scanlator
-    if chapter.scanlator ~= nil and not self.selected_scanlator then
-      table.insert(text_parts, " (" .. chapter.scanlator .. ")")
-    end
-
-    -- The text that shows to the right of the menu item
-    local mandatory_parts = {}
-    if chapter.read then
-      table.insert(mandatory_parts, Icons.FA_BOOK)
-    end
-
-    if chapter.last_read then
-      table.insert(mandatory_parts, 1, " ")
-      table.insert(mandatory_parts, 1, calcLastReadText(chapter.last_read))
-    end
-
-    if chapter.downloaded then
-      table.insert(mandatory_parts, Icons.FA_DOWNLOAD)
-    end
-
-    local post_text = nil
-    if chapter.locked then
-      post_text = _("Locked")
-    end
-    if #self.langs >= 2 and chapter.lang then
-      post_text = (post_text and post_text .. " " or "") .. "(" .. chapter.lang .. ")"
-    end
-
-    table.insert(item_table, {
-      chapter = chapter,
-      text = table.concat(text_parts),
-      post_text = post_text,
-      dim = chapter.locked,
-      mandatory = chapter.locked and Icons.FA_LOCKED or table.concat(mandatory_parts),
-    })
+    local item = self.renderChapterItem(chapter, #self.langs >= 2, not self.selected_scanlator)
+    item.chapter = chapter
+    table.insert(item_table, item)
   end
 
   return item_table
+end
+
+---@param chapter Chapter
+---@param show_langs boolean
+---@param show_scanlator boolean
+function ChapterListing.renderChapterItem(chapter, show_langs, show_scanlator)
+  local text_parts = {}
+  if chapter.volume_num ~= nil then
+    -- FIXME we assume there's a chapter number if there's a volume number
+    -- might not be true but who knows
+    table.insert(text_parts, _("Volume") .. " " .. chapter.volume_num .. ", ")
+  end
+
+  if chapter.chapter_num ~= nil then
+    table.insert(text_parts, _("Chapter") .. " " .. chapter.chapter_num .. " - ")
+  end
+
+  table.insert(text_parts, chapter.title)
+
+  -- Only show scanlator if not filtering by scanlator
+  if chapter.scanlator ~= nil and show_scanlator then
+    table.insert(text_parts, " (" .. chapter.scanlator .. ")")
+  end
+
+  -- The text that shows to the right of the menu item
+  local mandatory_parts = {}
+  if chapter.read then
+    table.insert(mandatory_parts, Icons.FA_BOOK)
+  end
+
+  if chapter.last_read then
+    table.insert(mandatory_parts, 1, " ")
+    table.insert(mandatory_parts, 1, calcLastReadText(chapter.last_read))
+  end
+
+  if chapter.downloaded then
+    table.insert(mandatory_parts, Icons.FA_DOWNLOAD)
+  end
+
+  local post_text = nil
+  if chapter.locked then
+    post_text = _("Locked")
+  end
+  if show_langs and chapter.lang then
+    post_text = (post_text and post_text .. " " or "") .. "(" .. chapter.lang .. ")"
+  end
+
+  return {
+    text = table.concat(text_parts),
+    post_text = post_text,
+    dim = chapter.locked,
+    mandatory = chapter.locked and Icons.FA_LOCKED or table.concat(mandatory_parts),
+  }
 end
 
 --- @private
@@ -836,7 +844,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
       response, cancelled = LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
     end
 
-    if cancelled then
+    if cancelled or response == nil then
       return
     end
 
@@ -943,9 +951,25 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       UIManager:show(self)
     end
 
+    ---@param nextChapter Chapter
+    local openChapter = function(nextChapter)
+      if chapter.on_tmpfs then
+        Trapper:wrap(function()
+          logger.info("revoking chapter", chapter.id)
+          Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)
+        end)
+      end
+
+      local nextChapterDownloadJob = nextChapter and self.preload_jobs[nextChapter.id] or nil
+      logger.info("opening next chapter", nextChapter)
+      self:openChapterOnReader(nextChapter, nextChapterDownloadJob)
+    end
+
     ---@param no_as_read boolean
     local onEndOfBookCallback = function(no_as_read)
-      chapter.read = true -- good man
+      if not no_as_read then
+        chapter.read = true -- good man
+      end
       Trapper:wrap(function()
         if not no_as_read then
           Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
@@ -999,9 +1023,14 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       on_end_of_book_callback = onEndOfBookCallback,
       on_beginning_of_book_callback = onBeginningOfBookCallback,
       chapter = chapter,
+      chapters = self.chapters,
       viewer = self.manga.viewer,
       state_viewer = self.manga.state_viewer,
-      on_rtl_changed = function(viewer) self.manga.viewer, self.manga.state_viewer = Backend.MangaViewerName[viewer], true end,
+      on_rtl_changed = function(viewer)
+        self.manga.viewer, self.manga.state_viewer = Backend.MangaViewerName[viewer],
+            true
+      end,
+      on_open_chapter = openChapter,
       on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()
           Backend.updateLastReadChapter(

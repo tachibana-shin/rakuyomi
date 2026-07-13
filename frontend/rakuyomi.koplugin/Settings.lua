@@ -267,7 +267,7 @@ Settings.setting_value_definitions = {
       title = _('Global viewer override'),
       options = {
         { label = _("Off"),      value = '' },
-        { label = _("Default"),  value = 'Default' },
+        { label = _("Default"),  value = 'DefaultViewer' },
         { label = _("RTL"),      value = 'Rtl' },
         { label = _("LTR"),      value = 'Ltr' },
         { label = _("Vertical"), value = 'Vertical' },

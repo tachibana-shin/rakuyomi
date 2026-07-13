@@ -2,18 +2,30 @@ local ReaderUI = require("apps/reader/readerui")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
+local Event = require("ui/event")
+local Trapper = require("ui/trapper")
 local logger = require("logger")
 local _ = require("gettext+")
+local Backend = require("Backend")
+local shallow_clone = require("utils/shallowClone")
 
 local Testing = require('testing')
 
 --- @class MangaReader
+--- @field chapter Chapter
+--- @field chapters Chapter[]
+--- @field viewer MangaViewer
+--- @field state_viewer boolean
+--- @field on_rtl_changed fun(viewer: MangaViewer): nil
+--- @field on_open_chapter fun(chapter: Chapter): nil
+--- @field on_end_of_book_callback? fun(no_as_read: boolean): nil
+--- @field on_beginning_of_book_callback? fun(): nil
+--- @field on_close_book_callback? fun(Chapter): nil
 --- This is a singleton that contains a simpler interface with ReaderUI.
 local MangaReader = {
   on_return_callback = nil,
   on_end_of_book_callback = nil,
   on_beginning_of_book_callback = nil,
-  chapter = nil,
   on_close_book_callback = nil,
   is_showing = false,
   is_switching_document = false,
@@ -22,9 +34,14 @@ local MangaReader = {
 --- @class MangaReaderOptions
 --- @field path string Path to the file to be displayed.
 --- @field on_return_callback fun(): nil Function to be called when the user selects "Go back to Rakuyomi".
---- @field on_end_of_book_callback fun(): nil Function to be called when the user reaches the end of the file.
+--- @field on_end_of_book_callback fun(no_as_read: boolean): nil Function to be called when the user reaches the end of the file.
 --- @field on_beginning_of_book_callback? fun(): nil Function to be called when the user navigates before the first page.
---- @field chapter? Chapter The chapter being read.
+--- @field on_rtl_changed fun(viewer: MangaViewer): nil Function to be called when the RTL setting is toggled.
+--- @field on_open_chapter fun(chapter: Chapter): nil Function to be called when the user opens a chapter.
+--- @field chapter Chapter The chapter being read.
+--- @field chapters Chapter[] List chapters filtered by ChapterListing
+--- @field viewer MangaViewer The preferred viewer mode from the source ("DefaultViewer", "Rtl", "Ltr", "Vertical", "Scroll").
+--- @field state_viewer boolean The viewer set by user?
 --- @field on_close_book_callback? fun(Chapter): nil Function to be called when the user closes the manga reader.
 
 --- Displays the file located in `path` in the KOReader's reader.
@@ -35,7 +52,18 @@ function MangaReader:show(options)
   self.on_return_callback = options.on_return_callback
   self.on_end_of_book_callback = options.on_end_of_book_callback
   self.on_beginning_of_book_callback = options.on_beginning_of_book_callback
+  self.on_rtl_changed = options.on_rtl_changed
+  self.on_open_chapter = options.on_open_chapter
   self.chapter = options.chapter
+  self.chapters = options.chapters
+  -- Global viewer override takes priority over per-manga/source viewer.
+  local global_viewer = G_reader_settings:readSetting('rakuyomi_global_viewer')
+  if global_viewer ~= nil and MangaViewer[global_viewer] ~= nil then
+    self.viewer = MangaViewer[global_viewer]
+  else
+    self.viewer = MangaViewer[options.viewer] or MangaViewer.DefaultViewer
+  end
+  self.state_viewer = options.state_viewer
   self.on_close_book_callback = options.on_close_book_callback
   local c_showing = self.is_showing
 
@@ -57,7 +85,6 @@ function MangaReader:show(options)
     end)
   else
     -- took this from opds reader
-    local Event = require("ui/event")
     UIManager:broadcastEvent(Event:new("SetupShowReader"))
 
     ReaderUI:showReader(options.path)
@@ -96,6 +123,16 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
   eventListener.onCloseWidget = function()
     self:onReaderUiCloseWidget()
   end
+  eventListener.onSetRakuViewMode = function()
+    self.viewer = ui.document.configurable.rakuyomi_view_mode
+
+    self:applyViewMode(ui)
+    self.on_rtl_changed(self.viewer)
+
+    Trapper:wrap(function()
+      Backend.setViewer(self.chapter.source_id, self.chapter.manga_id, self.viewer)
+    end)
+  end
 
   table.insert(ui, 2, eventListener)
 
@@ -130,6 +167,7 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
     end
     ui.paging._rakuyomi_patched = true
   end
+  self:addRakuOptionsToReader(ui)
 end
 
 --- Used to add the "Go back to Rakuyomi" menu item. Is called from `ReaderUI`, via the
@@ -172,7 +210,23 @@ function MangaReader:closeReaderUi(done_callback)
     end
 
     (done_callback or function() end)()
+
+    MangaReader:clean()
   end)
+end
+
+--- @private
+function MangaReader:clean()
+  self.on_return_callback = nil
+  self.chapter = nil
+  self.chapters = nil
+  self.viewer = nil
+  self.state_viewer = nil
+  self.on_rtl_changed = nil
+  self.on_open_chapter = nil
+  self.on_end_of_book_callback = nil
+  self.on_beginning_of_book_callback = nil
+  self.on_close_book_callback = nil
 end
 
 --- To be called when the last page of the manga is read.
@@ -180,7 +234,7 @@ function MangaReader:onEndOfBook()
   if self.is_showing then
     logger.info("Got end of book")
 
-    self.on_end_of_book_callback()
+    self.on_end_of_book_callback(false)
     return true
   end
 end
@@ -239,6 +293,349 @@ function MangaReader:overrideBtnFileManager(menu)
         self:onReturn()
       end
     end
+  end
+end
+
+--- Adds a custom RTL toggle option to the KoptOptions config panel for manga reading.
+--- The option appears alongside the existing View Mode toggle in the pageview tab.
+--- When enabled, it sets zoom_direction to RTL (Right to Left, Top to Bottom)
+--- and enables inverse_reading_order for RTL page turning.
+--- @private
+function MangaReader:addRakuOptionsToReader(ui)
+  if ui == nil or ui.config == nil then
+    return
+  end
+
+  local config = ui.config
+
+  -- Shallow-copy the options table to avoid mutating the shared KoptOptions module.
+  local new_options = shallow_clone(config.options)
+  new_options.prefix = config.options.prefix
+
+  -- Find the pageview panel (contains page_scroll / View Mode) and insert our option at position 2.
+  for __, panel in ipairs(new_options) do
+    if panel.icon == "appbar.pageview" then
+      -- Check if the option was already added (e.g. on document switch without closing reader).
+      local already_added = false
+      for _, opt in ipairs(panel.options) do
+        if opt.name == "rakuyomi_view_mode" then
+          already_added = true
+          break
+        end
+      end
+
+      if not already_added then
+        -- Create a copy of the panel's options array to avoid mutating KoptOptions.
+        local new_panel_options = shallow_clone(panel.options)
+        table.insert(new_panel_options, 2, {
+          name = "rakuyomi_view_mode",
+          name_text = _("View Mode"),
+          toggle = { _("Default"), _("RTL"), _("LTR"), _("Vertical"), _("Scroll") },
+          values = { MangaViewer.DefaultViewer, MangaViewer.Rtl, MangaViewer.Ltr, MangaViewer.Vertical, MangaViewer.Scroll },
+          default_value = self.viewer,
+          event = "SetRakuViewMode",
+          help_text = _([[Choose how pages are displayed and navigated.
+Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll).]]),
+          name_text_hold_callback = function()
+            local dialog
+
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local current = G_reader_settings:readSetting('rakuyomi_global_viewer')
+
+            local buttons = {
+              { {
+                text = _("Off") .. ((current == nil or current == '') and " *" or ""),
+                callback = function()
+                  UIManager:close(dialog)
+                  G_reader_settings:saveSetting('rakuyomi_global_viewer', '')
+                  self.viewer = MangaViewer[self.viewer] or MangaViewer.DefaultViewer
+                  self:applyViewMode(ui)
+                  self.on_rtl_changed(self.viewer)
+                end
+              } },
+            }
+            local viewer_options = {
+              { name = "DefaultViewer", label = _("Default") },
+              { name = "Rtl",           label = _("RTL") },
+              { name = "Ltr",           label = _("LTR") },
+              { name = "Vertical",      label = _("Vertical") },
+              { name = "Scroll",        label = _("Scroll") },
+            }
+            for _, opt in ipairs(viewer_options) do
+              local suffix = current == opt.name and " *" or ""
+              table.insert(buttons, { {
+                text = opt.label .. suffix,
+                callback = function()
+                  UIManager:close(dialog)
+                  G_reader_settings:saveSetting('rakuyomi_global_viewer', opt.name)
+                  self.viewer = MangaViewer[opt.name]
+                  self:applyViewMode(ui)
+                  self.on_rtl_changed(self.viewer)
+                end
+              } })
+            end
+            dialog = ButtonDialog:new {
+              title = _("Global Viewer Override"),
+              buttons = buttons,
+            }
+            UIManager:show(dialog)
+          end,
+        })
+        panel.options = new_panel_options
+      end
+      break
+    end
+  end
+
+  config.options = new_options
+
+  local global_viewer_val = G_reader_settings:readSetting('rakuyomi_global_viewer')
+  local has_global_override = global_viewer_val ~= nil and MangaViewer[global_viewer_val] ~= nil
+  if has_global_override or self.state_viewer or G_reader_settings:nilOrTrue('rakuyomi_auto_viewer_mode') then
+    self:applyViewMode(ui)
+  else
+    ui.document.configurable.rakuyomi_view_mode = 0
+  end
+
+  self:patchPressAsDefaultAndAddBtnNext(ui)
+end
+
+function MangaReader:applyViewMode(ui)
+  -- Set default value on the document configurable.
+  -- loadDefaults was already called during ReaderConfig:init() before we added
+  -- this option, so we must set it manually.
+  local doc = ui.document
+  doc.configurable.rakuyomi_view_mode = self.viewer
+
+  local kopt_mode = doc.configurable.page_scroll ~= nil
+
+  if self.viewer == MangaViewer.Rtl or self.viewer == MangaViewer.Ltr then
+    doc.configurable._modified = true
+    if kopt_mode then
+      if doc.configurable.page_scroll ~= 0 then
+        ui:handleEvent(Event:new("ConfigChange", "page_scroll", 0))
+        ui:handleEvent(Event:new("SetScrollMode", false))
+      end
+    else
+      if doc.configurable.view_mode ~= 0 then
+        ui:handleEvent(Event:new("ConfigChange", "view_mode", 0))
+        ui:handleEvent(Event:new("SetViewMode", "page"))
+      end
+    end
+
+    -- reset gap
+    if doc.configurable._page_gap_height_changed then
+      local gap = G_reader_settings:readSetting('kopt_page_gap_height') or 8
+      ui:handleEvent(Event:new("ConfigChange", "page_gap_height", gap))
+      ui:handleEvent(Event:new("PageGapUpdate", gap))
+
+      doc.configurable._page_gap_height_changed = false
+    end
+
+    local rtl = (not G_reader_settings:isTrue('rakuyomi_never_rtl')) and self.viewer == MangaViewer.Rtl
+    if ui.view.inverse_reading_order ~= rtl then
+      ui.view:onToggleReadingOrder(rtl)
+    end
+  elseif self.viewer == MangaViewer.Scroll or self.viewer == MangaViewer.Vertical then
+    doc.configurable._modified = true
+    if kopt_mode then
+      if doc.configurable.page_scroll ~= 1 then
+        ui:handleEvent(Event:new("ConfigChange", "page_scroll", 1))
+        ui:handleEvent(Event:new("SetScrollMode", true))
+      end
+    else
+      if doc.configurable.view_mode ~= 1 then
+        ui:handleEvent(Event:new("ConfigChange", "view_mode", 1))
+        ui:handleEvent(Event:new("SetViewMode", "scroll"))
+      end
+    end
+
+    if self.viewer == MangaViewer.Scroll then
+      ui:handleEvent(Event:new("ConfigChange", "page_gap_height", 0))
+      ui:handleEvent(Event:new("PageGapUpdate", 0))
+
+      doc.configurable._page_gap_height_changed = true
+    elseif doc.configurable._page_gap_height_changed then
+      local gap = G_reader_settings:readSetting('kopt_page_gap_height') or 8
+      ui:handleEvent(Event:new("ConfigChange", "page_gap_height", gap))
+      ui:handleEvent(Event:new("PageGapUpdate", gap))
+    end
+
+    if ui.view.inverse_reading_order then
+      ui.view:onToggleReadingOrder(false)
+    end
+  elseif self.viewer == MangaViewer.DefaultViewer then
+    if doc.configurable._modified then
+      doc.configurable:loadDefaults(ui.config.options)
+      doc.configurable.rakuyomi_view_mode = 0
+    end
+  end
+
+  if self.viewer ~= MangaViewer.DefaultViewer then
+    if G_reader_settings:nilOrTrue('rakuyomi_page_margin') and doc.configurable.page_margin > 0 then
+      -- -- recommend option
+      ui:handleEvent(Event:new("ConfigChange", "page_margin", 0))
+      ui:handleEvent(Event:new("MarginUpdate", 0))
+    end
+    if G_reader_settings:nilOrTrue('rakuyomi_trim_page') and doc.configurable.trim_page ~= 1 then
+      ui:handleEvent(Event:new("ConfigChange", "trim_page", 1))
+      ui:handleEvent(Event:new("PageCrop", "auto"))
+    end
+    if G_reader_settings:nilOrTrue('rakuyomi_zoom_mode_type') and doc.configurable.zoom_mode_type ~= 2 then
+      ui:handleEvent(Event:new("ConfigChange", "zoom_mode_type", 2))
+      ui:handleEvent(Event:new("DefineZoom", "full"))
+    end
+    if G_reader_settings:nilOrTrue('rakuyomi_zoom_mode_genus') and doc.configurable.zoom_mode_genus ~= 3 then
+      ui:handleEvent(Event:new("ConfigChange", "zoom_mode_genus", 3))
+      ui:handleEvent(Event:new("DefineZoom", "content"))
+    end
+  end
+end
+
+--patch frontend/apps/reader/modules/readerconfig.lua
+function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
+  local manga_reader = self
+  local ConfigDialog = require("ui/widget/configdialog")
+  local T = require("ffi/util").template
+
+  function ui.config:onShowConfigMenu() -- luacheck: ignore self
+    --- @patch code
+    local options = shallow_clone(self.options)
+    options.prefix = self.options.prefix
+
+    local show_toolbar_extend = G_reader_settings:readSetting('rakuyomi_reader_extend') or 'bottom'
+
+    local show_btn_prev = show_toolbar_extend == 'off' and G_reader_settings:nilOrTrue('rakuyomi_hide_btn_prev')
+    local show_btn_next = show_toolbar_extend == 'off' and G_reader_settings:nilOrTrue('rakuyomi_show_btn_next')
+    if show_btn_prev then
+      table.insert(options, 1, {
+        icon = "chevron.first",
+        name = "btn_prev",
+        options = {},
+      })
+    end
+    if show_btn_next then
+      table.insert(options, {
+        icon = "chevron.last",
+        name = "btn_next",
+        options = {},
+      })
+    end
+    if show_btn_prev and self.last_panel_index == 1 then
+      self.last_panel_index = 2
+    elseif show_btn_next and self.last_panel_index == #options then
+      self.last_panel_index = #options - 1
+    end
+    --- @/patch code
+
+    --- @original
+    self.config_dialog = ConfigDialog:new {
+      document = self.document,
+      ui = self.ui,
+      configurable = self.configurable,
+      config_options = options, --- @patch
+      is_always_active = true,
+      covers_footer = true,
+      close_callback = function() self:onCloseCallback() end,
+    }
+    self.ui.keyselection:stopHighlightIndicator(true) -- stop any text selection in progress, if applicable
+    self.ui:handleEvent(Event:new("DisableHinting"))
+    --- @/original
+
+    --- @patch code
+    --- @description override onShowConfigPanel for listen chevron.right
+    if show_btn_prev or show_btn_next then
+      local onShowConfigPanel = self.config_dialog.onShowConfigPanel
+      function self.config_dialog:onShowConfigPanel(index) -- luacheck: ignore self
+        local name = self.config_options[index].name
+        if name == "btn_next" then
+          manga_reader.on_end_of_book_callback(true)
+          return
+        elseif name == "btn_prev" then
+          manga_reader.on_beginning_of_book_callback()
+          return
+        end
+
+        return onShowConfigPanel(self, index)
+      end
+    end
+    --- @/patch code
+
+    --- @patch code
+    --- @description override press to make as default for rakuyomi_view_mode
+    local onMakeDefault = self.config_dialog.onMakeDefault
+    function self.config_dialog:onMakeDefault(name, name_text, values, labels, position, ...) -- luacheck: ignore self
+      if name == "rakuyomi_view_mode" then
+        UIManager:show(ConfirmBox:new {
+          text = T(
+            _("Set default %1 to %2?"),
+            (name_text or ""),
+            labels[position]
+          ),
+          ok_text = T(_("Set as default")),
+          ok_callback = function()
+            G_reader_settings:saveSetting('rakuyomi_global_viewer', Backend.MangaViewerName[values[position]] or '')
+
+            self:update()
+            UIManager:setDirty(self, function()
+              return "ui", self.dialog_frame.dimen
+            end)
+          end,
+        })
+        return true
+      end
+      return onMakeDefault(self, name, name_text, values, labels, position, ...)
+    end
+
+    --- @/patch
+
+    --- @patch
+    if show_toolbar_extend ~= 'off' then
+      local MangaReaderExtend = require("MangaReaderExtend")
+      local ChapterListPopup = require("ChapterListPopup")
+      local update = self.config_dialog.update
+      function self.config_dialog:update(...) -- luacheck: ignore self
+        update(self, ...)
+
+        if self.menu_extend then
+          self.menu_extend:clear()
+          self.menu_extend:init()
+        else
+          self.menu_extend = MangaReaderExtend:create {
+            chapter = manga_reader.chapter,
+            position = show_toolbar_extend == 'top' and 'top' or 'bottom',
+            on_prev_callback = manga_reader.on_beginning_of_book_callback,
+            on_next_callback = function()
+              manga_reader.on_end_of_book_callback(true)
+            end,
+            on_chapter_name_callback = function()
+              -- not need call UIManager:open because in `init` called
+              ChapterListPopup:create {
+                chapter = manga_reader.chapter,
+                chapters = manga_reader.chapters,
+                on_chapter_selected = manga_reader.on_open_chapter,
+              }
+            end,
+          }
+        end
+
+        if show_toolbar_extend == 'top' then
+          table.insert(self.dialog_frame[1], 1, self.menu_extend)
+        else
+          table.insert(self.dialog_frame[1], self.menu_extend)
+        end
+      end
+    end
+
+    --- @/patch
+
+    --- @original
+    -- show last used panel when opening config dialog
+    self.config_dialog:onShowConfigPanel(self.last_panel_index)
+    UIManager:show(self.config_dialog)
+    self.ui:handleEvent(Event:new("HandledAsSwipe")) -- cancel any pan scroll made
+    --- @/original
+    return true
   end
 end
 

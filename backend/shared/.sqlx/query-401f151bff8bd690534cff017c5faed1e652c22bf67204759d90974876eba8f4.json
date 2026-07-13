@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n                SELECT source_id, manga_id, chapter_id\n                FROM chapter_state\n                WHERE read = 1\n                ",
+  "query": "\n                SELECT source_id, manga_id, preferred_scanlator\n                FROM manga_state\n                WHERE source_id = ?1 AND manga_id = ?2;\n            ",
   "describe": {
     "columns": [
       {
@@ -9,7 +9,7 @@
         "type_info": "Text",
         "origin": {
           "Table": {
-            "table": "chapter_state",
+            "table": "manga_state",
             "name": "source_id"
           }
         }
@@ -20,31 +20,31 @@
         "type_info": "Text",
         "origin": {
           "Table": {
-            "table": "chapter_state",
+            "table": "manga_state",
             "name": "manga_id"
           }
         }
       },
       {
-        "name": "chapter_id",
+        "name": "preferred_scanlator",
         "ordinal": 2,
         "type_info": "Text",
         "origin": {
           "Table": {
-            "table": "chapter_state",
-            "name": "chapter_id"
+            "table": "manga_state",
+            "name": "preferred_scanlator"
           }
         }
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 2
     },
     "nullable": [
       false,
       false,
-      false
+      true
     ]
   },
-  "hash": "16ebb790e48ced066466701cef2f5ea0835d185a7b1e629c77d88399da0e661a"
+  "hash": "401f151bff8bd690534cff017c5faed1e652c22bf67204759d90974876eba8f4"
 }

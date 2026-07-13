@@ -253,6 +253,113 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_never_rtl',
+    {
+      type = 'boolean',
+      title = _('Never turn on RTL, even for Japanese manga'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_auto_viewer_mode',
+    {
+      type = 'boolean',
+      title = _('Automatically set the viewer to manga mode'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_global_viewer',
+    {
+      type = 'enum',
+      title = _('Global viewer override'),
+      options = {
+        { label = _("Off"),      value = '' },
+        { label = _("Default"),  value = 'DefaultViewer' },
+        { label = _("RTL"),      value = 'Rtl' },
+        { label = _("LTR"),      value = 'Ltr' },
+        { label = _("Vertical"), value = 'Vertical' },
+        { label = _("Scroll"),   value = 'Scroll' },
+      },
+      default = '',
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_hide_btn_prev',
+    {
+      type = 'boolean',
+      title = _('Show button previous chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_show_btn_next',
+    {
+      type = 'boolean',
+      title = _('Show button next chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_reader_extend',
+    {
+      type = 'enum',
+      title = _('Display the expanded rakuyomi bottom toolbar in the reader'),
+      options = {
+        { label = _('Off'),               value = 'off' },
+        { label = _('On bottom toolbar'), value = 'bottom' },
+        { label = _('On top toolbar'),    value = 'top' },
+      },
+      default = 'bottom',
+      is_local = true,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _('Recommended reader settings') }
+  },
+  {
+    'rakuyomi_page_margin',
+    {
+      type = 'boolean',
+      title = _('Turn off all margins'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_trim_page',
+    {
+      type = 'boolean',
+      title = _('Automatically crop excess edges from photos (a little slow)'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_type',
+    {
+      type = 'boolean',
+      title = _('Zoom to full screen'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_genus',
+    {
+      type = 'boolean',
+      title = _('Zoom to fit image size'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Storage") }
   },

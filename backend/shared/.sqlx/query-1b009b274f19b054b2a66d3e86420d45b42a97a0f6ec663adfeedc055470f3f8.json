@@ -6,12 +6,24 @@
       {
         "name": "last_check",
         "ordinal": 0,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "last_check_update",
+            "name": "last_check"
+          }
+        }
       },
       {
         "name": "next_ts_arima",
         "ordinal": 1,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "last_check_update",
+            "name": "next_ts_arima"
+          }
+        }
       }
     ],
     "parameters": {

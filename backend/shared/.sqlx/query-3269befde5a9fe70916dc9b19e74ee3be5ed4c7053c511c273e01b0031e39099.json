@@ -6,7 +6,13 @@
       {
         "name": "chapter_id",
         "ordinal": 0,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "chapter_id"
+          }
+        }
       }
     ],
     "parameters": {

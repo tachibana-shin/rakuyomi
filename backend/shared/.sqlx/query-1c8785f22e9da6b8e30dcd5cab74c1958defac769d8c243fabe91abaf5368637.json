@@ -6,52 +6,112 @@
       {
         "name": "id",
         "ordinal": 0,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "notifications",
+            "name": "id"
+          }
+        }
       },
       {
         "name": "source_id",
         "ordinal": 1,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "notifications",
+            "name": "source_id"
+          }
+        }
       },
       {
         "name": "manga_id",
         "ordinal": 2,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "notifications",
+            "name": "manga_id"
+          }
+        }
       },
       {
         "name": "chapter_id",
         "ordinal": 3,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "notifications",
+            "name": "chapter_id"
+          }
+        }
       },
       {
         "name": "manga_title",
         "ordinal": 4,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_informations",
+            "name": "title"
+          }
+        }
       },
       {
         "name": "manga_cover",
         "ordinal": 5,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "cover_url"
+          }
+        }
       },
       {
         "name": "manga_status",
         "ordinal": 6,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "status"
+          }
+        }
       },
       {
         "name": "chapter_title",
         "ordinal": 7,
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "title"
+          }
+        }
       },
       {
         "name": "chapter_number",
         "ordinal": 8,
-        "type_info": "Float"
+        "type_info": "Float",
+        "origin": {
+          "Table": {
+            "table": "chapter_informations",
+            "name": "chapter_number"
+          }
+        }
       },
       {
         "name": "created_at",
         "ordinal": 9,
-        "type_info": "Integer"
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "notifications",
+            "name": "created_at"
+          }
+        }
       }
     ],
     "parameters": {

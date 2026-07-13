@@ -72,7 +72,6 @@ function Rakuyomi:showErrorDialog()
     Backend.getLogs(),
     function()
       Backend.cleanup()
-      Backend.resetState()
       Backend.getBackend()
     end
   )

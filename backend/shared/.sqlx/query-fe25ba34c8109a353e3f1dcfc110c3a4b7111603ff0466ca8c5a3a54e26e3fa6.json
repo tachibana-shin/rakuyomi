@@ -1,0 +1,208 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT \n                md.source_id AS \"source_id!\",\n                md.id AS \"id!\", \n                md.title,\n                md.author,\n                md.artist,\n                md.description,\n                md.tags,\n                md.cover_url,\n                md.url,\n                md.status AS \"status!\",\n                md.nsfw AS \"nsfw!\",\n                md.viewer AS \"viewer!\",\n                md.last_updated,\n                md.last_opened,\n                COALESCE(MAX(cs.last_read), 0) AS \"last_read: i64\",\n                md.date_added,\n                COALESCE(AVG(cs.read), 0) AS \"per_read: f64\"\n            FROM manga_details md\n            LEFT JOIN chapter_state cs\n                ON cs.source_id = md.source_id\n                AND cs.manga_id = md.id\n            WHERE md.source_id = ?1 AND md.id = ?2\n            GROUP BY md.source_id, md.id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id!",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "source_id"
+          }
+        }
+      },
+      {
+        "name": "id!",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "title"
+          }
+        }
+      },
+      {
+        "name": "author",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "author"
+          }
+        }
+      },
+      {
+        "name": "artist",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "artist"
+          }
+        }
+      },
+      {
+        "name": "description",
+        "ordinal": 5,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "description"
+          }
+        }
+      },
+      {
+        "name": "tags",
+        "ordinal": 6,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "tags"
+          }
+        }
+      },
+      {
+        "name": "cover_url",
+        "ordinal": 7,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "cover_url"
+          }
+        }
+      },
+      {
+        "name": "url",
+        "ordinal": 8,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "url"
+          }
+        }
+      },
+      {
+        "name": "status!",
+        "ordinal": 9,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "name": "nsfw!",
+        "ordinal": 10,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "nsfw"
+          }
+        }
+      },
+      {
+        "name": "viewer!",
+        "ordinal": 11,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "viewer"
+          }
+        }
+      },
+      {
+        "name": "last_updated",
+        "ordinal": 12,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "last_updated"
+          }
+        }
+      },
+      {
+        "name": "last_opened",
+        "ordinal": 13,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "last_opened"
+          }
+        }
+      },
+      {
+        "name": "last_read: i64",
+        "ordinal": 14,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "date_added",
+        "ordinal": 15,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_details",
+            "name": "date_added"
+          }
+        }
+      },
+      {
+        "name": "per_read: f64",
+        "ordinal": 16,
+        "type_info": "Integer",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "fe25ba34c8109a353e3f1dcfc110c3a4b7111603ff0466ca8c5a3a54e26e3fa6"
+}

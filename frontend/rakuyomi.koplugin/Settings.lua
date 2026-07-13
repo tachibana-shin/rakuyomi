@@ -278,6 +278,24 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_hide_btn_prev',
+    {
+      type = 'boolean',
+      title = _('Show button previous chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_show_btn_next',
+    {
+      type = 'boolean',
+      title = _('Show button next chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _('Recommended reader settings') }
   },

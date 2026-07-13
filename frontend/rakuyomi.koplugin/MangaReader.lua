@@ -468,19 +468,26 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
     --- @patch code
     local options = shallow_clone(self.options)
     options.prefix = self.options.prefix
-    table.insert(options, 1, {
-      icon = "chevron.first",
-      name = "btn_prev",
-      options = {},
-    })
-    table.insert(options, {
-      icon = "chevron.last",
-      name = "btn_next",
-      options = {},
-    })
-    if self.last_panel_index == 1 then
+
+    local show_btn_prev = G_reader_settings:nilOrTrue('rakuyomi_hide_btn_prev')
+    local show_btn_next = G_reader_settings:nilOrTrue('rakuyomi_show_btn_next')
+    if show_btn_prev then
+      table.insert(options, 1, {
+        icon = "chevron.first",
+        name = "btn_prev",
+        options = {},
+      })
+    end
+    if show_btn_next then
+      table.insert(options, {
+        icon = "chevron.last",
+        name = "btn_next",
+        options = {},
+      })
+    end
+    if show_btn_prev and self.last_panel_index == 1 then
       self.last_panel_index = 2
-    elseif self.last_panel_index == #options then
+    elseif show_btn_next and self.last_panel_index == #options then
       self.last_panel_index = #options - 1
     end
     --- @/patch code

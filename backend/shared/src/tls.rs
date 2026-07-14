@@ -185,3 +185,69 @@ impl ServerCertVerifier for AcceptAllVerifier {
         self.0.supported_schemes()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn blocking_client_builds_and_requests_https() {
+        let client = blocking_client_builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("failed to build blocking client");
+        let resp = client
+            .get("https://example.com")
+            .send()
+            .expect("blocking HTTPS request failed");
+        assert!(resp.status().is_success());
+    }
+
+    #[tokio::test]
+    async fn async_client_builds_and_requests_https() {
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("failed to build async client");
+        let resp = client
+            .get("https://example.com")
+            .send()
+            .await
+            .expect("async HTTPS request failed");
+        assert!(resp.status().is_success());
+    }
+
+    #[test]
+    fn tls_works_without_system_certs() {
+        // Simulate Kobo/Kindle: no system CA certificates available
+        let orig_cert_dir = std::env::var_os("SSL_CERT_DIR");
+        let orig_cert_file = std::env::var_os("SSL_CERT_FILE");
+        unsafe {
+            std::env::set_var("SSL_CERT_DIR", "/nonexistent");
+            std::env::set_var("SSL_CERT_FILE", "/nonexistent");
+        }
+        let result = std::panic::catch_unwind(|| {
+            let client = blocking_client_builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .expect("failed to build client without system certs");
+            let resp = client
+                .get("https://example.com")
+                .send()
+                .expect("HTTPS request failed without system certs");
+            assert!(resp.status().is_success());
+        });
+        // Restore original env
+        unsafe {
+            match orig_cert_dir {
+                Some(v) => std::env::set_var("SSL_CERT_DIR", v),
+                None => std::env::remove_var("SSL_CERT_DIR"),
+            }
+            match orig_cert_file {
+                Some(v) => std::env::set_var("SSL_CERT_FILE", v),
+                None => std::env::remove_var("SSL_CERT_FILE"),
+            }
+        }
+        result.expect("TLS should work without system CA certs (uses bundled webpki roots)");
+    }
+}

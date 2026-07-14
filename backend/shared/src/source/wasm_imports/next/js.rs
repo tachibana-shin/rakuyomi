@@ -48,7 +48,7 @@ impl From<ResultContext> for i32 {
             ResultContext::InvalidString => -3,
             // ResultContext::InvalidHandler => -4,
             // ResultContext::InvalidRequest => -5,
-            ResultContext::InvalidRuleList => -6,
+            // ResultContext::InvalidRuleList => -6,
         }
     }
 }

@@ -63,26 +63,6 @@ fn base_tls_config() -> rustls::ClientConfig {
     CONFIG.clone()
 }
 
-fn apply_blocking_proxy(builder: reqwest::blocking::ClientBuilder) -> reqwest::blocking::ClientBuilder {
-    let url = match PROXY_URL.read() {
-        Ok(guard) => guard.clone(),
-        Err(e) => {
-            warn!("PROXY_URL lock poisoned, skipping proxy configuration: {e}");
-            return builder;
-        }
-    };
-    match url.as_ref() {
-        Some(url) => match reqwest::Proxy::all(url) {
-            Ok(proxy) => builder.proxy(proxy),
-            Err(e) => {
-                warn!("invalid proxy URL: {e}");
-                builder
-            }
-        },
-        None => builder,
-    }
-}
-
 fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::WantsVerifier> {
     static PROVIDER: Lazy<Arc<rustls::crypto::CryptoProvider>> =
         Lazy::new(|| Arc::new(rustls::crypto::ring::default_provider()));
@@ -111,14 +91,6 @@ pub fn client_builder_insecure() -> reqwest::ClientBuilder {
             .with_no_client_auth()
     });
     apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
-}
-
-/// Creates a blocking reqwest ClientBuilder configured with the standard WebPKI root trust store
-/// and the currently configured global proxy.
-pub fn blocking_client_builder() -> reqwest::blocking::ClientBuilder {
-    apply_blocking_proxy(
-        reqwest::blocking::Client::builder().use_preconfigured_tls(base_tls_config()),
-    )
 }
 
 /// Test whether a given proxy URL is reachable by making a lightweight HTTP request
@@ -190,19 +162,6 @@ impl ServerCertVerifier for AcceptAllVerifier {
 mod tests {
     use super::*;
 
-    #[test]
-    fn blocking_client_builds_and_requests_https() {
-        let client = blocking_client_builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()
-            .expect("failed to build blocking client");
-        let resp = client
-            .get("https://example.com")
-            .send()
-            .expect("blocking HTTPS request failed");
-        assert!(resp.status().is_success());
-    }
-
     #[tokio::test]
     async fn async_client_builds_and_requests_https() {
         let client = client_builder()
@@ -217,27 +176,24 @@ mod tests {
         assert!(resp.status().is_success());
     }
 
-    #[test]
-    fn tls_works_without_system_certs() {
-        // Simulate Kobo/Kindle: no system CA certificates available
+    #[tokio::test]
+    async fn tls_works_without_system_certs() {
         let orig_cert_dir = std::env::var_os("SSL_CERT_DIR");
         let orig_cert_file = std::env::var_os("SSL_CERT_FILE");
         unsafe {
             std::env::set_var("SSL_CERT_DIR", "/nonexistent");
             std::env::set_var("SSL_CERT_FILE", "/nonexistent");
         }
-        let result = std::panic::catch_unwind(|| {
-            let client = blocking_client_builder()
-                .timeout(std::time::Duration::from_secs(10))
-                .build()
-                .expect("failed to build client without system certs");
-            let resp = client
-                .get("https://example.com")
-                .send()
-                .expect("HTTPS request failed without system certs");
-            assert!(resp.status().is_success());
-        });
-        // Restore original env
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("failed to build client without system certs");
+        let resp = client
+            .get("https://example.com")
+            .send()
+            .await
+            .expect("HTTPS request failed without system certs");
+        assert!(resp.status().is_success());
         unsafe {
             match orig_cert_dir {
                 Some(v) => std::env::set_var("SSL_CERT_DIR", v),
@@ -248,6 +204,5 @@ mod tests {
                 None => std::env::remove_var("SSL_CERT_FILE"),
             }
         }
-        result.expect("TLS should work without system CA certs (uses bundled webpki roots)");
     }
 }

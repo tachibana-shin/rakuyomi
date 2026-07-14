@@ -3,6 +3,7 @@
 use aidoku::canvas::{Angle, FontWeight, PathOp};
 use anyhow::{bail, Result};
 use font_kit::properties::{Properties, Weight};
+use futures::executor;
 use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
 use raqote::{DrawOptions, LineCap, LineJoin, Point, Source, Transform, Vector};
 use wasm_shared::get_memory;
@@ -420,11 +421,14 @@ fn load_font(mut caller: Caller<'_, WasmStore>, url: Option<String>) -> Result<i
         return Ok(ResultContext::InvalidPath.into());
     };
 
-    let bytes = match crate::tls::blocking_client_builder()
-        .timeout(std::time::Duration::from_secs(30))
-        .build()
-        .and_then(|client| client.get(&url).send()?.error_for_status()?.bytes().map(|b| b.to_vec()))
-    {
+    let bytes = match executor::block_on(async {
+        let client = crate::tls::client_builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()?;
+        let response = client.get(&url).send().await?.error_for_status()?;
+        let bytes = response.bytes().await?.to_vec();
+        Ok::<Vec<u8>, reqwest::Error>(bytes)
+    }) {
         Ok(b) => b,
         Err(_) => return Ok(ResultContext::FontLoadFailed.into()),
     };

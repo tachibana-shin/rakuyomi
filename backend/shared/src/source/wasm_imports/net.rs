@@ -190,9 +190,13 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
 
     let cancellation_token = wasm_store.context.cancellation_token.clone();
     // Clone cookie sync settings before mutable borrow via request_builder
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let cookie_sync_server_url = wasm_store.settings.cookie_sync_server_url.clone();
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let cookie_sync_device_name = wasm_store.settings.cookie_sync_device_name.clone();
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let cookie_sync_chat_id = wasm_store.settings.cookie_sync_chat_id;
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let cookie_sync_api_token = wasm_store.settings.cookie_sync_api_token.clone();
     let request_builder = get_building_request(wasm_store, request_descriptor_i32)?;
 

@@ -423,7 +423,7 @@ fn load_font(mut caller: Caller<'_, WasmStore>, url: Option<String>) -> Result<i
     let bytes = match crate::tls::blocking_client_builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
-        .and_then(|client| client.get(&url).send()?.bytes().map(|b| b.to_vec()))
+        .and_then(|client| client.get(&url).send()?.error_for_status()?.bytes().map(|b| b.to_vec()))
     {
         Ok(b) => b,
         Err(_) => return Ok(ResultContext::FontLoadFailed.into()),

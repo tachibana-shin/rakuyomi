@@ -220,3 +220,161 @@ pub struct PlaylistManga {
     pub source_id: String,
     pub manga_id: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_source_id_new_and_value() {
+        let id = SourceId::new("test_source".to_string());
+        assert_eq!(id.value(), "test_source");
+    }
+
+    #[test]
+    fn test_source_id_clone() {
+        let id = SourceId::new("test_source".to_string());
+        let cloned = id.clone();
+        assert_eq!(id, cloned);
+    }
+
+    #[test]
+    fn test_source_id_equality() {
+        let id1 = SourceId::new("source_a".to_string());
+        let id2 = SourceId::new("source_a".to_string());
+        let id3 = SourceId::new("source_b".to_string());
+        assert_eq!(id1, id2);
+        assert_ne!(id1, id3);
+    }
+
+    #[test]
+    fn test_manga_id_from_strings() {
+        let id = MangaId::from_strings("source1".to_string(), "manga1".to_string());
+        assert_eq!(id.source_id().value(), "source1");
+        assert_eq!(id.value(), "manga1");
+    }
+
+    #[test]
+    fn test_manga_id_new() {
+        let source_id = SourceId::new("source1".to_string());
+        let id = MangaId::new(source_id, "manga1".to_string());
+        assert_eq!(id.source_id().value(), "source1");
+        assert_eq!(id.value(), "manga1");
+    }
+
+    #[test]
+    fn test_manga_id_equality() {
+        let id1 = MangaId::from_strings("src".to_string(), "manga".to_string());
+        let id2 = MangaId::from_strings("src".to_string(), "manga".to_string());
+        let id3 = MangaId::from_strings("src".to_string(), "other".to_string());
+        assert_eq!(id1, id2);
+        assert_ne!(id1, id3);
+    }
+
+    #[test]
+    fn test_manga_id_hash() {
+        let id1 = MangaId::from_strings("src".to_string(), "manga".to_string());
+        let id2 = MangaId::from_strings("src".to_string(), "manga".to_string());
+        let mut map = std::collections::HashMap::new();
+        map.insert(id1, "value1");
+        assert_eq!(map.get(&id2), Some(&"value1"));
+    }
+
+    #[test]
+    fn test_chapter_id_from_strings() {
+        let id = ChapterId::from_strings(
+            "source1".to_string(),
+            "manga1".to_string(),
+            "chapter1".to_string(),
+        );
+        assert_eq!(id.source_id().value(), "source1");
+        assert_eq!(id.manga_id().value(), "manga1");
+        assert_eq!(id.value(), "chapter1");
+    }
+
+    #[test]
+    fn test_chapter_id_new() {
+        let manga_id = MangaId::from_strings("src".to_string(), "manga".to_string());
+        let id = ChapterId::new(manga_id, "ch1".to_string());
+        assert_eq!(id.source_id().value(), "src");
+        assert_eq!(id.manga_id().value(), "manga");
+        assert_eq!(id.value(), "ch1");
+    }
+
+    #[test]
+    fn test_chapter_id_equality() {
+        let id1 = ChapterId::from_strings(
+            "src".to_string(),
+            "manga".to_string(),
+            "ch1".to_string(),
+        );
+        let id2 = ChapterId::from_strings(
+            "src".to_string(),
+            "manga".to_string(),
+            "ch1".to_string(),
+        );
+        let id3 = ChapterId::from_strings(
+            "src".to_string(),
+            "manga".to_string(),
+            "ch2".to_string(),
+        );
+        assert_eq!(id1, id2);
+        assert_ne!(id1, id3);
+    }
+
+    #[test]
+    fn test_chapter_id_hash() {
+        let id1 = ChapterId::from_strings(
+            "src".to_string(),
+            "manga".to_string(),
+            "ch1".to_string(),
+        );
+        let id2 = ChapterId::from_strings(
+            "src".to_string(),
+            "manga".to_string(),
+            "ch1".to_string(),
+        );
+        let mut set = std::collections::HashSet::new();
+        set.insert(id1);
+        assert!(set.contains(&id2));
+    }
+
+    #[test]
+    fn test_manga_state_default() {
+        let state = MangaState::default();
+        assert!(state.preferred_scanlator.is_none());
+    }
+
+    #[test]
+    fn test_chapter_state_default() {
+        let state = ChapterState::default();
+        assert!(!state.read);
+        assert!(state.last_read.is_none());
+    }
+
+    #[test]
+    fn test_source_information_from_manifest() {
+        let manifest = crate::source::SourceManifest {
+            info: crate::source::SourceInfo {
+                id: "test_id".to_string(),
+                lang: Some("en".to_string()),
+                #[cfg(not(feature = "all"))]
+                languages: None,
+                #[cfg(not(feature = "all"))]
+                content_rating: None,
+                name: "Test Source".to_string(),
+                version: 1,
+                url: None,
+                urls: None,
+                min_app_version: None,
+            },
+            config: None,
+            source_of_source: Some("test_sos".to_string()),
+        };
+        let info = SourceInformation::from(manifest);
+        assert_eq!(info.id.value(), "test_id");
+        assert_eq!(info.name, "Test Source");
+        assert_eq!(info.version, 1);
+        assert_eq!(info.source_of_source, Some("test_sos".to_string()));
+    }
+}

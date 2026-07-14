@@ -22,8 +22,6 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
-local Trapper = require("ui/trapper")
-local LoadingDialog = require("LoadingDialog")
 
 local ffi = require("ffi")
 
@@ -328,7 +326,7 @@ Settings.setting_value_definitions = {
     {
       type = 'boolean',
       title = _('Turn off all margins'),
-      default = true,
+      default = false,
       is_local = true,
     }
   },
@@ -337,7 +335,7 @@ Settings.setting_value_definitions = {
     {
       type = 'boolean',
       title = _('Automatically crop excess edges from photos (a little slow)'),
-      default = true,
+      default = false,
       is_local = true,
     }
   },
@@ -346,7 +344,7 @@ Settings.setting_value_definitions = {
     {
       type = 'boolean',
       title = _('Zoom to full screen'),
-      default = true,
+      default = false,
       is_local = true,
     }
   },
@@ -355,7 +353,7 @@ Settings.setting_value_definitions = {
     {
       type = 'boolean',
       title = _('Zoom to fit image size'),
-      default = true,
+      default = false,
       is_local = true,
     }
   },
@@ -667,26 +665,9 @@ function Settings:updateSetting(key, value)
 
   -- Test proxy before saving
   if key == 'proxy_url' and value ~= nil and value ~= '' then
-    local test_success = false
-    local test_error_msg = nil
-
-    Trapper:wrap(function()
-      local test_response = LoadingDialog:showAndRun(
-        _("Testing proxy..."),
-        function()
-          return Backend.testProxy(value)
-        end
-      )
-
-      if test_response and test_response.type ~= 'ERROR' then
-        test_success = true
-      else
-        test_error_msg = test_response and test_response.message or _("Failed to test proxy")
-      end
-    end)()
-
-    if not test_success then
-      ErrorDialog:show(test_error_msg)
+    local test_response = Backend.testProxy(value)
+    if test_response.type == 'ERROR' then
+      ErrorDialog:show(test_response.message or _("Failed to test proxy"))
       return false
     end
   end

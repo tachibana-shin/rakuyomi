@@ -162,7 +162,10 @@ impl ServerCertVerifier for AcceptAllVerifier {
 mod tests {
     use super::*;
 
+    // -- Tests that require network access --
+
     #[tokio::test]
+    #[ignore = "requires network access"]
     async fn async_client_builds_and_requests_https() {
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(10))
@@ -177,6 +180,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "requires network access"]
     async fn tls_works_without_system_certs() {
         let orig_cert_dir = std::env::var_os("SSL_CERT_DIR");
         let orig_cert_file = std::env::var_os("SSL_CERT_FILE");
@@ -204,5 +208,111 @@ mod tests {
                 None => std::env::remove_var("SSL_CERT_FILE"),
             }
         }
+    }
+
+    #[tokio::test]
+    #[ignore = "requires network access"]
+    async fn invalid_proxy_url_ignored() {
+        set_proxy_url(Some("not-a-valid-url".to_string()));
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+            .expect("builder should succeed even with invalid proxy URL");
+        let resp = client.get("https://example.com").send().await;
+        assert!(resp.is_ok(), "request should succeed without proxy applied");
+        set_proxy_url(None);
+    }
+
+    #[tokio::test]
+    #[ignore = "requires network access"]
+    async fn no_proxy_by_default() {
+        set_proxy_url(None);
+        assert_eq!(proxy_url(), None);
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+            .expect("builder should succeed without proxy");
+        let resp = client.get("https://example.com").send().await;
+        assert!(resp.is_ok());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires network access"]
+    async fn insecure_builder_works() {
+        let client = client_builder_insecure()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("failed to build insecure client");
+        let resp = client.get("https://example.com").send().await;
+        assert!(resp.is_ok(), "insecure client should be able to make requests");
+    }
+
+    // -- Tests that do NOT require network --
+
+    #[test]
+    fn proxy_set_and_get() {
+        set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
+        assert_eq!(proxy_url(), Some("http://127.0.0.1:8080".to_string()));
+        set_proxy_url(None);
+        assert_eq!(proxy_url(), None);
+    }
+
+    #[test]
+    fn proxy_switching() {
+        set_proxy_url(Some("http://proxy1:8080".to_string()));
+        assert_eq!(proxy_url(), Some("http://proxy1:8080".to_string()));
+        set_proxy_url(Some("http://proxy2:3128".to_string()));
+        assert_eq!(proxy_url(), Some("http://proxy2:3128".to_string()));
+        set_proxy_url(None);
+        assert_eq!(proxy_url(), None);
+    }
+
+    #[tokio::test]
+    #[ignore = "requires network access"]
+    async fn proxy_applied_to_builder() {
+        set_proxy_url(Some("http://127.0.0.1:9999".to_string()));
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+            .expect("failed to build client with proxy");
+        let result = client.get("https://example.com").send().await;
+        assert!(result.is_err(), "request through non-existent proxy should fail");
+        set_proxy_url(None);
+    }
+
+    #[test]
+    fn builder_creates_valid_client() {
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build();
+        assert!(client.is_ok(), "client_builder should produce a valid client");
+    }
+
+    #[test]
+    fn insecure_builder_creates_valid_client() {
+        let client = client_builder_insecure()
+            .timeout(std::time::Duration::from_secs(5))
+            .build();
+        assert!(client.is_ok(), "client_builder_insecure should produce a valid client");
+    }
+
+    #[test]
+    fn proxy_builder_creates_valid_client() {
+        set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build();
+        assert!(client.is_ok(), "client_builder with proxy should produce a valid client");
+        set_proxy_url(None);
+    }
+
+    #[test]
+    fn invalid_proxy_does_not_break_builder() {
+        set_proxy_url(Some("not-a-valid-url://??".to_string()));
+        let client = client_builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build();
+        assert!(client.is_ok(), "invalid proxy URL should not prevent client creation");
+        set_proxy_url(None);
     }
 }

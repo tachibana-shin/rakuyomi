@@ -264,6 +264,7 @@ pub async fn download_image(
     url: String,
     index: usize,
     source: &Source,
+    client: &Client,
 ) -> anyhow::Result<(Vec<u8>, String, String)> {
     let Some(url) = &Url::parse(&url).ok() else {
         bail!("Invalid URL: {}", url);
@@ -295,10 +296,7 @@ pub async fn download_image(
             .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
         let req_url = request.url().clone();
 
-        let client = crate::tls::client_builder()
-            .timeout(std::time::Duration::from_secs(30))
-            .build()?;
-        let response = request_with_forced_referer_from_request(&client, request, 10)
+        let response = request_with_forced_referer_from_request(client, request, 10)
             .await
             .map_err(|err| anyhow!(format!("Request error: {err}")))?;
 
@@ -372,7 +370,7 @@ where
 }
 pub async fn download_all_images(
     base_url: Option<&Url>,
-    pages: Vec<Page>,
+    pages: &[Page],
     source: &Source,
     token: &CancellationToken,
     concurrent_requests: usize,
@@ -387,7 +385,11 @@ pub async fn download_all_images(
     // Ensure concurrent_requests is at least 1 to prevent deadlock
     let concurrent_requests = concurrent_requests.max(1);
 
-    let mut seen = HashSet::<String>::new();
+    let client = crate::tls::client_builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()?;
+
+    let mut seen = HashSet::<String>::with_capacity(pages.len());
     type Task = std::pin::Pin<
         Box<
             dyn futures::Future<Output = (String, anyhow::Result<(Vec<u8>, String, String)>)>
@@ -399,7 +401,7 @@ pub async fn download_all_images(
     #[cfg(feature = "all")]
     let mut tasks: Vec<Task> = Vec::with_capacity(pages.len());
 
-    for page in &pages {
+    for page in pages {
         if token.is_cancelled() {
             break;
         }
@@ -408,9 +410,10 @@ pub async fn download_all_images(
                 let url = image_url.clone();
                 let index = page.index;
                 let source = source.clone();
+                let client = client.clone();
 
                 let task = Box::pin(async move {
-                    let result = download_image(url.to_string(), index, &source).await;
+                    let result = download_image(url.to_string(), index, &source, &client).await;
                     (url.to_string(), result)
                 });
 
@@ -431,9 +434,10 @@ pub async fn download_all_images(
                         let url = src.clone();
                         let index = page.index;
                         let source = source.clone();
+                        let client = client.clone();
 
                         let task = Box::pin(async move {
-                            let result = download_image(url.clone(), index, &source).await;
+                            let result = download_image(url.clone(), index, &source, &client).await;
                             (url, result)
                         });
 
@@ -457,8 +461,8 @@ pub async fn download_all_images(
         let on_progress = Arc::new(Mutex::new(on_progress));
 
         let semaphore = Arc::new(Semaphore::new(concurrent_requests));
-        let mut results = HashMap::new();
-        if tasks.len() > 0 {
+        let mut results = HashMap::with_capacity(tasks.len());
+        if !tasks.is_empty() {
             let (tx, mut rx) = mpsc::channel(tasks.len());
 
             for (index, fut) in tasks {
@@ -499,4 +503,130 @@ pub async fn download_all_images(
         .await;
 
     Ok(store)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_wrap_text_empty() {
+        let result = wrap_text("", 10);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_wrap_text_single_word() {
+        let result = wrap_text("hello", 10);
+        assert_eq!(result, vec!["hello"]);
+    }
+
+    #[test]
+    fn test_wrap_text_multiple_words_no_wrap() {
+        let result = wrap_text("hello world", 20);
+        assert_eq!(result, vec!["hello world"]);
+    }
+
+    #[test]
+    fn test_wrap_text_wraps_at_boundary() {
+        let result = wrap_text("hello world foo bar", 12);
+        assert_eq!(result, vec!["hello world", "foo bar"]);
+    }
+
+    #[test]
+    fn test_wrap_text_long_word() {
+        let result = wrap_text("supercalifragilisticexpialidocious", 10);
+        assert_eq!(result, vec!["", "supercalifragilisticexpialidocious"]);
+    }
+
+    #[test]
+    fn test_into_html_with_html_marker() {
+        let input = "<!-- html --><p>Hello</p>";
+        let result = into_html(input);
+        assert_eq!(result, "<p>Hello</p>");
+    }
+
+    #[test]
+    fn test_into_html_with_html_marker_case_insensitive() {
+        let input = "<!-- HTML --><p>Hello</p>";
+        let result = into_html(input);
+        assert_eq!(result, "<p>Hello</p>");
+    }
+
+    #[test]
+    fn test_into_html_with_html_marker_leading_whitespace() {
+        let input = "  <!-- html --><p>Hello</p>";
+        let result = into_html(input);
+        assert_eq!(result, "<p>Hello</p>");
+    }
+
+    #[test]
+    fn test_into_html_without_html_marker() {
+        let input = "# Hello\nThis is **bold**.";
+        let result = into_html(input);
+        assert!(result.contains("<h1>Hello</h1>"));
+        assert!(result.contains("<strong>bold</strong>"));
+    }
+
+    #[test]
+    fn test_create_xhtml() {
+        let result = create_xhtml("Test Title", "<p>Content</p>");
+        assert!(result.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+        assert!(result.contains("<title>Test Title</title>"));
+        assert!(result.contains("<p>Content</p>"));
+        assert!(result.contains("xmlns=\"http://www.w3.org/1999/xhtml\""));
+    }
+
+    #[test]
+    fn test_create_xhtml_escapes_title() {
+        let result = create_xhtml("Test <script>", "<p>Content</p>");
+        assert!(result.contains("Test &lt;script&gt;"));
+        assert!(!result.contains("<script>"));
+    }
+
+    #[test]
+    fn test_get_image_src_with_src() {
+        let result = get_image_src(None, |attr| {
+            if attr == "src" {
+                Some("image.jpg".to_string())
+            } else {
+                None
+            }
+        });
+        assert_eq!(result, Some("image.jpg".to_string()));
+    }
+
+    #[test]
+    fn test_get_image_src_fallback_to_data_src() {
+        let result = get_image_src(None, |attr| {
+            if attr == "data-src" {
+                Some("lazy.jpg".to_string())
+            } else {
+                None
+            }
+        });
+        assert_eq!(result, Some("lazy.jpg".to_string()));
+    }
+
+    #[test]
+    fn test_get_image_src_with_base_url() {
+        let base = Url::parse("https://example.com/path/page.html").unwrap();
+        let result = get_image_src(Some(&base), |attr| {
+            if attr == "src" {
+                Some("../images/photo.jpg".to_string())
+            } else {
+                None
+            }
+        });
+        assert_eq!(
+            result,
+            Some("https://example.com/images/photo.jpg".to_string())
+        );
+    }
+
+    #[test]
+    fn test_get_image_src_no_match() {
+        let result = get_image_src(None, |_| None);
+        assert_eq!(result, None);
+    }
 }

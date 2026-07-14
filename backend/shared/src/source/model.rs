@@ -75,7 +75,7 @@ pub enum SettingDefinition {
 }
 
 fn empty_vector() -> Vec<String> {
-    [].to_vec()
+    Vec::new()
 }
 fn return_false() -> bool {
     false

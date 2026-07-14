@@ -52,14 +52,14 @@ pub async fn ensure_chapter_is_in_storage(
         if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, true)? {
             return Ok((
                 output.0,
-                output.1.unwrap_or_else(|| Vec::<DownloadError>::from([])),
+                output.1.unwrap_or_default(),
             ));
         }
     }
     if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, false)? {
         return Ok((
             output.0,
-            output.1.unwrap_or_else(|| Vec::<DownloadError>::from([])),
+            output.1.unwrap_or_default(),
         ));
     }
 
@@ -479,7 +479,7 @@ where
 
     let images = download_all_images(
         chapter.url.as_ref(),
-        pages.clone(),
+        &pages,
         source,
         token,
         concurrent_requests_pages,
@@ -541,11 +541,11 @@ where
                     }
                     Err(e) => {
                         eprintln!("Failed to download image for EPUB: {:?}", e);
+                        index_image += 1;
 
                         format!("<p><strong>Failed to download image: {}</strong></p>", e)
                     }
                 };
-                index_image += 1;
 
                 if let Ok(mut stored) = stored_process_images_clone.lock() {
                     stored.insert(idx, 1.0);

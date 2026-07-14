@@ -1047,7 +1047,7 @@ impl Database {
             return Ok(None);
         }
 
-        Ok(row.count.map(|count| count.try_into().unwrap()))
+        Ok(row.count.and_then(|count| count.try_into().ok()))
     }
 
     pub async fn fetch_unread_chapter_counts_minimal(

@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.37.0...v1.37.1) (2026-07-14)
+
+
+### Bug Fixes
+
+* **tls:** use owned ClientConfig for use_preconfigured_tls and route … ([#246](https://github.com/tachibana-shin/rakuyomi/issues/246)) ([ac8c74a](https://github.com/tachibana-shin/rakuyomi/commit/ac8c74a0559feb3163203d90de5883e732491271))
+
 # [1.37.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.36.11...v1.37.0) (2026-07-13)
 
 

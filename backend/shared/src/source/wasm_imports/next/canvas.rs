@@ -420,11 +420,12 @@ fn load_font(mut caller: Caller<'_, WasmStore>, url: Option<String>) -> Result<i
         return Ok(ResultContext::InvalidPath.into());
     };
 
-    let bytes = match reqwest::blocking::get(&url) {
-        Ok(resp) => match resp.bytes() {
-            Ok(b) => b.to_vec(),
-            Err(_) => return Ok(ResultContext::FontLoadFailed.into()),
-        },
+    let bytes = match crate::tls::blocking_client_builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .and_then(|client| client.get(&url).send()?.bytes().map(|b| b.to_vec()))
+    {
+        Ok(b) => b,
         Err(_) => return Ok(ResultContext::FontLoadFailed.into()),
     };
 

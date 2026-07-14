@@ -10,13 +10,9 @@ local platformUtil = require('platform/util')
 local must = platformUtil.must
 local must0 = platformUtil.must0
 local SubprocessOutputCapturer = platformUtil.SubprocessOutputCapturer
-local rapidjson = require("rapidjson")
-local execute_binary_fast = require("utils/executeBinaryFast")
 
 local SERVER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_SERVER_WORKING_DIRECTORY')
 local SERVER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_SERVER_COMMAND_OVERRIDE')
-local REQUEST_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_WORKING_DIRECTORY')
-local REQUEST_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_UDS_HTTP_REQUEST_COMMAND_OVERRIDE')
 
 local SOCKET_PATH = '/tmp/rakuyomi.sock'
 
@@ -31,6 +27,105 @@ ffi.cdef([[
   int posix_spawn_file_actions_addclose(posix_spawn_file_actions_t *actions, int fd);
   int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *actions);
 ]])
+
+pcall(ffi.cdef, [[
+  struct sockaddr_un {
+    unsigned short sun_family;
+    char sun_path[108];
+  };
+  int socket(int domain, int type, int protocol);
+  int connect(int sockfd, const void *addr, unsigned int addrlen);
+]])
+
+local AF_UNIX = 1
+local SOCK_STREAM = 1
+local EINTR = 4
+local READ_BUF_SIZE = 4096
+
+local t_sockaddr = ffi.typeof("struct sockaddr_un")
+local t_readbuf = ffi.typeof("char[?]")
+local t_charptr = ffi.typeof("const char *")
+
+--- Write all bytes to a file descriptor, handling partial writes.
+---@param fd number
+---@param data string
+---@param len number
+---@return boolean ok
+---@return string|nil err
+local function write_all(fd, data, len)
+  local ptr = ffi.cast(t_charptr, data)
+  local total = 0
+  while total < len do
+    local n = C.write(fd, ptr + total, len - total)
+    if n > 0 then
+      total = total + n
+    elseif n < 0 then
+      if ffi.errno() ~= EINTR then
+        return false, ffi.string(C.strerror(ffi.errno()))
+      end
+    else
+      return false, "write returned 0"
+    end
+  end
+  return true, nil
+end
+
+--- Read from fd until EOF (server closes connection via Connection: close).
+--- Uses a pre-allocated buffer to minimize GC pressure during the read loop.
+---@param fd number
+---@param timeout_secs number
+---@return string|nil data
+---@return string|nil err
+local function read_until_eof(fd, timeout_secs)
+  local timeout_ms = math.floor(timeout_secs * 1000)
+  local chunks = {}
+  local buf = t_readbuf(READ_BUF_SIZE)
+  local pfd = ffi.new("struct pollfd")
+  pfd.fd = fd
+  pfd.events = 1 -- POLLIN
+
+  while true do
+    local ret = C.poll(pfd, 1, timeout_ms)
+    if ret < 0 then
+      if ffi.errno() ~= EINTR then
+        return nil, ffi.string(C.strerror(ffi.errno()))
+      end
+    elseif ret == 0 then
+      return nil, "read timed out"
+    else
+      local n = C.read(fd, buf, READ_BUF_SIZE)
+      if n > 0 then
+        chunks[#chunks + 1] = ffi.string(buf, n)
+      elseif n == 0 then
+        break -- EOF
+      else
+        if ffi.errno() ~= EINTR then
+          return nil, ffi.string(C.strerror(ffi.errno()))
+        end
+      end
+    end
+  end
+
+  return table.concat(chunks), nil
+end
+
+--- Extract status code and body from a raw HTTP response string.
+---@param raw string
+---@return number|nil status
+---@return string|nil body
+local function parse_http_response(raw)
+  local sep = string.find(raw, "\r\n\r\n", 1, true)
+  if not sep then
+    return nil, nil
+  end
+
+  local status_line_end = string.find(raw, "\r\n", 1, true)
+  local status_line = string.sub(raw, 1, status_line_end - 1)
+  local status = tonumber(string.match(status_line, "HTTP/%d%.%d (%d+)"))
+  local body = string.sub(raw, sep + 4)
+
+  return status, body
+end
 
 ---@class UnixServer: Server
 ---@field private pid number
@@ -63,30 +158,60 @@ function UnixServer:getLogBuffer()
 end
 
 function UnixServer:request(request)
-  local requestWithDefaults = {
-    socket_path = SOCKET_PATH,
-    path = request.path,
-    method = request.method or "GET",
-    headers = request.headers or {},
-    body = request.body or "",
-    timeout_seconds = request.timeout_seconds or 60,
+  local method = request.method or "GET"
+  local path = request.path
+  local body = request.body or ""
+  local headers = request.headers or {}
+  local timeout = request.timeout_seconds or 60
+
+  local fd = C.socket(AF_UNIX, SOCK_STREAM, 0)
+  if fd < 0 then
+    return { type = 'ERROR', message = "socket(): " .. ffi.string(C.strerror(ffi.errno())) }
+  end
+
+  local addr = ffi.new(t_sockaddr)
+  addr.sun_family = AF_UNIX
+  ffi.copy(addr.sun_path, SOCKET_PATH)
+
+  if C.connect(fd, ffi.cast("struct sockaddr *", addr), ffi.sizeof(t_sockaddr)) < 0 then
+    local err = ffi.string(C.strerror(ffi.errno()))
+    C.close(fd)
+    return { type = 'ERROR', message = "connect(): " .. err }
+  end
+
+  -- Build raw HTTP/1.1 request
+  local req = method .. " " .. path .. " HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n"
+  if #body > 0 then
+    req = req .. "Content-Length: " .. #body .. "\r\n"
+  end
+  for k, v in pairs(headers) do
+    req = req .. k .. ": " .. v .. "\r\n"
+  end
+  req = req .. "\r\n" .. body
+
+  local wok, werr = write_all(fd, req, #req)
+  if not wok then
+    C.close(fd)
+    return { type = 'ERROR', message = "write: " .. werr }
+  end
+
+  local raw, rerr = read_until_eof(fd, timeout)
+  C.close(fd)
+
+  if not raw or raw == "" then
+    return { type = 'ERROR', message = rerr or "empty response from server" }
+  end
+
+  local status, resp_body = parse_http_response(raw)
+  if not resp_body then
+    return { type = 'ERROR', message = "malformed HTTP response" }
+  end
+
+  return {
+    type = 'RESPONSE',
+    status = status or 0,
+    body = resp_body,
   }
-
-  local requestJson = rapidjson.encode(requestWithDefaults)
-  local udsHttpRequestCommand = REQUEST_COMMAND_OVERRIDE or (Paths.getPluginDirectory() .. "/uds_http_request")
-
-  local responseJson, err = execute_binary_fast(udsHttpRequestCommand, requestJson, REQUEST_COMMAND_WORKING_DIRECTORY)
-
-  if not responseJson or responseJson == "" then
-    return { type = 'ERROR', message = err or "Rust binary returned empty output or crashed" }
-  end
-
-  local response, err2 = rapidjson.decode(responseJson)
-  if err2 ~= nil then
-    return { type = 'ERROR', message = err2 }
-  end
-
-  return response
 end
 
 function UnixServer:stop()

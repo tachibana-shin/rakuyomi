@@ -538,7 +538,7 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
       covers_footer = true,
       close_callback = function() self:onCloseCallback() end,
     }
-    self.ui.keyselection:stopHighlightIndicator(true) -- stop any text selection in progress, if applicable
+    if self.ui.keyselection then self.ui.keyselection:stopHighlightIndicator(true) end -- stop any text selection in progress, if applicable
     self.ui:handleEvent(Event:new("DisableHinting"))
     --- @/original
 

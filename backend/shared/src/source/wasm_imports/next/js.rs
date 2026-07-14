@@ -34,7 +34,7 @@ enum ResultContext {
     MissingResult,
     InvalidContext,
     InvalidString,
-    InvalidRuleList,
+    // InvalidRuleList,
     // InvalidHandler,
     // InvalidRequest,
 }

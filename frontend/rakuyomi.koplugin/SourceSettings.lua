@@ -1,5 +1,5 @@
 local Blitbuffer = require("ffi/blitbuffer")
-local FocusManager = require("ui/widget/focusmanager")
+local FocusManager = require("widgets/FocusManagerWithTopZone")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local Geom = require("ui/geometry")

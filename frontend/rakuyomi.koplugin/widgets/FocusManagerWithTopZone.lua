@@ -3,9 +3,10 @@ local TopZoneHandler = require("widgets/TopZoneHandler")
 
 local FocusManagerWithTopZone = FocusManager:extend {}
 
-function FocusManagerWithTopZone:_init()
-  FocusManager._init(self)
-  TopZoneHandler.enableTopZoneHandler(self)
+function FocusManagerWithTopZone:new(o)
+  local instance = FocusManager.new(self, o)
+  TopZoneHandler.enableTopZoneHandler(instance)
+  return instance
 end
 
 return FocusManagerWithTopZone

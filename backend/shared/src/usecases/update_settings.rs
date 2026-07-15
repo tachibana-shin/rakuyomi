@@ -45,6 +45,7 @@ pub struct UpdateableSettings {
     cookie_sync_device_name: Option<String>,
     cookie_sync_chat_id: Option<i64>,
     proxy_url: Option<String>,
+    #[serde(default)]
     chapter_title_format: ChapterTitleFormat,
 }
 

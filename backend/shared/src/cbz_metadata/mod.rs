@@ -166,10 +166,11 @@ impl ComicInfo {
                 ChapterTitleFormat::Title => chapter_info.title.clone().unwrap_or_default(),
                 ChapterTitleFormat::SeriesTitle => {
                     let ch_title = chapter_info.title.clone().unwrap_or_default();
-                    if ch_title.is_empty() {
-                        series_title.clone()
-                    } else {
-                        format!("{} - {}", series_title, ch_title)
+                    match (!series_title.is_empty(), !ch_title.is_empty()) {
+                        (true, true) => format!("{} - {}", series_title, ch_title),
+                        (true, false) => series_title.clone(),
+                        (false, true) => ch_title,
+                        (false, false) => String::new(),
                     }
                 }
                 ChapterTitleFormat::SeriesChapterNumber => {
@@ -177,11 +178,11 @@ impl ComicInfo {
                         .chapter_number
                         .map(|n| format!("Ch.{}", n))
                         .unwrap_or_default();
-
-                    if series_title.is_empty() {
-                        chapter_number_str.clone()
-                    } else {
-                        format!("{} - {}", series_title, chapter_number_str)
+                    match (!series_title.is_empty(), !chapter_number_str.is_empty()) {
+                        (true, true) => format!("{} - {}", series_title, chapter_number_str),
+                        (true, false) => series_title.clone(),
+                        (false, true) => chapter_number_str,
+                        (false, false) => String::new(),
                     }
                 }
             },

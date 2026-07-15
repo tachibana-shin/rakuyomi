@@ -3,6 +3,7 @@ local Device = require('device')
 local ffi = require('ffi')
 local C = ffi.C
 local ffiutil = require('ffi/util')
+local bit = require('bit')
 local Paths = require('Paths')
 local util = require('frontend/util')
 ---@diagnostic disable-next-line: different-requires
@@ -311,8 +312,8 @@ function GenericUnixPlatform:startServer()
   if disable_logging then
     -- OS-level redirection: stdout and stderr go to /dev/null.
     -- No pipes created, no SubprocessOutputCapturer, zero overhead.
-    must0("addopen stdout", C.posix_spawn_file_actions_addopen(actions, 1, "/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0))
-    must0("addopen stderr", C.posix_spawn_file_actions_addopen(actions, 2, "/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0))
+    must0("addopen stdout", C.posix_spawn_file_actions_addopen(actions, 1, "/dev/null", bit.bor(O_WRONLY, O_CREAT, O_TRUNC), 0))
+    must0("addopen stderr", C.posix_spawn_file_actions_addopen(actions, 2, "/dev/null", bit.bor(O_WRONLY, O_CREAT, O_TRUNC), 0))
   else
     must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
     must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))

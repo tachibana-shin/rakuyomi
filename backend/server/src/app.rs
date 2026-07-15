@@ -59,16 +59,12 @@ pub fn init_logging() {
             })
             .expect("failed to spawn logging thread");
 
-        // Box::leak gives us a &'static reference — the logger lives for the
-        // entire process, so this is intentional.
-        let logger: &'static ChannelLogger = Box::leak(Box::new(ChannelLogger { sender }));
-        let _ = log::set_logger(logger);
+        let _ = log::set_boxed_logger(Box::new(ChannelLogger { sender }));
     }
 
     #[cfg(feature = "ffi")]
     {
-        let logger: &'static StderrLogger = Box::leak(Box::new(StderrLogger));
-        let _ = log::set_logger(logger);
+        let _ = log::set_boxed_logger(Box::new(StderrLogger));
     }
 
     let _ = log::set_max_level(max_level);

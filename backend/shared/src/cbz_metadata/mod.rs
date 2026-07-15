@@ -8,6 +8,7 @@ use std::path::Path;
 use zip::ZipArchive;
 
 use crate::model::{ChapterInformation, MangaInformation};
+use crate::settings::ChapterTitleFormat;
 use crate::source::model::Page;
 
 // ComicInfo.xml schema implementation based on ComicRack standard
@@ -155,14 +156,41 @@ impl ComicInfo {
         manga_info: MangaInformation,
         chapter_info: ChapterInformation,
         page_list: &[Page],
+        chapter_title_format: ChapterTitleFormat,
     ) -> Self {
+        let series_title = manga_info.title.unwrap_or_default();
+
         // Basic mapping from our data model to ComicInfo
         let mut comic_info = ComicInfo {
-            title: chapter_info.title.unwrap_or_default(),
-            series: manga_info.title.unwrap_or_default(),
+            title: match chapter_title_format {
+                ChapterTitleFormat::Title => chapter_info.title.clone().unwrap_or_default(),
+                ChapterTitleFormat::SeriesTitle => {
+                    let ch_title = chapter_info.title.clone().unwrap_or_default();
+                    match (!series_title.is_empty(), !ch_title.is_empty()) {
+                        (true, true) => format!("{} - {}", series_title, ch_title),
+                        (true, false) => series_title.clone(),
+                        (false, true) => ch_title,
+                        (false, false) => String::new(),
+                    }
+                }
+                ChapterTitleFormat::SeriesChapterNumber => {
+                    let chapter_number_str = chapter_info
+                        .chapter_number
+                        .map(|n| format!("Ch.{}", n))
+                        .unwrap_or_default();
+                    match (!series_title.is_empty(), !chapter_number_str.is_empty()) {
+                        (true, true) => format!("{} - {}", series_title, chapter_number_str),
+                        (true, false) => series_title.clone(),
+                        (false, true) => chapter_number_str,
+                        (false, false) => String::new(),
+                    }
+                }
+            },
+            series: series_title,
             ..Default::default()
         };
 
+        // Fallback: if title is empty, generate one from chapter number
         if comic_info.title.is_empty() {
             if let Some(chapter_number) = chapter_info.chapter_number {
                 comic_info.title = format!("Ch.{}", chapter_number);

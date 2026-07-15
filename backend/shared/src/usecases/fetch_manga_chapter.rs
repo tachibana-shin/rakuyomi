@@ -11,6 +11,7 @@ use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::ChapterId,
+    settings::ChapterTitleFormat,
     source::Source,
 };
 
@@ -24,6 +25,7 @@ pub async fn fetch_manga_chapter(
     optimize_image: bool,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
     use_ram: bool,
+    chapter_title_format: ChapterTitleFormat,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
@@ -46,6 +48,7 @@ pub async fn fetch_manga_chapter(
         on_progress.clone(),
         use_ram,
         None,
+        chapter_title_format,
     )
     .await
     {
@@ -64,6 +67,7 @@ pub async fn fetch_manga_chapter(
                 on_progress.clone(),
                 false,
                 None,
+                chapter_title_format,
             )
             .await
             .map_err(|e| match e {

@@ -99,6 +99,7 @@ async fn create_download_chapter_job(
         download_semaphore,
         settings.ram_storage_enabled,
         current_chapter_id,
+        settings.chapter_title_format,
     );
 
     job_registry
@@ -161,6 +162,7 @@ async fn create_download_unread_chapters_job(
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
         settings.optimize_image,
+        settings.chapter_title_format,
     );
 
     job_registry
@@ -224,6 +226,7 @@ async fn create_download_scanlator_chapters_job(
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
         settings.optimize_image,
+        settings.chapter_title_format,
     );
 
     job_registry

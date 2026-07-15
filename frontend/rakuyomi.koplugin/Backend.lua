@@ -709,7 +709,8 @@ end
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
 --- @alias SearchViewMode 'base' | 'cover' | 'grid'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode, search_view_mode: SearchViewMode }
+--- @alias ChapterTitleFormat 'title' | 'series_title' | 'series_chapter_number'
+--- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode, search_view_mode: SearchViewMode, chapter_title_format: ChapterTitleFormat }
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse

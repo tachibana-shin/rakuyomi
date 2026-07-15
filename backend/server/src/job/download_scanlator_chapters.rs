@@ -3,6 +3,7 @@ use shared::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::MangaId,
+    settings::ChapterTitleFormat,
     source::Source,
     usecases::fetch_manga_chapters_in_batch::{Filter, ProgressReport},
 };
@@ -44,6 +45,7 @@ impl DownloadScanlatorChaptersJob {
         langs: Vec<String>,
         concurrent_requests_pages: usize,
         optimize_image: bool,
+        chapter_title_format: ChapterTitleFormat,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let output: Arc<Mutex<Option<Result<(), ErrorResponse>>>> = Default::default();
@@ -74,6 +76,7 @@ impl DownloadScanlatorChaptersJob {
                     &lang_refs,
                     concurrent_requests_pages,
                     optimize_image,
+                    chapter_title_format,
                 );
 
             use futures::StreamExt;

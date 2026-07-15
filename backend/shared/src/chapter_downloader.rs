@@ -20,6 +20,7 @@ use crate::{
     cbz_metadata::ComicInfo,
     chapter_storage::ChapterStorage,
     model::{ChapterId, ChapterInformation, MangaInformation},
+    settings::ChapterTitleFormat,
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
@@ -47,6 +48,7 @@ pub async fn ensure_chapter_is_in_storage(
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
     use_ram: bool,
     current_chapter_id: Option<&ChapterId>,
+    chapter_title_format: ChapterTitleFormat,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     if use_ram {
         if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, true)? {
@@ -89,7 +91,8 @@ pub async fn ensure_chapter_is_in_storage(
     let output_path: PathBuf =
         chapter_storage.get_path_to_store_chapter(&chapter.id, is_novel, use_ram);
 
-    let metadata = ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages);
+    let metadata =
+        ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages, chapter_title_format);
 
     // Write chapter pages to a temporary file, so that if things go wrong
     // we do not have a borked .cbz file in the chapter storage.

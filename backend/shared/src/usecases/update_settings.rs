@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use size::{consts, Size};
 
 use crate::settings::{
-    ChapterSortingMode, LibrarySortingMode, LibraryViewMode, SearchViewMode, Settings,
-    StorageSizeLimit,
+    ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode, LibraryViewMode, SearchViewMode,
+    Settings, StorageSizeLimit,
 };
 
 pub fn update_settings(
@@ -45,6 +45,8 @@ pub struct UpdateableSettings {
     cookie_sync_device_name: Option<String>,
     cookie_sync_chat_id: Option<i64>,
     proxy_url: Option<String>,
+    #[serde(default)]
+    chapter_title_format: ChapterTitleFormat,
 }
 
 impl UpdateableSettings {
@@ -73,6 +75,7 @@ impl UpdateableSettings {
                 Some(trimmed.to_string())
             }
         });
+        settings.chapter_title_format = self.chapter_title_format;
     }
 }
 
@@ -99,6 +102,7 @@ impl From<&Settings> for UpdateableSettings {
             cookie_sync_device_name: value.cookie_sync_device_name.clone(),
             cookie_sync_chat_id: value.cookie_sync_chat_id,
             proxy_url: value.proxy_url.clone(),
+            chapter_title_format: value.chapter_title_format,
         }
     }
 }

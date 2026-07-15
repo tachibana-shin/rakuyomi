@@ -11,6 +11,7 @@ use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::{ChapterInformation, MangaId},
+    settings::ChapterTitleFormat,
     source::Source,
 };
 
@@ -24,6 +25,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     langs: &'a [&'a str],
     concurrent_requests_pages: usize,
     optimize_image: bool,
+    chapter_title_format: ChapterTitleFormat,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
         let manga = match db.find_cached_manga_information(&id).await {
@@ -74,6 +76,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     None,
                     false, // batch download never use RAM
                     None,
+                    chapter_title_format,
                 ) => result
             };
 

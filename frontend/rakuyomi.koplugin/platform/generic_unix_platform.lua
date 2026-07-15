@@ -37,12 +37,27 @@ pcall(ffi.cdef, [[
   };
   int socket(int domain, int type, int protocol);
   int connect(int sockfd, const void *addr, unsigned int addrlen);
+  int fcntl(int fd, int cmd, ...);
+  struct timeval {
+    long tv_sec;
+    long tv_usec;
+  };
+  int setsockopt(int sockfd, int level, int optname, const void *optval, unsigned int optlen);
+  int getsockopt(int sockfd, int level, int optname, void *optval, unsigned int *optlen);
 ]])
 
 local AF_UNIX = 1
 local SOCK_STREAM = 1
 local EINTR = 4
+local EAGAIN = 11
+local EINPROGRESS = 115
 local READ_BUF_SIZE = 4096
+local F_SETFL = 4
+local O_NONBLOCK = 0x4
+local F_GETFL = 3
+local SOL_SOCKET = 1
+local SO_SNDTIMEO = 21
+local SO_RCVTIMEO = 20
 
 local t_sockaddr = ffi.typeof("struct sockaddr_un")
 local t_readbuf = ffi.typeof("char[?]")
@@ -52,21 +67,38 @@ local t_charptr = ffi.typeof("const char *")
 ---@param fd number
 ---@param data string
 ---@param len number
+---@param timeout_secs number
 ---@return boolean ok
 ---@return string|nil err
-local function write_all(fd, data, len)
+local function write_all(fd, data, len, timeout_secs)
   local ptr = ffi.cast(t_charptr, data)
   local total = 0
+  local timeout_ms = math.floor(timeout_secs * 1000)
+  local pfd = ffi.new("struct pollfd")
+  pfd.fd = fd
+  pfd.events = 4 -- POLLOUT
+
   while total < len do
-    local n = C.write(fd, ptr + total, len - total)
-    if n > 0 then
-      total = total + n
-    elseif n < 0 then
+    -- Wait for socket to be writable with timeout
+    local ret = C.poll(pfd, 1, timeout_ms)
+    if ret < 0 then
       if ffi.errno() ~= EINTR then
         return false, ffi.string(C.strerror(ffi.errno()))
       end
+    elseif ret == 0 then
+      return false, "write timed out"
     else
-      return false, "write returned 0"
+      local n = C.write(fd, ptr + total, len - total)
+      if n > 0 then
+        total = total + n
+      elseif n < 0 then
+        local err = ffi.errno()
+        if err ~= EINTR and err ~= EAGAIN then
+          return false, ffi.string(C.strerror(err))
+        end
+      else
+        return false, "write returned 0"
+      end
     end
   end
   return true, nil
@@ -129,6 +161,14 @@ local function parse_http_response(raw)
   return status, body
 end
 
+--- Sanitize HTTP header value by removing CR/LF characters
+---@param value string
+---@return string
+local function sanitize_http_value(value)
+  -- Remove \r and \n to prevent header injection
+  return string.gsub(string.gsub(value, "\r", ""), "\n", "")
+end
+
 ---@class UnixServer: Server
 ---@field private pid number
 ---@field private outputCapturer SubprocessOutputCapturer
@@ -166,32 +206,94 @@ function UnixServer:request(request)
   local headers = request.headers or {}
   local timeout = request.timeout_seconds or 60
 
+  -- Validate path is present
+  if not path or path == "" then
+    return { type = 'ERROR', message = "request path is required" }
+  end
+
+  -- Sanitize path to prevent header injection
+  path = sanitize_http_value(path)
+
   local fd = C.socket(AF_UNIX, SOCK_STREAM, 0)
   if fd < 0 then
     return { type = 'ERROR', message = "socket(): " .. ffi.string(C.strerror(ffi.errno())) }
   end
 
+  -- Set socket timeouts for send and receive operations
+  local tv = ffi.new("struct timeval")
+  tv.tv_sec = timeout
+  tv.tv_usec = 0
+  C.setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, tv, ffi.sizeof(tv))
+  C.setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, tv, ffi.sizeof(tv))
+
   local addr = ffi.new(t_sockaddr)
   addr.sun_family = AF_UNIX
   ffi.copy(addr.sun_path, SOCKET_PATH)
 
-  if C.connect(fd, ffi.cast("struct sockaddr *", addr), ffi.sizeof(t_sockaddr)) < 0 then
-    local err = ffi.string(C.strerror(ffi.errno()))
-    C.close(fd)
-    return { type = 'ERROR', message = "connect(): " .. err }
+  -- Make socket non-blocking for connect timeout
+  local flags = C.fcntl(fd, F_GETFL, 0)
+  if flags >= 0 then
+    C.fcntl(fd, F_SETFL, bit.bor(flags, O_NONBLOCK))
+  end
+
+  local connect_result = C.connect(fd, ffi.cast("struct sockaddr *", addr), ffi.sizeof(t_sockaddr))
+  if connect_result < 0 then
+    local err = ffi.errno()
+    if err ~= EINPROGRESS then
+      local err_msg = ffi.string(C.strerror(err))
+      C.close(fd)
+      return { type = 'ERROR', message = "connect(): " .. err_msg }
+    end
+
+    -- Wait for connect to complete with timeout
+    local pfd = ffi.new("struct pollfd")
+    pfd.fd = fd
+    pfd.events = 4 -- POLLOUT
+    local ret = C.poll(pfd, 1, math.floor(timeout * 1000))
+    if ret <= 0 then
+      C.close(fd)
+      return { type = 'ERROR', message = ret == 0 and "connect timed out" or "connect poll failed" }
+    end
+
+    -- Check if connect succeeded
+    local so_error = ffi.new("int[1]")
+    local so_error_len = ffi.new("unsigned int[1]", ffi.sizeof("int"))
+    if C.getsockopt(fd, SOL_SOCKET, 4, so_error, so_error_len) == 0 and so_error[0] ~= 0 then
+      local err_msg = ffi.string(C.strerror(so_error[0]))
+      C.close(fd)
+      return { type = 'ERROR', message = "connect(): " .. err_msg }
+    end
+  end
+
+  -- Restore blocking mode for simpler write/read logic
+  if flags >= 0 then
+    C.fcntl(fd, F_SETFL, flags)
   end
 
   -- Build raw HTTP/1.1 request
   local req = method .. " " .. path .. " HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n"
-  if #body > 0 then
+
+  -- Check if Content-Length header already exists (to avoid duplication)
+  local has_content_length = false
+  for k, _ in pairs(headers) do
+    if string.lower(k) == "content-length" then
+      has_content_length = true
+      break
+    end
+  end
+
+  -- Only add Content-Length if not already present and body exists
+  if #body > 0 and not has_content_length then
     req = req .. "Content-Length: " .. #body .. "\r\n"
   end
+
+  -- Add other headers with sanitization
   for k, v in pairs(headers) do
-    req = req .. k .. ": " .. v .. "\r\n"
+    req = req .. sanitize_http_value(k) .. ": " .. sanitize_http_value(tostring(v)) .. "\r\n"
   end
   req = req .. "\r\n" .. body
 
-  local wok, werr = write_all(fd, req, #req)
+  local wok, werr = write_all(fd, req, #req, timeout)
   if not wok then
     C.close(fd)
     return { type = 'ERROR', message = "write: " .. werr }

@@ -71,17 +71,29 @@ pub fn init_logging() {
 }
 
 fn parse_log_level(rust_log: &str) -> LevelFilter {
-    // Handle simple level keywords. We ignore module-specific filters
-    // like "info,my_mod=debug" and just use the first token's level.
-    let first = rust_log.split(',').next().unwrap_or("info");
-    match first.trim().to_lowercase().as_str() {
-        "error" => LevelFilter::Error,
-        "warn" | "warning" => LevelFilter::Warn,
-        "info" => LevelFilter::Info,
-        "debug" => LevelFilter::Debug,
-        "trace" => LevelFilter::Trace,
-        _ => LevelFilter::Info,
+    // Parse all comma-separated directives like "info,server=debug,shared=trace"
+    // and return the most verbose (highest) level found.
+    let mut max_level = LevelFilter::Info;
+    for directive in rust_log.split(',') {
+        // Strip target prefix: "server=debug" → "debug"
+        let level_str = directive
+            .trim()
+            .rsplit_once('=')
+            .map(|(_, level)| level)
+            .unwrap_or(directive.trim());
+        let level = match level_str.to_lowercase().as_str() {
+            "error" => LevelFilter::Error,
+            "warn" | "warning" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => continue,
+        };
+        if level > max_level {
+            max_level = level;
+        }
     }
+    max_level
 }
 
 /// A `log::Log` implementation that sends formatted messages through a bounded

@@ -8,7 +8,7 @@ import { getChatId } from "./utils.ts"
 export async function unlinkCommand(ctx: Context) {
   const chatId = getChatId(ctx)
   if (!chatId) return
-  const locale = t(chatId)
+  const locale = await t(chatId)
 
   const text = ctx.message?.text ?? ""
   const parts = text.split(/\s+/)

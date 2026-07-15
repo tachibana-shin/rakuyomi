@@ -5,5 +5,5 @@ import { getChatId } from "./utils.ts"
 export async function helpCommand(ctx: Context) {
   const chatId = getChatId(ctx)
   if (!chatId) return
-  await ctx.reply(t(chatId).help)
+  await ctx.reply((await t(chatId)).help)
 }

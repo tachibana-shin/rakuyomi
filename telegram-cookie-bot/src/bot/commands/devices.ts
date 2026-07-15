@@ -6,7 +6,7 @@ import { getChatId } from "./utils.ts"
 export async function devicesCommand(ctx: Context) {
   const chatId = getChatId(ctx)
   if (!chatId) return
-  const locale = t(chatId)
+  const locale = await t(chatId)
 
   const allDevices = await getDevices(chatId)
   const devices = allDevices.filter((d) => d !== "/all")

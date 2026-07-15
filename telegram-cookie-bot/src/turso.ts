@@ -44,6 +44,12 @@ async function migrate(db: Awaited<ReturnType<typeof createClient>>) {
       PRIMARY KEY (chat_id, device)
     )
   `)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS chat_languages (
+      chat_id INTEGER PRIMARY KEY,
+      lang    TEXT NOT NULL DEFAULT 'en'
+    )
+  `)
 }
 
 // ── Devices (the authoritative list of linked devices per chat) ──
@@ -231,6 +237,36 @@ export async function getDeviceHash(
       args: [chatId, device],
     })
     return result.rows.length > 0 ? (result.rows[0].hash as string) : null
+  } catch {
+    return null
+  }
+}
+
+// ── Chat language preferences ──
+
+export async function setChatLang(chatId: number, lang: string): Promise<void> {
+  const db = await getTurso()
+  if (!db) return
+  try {
+    await db.execute({
+      sql: `INSERT INTO chat_languages (chat_id, lang) VALUES (?, ?)
+            ON CONFLICT(chat_id) DO UPDATE SET lang = excluded.lang`,
+      args: [chatId, lang],
+    })
+  } catch {
+    // ignore
+  }
+}
+
+export async function getChatLang(chatId: number): Promise<string | null> {
+  const db = await getTurso()
+  if (!db) return null
+  try {
+    const result = await db.execute({
+      sql: "SELECT lang FROM chat_languages WHERE chat_id = ?",
+      args: [chatId],
+    })
+    return result.rows.length > 0 ? (result.rows[0].lang as string) : null
   } catch {
     return null
   }

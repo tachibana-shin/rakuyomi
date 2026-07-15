@@ -11,6 +11,7 @@ export async function clearcookiesCommand(ctx: Context) {
   const chatId = ctx.chat?.id
   if (!chatId) return
 
+  const locale = await t(chatId)
   const args = ctx.message?.text?.split(/\s+/).slice(1) ?? []
   const deviceName = args[0]
   const domain = args[1]
@@ -18,24 +19,24 @@ export async function clearcookiesCommand(ctx: Context) {
   if (deviceName && domain) {
     const ok = await clearDeviceDomainCookies(chatId, deviceName, domain)
     if (ok) {
-      await ctx.reply(t(chatId).clearcookies_domain_done(domain, deviceName))
+      await ctx.reply(locale.clearcookies_domain_done(domain, deviceName))
     } else {
-      await ctx.reply(t(chatId).clearcookies_none)
+      await ctx.reply(locale.clearcookies_none)
     }
   } else if (deviceName) {
     const ok = await clearDeviceCookies(chatId, deviceName)
     if (ok) {
-      await ctx.reply(t(chatId).clearcookies_device_done(deviceName))
+      await ctx.reply(locale.clearcookies_device_done(deviceName))
     } else {
-      await ctx.reply(t(chatId).clearcookies_none)
+      await ctx.reply(locale.clearcookies_none)
     }
   } else {
     const devices = await getDevices(chatId)
     if (devices.length === 0) {
-      await ctx.reply(t(chatId).clearcookies_none)
+      await ctx.reply(locale.clearcookies_none)
       return
     }
     await clearAllCookies(chatId)
-    await ctx.reply(t(chatId).clearcookies_all_done)
+    await ctx.reply(locale.clearcookies_all_done)
   }
 }

@@ -20,7 +20,7 @@ app.get(
 
     const bot = getBot()
     const devices = await getDevices(chat_id)
-    const locale = t(chat_id)
+    const locale = await t(chat_id)
 
     if (!devices.includes(device) && !devices.includes("/all")) {
       return c.json({ status: "skipped", reason: "device_not_linked" })

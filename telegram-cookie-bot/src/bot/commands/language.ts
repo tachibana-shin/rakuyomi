@@ -13,7 +13,7 @@ export async function languageCommand(ctx: Context) {
     )]),
   )
 
-  await ctx.reply(t(chatId).language_prompt, {
+  await ctx.reply((await t(chatId)).language_prompt, {
     reply_markup: keyboard,
   })
 }
@@ -26,7 +26,7 @@ export async function handleLanguageCallback(ctx: Context) {
   const lang = SUPPORTED_LANGUAGES.find((l) => l.code === langCode)
   if (!lang) return
 
-  setChatLang(chatId, langCode)
+  await setChatLang(chatId, langCode)
   await ctx.answerCallbackQuery()
-  await ctx.reply(t(chatId).language_set(lang.label))
+  await ctx.reply((await t(chatId)).language_set(lang.label))
 }

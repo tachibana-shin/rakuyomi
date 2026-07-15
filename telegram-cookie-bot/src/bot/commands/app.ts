@@ -14,7 +14,7 @@ export async function appCommand(ctx: Context) {
     return
   }
 
-  const locale = t(chatId)
+  const locale = await t(chatId)
   const url = `${PUBLIC_URL}/webapp/cookies`
   const keyboard = new InlineKeyboard().webApp(
     locale.cookies_view_in_webapp,

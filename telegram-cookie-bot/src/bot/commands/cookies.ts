@@ -14,9 +14,10 @@ export async function cookiesCommand(ctx: Context) {
   const chatId = ctx.chat?.id
   if (!chatId) return
 
+  const locale = await t(chatId)
   const devices = await getDevices(chatId)
   if (devices.length === 0) {
-    await ctx.reply(t(chatId).cookies_none)
+    await ctx.reply(locale.cookies_none)
     return
   }
 
@@ -26,7 +27,7 @@ export async function cookiesCommand(ctx: Context) {
   const domains = await getDeviceDomains(chatId, deviceName)
   if (domains.length === 0) {
     await ctx.reply(
-      `${t(chatId).cookies_header(deviceName)}\n${t(chatId).cookies_none}`,
+      `${locale.cookies_header(deviceName)}\n${locale.cookies_none}`,
     )
     return
   }
@@ -38,8 +39,8 @@ export async function cookiesCommand(ctx: Context) {
     const n = counts[i]
     return `• ${d} — ${n} cookie${n !== 1 ? "s" : ""}`
   }).join("\n")
-  const text = `${t(chatId).cookies_header(deviceName)} (${cookies} total)\n\n${
-    t(chatId).cookies_list(lines)
+  const text = `${locale.cookies_header(deviceName)} (${cookies} total)\n\n${
+    locale.cookies_list(lines)
   }`
   await sendWithAppButton(ctx, chatId, text, deviceName)
 }
@@ -61,7 +62,7 @@ async function sendWithAppButton(
     return
   }
 
-  const locale = t(chatId)
+  const locale = await t(chatId)
   const url = `${PUBLIC_URL}/webapp/cookies?chat_id=${chatId}&device=${
     encodeURIComponent(device)
   }`

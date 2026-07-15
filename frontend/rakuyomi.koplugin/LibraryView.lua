@@ -684,7 +684,6 @@ function LibraryView:onSwipe(arg, ges_ev)
   local direction = BD.flipDirectionIfMirroredUILayout(ges_ev.direction)
   if direction == "south" then
     self:refreshAllChapters()
-
     return
   end
 

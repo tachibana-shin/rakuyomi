@@ -4,6 +4,7 @@ local logger = require("logger")
 local _ = require("gettext+")
 
 local Icons = require("Icons")
+local TopZoneHandler = require("widgets/TopZoneHandler")
 
 local Menu = BaseMenu:extend {
   with_context_menu = false,
@@ -17,6 +18,7 @@ function Menu:init()
   self:updateOfflineSubtitle(true)
 
   BaseMenu.init(self)
+  TopZoneHandler.enableTopZoneHandler(self)
 end
 
 function Menu:updateItems(select_number)

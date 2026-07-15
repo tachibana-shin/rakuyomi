@@ -1,3 +1,11 @@
+# [1.38.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.37.2...v1.38.0) (2026-07-15)
+
+
+### Features
+
+* add configurable chapter title format for ComicInfo.xml metadata ([#253](https://github.com/tachibana-shin/rakuyomi/issues/253)) ([ba56169](https://github.com/tachibana-shin/rakuyomi/commit/ba561696fb6db8173b557f2c085bb6df5fe7f42e))
+* add top-zone tap/swipe to open KOReader native top bar across a… ([#252](https://github.com/tachibana-shin/rakuyomi/issues/252)) ([8432777](https://github.com/tachibana-shin/rakuyomi/commit/8432777878e1c477711af097bcee20d0c398fd26))
+
 ## [1.37.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.37.1...v1.37.2) (2026-07-14)
 
 

@@ -1186,7 +1186,16 @@ function LibraryView:openMenu()
     },
   }
 
+  local total_bytes = 0
+  for __, bytes in pairs(self.storage_by_manga) do
+    total_bytes = total_bytes + bytes
+  end
+
   dialog = ButtonDialog:new {
+    title = total_bytes > 0
+        and (Icons.FA_DOWNLOAD .. " " .. _("Total downloaded") .. ": " .. formatBytes(total_bytes))
+        or nil,
+    title_align = "center",
     buttons = buttons,
   }
 

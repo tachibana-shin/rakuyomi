@@ -163,6 +163,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn async_client_builds_and_requests_https() {
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(10))
@@ -177,6 +178,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn tls_works_without_system_certs() {
         let orig_cert_dir = std::env::var_os("SSL_CERT_DIR");
         let orig_cert_file = std::env::var_os("SSL_CERT_FILE");
@@ -207,6 +209,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn invalid_proxy_url_ignored() {
         set_proxy_url(Some("not-a-valid-url".to_string()));
         let client = client_builder()
@@ -218,6 +221,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn no_proxy_by_default() {
         set_proxy_url(None);
         assert_eq!(proxy_url(), None);
@@ -230,6 +234,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn insecure_builder_works() {
         let client = client_builder_insecure()
             .timeout(std::time::Duration::from_secs(10))
@@ -258,6 +263,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // requires network
     async fn proxy_applied_to_builder() {
         set_proxy_url(Some("http://127.0.0.1:9999".to_string()));
         let client = client_builder()

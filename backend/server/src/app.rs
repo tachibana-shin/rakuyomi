@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
+#[cfg(not(feature = "ffi"))]
+use std::sync::mpsc;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use log::{info, warn};
+use log::{info, warn, Log, Metadata, Record, LevelFilter};
 use tokio::sync::{Mutex, Semaphore};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 #[cfg(feature = "ffi")]
 use axum::extract::Request;
@@ -29,15 +29,126 @@ use crate::state::State;
 use crate::{cookie, job, manga, playlists, settings, source, system, update};
 
 /// Initialize logging. Safe to call multiple times; only the first invocation
-/// actually installs the subscriber.
+/// installs the logger.
+///
+/// - **Linux e-readers** (`not(ffi)`): Bounded `sync_channel(200)` with a
+///   background thread. `try_send()` drops messages when full — zero blocking,
+///   zero OOM risk on low-RAM devices.
+/// - **Android** (`ffi`): Direct stderr writes — JNI captures stderr natively,
+///   no channel or background thread needed.
 pub fn init_logging() {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
     }
-    let _ = tracing_subscriber::registry()
-        .with(EnvFilter::from_default_env())
-        .with(tracing_subscriber::fmt::layer().with_ansi(false))
-        .try_init();
+
+    let max_level = parse_log_level(
+        &std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+    );
+
+    #[cfg(not(feature = "ffi"))]
+    {
+        let (sender, receiver) = mpsc::sync_channel::<String>(200);
+
+        std::thread::Builder::new()
+            .name("rakuyomi-log".into())
+            .spawn(move || {
+                let mut stderr = std::io::stderr();
+                while let Ok(msg) = receiver.recv() {
+                    let _ = stderr.write_all(msg.as_bytes());
+                }
+            })
+            .expect("failed to spawn logging thread");
+
+        let _ = log::set_boxed_logger(Box::new(ChannelLogger { sender }));
+    }
+
+    #[cfg(feature = "ffi")]
+    {
+        let _ = log::set_boxed_logger(Box::new(StderrLogger));
+    }
+
+    let _ = log::set_max_level(max_level);
+}
+
+fn parse_log_level(rust_log: &str) -> LevelFilter {
+    // Parse all comma-separated directives like "info,server=debug,shared=trace"
+    // and return the most verbose (highest) level found.
+    let mut max_level = LevelFilter::Info;
+    for directive in rust_log.split(',') {
+        // Strip target prefix: "server=debug" → "debug"
+        let level_str = directive
+            .trim()
+            .rsplit_once('=')
+            .map(|(_, level)| level)
+            .unwrap_or(directive.trim());
+        let level = match level_str.to_lowercase().as_str() {
+            "error" => LevelFilter::Error,
+            "warn" | "warning" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => continue,
+        };
+        if level > max_level {
+            max_level = level;
+        }
+    }
+    max_level
+}
+
+/// A `log::Log` implementation that sends formatted messages through a bounded
+/// channel. When the channel is full, messages are silently dropped.
+#[cfg(not(feature = "ffi"))]
+struct ChannelLogger {
+    sender: mpsc::SyncSender<String>,
+}
+
+#[cfg(not(feature = "ffi"))]
+impl Log for ChannelLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= log::max_level()
+    }
+
+    fn log(&self, record: &Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
+
+        // Compact format: [LEVEL target] message
+        // No timestamps — the Lua log capturer adds its own context.
+        let msg = format!(
+            "[{}] {}\n",
+            record.level(),
+            record.args(),
+        );
+
+        // Silently drop if the channel is full (bounded at 200).
+        let _ = self.sender.try_send(msg);
+    }
+
+    fn flush(&self) {}
+}
+
+/// Android-only: writes directly to stderr. JNI captures stderr natively,
+/// so no channel or background thread is needed.
+#[cfg(feature = "ffi")]
+struct StderrLogger;
+
+#[cfg(feature = "ffi")]
+impl Log for StderrLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= log::max_level()
+    }
+
+    fn log(&self, record: &Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
+        let mut stderr = std::io::stderr();
+        let _ = writeln!(stderr, "[{}] {}", record.level(), record.args());
+    }
+
+    fn flush(&self) {}
 }
 
 /// Build the full axum router with the given state. Exposed so both the

@@ -472,20 +472,20 @@ function MangaReader:applyViewMode(ui)
   end
 
   if self.viewer ~= MangaViewer.DefaultViewer then
-    if G_reader_settings:nilOrTrue('rakuyomi_page_margin') and doc.configurable.page_margin > 0 then
+    if G_reader_settings:nilOrFalse('rakuyomi_page_margin') and doc.configurable.page_margin > 0 then
       -- -- recommend option
       ui:handleEvent(Event:new("ConfigChange", "page_margin", 0))
       ui:handleEvent(Event:new("MarginUpdate", 0))
     end
-    if G_reader_settings:nilOrTrue('rakuyomi_trim_page') and doc.configurable.trim_page ~= 1 then
+    if G_reader_settings:nilOrFalse('rakuyomi_trim_page') and doc.configurable.trim_page ~= 1 then
       ui:handleEvent(Event:new("ConfigChange", "trim_page", 1))
       ui:handleEvent(Event:new("PageCrop", "auto"))
     end
-    if G_reader_settings:nilOrTrue('rakuyomi_zoom_mode_type') and doc.configurable.zoom_mode_type ~= 2 then
+    if G_reader_settings:nilOrFalse('rakuyomi_zoom_mode_type') and doc.configurable.zoom_mode_type ~= 2 then
       ui:handleEvent(Event:new("ConfigChange", "zoom_mode_type", 2))
       ui:handleEvent(Event:new("DefineZoom", "full"))
     end
-    if G_reader_settings:nilOrTrue('rakuyomi_zoom_mode_genus') and doc.configurable.zoom_mode_genus ~= 3 then
+    if G_reader_settings:nilOrFalse('rakuyomi_zoom_mode_genus') and doc.configurable.zoom_mode_genus ~= 3 then
       ui:handleEvent(Event:new("ConfigChange", "zoom_mode_genus", 3))
       ui:handleEvent(Event:new("DefineZoom", "content"))
     end
@@ -538,7 +538,7 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
       covers_footer = true,
       close_callback = function() self:onCloseCallback() end,
     }
-    self.ui.keyselection:stopHighlightIndicator(true) -- stop any text selection in progress, if applicable
+    if self.ui.keyselection then self.ui.keyselection:stopHighlightIndicator(true) end -- stop any text selection in progress, if applicable
     self.ui:handleEvent(Event:new("DisableHinting"))
     --- @/original
 

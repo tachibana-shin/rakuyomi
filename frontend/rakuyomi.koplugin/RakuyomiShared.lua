@@ -37,7 +37,7 @@ function Shared:getZipComment(filepath)
         if comment_len > 0 then
           return data:sub(i + 22, i + 21 + comment_len)
         else
-          return ""           -- ZIP file valid but no comment
+          return "" -- ZIP file valid but no comment
         end
       end
     end
@@ -99,6 +99,9 @@ function Shared:openChapterListingFromFile(filepath, hideTopClose)
     source = { id = origin.manga_id.source_id, name = "", version = 0 },
     title = "",
     in_library = false,
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    viewer = "DefaultViewer",
+    state_viewer = false,
   }
 
   local focus_manga_id = origin.manga_id.manga_id

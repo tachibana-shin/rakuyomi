@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [build-dependencies]
-regex = "1.12.4"
+regex = "1.13.0"
 schemars = { version = "1.2.1", features = ["url2"] }
 size = "0.5.0"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -57,7 +57,7 @@ log = "0.4.33"
 derive_more = { version = "2.1.1", features = ["from", "try_unwrap", "deref"] }
 size = "0.5.0"
 walkdir = "2.5.0"
-regex = "1.12.4"
+regex = "1.13.0"
 schemars = { version = "1.2.1", features = ["url2"] }
 pared = { git = "https://github.com/hanatsumi/pared.git", branch = "feat/unwrap-or-clone" }
 sanitize-filename = "0.6.0"

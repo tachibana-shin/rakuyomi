@@ -221,6 +221,19 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'chapter_title_format',
+    {
+      type = 'enum',
+      title = _("Chapter title in statistics (ComicInfo)"),
+      options = {
+        { label = _("Chapter title only"),   value = 'title' },
+        { label = _("Series + chapter title"), value = 'series_title' },
+        { label = _("Series + chapter number"), value = 'series_chapter_number' },
+      },
+      default = 'title',
+    }
+  },
+  {
     'preload_chapters',
     {
       type = 'integer',

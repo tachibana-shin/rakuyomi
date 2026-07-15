@@ -7,6 +7,7 @@ use shared::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::MangaId,
+    settings::ChapterTitleFormat,
     source::Source,
     usecases::{
         self,
@@ -48,6 +49,7 @@ impl DownloadUnreadChaptersJob {
         langs: Vec<String>,
         concurrent_requests_pages: usize,
         optimize_image: bool,
+        chapter_title_format: ChapterTitleFormat,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let cancellation_token_clone = cancellation_token.clone();
@@ -71,6 +73,7 @@ impl DownloadUnreadChaptersJob {
                 &lang_refs,
                 concurrent_requests_pages,
                 optimize_image,
+                chapter_title_format,
             );
 
             pin_mut!(progress_report_stream);

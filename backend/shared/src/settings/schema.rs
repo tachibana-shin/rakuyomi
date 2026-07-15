@@ -57,6 +57,20 @@ pub enum LibraryViewMode {
     Grid,
 }
 
+/// Controls how the chapter title is written into ComicInfo.xml.
+/// This affects KOReader's statistics display.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ChapterTitleFormat {
+    /// Chapter title only (default, current behavior)
+    #[default]
+    Title,
+    /// Series name + chapter title
+    SeriesTitle,
+    /// Series name + chapter number
+    SeriesChapterNumber,
+}
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SearchViewMode {
@@ -156,6 +170,10 @@ pub struct Settings {
     /// Examples: `http://proxy.local:8080`, `socks5://127.0.0.1:1080`
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub proxy_url: Option<String>,
+
+    /// Controls how the chapter title is formatted in ComicInfo.xml.
+    #[serde(default)]
+    pub chapter_title_format: ChapterTitleFormat,
 }
 
 fn default_ram_storage_size_mb() -> usize {
@@ -353,6 +371,12 @@ mod tests {
     }
 
     #[test]
+    fn test_chapter_title_format_default() {
+        let mode = ChapterTitleFormat::default();
+        assert_eq!(mode, ChapterTitleFormat::Title);
+    }
+
+    #[test]
     fn test_settings_default() {
         let settings = Settings::default();
         assert!(settings.source_lists.is_empty());
@@ -373,6 +397,7 @@ mod tests {
         assert_eq!(settings.search_view_mode, SearchViewMode::Base);
         assert!(!settings.ram_storage_enabled);
         assert_eq!(settings.ram_storage_size_mb, 0);
+        assert_eq!(settings.chapter_title_format, ChapterTitleFormat::Title);
     }
 
     #[test]
@@ -398,5 +423,6 @@ mod tests {
         assert_eq!(deserialized.library_view_mode, settings.library_view_mode);
         assert_eq!(deserialized.search_view_mode, settings.search_view_mode);
         assert_eq!(deserialized.ram_storage_size_mb, settings.ram_storage_size_mb);
+        assert_eq!(deserialized.chapter_title_format, settings.chapter_title_format);
     }
 }

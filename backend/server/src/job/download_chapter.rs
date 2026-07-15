@@ -5,6 +5,7 @@ use shared::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::ChapterId,
+    settings::ChapterTitleFormat,
     source_collection::SourceCollection,
     source_manager::SourceManager,
 };
@@ -51,6 +52,7 @@ impl DownloadChapterJob {
         download_semaphore: Arc<Semaphore>,
         use_ram: bool,
         current_chapter_id: Option<ChapterId>,
+        chapter_title_format: ChapterTitleFormat,
     ) -> Self {
         let (tx, rx) = watch::channel::<
             Option<Result<Arc<(PathBuf, Vec<DownloadError>, bool)>, ErrorResponse>>,
@@ -75,6 +77,7 @@ impl DownloadChapterJob {
                 progress_tx_clone,
                 use_ram,
                 current_chapter_id,
+                chapter_title_format,
             )
             .await
             .map(Arc::new);
@@ -102,6 +105,7 @@ impl DownloadChapterJob {
         progress_tx: ProgressSender,
         use_ram: bool,
         current_chapter_id: Option<ChapterId>,
+        chapter_title_format: ChapterTitleFormat,
     ) -> Result<(PathBuf, Vec<DownloadError>, bool), ErrorResponse> {
         let source = {
             let mgr = source_manager.lock().await;
@@ -153,6 +157,7 @@ impl DownloadChapterJob {
             Some(progress_callback.clone()),
             use_ram,
             current_chapter_id.as_ref(),
+            chapter_title_format,
         )
         .await
         {
@@ -176,6 +181,7 @@ impl DownloadChapterJob {
                         Some(progress_callback),
                         false,
                         current_chapter_id.as_ref(),
+                        chapter_title_format,
                     )
                     .await
                     .map_err(|e| {

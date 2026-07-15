@@ -90,10 +90,12 @@ fn parse_log_level(rust_log: &str) -> LevelFilter {
 
 /// A `log::Log` implementation that sends formatted messages through a bounded
 /// channel. When the channel is full, messages are silently dropped.
+#[cfg(not(feature = "ffi"))]
 struct ChannelLogger {
     sender: mpsc::SyncSender<String>,
 }
 
+#[cfg(not(feature = "ffi"))]
 impl Log for ChannelLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
         metadata.level() <= log::max_level()

@@ -25,6 +25,7 @@ ffi.cdef([[
   int posix_spawn_file_actions_init(posix_spawn_file_actions_t *actions);
   int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *actions, int fd, int newfd);
   int posix_spawn_file_actions_addclose(posix_spawn_file_actions_t *actions, int fd);
+  int posix_spawn_file_actions_addopen(posix_spawn_file_actions_t *actions, int fd, const char *path, int oflag, int mode);
   int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *actions);
 ]])
 
@@ -264,12 +265,23 @@ local GenericUnixPlatform = {}
 local t_int_array = ffi.typeof("int[1]")
 local t_file_actions = ffi.typeof("posix_spawn_file_actions_t")
 
+-- O_WRONLY | O_CREAT | O_TRUNC for /dev/null redirection
+local O_WRONLY = 1
+local O_CREAT = 64
+local O_TRUNC = 512
+
 function GenericUnixPlatform:startServer()
   if Device:isKobo() then
     os.execute("ifconfig lo 127.0.0.1")
   end
 
-  local capturer = SubprocessOutputCapturer:new()
+  local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
+
+  local capturer
+  if not disable_logging then
+    capturer = SubprocessOutputCapturer:new()
+  end
+
   local binaryPath
   local argv
 
@@ -296,7 +308,12 @@ function GenericUnixPlatform:startServer()
   local actions = t_file_actions()
   must0("posix_spawn_file_actions_init", C.posix_spawn_file_actions_init(actions))
 
-  if capturer.stdout_pipe and capturer.stderr_pipe then
+  if disable_logging then
+    -- OS-level redirection: stdout and stderr go to /dev/null.
+    -- No pipes created, no SubprocessOutputCapturer, zero overhead.
+    must0("addopen stdout", C.posix_spawn_file_actions_addopen(actions, 1, "/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0))
+    must0("addopen stderr", C.posix_spawn_file_actions_addopen(actions, 2, "/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0))
+  else
     must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stdout_pipe[1], 1))
     must0("posix_spawn_file_actions_adddup2", C.posix_spawn_file_actions_adddup2(actions, capturer.stderr_pipe[1], 2))
 
@@ -329,7 +346,9 @@ function GenericUnixPlatform:startServer()
   must0("posix_spawn", spawn_res)
   local pid = pid_ptr[0]
 
-  capturer:setupParentProcess()
+  if capturer then
+    capturer:setupParentProcess()
+  end
 
   return UnixServer:new(pid, capturer)
 end

@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
+use std::sync::mpsc;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use log::{info, warn};
+use log::{info, warn, Log, Metadata, Record, LevelFilter};
 use tokio::sync::{Mutex, Semaphore};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 #[cfg(feature = "ffi")]
 use axum::extract::Request;
@@ -28,16 +27,87 @@ use crate::listener::{pick_listener, ResolvedListener};
 use crate::state::State;
 use crate::{cookie, job, manga, playlists, settings, source, system, update};
 
-/// Initialize logging. Safe to call multiple times; only the first invocation
-/// actually installs the subscriber.
+/// Initialize logging with a bounded async channel and background writer.
+///
+/// Messages are formatted and sent through a bounded `sync_channel(200)`.
+/// A detached background thread drains the channel and writes to stderr.
+/// When the channel is full (Lua reading too slowly), messages are silently
+/// dropped via `try_send()` — this prevents the server from blocking or OOM.
+///
+/// Safe to call multiple times; only the first invocation installs the logger.
 pub fn init_logging() {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
     }
-    let _ = tracing_subscriber::registry()
-        .with(EnvFilter::from_default_env())
-        .with(tracing_subscriber::fmt::layer().with_ansi(false))
-        .try_init();
+
+    let max_level = parse_log_level(
+        &std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+    );
+
+    let (sender, receiver) = mpsc::sync_channel::<String>(200);
+
+    std::thread::Builder::new()
+        .name("rakuyomi-log".into())
+        .spawn(move || {
+            let mut stderr = std::io::stderr();
+            while let Ok(msg) = receiver.recv() {
+                let _ = stderr.write_all(msg.as_bytes());
+            }
+        })
+        .expect("failed to spawn logging thread");
+
+    let logger = ChannelLogger { sender };
+
+    // set_boxed_logger + set_max_level is the only way to install a global
+    // logger exactly once without a Box + lock. set_logger returns Err if
+    // already set, which is fine for us.
+    let _ = log::set_boxed_logger(Box::new(logger));
+    let _ = log::set_max_level(max_level);
+}
+
+fn parse_log_level(rust_log: &str) -> LevelFilter {
+    // Handle simple level keywords. We ignore module-specific filters
+    // like "info,my_mod=debug" and just use the first token's level.
+    let first = rust_log.split(',').next().unwrap_or("info");
+    match first.trim().to_lowercase().as_str() {
+        "error" => LevelFilter::Error,
+        "warn" | "warning" => LevelFilter::Warn,
+        "info" => LevelFilter::Info,
+        "debug" => LevelFilter::Debug,
+        "trace" => LevelFilter::Trace,
+        _ => LevelFilter::Info,
+    }
+}
+
+/// A `log::Log` implementation that sends formatted messages through a bounded
+/// channel. When the channel is full, messages are silently dropped.
+struct ChannelLogger {
+    sender: mpsc::SyncSender<String>,
+}
+
+impl Log for ChannelLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= log::max_level()
+    }
+
+    fn log(&self, record: &Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
+
+        // Compact format: [LEVEL target] message
+        // No timestamps — the Lua log capturer adds its own context.
+        let msg = format!(
+            "[{}] {}\n",
+            record.level(),
+            record.args(),
+        );
+
+        // Silently drop if the channel is full (bounded at 200).
+        let _ = self.sender.try_send(msg);
+    }
+
+    fn flush(&self) {}
 }
 
 /// Build the full axum router with the given state. Exposed so both the

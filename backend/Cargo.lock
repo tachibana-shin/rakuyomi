@@ -4090,7 +4090,6 @@ dependencies = [
  "size",
  "tokio",
  "tokio-util",
- "tracing-subscriber",
  "url",
  "uuid",
 ]

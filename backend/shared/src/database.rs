@@ -59,7 +59,12 @@ impl Database {
             .connect_with(options)
             .await?;
 
-        sqlx::migrate!().run(&pool).await?;
+        // Ignore migrations recorded in the database that no longer exist in
+        // the source tree (e.g. leftovers from development builds). Checksum
+        // validation of known migrations still applies.
+        let mut migrator = sqlx::migrate!();
+        migrator.set_ignore_missing(true);
+        migrator.run(&pool).await?;
 
         Ok(Self {
             pool: Arc::new(RwLock::new(pool)),

@@ -182,7 +182,7 @@ pub struct Settings {
 
     /// Whether a downloaded chapter file should be deleted right after it is
     /// marked as read. Disabled by default.
-    #[serde(default = "default_false")]
+    #[serde(default)]
     pub delete_downloaded_after_read: bool,
 }
 

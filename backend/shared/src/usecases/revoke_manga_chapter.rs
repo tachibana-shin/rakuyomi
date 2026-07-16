@@ -2,6 +2,10 @@ use anyhow::Error;
 
 use crate::{chapter_storage::ChapterStorage, model::ChapterId};
 
+/// Deletes the downloaded file of a chapter (and its error-log sidecar), if
+/// present. Deletion goes through [`ChapterStorage`] so the cached storage
+/// size used for eviction decisions stays accurate. Returns whether a chapter
+/// file was actually removed.
 pub async fn revoke_manga_chapter(
     chapter_storage: &ChapterStorage,
     chapter: &ChapterId,
@@ -12,7 +16,15 @@ pub async fn revoke_manga_chapter(
         return Ok(false);
     };
 
-    let removed_main = (tokio::fs::remove_file(&path).await).is_ok();
+    // Delete through ChapterStorage so `cached_storage_size` is decremented;
+    // deleting the file directly would leave the eviction accounting stale.
+    let removed_main = match path.file_name().and_then(|name| name.to_str()) {
+        Some(filename) => chapter_storage
+            .delete_filename(filename.to_string(), use_ram)
+            .await
+            .is_ok(),
+        None => false,
+    };
 
     // Get path to "errors file" (optional) and delete it,
     // but ignore all failures because it's best-effort cleanup.

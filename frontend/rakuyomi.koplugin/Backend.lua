@@ -113,7 +113,17 @@ function Backend.requestJson(request)
 
   if not (response.status and response.status >= 200 and response.status <= 299) then
     logger.err("Request failed with status code", response.status, "and body", parsed_body)
-    local error_message = parsed_body.message or tostring(response.body) or ("HTTP " .. tostring(response.status))
+    -- The decoded body may be a JSON scalar (e.g. a bare string), so only
+    -- read `message` when it's actually a table.
+    local error_message
+    if type(parsed_body) == "table" and type(parsed_body.message) == "string"
+        and parsed_body.message ~= "" then
+      error_message = parsed_body.message
+    elseif response.body and response.body ~= "" then
+      error_message = tostring(response.body)
+    else
+      error_message = "HTTP " .. tostring(response.status)
+    end
 
     return { type = 'ERROR', status = response.status, message = error_message }
   end

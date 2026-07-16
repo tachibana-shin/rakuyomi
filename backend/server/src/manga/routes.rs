@@ -468,10 +468,18 @@ async fn remove_manga_from_library(
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
+    // Copy the flag and release the settings lock before the long-running
+    // removal work, so concurrent settings access isn't blocked.
+    let delete_downloaded_on_remove = settings.lock().await.delete_downloaded_on_remove;
     let chapter_storage = chapter_storage.lock().await;
-    let settings = settings.lock().await;
 
-    usecases::remove_manga_from_library(&database, &chapter_storage, &settings, manga_id).await?;
+    usecases::remove_manga_from_library(
+        &database,
+        &chapter_storage,
+        delete_downloaded_on_remove,
+        manga_id,
+    )
+    .await?;
 
     Ok(Json(()))
 }
@@ -591,13 +599,13 @@ async fn mark_chapters_as_read(
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
 
+    let delete_downloaded_after_read = settings.lock().await.delete_downloaded_after_read;
     let chapter_storage = &*chapter_storage.lock().await;
-    let settings = settings.lock().await;
 
     let count = usecases::mark_chapters_as_read(
         &database,
         chapter_storage,
-        &settings,
+        delete_downloaded_after_read,
         manga_id,
         &range,
         state,
@@ -714,11 +722,17 @@ async fn mark_chapter_as_read(
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
+    let delete_downloaded_after_read = settings.lock().await.delete_downloaded_after_read;
     let chapter_storage = chapter_storage.lock().await;
-    let settings = settings.lock().await;
 
-    usecases::mark_chapter_as_read(&database, &chapter_storage, &settings, &chapter_id, state)
-        .await?;
+    usecases::mark_chapter_as_read(
+        &database,
+        &chapter_storage,
+        delete_downloaded_after_read,
+        &chapter_id,
+        state,
+    )
+    .await?;
 
     Ok(Json(()))
 }

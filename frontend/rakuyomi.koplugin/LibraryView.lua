@@ -405,8 +405,13 @@ function LibraryView:_applyHideReadFilter(mangas)
 
   local filtered = {}
   for _, manga in ipairs(mangas) do
-    -- Keep mangas with unread chapters, or whose unread count is unknown.
-    if not (manga.unread_chapters_count ~= nil and manga.unread_chapters_count == 0) then
+    -- Only treat a manga as fully read when both counts are known and the
+    -- total is positive; otherwise empty/new mangas would disappear.
+    local total = manga.total_chapters_count
+    local unread = manga.unread_chapters_count
+    local fully_read = total ~= nil and total > 0
+        and unread ~= nil and unread == 0
+    if not fully_read then
       table.insert(filtered, manga)
     end
   end
@@ -694,6 +699,9 @@ function LibraryView:onContextMenuChoice(item)
 
           ChapterListing:openMarkDialog(manga, true, function(count)
             manga.unread_chapters_count = count
+            -- Marking as read may have auto-deleted downloads; refresh the
+            -- storage lookup so cover badges show current sizes.
+            self.storage_by_manga = self:fetchStorageByManga()
             self:updateItems()
           end)
         end
@@ -705,6 +713,7 @@ function LibraryView:onContextMenuChoice(item)
 
           ChapterListing:openMarkDialog(manga, false, function(count)
             manga.unread_chapters_count = count
+            self.storage_by_manga = self:fetchStorageByManga()
             self:updateItems()
           end)
         end

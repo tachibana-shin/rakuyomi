@@ -29,10 +29,6 @@ fn default_true() -> bool {
     true
 }
 
-fn default_false() -> bool {
-    false
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct UpdateableSettings {
     chapter_sorting_mode: ChapterSortingMode,
@@ -57,7 +53,7 @@ pub struct UpdateableSettings {
     chapter_title_format: ChapterTitleFormat,
     #[serde(default = "default_true")]
     delete_downloaded_on_remove: bool,
-    #[serde(default = "default_false")]
+    #[serde(default)]
     delete_downloaded_after_read: bool,
 }
 

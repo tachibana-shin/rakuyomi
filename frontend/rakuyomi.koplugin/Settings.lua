@@ -775,6 +775,7 @@ function Settings:updateSetting(key, value)
   end
 end
 
+--- @param on_return_callback function|nil Called when the settings screen is closed.
 --- @return boolean # true when the settings screen was shown
 function Settings:fetchAndShow(on_return_callback)
   local response = Backend.getSettings()

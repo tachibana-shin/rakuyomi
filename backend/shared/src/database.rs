@@ -642,7 +642,7 @@ impl Database {
                         AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)
                         AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)
                     GROUP BY ml.source_id, ml.manga_id, lti.last_read_time
-                    ORDER BY unread_chapters_count ASC
+                    ORDER BY COUNT(ci.chapter_number) ASC
                     "#
                 )
                 .fetch_all(&*self.pool.read().await)
@@ -720,7 +720,7 @@ impl Database {
                         AND (ms.preferred_scanlator IS NULL OR ci.scanlator = ms.preferred_scanlator OR ci.scanlator IS NULL)
                         AND ci.chapter_number > COALESCE(lr.last_read_chapter, -1)
                     GROUP BY ml.source_id, ml.manga_id, lti.last_read_time
-                    ORDER BY unread_chapters_count DESC
+                    ORDER BY COUNT(ci.chapter_number) DESC
                     "#
                 )
                 .fetch_all(&*self.pool.read().await)

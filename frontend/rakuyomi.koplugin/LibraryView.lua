@@ -459,37 +459,44 @@ function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   local is_cover = self:getLibraryViewMode() == "cover"
 
+  local is_grid = self:getLibraryViewMode() == "grid"
+
   for _, manga in ipairs(mangas) do
     local mandatory_parts = {}
 
-    if is_cover then
-      table.insert(mandatory_parts, manga.source.name)
-    end
-
-    if manga.last_read then
-      local text = calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base")
-      if not is_cover then
-        text = text .. " "
+    if is_grid then
+      -- Grid tiles have very little room: show only "read/total" chapters.
+      if manga.total_chapters_count ~= nil and manga.total_chapters_count > 0 then
+        local unread = manga.unread_chapters_count or 0
+        local read = math.max(manga.total_chapters_count - unread, 0)
+        table.insert(mandatory_parts, read .. "/" .. manga.total_chapters_count)
       end
-      table.insert(mandatory_parts, text)
-    end
-
-    if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      local bell = Icons.FA_BELL
+    else
       if is_cover then
-        bell = bell .. " "
+        table.insert(mandatory_parts, manga.source.name)
       end
-      table.insert(mandatory_parts, bell .. manga.unread_chapters_count)
-    end
 
-    if self:getLibraryViewMode() ~= "base" then
-      local bytes = self.storage_by_manga[manga.source.id .. "|" .. manga.id]
-      if bytes and bytes > 0 then
-        local download = Icons.FA_DOWNLOAD
-        if is_cover then
-          download = download .. " "
+      if manga.last_read then
+        local text = calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base")
+        if not is_cover then
+          text = text .. " "
         end
-        table.insert(mandatory_parts, download .. formatBytes(bytes))
+        table.insert(mandatory_parts, text)
+      end
+
+      if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
+        local bell = Icons.FA_BELL
+        if is_cover then
+          bell = bell .. " "
+        end
+        table.insert(mandatory_parts, bell .. manga.unread_chapters_count)
+      end
+
+      if is_cover then
+        local bytes = self.storage_by_manga[manga.source.id .. "|" .. manga.id]
+        if bytes and bytes > 0 then
+          table.insert(mandatory_parts, Icons.FA_DOWNLOAD .. " " .. formatBytes(bytes))
+        end
       end
     end
 

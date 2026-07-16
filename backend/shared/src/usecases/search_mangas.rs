@@ -207,6 +207,7 @@ pub async fn search_mangas(
                     information: manga,
                     state: MangaState::default(),
                     unread_chapters_count: unread_count,
+                    total_chapters_count: None,
                     last_read,
                     in_library,
                     state_viewer: false,

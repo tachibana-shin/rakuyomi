@@ -1,4 +1,5 @@
 local Font = require("ui/font")
+local GestureRange = require("ui/gesturerange")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local Screen = require("device").screen
 local TextBoxWidget = require("ui/widget/textboxwidget")
@@ -49,6 +50,26 @@ function SettingItem:init()
     self.label_widget,
     self.value_widget,
   }
+
+  -- Make the whole row tappable, not just the value widget on the right:
+  -- taps on the label half otherwise bubble up to the containing view, where
+  -- the top-zone gesture handler may hijack them (e.g. the first settings row
+  -- opening the KOReader menu).
+  self.ges_events = {
+    Tap = {
+      GestureRange:new {
+        ges = "tap",
+        range = function()
+          return self.dimen
+        end
+      }
+    },
+  }
+end
+
+--- @private
+function SettingItem:onTap()
+  return self.value_widget:onTap()
 end
 
 --- @private

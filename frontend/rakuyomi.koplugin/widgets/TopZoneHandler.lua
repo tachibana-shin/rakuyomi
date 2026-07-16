@@ -9,7 +9,13 @@ local function showFileManagerMenu()
   return false
 end
 
-function TopZoneHandler:enableTopZoneHandler()
+--- @param ratio_h number|nil Height of the tap/swipe zone as a fraction of the
+--- screen. Defaults to 0.15. Views whose content reaches into the top of the
+--- screen (e.g. Settings) should pass a smaller value so the zone does not
+--- swallow taps meant for their topmost interactive elements.
+function TopZoneHandler:enableTopZoneHandler(ratio_h)
+  ratio_h = ratio_h or 0.15
+
   self:registerTouchZones({
     {
       id = "rakuyomi_top_tap",
@@ -18,7 +24,7 @@ function TopZoneHandler:enableTopZoneHandler()
         ratio_x = 0,
         ratio_y = 0,
         ratio_w = 1,
-        ratio_h = 0.15,
+        ratio_h = ratio_h,
       },
       handler = function()
         return showFileManagerMenu()
@@ -31,7 +37,7 @@ function TopZoneHandler:enableTopZoneHandler()
         ratio_x = 0,
         ratio_y = 0,
         ratio_w = 1,
-        ratio_h = 0.15,
+        ratio_h = ratio_h,
       },
       handler = function(ges)
         if ges.direction ~= "south" then

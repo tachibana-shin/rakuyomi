@@ -2,8 +2,8 @@ use crate::{source::html_element::HTMLElement, util::has_internet_connection};
 use anyhow::{Context, Result};
 use dom_query::Document;
 use futures::executor;
-#[cfg(feature = "all")]
-use log::warn;
+#[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+use log::{info, warn};
 use num_enum::FromPrimitive;
 use reqwest::Method;
 
@@ -15,7 +15,7 @@ use wasmi::{Caller, Linker};
 use crate::source::wasm_store::ResponseData;
 use crate::source::wasm_store::{RequestState, Value, WasmStore};
 
-#[cfg(not(feature = "all"))]
+#[cfg(any(feature = "ffi", not(feature = "all")))]
 pub static NET_SEND: std::sync::OnceLock<
     fn(
         &tokio_util::sync::CancellationToken,
@@ -189,6 +189,15 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     wasm_store.rate_limit_acquire();
 
     let cancellation_token = wasm_store.context.cancellation_token.clone();
+    // Clone cookie sync settings before mutable borrow via request_builder
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let cookie_sync_server_url = wasm_store.settings.cookie_sync_server_url.clone();
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let cookie_sync_device_name = wasm_store.settings.cookie_sync_device_name.clone();
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let cookie_sync_chat_id = wasm_store.settings.cookie_sync_chat_id;
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let cookie_sync_api_token = wasm_store.settings.cookie_sync_api_token.clone();
     let request_builder = get_building_request(wasm_store, request_descriptor_i32)?;
 
     // HACK Before everything, we want to fail fast if no internet connection is available.
@@ -203,13 +212,45 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         anyhow::bail!("no internet connection available");
     }
 
-    #[cfg(feature = "all")]
-    let client = reqwest::Client::new();
-    #[cfg(feature = "all")]
-    let request =
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let client = crate::tls::client_builder()
+        .timeout(std::time::Duration::from_secs(60))
+        .build()
+        .context("failed to build HTTP client")?;
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let mut request =
         reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
-    #[cfg(feature = "all")]
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let (override_ua, cookie_value) = request
+        .url()
+        .host_str()
+        .map(crate::cookie_store::get_user_agent_and_cookie_header)
+        .unwrap_or((None, None));
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    if let Some(ref ua) = override_ua {
+        if let Ok(header_val) = reqwest::header::HeaderValue::from_str(ua) {
+            // println!("[cookie] overriding User-Agent for {}: {}", request.url().host_str().unwrap_or("?"), ua);
+            request
+                .headers_mut()
+                .insert(reqwest::header::USER_AGENT, header_val);
+        }
+    }
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    if let Some(ref cval) = cookie_value {
+        if let Ok(header_val) = reqwest::header::HeaderValue::from_str(cval) {
+            // println!(
+            //     "[cookie] setting Cookie header for {}: {} cookies",
+            //     request.url().host_str().unwrap_or("?"),
+            //     cval.matches(';').count() + 1
+            // );
+            request
+                .headers_mut()
+                .insert(reqwest::header::COOKIE, header_val);
+        }
+    }
+
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let warn_cancellation = || {
         warn!(
             "request to {:?} was cancelled mid-flight!",
@@ -217,8 +258,8 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         );
     };
 
-    #[cfg(feature = "all")]
-    let response =
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let mut response =
         match executor::block_on(cancellation_token.run_until_cancelled(client.execute(request))) {
             Some(response) => response
                 .map_err(|err| {
@@ -231,7 +272,95 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                 anyhow::bail!("request was cancelled mid-flight");
             }
         };
-    #[cfg(feature = "all")]
+
+    // println!("[cookie] response status: {}", response.status());
+    // Auto-retry on 403: refresh cookies from the Telegram bot
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    if response.status() == reqwest::StatusCode::FORBIDDEN {
+        let has_all_cookie_settings = cookie_sync_server_url.is_some()
+            && cookie_sync_device_name.is_some()
+            && cookie_sync_chat_id.is_some();
+        if has_all_cookie_settings {
+            let server_url = cookie_sync_server_url.as_deref().unwrap();
+            let chat_id = cookie_sync_chat_id.unwrap();
+            let device_name = cookie_sync_device_name.as_deref().unwrap();
+            // println!(
+            //     "[cookie] 403 for {}, syncing (chat={}, device={})",
+            //     request_builder.url.as_ref().map(|u| u.to_string()).unwrap_or_default(),
+            //     chat_id,
+            //     device_name
+            // );
+            if let Some(Ok(data)) = executor::block_on(cancellation_token.run_until_cancelled(
+                crate::cookie_store::sync_all_cookies(
+                    server_url,
+                    chat_id,
+                    device_name,
+                    cookie_sync_api_token.as_deref(),
+                ),
+            )) {
+                // println!("[cookie] sync success, applying {} domains", data.len());
+                crate::cookie_store::apply_synced_cookies(&data);
+                // Rebuild and retry the request with fresh cookies
+                let retry_client = crate::tls::client_builder()
+                    .timeout(std::time::Duration::from_secs(60))
+                    .build()
+                    .context("failed to build retry HTTP client")?;
+                let mut retry_request = reqwest::Request::try_from(&*request_builder)
+                    .context("failed to build retry request")?;
+                let retry_url = retry_request.url().to_string();
+                let host = retry_request.url().host_str().map(String::from);
+                let (override_ua, cookie_value) = host
+                    .as_deref()
+                    .map(crate::cookie_store::get_user_agent_and_cookie_header)
+                    .unwrap_or((None, None));
+                if let Some(ref ua) = override_ua {
+                    if let Ok(header_val) = reqwest::header::HeaderValue::from_str(ua) {
+                        // println!("[cookie] overriding User-Agent for {} (retry): {}", host.as_deref().unwrap_or("?"), ua);
+                        retry_request
+                            .headers_mut()
+                            .insert(reqwest::header::USER_AGENT, header_val);
+                    }
+                }
+                if let Some(ref cval) = cookie_value {
+                    if let Ok(header_val) = reqwest::header::HeaderValue::from_str(cval) {
+                        // println!(
+                        //     "[cookie] setting Cookie header for {} (retry): {} cookies",
+                        //     host.as_deref().unwrap_or("?"),
+                        //     cval.matches(';').count() + 1
+                        // );
+                        retry_request
+                            .headers_mut()
+                            .insert(reqwest::header::COOKIE, header_val);
+                    }
+                }
+                // println!("[cookie] retry request headers for {}:", retry_url);
+                // for (name, value) in retry_request.headers() {
+                //     println!("  {}: {}", name, value.to_str().unwrap_or("<binary>"));
+                // }
+                if let Some(Some(retry_resp)) = executor::block_on(
+                    cancellation_token.run_until_cancelled(retry_client.execute(retry_request)),
+                )
+                .map(|r| r.ok())
+                {
+                    if retry_resp.status() == reqwest::StatusCode::FORBIDDEN {
+                        info!("[cookie] retry still 403 for {}, notifying", retry_url);
+                        let _ = executor::block_on(cancellation_token.run_until_cancelled(
+                            crate::cookie_store::notify_cookie_needs_update(
+                                server_url,
+                                chat_id,
+                                device_name,
+                                &retry_url,
+                                cookie_sync_api_token.as_deref(),
+                            ),
+                        ));
+                    }
+                    response = retry_resp;
+                }
+            }
+        }
+    }
+
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let response_data = ResponseData {
         url: response.url().clone(),
         headers: response.headers().clone(),
@@ -249,7 +378,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         bytes_read: 0,
     };
 
-    #[cfg(not(feature = "all"))]
+    #[cfg(any(feature = "ffi", not(feature = "all")))]
     let response_data =
         (NET_SEND.get().context("Please set NET_SEND")?)(&cancellation_token, &request_builder)
             .map_err(|err| {
@@ -265,7 +394,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
 }
 
 #[aidoku_wasm_function]
-fn get_url(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
+pub fn get_url(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> Result<i32> {
     let descriptor: usize = request_descriptor_i32.try_into()?;
     let url = {
         let wasm_store = caller.data_mut();

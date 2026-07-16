@@ -1,8 +1,6 @@
 local DataStorage = require("datastorage")
 local ffiutil = require("ffi/util")
 
-local Testing = require("testing")
-
 local Paths = {}
 
 --- @return string -- The directory in which Rakuyomi's home folder is located.

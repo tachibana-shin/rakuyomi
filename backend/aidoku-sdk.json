@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/Aidoku/aidoku-rs",
+  "rev": "1a6bb691dd67c7151fc76fc852fb5a364d325f72",
+  "message": "feat: add new js apis",
+  "date": "2026-06-26",
+  "apis": [
+    "context_eval_async",
+    "webview_set_rule_list",
+    "webview_eval_async",
+    "webview_add_user_script"
+  ]
+}

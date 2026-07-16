@@ -10,10 +10,16 @@ members = [
 ]
 
 [workspace.dependencies]
-wasmi = "0.51.5"
+wasmi = "1.1.0"
 
 [profile.dev]
 incremental = true
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
 
 [patch.crates-io]
 tiff = { git = "https://github.com/image-rs/image-tiff", version = "0.11.3" }

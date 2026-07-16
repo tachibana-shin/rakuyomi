@@ -1,6 +1,5 @@
 -- FIXME make class names have _some_ kind of logic
 local ConfirmBox = require("ui/widget/confirmbox")
-local ffiutil = require("ffi/util")
 local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
@@ -18,6 +17,8 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local addToPlaylist = require("handlers/addToPlaylist")
+local NetworkMgr = require("ui/network/manager")
+local logger = require("logger")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -36,6 +37,7 @@ local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
 local LuaSettings = require("luasettings")
 local NotificationView = require("NotificationView")
+local CookieSyncView = require("CookieSyncView")
 local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 
 local LoadingDialog = require("LoadingDialog")
@@ -50,6 +52,18 @@ local MenuItemCover = require("patch/MenuItemCover")
 local MenuItemGrid = require("patch/MenuItemGrid")
 local MenuCustom = require("patch/MenuCustom")
 local PlaylistDialog = require("PlaylistDialog")
+
+local function humanizeBytes(bytes)
+  if bytes < 1024 then
+    return bytes .. " B"
+  elseif bytes < 1024 * 1024 then
+    return string.format("%.1f KiB", bytes / 1024)
+  elseif bytes < 1024 * 1024 * 1024 then
+    return string.format("%.1f MiB", bytes / (1024 * 1024))
+  else
+    return string.format("%.1f GiB", bytes / (1024 * 1024 * 1024))
+  end
+end
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
@@ -90,6 +104,59 @@ function LibraryView:init()
 
   -- fix bottom bar size
   self:updateItems()
+end
+
+--- @private
+--- @param no_exit boolean
+function LibraryView:onClose(no_exit)
+  MenuCustom.onClose(self)
+
+  if no_exit then
+    return
+  end
+
+  -- if close from playlist view, do not stop server
+  if self.current_playlist ~= nil then
+    return
+  end
+
+  local delay = G_reader_settings:readSetting("rakuyomi_auto_kill_server_delay", "disabled")
+  if delay == "immediate" then
+    logger.info("Cleaning up server...")
+    Backend.cleanup()
+  elseif delay ~= "disabled" then
+    local seconds = tonumber(delay)
+    if seconds and seconds > 0 then
+      self:scheduleServerKill(seconds)
+    end
+  end
+end
+
+function LibraryView:onReturn()
+  self:onClose(false)
+end
+
+--- Schedule server kill after delay (cancelled if library view reopens)
+function LibraryView:scheduleServerKill(seconds)
+  -- Cancel any existing timer
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
+  end
+  logger.info("Server will be killed in " .. seconds .. " seconds")
+  LibraryView._kill_server_timer = UIManager:scheduleIn(seconds, function()
+    logger.info("Killing server...")
+    Backend.cleanup()
+    LibraryView._kill_server_timer = nil
+  end)
+end
+
+--- Cancel scheduled server kill (called when library view reopens)
+function LibraryView:cancelServerKill()
+  if LibraryView._kill_server_timer then
+    UIManager:unschedule(LibraryView._kill_server_timer)
+    LibraryView._kill_server_timer = nil
+  end
 end
 
 --- @private
@@ -183,6 +250,7 @@ function LibraryView:patchTitleBar(count_notify)
           local response = Backend.getSettings()
           if response.type == 'ERROR' then
             ErrorDialog:show(response.message)
+            return
           end
 
           local settings = response.body
@@ -210,9 +278,9 @@ function LibraryView:patchTitleBar(count_notify)
 
               settings[key] = radio.provider
 
-              local response = Backend.setSettings(settings)
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
+              local response_s = Backend.setSettings(settings)
+              if response_s.type == 'ERROR' then
+                ErrorDialog:show(response_s.message)
                 return
               end
 
@@ -237,9 +305,11 @@ function LibraryView:patchTitleBar(count_notify)
     },
   }
 
-  self.title_bar.right_button = HorizontalGroup:new {
+  ---@type boolean
+  local hide_top_close = self.hide_top_close or false
+  local right_widgets = {
     HorizontalSpan:new {
-      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - right_icon_size - button_padding, -- extend button tap zone
+      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - (not hide_top_close and (right_icon_size + button_padding) or 0),
     },
     VerticalGroup:new {
       Button:new {
@@ -252,12 +322,12 @@ function LibraryView:patchTitleBar(count_notify)
         callback = function()
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow(self.current_playlist)
+              self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
             end
 
             NotificationView:fetchAndShow(onReturnCallback)
 
-            self:onClose()
+            self:onClose(true)
           end)
         end
       },
@@ -275,7 +345,9 @@ function LibraryView:patchTitleBar(count_notify)
         self:openSearchMangasDialog()
       end,
     },
-    IconButton:new {
+  }
+  if not hide_top_close then
+    table.insert(right_widgets, IconButton:new {
       icon = "close",
       icon_rotation_angle = right_icon_rotation_angle,
       width = right_icon_size,
@@ -284,8 +356,11 @@ function LibraryView:patchTitleBar(count_notify)
       padding_bottom = right_icon_size,
       callback = self.title_bar.right_icon_tap_callback,
       hold_callback = self.title_bar.right_icon_hold_callback,
-    },
-  }
+    })
+  end
+
+  self.title_bar.right_button = HorizontalGroup:new(right_widgets)
+
   --- [1] title
   --- [2] left button
   --- [3] right button
@@ -341,24 +416,30 @@ function LibraryView:generateItemTableFromMangas(mangas)
   local is_cover = self:getLibraryViewMode() == "cover"
 
   for _, manga in ipairs(mangas) do
-    local mandatory = ""
+    local mandatory_parts = {}
 
     if is_cover then
-      mandatory = manga.source.name
+      table.insert(mandatory_parts, manga.source.name)
+    end
+
+    if manga.last_read then
+      local text = calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base")
+      if not is_cover then
+        text = text .. " "
+      end
+      table.insert(mandatory_parts, text)
+    end
+
+    if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
+      local bell = Icons.FA_BELL
+      if is_cover then
+        bell = bell .. " "
+      end
+      table.insert(mandatory_parts, bell .. manga.unread_chapters_count)
     end
 
     local space = is_cover and "  " .. Icons.DOT .. "  " or ""
-
-    mandatory = mandatory .. (manga.last_read and space
-      .. calcLastReadText(manga.last_read, self:getLibraryViewMode() ~= "base") .. (is_cover and "" or " ") or "")
-
-    if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      if is_cover then
-        mandatory = mandatory .. space .. Icons.FA_BELL .. " " .. manga.unread_chapters_count
-      else
-        mandatory = mandatory .. Icons.FA_BELL .. manga.unread_chapters_count
-      end
-    end
+    local mandatory = table.concat(mandatory_parts, space)
 
     table.insert(item_table, {
       manga = manga,
@@ -383,9 +464,17 @@ function LibraryView:generateEmptyViewItemTable()
   }
 end
 
-function LibraryView:fetchAndShow(playlist, on_after_open)
+---@class FetchAndShowOptions
+---@field playlist any? - Playlist to fetch mangas from
+---@field on_after_open function? - Callback to execute after opening the library view
+---@param options OpenOptions?
+function LibraryView:fetchAndShow(playlist, on_after_open, options)
   local old = self.current_playlist
   self.current_playlist = playlist
+
+  -- Cancel any pending server kill since user is reopening library view
+  self:cancelServerKill()
+
   local settings = Backend.getSettings()
 
   if settings.type == 'ERROR' then
@@ -402,13 +491,26 @@ function LibraryView:fetchAndShow(playlist, on_after_open)
     return
   end
 
-  UIManager:show(LibraryView:new {
+  local lv = LibraryView:new {
     mangas = mangas,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page,
     library_view_mode = settings.body.library_view_mode,
     current_playlist = self.current_playlist,
-  })
+    hide_top_close = options and options.hideTopClose,
+  }
+  UIManager:show(lv)
+
+  if options and options.focus_manga_id then
+    for i, item in ipairs(lv.mangas or {}) do
+      if item.id == options.focus_manga_id
+          and item.source and item.source.id == options.focus_manga_source_id then
+        lv.itemnumber = i
+        lv:switchItemTable(nil, nil, i)
+        break
+      end
+    end
+  end
 
   self.current_playlist = old
   if on_after_open then
@@ -424,12 +526,18 @@ function LibraryView:onPrimaryMenuChoice(item)
     --- @type Manga
     local manga = item.manga
 
-    local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
-    end
+    local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
 
-    if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
-      self:onClose()
+    if tap_action == "continue_reading" then
+      self:_handleContinueReading(manga)
+    else
+      local onReturnCallback = function()
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+      end
+
+      if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+        self:onClose(true)
+      end
     end
   end)
 end
@@ -461,7 +569,7 @@ function LibraryView:onContextMenuChoice(item)
             })
           end
 
-          self:fetchAndShow(self.current_playlist)
+          self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
           UIManager:close(self)
         end
       },
@@ -472,7 +580,7 @@ function LibraryView:onContextMenuChoice(item)
 
           Trapper:wrap(function()
             local onReturnCallback = function()
-              self:fetchAndShow(self.current_playlist)
+              self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
             end
             MangaInfoWidget:fetchAndShow(manga, onReturnCallback)
             UIManager:close(self)
@@ -523,6 +631,25 @@ function LibraryView:onContextMenuChoice(item)
       },
     },
   }
+
+  local tap_action = G_reader_settings:readSetting("rakuyomi_tap_manga_action", "chapter_list")
+  if tap_action == "continue_reading" then
+    table.insert(context_menu_buttons, 1, { {
+      text = _("List chapters"),
+      callback = function()
+        local onReturnCallback = function()
+          self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+        end
+
+        Trapper:wrap(function()
+          if ChapterListing:fetchAndShow(manga, onReturnCallback, true) then
+            self:onClose(true)
+          end
+        end)
+      end
+    } })
+  end
+
   if self.current_playlist == nil then
     table.insert(context_menu_buttons, {
       {
@@ -557,7 +684,6 @@ function LibraryView:onSwipe(arg, ges_ev)
   local direction = BD.flipDirectionIfMirroredUILayout(ges_ev.direction)
   if direction == "south" then
     self:refreshAllChapters()
-
     return
   end
 
@@ -617,42 +743,51 @@ function LibraryView:_handleContinueReading(manga)
       return
     end
 
-    local confirm_dialog
-    confirm_dialog = ConfirmBox:new {
-      text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter_to_open) .. "?",
-      ok_text = _("Read"),
-      cancel_text = _("Cancel"),
-      ok_callback = function()
-        UIManager:close(confirm_dialog)
-
-        local response = Backend.getSettings()
-        if response.type == 'ERROR' then
-          ErrorDialog:show(response.message)
-
-          return
-        end
-
-        local settings = response.body
-
-        local temp_listing = ChapterListing:new {
-          manga = manga,
-          chapter_sorting_mode = settings.chapter_sorting_mode,
-          on_return_callback = function()
-            self:fetchAndShow(self.current_playlist)
-          end,
-          covers_fullscreen = true, -- hint for UIManager:_repaint()
-          page = self.page,
-          preload_count = settings.preload_chapters
-        }
-        temp_listing.chapters = chapters
-        temp_listing:openChapterOnReader(chapter_to_open)
-        self:onClose()
-      end,
-      cancel_callback = function()
-        UIManager:close(confirm_dialog)
+    local function openContinueReading()
+      local response_s = Backend.getSettings()
+      if response_s.type == 'ERROR' then
+        ErrorDialog:show(response_s.message)
+        return
       end
-    }
-    UIManager:show(confirm_dialog)
+
+      local settings = response_s.body
+
+      local onReturnCallback = function()
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+      end
+      local temp_listing = ChapterListing:new {
+        manga = manga,
+        chapter_sorting_mode = settings.chapter_sorting_mode,
+        on_return_callback = onReturnCallback,
+        covers_fullscreen = true,
+        page = self.page,
+        preload_count = settings.preload_chapters
+      }
+      temp_listing.on_return_callback = onReturnCallback
+      temp_listing.chapters = chapters
+      temp_listing:openChapterOnReader(chapter_to_open, nil, function()
+        self:onClose(true)
+      end)
+    end
+
+    if G_reader_settings:isTrue("rakuyomi_skip_resume_confirm") then
+      openContinueReading()
+    else
+      local confirm_dialog
+      confirm_dialog = ConfirmBox:new {
+        text = _("Resume reading with:") .. "\n" .. getChapterDisplayName(chapter_to_open) .. "?",
+        ok_text = _("Read"),
+        cancel_text = _("Cancel"),
+        ok_callback = function()
+          UIManager:close(confirm_dialog)
+          openContinueReading()
+        end,
+        cancel_callback = function()
+          UIManager:close(confirm_dialog)
+        end
+      }
+      UIManager:show(confirm_dialog)
+    end
   end)
 end
 
@@ -669,8 +804,8 @@ function LibraryView:_handleRemoveFromLibrary(manga)
 
         return
       end
-      self:fetchAndShow(self.current_playlist)
-      self:onClose()
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+      self:onClose(true)
     end
   })
 end
@@ -689,8 +824,8 @@ function LibraryView:_handleRemoveFromPlaylist(manga)
 
         return
       end
-      self:fetchAndShow(self.current_playlist)
-      self:onClose()
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+      self:onClose(true)
     end
   })
 end
@@ -804,13 +939,13 @@ function LibraryView:openMenu()
               ok_text = _("Migrate"),
               ok_callback = function()
                 Trapper:wrap(function()
-                  local response = LoadingDialog:showAndRun(
+                  local response_m = LoadingDialog:showAndRun(
                     _("Migrating database..."),
                     function() return Backend.syncDatabase(true, false) end
                   )
 
-                  if response.type == 'ERROR' then
-                    ErrorDialog:show(response.message)
+                  if response_m.type == 'ERROR' then
+                    ErrorDialog:show(response_m.message)
 
                     return
                   end
@@ -821,7 +956,7 @@ function LibraryView:openMenu()
 
                   UIManager:close(self)
                   UIManager:close(dialog)
-                  self:fetchAndShow(self.current_playlist)
+                  self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
                 end)
               end,
               other_buttons = {
@@ -830,12 +965,12 @@ function LibraryView:openMenu()
                     text = _("Replace Cloud"),
                     callback = function()
                       Trapper:wrap(function()
-                        local response = LoadingDialog:showAndRun(
+                        local response_r = LoadingDialog:showAndRun(
                           _("Replacing cloud..."),
                           function() return Backend.syncDatabase(false, true) end
                         )
-                        if response.type == 'ERROR' then
-                          ErrorDialog:show(response.message)
+                        if response_r.type == 'ERROR' then
+                          ErrorDialog:show(response_r.message)
 
                           return
                         end
@@ -846,7 +981,7 @@ function LibraryView:openMenu()
 
                         UIManager:close(self)
                         UIManager:close(dialog)
-                        self:fetchAndShow(self.current_playlist)
+                        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
                       end)
                     end,
                   }
@@ -857,7 +992,7 @@ function LibraryView:openMenu()
             return
           end
 
-          local msg = '';
+          local msg
           if response.body == 'up_to_date' then
             msg = _("Database is already up to date!")
           elseif response.body == 'updated_to_server' then
@@ -873,7 +1008,88 @@ function LibraryView:openMenu()
           })
         end)
       end
-    } }
+    } },
+    {
+      {
+        text = Icons.SYNC .. " " .. _("Cookie Sync"),
+        callback = function()
+          UIManager:close(dialog)
+          self:openCookieSyncView()
+        end
+      },
+      {
+        text = Icons.REFRESHING .. " " .. _("Sync Cookies"),
+        enabled_func = function()
+          local resp = Backend.getCookieSyncStatus().body
+          return resp and resp.paired
+        end,
+        callback = function()
+          UIManager:close(dialog)
+          local loading = InfoMessage:new {
+            text = _("Syncing cookies..."),
+            dismissable = false,
+          }
+          UIManager:show(loading)
+          UIManager:forceRePaint()
+          local resp = Backend.syncCookies()
+          UIManager:close(loading)
+          if resp.type == 'ERROR' then
+            UIManager:show(InfoMessage:new {
+              text = _("Failed to sync cookies: ") .. (resp.message or "unknown error"),
+            })
+            return
+          end
+          local count = #(resp.body.domains or {})
+          UIManager:show(InfoMessage:new {
+            text = _("Synced cookies for ") .. count .. _(" domain(s)."),
+          })
+        end
+      },
+    },
+    {
+      {
+        text = Icons.INFO .. " " .. _("System resources"),
+        callback = function()
+          UIManager:close(dialog)
+
+          Trapper:wrap(function()
+            local response = Backend.getSystemStats()
+
+            if response.type == 'ERROR' then
+              ErrorDialog:show(response.message)
+
+              return
+            end
+
+            local s = response.body
+            local parts = {}
+            table.insert(parts, _("CPU") .. ": " .. s.cpu.model .. "\n"
+              .. _("Cores") .. ": " .. s.cpu.cores .. " | "
+              .. _("Usage") .. ": " .. string.format("%.1f", s.cpu.usage_percent) .. "%")
+            table.insert(parts, _("Memory") .. ": "
+              .. humanizeBytes(s.memory.used_bytes) .. " / " .. humanizeBytes(s.memory.total_bytes) .. " ("
+              .. string.format("%.1f", s.memory.used_bytes / math.max(s.memory.total_bytes, 1) * 100) .. "%)")
+            table.insert(parts, _("Storage") .. ": "
+              .. humanizeBytes(s.storage.used_bytes) .. " / " .. humanizeBytes(s.storage.total_bytes) .. " ("
+              .. string.format("%.1f", s.storage.used_bytes / math.max(s.storage.total_bytes, 1) * 100) .. "%)")
+            if s.tmpfs then
+              table.insert(parts, _("Tmpfs") .. ": "
+                .. humanizeBytes(s.tmpfs.used_bytes) .. " / " .. humanizeBytes(s.tmpfs.total_bytes) .. " ("
+                .. string.format("%.1f", s.tmpfs.used_bytes / math.max(s.tmpfs.total_bytes, 1) * 100) .. "%)")
+            elseif s.tmpfs_mount_error then
+              table.insert(parts, _("Tmpfs") .. ": " .. _("unavailable") .. "\n"
+                .. s.tmpfs_mount_error)
+            end
+            table.insert(parts, _("Process RSS") .. ": " .. humanizeBytes(s.process.memory_rss_bytes)
+              .. " | " .. _("Virtual") .. ": " .. humanizeBytes(s.process.memory_virtual_bytes))
+
+            UIManager:show(InfoMessage:new {
+              text = table.concat(parts, "\n\n"),
+            })
+          end)
+        end
+      },
+    },
   }
 
   dialog = ButtonDialog:new {
@@ -891,9 +1107,9 @@ function LibraryView:openPlaylistDialog()
     local need_close = self.current_playlist ~= nil
     LibraryView:fetchAndShow(playlist, function()
       if need_close then
-        self:onClose()
+        self:onClose(true)
       end
-    end)
+    end, { hideTopClose = true })
   end)
 end
 
@@ -1062,12 +1278,12 @@ function LibraryView:startCleaner(modeInvalid)
         UIManager:show(progressbar_dialog)
 
         for i, filename in ipairs(filenames) do
-          local response = Backend.removeFile(filename)
-          if response.type == 'ERROR' then
-            ErrorDialog:show(response.message)
+          local response_f = Backend.removeFile(filename)
+          if response_f.type == 'ERROR' then
+            ErrorDialog:show(response_f.message)
             return
           end
-          progressbar_dialog:reportProgress(i + 1)
+          progressbar_dialog:reportProgress(i)
           progressbar_dialog:redrawProgressbarIfNeeded()
         end
 
@@ -1088,6 +1304,10 @@ end
 --- @param cancel_id number
 --- @param manga Manga
 function LibraryView:_refreshManga(cancel_id, manga)
+  if not NetworkMgr:isConnected() then
+    return { type = 'ERROR', message = _("Cannot refresh while offline") }
+  end
+
   local response = Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
   return response
 end
@@ -1095,6 +1315,14 @@ end
 --- @private
 --- @private
 function LibraryView:refreshAllChapters()
+  if not NetworkMgr:isConnected() then
+    UIManager:show(InfoMessage:new {
+      text = _("Cannot refresh while offline"),
+    })
+
+    return
+  end
+
   local job = RefreshLibraryChapters:new()
   if job then
     self:_runLibraryJob(
@@ -1108,6 +1336,14 @@ end
 
 --- @private
 function LibraryView:refreshAllDetails()
+  if not NetworkMgr:isConnected() then
+    UIManager:show(InfoMessage:new {
+      text = _("Cannot refresh while offline"),
+    })
+
+    return
+  end
+
   local job = RefreshLibraryDetails:new()
   if job then
     self:_runLibraryJob(
@@ -1135,7 +1371,7 @@ function LibraryView:_runLibraryJob(job, title, success_msg, error_prefix)
         return nil
       end,
       dismiss_callback = function()
-        self:fetchAndShow(self.current_playlist)
+        self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
         UIManager:close(self)
       end
     })
@@ -1150,7 +1386,7 @@ function LibraryView:openCleanerDialog()
   dialog = ConfirmBox:new {
     text = _("Cleaner") .. "\n\n" ..
         _("Normal") .. ": " .. _("Find and delete invalid files including files from deleted sources") .. "\n\n" ..
-        ("Chapter read done: Find and delete chapters that have been read") .. "\n\n" ..
+        _("Chapter read done") .. ": " .. _("Find and delete chapters that have been read") .. "\n\n" ..
         _("IMPORTANT: Meta files (bookmark, history) not keep!"),
     ok_text = _("Normal"),
     ok_callback = function()
@@ -1173,11 +1409,11 @@ end
 function LibraryView:searchMangas(search_text, exclude)
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
-      self:onClose()
+      self:onClose(true)
     end
   end)
 end
@@ -1186,12 +1422,12 @@ end
 function LibraryView:openInstalledSourcesListing()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     InstalledSourcesListing:fetchAndShow(onReturnCallback)
 
-    self:onClose()
+    self:onClose(true)
   end)
 end
 
@@ -1199,12 +1435,25 @@ end
 function LibraryView:openSettings()
   Trapper:wrap(function()
     local onReturnCallback = function()
-      self:fetchAndShow(self.current_playlist)
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
     Settings:fetchAndShow(onReturnCallback)
 
-    self:onClose()
+    self:onClose(true)
+  end)
+end
+
+function LibraryView:openCookieSyncView()
+  Trapper:wrap(function()
+    local playlist = self.current_playlist
+    local hide_top = self.hide_top_close
+    CookieSyncView:new {
+      on_return_callback = function()
+        LibraryView:new {}:fetchAndShow(playlist, nil, { hideTopClose = hide_top })
+      end,
+    }:fetchAndShow()
+    self:onClose(true)
   end)
 end
 

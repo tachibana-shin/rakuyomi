@@ -2,7 +2,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local Device = require("device")
 local Font = require("ui/font")
-local FocusManager = require("ui/widget/focusmanager")
+local FocusManager = require("widgets/FocusManagerWithTopZone")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
 local GestureRange = require("ui/gesturerange")
@@ -10,7 +10,6 @@ local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local ImageWidget = require("ui/widget/imagewidget")
 local ScrollTextWidget = require("ui/widget/scrolltextwidget")
-local InputText = require("ui/widget/inputtext")
 local TextViewer = require("ui/widget/textviewer")
 local LeftContainer = require("ui/widget/container/leftcontainer")
 local LineWidget = require("ui/widget/linewidget")
@@ -25,6 +24,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local Trapper = require("ui/trapper")
 local _ = require("gettext+")
+local NetworkMgr = require("ui/network/manager")
 local Screen = Device.screen
 local T = require("ffi/util").template
 
@@ -35,7 +35,11 @@ local calcLastReadText = require("utils/calcLastReadText")
 
 local function parse_iso8601(str)
   local year, month, day, hour, min, sec =
-      str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)Z")
+      str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)")
+
+  if not year then
+    return nil
+  end
 
   return os.time({
     year = year,
@@ -303,7 +307,8 @@ function MangaInfoWidget:genBookInfoGroup(manga)
 
   -- last read text
   if manga.last_read ~= nil then
-    local last_read_str = calcLastReadText(parse_iso8601(manga.last_read))
+    local ts = parse_iso8601(manga.last_read)
+    local last_read_str = ts and calcLastReadText(ts) or _("N/A")
     local text_last_read = TextWidget:new {
       text = T(_("Last read: %1"), last_read_str),
       face = self.small_font_face,
@@ -397,6 +402,14 @@ function MangaInfoWidget:genStatisticsGroup(width, manga)
     }
   }
 
+  local last_updated_text = _("N/A")
+  if manga.last_updated then
+    local ts = parse_iso8601(manga.last_updated)
+    if ts then
+      last_updated_text = calcLastReadText(ts)
+    end
+  end
+
   local data_group = HorizontalGroup:new {
     align = "center",
     CenterContainer:new {
@@ -416,7 +429,7 @@ function MangaInfoWidget:genStatisticsGroup(width, manga)
     CenterContainer:new {
       dimen = Geom:new { w = tile_width, h = tile_height },
       TextWidget:new {
-        text = manga.last_updated and calcLastReadText(parse_iso8601(manga.last_updated)) or _("N/A"),
+        text = last_updated_text,
         face = self.medium_font_face,
       }
     }
@@ -494,7 +507,7 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   }
 end
 
-function MangaInfoWidget:onSwipe(arg, ges_ev)
+function MangaInfoWidget:onSwipe(_, ges_ev)
   if ges_ev.direction == "south" then
     -- Allow easier closing with swipe down
     self:onClose()
@@ -515,7 +528,7 @@ function MangaInfoWidget:onSwipe(arg, ges_ev)
   end
 end
 
-function MangaInfoWidget:onMultiSwipe(arg, ges_ev)
+function MangaInfoWidget:onMultiSwipe(_, _)
   -- For consistency with other fullscreen widgets where swipe south can't be
   -- used to close and where we then allow any multiswipe to close, allow any
   -- multiswipe to close this widget too.
@@ -539,6 +552,19 @@ end
 --- @param manga_id string
 --- @return SuccessfulResponse<[MManga, number]>|ErrorResponse|nil
 function MangaInfoWidget:refreshDetails(source_id, manga_id)
+  if not NetworkMgr:isConnected() then
+    local cancel_id = Backend.createCancelId()
+    local response = Backend.cachedMangaDetails(cancel_id, source_id, manga_id)
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+
+      return
+    end
+
+    return { type = 'SUCCESS', body = response.body }
+  end
+
   local cancel_id_1 = Backend.createCancelId()
   local cancel_id_2 = Backend.createCancelId()
 

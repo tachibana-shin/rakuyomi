@@ -1,5 +1,5 @@
 local Blitbuffer = require("ffi/blitbuffer")
-local FocusManager = require("ui/widget/focusmanager")
+local FocusManager = require("widgets/FocusManagerWithTopZone")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
@@ -25,6 +25,51 @@ local SettingItem = require('widgets/SettingItem')
 local Trapper = require("ui/trapper")
 local LoadingDialog = require("LoadingDialog")
 
+local ffi = require("ffi")
+
+ffi.cdef [[
+  struct sysinfo {
+      long uptime;
+      unsigned long loads[3];
+      unsigned long totalram;
+      unsigned long freeram;
+      unsigned long sharedram;
+      unsigned long bufferram;
+      unsigned long totalswap;
+      unsigned long freeswap;
+      unsigned short procs;
+      unsigned short pad;
+      unsigned long totalhigh;
+      unsigned long freehigh;
+      unsigned int mem_unit;
+      char _f[20-2*sizeof(long)-sizeof(int)];
+  };
+  int sysinfo(struct sysinfo *info);
+]]
+
+local function get_ram_via_ffi()
+  local info = ffi.new("struct sysinfo")
+  if ffi.C.sysinfo(info) == 0 then
+    local mem_unit = info.mem_unit > 0 and info.mem_unit or 1
+    local total_bytes = tonumber(info.totalram) * mem_unit
+    local free_bytes = tonumber(info.freeram) * mem_unit
+
+    return {
+      total_mb = math.floor(total_bytes / 1024 / 1024),
+      free_mb = math.floor(free_bytes / 1024 / 1024)
+    }
+  end
+  return nil
+end
+
+local function validate_proxy_url(value)
+  if value == nil or value == "" then
+    return true
+  end
+  local lower_value = value:lower()
+  return lower_value:match("^https?://") ~= nil or lower_value:match("^socks5://") ~= nil
+end
+
 -- REFACT This is duplicated from `SourceSettings` (pretty much all of it actually)
 local Settings = FocusManager:extend {
   settings = {},
@@ -32,6 +77,7 @@ local Settings = FocusManager:extend {
   paths = { 0 }
 }
 
+local ram_info = get_ram_via_ffi()
 
 --- @type [string, ValueDefinition][]
 Settings.setting_value_definitions = {
@@ -105,6 +151,63 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_grid_show_title',
+    {
+      type = 'boolean',
+      title = _("Show title in grid mode"),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_grid_show_metadata',
+    {
+      type = 'boolean',
+      title = _("Show metadata in grid mode"),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_tap_manga_action',
+    {
+      type = 'enum',
+      title = _("Tap manga action"),
+      options = {
+        { label = _("Open chapter list"), value = "chapter_list" },
+        { label = _("Continue reading"),  value = "continue_reading" },
+      },
+      default = "chapter_list",
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_skip_resume_confirm',
+    {
+      type = 'boolean',
+      title = _("Skip resume reading confirmation"),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Search") }
+  },
+  {
+    'search_view_mode',
+    {
+      type = 'enum',
+      title = _("Search view mode"),
+      options = {
+        { label = _("Base"),  value = "base" },
+        { label = _("Cover"), value = "cover" },
+        { label = _("Grid"),  value = "grid" },
+      },
+      default = "base",
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Reader") }
   },
@@ -117,6 +220,19 @@ Settings.setting_value_definitions = {
         { label = _("By chapter ascending"),  value = 'chapter_ascending' },
         { label = _("By chapter descending"), value = 'chapter_descending' },
       }
+    }
+  },
+  {
+    'chapter_title_format',
+    {
+      type = 'enum',
+      title = _("Chapter title in statistics (ComicInfo)"),
+      options = {
+        { label = _("Chapter title only"),   value = 'title' },
+        { label = _("Series + chapter title"), value = 'series_title' },
+        { label = _("Series + chapter number"), value = 'series_chapter_number' },
+      },
+      default = 'title',
     }
   },
   {
@@ -150,6 +266,113 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_never_rtl',
+    {
+      type = 'boolean',
+      title = _('Never turn on RTL, even for Japanese manga'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_auto_viewer_mode',
+    {
+      type = 'boolean',
+      title = _('Automatically set the viewer to manga mode'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_global_viewer',
+    {
+      type = 'enum',
+      title = _('Global viewer override'),
+      options = {
+        { label = _("Off"),      value = '' },
+        { label = _("Default"),  value = 'DefaultViewer' },
+        { label = _("RTL"),      value = 'Rtl' },
+        { label = _("LTR"),      value = 'Ltr' },
+        { label = _("Vertical"), value = 'Vertical' },
+        { label = _("Scroll"),   value = 'Scroll' },
+      },
+      default = '',
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_hide_btn_prev',
+    {
+      type = 'boolean',
+      title = _('Show button previous chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_show_btn_next',
+    {
+      type = 'boolean',
+      title = _('Show button next chapter in toolbar reader'),
+      default = true,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_reader_extend',
+    {
+      type = 'enum',
+      title = _('Display the expanded rakuyomi bottom toolbar in the reader'),
+      options = {
+        { label = _('Off'),               value = 'off' },
+        { label = _('On bottom toolbar'), value = 'bottom' },
+        { label = _('On top toolbar'),    value = 'top' },
+      },
+      default = 'bottom',
+      is_local = true,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _('Recommended reader settings') }
+  },
+  {
+    'rakuyomi_page_margin',
+    {
+      type = 'boolean',
+      title = _('Turn off all margins'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_trim_page',
+    {
+      type = 'boolean',
+      title = _('Automatically crop excess edges from photos (a little slow)'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_type',
+    {
+      type = 'boolean',
+      title = _('Zoom to full screen'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_zoom_mode_genus',
+    {
+      type = 'boolean',
+      title = _('Zoom to fit image size'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _("Storage") }
   },
@@ -170,6 +393,39 @@ Settings.setting_value_definitions = {
       min_value = 1,
       max_value = 10240,
       unit = 'MB'
+    }
+  },
+  {
+    'ram_storage_enabled',
+    {
+      type = 'boolean',
+      title = _("Write chapters to RAM (protect eMMC)"),
+      default = false,
+    }
+  },
+  {
+    'ram_storage_size_mb',
+    {
+      type = 'integer',
+      title = _("RAM storage size. Your RAM is: " .. (ram_info and ram_info.total_mb or 0) .. " MB"),
+      min_value = 8,
+      max_value = ram_info and math.max(8, math.floor(ram_info.total_mb / 2)) or 32,
+      unit = 'MB',
+      default = 32,
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Network") }
+  },
+  {
+    'proxy_url',
+    {
+      type = 'string',
+      title = _("HTTP, HTTPS or SOCKS5 Proxy"),
+      placeholder = 'http://user:pass@host:port',
+      validate = validate_proxy_url,
+      validate_error = _("Proxy URL must start with http://, https://, or socks5://"),
     }
   },
   {
@@ -397,6 +653,49 @@ Settings.setting_value_definitions = {
       default = true
     }
   },
+  {
+    nil,
+    { type = 'divider', title = _("Server") }
+  },
+  {
+    'rakuyomi_auto_kill_server_delay',
+    {
+      type = 'enum',
+      title = _("Auto-stop server when leaving library view"),
+      options = {
+        { label = _("Disabled"),         value = "disabled" },
+        { label = _("Immediate"),        value = "immediate" },
+        { label = _("After 30 seconds"), value = "30" },
+        { label = _("After 1 minute"),   value = "60" },
+        { label = _("After 5 minutes"),  value = "300" },
+        { label = _("After 10 minutes"), value = "600" },
+      },
+      is_local = true,
+      default = "disabled",
+    }
+  },
+  {
+    'rakuyomi_show_download_progress',
+    {
+      type = 'boolean',
+      title = _("Show chapter download progress"),
+      is_local = true,
+      default = true
+    }
+  },
+  {
+    nil,
+    { type = 'divider', title = _("Logging") }
+  },
+  {
+    'rakuyomi_disable_logging',
+    {
+      type = 'boolean',
+      title = _("Disable logging"),
+      default = false,
+      is_local = true,
+    }
+  },
 }
 
 
@@ -461,7 +760,7 @@ function Settings:init()
         value_definition = definition,
         value = value,
         on_value_changed_callback = function(new_value)
-          self:updateSetting(key, new_value)
+          return self:updateSetting(key, new_value)
         end
       })
     end
@@ -540,6 +839,38 @@ end
 
 --- @private
 function Settings:updateSetting(key, value)
+  -- fallback control ram_storage_enabled, ram_storage_size_mb
+  if key == 'ram_storage_enabled' or key == 'ram_storage_size_mb' then
+    local enabled = key == 'ram_storage_enabled' and value or self.settings.ram_storage_enabled
+    local ram_storage_size_mb = key == 'ram_storage_size_mb' and value or self.settings.ram_storage_size_mb
+
+    local response = Backend.mountFS({
+      enabled = enabled,
+      ram_storage_size_mb = ram_storage_size_mb,
+    })
+
+    if response.type == 'ERROR' then
+      if key == 'ram_storage_enabled' then
+        self.settings.ram_storage_enabled = false
+      end
+      ErrorDialog:show(response.message)
+      return false
+    end
+
+    self.settings[key] = value
+
+    return
+  end
+
+  -- Test proxy before saving
+  if key == 'proxy_url' and value ~= nil and value ~= '' then
+    local test_response = Backend.testProxy(value)
+    if test_response.type == 'ERROR' then
+      ErrorDialog:show(test_response.message or _("Failed to test proxy"))
+      return false
+    end
+  end
+
   self.settings[key] = value
 
   local response = Backend.setSettings(self.settings)
@@ -559,6 +890,7 @@ function Settings:fetchAndShow(on_return_callback)
   local response = Backend.getSettings()
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
+    return
   end
 
   local ui = Settings:new {

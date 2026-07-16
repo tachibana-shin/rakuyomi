@@ -2,10 +2,31 @@ local PdfDocument = require('document/pdfdocument')
 local logger = require("logger")
 local rapidjson = require("rapidjson")
 local Paths = require('Paths')
+local execute_binary_fast = require("utils/executeBinaryFast")
 
 -- Environment variable for overriding the command
 local CBZ_METADATA_READER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_CBZ_METADATA_READER_COMMAND_OVERRIDE')
 local CBZ_METADATA_READER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_CBZ_METADATA_READER_WORKING_DIRECTORY')
+
+
+local function getString(metadata, key)
+  local value = metadata[key]
+  if type(value) == "string" then
+    local trimmed = value:match("^%s*(.-)%s*$")
+    return trimmed ~= "" and trimmed or nil
+  end
+  return nil
+end
+
+local function getNumber(metadata, key)
+  local value = metadata[key]
+  if type(value) == "number" then
+    return value
+  elseif type(value) == "string" then
+    return tonumber(value)
+  end
+  return nil
+end
 
 local CbzDocument = PdfDocument:extend {
   -- Inherit properties and methods from PdfDocument
@@ -39,7 +60,6 @@ end
 --- @return string|nil The JSON string or nil if an error occurred.
 function CbzDocument:_getComicBookInfoJSONFromBinary()
   local file_path = self.file
-  local json_content = nil
 
   -- Determine the command to run
   local command_path
@@ -51,37 +71,16 @@ function CbzDocument:_getComicBookInfoJSONFromBinary()
     logger.dbg("CbzDocument: Using default command path:", command_path)
   end
 
-  -- Construct the command. Ensure the file path is properly quoted for the shell.
-  local command = string.format("%s %q", command_path, file_path)
-  logger.dbg("CbzDocument: Executing command:", command)
+  logger.dbg("CbzDocument: Executing binary via FFI:", command_path, "with file:", file_path)
 
-  if CBZ_METADATA_READER_COMMAND_WORKING_DIRECTORY then
-    command = string.format("cd %q && %s", CBZ_METADATA_READER_COMMAND_WORKING_DIRECTORY, command)
-  end
+  local json_content, err = execute_binary_fast(command_path, file_path, CBZ_METADATA_READER_COMMAND_WORKING_DIRECTORY)
 
-  -- Use io.popen to run the command and capture its standard output.
-  local handle = io.popen(command, 'r')
-
-  if not handle then
-    logger.warn("CbzDocument: Failed to execute command:", command)
-    return nil
-  end
-
-  -- Read all output from the command (should be the JSON string or '{}').
-  json_content = handle:read("*a")
-  local status, exit_code_or_signal, exit_code = handle:close() -- Check exit status
-
-  -- Check status and output
-  if not status or (exit_code and exit_code ~= 0) then
-    logger.warn("CbzDocument: Command exited with non-zero status:", command, "Exit code:", exit_code, "Output:",
-      json_content)
-
-    return nil
-  end
-
-  -- Check if the output is empty or just '{}', which indicates no valid metadata found.
   if not json_content or json_content == "" or json_content == "{}" then
-    logger.dbg("CbzDocument: Rust binary returned no valid JSON metadata for", file_path)
+    if err then
+      logger.warn("CbzDocument: Command execution failed:", err)
+    else
+      logger.dbg("CbzDocument: Rust binary returned no valid JSON metadata for", file_path)
+    end
     return nil
   end
 
@@ -108,49 +107,24 @@ function CbzDocument:_parseMetadata(json_content)
     return nil
   end
 
-  -- The Rust binary now returns the flat structure directly.
   local metadata = parsed_data
+  local info = {}
 
-  -- Helper functions to safely get string/number values
-  -- Define helpers *before* they are used
-  local function getString(key)
-    local value = metadata[key]
-    if type(value) == "string" then
-      local trimmed = value:match("^%s*(.-)%s*$")
-      return trimmed ~= "" and trimmed or nil
-    end
-    return nil
-  end
-  local function getNumber(key)
-    local value = metadata[key]
-    if type(value) == "number" then
-      return value
-    elseif type(value) == "string" then
-      return tonumber(value) -- Attempt conversion if it's a string
-    end
-    return nil
-  end
+  info.title = getString(metadata, "title")
+  info.series = getString(metadata, "series")
+  info.publisher = getString(metadata, "publisher")
+  info.notes = getString(metadata, "notes")
+  info.language = getString(metadata, "language")
+  info.keywords = getString(metadata, "keywords")
+  info.author = getString(metadata, "authors")
+  info.series_index = getNumber(metadata, "series_index")
 
-  local info
-
-  -- Map fields from the simplified JSON to self.info
-  info = {} -- Initialize local info table
-
-  info.title = getString("title")
-  info.series = getString("series")
-  info.publisher = getString("publisher")
-  info.notes = getString("notes")       -- Map 'notes' from JSON
-  info.language = getString("language")
-  info.keywords = getString("keywords") -- Map 'keywords' from JSON
-  info.author = getString("authors")    -- Map 'authors' from JSON
-  info.series_index = getNumber("series_index")
-
-  local rating = getNumber("rating")
+  local rating = getNumber(metadata, "rating")
   if rating and rating >= 0 then
     info.rating = rating
   end
 
-  local pub_year = getNumber("publication_year")
+  local pub_year = getNumber(metadata, "publication_year")
   if pub_year then
     info.publication_year = pub_year
   end

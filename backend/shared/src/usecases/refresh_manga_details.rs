@@ -19,9 +19,11 @@ pub async fn refresh_manga_details(
 ) -> Result<PublishingStatus> {
     let duration = Duration::from_secs(seconds);
 
+    let child_token = token.child_token();
+
     let fetch_task = async {
         source
-            .get_manga_details(token.clone(), id.value().clone())
+            .get_manga_details(child_token.clone(), id.value().clone())
             .await
     };
 
@@ -31,8 +33,7 @@ pub async fn refresh_manga_details(
         Ok(Err(e)) => return Err(anyhow!("source error: {}", e)),
 
         Err(_) => {
-            // Cancel the operation
-            token.cancel();
+            child_token.cancel();
             return Err(anyhow!("timeout when refreshing manga details"));
         }
     };

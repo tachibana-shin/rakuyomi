@@ -9,6 +9,7 @@ local Job = require('jobs/Job')
 --- @field private chapter_id string
 --- @field private chapter_num number
 --- @field private job_id string
+--- @field private current_chapter_id string|nil
 --- @field started boolean
 local DownloadChapter = Job:extend()
 
@@ -18,13 +19,15 @@ local DownloadChapter = Job:extend()
 --- @param manga_id string
 --- @param chapter_id string
 --- @param chapter_num number
+--- @param current_chapter_id string|nil
 --- @return self job A new `DownloadChapter` job, case failed use :start() `nil`, if the job could not be created.
-function DownloadChapter:new(source_id, manga_id, chapter_id, chapter_num)
+function DownloadChapter:new(source_id, manga_id, chapter_id, chapter_num, current_chapter_id)
   local o = {
     source_id = source_id,
     manga_id = manga_id,
     chapter_id = chapter_id,
     chapter_num = chapter_num,
+    current_chapter_id = current_chapter_id,
     started = false,
   }
   setmetatable(o, self)
@@ -44,7 +47,10 @@ function DownloadChapter:start()
 
   self.started = true
 
-  local response = Backend.createDownloadChapterJob(self.source_id, self.manga_id, self.chapter_id, self.chapter_num)
+  local response = Backend.createDownloadChapterJob(
+    self.source_id, self.manga_id, self.chapter_id, self.chapter_num,
+    self.current_chapter_id
+  )
   if response.type == 'ERROR' then
     logger.error('could not create download chapter job', response.message)
   else
@@ -56,9 +62,9 @@ function DownloadChapter:start()
   return response
 end
 
---- @return SuccessfulResponse<[string, DownloadError[]]>|ErrorResponse
-function DownloadChapter:runUntilCompletion()
-  return Job.runUntilCompletion(self)
+--- @return SuccessfulResponse<DownloadChapterJobCompleted>|ErrorResponse
+function DownloadChapter:runUntilCompletion(onProgress)
+  return Job.runUntilCompletion(self, onProgress)
 end
 
 return DownloadChapter

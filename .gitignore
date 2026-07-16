@@ -17,3 +17,7 @@ devenv.local.nix
 .gemini/
 gha-creds-*.json
 dev.db
+
+node_modules
+
+/BUILD_INFO.json

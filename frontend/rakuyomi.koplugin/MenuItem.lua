@@ -4,7 +4,6 @@ local InputContainer = require("ui/widget/container/inputcontainer")
 local Size = require("ui/size")
 local TextWidget = require("ui/widget/textwidget")
 local UIManager = require("ui/uimanager")
-local ffiUtil = require("ffi/util")
 local Screen = Device.screen
 
 --[[
@@ -73,7 +72,7 @@ function MenuItem:getGesPosition(ges)
   }
 end
 
-function MenuItem:onTapSelect(arg, ges)
+function MenuItem:onTapSelect(_, ges)
   -- Abort if the menu hasn't been painted yet.
   if not self[1].dimen then return end
 
@@ -107,7 +106,7 @@ function MenuItem:onTapSelect(arg, ges)
   return true
 end
 
-function MenuItem:onHoldSelect(arg, ges)
+function MenuItem:onHoldSelect(_, ges)
   if not self[1].dimen then return end
 
   local pos = self:getGesPosition(ges)

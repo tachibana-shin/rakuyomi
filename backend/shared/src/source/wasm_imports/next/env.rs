@@ -25,7 +25,7 @@ pub fn register_env_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
 }
 
 #[aidoku_wasm_function]
-fn print(caller: Caller<'_, WasmStore>, string: Option<String>) -> Result<()> {
+pub(crate) fn print(caller: Caller<'_, WasmStore>, string: Option<String>) -> Result<()> {
     let string = string.unwrap_or_default();
     let wasm_store = caller.data();
 
@@ -55,7 +55,7 @@ struct AbortError {}
 
 impl HostError for AbortError {}
 
-fn abort(caller: Caller<'_, WasmStore>) -> core::result::Result<(), wasmi::Error> {
+pub(crate) fn abort(caller: Caller<'_, WasmStore>) -> core::result::Result<(), wasmi::Error> {
     let wasm_store = caller.data();
 
     error!("{}: env.abort called", &wasm_store.id);

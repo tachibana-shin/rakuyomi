@@ -4,9 +4,16 @@ local rapidjson = require("rapidjson")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
+local Device = require("device")
 local Platform = require("Platform")
 
-local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or 5)
+local device_is_slow = Device:isKobo()
+
+-- Seconds before we log a warning (slow devices) or kill the server (others)
+local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or (device_is_slow and 10 or 5))
+
+-- Hard cap for slow devices; only used when device_is_slow
+local SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_ABSOLUTE_TIMEOUT') or 180)
 
 --- @class Backend
 --- @field private server Server
@@ -52,13 +59,11 @@ function Backend.requestJson(request)
 
   -- FIXME naming
   local query_params = request.query_params or {}
-  local built_query_params = ""
+  local parts = {}
   for name, value in pairs(query_params) do
-    if built_query_params ~= "" then
-      built_query_params = built_query_params .. "&"
-    end
-    built_query_params = built_query_params .. name .. "=" .. url.escape(value)
+    table.insert(parts, name .. "=" .. url.escape(value))
   end
+  local built_query_params = table.concat(parts, "&")
 
   local path_and_query = request.path
   if built_query_params ~= "" then
@@ -81,6 +86,7 @@ function Backend.requestJson(request)
       method = request.method or "GET",
       headers = headers,
       body = serialized_body,
+      timeout_seconds = request.timeout,
     }
   )
 
@@ -110,8 +116,9 @@ end
 ---@return boolean
 local function waitUntilHttpServerIsReady()
   local start_time = os.time()
+  local patience_warned = false
 
-  while os.time() - start_time < SERVER_STARTUP_TIMEOUT_SECONDS do
+  while true do
     local ok, response = pcall(function()
       return Backend.requestJson({
         path = '/health-check',
@@ -123,10 +130,24 @@ local function waitUntilHttpServerIsReady()
       return true
     end
 
+    local elapsed = os.time() - start_time
+    local deadline = device_is_slow and SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS
+                   or SERVER_STARTUP_TIMEOUT_SECONDS
+
+    if elapsed >= deadline then
+      return false
+    end
+
+    if device_is_slow
+      and not patience_warned
+      and elapsed >= SERVER_STARTUP_TIMEOUT_SECONDS then
+      patience_warned = true
+      logger.warn("Backend not ready after", SERVER_STARTUP_TIMEOUT_SECONDS,
+        "s; continuing to wait (max", SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS, "s)")
+    end
+
     ffiutil.sleep(1)
   end
-
-  return false
 end
 
 ---@return boolean success Whether the backend was initialized successfully.
@@ -138,11 +159,58 @@ function Backend.initialize()
 
   if not waitUntilHttpServerIsReady() then
     local logBuffer = Backend.server:getLogBuffer()
+    Backend.server:stop()
+    Backend.server = nil
 
     return false, table.concat(logBuffer, "\n")
   end
 
   return true, nil
+end
+
+---@return boolean, string|nil
+local backendInitialized, logs
+function Backend.getBackend()
+  if backendInitialized and Backend.running() then return true, nil end
+  backendInitialized, logs = Backend.initialize()
+  if backendInitialized then
+    local messages = Backend.drainStartupLog()
+    if #messages > 0 then
+      local UIManager = require('ui/uimanager')
+      local InfoMessage = require('ui/widget/infomessage')
+
+      UIManager:show(InfoMessage:new {
+        text = table.concat(messages, "\n\n"),
+      })
+    end
+  end
+end
+
+function Backend.getLogs()
+  return logs
+end
+
+function Backend.getInitialized()
+  return backendInitialized
+end
+
+--- Drain any startup warnings from the server.
+---@return string[] messages
+function Backend.drainStartupLog()
+  local response = Backend.requestJson({
+    path = '/system/startup-log',
+    timeout = 5,
+  })
+  if response.type == 'SUCCESS' then
+    ---@diagnostic disable-next-line: undefined-field
+    return response.body.messages or {}
+  end
+  return {}
+end
+
+---@return boolean
+function Backend.running()
+  return Backend.server ~= nil
 end
 
 --- @class SourceInformation
@@ -159,6 +227,8 @@ end
 --- @field unread_chapters_count number|nil The number of unread chapters for this manga, or `nil` if we do not know how many chapters this manga has.
 --- @field last_read number|nil The timestamp (in seconds since epoch) of when this manga was last read, or `nil` if we don't know.
 --- @field in_library boolean Whether this manga is in the user's library.
+--- @field viewer MangaViewer The preferred viewer mode from the source ("DefaultViewer", "Rtl", "Ltr", "Vertical", "Scroll").
+--- @field state_viewer boolean The viewer mode set by user?
 
 --- @class Chapter
 --- @field id string The ID of this chapter.
@@ -173,6 +243,8 @@ end
 --- @field title string? The title of this chapter, if any.
 --- @field locked boolean The locked
 --- @field lang string? The language code
+--- @field on_tmpfs boolean? The chapter is stored in tmpfs.
+--- @field file string? The file path of the chapter (only use in frontend).
 
 --- @class SourceMangaSearchResults
 --- @field source_information SourceInformation Information about the source that generated those results.
@@ -182,6 +254,34 @@ end
 --- @field filenames string[] The names
 --- @field total_size number The total size
 --- @field total_text string The total size text format kb, mb...
+
+--- @class CpuInfo
+--- @field model string CPU model name.
+--- @field cores number Number of CPU cores.
+--- @field usage_percent number Overall CPU usage percentage.
+
+--- @class MemoryInfo
+--- @field total_bytes number Total physical memory in bytes.
+--- @field available_bytes number Available memory in bytes.
+--- @field used_bytes number Used memory in bytes.
+
+--- @class FilesystemInfo
+--- @field path string Mount point path.
+--- @field total_bytes number Total size in bytes.
+--- @field used_bytes number Used size in bytes.
+--- @field free_bytes number Free size in bytes.
+
+--- @class ProcessInfo
+--- @field memory_rss_bytes number Resident set size of the server process in bytes.
+--- @field memory_virtual_bytes number Virtual memory size of the server process in bytes.
+
+--- @class SystemStats
+--- @field cpu CpuInfo CPU information.
+--- @field memory MemoryInfo System memory information.
+--- @field tmpfs FilesystemInfo|nil Tmpfs filesystem information, if available.
+--- @field tmpfs_mount_error string|nil Error message if tmpfs mount failed.
+--- @field storage FilesystemInfo Data storage filesystem information.
+--- @field process ProcessInfo Server process memory usage.
 
 --- Publishing status of a manga.
 ---
@@ -215,6 +315,12 @@ MangaViewer = {
   Vertical      = 3, -- Vertical strip reading (webtoons, long-strip manga)
   Scroll        = 4, -- Free scrolling mode (continuous scroll)
 }
+--- Reverse map: numeric viewer id -> name string.
+local MangaViewerName = {}
+for name, id in pairs(MangaViewer) do
+  MangaViewerName[id] = name
+end
+Backend.MangaViewerName = MangaViewerName
 
 --- Represents a manga entry returned by a source or stored locally.
 --- This table contains all metadata used to describe a manga.
@@ -274,6 +380,15 @@ function Backend.removeFile(filename)
   })
 end
 
+--- Get system resource statistics.
+--- @return SuccessfulResponse<SystemStats>|ErrorResponse
+function Backend.getSystemStats()
+  return Backend.requestJson({
+    path = "/system/stats",
+    method = "GET"
+  })
+end
+
 --- Sync database
 --- @param accept_migrate_local boolean Flag if true allow migrate database local from WebDAV
 --- @param accept_replace_remote boolean Flag if true allow replace database remote from local
@@ -310,15 +425,18 @@ end
 
 --- Searches manga from the manga sources.
 --- @param cancel_id number
+--- @search_text string
 --- @param exclude string[]|nil
---- @return SuccessfulResponse<[Manga[], SearchError[]]>|ErrorResponse
-function Backend.searchMangas(cancel_id, search_text, exclude)
+--- @param page number|nil
+--- @return SuccessfulResponse<[Manga[], SearchError[], boolean]>|ErrorResponse
+function Backend.searchMangas(cancel_id, search_text, exclude, page)
   return Backend.requestJson({
     path = "/mangas",
     query_params = {
       q = search_text,
       exclude = exclude and table.concat(exclude, ",") or nil,
       cancel_id = cancel_id,
+      page = page,
     }
   })
 end
@@ -442,11 +560,19 @@ end
 --- @param source_id string
 --- @param manga_id string
 --- @param chapter_id string
+--- @param use_ram boolean|nil
 --- @return SuccessfulResponse<boolean>|ErrorResponse
-function Backend.revokeChapter(source_id, manga_id, chapter_id)
+function Backend.revokeChapter(source_id, manga_id, chapter_id, use_ram)
+  local query_params = {}
+
+  if use_ram ~= nil then
+    query_params.use_ram = use_ram and "true" or "false"
+  end
+
   return Backend.requestJson({
     path = "/mangas/" ..
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/revoke",
+    query_params = query_params,
     method = "POST",
   })
 end
@@ -515,7 +641,7 @@ end
 --- @class LoginSettingDefinition: { type: 'login', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
 --- @class ButtonSettingDefinition: { type: 'button', title: string, key: string, confirmTitle: string|nil, confirmMessage: string|nil  }
 --- @class EditableListSettingDefinition: { type: 'editable-list', title: string, key: string, values: string[], titles: string[]|nil, default: string[]  }
---- @class TextSettingDefinition: { type: 'text', placeholder: string, key: string, default: string|nil }
+--- @class TextSettingDefinition: { type: 'text', placeholder: string|nil, key: string, default: string|nil }
 --- @class LinkSettingDefinition: { type: 'link', title: string, url: string }
 
 --- @alias SettingDefinition GroupSettingDefinition|SwitchSettingDefinition|SelectSettingDefinition|MultiSelectSettingDefinition|LoginSettingDefinition|ButtonSettingDefinition|EditableListSettingDefinition|TextSettingDefinition|LinkSettingDefinition
@@ -650,9 +776,26 @@ function Backend.validateTrackingSettings(service)
   })
 end
 
+--- Sets the viewer override for a manga.
+---@param source_id string
+---@param manga_id string
+---@param viewer MangaViewer
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.setViewer(source_id, manga_id, viewer)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/viewer",
+    method = "POST",
+    body = {
+      viewer = viewer
+    }
+  })
+end
+
 --- @alias ChapterSortingMode 'chapter_ascending'|'chapter_descending'
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode }
+--- @alias SearchViewMode 'base' | 'cover' | 'grid'
+--- @alias ChapterTitleFormat 'title' | 'series_title' | 'series_chapter_number'
+--- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode, search_view_mode: SearchViewMode, chapter_title_format: ChapterTitleFormat }
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse
@@ -672,9 +815,35 @@ function Backend.setSettings(settings)
   })
 end
 
+--- @class TestProxyResponse: { ok: boolean, message: string }
+--- Tests whether a proxy URL is reachable.
+--- @param proxy_url string
+--- @return SuccessfulResponse<TestProxyResponse>|ErrorResponse
+function Backend.testProxy(proxy_url)
+  return Backend.requestJson({
+    path = "/settings/test-proxy",
+    method = 'POST',
+    body = { proxy_url = proxy_url },
+    timeout = 20,
+  })
+end
+
+--- @class MountTmpFSConfig
+--- @field enabled boolean
+--- @field ram_storage_size_mb number
+--- @param config MountTmpFSConfig
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.mountFS(config)
+  return Backend.requestJson({
+    path = "/settings/mount-tmpfs",
+    method = 'POST',
+    body = config
+  })
+end
+
 --- Creates a new download chapter job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num)
+function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapter_num, current_chapter_id)
   return Backend.requestJson({
     path = "/jobs/download-chapter",
     method = 'POST',
@@ -683,6 +852,7 @@ function Backend.createDownloadChapterJob(source_id, manga_id, chapter_id, chapt
       manga_id = manga_id,
       chapter_id = chapter_id,
       chapter_num = chapter_num,
+      current_chapter_id = current_chapter_id,
     }
   })
 end
@@ -738,11 +908,14 @@ function Backend.refreshLibraryDetailsJob()
   })
 end
 
+--- @class DownloadProgress: { type: 'INITIALIZING' }|{ type: 'DOWNLOADING', processed: number, total: number }
+
 --- @class PendingJob<T>: { type: 'PENDING', data: T }
 --- @class CompletedJob<T>: { type: 'COMPLETED', data: T }
 --- @class ErroredJob: { type: 'ERROR', data: ErrorResponse }
 
---- @alias DownloadChapterJobDetails PendingJob<nil>|CompletedJob<[string, DownloadError[]]>|ErroredJob
+--- @alias DownloadChapterJobCompleted [string, DownloadError[], boolean]
+--- @alias DownloadChapterJobDetails PendingJob<DownloadProgress|nil>|CompletedJob<DownloadChapterJobCompleted> |ErroredJob
 
 --- Gets details about a job.
 --- @return SuccessfulResponse<DownloadChapterJobDetails>|ErrorResponse
@@ -798,6 +971,7 @@ function Backend.cleanup()
   if Backend.server ~= nil then
     Backend.server:stop()
     Backend.server = nil
+    backendInitialized, logs = nil, nil
   end
 end
 
@@ -940,6 +1114,84 @@ function Backend.removeMangaFromPlaylist(playlist_id, source_id, manga_id)
   return Backend.requestJson({
     path = "/playlists/" .. playlist_id .. "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id),
     method = 'DELETE',
+  })
+end
+
+--- @class CookieSyncStatus
+--- @field paired boolean
+--- @field server_url string|nil
+--- @field device_name string|nil
+--- @field chat_id number|nil
+--- @field cookie_count number
+
+--- @return SuccessfulResponse<CookieSyncStatus>|ErrorResponse
+function Backend.getCookieSyncStatus()
+  return Backend.requestJson({
+    path = "/cookie-sync/status",
+    method = "GET",
+  })
+end
+
+--- @class GenerateCodeResponse
+--- @field pairing_code string
+
+--- @return SuccessfulResponse<GenerateCodeResponse>|ErrorResponse
+function Backend.generatePairingCode(server_url)
+  return Backend.requestJson({
+    path = "/cookie-sync/generate-code",
+    method = "POST",
+    body = { server_url = server_url },
+    timeout = 15,
+  })
+end
+
+--- @class PollPairingResponse
+--- @field paired boolean
+--- @field chat_id number|nil
+--- @field device_name string|nil
+
+--- @return SuccessfulResponse<PollPairingResponse>|ErrorResponse
+function Backend.pollPairingStatus(server_url, pairing_code)
+  return Backend.requestJson({
+    path = "/cookie-sync/poll-pairing",
+    method = "POST",
+    body = {
+      server_url = server_url,
+      pairing_code = pairing_code,
+    },
+    timeout = 15,
+  })
+end
+
+--- @class SyncResponse
+--- @field status string
+--- @field domains string[]
+
+--- @return SuccessfulResponse<SyncResponse>|ErrorResponse
+function Backend.syncCookies()
+  return Backend.requestJson({
+    path = "/cookie-sync/sync",
+    method = "POST",
+    timeout = 30,
+  })
+end
+
+--- @return SuccessfulResponse<{status: string}>|ErrorResponse
+function Backend.unpairDevice()
+  return Backend.requestJson({
+    path = "/cookie-sync/unpair",
+    method = "POST",
+  })
+end
+
+--- @class ListCookiesResponse
+--- @field domains table
+
+--- @return SuccessfulResponse<ListCookiesResponse>|ErrorResponse
+function Backend.listCookies()
+  return Backend.requestJson({
+    path = "/cookie-sync/cookies",
+    method = "GET",
   })
 end
 

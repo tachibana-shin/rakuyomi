@@ -8,8 +8,6 @@ local Trapper = require("ui/trapper")
 local Screen = require("device").screen
 local logger = require("logger")
 local LoadingDialog = require("LoadingDialog")
----@diagnostic disable-next-line: different-requires
-local util = require("util")
 local ffiutil = require("ffi/util")
 local _ = require("gettext+")
 local IconButton = require("ui/widget/iconbutton")
@@ -20,6 +18,7 @@ local Button = require("ui/widget/button")
 local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
 local LuaSettings = require("luasettings")
+local NetworkMgr = require("ui/network/manager")
 
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
@@ -39,6 +38,7 @@ local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local findNextChapter = require("chapters/findNextChapter")
+local findPreviousChapter = require("chapters/findPreviousChapter")
 
 local function trackingServiceLabel(service)
   if service == "anilist" then
@@ -90,6 +90,7 @@ local SMALL_FONT_FACE = Font:getFace("smallffont")
 --- @field chapters Chapter[]
 --- @field langs BaseOption[]
 --- @field chapter_sorting_mode ChapterSortingMode
+--- @field preload_jobs {[string]: DownloadChapter}
 local ChapterListing = Menu:extend {
   name = "chapter_listing",
   is_enable_shortcut = false,
@@ -157,53 +158,57 @@ end
 
 --- Fetches the cached chapter list from the backend and updates the menu items.
 function ChapterListing:updateChapterList()
-  local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
+  if #self.raw_chapters < 1 then
+    local response = Backend.listCachedChapters(self.manga.source.id, self.manga.id)
 
-  if response.type == 'ERROR' then
-    ErrorDialog:show(response.message)
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
 
-    return
-  end
-
-  local chapter_results = response.body
-  self.raw_chapters = chapter_results
-
-  local langs_set = {}
-  local langs_list = {}
-  for _, chapter in ipairs(chapter_results) do
-    local lang = chapter.lang or "unknown"
-    if not langs_set[lang] then
-      langs_set[lang] = true
-      table.insert(langs_list, lang)
+      return
+    else
+      self.raw_chapters = response.body
+      self._refresh_langs_selected = true
     end
   end
 
-  -- Load / initialize language preferences only when it matters (2+ langs)
-  if #langs_list >= 2 then
-    table.sort(langs_list)
-    self.langs = {}
-    for _, lang in ipairs(langs_list) do
-      table.insert(self.langs, { id = lang, name = lang })
+  if self._refresh_langs_selected == true then
+    local langs_set = {}
+    local langs_list = {}
+    for _, chapter in ipairs(self.raw_chapters) do
+      local lang = chapter.lang or "unknown"
+      if not langs_set[lang] then
+        langs_set[lang] = true
+        table.insert(langs_list, lang)
+      end
     end
-    local key = self:hashMangaId() .. "_lang"
-    self.langs_selected = self:readSettings():readSetting(key, {})
-    -- If no preferences are set, default to selecting all available languages
-    if not self.langs_selected or #self.langs_selected == 0 then
-      self.langs_selected = langs_list
+
+    -- Load / initialize language preferences only when it matters (2+ langs)
+    if #langs_list >= 2 then
+      table.sort(langs_list)
+      self.langs = {}
+      for _, lang in ipairs(langs_list) do
+        table.insert(self.langs, { id = lang, name = lang })
+      end
+      local key = self:hashMangaId() .. "_lang"
+      self.langs_selected = self:readSettings():readSetting(key, {})
+      -- If no preferences are set, default to selecting all available languages
+      if not self.langs_selected or #self.langs_selected == 0 then
+        self.langs_selected = langs_list
+      end
+      self:patchTitleBar(#self.langs_selected)
+      UIManager:setDirty(self.show_parent, "ui", self.dimen)
+      self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
+    else
+      -- Single-language manga: no language UI/filtering needed
+      self.langs = {}
+      self.langs_selected = {}
+      self.chapters = self.raw_chapters
     end
-    self:patchTitleBar(#self.langs_selected)
-    UIManager:setDirty(self.show_parent, "ui", self.dimen)
-    self.chapters = filterChaptersByLang(self.raw_chapters, self.langs_selected)
-  else
-    -- Single-language manga: no language UI/filtering needed
-    self.langs = {}
-    self.langs_selected = {}
-    self.chapters = self.raw_chapters
+
+    self:extractAvailableScanlators()
+    self:loadSavedScanlatorPreference()
+    self._refresh_langs_selected = false
   end
-
-  self:extractAvailableScanlators()
-
-  self:loadSavedScanlatorPreference()
 
   self:updateItems()
 end
@@ -276,6 +281,7 @@ function ChapterListing:showSelectLanguage()
     options = self.langs,
     update_callback = function(value)
       self.langs_selected = value
+      self._refresh_langs_selected = true
       self:readSettings():saveSetting(key, value)
       self:readSettings():flush()
 
@@ -294,9 +300,11 @@ end
 
 -- Load saved scanlator preference from backend
 function ChapterListing:loadSavedScanlatorPreference()
+  if self._scanlator_loaded then return end
   local response = Backend.getPreferredScanlator(self.manga.source.id, self.manga.id)
 
   self.selected_scanlator = nil
+  self._scanlator_loaded = true
 
   if response.type == 'SUCCESS' and response.body then
     for _, available_scanlator in ipairs(self.available_scanlators) do
@@ -324,6 +332,7 @@ function ChapterListing:extractAvailableScanlators()
   table.sort(scanlators)
 
   self.available_scanlators = scanlators
+  self._scanlator_loaded = false
 end
 
 --- Updates the menu item contents with the chapter information
@@ -342,19 +351,19 @@ function ChapterListing:updateItems()
   Menu.updateItems(self)
 end
 
----@private
----@param chapter Chapter
----@return Chapter
-function ChapterListing:findRootChapter(chapter)
-  for _, root in ipairs(self.chapters) do
-    if root.id == chapter.id then
-      return root
-    end
-  end
+-- ---@private
+-- ---@param chapter Chapter
+-- ---@return Chapter
+-- function ChapterListing:findRootChapter(chapter)
+--   for _, root in ipairs(self.chapters) do
+--     if root.id == chapter.id then
+--       return root
+--     end
+--   end
 
-  ---@diagnostic disable-next-line: missing-return
-  assert(false, "not found chapter reference")
-end
+--   ---@diagnostic disable-next-line: missing-return
+--   assert(false, "not found chapter reference")
+-- end
 
 --- @private
 function ChapterListing:generateEmptyViewItemTable()
@@ -381,73 +390,85 @@ function ChapterListing:generateItemTableFromChapters(chapters)
     end
   end
 
-  --- @type Chapter[]
-  --- @diagnostic disable-next-line: assign-type-mismatch
-  local sorted_chapters_with_index = util.tableDeepCopy(filtered_chapters)
-  for index, chapter in ipairs(sorted_chapters_with_index) do
-    ---@diagnostic disable-next-line: inject-field
-    chapter.index = index
+  local indexed = {}
+  for i, ch in ipairs(filtered_chapters) do
+    indexed[i] = {
+      index = i,
+      volume_num = ch.volume_num,
+      chapter_num = ch.chapter_num,
+      ch = ch,
+    }
   end
 
   if self.chapter_sorting_mode == 'chapter_ascending' then
-    table.sort(sorted_chapters_with_index, isBeforeChapter)
+    table.sort(indexed, isBeforeChapter)
   else
-    table.sort(sorted_chapters_with_index, function(a, b) return not isBeforeChapter(a, b) end)
+    table.sort(indexed, function(a, b) return not isBeforeChapter(a, b) end)
   end
 
   local item_table = {}
 
-  for __, chapter in ipairs(sorted_chapters_with_index) do
-    local text = ""
-    if chapter.volume_num ~= nil then
-      -- FIXME we assume there's a chapter number if there's a volume number
-      -- might not be true but who knows
-      text = text .. _("Volume") .. " " .. chapter.volume_num .. ", "
-    end
-
-    if chapter.chapter_num ~= nil then
-      text = text .. _("Chapter") .. " " .. chapter.chapter_num .. " - "
-    end
-
-    text = text .. chapter.title
-
-    -- Only show scanlator if not filtering by scanlator
-    if chapter.scanlator ~= nil and not self.selected_scanlator then
-      text = text .. " (" .. chapter.scanlator .. ")"
-    end
-
-    -- The text that shows to the right of the menu item
-    local mandatory = ""
-    if chapter.read then
-      mandatory = mandatory .. Icons.FA_BOOK
-    end
-
-    if chapter.last_read then
-      mandatory = (calcLastReadText(chapter.last_read) .. " ") .. mandatory
-    end
-
-    if chapter.downloaded then
-      mandatory = mandatory .. Icons.FA_DOWNLOAD
-    end
-
-    local post_text = nil
-    if chapter.locked then
-      post_text = _("Locked")
-    end
-    if #self.langs >= 2 and chapter.lang then
-      post_text = (post_text and post_text .. " " or "") .. "(" .. chapter.lang .. ")"
-    end
-
-    table.insert(item_table, {
-      chapter = chapter,
-      text = text,
-      post_text = post_text,
-      dim = chapter.locked,
-      mandatory = chapter.locked and Icons.FA_LOCKED or mandatory,
-    })
+  for __, entry in ipairs(indexed) do
+    local chapter = entry.ch
+    local item = self.renderChapterItem(chapter, #self.langs >= 2, not self.selected_scanlator)
+    item.chapter = chapter
+    table.insert(item_table, item)
   end
 
   return item_table
+end
+
+---@param chapter Chapter
+---@param show_langs boolean
+---@param show_scanlator boolean
+function ChapterListing.renderChapterItem(chapter, show_langs, show_scanlator)
+  local text_parts = {}
+  if chapter.volume_num ~= nil then
+    -- FIXME we assume there's a chapter number if there's a volume number
+    -- might not be true but who knows
+    table.insert(text_parts, _("Volume") .. " " .. chapter.volume_num .. ", ")
+  end
+
+  if chapter.chapter_num ~= nil then
+    table.insert(text_parts, _("Chapter") .. " " .. chapter.chapter_num .. " - ")
+  end
+
+  table.insert(text_parts, chapter.title)
+
+  -- Only show scanlator if not filtering by scanlator
+  if chapter.scanlator ~= nil and show_scanlator then
+    table.insert(text_parts, " (" .. chapter.scanlator .. ")")
+  end
+
+  -- The text that shows to the right of the menu item
+  local mandatory_parts = {}
+  if chapter.read then
+    table.insert(mandatory_parts, Icons.FA_BOOK)
+  end
+
+  if chapter.last_read then
+    table.insert(mandatory_parts, 1, " ")
+    table.insert(mandatory_parts, 1, calcLastReadText(chapter.last_read))
+  end
+
+  if chapter.downloaded then
+    table.insert(mandatory_parts, Icons.FA_DOWNLOAD)
+  end
+
+  local post_text = nil
+  if chapter.locked then
+    post_text = _("Locked")
+  end
+  if show_langs and chapter.lang then
+    post_text = (post_text and post_text .. " " or "") .. "(" .. chapter.lang .. ")"
+  end
+
+  return {
+    text = table.concat(text_parts),
+    post_text = post_text,
+    dim = chapter.locked,
+    mandatory = chapter.locked and Icons.FA_LOCKED or table.concat(mandatory_parts),
+  }
 end
 
 --- @private
@@ -462,36 +483,39 @@ end
 --- @param onReturnCallback fun(): nil
 --- @param accept_cached_results? boolean If set, failing to refresh the list of chapters from the source
 --- will not show an error. Defaults to false.
+--- @param focus_chapter_id? string If set, the chapter listing will scroll to and highlight the chapter with this ID.
 --- @return boolean
-function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results)
+function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_results, focus_chapter_id)
   accept_cached_results = accept_cached_results or false
 
-  local cancel_id = Backend.createCancelId()
-  local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
-    _("Refreshing chapters..."),
-    function()
-      return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
-    end,
-    function()
-      Backend.cancel(cancel_id)
+  if NetworkMgr:isConnected() then
+    local cancel_id = Backend.createCancelId()
+    local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
+      _("Refreshing chapters..."),
+      function()
+        return Backend.refreshChapters(cancel_id, manga.source.id, manga.id)
+      end,
+      function()
+        Backend.cancel(cancel_id)
 
-      local cancelledMessage = InfoMessage:new {
-        text = _("Cancelled."),
-      }
-      UIManager:show(cancelledMessage)
-    end,
-    nil
-  )
+        local cancelledMessage = InfoMessage:new {
+          text = _("Cancelled."),
+        }
+        UIManager:show(cancelledMessage)
+      end,
+      nil
+    )
 
-  if cancelled then
-    return false
-  end
-
-  if refresh_chapters_response.type == 'ERROR' then
-    ErrorDialog:show(_("Refresh chapter error") .. "\n\n" .. refresh_chapters_response.message)
-
-    if not accept_cached_results then
+    if cancelled then
       return false
+    end
+
+    if refresh_chapters_response.type == 'ERROR' then
+      ErrorDialog:show(_("Refresh chapter error") .. "\n\n" .. refresh_chapters_response.message)
+
+      if not accept_cached_results then
+        return false
+      end
     end
   end
 
@@ -515,6 +539,16 @@ function ChapterListing:fetchAndShow(manga, onReturnCallback, accept_cached_resu
   }
   ui.on_return_callback = onReturnCallback
   UIManager:show(ui)
+
+  if focus_chapter_id and ui.item_table then
+    for i, item in ipairs(ui.item_table) do
+      if item.chapter and item.chapter.id == focus_chapter_id then
+        ui.itemnumber = i
+        ui:switchItemTable(nil, nil, i)
+        break
+      end
+    end
+  end
 
   Testing:emitEvent("chapter_listing_shown")
 
@@ -559,19 +593,18 @@ function ChapterListing:onContextMenuChoice(item)
           UIManager:close(dialog_context_menu)
 
           self:revokeChapter(chapter, false)
-          self:downloadChapter(chapter, nil, function(manga_path)
+          self:downloadChapter(chapter, nil, function(_)
             UIManager:show(InfoMessage:new { text = _("Chapter refreshed") })
           end)
         end
       },
       {
         text_func = function()
-          return Icons.CHECK_ALL .. " " .. _("Mark") .. " " .. (chapter.read and "unread" or "read")
+          return Icons.CHECK_ALL .. " " .. _(chapter.read and "Mark unread" or "Mark read")
         end,
         callback = function()
           UIManager:close(dialog_context_menu)
-
-          self:markChapterAs(chapter, chapter.read and false or true)
+          self:markChapterAs(chapter, not chapter.read)
         end
       }
     },
@@ -586,7 +619,7 @@ function ChapterListing:onContextMenuChoice(item)
           if chapter.downloaded then
             self:revokeChapter(chapter)
           else
-            self:downloadChapter(chapter, nil, function(manga_path)
+            self:downloadChapter(chapter, nil, function(_)
               UIManager:show(InfoMessage:new { text = _("Chapter downloaded") })
             end)
           end
@@ -619,7 +652,7 @@ function ChapterListing:revokeChapter(chapter, hide_notify)
     end
 
     if revoke_chapter_response then
-      self:findRootChapter(chapter).downloaded = false
+      chapter.downloaded = false
       self:updateItems()
     end
 
@@ -647,7 +680,7 @@ function ChapterListing:markChapterAs(chapter, value)
       return
     end
 
-    self:findRootChapter(chapter).read = value
+    chapter.read = value
     self:updateItems()
   end)
 end
@@ -667,6 +700,14 @@ end
 --- @private
 function ChapterListing:refreshChapters()
   Trapper:wrap(function()
+    if not NetworkMgr:isConnected() then
+      UIManager:show(InfoMessage:new {
+        text = _("Cannot refresh chapters while offline"),
+      })
+
+      return
+    end
+
     local cancel_id = Backend.createCancelId()
     local refresh_chapters_response, cancelled = LoadingDialog:showAndRun(
       _("Refreshing chapters..."),
@@ -783,6 +824,9 @@ end
 --- @param callback fun(manga_path)
 function ChapterListing:downloadChapter(chapter, download_job, callback)
   Trapper:wrap(function()
+    if chapter.file ~= nil then
+      return callback(chapter.file)
+    end
     -- If the download job we have is already invalid (internet problems, for example),
     -- spawn a new job before proceeding.
     if download_job == nil or (download_job.started and download_job:poll().type == 'ERROR') then
@@ -797,43 +841,50 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
 
     local time = require("ui/time")
     local start_time = time.now()
-    local response, cancelled = LoadingDialog:showAndRun(
-      _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
-      .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
-      .. ' '
-      .. (chapter.title or ''),
-      function()
-        local response_start = download_job:start()
-        if response_start.type == 'ERROR' then
-          ErrorDialog:show(_('Could not download chapter.'))
 
-          return response_start
+    local message = _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
+        .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
+        .. ' '
+        .. (chapter.title or '')
+    local runnable, onCancel, onConfirmCancel =
+        function(onProgress)
+          local response_start = download_job:start()
+          if response_start.type == 'ERROR' then
+            return response_start
+          end
+
+          return download_job:runUntilCompletion(onProgress)
+        end,
+        function()
+          if download_job.started then
+            download_job:requestCancellation()
+          end
+
+          local cancelledMessage = InfoMessage:new {
+            text = _("Download cancelled."),
+          }
+          UIManager:show(cancelledMessage)
+        end,
+        function(cancel)
+          local confirm = ConfirmBox:new {
+            text = _("Are you sure you want to cancel the download?"),
+            ok_callback = cancel
+          }
+          UIManager:show(confirm)
+
+          return confirm
         end
 
-        return download_job:runUntilCompletion()
-      end,
-      function()
-        if download_job.started then
-          download_job:requestCancellation()
-        end
+    local show_progress = G_reader_settings:isTrue("rakuyomi_show_download_progress", true)
 
-        local cancelledMessage = InfoMessage:new {
-          text = _("Download cancelled."),
-        }
-        UIManager:show(cancelledMessage)
-      end,
-      function(cancel)
-        local confirm = ConfirmBox:new {
-          text = _("Are you sure you want to cancel the download?"),
-          ok_callback = cancel
-        }
-        UIManager:show(confirm)
+    local response, cancelled
+    if show_progress then
+      response, cancelled = LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onConfirmCancel)
+    else
+      response, cancelled = LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
+    end
 
-        return confirm
-      end
-    )
-
-    if cancelled then
+    if cancelled or response == nil then
       return
     end
 
@@ -843,7 +894,8 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
       return
     end
 
-    self:findRootChapter(chapter).downloaded = true
+    chapter.downloaded = true
+    chapter.on_tmpfs = response.body[3]
 
     if #response.body[2] > 0 then
       logger.err("Download job errors: ", response.body[1])
@@ -864,7 +916,8 @@ end
 --- @private
 --- @param chapter Chapter
 function ChapterListing:preloadChapters(chapter)
-  for i = 1, self.preload_count do
+  local current_chapter_id = chapter.id
+  for _ = 1, self.preload_count do
     local preloadChapter = findNextChapter(self.chapters, chapter)
     if preloadChapter == nil then
       logger.info("No more chapters to preload.")
@@ -885,7 +938,8 @@ function ChapterListing:preloadChapters(chapter)
         preloadChapter.source_id,
         preloadChapter.manga_id,
         preloadChapter.id,
-        preloadChapter.chapter_num
+        preloadChapter.chapter_num,
+        current_chapter_id -- current_chapter_id: chapter user is reading
       )
 
       local job_status = preload_job:start()
@@ -903,15 +957,19 @@ end
 
 function ChapterListing:prunePreloadJobs()
   for chapter_id, job in pairs(self.preload_jobs) do
+    ---@type SuccessfulResponse<DownloadChapterJobCompleted>|PendingResponse<unknown>|ErrorResponse
     local status = job:poll()
     if status.type == 'SUCCESS' or status.type == 'ERROR' then
       logger.info("Pruning finished preload job for chapter: ", chapter_id)
       self.preload_jobs[chapter_id] = nil
 
       if status.type == 'SUCCESS' then
+        local body = status.body
         for __, chapter in ipairs(self.chapters) do
           if chapter.id == chapter_id then
             chapter.downloaded = true
+            chapter.file = body[1]
+            chapter.on_tmpfs = body[3]
             break
           end
         end
@@ -923,7 +981,8 @@ end
 --- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
-function ChapterListing:openChapterOnReader(chapter, download_job)
+--- @param on_opened nil|fun(on_return_callback)
+function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
   self:downloadChapter(chapter, download_job, function(manga_path)
     local onReturnCallback = function()
       self:updateItems()
@@ -932,8 +991,34 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       UIManager:show(self)
     end
 
-    local onEndOfBookCallback = function()
-      Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+    ---@param nextChapter Chapter
+    local openChapter = function(nextChapter)
+      if chapter.on_tmpfs then
+        Trapper:wrap(function()
+          logger.info("revoking chapter", chapter.id)
+          Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)
+        end)
+      end
+
+      local nextChapterDownloadJob = nextChapter and self.preload_jobs[nextChapter.id] or nil
+      logger.info("opening next chapter", nextChapter)
+      self:openChapterOnReader(nextChapter, nextChapterDownloadJob)
+    end
+
+    ---@param no_as_read boolean
+    local onEndOfBookCallback = function(no_as_read)
+      if not no_as_read then
+        chapter.read = true -- good man
+      end
+      Trapper:wrap(function()
+        if not no_as_read then
+          Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+        end
+        if chapter.on_tmpfs then
+          logger.info("revoking chapter", chapter.id)
+          Backend.revokeChapter(chapter.source_id, chapter.manga_id, chapter.id, true)
+        end
+      end)
 
       self:updateChapterList()
       self:prunePreloadJobs()
@@ -951,6 +1036,19 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
       end
     end
 
+    local onBeginningOfBookCallback = function()
+      local prevChapter = findPreviousChapter(self.chapters, chapter)
+
+      if prevChapter ~= nil then
+        logger.info("opening previous chapter", prevChapter)
+        local prevChapterDownloadJob = self.preload_jobs[prevChapter.id] or nil
+        self:openChapterOnReader(prevChapter, prevChapterDownloadJob)
+        return true
+      end
+
+      return false
+    end
+
     Trapper:wrap(function()
       Backend.updateLastReadChapter(
         chapter.source_id,
@@ -963,13 +1061,22 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     MangaReader:show({
       path = manga_path,
       on_end_of_book_callback = onEndOfBookCallback,
+      on_beginning_of_book_callback = onBeginningOfBookCallback,
       chapter = chapter,
-      on_close_book_callback = function(chapter)
+      chapters = self.chapters,
+      viewer = self.manga.viewer,
+      state_viewer = self.manga.state_viewer,
+      on_rtl_changed = function(viewer)
+        self.manga.viewer, self.manga.state_viewer = Backend.MangaViewerName[viewer],
+            true
+      end,
+      on_open_chapter = openChapter,
+      on_close_book_callback = function(chapter_self)
         Trapper:wrap(function()
           Backend.updateLastReadChapter(
-            chapter.source_id,
-            chapter.manga_id,
-            chapter.id
+            chapter_self.source_id,
+            chapter_self.manga_id,
+            chapter_self.id
           )
         end)
       end,
@@ -983,6 +1090,10 @@ function ChapterListing:openChapterOnReader(chapter, download_job)
     end
 
     self:onClose(false)
+
+    if on_opened then
+      on_opened(onReturnCallback)
+    end
   end)
 end
 
@@ -1401,21 +1512,24 @@ function ChapterListing:readContinue(nextChapter)
     return
   end
 
-  local confirm_dialog
-  confirm_dialog = ConfirmBox:new {
-    text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(chapter_to_open) .. "?",
-    ok_text = _("Read"),
-    cancel_text = _("Cancel"),
-    ok_callback = function()
-      UIManager:close(confirm_dialog)
-
-      self:openChapterOnReader(chapter_to_open)
-    end,
-    cancel_callback = function()
-      UIManager:close(confirm_dialog)
-    end
-  }
-  UIManager:show(confirm_dialog)
+  if G_reader_settings:isTrue("rakuyomi_skip_resume_confirm") then
+    self:openChapterOnReader(chapter_to_open)
+  else
+    local confirm_dialog
+    confirm_dialog = ConfirmBox:new {
+      text = _(nextChapter and "Next" or "Resume") .. " " .. _("reading with") .. ":\n" .. getChapterDisplayName(chapter_to_open) .. "?",
+      ok_text = _("Read"),
+      cancel_text = _("Cancel"),
+      ok_callback = function()
+        UIManager:close(confirm_dialog)
+        self:openChapterOnReader(chapter_to_open)
+      end,
+      cancel_callback = function()
+        UIManager:close(confirm_dialog)
+      end
+    }
+    UIManager:show(confirm_dialog)
+  end
 end
 
 -- Scanlator selection dialog with persistence
@@ -1432,6 +1546,7 @@ function ChapterListing:showScanlatorDialog()
         self.selected_scanlator = nil
 
         Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, nil)
+        self._scanlator_loaded = false
 
         self:updateItems()
         UIManager:show(InfoMessage:new { text = _("Showing all groups"), timeout = 1 })
@@ -1452,6 +1567,7 @@ function ChapterListing:showScanlatorDialog()
           self.selected_scanlator = scanlator
 
           Backend.setPreferredScanlator(self.manga.source.id, self.manga.id, scanlator)
+          self._scanlator_loaded = false
 
           self:updateItems()
           UIManager:show(InfoMessage:new { text = _("Filtered to") .. ": " .. scanlator, timeout = 1 })
@@ -1568,7 +1684,7 @@ function ChapterListing:onDownloadAllChapters()
       -- - return the chapter list from the backend on the `downloadAllChapters` call
       -- - biting the bullet and making the API call
       for __, chapter in ipairs(self.chapters) do
-        self:findRootChapter(chapter).downloaded = true
+        chapter.downloaded = true
       end
 
       logger.info("Downloaded all chapters in ", time.to_ms(time.since(startTime)), "ms")
@@ -1580,9 +1696,9 @@ function ChapterListing:onDownloadAllChapters()
 
     local cancellationRequested = false
     local onCancellationRequested = function()
-      local response = Backend.cancelDownloadAllChapters(self.manga.source.id, self.manga.id)
+      local response_s = Backend.cancelDownloadAllChapters(self.manga.source.id, self.manga.id)
       -- FIXME is it ok to assume there are no errors here?
-      assert(response.type == 'SUCCESS')
+      assert(response_s.type == 'SUCCESS')
 
       cancellationRequested = true
 
@@ -1606,14 +1722,14 @@ function ChapterListing:onDownloadAllChapters()
       UIManager:unschedule(updateProgress)
       UIManager:close(downloadingMessage)
 
-      local response = Backend.getDownloadAllChaptersProgress(self.manga.source.id, self.manga.id)
-      if response.type == 'ERROR' then
-        ErrorDialog:show(response.message)
+      local response_s = Backend.getDownloadAllChaptersProgress(self.manga.source.id, self.manga.id)
+      if response_s.type == 'ERROR' then
+        ErrorDialog:show(response_s.message)
 
         return
       end
 
-      local downloadProgress = response.body
+      local downloadProgress = response_s.body
 
       local messageText = nil
       local isCancellable = false

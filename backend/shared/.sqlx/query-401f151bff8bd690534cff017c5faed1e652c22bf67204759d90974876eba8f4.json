@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                SELECT source_id, manga_id, preferred_scanlator\n                FROM manga_state\n                WHERE source_id = ?1 AND manga_id = ?2;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_state",
+            "name": "source_id"
+          }
+        }
+      },
+      {
+        "name": "manga_id",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_state",
+            "name": "manga_id"
+          }
+        }
+      },
+      {
+        "name": "preferred_scanlator",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_state",
+            "name": "preferred_scanlator"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "401f151bff8bd690534cff017c5faed1e652c22bf67204759d90974876eba8f4"
+}

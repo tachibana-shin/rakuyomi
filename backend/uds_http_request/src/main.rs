@@ -84,7 +84,10 @@ async fn perform_request(request: Request) -> anyhow::Result<ResponseData> {
     let response = timeout(timeout_duration, response_future).await??;
 
     let status = response.status().as_u16();
-    let body_bytes = response.collect().await?.to_bytes().to_vec();
+    let body_bytes = timeout(timeout_duration, response.collect())
+        .await??
+        .to_bytes()
+        .to_vec();
     let body = String::from_utf8(body_bytes)?;
 
     Ok(ResponseData { status, body })

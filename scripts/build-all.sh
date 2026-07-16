@@ -10,6 +10,7 @@ declare -A TARGETS=(
   ["aarch64"]="aarch64-unknown-linux-musl"
   ["kindle"]="arm-unknown-linux-musleabi"
   ["kindlehf"]="arm-unknown-linux-musleabihf"
+  ["kindlea9"]="arm-unknown-linux-musleabi"
 )
 
 # --- Helper function: build for one profile ---
@@ -19,15 +20,29 @@ build_one() {
 
   cd backend
   echo "=== Building $name ($target) ==="
+  
+  local base_flags=""
+
+  if [[ "$name" == "kindlea9" ]]; then
+    echo "🚀 Applying aggressive optimizations for Cortex-A9..."
+    base_flags="-C target-cpu=cortex-a9 -C target-feature=+thumb2,+neon"
+  fi
+
   mkdir -p .cargo
   cat > .cargo/config.toml << 'EOF'
 [env]
 RUST_FONTCONFIG_DLOPEN = "on"
 FONTCONFIG_NO_PKG_CONFIG = "1"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
 EOF
 
   # Build all required crates
-  cross build --release --target "$target"
+  RUSTFLAGS="$base_flags" cross build --release --target "$target"
   cd ..
 
   # Package osh output
@@ -41,8 +56,9 @@ if [[ $# -eq 1 ]]; then
   # Single argument → must be a valid build key
   key="$1"
 
-  if [[ -n "${TARGETS[$key]}" ]]; then
-    # Valid key → build only this one
+  if [[ "$key" == "android" ]]; then
+    bash ./scripts/build-plugin.sh "none" "rakuyomi.koplugin" "android"
+  elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"
   else
     echo "❌ Unknown build target: '$key'"
@@ -50,6 +66,7 @@ if [[ $# -eq 1 ]]; then
     for k in "${!TARGETS[@]}"; do
       echo "  - $k"
     done
+    echo "  - android"
     exit 1
   fi
 

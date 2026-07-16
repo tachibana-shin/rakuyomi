@@ -1,5 +1,7 @@
 use std::io::Cursor;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::{fs, future::Future};
 
 use anyhow::{anyhow, Context, Result};
@@ -16,25 +18,254 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
 use crate::model::{ChapterId, MangaId};
-use crate::source::decode_image::decode_image_fast;
+use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
-#[derive(Clone)]
 pub struct ChapterStorage {
+    /// Always the persistent download path — never changes.
     downloads_folder_path: PathBuf,
+    ram_enabled: bool,
+    tmpfs_mount_error: Option<String>,
     storage_size_limit: Size,
+    cached_storage_size: Arc<AtomicU64>,
+}
+
+impl Clone for ChapterStorage {
+    fn clone(&self) -> Self {
+        Self {
+            downloads_folder_path: self.downloads_folder_path.clone(),
+            ram_enabled: self.ram_enabled,
+            tmpfs_mount_error: self.tmpfs_mount_error.clone(),
+            storage_size_limit: self.storage_size_limit,
+            cached_storage_size: Arc::clone(&self.cached_storage_size),
+        }
+    }
 }
 
 impl ChapterStorage {
-    pub fn new(downloads_folder_path: PathBuf, storage_size_limit: Size) -> Result<Self> {
+    pub fn new(
+        downloads_folder_path: PathBuf,
+        storage_size_limit: Size,
+        ram_enabled: bool,
+    ) -> Result<Self> {
         fs::create_dir_all(&downloads_folder_path)
             .with_context(|| "while trying to ensure chapter storage exists")?;
 
-        Ok(Self {
+        let storage = Self {
             downloads_folder_path,
+            ram_enabled,
+            tmpfs_mount_error: None,
             storage_size_limit,
-        })
+            cached_storage_size: Arc::new(AtomicU64::new(0)),
+        };
+        storage.cached_storage_size.store(
+            storage.calculate_storage_size().bytes() as u64,
+            Ordering::Relaxed,
+        );
+
+        Ok(storage)
+    }
+
+    /// Switch to RAM-backed tmpfs storage.
+    /// tmpfs is mounted at `<parent_of_downloads>/tmpfs/`.
+    /// If already mounted, remounts with the new size.
+    /// Returns an error (e.g. `EPERM` — need root) on failure.
+    #[cfg(not(target_os = "android"))]
+    pub fn enable_ram(&mut self, size_mb: usize) -> Result<()> {
+        use log::{info, warn};
+        use nix::errno::Errno;
+        use nix::mount::{mount, MsFlags};
+
+        let ram_path = self.tmpfs_path();
+        fs::create_dir_all(&ram_path).with_context(|| {
+            format!(
+                "failed to create tmpfs mount point at {}",
+                ram_path.display()
+            )
+        })?;
+
+        let mount_opts = format!("size={size_mb}M");
+
+        let result = match mount(
+            Some("tmpfs"),
+            &ram_path,
+            Some("tmpfs"),
+            MsFlags::empty(),
+            Some(mount_opts.as_str()),
+        ) {
+            Ok(_) => {
+                info!("mounted tmpfs at {}", ram_path.display());
+                self.tmpfs_mount_error = None;
+                self.ram_enabled = true;
+                Ok(())
+            }
+
+            Err(Errno::EBUSY) => {
+                info!("tmpfs already mounted, attempting remount instead...");
+                match mount(
+                    Some("tmpfs"),
+                    &ram_path,
+                    Some("tmpfs"),
+                    MsFlags::MS_REMOUNT,
+                    Some(mount_opts.as_str()),
+                ) {
+                    Ok(_) => {
+                        info!("remounted tmpfs at {}", ram_path.display());
+                        self.tmpfs_mount_error = None;
+                        self.ram_enabled = true;
+                        Ok(())
+                    }
+                    Err(e) => {
+                        let msg = format!("remount failed: {e}");
+                        warn!("failed to remount tmpfs at {}: {e}", ram_path.display());
+                        self.tmpfs_mount_error = Some(msg.clone());
+                        self.ram_enabled = false;
+
+                        Err(anyhow::anyhow!(msg))
+                    }
+                }
+            }
+
+            Err(e) => {
+                let msg = format!("mount failed: {e}");
+                warn!("failed to mount tmpfs at {}: {e}", ram_path.display());
+                self.tmpfs_mount_error = Some(msg.clone());
+                self.ram_enabled = false;
+
+                Err(anyhow::anyhow!(msg))
+            }
+        };
+
+        result
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn enable_ram(&mut self, _size_mb: usize) -> Result<()> {
+        Err(anyhow::anyhow!("Not implemented for Android"))
+    }
+
+    /// Switch back to persistent disk storage.
+    /// Unmounts the tmpfs if it was mounted.
+    #[cfg(not(target_os = "android"))]
+    pub fn disable_ram(&mut self) {
+        use log::{info, warn};
+        use nix::mount::umount;
+        if !self.ram_enabled {
+            return;
+        }
+        let ram_path = self.tmpfs_path();
+        if let Err(e) = umount(&ram_path) {
+            warn!("failed to unmount tmpfs at {}: {e}", ram_path.display());
+        } else {
+            info!("unmounted tmpfs at {}", ram_path.display());
+        }
+        let _ = fs::remove_dir(&ram_path);
+        self.ram_enabled = false;
+        self.tmpfs_mount_error = None;
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn disable_ram(&mut self) {}
+
+    /// Returns `true` when writing to tmpfs instead of persistent storage.
+    pub fn is_ram_enabled(&self) -> bool {
+        self.ram_enabled
+    }
+
+    /// Returns the last tmpfs mount error, if any.
+    pub fn tmpfs_mount_error(&self) -> Option<&str> {
+        self.tmpfs_mount_error.as_deref()
+    }
+
+    pub async fn clean_tmpfs(&self) -> Result<()> {
+        if !self.ram_enabled {
+            return Ok(());
+        }
+
+        let ram_path = self.tmpfs_path();
+        let mut entries = tokio::fs::read_dir(&ram_path).await?;
+
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            let file_type = entry.file_type().await?;
+
+            if file_type.is_dir() {
+                tokio::fs::remove_dir_all(&path).await?;
+            } else {
+                tokio::fs::remove_file(&path).await?;
+            }
+        }
+
+        Ok(())
+    }
+
+    pub async fn evict_tmpfs_older_than_current(
+        &self,
+        current_chapter_id: &ChapterId,
+        is_novel: bool,
+    ) -> Result<u64> {
+        if !self.ram_enabled {
+            return Ok(0);
+        }
+        let current_path = self.path_for_chapter(current_chapter_id, is_novel, true);
+        if !current_path.exists() {
+            return Ok(0);
+        }
+        let current_mtime = tokio::fs::metadata(&current_path).await?.modified()?;
+
+        let mut freed = 0u64;
+        for entry in WalkDir::new(self.tmpfs_path())
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            if !entry.file_type().is_file() {
+                continue;
+            }
+            let path = entry.path();
+            if path == current_path {
+                continue;
+            }
+            if let Ok(meta) = tokio::fs::metadata(path).await {
+                if let Ok(mtime) = meta.modified() {
+                    if mtime < current_mtime {
+                        let size = meta.len();
+                        let _ = tokio::fs::remove_file(path).await;
+                        freed += size;
+                    }
+                }
+            }
+        }
+        Ok(freed)
+    }
+
+    pub async fn tmpfs_full_storage(&self) -> Result<bool> {
+        // if tmpfs free < 4kb return true
+        if !self.ram_enabled {
+            return Ok(false);
+        }
+
+        #[cfg(not(target_os = "android"))]
+        match nix::sys::statfs::statfs(&self.tmpfs_path()) {
+            Ok(stats) => Ok((stats.blocks_available() * (stats.block_size() as u64)) < 4096),
+            Err(_) => Ok(false),
+        }
+
+        #[cfg(target_os = "android")]
+        Ok(false)
+    }
+
+    /// tmpfs mount path — sibling of `downloads_folder_path`.
+    pub fn tmpfs_path(&self) -> PathBuf {
+        self.downloads_folder_path
+            .parent()
+            .unwrap_or(&self.downloads_folder_path)
+            .join("tmpfs")
+    }
+
+    /// Persistent downloads storage path.
+    pub fn downloads_path(&self) -> &PathBuf {
+        &self.downloads_folder_path
     }
 
     pub fn collect_all_files(&self, depth: usize) -> std::collections::HashSet<PathBuf> {
@@ -54,9 +285,45 @@ impl ChapterStorage {
             .collect()
     }
 
-    pub async fn delete_filename(&self, filename: String) -> std::io::Result<()> {
-        let file_path = self.downloads_folder_path.join(filename);
-        tokio::fs::remove_file(file_path).await
+    pub async fn delete_filename(&self, filename: String, tmpfs: bool) -> std::io::Result<()> {
+        let parent = if tmpfs {
+            if self.ram_enabled {
+                self.tmpfs_path()
+            } else {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::PermissionDenied,
+                    "tmpfs is not enabled",
+                ));
+            }
+        } else {
+            self.downloads_folder_path.clone()
+        };
+
+        let file_path = parent.join(&filename);
+        let canonical = tokio::fs::canonicalize(&file_path).await?;
+        let base = tokio::fs::canonicalize(&parent).await?;
+        if !canonical.starts_with(&base) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "path traversal denied",
+            ));
+        }
+        // Get metadata before removal
+        let file_size = if tmpfs {
+            None
+        } else {
+            std::fs::metadata(&file_path).ok().map(|m| m.len())
+        };
+
+        // Perform the deletion
+        tokio::fs::remove_file(file_path).await?;
+
+        // Update cache only after successful removal
+        if let Some(size) = file_size {
+            self.cached_storage_size.fetch_sub(size, Ordering::Relaxed);
+        }
+
+        Ok(())
     }
 
     fn path_for_poster(&self, manga_id: &MangaId) -> PathBuf {
@@ -102,7 +369,9 @@ impl ChapterStorage {
             return Ok(file);
         }
 
-        let client = reqwest::Client::new();
+        let client = crate::tls::client_builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()?;
         let bytes = tokio::select! {
             _ = token.cancelled() => Err(anyhow::anyhow!("cancelled")),
             result = async {
@@ -123,20 +392,7 @@ impl ChapterStorage {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
 
-                // RGBA に変換（元は ARGB）
-                let mut rgb_pixels: Vec<u8> =
-                    Vec::with_capacity((image.width * image.height * 3) as usize);
-
-                for px in &image.data {
-                    let _a = ((px >> 24) & 0xFF) as u8;
-                    let r = ((px >> 16) & 0xFF) as u8;
-                    let g = ((px >> 8) & 0xFF) as u8;
-                    let b = (px & 0xFF) as u8;
-
-                    // JPEG は alpha に対応しないため RGB のみ書き込む
-                    rgb_pixels.extend_from_slice(&[r, g, b]);
-                }
-
+                let rgb_pixels = decode_argb_to_rgb(image.width, image.height, &image.data)?;
                 (image.width as u32, image.height as u32, rgb_pixels)
             }
             // fallback with image
@@ -169,13 +425,14 @@ impl ChapterStorage {
     pub fn get_stored_chapter_and_errors(
         &self,
         id: &ChapterId,
+        use_ram: bool,
     ) -> anyhow::Result<
         Option<(
             PathBuf,
             Option<Vec<crate::chapter_downloader::DownloadError>>,
         )>,
     > {
-        if let Some(path) = self.get_stored_chapter(id) {
+        if let Some(path) = self.get_stored_chapter(id, use_ram) {
             let file_errors = self.errors_source_path(&path)?;
 
             let errors = match std::fs::read(&file_errors) {
@@ -192,15 +449,19 @@ impl ChapterStorage {
         Ok(None)
     }
 
-    pub fn get_stored_chapter(&self, id: &ChapterId) -> Option<PathBuf> {
-        let new_path = self.path_for_chapter(id, false);
+    pub fn get_stored_chapter(&self, id: &ChapterId, use_ram: bool) -> Option<PathBuf> {
+        let new_path = self.path_for_chapter(id, false, use_ram);
         if new_path.exists() {
             return Some(new_path);
         }
 
-        let new_path_novel = self.path_for_chapter(id, true);
+        let new_path_novel = self.path_for_chapter(id, true, use_ram);
         if new_path_novel.exists() {
             return Some(new_path_novel);
+        }
+
+        if use_ram {
+            return None;
         }
 
         // Backwards compatibility: check the old path format
@@ -223,8 +484,8 @@ impl ChapterStorage {
         index: &std::collections::HashSet<PathBuf>,
     ) -> bool {
         let candidates = [
-            self.path_for_chapter(id, false),
-            self.path_for_chapter(id, true),
+            self.path_for_chapter(id, false, false),
+            self.path_for_chapter(id, true, false),
             self.path_for_chapter_legacy(id, false),
             self.path_for_chapter_legacy(id, true),
         ];
@@ -232,9 +493,14 @@ impl ChapterStorage {
         candidates.into_iter().any(|path| index.contains(&path))
     }
 
-    pub fn get_path_to_store_chapter(&self, id: &ChapterId, is_novel: bool) -> PathBuf {
+    pub fn get_path_to_store_chapter(
+        &self,
+        id: &ChapterId,
+        is_novel: bool,
+        use_ram: bool,
+    ) -> PathBuf {
         // New chapters should always use the new path format
-        self.path_for_chapter(id, is_novel)
+        self.path_for_chapter(id, is_novel, use_ram)
     }
 
     pub fn errors_source_path(&self, path: &std::path::Path) -> anyhow::Result<std::path::PathBuf> {
@@ -260,8 +526,9 @@ impl ChapterStorage {
         is_novel: bool,
         temporary_file: NamedTempFile,
         errors: &Vec<crate::chapter_downloader::DownloadError>,
+        use_ram: bool,
     ) -> Result<PathBuf> {
-        let mut current_size = self.calculate_storage_size();
+        let mut current_size = self.cached_storage_size();
         let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.len());
 
         while current_size + persisted_chapter_size > self.storage_size_limit {
@@ -271,7 +538,8 @@ impl ChapterStorage {
                 self.storage_size_limit
             );
 
-            self.evict_least_recently_modified_chapter()
+            let evicted_size = self
+                .evict_least_recently_modified_chapter()
                 .await
                 .with_context(|| format!(
                     "while attempting to bring the storage size under the {} limit (current size: {}, persisted chapter size: {})",
@@ -280,12 +548,22 @@ impl ChapterStorage {
                     persisted_chapter_size,
                 ))?;
 
-            current_size = self.calculate_storage_size();
+            let evicted_bytes = evicted_size.bytes() as u64;
+            let current_bytes = current_size.bytes() as u64;
+            current_size = Size::from_bytes(current_bytes.saturating_sub(evicted_bytes));
+            self.cached_storage_size
+                .fetch_sub(evicted_bytes, Ordering::Relaxed);
         }
 
         // Persist using the new path format
-        let path = self.path_for_chapter(id, is_novel);
+        let path = self.path_for_chapter(id, is_novel, use_ram);
         temporary_file.persist(&path)?;
+
+        // Update cache with new file size
+        if let Ok(metadata) = std::fs::metadata(&path) {
+            self.cached_storage_size
+                .fetch_add(metadata.len(), Ordering::Relaxed);
+        }
 
         if !errors.is_empty() {
             let _ = std::fs::write(
@@ -318,7 +596,18 @@ impl ChapterStorage {
         Size::from_bytes(size_in_bytes)
     }
 
-    async fn evict_least_recently_modified_chapter(&self) -> Result<()> {
+    fn cached_storage_size(&self) -> Size {
+        Size::from_bytes(self.cached_storage_size.load(Ordering::Relaxed))
+    }
+
+    pub fn refresh_storage_size(&self) {
+        self.cached_storage_size.store(
+            self.calculate_storage_size().bytes() as u64,
+            Ordering::Relaxed,
+        );
+    }
+
+    async fn evict_least_recently_modified_chapter(&self) -> Result<Size> {
         let chapter_to_evict = self
             .find_least_recently_modified_chapter()?
             .ok_or_else(|| anyhow!("couldn't find any chapters to evict from storage"))?;
@@ -326,6 +615,12 @@ impl ChapterStorage {
         debug!(
             "evict_least_recently_modified_chapter: evicting {}",
             chapter_to_evict.display()
+        );
+
+        let evicted_size = Size::from_bytes(
+            std::fs::metadata(&chapter_to_evict)
+                .map(|m| m.len())
+                .unwrap_or(0),
         );
 
         let cloned_path = chapter_to_evict.clone();
@@ -339,7 +634,7 @@ impl ChapterStorage {
             )),
         };
 
-        Ok(())
+        Ok(evicted_size)
     }
 
     fn find_least_recently_modified_chapter(&self) -> Result<Option<PathBuf>> {
@@ -389,7 +684,7 @@ impl ChapterStorage {
         self.downloads_folder_path.join(output_filename)
     }
 
-    fn path_for_chapter(&self, chapter_id: &ChapterId, is_novel: bool) -> PathBuf {
+    fn path_for_chapter(&self, chapter_id: &ChapterId, is_novel: bool, use_ram: bool) -> PathBuf {
         let mut hasher = Sha256::new();
         hasher.update(chapter_id.source_id().value().as_bytes());
         hasher.update(chapter_id.manga_id().value().as_bytes());
@@ -401,6 +696,51 @@ impl ChapterStorage {
 
         let output_filename = format!("{}.{}", encoded_hash, if is_novel { "epub" } else { "cbz" });
 
-        self.downloads_folder_path.join(output_filename)
+        if use_ram && self.ram_enabled {
+            self.tmpfs_path().join(output_filename)
+        } else {
+            self.downloads_folder_path.join(output_filename)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use size::Size;
+    use tempfile::tempdir;
+
+    fn make_storage() -> ChapterStorage {
+        let dir = tempdir().unwrap();
+        ChapterStorage::new(dir.keep(), Size::from_mebibytes(100.0), false).unwrap()
+    }
+
+    fn make_rgb_jpeg(width: u32, height: u32) -> Vec<u8> {
+        let pixels: Vec<u8> = vec![128u8; (width * height * 3) as usize];
+        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+        comp.set_size(width as usize, height as usize);
+        comp.set_fastest_defaults();
+        let mut comp = comp.start_compress(Vec::new()).unwrap();
+        comp.write_scanlines(&pixels).unwrap();
+        comp.finish().unwrap()
+    }
+
+    fn output_dimensions(jpeg: &[u8]) -> (u32, u32) {
+        let cursor = std::io::Cursor::new(jpeg);
+        let img = image::ImageReader::new(cursor)
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap();
+        (img.width(), img.height())
+    }
+
+    #[test]
+    fn image_is_transcoded_to_jpeg() {
+        let storage = make_storage();
+        let input = make_rgb_jpeg(200, 300);
+        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let (w, h) = output_dimensions(&output);
+        assert_eq!((w, h), (200, 300));
     }
 }

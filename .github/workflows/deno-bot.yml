@@ -1,0 +1,42 @@
+name: Deno Bot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "telegram-cookie-bot/**"
+  pull_request:
+    paths:
+      - "telegram-cookie-bot/**"
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./telegram-cookie-bot
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type check
+        run: deno check main.ts
+
+      - name: Lint
+        run: deno lint
+
+      - name: Run tests
+        env:
+          BOT_TOKEN: test
+          TURSO_DB_URL: ""
+          TURSO_AUTH_TOKEN: ""
+        run: deno task test

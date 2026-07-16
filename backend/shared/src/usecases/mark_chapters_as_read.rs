@@ -15,7 +15,7 @@ pub async fn mark_chapters_as_read(
     text: &str,
     state: bool,
 ) -> Result<Option<usize>> {
-    let chapters = super::get_cached_manga_chapters(db, chapter_storage, manga_id).await?;
+    let chapters = super::get_cached_manga_chapters(db, chapter_storage, &manga_id, false).await?;
 
     let selected_ids = parse_chapter_ranges(&chapters, text)?;
 

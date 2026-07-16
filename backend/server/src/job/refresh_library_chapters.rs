@@ -48,7 +48,7 @@ pub struct RefreshLibraryChaptersJob {
 impl RefreshLibraryChaptersJob {
     pub fn spawn_new(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
-        database: Arc<tokio::sync::Mutex<Database>>,
+        database: Arc<Database>,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
         let cancellation_token_clone = cancellation_token.clone();
@@ -61,10 +61,9 @@ impl RefreshLibraryChaptersJob {
             let cancellation_token = cancellation_token_clone;
 
             let (mangas, source_manager) = {
-                let db = database.lock().await;
                 let sm = source_manager.lock().await;
                 let mangas = match get_manga_library(
-                    &db,
+                    &*database,
                     &*sm,
                     &shared::settings::LibrarySortingMode::TitleAsc,
                 )
@@ -108,10 +107,9 @@ impl RefreshLibraryChaptersJob {
                     None => continue,
                 };
 
-                let db = database.lock().await;
                 if let Err(e) = usecases::refresh_manga_chapters(
                     &cancellation_token,
-                    &db,
+                    &*database,
                     source,
                     &manga_id,
                     60,

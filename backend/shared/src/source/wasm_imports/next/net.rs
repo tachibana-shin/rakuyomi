@@ -1,4 +1,4 @@
-#[cfg(feature = "all")]
+#[cfg(all(not(feature = "ffi"), feature = "all"))]
 use crate::source::wasm_store::ResponseData;
 use crate::{
     source::wasm_imports::net::{get_building_request, DEFAULT_USER_AGENT},
@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use futures::executor;
-#[cfg(feature = "all")]
+#[cfg(all(not(feature = "ffi"), feature = "all"))]
 use log::warn;
 use reqwest::Method;
 
@@ -40,6 +40,7 @@ pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "net", "set_timeout", set_timeout)?; // OK
     register_wasm_function!(linker, "net", "data_len", data_len)?; // OK
     register_wasm_function!(linker, "net", "read_data", read_data)?; // OK
+    register_wasm_function!(linker, "net", "get_url", get_url)?; // OK
     register_wasm_function!(linker, "net", "get_image", get_image)?; // OK
     register_wasm_function!(linker, "net", "get_status_code", get_status_code)?; // OK
     register_wasm_function!(linker, "net", "get_header", get_header)?; // OK
@@ -186,13 +187,16 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         store.rate_limit_acquire();
 
         let request_builder = get_building_request(store, request_descriptor_i32)?;
-        #[cfg(feature = "all")]
-        let client = reqwest::Client::new();
-        #[cfg(feature = "all")]
+        #[cfg(all(not(feature = "ffi"), feature = "all"))]
+        let client = crate::tls::client_builder()
+            .timeout(std::time::Duration::from_secs(60))
+            .build()
+            .context("failed to build HTTP client")?;
+        #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let request =
             reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
 
-        #[cfg(feature = "all")]
+        #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let warn_cancellation = || {
             warn!(
                 "request to {:?} was cancelled mid-flight!",
@@ -200,7 +204,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             );
         };
 
-        #[cfg(feature = "all")]
+        #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let response = match executor::block_on(
             cancellation_token.run_until_cancelled(client.execute(request)),
         ) {
@@ -216,7 +220,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             }
         };
 
-        #[cfg(feature = "all")]
+        #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let response_data = ResponseData {
             url: response.url().clone(),
             headers: response.headers().clone(),
@@ -235,7 +239,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
             bytes_read: 0,
         };
 
-        #[cfg(not(feature = "all"))]
+        #[cfg(any(feature = "ffi", not(feature = "all")))]
         let response_data =
             (crate::source::wasm_imports::net::NET_SEND
                 .get()
@@ -258,6 +262,10 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
 fn set_url(caller: Caller<'_, WasmStore>, request_ptr: i32, url: Option<String>) -> FFIResult {
     crate::source::wasm_imports::net::set_url(caller, request_ptr, url)?;
     ResultContext::Success.into()
+}
+#[aidoku_wasm_function]
+fn get_url(caller: Caller<'_, WasmStore>, request_ptr: i32) -> Result<i32> {
+    crate::source::wasm_imports::net::get_url(caller, request_ptr)
 }
 #[aidoku_wasm_function]
 fn set_header(

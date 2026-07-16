@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO manga_state (source_id, manga_id, viewer)\n                VALUES (?1, ?2, ?3)\n                ON CONFLICT DO UPDATE SET\n                    viewer = excluded.viewer\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "b252ce59a5bb6fc9d01f7a92d644189b13634c4ff0b3489da4441d6d17b3cc82"
+}

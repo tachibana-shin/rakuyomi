@@ -14,6 +14,18 @@ function util.must(operation, return_code)
   return return_code
 end
 
+--- Like must(), but for posix_spawn APIs that return the error code directly
+--- (0 on success, positive errno on failure) instead of -1 + errno.
+---@param operation string
+---@param return_code number
+function util.must0(operation, return_code)
+  if return_code ~= 0 then
+    error("failed to " .. operation .. ": " .. ffi.string(C.strerror(return_code)))
+  end
+
+  return return_code
+end
+
 local F_SETFL = 4
 local O_NONBLOCK = 0x4
 

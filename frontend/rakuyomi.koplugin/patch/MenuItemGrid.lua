@@ -36,40 +36,56 @@ function MenuItemGrid:init()
     },
   }
 
-  local text_height = Screen:scaleBySize(44)
+  local show_title = G_reader_settings:readSetting("rakuyomi_grid_show_title", true)
+  local show_metadata = G_reader_settings:readSetting("rakuyomi_grid_show_metadata", true)
+  local text_height
+  if show_title then
+    text_height = Screen:scaleBySize(44)
+  elseif show_metadata then
+    text_height = Screen:scaleBySize(20)
+  else
+    text_height = 0
+  end
+
   local img_width = self.dimen.w - 6
   local img_height = self.dimen.h - text_height - 12 - 6 -- padding y = 3
 
   -- Main text (Title)
-  self.face = Font:getFace(self.font, self.font_size)
-
-  local title_widget = TextWidget:new {
-    text = self.text,
-    face = self.face,
-    max_width = self.dimen.w - 6,
-    padding = 0,
-    bold = self.bold,
-    fgcolor = self.dim and Blitbuffer.COLOR_DARK_GRAY or nil,
-  }
+  local title_widget
+  if show_title then
+    self.face = Font:getFace(self.font, self.font_size)
+    title_widget = TextWidget:new {
+      text = self.text,
+      face = self.face,
+      max_width = self.dimen.w - 6,
+      padding = 0,
+      bold = self.bold,
+      fgcolor = self.dim and Blitbuffer.COLOR_DARK_GRAY or nil,
+    }
+  else
+    title_widget = VerticalSpan:new { width = 0 }
+  end
 
   -- Unread count / Mandatory info
-  local mandatory = self.mandatory_func and self.mandatory_func() or self.mandatory
   local mandatory_widget
-  if mandatory and mandatory ~= "" then
-    mandatory_widget = TextWidget:new {
-      text = mandatory,
-      face = Font:getFace(self.infont, self.infont_size),
-      bold = self.bold,
-      fgcolor = Blitbuffer.COLOR_BLACK,
-    }
-    -- Wrap mandatory in a small frame for better visibility over covers
-    mandatory_widget = FrameContainer:new {
-      padding = 0,
-      bordersize = 0,
-      background = Blitbuffer.COLOR_WHITE,
-      color = Blitbuffer.TRANSPARENT,
-      mandatory_widget
-    }
+  if show_metadata then
+    local mandatory = self.mandatory_func and self.mandatory_func() or self.mandatory
+    if mandatory and mandatory ~= "" then
+      mandatory_widget = TextWidget:new {
+        text = mandatory,
+        face = Font:getFace(self.infont, self.infont_size),
+        bold = self.bold,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+      }
+      -- Wrap mandatory in a small frame for better visibility over covers
+      mandatory_widget = FrameContainer:new {
+        padding = 0,
+        bordersize = 0,
+        background = Blitbuffer.COLOR_WHITE,
+        color = Blitbuffer.TRANSPARENT,
+        mandatory_widget
+      }
+    end
   end
 
   local cover_widget = MenuItemCover.genCover(self, img_width, img_height)

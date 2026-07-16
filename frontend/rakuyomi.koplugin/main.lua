@@ -1,7 +1,5 @@
 local DocumentRegistry = require("document/documentregistry")
 local InputContainer = require("ui/widget/container/inputcontainer")
-local FileManager = require("apps/filemanager/filemanager")
-local UIManager = require("ui/uimanager")
 local Dispatcher = require("dispatcher")
 local logger = require("logger")
 local _ = require("gettext+")
@@ -14,9 +12,12 @@ local LibraryView = require("LibraryView")
 local MangaReader = require("MangaReader")
 local Testing = require("testing")
 
-logger.info("Loading Rakuyomi plugin...")
-local backendInitialized, logs = Backend.initialize()
+require("RakuyomiShared")
 
+local disable_logging = G_reader_settings:isTrue("rakuyomi_disable_logging")
+if disable_logging then logger:setLevel(logger.levels.err) end
+
+local ok, android = pcall(require, "android")
 local Rakuyomi = InputContainer:extend({
   name = "rakuyomi"
 })
@@ -32,7 +33,9 @@ function Rakuyomi:init()
     self.ui.menu:registerToMainMenu(self)
   end
 
-  CbzDocument:register(DocumentRegistry)
+  if not ok or not android then
+    CbzDocument:register(DocumentRegistry)
+  end
   Dispatcher:registerAction("start_library_view", {
     category = "none",
     event = "StartLibraryView",
@@ -48,12 +51,6 @@ function Rakuyomi:onStartLibraryView()
   if self.ui.name == "ReaderUI" then
     MangaReader:initializeFromReaderUI(self.ui)
   else
-    if not backendInitialized then
-      self:showErrorDialog()
-
-      return
-    end
-
     self:openLibraryView()
   end
 end
@@ -63,12 +60,6 @@ function Rakuyomi:addToMainMenu(menu_items)
     text = _("Rakuyomi"),
     sorting_hint = "search",
     callback = function()
-      if not backendInitialized then
-        self:showErrorDialog()
-
-        return
-      end
-
       self:openLibraryView()
     end
   }
@@ -78,16 +69,28 @@ function Rakuyomi:showErrorDialog()
   ErrorDialog:show(
     _("Oops!") .. _("Rakuyomi encountered an issue while starting up!") .. "\n" ..
     _("Here are some messages that might help identify the problem:") .. "\n\n" ..
-    logs,
+    Backend.getLogs(),
     function()
       Backend.cleanup()
-      backendInitialized, logs = Backend.initialize()
+      Backend.getBackend()
     end
   )
 end
 
-function Rakuyomi:openLibraryView()
-  LibraryView:fetchAndShow()
+---@class OpenOptions
+---@field hideTopClose? boolean - Whether to hide the top close button
+---@field focus_manga_id? string
+---@field focus_manga_source_id? string
+---@param options OpenOptions?
+function Rakuyomi:openLibraryView(options)
+  Backend.getBackend()
+  if not Backend.getInitialized() then
+    self:showErrorDialog()
+
+    return
+  end
+
+  LibraryView:fetchAndShow(nil, nil, options)
   OfflineAlertDialog:showIfOffline()
 end
 

@@ -3,14 +3,16 @@ use futures::TryStreamExt;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
-    time::Duration,
+    sync::Arc,
 };
 
 use anyhow::Result;
 use sqlx::{
+    pool::PoolOptions,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous},
     Error, Pool, QueryBuilder, Sqlite,
 };
+use tokio::sync::RwLock;
 use url::Url;
 
 use crate::{
@@ -20,14 +22,22 @@ use crate::{
         TrackingBinding, TrackingCandidate, TrackingProgressSnapshot, TrackingService,
         TrackingStatus,
     },
-    source::model::PublishingStatus,
+    source::model::{PublishingStatus, MangaViewer},
     source_collection::SourceCollection,
 };
 
-#[derive(Clone)]
 pub struct Database {
     pub filename: PathBuf,
-    pool: Pool<Sqlite>,
+    pool: Arc<RwLock<Pool<Sqlite>>>,
+}
+
+impl Clone for Database {
+    fn clone(&self) -> Self {
+        Self {
+            filename: self.filename.clone(),
+            pool: Arc::clone(&self.pool),
+        }
+    }
 }
 
 const BIND_LIMIT: usize = 32766;
@@ -40,33 +50,102 @@ impl Database {
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(SqliteSynchronous::Normal)
-            .busy_timeout(Duration::from_secs(5));
-        let pool = Pool::connect_with(options).await?;
+            .pragma("busy_timeout", "5000")
+            .pragma("cache_size", "-2000")
+            .pragma("temp_store", "MEMORY")
+            .foreign_keys(true);
+
+        let pool = PoolOptions::new()
+            .max_connections(4)
+            .min_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(5))
+            .connect_with(options)
+            .await?;
 
         sqlx::migrate!().run(&pool).await?;
 
         Ok(Self {
-            pool,
+            pool: Arc::new(RwLock::new(pool)),
             filename: filename.to_path_buf(),
         })
     }
 
-    pub async fn hot_replace(&mut self, buf: &Vec<u8>) -> Result<()> {
-        self.pool.close().await;
+    pub async fn hot_replace(&self, buf: &[u8]) -> Result<()> {
+        // Acquire write lock first to prevent any concurrent access
+        let mut pool = self.pool.write().await;
 
-        tokio::fs::write(&self.filename, buf).await?;
+        // Close and drain the current pool before file operations
+        let old_pool = std::mem::replace(&mut *pool, Pool::connect("sqlite::memory:").await?);
+        drop(pool);
+        old_pool.close().await;
 
+        // Replace database file via temporary backup swap
+        let backup_path = self.filename.with_extension("db.backup");
+        if self.filename.exists() {
+            tokio::fs::rename(&self.filename, &backup_path).await?;
+        }
+
+        // Write new database file
+        let write_result = tokio::fs::write(&self.filename, buf).await;
+
+        // If write fails, restore backup
+        if write_result.is_err() {
+            if backup_path.exists() {
+                let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+            }
+            write_result?;
+        }
+
+        // Create new pool with proper configuration
         let options = SqliteConnectOptions::new()
             .filename(&self.filename)
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(SqliteSynchronous::Normal)
-            .busy_timeout(Duration::from_secs(5));
-        let pool = Pool::<Sqlite>::connect_with(options).await?;
+            .pragma("busy_timeout", "5000")
+            .pragma("cache_size", "-2000")
+            .pragma("temp_store", "MEMORY")
+            .foreign_keys(true);
 
-        sqlx::migrate!().run(&pool).await?;
+        let new_pool = PoolOptions::new()
+            .max_connections(4)
+            .min_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(5))
+            .connect_with(options)
+            .await;
 
-        self.pool = pool;
+        // If connection fails, restore backup
+        let new_pool = match new_pool {
+            Ok(p) => p,
+            Err(e) => {
+                if backup_path.exists() {
+                    let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+                }
+                return Err(e.into());
+            }
+        };
+
+        // Run migrations on the new pool
+        let migration_result = sqlx::migrate!().run(&new_pool).await;
+
+        // If migrations fail, restore backup
+        if let Err(e) = migration_result {
+            new_pool.close().await;
+            if backup_path.exists() {
+                let _ = tokio::fs::rename(&backup_path, &self.filename).await;
+            }
+            return Err(e.into());
+        }
+
+        // Swap new pool into shared reference
+        let mut pool = self.pool.write().await;
+        *pool = new_pool;
+        drop(pool);
+
+        // Clean up backup file on success
+        if backup_path.exists() {
+            let _ = tokio::fs::remove_file(&backup_path).await;
+        }
 
         Ok(())
     }
@@ -78,7 +157,7 @@ impl Database {
                 SELECT * FROM manga_library;
             "#
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.manga_id()).collect())
@@ -97,7 +176,7 @@ impl Database {
             AND ml.source_id = md.source_id
             "#
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -169,12 +248,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -188,7 +271,7 @@ impl Database {
                     ORDER BY ml.rowid
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::Descending => {
@@ -239,12 +322,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -258,7 +345,7 @@ impl Database {
                     ORDER BY ml.rowid DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleAsc => {
@@ -309,12 +396,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -328,7 +419,7 @@ impl Database {
                     ORDER BY mi.title COLLATE NOCASE ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleDesc => {
@@ -379,12 +470,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -398,7 +493,7 @@ impl Database {
                     ORDER BY mi.title COLLATE NOCASE DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadAsc => {
@@ -449,12 +544,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -468,7 +567,7 @@ impl Database {
                     ORDER BY unread_chapters_count ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadDesc => {
@@ -519,12 +618,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -538,7 +641,7 @@ impl Database {
                     ORDER BY unread_chapters_count DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadAsc => {
@@ -589,12 +692,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -608,7 +715,7 @@ impl Database {
                     ORDER BY lti.last_read_time ASC NULLS LAST
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadDesc => {
@@ -659,12 +766,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -678,7 +789,7 @@ impl Database {
                     ORDER BY lti.last_read_time DESC NULLS LAST
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceAsc => {
@@ -729,12 +840,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -748,7 +863,7 @@ impl Database {
                     ORDER BY ml.source_id COLLATE NOCASE ASC, mi.title COLLATE NOCASE ASC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceDesc => {
@@ -799,12 +914,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS unread_chapters_count,
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = ml.source_id AND ms.manga_id = ml.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = ml.source_id AND md.id = ml.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = ml.source_id AND lr.manga_id = ml.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -818,7 +937,7 @@ impl Database {
                     ORDER BY ml.source_id COLLATE NOCASE DESC, mi.title COLLATE NOCASE DESC
                     "#
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
         };
@@ -833,6 +952,7 @@ impl Database {
                     author: row.author,
                     artist: row.artist,
                     cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
                 };
 
                 Some(Manga {
@@ -842,6 +962,7 @@ impl Database {
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
                     in_library: true,
+                    state_viewer: row.state_viewer != 0,
                 })
             })
             .collect();
@@ -862,7 +983,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -880,7 +1001,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -923,14 +1044,14 @@ impl Database {
             "#,
             source_id, manga_id, preferred_scanlator
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&*self.pool.read().await)
         .await?;
 
         if !row.has_chapters.unwrap_or(false) {
             return Ok(None);
         }
 
-        Ok(row.count.map(|count| count.try_into().unwrap()))
+        Ok(row.count.and_then(|count| count.try_into().ok()))
     }
 
     pub async fn fetch_unread_chapter_counts_minimal(
@@ -997,15 +1118,19 @@ impl Database {
         );
 
         // Bind params
-        let mut query_builder = sqlx::query_as::<_, UnreadChaptersRowFull>(&query);
+        let mut query_builder =
+            sqlx::query_as::<_, UnreadChaptersRowFull>(sqlx::AssertSqlSafe(&*query));
         for id in manga_ids {
             query_builder = query_builder.bind(id.source_id().value()).bind(id.value());
         }
 
-        let rows = query_builder.fetch_all(&self.pool).await.map_err(|e| {
-            eprintln!("🔥 SQL query failed: {}", e);
-            e
-        })?;
+        let rows = query_builder
+            .fetch_all(&*self.pool.read().await)
+            .await
+            .map_err(|e| {
+                eprintln!("🔥 SQL query failed: {}", e);
+                e
+            })?;
 
         for row in rows {
             let id = MangaId::new(SourceId::new(row.source_id), row.manga_id);
@@ -1042,7 +1167,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1066,7 +1191,7 @@ impl Database {
             manga_id,
             chapter_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1080,17 +1205,18 @@ impl Database {
         if invalid_mode {
             let mut remaining = chapter_storage.collect_all_files(1);
 
+            let pool_lock = self.pool.read().await;
             let mut stream = sqlx::query_as!(
                 ChapterInformationsRow,
                 r#"SELECT * FROM chapter_informations"#
             )
-            .fetch(&self.pool);
+            .fetch(&*pool_lock);
 
             while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         remaining.remove(&path);
                     }
@@ -1112,6 +1238,7 @@ impl Database {
         } else {
             let mut paths = Vec::new();
 
+            let pool_lock = self.pool.read().await;
             let mut stream = sqlx::query!(
                 r#"
                 SELECT source_id, manga_id, chapter_id
@@ -1119,13 +1246,13 @@ impl Database {
                 WHERE read = 1
                 "#
             )
-            .fetch(&self.pool);
+            .fetch(&*pool_lock);
 
             while let Some(row) = stream.try_next().await? {
                 let id = ChapterId::from_strings(row.source_id, row.manga_id, row.chapter_id);
 
                 for is_novel in [false, true] {
-                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel);
+                    let path = chapter_storage.get_path_to_store_chapter(&id, is_novel, false);
                     if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                         paths.push(path.clone());
                     }
@@ -1163,7 +1290,7 @@ impl Database {
             source_id,
             manga_id_value
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -1189,7 +1316,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.into()).collect())
@@ -1199,6 +1326,7 @@ impl Database {
         &self,
         manga_id: &MangaId,
         chapter_storage: &crate::chapter_storage::ChapterStorage,
+        ram_mode_enabled: bool,
     ) -> Result<Vec<Chapter>> {
         let source_id = manga_id.source_id().value();
         let manga_id_val = manga_id.value();
@@ -1231,7 +1359,7 @@ impl Database {
             source_id,
             manga_id_val,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows
@@ -1263,12 +1391,18 @@ impl Database {
                     last_read: row.last_read,
                 };
 
-                let downloaded = chapter_storage.get_stored_chapter(&id).is_some();
+                let mut downloaded = chapter_storage.get_stored_chapter(&id, false).is_some();
+                let on_tmpfs =
+                    ram_mode_enabled && chapter_storage.get_stored_chapter(&id, true).is_some();
+                if on_tmpfs {
+                    downloaded = true;
+                }
 
                 Chapter {
                     information,
                     state,
                     downloaded,
+                    on_tmpfs,
                 }
             })
             .collect())
@@ -1282,7 +1416,7 @@ impl Database {
             return Ok(());
         }
 
-        const MAX_BATCH_SIZE: usize = 20; // Kindle safe size
+        const MAX_BATCH_SIZE: usize = 100; // Kindle safe size. Old value is 20
         let mut start = 0;
 
         while start < manga_informations.len() {
@@ -1313,7 +1447,7 @@ impl Database {
                 "#
             );
 
-            let mut query = sqlx::query(&sql);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
             for info in chunk {
                 query = query.bind(info.id.source_id().value());
                 query = query.bind(info.id.value());
@@ -1323,10 +1457,7 @@ impl Database {
                 query = query.bind(info.cover_url.as_ref().map(|url| url.to_string()));
             }
 
-            // No transaction, flush immediately
-            if let Err(e) = query.execute(&self.pool).await {
-                eprintln!("WARN: upsert_cached_manga_information failed: {e}");
-            }
+            query.execute(&*self.pool.read().await).await?;
         }
 
         Ok(())
@@ -1361,7 +1492,7 @@ impl Database {
                     b.push_bind(chapter_id.value());
                 });
 
-            builder.build().execute(&self.pool).await?;
+            builder.build().execute(&*self.pool.read().await).await?;
         }
 
         const INSERT_FIELD_COUNT: usize = 8;
@@ -1405,7 +1536,7 @@ impl Database {
                 last_updated = excluded.last_updated",
             );
 
-            builder.build().execute(&self.pool).await?;
+            builder.build().execute(&*self.pool.read().await).await?;
         }
 
         Ok(())
@@ -1422,12 +1553,23 @@ impl Database {
             MangaDetailsRow,
             r#"
             SELECT 
-                md.*, 
-                COALESCE(AVG(cs.read), 0) AS "per_read: f64",
-                COALESCE(
-                    MAX(cs.last_read),
-                    0
-                ) AS "last_read: i64"
+                md.source_id AS "source_id!",
+                md.id AS "id!", 
+                md.title,
+                md.author,
+                md.artist,
+                md.description,
+                md.tags,
+                md.cover_url,
+                md.url,
+                md.status AS "status!",
+                md.nsfw AS "nsfw!",
+                md.viewer AS "viewer!",
+                md.last_updated,
+                md.last_opened,
+                COALESCE(MAX(cs.last_read), 0) AS "last_read: i64",
+                md.date_added,
+                COALESCE(AVG(cs.read), 0) AS "per_read: f64"
             FROM manga_details md
             LEFT JOIN chapter_state cs
                 ON cs.source_id = md.source_id
@@ -1438,7 +1580,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(row.map(|v| {
@@ -1527,7 +1669,7 @@ impl Database {
             last_opened,
             date_added,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1540,14 +1682,14 @@ impl Database {
         let maybe_row = sqlx::query_as!(
             MangaStateRow,
             r#"
-                SELECT source_id, manga_id, preferred_scanlator 
+                SELECT source_id, manga_id, preferred_scanlator
                 FROM manga_state
                 WHERE source_id = ?1 AND manga_id = ?2;
             "#,
             source_id,
             manga_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
@@ -1566,9 +1708,34 @@ impl Database {
             "#,
             source_id,
             manga_id,
-            state.preferred_scanlator,
+            state.preferred_scanlator
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn upsert_manga_viewer(
+        &self,
+        manga_id: &MangaId,
+        viewer: Option<i64>,
+    ) -> Result<()> {
+        let source_id = manga_id.source_id().value();
+        let manga_id = manga_id.value();
+
+        sqlx::query!(
+            r#"
+                INSERT INTO manga_state (source_id, manga_id, viewer)
+                VALUES (?1, ?2, ?3)
+                ON CONFLICT DO UPDATE SET
+                    viewer = excluded.viewer
+            "#,
+            source_id,
+            manga_id,
+            viewer,
+        )
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1591,10 +1758,35 @@ impl Database {
             manga_id,
             chapter_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| row.into()))
+    }
+
+    pub async fn find_chapter_states_for_manga(
+        &self,
+        manga_id: &MangaId,
+    ) -> Result<HashMap<String, ChapterState>> {
+        let source_id = manga_id.source_id().value();
+        let manga_id = manga_id.value();
+
+        let rows = sqlx::query_as!(
+            ChapterStateRow,
+            r#"
+                SELECT source_id, manga_id, chapter_id, read AS "read: bool", last_read AS "last_read?: i64" FROM chapter_state
+                WHERE source_id = ?1 AND manga_id = ?2;
+            "#,
+            source_id,
+            manga_id,
+        )
+        .fetch_all(&*self.pool.read().await)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|row| (row.chapter_id.clone(), row.into()))
+            .collect())
     }
 
     pub async fn upsert_chapter_state(
@@ -1620,7 +1812,7 @@ impl Database {
             state.read,
             state.last_read,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1655,7 +1847,7 @@ impl Database {
             value,
             now,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1680,7 +1872,7 @@ impl Database {
             chapter_id,
             now,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1695,7 +1887,7 @@ impl Database {
             source_id,
             manga_id,
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&*self.pool.read().await)
         .await?;
 
         Ok(maybe_row.map(|row| (row.last_check, row.next_ts_arima)))
@@ -1727,7 +1919,7 @@ impl Database {
             value,
             next_ts_arima
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1744,7 +1936,7 @@ impl Database {
             source_id,
             manga_id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1774,7 +1966,7 @@ impl Database {
         }
 
         // Create query
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         // Bind all values in order
         for ch in new_chapters {
@@ -1786,7 +1978,7 @@ impl Database {
         }
 
         // Execute
-        query.execute(&self.pool).await?;
+        query.execute(&*self.pool.read().await).await?;
 
         Ok(())
     }
@@ -1817,13 +2009,13 @@ impl Database {
             "#
         );
 
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         for s in skip_sources {
             query = query.bind(s);
         }
 
-        let row = query.fetch_optional(&self.pool).await?;
+        let row = query.fetch_optional(&*self.pool.read().await).await?;
 
         use sqlx::Row;
         Ok(row.map(|row| {
@@ -1852,7 +2044,7 @@ impl Database {
             "#,
             now
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(due_mangas
@@ -1880,7 +2072,7 @@ impl Database {
             WHERE is_read = 0
             "#
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&*self.pool.read().await)
         .await?;
 
         Ok(value.count)
@@ -1915,7 +2107,7 @@ impl Database {
                 n.created_at DESC
             "#,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         Ok(rows.into_iter().map(|row| row.into()).collect())
@@ -1928,7 +2120,7 @@ impl Database {
             "#,
             id
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1940,7 +2132,7 @@ impl Database {
             DELETE FROM notifications WHERE 1 = 1
             "#,
         )
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -1984,7 +2176,7 @@ impl Database {
             "#,
         );
 
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(&*sql));
 
         for id in ids {
             query = query
@@ -1994,7 +2186,7 @@ impl Database {
                 .bind(read);
         }
 
-        query.execute(&self.pool).await?;
+        query.execute(&*self.pool.read().await).await?;
 
         self.count_unread_chapters(manga_id).await
     }
@@ -2166,7 +2358,7 @@ impl Database {
 
     pub async fn get_playlists(&self) -> Result<Vec<Playlist>> {
         let playlists = sqlx::query_as!(Playlist, "SELECT id, name FROM playlists")
-            .fetch_all(&self.pool)
+            .fetch_all(&*self.pool.read().await)
             .await?;
 
         Ok(playlists)
@@ -2175,7 +2367,7 @@ impl Database {
     pub async fn create_playlist(&self, name: String) -> Result<Playlist> {
         let row: (i64,) = sqlx::query_as("INSERT INTO playlists (name) VALUES (?1) RETURNING id")
             .bind(&name)
-            .fetch_one(&self.pool)
+            .fetch_one(&*self.pool.read().await)
             .await?;
 
         Ok(Playlist { id: row.0, name })
@@ -2183,7 +2375,7 @@ impl Database {
 
     pub async fn delete_playlist(&self, id: i64) -> Result<()> {
         sqlx::query!("DELETE FROM playlists WHERE id = ?1", id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2191,7 +2383,7 @@ impl Database {
 
     pub async fn rename_playlist(&self, id: i64, name: String) -> Result<()> {
         sqlx::query!("UPDATE playlists SET name = ?1 WHERE id = ?2", name, id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2202,7 +2394,7 @@ impl Database {
         let manga_id = manga_id.value();
 
         sqlx::query!("INSERT INTO playlist_mangas (playlist_id, source_id, manga_id) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING", playlist_id, source_id, manga_id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2217,7 +2409,7 @@ impl Database {
         let manga_id = manga_id.value();
 
         sqlx::query!("DELETE FROM playlist_mangas WHERE playlist_id = ?1 AND source_id = ?2 AND manga_id = ?3", playlist_id, source_id, manga_id)
-            .execute(&self.pool)
+            .execute(&*self.pool.read().await)
             .await?;
 
         Ok(())
@@ -2278,12 +2470,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2299,7 +2495,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
              crate::settings::LibrarySortingMode::Descending => {
@@ -2350,12 +2546,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2371,7 +2571,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleAsc => {
@@ -2422,12 +2622,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2443,7 +2647,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::TitleDesc => {
@@ -2494,12 +2698,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2515,7 +2723,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadAsc => {
@@ -2566,12 +2774,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2587,7 +2799,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::UnreadDesc => {
@@ -2638,12 +2850,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2659,7 +2875,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadAsc => {
@@ -2710,12 +2926,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2731,7 +2951,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::LastReadDesc => {
@@ -2782,12 +3002,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2803,7 +3027,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceAsc => {
@@ -2854,12 +3078,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2875,7 +3103,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
             crate::settings::LibrarySortingMode::SourceDesc => {
@@ -2926,12 +3154,16 @@ impl Database {
                         mi.artist,
                         mi.cover_url,
                         COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
-                        lti.last_read_time AS "last_read?: i64"
+                        lti.last_read_time AS "last_read?: i64",
+                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
                     LEFT JOIN manga_state ms
                         ON ms.source_id = pm.source_id AND ms.manga_id = pm.manga_id
+                    LEFT JOIN manga_details md
+                        ON md.source_id = pm.source_id AND md.id = pm.manga_id
                     LEFT JOIN last_read lr
                         ON lr.source_id = pm.source_id AND lr.manga_id = pm.manga_id
                     LEFT JOIN last_time_interacted lti
@@ -2947,7 +3179,7 @@ impl Database {
                     "#,
                     playlist_id
                 )
-                .fetch_all(&self.pool)
+                .fetch_all(&*self.pool.read().await)
                 .await?
             }
         };
@@ -2962,6 +3194,7 @@ impl Database {
                     author: row.author,
                     artist: row.artist,
                     cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
                 };
 
                 Some(Manga {
@@ -2971,6 +3204,7 @@ impl Database {
                     unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
                     last_read: row.last_read,
                     in_library: false,
+                    state_viewer: row.state_viewer != 0,
                 })
             })
             .collect();
@@ -3007,6 +3241,10 @@ pub struct MangaLibraryRowWithReadCount {
 
     /// Timestamp of the last read chapter (nullable in DB)
     pub last_read: Option<i64>,
+
+    /// Effective viewer: COALESCE(manga_state.viewer, manga_informations.viewer, 0)
+    pub viewer: Option<i64>,
+    pub state_viewer: i64
 }
 
 #[derive(sqlx::FromRow)]
@@ -3029,6 +3267,7 @@ impl From<MangaInformationsRow> for MangaInformation {
             cover_url: value
                 .cover_url
                 .map(|url_string| url_string.as_str().try_into().unwrap()),
+            viewer: MangaViewer::default(),
         }
     }
 }
@@ -3060,7 +3299,7 @@ impl From<MangaDetailsRow> for crate::source::model::Manga {
         // Parse enums (SQLite returns INTEGER as i64)
         let status = crate::source::model::PublishingStatus::from(row.status as u8);
         let nsfw = crate::source::model::MangaContentRating::from(row.nsfw as u8);
-        let viewer = crate::source::model::MangaViewer::from(row.viewer as u8);
+        let viewer = MangaViewer::from(row.viewer as u8);
 
         // Parse tags JSON
         let tags = row.tags.map(|json| serde_json::from_str(&json).unwrap());

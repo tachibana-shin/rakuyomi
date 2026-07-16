@@ -10,6 +10,20 @@
 > 
 > `rakuyomi` currently supports all [Aidoku](https://github.com/Aidoku) sources including sources written with legacy SDK or next SDK ([Aidoku Community Sources](https://github.com/Aidoku-Community/sources), [Tachibana Shin Sources](https://github.com/tachibana-shin/aidoku-community-sources)...)
 
+## Android Support
+
+rakuyomi runs on Android via the **Rakuyomi Bridge** companion app ([Rakuyomi Bridge](https://github.com/tachibana-shin/rakuyomi_bridge/)), which loads the Rust server via JNI and runs it as a foreground service.
+
+| Variant | Android Support |
+|---|---|
+| Rakuyomi Bridge (Compose) | Android 5.0+ (API 21+) |
+| Rakuyomi Bridge (Headless) | Android 4.3+ (API 18+) |
+
+Both are available on the [Releases](https://github.com/tachibana-shin/rakuyomi_bridge/releases) page.
+
+> [!TIP]
+> If you want to run Rakuyomi as soon as you open Koreader, use this plugin: https://github.com/mgrimace/startrakuyomi.koplugin
+
 This fork:
 - Added last read time for manga, chapter
 - Improved UI now you can see exactly which source manga belongs to
@@ -57,6 +71,24 @@ This fork:
 ## Installation & Usage
 
 For detailed installation and usage instructions, please check out the [Installation](https://tachibana-shin.github.io/rakuyomi/user-guide/installation/README.html) and [Quickstart](https://tachibana-shin.github.io/rakuyomi/user-guide/quickstart) sections on our user guide!
+
+## Cookie Sync Bot
+
+Rakuyomi includes a Telegram bot for syncing Cloudflare cookies from your Android browser to your e-reader.
+
+### Setup
+
+1. Open Telegram and start the bot: [t.me/rakuyomi_bot](https://t.me/rakuyomi_bot) (or your self-hosted instance)
+2. In KOReader, go to **Rakuyomi → Settings → Cookie Sync**
+3. Tap **Pair Device** → enter the bot URL → send `/link CODE NAME` to the bot
+4. Install [Get cookies.txt LOCALLY](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) in Kiwi Browser
+5. When a source returns 403, export cookies via the extension and paste the JSON array into the bot chat
+
+The Rust backend automatically syncs cookies on 403 and retries. If the retry also fails, the bot sends a notification so you know to refresh cookies.
+
+### Self-hosting
+
+See [telegram-cookie-bot/README.md](telegram-cookie-bot/README.md) for deployment instructions.
 
 ## Contributing
 

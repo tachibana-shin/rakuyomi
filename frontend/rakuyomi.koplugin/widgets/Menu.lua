@@ -4,6 +4,7 @@ local logger = require("logger")
 local _ = require("gettext+")
 
 local Icons = require("Icons")
+local TopZoneHandler = require("widgets/TopZoneHandler")
 
 local Menu = BaseMenu:extend {
   with_context_menu = false,
@@ -17,6 +18,7 @@ function Menu:init()
   self:updateOfflineSubtitle(true)
 
   BaseMenu.init(self)
+  TopZoneHandler.enableTopZoneHandler(self)
 end
 
 function Menu:updateItems(select_number)
@@ -49,7 +51,7 @@ end
 
 --- Defaults to calling the entry's callback.
 --- Override this function to change the behavior.
-function Menu:onPrimaryMenuChoice(entry, pos)
+function Menu:onPrimaryMenuChoice(entry, _)
   if entry.callback then
     entry.callback()
   end
@@ -57,7 +59,7 @@ function Menu:onPrimaryMenuChoice(entry, pos)
   return true
 end
 
-function Menu:onContextMenuChoice(entry, pos)
+function Menu:onContextMenuChoice(_, _)
 end
 
 ---@private

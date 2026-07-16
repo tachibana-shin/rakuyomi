@@ -4,15 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.100"
-http-body-util = "0.1.3"
-hyper = { version = "1.8.1" }
-hyper-util = "0.1.19"
+anyhow = "1.0.103"
+http-body-util = "0.1.4"
+hyper = { version = "1.10.1" }
+hyper-util = "0.1.20"
 hyperlocal = "0.9.1"
-log = "0.4.29"
+log = "0.4.33"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
-tokio = { version = "1.48.0", features = ["full"] }
-tokio-util = "0.7.17"
-tracing = "0.1"
+serde_json = "1.0.150"
+tokio = { version = "1.52.3", features = ["full"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }

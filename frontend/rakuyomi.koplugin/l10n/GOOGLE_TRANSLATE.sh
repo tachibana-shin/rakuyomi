@@ -1,7 +1,7 @@
 #!/bin/bash
 # GOOGLE_TRANSLATE.sh - Drop-in replacement for AI_TRANSLATE.sh
-# Translate gettext .po using Google Translate free API (client=gtx)
-# Requires: curl, jq, python3 (for URL encode)
+# Translate gettext .po using Google Translate free API
+# Requires: curl, jq
 
 set -euo pipefail
 
@@ -44,19 +44,30 @@ fi
 # Google Translate helper
 # ----------------------------------------
 gtranslate() {
-    TEXT="$1"
+    local TEXT="$1"
 
-    # URL-encode using python
-    ESCAPED=$(python3 - <<EOF
-import urllib.parse
-print(urllib.parse.quote("""$TEXT"""))
-EOF
-)
+    if [[ -z "$TEXT" ]]; then
+        echo ""
+        return
+    fi
 
-    JSON=$(curl -s \
-        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=$LANG_CODE&dt=t&q=$ESCAPED")
+    local ESCAPED
+    ESCAPED=$(echo -n "$TEXT" | jq -sRr @uri)
 
-    echo "$JSON" | jq -r '.[0][0][0]'
+    local JSON
+    JSON=$(curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
+        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${LANG_CODE}&dt=t&q=${ESCAPED}" 2>/dev/null)
+
+    local TRANS
+    TRANS=$(echo "$JSON" | jq -r '.[0][0][0]' 2>/dev/null)
+
+    if [[ -z "$TRANS" || "$TRANS" == "null" ]]; then
+        echo "$TEXT"
+    else
+        echo "$TRANS"
+    fi
+
+    sleep 0.3
 }
 
 # ----------------------------------------
@@ -82,6 +93,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     # If it's a msgstr — we replace it by translated version
     if [[ "$line" =~ ^msgstr\ \"(.*)\"$ ]]; then
         if [[ "$READING_MSGID" -eq 1 ]]; then
+            echo "Translating: $CURRENT_MSGID"
             TRANS=$(gtranslate "$CURRENT_MSGID")
             echo "msgstr \"$TRANS\"" >> "$OUTPUTFILE"
             READING_MSGID=0

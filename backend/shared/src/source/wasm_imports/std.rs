@@ -9,7 +9,7 @@ use wasm_shared::{
     get_memory,
     memory_reader::{read_string as read_memory_string, write_bytes},
 };
-use wasmi::{core::F64, Caller, Linker};
+use wasmi::{Caller, Linker, F64};
 
 use crate::source::{
     model::{Filter, FilterType, Manga, MangaPageResult},

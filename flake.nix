@@ -60,7 +60,7 @@
               pkgsCross.brotli
             ];
 
-            craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable."1.91.1".default.override {
+            craneLib = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.stable."1.95.0".default.override {
               targets = [target];
             });
           in

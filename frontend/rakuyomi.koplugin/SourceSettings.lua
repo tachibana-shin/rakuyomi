@@ -1,5 +1,5 @@
 local Blitbuffer = require("ffi/blitbuffer")
-local FocusManager = require("ui/widget/focusmanager")
+local FocusManager = require("widgets/FocusManagerWithTopZone")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local Geom = require("ui/geometry")
@@ -88,8 +88,8 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
   elseif setting_definition.type == 'text' then
     return {
       type = 'string',
-      title = setting_definition.title or setting_definition.placeholder,
-      placeholder = setting_definition.placeholder
+      title = setting_definition.title or setting_definition.placeholder or '',
+      placeholder = setting_definition.placeholder or ''
     }
   elseif setting_definition.type == 'link' then
     return {

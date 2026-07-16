@@ -44,7 +44,7 @@ local function getDefaultPlural(n)
 end
 
 --- Generates a proper Lua function out of logical gettext math tests.
-local function getPluralFunc(pl_tests, nplurals, plural_default)
+local function getPluralFunc(pl_tests, _, plural_default)
   -- the return function() stuff is a bit of loadstring trickery
   local plural_func_str = "return function(n) if "
 

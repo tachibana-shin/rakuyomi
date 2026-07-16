@@ -5,14 +5,8 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-anyhow = "1.0.100"
-chrono = "0.4.42"
+anyhow = "1.0.103"
+chrono = "0.4.45"
 chrono-tz = "0.10.4"
-darling = "0.21.3"
-log = "0.4.29"
-num_enum = "0.7.5"
-proc-macro2 = "1.0.103"
-quote = "1.0.42"
-syn = { version = "2.0.111", features = ["full"] }
-url = "2.5.7"
+log = "0.4.33"
 wasmi.workspace = true

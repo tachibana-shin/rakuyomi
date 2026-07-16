@@ -216,6 +216,14 @@ pub static WEBVIEW_EVAL: std::sync::OnceLock<
         -> std::pin::Pin<Box<dyn futures::Future<Output = Result<String, anyhow::Error>> + Send>>,
 > = std::sync::OnceLock::new();
 #[cfg(not(feature = "all"))]
+pub static WEBVIEW_SET_RULE_LIST: std::sync::OnceLock<
+    fn(usize, &str) -> Result<(), anyhow::Error>,
+> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
+pub static WEBVIEW_ADD_USER_SCRIPT: std::sync::OnceLock<
+    fn(usize, &str, bool, bool) -> Result<(), anyhow::Error>,
+> = std::sync::OnceLock::new();
+#[cfg(not(feature = "all"))]
 pub static WEBVIEW_DESTROY: std::sync::OnceLock<fn(usize) -> ()> = std::sync::OnceLock::new();
 #[cfg(not(feature = "all"))]
 impl WebView {
@@ -234,6 +242,23 @@ impl WebView {
         let output = (WEBVIEW_EVAL.get().expect("Please set WEBVIEW_EVAL"))(self.id, code).await?;
 
         Ok(output)
+    }
+    pub fn set_rule_list(&self, json: &str) -> anyhow::Result<()> {
+        (WEBVIEW_SET_RULE_LIST
+            .get()
+            .expect("Please set WEBVIEW_SET_RULE_LIST"))(self.id, json)
+    }
+    pub fn add_user_script(
+        &self,
+        source: &str,
+        at_document_end: bool,
+        for_main_frame_only: bool,
+    ) -> anyhow::Result<()> {
+        (WEBVIEW_ADD_USER_SCRIPT
+            .get()
+            .expect("Please set WEBVIEW_ADD_USER_SCRIPT"))(
+            self.id, source, at_document_end, for_main_frame_only
+        )
     }
     pub fn destroy(&self) {
         (WEBVIEW_DESTROY.get().expect("Please set WEBVIEW_DESTROY"))(self.id)

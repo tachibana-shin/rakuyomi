@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::anyhow;
 use tokio_util::sync::CancellationToken;
@@ -10,6 +11,7 @@ use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::ChapterId,
+    settings::ChapterTitleFormat,
     source::Source,
 };
 
@@ -21,6 +23,9 @@ pub async fn fetch_manga_chapter(
     chapter_id: &ChapterId,
     concurrent_requests_pages: usize,
     optimize_image: bool,
+    on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
+    use_ram: bool,
+    chapter_title_format: ChapterTitleFormat,
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     let manga = database
         .find_cached_manga_information(chapter_id.manga_id())
@@ -32,7 +37,7 @@ pub async fn fetch_manga_chapter(
         .await?
         .ok_or_else(|| anyhow!("Expected chapter to be in the database"))?;
 
-    ensure_chapter_is_in_storage(
+    match ensure_chapter_is_in_storage(
         token,
         chapter_storage,
         source,
@@ -40,12 +45,39 @@ pub async fn fetch_manga_chapter(
         &chapter,
         concurrent_requests_pages,
         optimize_image,
+        on_progress.clone(),
+        use_ram,
+        None,
+        chapter_title_format,
     )
     .await
-    .map_err(|e| match e {
-        ChapterDownloaderError::DownloadError(e) => Error::DownloadError(e),
-        ChapterDownloaderError::Other(e) => Error::Other(e),
-    })
+    {
+        Ok(v) => Ok(v),
+        Err(ChapterDownloaderError::Other(_))
+            if use_ram && chapter_storage.tmpfs_full_storage().await? =>
+        {
+            return ensure_chapter_is_in_storage(
+                token,
+                chapter_storage,
+                source,
+                &manga,
+                &chapter,
+                concurrent_requests_pages,
+                optimize_image,
+                on_progress.clone(),
+                false,
+                None,
+                chapter_title_format,
+            )
+            .await
+            .map_err(|e| match e {
+                ChapterDownloaderError::Other(e) => Error::Other(e),
+                ChapterDownloaderError::DownloadError(e) => Error::DownloadError(e),
+            });
+        }
+        Err(ChapterDownloaderError::DownloadError(e)) => Err(Error::DownloadError(e)),
+        Err(ChapterDownloaderError::Other(e)) => Err(Error::Other(e)),
+    }
 }
 
 #[derive(thiserror::Error, Debug)]

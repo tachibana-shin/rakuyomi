@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-17 00:10+0700\n"
+"POT-Creation-Date: 2026-07-14 00:12+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -32,336 +32,521 @@ msgstr "Kurulabilir"
 msgid "version"
 msgstr "versiyon"
 
-#: ../AvailableSourcesListing.lua:97 ../ChapterListing.lua:277
-#: ../ChapterListing.lua:337 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:445
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:285
+#: ../ChapterListing.lua:346 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "Bilinmiyor"
 
-#: ../AvailableSourcesListing.lua:144
+#: ../AvailableSourcesListing.lua:145
 msgid "No available sources found."
 msgstr "Kullanılabilir kaynak bulunamadı."
 
-#: ../AvailableSourcesListing.lua:144
+#: ../AvailableSourcesListing.lua:145
 msgid "Try adding some source lists by looking at our README!"
 msgstr "README! dosyamıza bakarak bazı kaynak listeleri eklemeyi deneyin!"
 
-#: ../AvailableSourcesListing.lua:162
+#: ../AvailableSourcesListing.lua:163
 msgid "Installing source..."
 msgstr "Kaynak yükleniyor..."
 
-#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:246
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "İptal edildi!"
 
-#: ../BasicJobDialog.lua:77 ../BasicJobDialog.lua:242
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Tamamlamak!"
 
-#: ../BasicJobDialog.lua:80 ../BasicJobDialog.lua:190
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "İptal edilene kadar bekleniyor…"
 
-#: ../BasicJobDialog.lua:86 ../BasicJobDialog.lua:89 ../BasicJobDialog.lua:155
-#: ../BasicJobDialog.lua:165
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "İşleme..."
 
-#: ../BasicJobDialog.lua:92
+#: ../BasicJobDialog.lua:90
 msgid "An error occurred"
 msgstr "Bir hata oluştu"
 
-#: ../BasicJobDialog.lua:93 ../BasicJobDialog.lua:250
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
 
-#: ../BasicJobDialog.lua:250
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Hata"
 
-#: ../ChapterListing.lua:57
-msgid "Chapter listing"
-msgstr "Bölüm listesi"
+#: ../ChapterListPopup.lua:129
+msgid "Chapters"
+msgstr "Bölümler"
 
-#: ../ChapterListing.lua:234 ../ChapterListing.lua:1046
-msgid "Languages"
-msgstr "Diller"
+#: ../ChapterListPopup.lua:354
+msgid "Search chapters"
+msgstr "Bölümleri ara"
 
-#: ../ChapterListing.lua:323
-msgid "No chapters found"
-msgstr "Bölüm bulunamadı"
-
-#: ../ChapterListing.lua:323
-msgid "Try swiping down to refresh the chapter list."
-msgstr "Bölüm listesini yenilemek için aşağı kaydırmayı deneyin."
-
-#: ../ChapterListing.lua:365
-msgid "Volume"
-msgstr "Hacim"
-
-#: ../ChapterListing.lua:369 ../utils/getChapterDisplayName.lua:10
-msgid "Chapter"
-msgstr "Bölüm"
-
-#: ../ChapterListing.lua:395
-msgid "Locked"
-msgstr "Kilitli"
-
-#: ../ChapterListing.lua:431 ../ChapterListing.lua:632
-msgid "Refreshing chapters..."
-msgstr "Bölümler yenileniyor..."
-
-#: ../ChapterListing.lua:439 ../ChapterListing.lua:639
-#: ../ChapterListing.lua:1301
-msgid "Cancelled."
-msgstr "İptal edildi."
-
-#: ../ChapterListing.lua:451
-msgid "Refresh chapter error"
-msgstr "Bölümü yenileme hatası"
-
-#: ../ChapterListing.lua:490
-msgid "Chapter is locked"
-msgstr "Bölüm kilitlendi"
-
-#: ../ChapterListing.lua:507 ../PlaylistDialog.lua:220
-msgid "Open"
-msgstr "Açık"
-
-#: ../ChapterListing.lua:517 ../ChapterListing.lua:966 ../LibraryView.lua:446
-msgid "Refresh"
-msgstr "Yenile"
-
-#: ../ChapterListing.lua:523
-msgid "Chapter refreshed"
-msgstr "Bölüm yenilendi"
-
-#: ../ChapterListing.lua:529 ../ChapterListing.lua:678
-msgid "Mark"
-msgstr "İşaret"
-
-#: ../ChapterListing.lua:541 ../ChapterListing.lua:1197
-msgid "Download"
-msgstr "İndirmek"
-
-#: ../ChapterListing.lua:541 ../LibraryView.lua:660 ../LibraryView.lua:680
-msgid "Remove"
-msgstr "Kaldırmak"
-
-#: ../ChapterListing.lua:550
-msgid "Chapter downloaded"
-msgstr "Bölüm indirildi"
-
-#: ../ChapterListing.lua:569
-msgid "Revoke chapter..."
-msgstr "Bölümü iptal et..."
-
-#: ../ChapterListing.lua:587
-msgid "Removed chapter"
-msgstr "Bölüm kaldırıldı"
-
-#: ../ChapterListing.lua:598
-msgid "Marking"
-msgstr "İşaretleme"
-
-#: ../ChapterListing.lua:598
-msgid "Un-marking"
-msgstr "İşareti kaldır"
-
-#: ../ChapterListing.lua:598
-msgid "chapter..."
-msgstr "bölüm..."
-
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:992 ../LibraryView.lua:482
-msgid "Mark read"
-msgstr "Okundu olarak işaretle"
-
-#: ../ChapterListing.lua:665 ../ChapterListing.lua:1002 ../LibraryView.lua:493
-msgid "Mark unread"
-msgstr "Okunmadı olarak işaretle"
-
-#: ../ChapterListing.lua:666
-msgid "1 - 10.5, 20 - 100"
-msgstr "1 - 10,5, 20 - 100"
-
-#: ../ChapterListing.lua:667
-msgid "Leaving blank will select all"
-msgstr "Boş bırakmak hepsini seçecektir"
-
-#: ../ChapterListing.lua:667
-msgid "Mark chapters as read or unread"
-msgstr "Bölümleri okundu veya okunmadı olarak işaretleme"
-
-#: ../ChapterListing.lua:671 ../ChapterListing.lua:1115
-#: ../ChapterListing.lua:1190 ../LibraryView.lua:621 ../LibraryView.lua:923
-#: ../LibraryView.lua:971 ../NotificationView.lua:162 ../PlaylistDialog.lua:135
-#: ../PlaylistDialog.lua:255 ../widgets/SettingItemValue.lua:163
+#: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
+#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
+#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
+#: ../LibraryView.lua:1203 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
+#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
 msgid "Cancel"
 msgstr "İptal etmek"
 
-#: ../ChapterListing.lua:688
+#: ../ChapterListPopup.lua:361
+msgid "Apply"
+msgstr "Uygula"
+
+#: ../ChapterListPopup.lua:384
+msgid "Go to page"
+msgstr "Sayfaya git"
+
+#: ../ChapterListPopup.lua:391
+msgid "Go"
+msgstr "Gitmek"
+
+#: ../ChapterListing.lua:58
+msgid "Chapter listing"
+msgstr "Bölüm listesi"
+
+#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
+msgid "Languages"
+msgstr "Diller"
+
+#: ../ChapterListing.lua:332
+msgid "No chapters found"
+msgstr "Bölüm bulunamadı"
+
+#: ../ChapterListing.lua:332
+msgid "Try swiping down to refresh the chapter list."
+msgstr "Bölüm listesini yenilemek için aşağı kaydırmayı deneyin."
+
+#: ../ChapterListing.lua:389
+msgid "Volume"
+msgstr "Hacim"
+
+#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
+msgid "Chapter"
+msgstr "Bölüm"
+
+#: ../ChapterListing.lua:420
+msgid "Locked"
+msgstr "Kilitli"
+
+#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
+msgid "Refreshing chapters..."
+msgstr "Bölümler yenileniyor..."
+
+#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
+#: ../ChapterListing.lua:1417
+msgid "Cancelled."
+msgstr "İptal edildi."
+
+#: ../ChapterListing.lua:474
+msgid "Refresh chapter error"
+msgstr "Bölümü yenileme hatası"
+
+#: ../ChapterListing.lua:524
+msgid "Chapter is locked"
+msgstr "Bölüm kilitlendi"
+
+#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
+msgid "Open"
+msgstr "Açık"
+
+#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
+msgid "Refresh"
+msgstr "Yenile"
+
+#: ../ChapterListing.lua:557
+msgid "Chapter refreshed"
+msgstr "Bölüm yenilendi"
+
+#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
+#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
+msgid "Mark unread"
+msgstr "Okunmadı olarak işaretle"
+
+#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
+msgid "Download"
+msgstr "İndirmek"
+
+#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
+msgid "Remove"
+msgstr "Kaldırmak"
+
+#: ../ChapterListing.lua:583
+msgid "Chapter downloaded"
+msgstr "Bölüm indirildi"
+
+#: ../ChapterListing.lua:602
+msgid "Revoke chapter..."
+msgstr "Bölümü iptal et..."
+
+#: ../ChapterListing.lua:620
+msgid "Removed chapter"
+msgstr "Bölüm kaldırıldı"
+
+#: ../ChapterListing.lua:631
+msgid "Marking"
+msgstr "İşaretleme"
+
+#: ../ChapterListing.lua:631
+msgid "Un-marking"
+msgstr "İşareti kaldır"
+
+#: ../ChapterListing.lua:631
+msgid "chapter..."
+msgstr "bölüm..."
+
+#: ../ChapterListing.lua:665
+msgid "Cannot refresh chapters while offline"
+msgstr "Çevrimdışıyken bölümler yenilenemiyor"
+
+#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
+msgid "Mark read"
+msgstr "Okundu olarak işaretle"
+
+#: ../ChapterListing.lua:707
+msgid "1 - 10.5, 20 - 100"
+msgstr "1 - 10,5, 20 - 100"
+
+#: ../ChapterListing.lua:708
+msgid "Leaving blank will select all"
+msgstr "Boş bırakmak hepsini seçecektir"
+
+#: ../ChapterListing.lua:708
+msgid "Mark chapters as read or unread"
+msgstr "Bölümleri okundu veya okunmadı olarak işaretleme"
+
+#: ../ChapterListing.lua:719
+msgid "Mark"
+msgstr "İşaret"
+
+#: ../ChapterListing.lua:729
 msgid "Marking..."
 msgstr "İşaretleniyor..."
 
-#: ../ChapterListing.lua:698
+#: ../ChapterListing.lua:739
 msgid "Marked"
 msgstr "işaretlendi"
 
-#: ../ChapterListing.lua:717 ../MangaSearchResults.lua:104
+#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "Hata yok"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "Page"
 msgstr "Sayfa"
 
-#: ../ChapterListing.lua:726
+#: ../ChapterListing.lua:767
 #, lua-format
 msgid "attempts"
 msgstr "girişimler"
 
-#: ../ChapterListing.lua:734 ../MangaSearchResults.lua:120
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… ve %d hata daha"
 
-#: ../ChapterListing.lua:753 ../ChapterListing.lua:768
+#: ../ChapterListing.lua:797
 msgid "Could not download chapter."
 msgstr "Bölüm indirilemedi."
 
-#: ../ChapterListing.lua:761
+#: ../ChapterListing.lua:805
 msgid "Loading chapter..."
 msgstr "Bölüm yükleniyor..."
 
-#: ../ChapterListing.lua:762
+#: ../ChapterListing.lua:806
 msgid "unknown"
 msgstr "bilinmiyor"
 
-#: ../ChapterListing.lua:781
+#: ../ChapterListing.lua:824
 msgid "Download cancelled."
 msgstr "İndirme iptal edildi."
 
-#: ../ChapterListing.lua:787
+#: ../ChapterListing.lua:830
 msgid "Are you sure you want to cancel the download?"
 msgstr "İndirmeyi iptal etmek istediğinizden emin misiniz?"
 
-#: ../ChapterListing.lua:956 ../MangaSearchResults.lua:208
+#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "Kitaplığa Ekle"
 
-#: ../ChapterListing.lua:974 ../LibraryView.lua:466
-#: ../MangaSearchResults.lua:279
+#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
+#: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "Detaylar"
 
-#: ../ChapterListing.lua:1014
+#: ../ChapterListing.lua:1125
 msgid "Resume"
 msgstr "Sürdürmek"
 
-#: ../ChapterListing.lua:1022
+#: ../ChapterListing.lua:1133
 msgid "Next Chapter"
 msgstr "Sonraki Bölüm"
 
-#: ../ChapterListing.lua:1032
+#: ../ChapterListing.lua:1143
 msgid "Download unread chapters…"
 msgstr "Okunmamış bölümleri indirin…"
 
-#: ../ChapterListing.lua:1059
+#: ../ChapterListing.lua:1170
 msgid "Group"
 msgstr "Grup"
 
-#: ../ChapterListing.lua:1060 ../ChapterListing.lua:1171
+#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
 msgid "Filter by Group"
 msgstr "Gruba göre filtrele"
 
-#: ../ChapterListing.lua:1083
+#: ../ChapterListing.lua:1194
 msgid "Adding to library..."
 msgstr "Kitaplığa ekleniyor..."
 
-#: ../ChapterListing.lua:1090
+#: ../ChapterListing.lua:1201
 msgid "Failed to add to library"
 msgstr "Kitaplığa eklenemedi"
 
-#: ../ChapterListing.lua:1095
+#: ../ChapterListing.lua:1206
 msgid "Added to library."
 msgstr "Kitaplığa eklendi."
 
-#: ../ChapterListing.lua:1107 ../LibraryView.lua:613
+#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
 msgid "Sadly, no next chapter available! :c"
 msgstr "Ne yazık ki bir sonraki bölüm mevcut değil! "
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1227
 msgid "Next"
 msgstr "Sonraki"
 
-#: ../ChapterListing.lua:1113
+#: ../ChapterListing.lua:1227
 msgid "reading with"
 msgstr "ile okumak"
 
-#: ../ChapterListing.lua:1114 ../LibraryView.lua:620
+#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
 msgid "Read"
 msgstr "Okumak"
 
-#: ../ChapterListing.lua:1136
+#: ../ChapterListing.lua:1250
 msgid "Show All"
 msgstr "Tümünü Göster"
 
-#: ../ChapterListing.lua:1144
+#: ../ChapterListing.lua:1259
 msgid "Showing all groups"
 msgstr "Tüm gruplar gösteriliyor"
 
-#: ../ChapterListing.lua:1164
+#: ../ChapterListing.lua:1280
 msgid "Filtered to"
 msgstr "Şuna göre filtrelendi:"
 
-#: ../ChapterListing.lua:1181
+#: ../ChapterListing.lua:1297
 msgid "Download unread chapters..."
 msgstr "Okunmamış bölümleri indirin..."
 
-#: ../ChapterListing.lua:1183
+#: ../ChapterListing.lua:1299
 msgid "Amount of unread chapters (default: all)"
 msgstr "Okunmamış bölümlerin miktarı (varsayılan: tümü)"
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1301
 msgid "Specify amount or leave empty for all."
 msgstr "Tutarı belirtin veya tümü için boş bırakın."
 
-#: ../ChapterListing.lua:1185
+#: ../ChapterListing.lua:1301
 msgid "Will download from"
 msgstr "Şuradan indirilecek:"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1302
 msgid "Specify the amount of unread chapters to download"
 msgstr "İndirilecek okunmamış bölümlerin miktarını belirtin"
 
-#: ../ChapterListing.lua:1186
+#: ../ChapterListing.lua:1302
 msgid "or leave empty to download all of them."
 msgstr "veya hepsini indirmek için boş bırakın."
 
-#: ../ChapterListing.lua:1207
+#: ../ChapterListing.lua:1323
 msgid "Invalid amount of chapters!"
 msgstr "Geçersiz bölüm sayısı!"
 
-#: ../ChapterListing.lua:1228
+#: ../ChapterListing.lua:1344
 msgid "No unread chapters found for"
 msgstr "Okunmamış bölüm bulunamadı"
 
-#: ../ChapterListing.lua:1253 ../ChapterListing.lua:1328
+#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
 msgid "Downloading all chapters, this will take a while…"
 msgstr "Tüm bölümlerin indirilmesi biraz zaman alacak…"
 
-#: ../ChapterListing.lua:1338
+#: ../ChapterListing.lua:1454
 msgid "Waiting for download to be cancelled…"
 msgstr "İndirme işleminin iptal edilmesi bekleniyor…"
 
-#: ../ChapterListing.lua:1340
+#: ../ChapterListing.lua:1456
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "Tüm bölümlerin indirilmesi biraz zaman alacak… ("
 
-#: ../ChapterListing.lua:1343
+#: ../ChapterListing.lua:1459
 msgid "Tap outside this message to cancel."
 msgstr "İptal etmek için bu mesajın dışına dokunun."
+
+#: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
+msgid "Cookie Sync"
+msgstr "Çerez Senkronizasyonu"
+
+#: ../CookieSyncView.lua:164
+msgid "Unable to fetch cookie sync status."
+msgstr "Çerez senkronizasyon durumu getirilemiyor."
+
+#: ../CookieSyncView.lua:183
+msgid "Device paired as: "
+msgstr "Cihaz şu şekilde eşlendi:"
+
+#: ../CookieSyncView.lua:185
+msgid "Chat ID: "
+msgstr "Sohbet kimliği:"
+
+#: ../CookieSyncView.lua:187
+msgid "Cached domains: "
+msgstr "Önbelleğe alınmış alanlar:"
+
+#: ../CookieSyncView.lua:190
+msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
+msgstr "Eşleştirilmedi. "
+
+#: ../CookieSyncView.lua:214
+msgid "Sync Cookies Now"
+msgstr "Çerezleri Şimdi Eşitle"
+
+#: ../CookieSyncView.lua:225
+msgid "View Cached Cookies"
+msgstr "Önbelleğe Alınmış Çerezleri Görüntüle"
+
+#: ../CookieSyncView.lua:236
+msgid "Unpair Device"
+msgstr "Cihazın Eşleşmesini Kaldır"
+
+#: ../CookieSyncView.lua:255
+msgid "Pair Device"
+msgstr "Cihazı Eşleştir"
+
+#: ../CookieSyncView.lua:270
+msgid "Enter Telegram Bot Server URL"
+msgstr "Telegram Bot Sunucusu URL'sini girin"
+
+#: ../CookieSyncView.lua:271
+msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
+msgstr ""
+
+#: ../CookieSyncView.lua:274
+msgid "https://your-bot.deno.dev"
+msgstr "https://botunuz.deno.dev"
+
+#: ../CookieSyncView.lua:284
+msgid "Generate Code"
+msgstr "Kod Oluştur"
+
+#: ../CookieSyncView.lua:305
+msgid "Generating pairing code..."
+msgstr "Eşleme kodu oluşturuluyor..."
+
+#: ../CookieSyncView.lua:317
+msgid "Failed to generate pairing code: "
+msgstr "Eşleştirme kodu oluşturulamadı:"
+
+#: ../CookieSyncView.lua:325
+msgid "Pairing Code: "
+msgstr "Eşleştirme Kodu:"
+
+#: ../CookieSyncView.lua:326
+msgid "1. Open Telegram on your Android phone"
+msgstr "1. Android telefonunuzda Telegram'ı açın"
+
+#: ../CookieSyncView.lua:327
+msgid "2. Send this command to the bot:"
+msgstr "2. Bu komutu bota gönderin:"
+
+#: ../CookieSyncView.lua:328
+msgid "DEVICE_NAME"
+msgstr "DEVICE_NAME"
+
+#: ../CookieSyncView.lua:329
+msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
+msgstr "(DEVICE_NAME yerine bu cihaz için bir ad verin; örneğin kindle_bedroom)"
+
+#: ../CookieSyncView.lua:330
+msgid "3. Come back here and tap 'Check Pairing'"
+msgstr "3. Buraya geri gelin ve 'Eşleştirmeyi Kontrol Et'e dokunun"
+
+#: ../CookieSyncView.lua:334
+msgid "Check Pairing"
+msgstr "Eşleştirmeyi Kontrol Et"
+
+#: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
+#: ../OfflineAlertDialog.lua:54
+msgid "Close"
+msgstr "Kapalı"
+
+#: ../CookieSyncView.lua:344
+msgid "Checking pairing status..."
+msgstr "Eşleştirme durumu kontrol ediliyor..."
+
+#: ../CookieSyncView.lua:356
+msgid "Failed to check pairing: "
+msgstr "Eşleştirme kontrol edilemedi:"
+
+#: ../CookieSyncView.lua:363
+msgid "Device paired successfully as: "
+msgstr "Cihaz şu şekilde başarıyla eşleştirildi:"
+
+#: ../CookieSyncView.lua:368
+msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
+msgstr ""
+
+#: ../CookieSyncView.lua:371
+msgid "Check Again"
+msgstr "Tekrar Kontrol Et"
+
+#: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
+msgid "Syncing cookies..."
+msgstr "Çerezler senkronize ediliyor..."
+
+#: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
+msgid "Failed to sync cookies: "
+msgstr "Çerezler senkronize edilemedi:"
+
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+msgid " domain(s)."
+msgstr "etki alanları."
+
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+msgid "Synced cookies for "
+msgstr "Şunun için senkronize edilmiş çerezler:"
+
+#: ../CookieSyncView.lua:408
+msgid "Unpair this device? This will clear all synced cookies."
+msgstr "Bu cihazın eşlemesi kaldırılsın mı? "
+
+#: ../CookieSyncView.lua:409
+msgid "Unpair"
+msgstr "Eşlemeyi kaldır"
+
+#: ../CookieSyncView.lua:414
+msgid "Failed to unpair: "
+msgstr "Eşleme kaldırılamadı:"
+
+#: ../CookieSyncView.lua:419
+msgid "Device unpaired."
+msgstr "Cihazın eşleşmesi kaldırıldı."
+
+#: ../CookieSyncView.lua:432
+msgid "Failed to list cookies: "
+msgstr "Çerezler listelenemedi:"
+
+#: ../CookieSyncView.lua:445
+msgid "No cookies cached."
+msgstr "Önbelleğe alınmış çerez yok."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -407,361 +592,467 @@ msgstr "kaldırmak istiyor musunuz?"
 msgid "source?"
 msgstr "kaynak?"
 
-#: ../LibraryView.lua:60 ../Settings.lua:38
+#: ../LibraryView.lua:74 ../Settings.lua:86
 msgid "Library"
 msgstr "Kütüphane"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:460
 msgid "No mangas found in library"
 msgstr "Kütüphanede manga bulunamadı"
 
-#: ../LibraryView.lua:379
+#: ../LibraryView.lua:460
 msgid "Try adding some by holding their name on the search results!"
 msgstr "Adlarını arama sonuçlarında tutarak bazılarını eklemeyi deneyin!"
 
-#: ../LibraryView.lua:457
+#: ../LibraryView.lua:568
 msgid "Refreshed manga"
 msgstr "Yenilenen manga"
 
-#: ../LibraryView.lua:506
+#: ../LibraryView.lua:617
 msgid "Continue Reading"
 msgstr "Okumaya Devam Et"
 
-#: ../LibraryView.lua:515 ../MangaSearchResults.lua:270
+#: ../LibraryView.lua:626 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "Oynatma Listesine Ekle"
 
-#: ../LibraryView.lua:526 ../MangaSearchResults.lua:205
+#: ../LibraryView.lua:638
+msgid "List chapters"
+msgstr "Bölümleri listele"
+
+#: ../LibraryView.lua:656 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "Kitaplıktan kaldır"
 
-#: ../LibraryView.lua:536
+#: ../LibraryView.lua:666
 msgid "Remove from Playlist"
 msgstr "Oynatma Listesinden kaldır"
 
-#: ../LibraryView.lua:569
+#: ../LibraryView.lua:699
 msgid "Finding next chapter..."
 msgstr "Bir sonraki bölümü bulmak..."
 
-#: ../LibraryView.lua:580
+#: ../LibraryView.lua:710
 msgid "No chapters found for this manga."
 msgstr "Bu mangaya ait bölüm bulunamadı."
 
-#: ../LibraryView.lua:619
+#: ../LibraryView.lua:779
 msgid "Resume reading with:"
 msgstr "Okumaya şununla devam edin:"
 
-#: ../LibraryView.lua:659 ../LibraryView.lua:679
+#: ../LibraryView.lua:798 ../LibraryView.lua:818
 msgid "Do you want to remove"
 msgstr "Kaldırmak istiyor musun?"
 
-#: ../LibraryView.lua:659
+#: ../LibraryView.lua:798
 msgid "from your library?"
 msgstr "kütüphanenizden mi?"
 
-#: ../LibraryView.lua:679
+#: ../LibraryView.lua:818
 msgid "from your playlist?"
 msgstr "çalma listenizden mi?"
 
-#: ../LibraryView.lua:702
+#: ../LibraryView.lua:841
 msgid "Search for mangas"
 msgstr "Manga arayın"
 
-#: ../LibraryView.lua:712
+#: ../LibraryView.lua:851
 msgid "Search favorites"
 msgstr "Favorileri ara"
 
-#: ../LibraryView.lua:722 ../PlaylistDialog.lua:306
+#: ../LibraryView.lua:861 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "Çalma listeleri"
 
-#: ../LibraryView.lua:731
+#: ../LibraryView.lua:870
 msgid "Refresh mangas"
 msgstr "Mangaları yenile"
 
-#: ../LibraryView.lua:739
+#: ../LibraryView.lua:878
 msgid "Refresh details"
 msgstr "Ayrıntıları yenile"
 
-#: ../LibraryView.lua:749
+#: ../LibraryView.lua:888
 msgid "Cleaner chapters"
 msgstr "Temizleyici bölümler"
 
-#: ../LibraryView.lua:757
+#: ../LibraryView.lua:896
 msgid "Manage sources"
 msgstr "Kaynakları yönet"
 
-#: ../LibraryView.lua:767 ../LibraryView.lua:917 ../Settings.lua:285
+#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
 msgid "Settings"
 msgstr "Ayarlar"
 
-#: ../LibraryView.lua:775
+#: ../LibraryView.lua:914
 msgid "Check for updates"
 msgstr "Güncellemeleri kontrol edin"
 
-#: ../LibraryView.lua:784
+#: ../LibraryView.lua:923
 msgid "Sync Database (Beta)"
 msgstr "Veritabanını Eşitle (Beta)"
 
-#: ../LibraryView.lua:788
+#: ../LibraryView.lua:927
 msgid "Sync to WebDAV..."
 msgstr "WebDAV'a senkronize et..."
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:939
 msgid "Do you want to migrate your local database from the server?"
 msgstr "Yerel veritabanınızı sunucudan taşımak istiyor musunuz?"
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:939
 msgid "The remote database is newer than the local one."
 msgstr "Uzak veritabanı yerel veritabanından daha yenidir."
 
-#: ../LibraryView.lua:800
+#: ../LibraryView.lua:939
 msgid "This action cannot be undone."
 msgstr "Bu eylem geri alınamaz."
 
-#: ../LibraryView.lua:801
+#: ../LibraryView.lua:940
 msgid "Migrate"
 msgstr "Taşı"
 
-#: ../LibraryView.lua:805
+#: ../LibraryView.lua:944
 msgid "Migrating database..."
 msgstr "Veritabanı taşınıyor..."
 
-#: ../LibraryView.lua:816 ../LibraryView.lua:863
+#: ../LibraryView.lua:955 ../LibraryView.lua:1002
 msgid "Local database has been migrated from the server!"
 msgstr "Yerel veritabanı sunucudan taşındı!"
 
-#: ../LibraryView.lua:827
+#: ../LibraryView.lua:966
 msgid "Replace Cloud"
 msgstr "Bulutu Değiştir"
 
-#: ../LibraryView.lua:831
+#: ../LibraryView.lua:970
 msgid "Replacing cloud..."
 msgstr "Bulut değiştiriliyor..."
 
-#: ../LibraryView.lua:841
+#: ../LibraryView.lua:980
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "Bulut veritabanı zorunlu olarak yerel veritabanıyla değiştirildi!"
 
-#: ../LibraryView.lua:859
+#: ../LibraryView.lua:998
 msgid "Database is already up to date!"
 msgstr "Veritabanı zaten güncel!"
 
-#: ../LibraryView.lua:861
+#: ../LibraryView.lua:1000
 msgid "Database has been synced to the server!"
 msgstr "Veritabanı sunucuyla senkronize edildi!"
 
-#: ../LibraryView.lua:865
+#: ../LibraryView.lua:1004
 msgid "Sync completed!"
 msgstr "Senkronizasyon tamamlandı!"
 
-#: ../LibraryView.lua:889
+#: ../LibraryView.lua:1022
+msgid "Sync Cookies"
+msgstr "Çerezleri Senkronize Et"
+
+#: ../LibraryView.lua:1052
+msgid "System resources"
+msgstr "Sistem kaynakları"
+
+#: ../LibraryView.lua:1067
+msgid "CPU"
+msgstr "İşlemci"
+
+#: ../LibraryView.lua:1068
+msgid "Cores"
+msgstr "Çekirdekler"
+
+#: ../LibraryView.lua:1069
+msgid "Usage"
+msgstr "Kullanım"
+
+#: ../LibraryView.lua:1070
+msgid "Memory"
+msgstr "Hafıza"
+
+#: ../LibraryView.lua:1073 ../Settings.lua:364
+msgid "Storage"
+msgstr "Depolamak"
+
+#: ../LibraryView.lua:1077 ../LibraryView.lua:1081
+msgid "Tmpfs"
+msgstr "Tmpf'ler"
+
+#: ../LibraryView.lua:1081
+msgid "unavailable"
+msgstr "müsait değil"
+
+#: ../LibraryView.lua:1084
+msgid "Process RSS"
+msgstr "RSS'yi işle"
+
+#: ../LibraryView.lua:1085
+msgid "Virtual"
+msgstr "Sanal"
+
+#: ../LibraryView.lua:1121
 msgid "Manga search..."
 msgstr "Mangayı araştır..."
 
-#: ../LibraryView.lua:890
+#: ../LibraryView.lua:1122
 msgid "Houseki no Kuni"
 msgstr "Houseki no Kuni"
 
-#: ../LibraryView.lua:891 ../LibraryView.lua:967
+#: ../LibraryView.lua:1123 ../LibraryView.lua:1199
 msgid "Type the manga name to search for"
 msgstr "Aranacak manga adını yazın"
 
-#: ../LibraryView.lua:895 ../LibraryView.lua:904 ../LibraryView.lua:949
-#: ../LibraryView.lua:978
+#: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
+#: ../LibraryView.lua:1210 ../Settings.lua:195
 msgid "Search"
 msgstr "Aramak"
 
-#: ../LibraryView.lua:949
+#: ../LibraryView.lua:1181
 msgid "Exclude source search for"
 msgstr "Kaynak aramayı hariç tut"
 
-#: ../LibraryView.lua:964
+#: ../LibraryView.lua:1196
 msgid "Favorite search..."
 msgstr "Favori arama..."
 
-#: ../LibraryView.lua:966
+#: ../LibraryView.lua:1198
 msgid "Tonikaku Kawaii"
 msgstr "Tonikaku Kawaii'si"
 
-#: ../LibraryView.lua:1018
+#: ../LibraryView.lua:1250
 msgid "Scaning files..."
 msgstr "Dosyalar taranıyor..."
 
-#: ../LibraryView.lua:1033
+#: ../LibraryView.lua:1265
 #, lua-format
 msgid "Found %d files."
 msgstr "%d dosya bulundu."
 
-#: ../LibraryView.lua:1034
+#: ../LibraryView.lua:1266
 #, lua-format
 msgid "Total size %s."
 msgstr "Toplam boyut %s."
 
-#: ../LibraryView.lua:1035
+#: ../LibraryView.lua:1267
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly dosyası .cbz ve .epub taraması yapın."
 
-#: ../LibraryView.lua:1039
+#: ../LibraryView.lua:1271
 msgid "Clean"
 msgstr "Temiz"
 
-#: ../LibraryView.lua:1044
+#: ../LibraryView.lua:1276
 msgid "Deleting..."
 msgstr "Siliniyor..."
 
-#: ../LibraryView.lua:1062
+#: ../LibraryView.lua:1294
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Ücretsiz %s depolama alanı temizlendi"
 
-#: ../LibraryView.lua:1087
+#: ../LibraryView.lua:1309 ../LibraryView.lua:1321 ../LibraryView.lua:1342
+msgid "Cannot refresh while offline"
+msgstr "Çevrimdışıyken yenilenemiyor"
+
+#: ../LibraryView.lua:1331
 msgid "Refresh mangas..."
 msgstr "Mangaları yenile..."
 
-#: ../LibraryView.lua:1088
+#: ../LibraryView.lua:1332
 msgid "All chapters manga updated!"
 msgstr "Manganın tüm bölümleri güncellendi!"
 
-#: ../LibraryView.lua:1089
+#: ../LibraryView.lua:1333
 msgid "Some manga updates fail:"
 msgstr "Bazı manga güncellemeleri başarısız oluyor:"
 
-#: ../LibraryView.lua:1100
+#: ../LibraryView.lua:1352
 msgid "Refresh manga details..."
 msgstr "Manga ayrıntılarını yenile..."
 
-#: ../LibraryView.lua:1101
+#: ../LibraryView.lua:1353
 msgid "All manga details refresh!"
 msgstr "Tüm manga detayları yenileniyor!"
 
-#: ../LibraryView.lua:1102
+#: ../LibraryView.lua:1354
 msgid "Some manga details refresh fail:"
 msgstr "Bazı manga ayrıntılarının yenilenmesi başarısız oluyor:"
 
-#: ../LibraryView.lua:1118
+#: ../LibraryView.lua:1370
 msgid "Progress"
 msgstr "İlerlemek"
 
-#: ../LibraryView.lua:1136
+#: ../LibraryView.lua:1388
 msgid "Cleaner"
 msgstr "Temizleyici"
 
-#: ../LibraryView.lua:1137
+#: ../LibraryView.lua:1389
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Silinen kaynaklardaki dosyalar da dahil olmak üzere geçersiz dosyaları bulun ve silin"
 
-#: ../LibraryView.lua:1137 ../LibraryView.lua:1140
+#: ../LibraryView.lua:1389 ../LibraryView.lua:1392
 msgid "Normal"
 msgstr "Normal"
 
-#: ../LibraryView.lua:1139
-msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
-msgstr "ÖNEMLİ: Meta dosyaları (yer imi, geçmiş) saklanmaz!"
-
-#: ../LibraryView.lua:1146
+#: ../LibraryView.lua:1390 ../LibraryView.lua:1398
 msgid "Chapter read done"
 msgstr "Bölüm okuması tamamlandı"
 
-#: ../MangaInfoWidget.lua:141
+#: ../LibraryView.lua:1390
+msgid "Find and delete chapters that have been read"
+msgstr "Okunan bölümleri bulma ve silme"
+
+#: ../LibraryView.lua:1391
+msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
+msgstr "ÖNEMLİ: Meta dosyaları (yer imi, geçmiş) saklanmaz!"
+
+#: ../MangaInfoWidget.lua:145
 msgid "Statistics"
 msgstr "İstatistikler"
 
-#: ../MangaInfoWidget.lua:143 ../MangaInfoWidget.lua:477
-#: ../MangaInfoWidget.lua:503
+#: ../MangaInfoWidget.lua:147 ../MangaInfoWidget.lua:490
+#: ../MangaInfoWidget.lua:516
 msgid "Description"
 msgstr "Tanım"
 
-#: ../MangaInfoWidget.lua:276
+#: ../MangaInfoWidget.lua:280
 msgid "%1 % Completed"
 msgstr "%1% Tamamlandı"
 
-#: ../MangaInfoWidget.lua:308
-msgid "Last read: %1"
-msgstr "Son okuma: %1"
-
-#: ../MangaInfoWidget.lua:380
-msgid "Status"
-msgstr "Durum"
-
-#: ../MangaInfoWidget.lua:387 ../MangaInfoWidget.lua:455
-msgid "NSFW"
-msgstr "NSFW"
-
-#: ../MangaInfoWidget.lua:394
-msgid "Last Updated"
-msgstr "Son Güncelleme"
-
-#: ../MangaInfoWidget.lua:419
+#: ../MangaInfoWidget.lua:311 ../MangaInfoWidget.lua:405
 msgid "N/A"
 msgstr "Yok"
 
-#: ../MangaInfoWidget.lua:435
+#: ../MangaInfoWidget.lua:313
+msgid "Last read: %1"
+msgstr "Son okuma: %1"
+
+#: ../MangaInfoWidget.lua:385
+msgid "Status"
+msgstr "Durum"
+
+#: ../MangaInfoWidget.lua:392 ../MangaInfoWidget.lua:468
+msgid "NSFW"
+msgstr "NSFW"
+
+#: ../MangaInfoWidget.lua:399
+msgid "Last Updated"
+msgstr "Son Güncelleme"
+
+#: ../MangaInfoWidget.lua:448
 msgid "Ongoing"
 msgstr "devam ediyor"
 
-#: ../MangaInfoWidget.lua:437
+#: ../MangaInfoWidget.lua:450
 msgid "Completed"
 msgstr "Tamamlanmış"
 
-#: ../MangaInfoWidget.lua:439
+#: ../MangaInfoWidget.lua:452
 msgid "Cancelled"
 msgstr "İptal edildi"
 
-#: ../MangaInfoWidget.lua:441
+#: ../MangaInfoWidget.lua:454
 msgid "Hiatus"
 msgstr "Ara"
 
-#: ../MangaInfoWidget.lua:443
+#: ../MangaInfoWidget.lua:456
 msgid "Not published"
 msgstr "Yayınlanmadı"
 
-#: ../MangaInfoWidget.lua:451
+#: ../MangaInfoWidget.lua:464
 msgid "Safe"
 msgstr "Güvenli"
 
-#: ../MangaInfoWidget.lua:453
+#: ../MangaInfoWidget.lua:466
 msgid "Suggestive"
 msgstr "müstehcen"
 
-#: ../MangaInfoWidget.lua:546 ../MangaSearchResults.lua:234
+#: ../MangaInfoWidget.lua:572 ../MangaSearchResults.lua:388
 msgid "Refreshing details..."
 msgstr "Detaylar yenileniyor..."
 
-#: ../MangaInfoWidget.lua:558 ../MangaSearchResults.lua:241
+#: ../MangaInfoWidget.lua:584 ../MangaSearchResults.lua:394
 msgid "Refresh details cancelled."
 msgstr "Ayrıntıların yenilenmesi iptal edildi."
 
-#: ../MangaReader.lua:101
+#: ../MangaReader.lua:178
 msgid "Go back to Rakuyomi..."
 msgstr "Rakuyomi'ye geri dön..."
 
-#: ../MangaReader.lua:172
+#: ../MangaReader.lua:274
 msgid "Do you want Rakuyomi to commandeer this button when you open it?"
 msgstr "Rakuyomi'nin bu düğmeyi açtığınızda kumanda etmesini istiyor musunuz?"
 
-#: ../MangaReader.lua:172
+#: ../MangaReader.lua:274
 msgid "This setting only affects when you open it with Rakuyomi."
 msgstr "Bu ayar yalnızca Rakuyomi ile açtığınızda etkilenir."
 
-#: ../MangaReader.lua:174
+#: ../MangaReader.lua:276
 msgid "Yes"
 msgstr "Evet"
 
-#: ../MangaReader.lua:175
+#: ../MangaReader.lua:277
 msgid "No"
 msgstr "HAYIR"
 
-#: ../MangaSearchResults.lua:26
+#: ../MangaReader.lua:332
+msgid "View Mode"
+msgstr "Görünüm Modu"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+msgid "Default"
+msgstr "Varsayılan"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+msgid "LTR"
+msgstr "LTR"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+msgid "RTL"
+msgstr "Sağdan sola"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+msgid "Scroll"
+msgstr "Taslak"
+
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+msgid "Vertical"
+msgstr "Dikey"
+
+#: ../MangaReader.lua:337
+msgid ""
+"Choose how pages are displayed and navigated.\n"
+"Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
+msgstr ""
+
+#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+msgid "Off"
+msgstr "Kapalı"
+
+#: ../MangaReader.lua:378
+msgid "Global Viewer Override"
+msgstr "Küresel Görüntüleyiciyi Geçersiz Kılma"
+
+#: ../MangaReader.lua:571
+msgid "Set default %1 to %2?"
+msgstr "Varsayılan %1, %2 olarak ayarlansın mı?"
+
+#: ../MangaReader.lua:575
+msgid "Set as default"
+msgstr "Varsayılan olarak ayarla"
+
+#: ../MangaSearchResults.lua:30
 msgid "Search results..."
 msgstr "Arama sonuçları..."
 
-#: ../MangaSearchResults.lua:133
+#: ../MangaSearchResults.lua:158
+msgid "Next page"
+msgstr "Sonraki sayfa"
+
+#: ../MangaSearchResults.lua:210 ../MangaSearchResults.lua:270
 msgid "Searching for"
 msgstr "Aranıyor"
 
-#: ../MangaSearchResults.lua:140
+#: ../MangaSearchResults.lua:215 ../MangaSearchResults.lua:276
 msgid "Search cancelled."
 msgstr "Arama iptal edildi."
 
@@ -781,8 +1072,8 @@ msgstr "Bildirim yok"
 msgid "Delete this notification?"
 msgstr "Bu bildirim silinsin mi?"
 
-#: ../NotificationView.lua:161 ../PlaylistDialog.lua:159
-#: ../PlaylistDialog.lua:232
+#: ../NotificationView.lua:161 ../PlaylistDialog.lua:157
+#: ../PlaylistDialog.lua:230
 msgid "Delete"
 msgstr "Silmek"
 
@@ -806,258 +1097,402 @@ msgstr "• Kütüphane içeriğiniz mevcut olacak"
 msgid "• New content and updates require a connection"
 msgstr "• Yeni içerik ve güncellemeler bağlantı gerektirir"
 
-#: ../OfflineAlertDialog.lua:54
-msgid "Close"
-msgstr "Kapalı"
-
 #: ../OfflineAlertDialog.lua:64
 msgid "Do not show this message again"
 msgstr "Bu mesajı bir daha gösterme"
 
-#: ../PlaylistDialog.lua:131
+#: ../PlaylistDialog.lua:129
 msgid "Rename Playlist"
 msgstr "Oynatma Listesini Yeniden Adlandır"
 
-#: ../PlaylistDialog.lua:136
+#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
 msgid "Save"
 msgstr "Kaydetmek"
 
-#: ../PlaylistDialog.lua:158
+#: ../PlaylistDialog.lua:156
 msgid "Delete playlist"
 msgstr "Çalma listesini sil"
 
-#: ../PlaylistDialog.lua:227
+#: ../PlaylistDialog.lua:225
 msgid "Rename"
 msgstr "Yeniden isimlendirmek"
 
-#: ../PlaylistDialog.lua:250 ../PlaylistDialog.lua:312
+#: ../PlaylistDialog.lua:248 ../PlaylistDialog.lua:310
 msgid "New Playlist"
 msgstr "Yeni Oynatma Listesi"
 
-#: ../PlaylistDialog.lua:251
+#: ../PlaylistDialog.lua:249
 msgid "Playlist name"
 msgstr "Oynatma listesi adı"
 
-#: ../PlaylistDialog.lua:264
+#: ../PlaylistDialog.lua:262
 msgid "Create"
 msgstr "Yaratmak"
 
-#: ../PlaylistDialog.lua:324
+#: ../PlaylistDialog.lua:322
 msgid "No playlists yet."
 msgstr "Henüz oynatma listesi yok."
 
-#: ../Settings.lua:44
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "Kitaplık görüntüleme modu"
 
-#: ../Settings.lua:46
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "Temel"
 
-#: ../Settings.lua:47
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "Kapak"
 
-#: ../Settings.lua:48
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "Izgara"
 
-#: ../Settings.lua:57
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "Kitaplık sıralama modu"
 
-#: ../Settings.lua:59
+#: ../Settings.lua:107
 msgid "Order added ascending (Default)"
 msgstr "Artan şekilde eklenen sıra (Varsayılan)"
 
-#: ../Settings.lua:60
+#: ../Settings.lua:108
 msgid "Order added descending"
 msgstr "Azalan şekilde eklenen sıra"
 
-#: ../Settings.lua:61
+#: ../Settings.lua:109
 msgid "Title manga ascending"
 msgstr "Başlık mangası artıyor"
 
-#: ../Settings.lua:62
+#: ../Settings.lua:110
 msgid "Title manga descending"
 msgstr "Başlık mangası azalıyor"
 
-#: ../Settings.lua:63
+#: ../Settings.lua:111
 msgid "Count unread chapters ascending"
 msgstr "Okunmamış bölümleri artan şekilde say"
 
-#: ../Settings.lua:64
+#: ../Settings.lua:112
 msgid "Count unread chapters descending"
 msgstr "Okunmamış bölümleri azalan şekilde say"
 
-#: ../Settings.lua:65
+#: ../Settings.lua:113
 msgid "Last read ascending"
 msgstr "Artan şekilde son okuma"
 
-#: ../Settings.lua:66
+#: ../Settings.lua:114
 msgid "Last read descending"
 msgstr "Son okuma azalan"
 
-#: ../Settings.lua:67
+#: ../Settings.lua:115
 msgid "Source ascending"
 msgstr "Kaynak artan"
 
-#: ../Settings.lua:68
+#: ../Settings.lua:116
 msgid "Source descending"
 msgstr "Kaynak azalan"
 
-#: ../Settings.lua:76
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "Sayfa başına öğe sayısı (0 = otomatik)"
 
-#: ../Settings.lua:87
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "Izgara sütunları"
 
-#: ../Settings.lua:98
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "Izgara satırları"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:157
+msgid "Show title in grid mode"
+msgstr "Başlığı tablo modunda göster"
+
+#: ../Settings.lua:166
+msgid "Show metadata in grid mode"
+msgstr "Meta verileri ızgara modunda göster"
+
+#: ../Settings.lua:175
+msgid "Tap manga action"
+msgstr "Manga eylemine dokunun"
+
+#: ../Settings.lua:177
+msgid "Open chapter list"
+msgstr "Bölüm listesini aç"
+
+#: ../Settings.lua:178
+msgid "Continue reading"
+msgstr "Okumaya devam et"
+
+#: ../Settings.lua:188
+msgid "Skip resume reading confirmation"
+msgstr "Özgeçmiş okuma onayını atla"
+
+#: ../Settings.lua:201
+msgid "Search view mode"
+msgstr "Arama görünümü modu"
+
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "Okuyucu"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "Bölüm sıralama modu"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "Bölüme göre artan"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "Bölüm azalarak"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:229
 msgid "Preload chapters on reader open"
 msgstr "Okuyucu açıkken bölümleri önceden yükleyin"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:240
 msgid "Optimize page images (experimental)"
 msgstr "Sayfa resimlerini optimize edin (deneysel)"
 
-#: ../Settings.lua:143
+#: ../Settings.lua:248
 msgid "Concurrent page requests"
 msgstr "Eşzamanlı sayfa istekleri"
 
-#: ../Settings.lua:152
-msgid "Storage"
-msgstr "Depolamak"
+#: ../Settings.lua:259
+msgid "Never turn on RTL, even for Japanese manga"
+msgstr "Japon mangalarında bile asla RTL'yi açmayın"
 
-#: ../Settings.lua:158
+#: ../Settings.lua:268
+msgid "Automatically set the viewer to manga mode"
+msgstr "Görüntüleyiciyi otomatik olarak manga moduna ayarla"
+
+#: ../Settings.lua:277
+msgid "Global viewer override"
+msgstr "Küresel görüntüleyiciyi geçersiz kılma"
+
+#: ../Settings.lua:294
+msgid "Show button previous chapter in toolbar reader"
+msgstr "Araç çubuğu okuyucusunda düğmenin önceki bölümünü göster"
+
+#: ../Settings.lua:303
+msgid "Show button next chapter in toolbar reader"
+msgstr "Araç çubuğu okuyucusunda düğmeyi sonraki bölümü göster"
+
+#: ../Settings.lua:312
+msgid "Display the expanded rakuyomi bottom toolbar in the reader"
+msgstr "Genişletilmiş rakuyomi alt araç çubuğunu okuyucuda görüntüleyin"
+
+#: ../Settings.lua:315
+msgid "On bottom toolbar"
+msgstr "Alt araç çubuğunda"
+
+#: ../Settings.lua:316
+msgid "On top toolbar"
+msgstr "Üst araç çubuğunda"
+
+#: ../Settings.lua:324
+msgid "Recommended reader settings"
+msgstr "Önerilen okuyucu ayarları"
+
+#: ../Settings.lua:330
+msgid "Turn off all margins"
+msgstr "Tüm kenar boşluklarını kapat"
+
+#: ../Settings.lua:339
+msgid "Automatically crop excess edges from photos (a little slow)"
+msgstr "Fotoğrafların fazla kenarlarını otomatik olarak kırpın (biraz yavaş)"
+
+#: ../Settings.lua:348
+msgid "Zoom to full screen"
+msgstr "Tam ekrana yakınlaştır"
+
+#: ../Settings.lua:357
+msgid "Zoom to fit image size"
+msgstr "Görüntü boyutuna uyacak şekilde yakınlaştırın"
+
+#: ../Settings.lua:370
 msgid "Chapter storage path"
 msgstr "Bölüm depolama yolu"
 
-#: ../Settings.lua:167
+#: ../Settings.lua:379
 msgid "Storage size limit"
 msgstr "Depolama boyutu sınırı"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:389
+msgid "Write chapters to RAM (protect eMMC)"
+msgstr "Bölümleri RAM'e yazın (eMMC'yi koruyun)"
+
+#: ../Settings.lua:397
+msgid "RAM storage size. Your RAM is: "
+msgstr "RAM depolama boyutu. "
+
+#: ../Settings.lua:406
+msgid "Network"
+msgstr "Ağ"
+
+#: ../Settings.lua:412
+msgid "HTTP, HTTPS or SOCKS5 Proxy"
+msgstr "HTTP, HTTPS veya SOCKS5 Proxy'si"
+
+#: ../Settings.lua:415
+msgid "Proxy URL must start with http://, https://, or socks5://"
+msgstr "Proxy URL'si http://, https:// veya socks5:// ile başlamalıdır"
+
+#: ../Settings.lua:420
 msgid "Sync & Updates"
 msgstr "Senkronizasyon ve Güncellemeler"
 
-#: ../Settings.lua:181
+#: ../Settings.lua:426
 msgid "WebDAV Sync"
 msgstr "WebDAV Senkronizasyonu"
 
-#: ../Settings.lua:189
+#: ../Settings.lua:434
 msgid "Enabled cron check for manga updates"
 msgstr "Manga güncellemeleri için cron kontrolü etkinleştirildi"
 
-#: ../Settings.lua:197
+#: ../Settings.lua:442
 msgid "Source IDs skip check update"
 msgstr "Kaynak kimlikleri kontrol güncellemesini atla"
 
-#: ../Settings.lua:203
+#: ../Settings.lua:448
 msgid "System"
 msgstr "Sistem"
 
-#: ../Settings.lua:209
+#: ../Settings.lua:454
 msgid "Allow requisition of the back button"
 msgstr "Geri düğmesinin talep edilmesine izin ver"
+
+#: ../Settings.lua:461
+msgid "Server"
+msgstr "Sunucu"
+
+#: ../Settings.lua:467
+msgid "Auto-stop server when leaving library view"
+msgstr "Kitaplık görünümünden çıkarken sunucuyu otomatik olarak durdur"
+
+#: ../Settings.lua:469
+msgid "Disabled"
+msgstr "Engelli"
+
+#: ../Settings.lua:470
+msgid "Immediate"
+msgstr "hemen"
+
+#: ../Settings.lua:471
+msgid "After 30 seconds"
+msgstr "30 saniye sonra"
+
+#: ../Settings.lua:472
+msgid "After 1 minute"
+msgstr "1 dakika sonra"
+
+#: ../Settings.lua:473
+msgid "After 5 minutes"
+msgstr "5 dakika sonra"
+
+#: ../Settings.lua:474
+msgid "After 10 minutes"
+msgstr "10 dakika sonra"
+
+#: ../Settings.lua:484
+msgid "Show chapter download progress"
+msgstr "Bölüm indirme ilerlemesini göster"
+
+#: ../Settings.lua:491
+msgid "Logging"
+msgstr "Günlüğe kaydetme"
+
+#: ../Settings.lua:497
+msgid "Disable logging"
+msgstr "Günlüğe kaydetmeyi devre dışı bırak"
+
+#: ../Settings.lua:675
+msgid "Testing proxy..."
+msgstr "Proxy test ediliyor..."
+
+#: ../Settings.lua:684
+msgid "Failed to test proxy"
+msgstr "Proxy test edilemedi"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "Kaynak ayarları"
 
-#: ../UpdateChecker.lua:24
+#: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
 msgstr "Çevrimdışıyken güncellemeler kontrol edilemiyor"
 
-#: ../UpdateChecker.lua:39
+#: ../UpdateChecker.lua:38
 msgid "You're running the latest version!"
 msgstr "En son sürümü çalıştırıyorsunuz!"
 
-#: ../UpdateChecker.lua:50 ../UpdateChecker.lua:74
+#: ../UpdateChecker.lua:49 ../UpdateChecker.lua:73
 #, lua-format
 msgid "Version"
 msgstr "Sürüm"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "Would you like to update now?"
 msgstr "Şimdi güncellemek ister misiniz?"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "You're currently running version "
 msgstr "Şu anda sürümü çalıştırıyorsunuz"
 
-#: ../UpdateChecker.lua:50
+#: ../UpdateChecker.lua:49
 #, lua-format
 msgid "is available"
 msgstr "mevcut"
 
-#: ../UpdateChecker.lua:58
+#: ../UpdateChecker.lua:57
 msgid "Later"
 msgstr "Daha sonra"
 
-#: ../UpdateChecker.lua:64
+#: ../UpdateChecker.lua:63
 msgid "Update Now"
 msgstr "Şimdi Güncelle"
 
-#: ../UpdateChecker.lua:74
+#: ../UpdateChecker.lua:73
 #, lua-format
 msgid "is available. You're currently running version "
 msgstr "mevcuttur. "
 
-#: ../UpdateChecker.lua:75
+#: ../UpdateChecker.lua:74
 #, lua-format
 msgid "This update cannot be installed automatically"
 msgstr "Bu güncelleme otomatik olarak yüklenemez"
 
-#: ../UpdateChecker.lua:75
+#: ../UpdateChecker.lua:74
 #, lua-format
 msgid "please visit the user guide for instructions."
 msgstr "talimatlar için lütfen kullanım kılavuzunu ziyaret edin."
 
-#: ../UpdateChecker.lua:83
+#: ../UpdateChecker.lua:82
 msgid "OK"
 msgstr "TAMAM"
 
-#: ../UpdateChecker.lua:103
+#: ../UpdateChecker.lua:102
 msgid "Updating rakuyomi, please wait..."
 msgstr "Rakuyomi güncelleniyor, lütfen bekleyin..."
 
-#: ../UpdateChecker.lua:119
+#: ../UpdateChecker.lua:118
 msgid "Restart Now"
 msgstr "Şimdi Yeniden Başlat"
 
-#: ../UpdateChecker.lua:130
+#: ../UpdateChecker.lua:129
 msgid "KOReader needs to be restarted to apply the changes."
 msgstr "Değişikliklerin uygulanabilmesi için KOReader'ın yeniden başlatılması gerekiyor."
 
-#: ../UpdateChecker.lua:130
+#: ../UpdateChecker.lua:129
 msgid "The update has been installed successfully"
 msgstr "Güncelleme başarıyla yüklendi"
 
-#: ../UpdateChecker.lua:140
+#: ../UpdateChecker.lua:139
 msgid "Restarting..."
 msgstr "Yeniden başlatılıyor..."
 
@@ -1073,19 +1508,19 @@ msgstr "Mangaları e-kitap okuyucunuza indirin!"
 msgid "Added to"
 msgstr "Şuraya eklendi:"
 
-#: ../main.lua:39 ../main.lua:63
+#: ../main.lua:42 ../main.lua:60
 msgid "Rakuyomi"
 msgstr "Rakuyomi"
 
-#: ../main.lua:79
+#: ../main.lua:70
 msgid "Oops!"
 msgstr "Hata!"
 
-#: ../main.lua:79
+#: ../main.lua:70
 msgid "Rakuyomi encountered an issue while starting up!"
 msgstr "Rakuyomi başlatılırken bir sorunla karşılaştı!"
 
-#: ../main.lua:80
+#: ../main.lua:71
 msgid "Here are some messages that might help identify the problem:"
 msgstr "Sorunu tanımlamanıza yardımcı olabilecek bazı mesajlar şunlardır:"
 
@@ -1151,11 +1586,11 @@ msgstr "%dy"
 msgid "years"
 msgstr "yıllar"
 
-#: ../utils/getChapterDisplayName.lua:5
+#: ../utils/getChapterDisplayName.lua:7
 msgid "Vol."
 msgstr "Cilt"
 
-#: ../utils/getChapterDisplayName.lua:6
+#: ../utils/getChapterDisplayName.lua:10
 msgid "Ch."
 msgstr "Ch."
 
@@ -1178,3 +1613,7 @@ msgstr "Tamamlamak"
 #: ../widgets/SettingItemValue.lua:236
 msgid "Select"
 msgstr "Seçme"
+
+#: ../widgets/SettingItemValue.lua:359
+msgid "Invalid value"
+msgstr "Geçersiz değer"

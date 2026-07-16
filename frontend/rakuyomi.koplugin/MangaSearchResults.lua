@@ -4,10 +4,14 @@ local Screen = require("device").screen
 local InfoMessage = require("ui/widget/infomessage")
 local _ = require("gettext+")
 local addToPlaylist = require("handlers/addToPlaylist")
+local NetworkMgr = require("ui/network/manager")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local Menu = require("widgets/Menu")
+local MenuCustom = require("patch/MenuCustom")
+local MenuItemCover = require("patch/MenuItemCover")
+local MenuItemGrid = require("patch/MenuItemGrid")
 local LoadingDialog = require("LoadingDialog")
 local ChapterListing = require("ChapterListing")
 local Testing = require("testing")
@@ -19,7 +23,7 @@ local Trapper = require("ui/trapper")
 --- @class MangaSearchResults: { [any]: any }
 --- @field results Manga[]
 --- @field on_return_callback fun(): nil
-local MangaSearchResults = Menu:extend {
+local MangaSearchResults = MenuCustom:extend {
   name = "manga_search_results",
   is_enable_shortcut = false,
   is_popout = false,
@@ -30,10 +34,23 @@ local MangaSearchResults = Menu:extend {
   results = nil,
   -- callback to be called when pressing the back button
   on_return_callback = nil,
+  -- pagination
+  search_text = nil,
+  exclude = nil,
+  result_page = 1,
+  has_next_page = false,
 }
 
 function MangaSearchResults:init()
-  self.results = self.results or {}
+  local results = self.results or {}
+  local settings_response = Backend.getSettings()
+  self.search_view_mode = (settings_response.type ~= 'ERROR' and settings_response.body.search_view_mode) or "base"
+
+  self.title_bar_left_icon = "column.two"
+  self.onLeftButtonTap = function()
+    self:cycleViewMode()
+  end
+
   self.width = Screen:getWidth()
   self.height = Screen:getHeight()
   local page = self.page
@@ -44,8 +61,35 @@ function MangaSearchResults:init()
   -- FIXME we could refactor this into a single class
   self.paths = { 0 }
   self.on_return_callback = nil
+  self.results = results
+  self:updateItems()
+end
 
-  -- self:updateItems()
+function MangaSearchResults:cycleViewMode()
+  local modes = { "base", "cover", "grid" }
+  local next_mode = "base"
+  for i, mode in ipairs(modes) do
+    if mode == self.search_view_mode then
+      next_mode = modes[(i % #modes) + 1]
+      break
+    end
+  end
+  self.search_view_mode = next_mode
+  local settings_response = Backend.getSettings()
+  if settings_response.type ~= 'ERROR' then
+    settings_response.body.search_view_mode = next_mode
+    Backend.setSettings(settings_response.body)
+  end
+  self:updateItems()
+  Testing:emitEvent("search_view_mode_changed", { mode = next_mode })
+end
+
+function MangaSearchResults:_recalculateDimen(flag)
+  if self.search_view_mode ~= "base" then
+    MenuCustom._recalculateDimen(self, flag)
+  else
+    Menu._recalculateDimen(self, flag)
+  end
 end
 
 function MangaSearchResults:onClose()
@@ -60,7 +104,20 @@ end
 function MangaSearchResults:updateItems()
   self.item_table = self:generateItemTableFromSearchResults(self.results)
 
-  Menu.updateItems(self)
+  local mode = self.search_view_mode
+  local MenuItemChoice = MenuItemCover
+  if mode == "grid" then
+    MenuItemChoice = MenuItemGrid
+    self.grid_columns = G_reader_settings:readSetting("rakuyomi_grid_columns") or 3
+  else
+    self.grid_columns = nil
+  end
+
+  if mode ~= "base" then
+    MenuCustom.updateItems(self, MenuItemChoice)
+  else
+    Menu.updateItems(self)
+  end
 end
 
 --- Generates the item table for displaying the search results.
@@ -69,22 +126,42 @@ end
 --- @return table
 function MangaSearchResults:generateItemTableFromSearchResults(results)
   local item_table = {}
+  local is_cover = self.search_view_mode == "cover"
+
   for _, manga in ipairs(results) do
-    local mandatory = (manga.last_read and calcLastReadText(manga.last_read) .. " " or "")
+    local mandatory_parts = {}
+    if manga.last_read then
+      table.insert(mandatory_parts, calcLastReadText(manga.last_read) .. " ")
+    end
 
     if manga.unread_chapters_count ~= nil and manga.unread_chapters_count > 0 then
-      mandatory = (mandatory or "") .. Icons.FA_BELL .. manga.unread_chapters_count
+      table.insert(mandatory_parts, Icons.FA_BELL .. manga.unread_chapters_count)
     end
 
     if manga.in_library then
-      mandatory = (mandatory or "") .. Icons.COD_LIBRARY
+      table.insert(mandatory_parts, Icons.COD_LIBRARY)
     end
+
+    local mandatory = table.concat(mandatory_parts)
 
     table.insert(item_table, {
       manga = manga,
       text = manga.title,
-      post_text = manga.source.name,
-      mandatory = mandatory,
+      post_text = is_cover and mandatory or manga.source.name,
+      manga_cover = self.search_view_mode ~= "base" and manga.manga_cover or nil,
+      mandatory = not is_cover and mandatory or nil,
+    })
+  end
+
+  if self.has_next_page then
+    table.insert(item_table, {
+      text = "(" .. _("Next page") .. " " .. (self.result_page + 1) .. ")",
+      manga = {
+        callback = function()
+          self:loadNextPage()
+        end,
+      },
+      bold = true
     })
   end
 
@@ -134,8 +211,6 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
     function() return Backend.searchMangas(cancel_id, search_text, exclude) end,
     function()
       Backend.cancel(cancel_id)
-      local InfoMessage = require("ui/widget/infomessage")
-
       local cancelledMessage = InfoMessage:new {
         text = _("Search cancelled."),
       }
@@ -154,9 +229,14 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
   end
 
   local results = response.body[1]
+  local has_next_page = response.body[3] == true
 
   local ui = MangaSearchResults:new {
     results = results,
+    search_text = search_text,
+    exclude = exclude,
+    result_page = 1,
+    has_next_page = has_next_page,
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
     page = self.page
@@ -175,14 +255,82 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
   return true
 end
 
+--- Loads the next page of search results.
+--- @private
+function MangaSearchResults:loadNextPage()
+  Trapper:wrap(function()
+    local search_text = self.search_text
+    if not search_text or search_text == "" then
+      return
+    end
+
+    local cancel_id = Backend.createCancelId()
+    local next_page = self.result_page + 1
+    local response, cancelled = LoadingDialog:showAndRun(
+      _("Searching for") .. " \"" .. search_text .. "\"",
+      function() return Backend.searchMangas(cancel_id, search_text, self.exclude, next_page) end,
+      function()
+        Backend.cancel(cancel_id)
+
+        local cancelledMessage = InfoMessage:new {
+          text = _("Search cancelled."),
+        }
+        UIManager:show(cancelledMessage)
+      end
+    )
+
+    if cancelled then
+      return
+    end
+
+    if response.type == 'ERROR' then
+      ErrorDialog:show(response.message)
+      return
+    end
+
+    local results = response.body[1]
+    self.has_next_page = response.body[3] == true
+
+    for _, manga in ipairs(results) do
+      table.insert(self.results, manga)
+    end
+    self.result_page = next_page
+    self:updateItems()
+
+    if #response.body[2] > 0 then
+      UIManager:show(InfoMessage:new {
+        text = formatSearchErrors(response.body[2])
+      })
+    end
+
+    Testing:emitEvent("manga_search_results_shown")
+  end)
+end
+
 --- @private
 function MangaSearchResults:onPrimaryMenuChoice(item)
+  if item.manga and item.manga.callback then
+    item.manga.callback()
+    return
+  end
+
   Trapper:wrap(function()
     --- @type Manga
     local manga = item.manga
 
     local onReturnCallback = function()
-      UIManager:show(self)
+      local ui = MangaSearchResults:new {
+        results = self.results,
+        search_text = self.search_text,
+        exclude = self.exclude,
+        result_page = self.result_page,
+        has_next_page = self.has_next_page,
+        on_return_callback = self.on_return_callback,
+        covers_fullscreen = true, -- hint for UIManager:_repaint()
+        page = self.page
+      }
+      ui.on_return_callback = self.on_return_callback
+      UIManager:show(ui)
     end
 
     if ChapterListing:fetchAndShow(manga, onReturnCallback) then
@@ -193,6 +341,11 @@ end
 
 --- @private
 function MangaSearchResults:onContextMenuChoice(item)
+  if item.manga and item.manga.callback then
+    item.manga.callback()
+    return
+  end
+
   --- @type Manga
   local manga = item.manga
 
@@ -212,7 +365,7 @@ function MangaSearchResults:onContextMenuChoice(item)
 
           Trapper:wrap(function()
             --- @type ErrorResponse
-            local err = nil
+            local err
             if manga.in_library then
               err = Backend.removeMangaFromLibrary(manga.source.id, manga.id)
             else
@@ -229,29 +382,30 @@ function MangaSearchResults:onContextMenuChoice(item)
             manga.in_library = not added
 
             if manga.in_library and Backend.getSettings().body.library_view_mode ~= 'base' then
-              local cancel_id = Backend.createCancelId()
-              local response, cancelled = LoadingDialog:showAndRun(
-                _("Refreshing details..."),
-                function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
-                function()
-                  Backend.cancel(cancel_id)
-                  local InfoMessage = require("ui/widget/infomessage")
+              if NetworkMgr:isConnected() then
+                local cancel_id = Backend.createCancelId()
+                local response, cancelled = LoadingDialog:showAndRun(
+                  _("Refreshing details..."),
+                  function() return Backend.refreshMangaDetails(cancel_id, manga.source.id, manga.id) end,
+                  function()
+                    Backend.cancel(cancel_id)
 
-                  local cancelledMessage = InfoMessage:new {
-                    text = _("Refresh details cancelled."),
-                  }
-                  UIManager:show(cancelledMessage)
+                    local cancelledMessage = InfoMessage:new {
+                      text = _("Refresh details cancelled."),
+                    }
+                    UIManager:show(cancelledMessage)
+                  end
+                )
+
+                if cancelled then
+                  return false
                 end
-              )
 
-              if cancelled then
-                return false
-              end
+                if response.type == 'ERROR' then
+                  ErrorDialog:show(response.message)
 
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
-
-                return false
+                  return false
+                end
               end
             end
 
@@ -284,11 +438,15 @@ function MangaSearchResults:onContextMenuChoice(item)
             local onReturnCallback = function()
               local ui = MangaSearchResults:new {
                 results = self.results,
-                on_return_callback = self.onReturnCallback,
+                search_text = self.search_text,
+                exclude = self.exclude,
+                result_page = self.result_page,
+                has_next_page = self.has_next_page,
+                on_return_callback = self.on_return_callback,
                 covers_fullscreen = true, -- hint for UIManager:_repaint()
                 page = self.page
               }
-              ui.on_return_callback = self.onReturnCallback
+              ui.on_return_callback = self.on_return_callback
               UIManager:show(ui)
             end
             MangaInfoWidget:fetchAndShow(manga, onReturnCallback)

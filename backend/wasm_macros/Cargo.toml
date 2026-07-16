@@ -5,17 +5,11 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-anyhow = "1.0.100"
-chrono = "0.4.42"
-chrono-tz = "0.10.4"
-darling = "0.21.3"
-num_enum = "0.7.5"
-proc-macro2 = "1.0.103"
-quote = "1.0.42"
-syn = { version = "2.0.111", features = ["full"] }
-url = "2.5.7"
+proc-macro2 = "1.0.106"
+quote = "1.0.46"
+syn = { version = "2.0.118", features = ["full"] }
 wasm_shared = { path = "../wasm_shared" }
-wasmi = "0.51.5"
+wasmi = "1.1.0"
 
 [lib]
 proc-macro = true

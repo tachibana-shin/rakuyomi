@@ -1,6 +1,6 @@
 # fork from https://github.com/omer-faruq/assistant.koplugin
 
-.PHONY: all translate template update extract-untranslated ai-translate check-ai-results import-translation check clean init-dirs
+.PHONY: all translate template update extract-untranslated ai-translate check-ai-results import-translation check clean init-dirs fmt
 
 all: translate
 
@@ -29,7 +29,16 @@ translate:
 	@echo "[7/7] Cleaning up intermediate files..."
 	@$(MAKE) clean
 	@echo "\nTranslation process completed successfully!"
+	@$(MAKE) fmt
 
+update-trans:
+	@$(MAKE) clean
+	@$(MAKE) update
+	@$(MAKE) extract-untranslated
+	@$(MAKE) g-translate
+	@$(MAKE) import-translation
+	@$(MAKE) check
+	@$(MAKE) fmt
 
 DOMAIN = koreader
 TEMPLATE_DIR = templates
@@ -145,6 +154,17 @@ template:
 		`find .. -type f -name "*.lua" | sort` \
 		-o $(TEMPLATE_DIR)/$(DOMAIN).pot
 
+PO_FILES := $(shell find . -name "koreader.po")
+
+fmt:
+	@echo "Formatting .po..."
+	@for file in $(PO_FILES); do \
+		echo "Formatting $$file..."; \
+		$(MSGCAT_BIN) --no-wrap $$file -o $$file; \
+	done
+	@echo "Done!"
+
+check:
 
 # Compile .po files to .mo files
 # for future use

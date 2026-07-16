@@ -7,8 +7,8 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use futures::executor;
 use pprof::criterion::{Output, PProfProfiler};
 use shared::{
-    cbz_metadata::ComicInfo, chapter_downloader::download_chapter_pages_as_cbz, settings::Settings,
-    source::Source, source_manager::SourceManager,
+    cbz_metadata::ComicInfo, chapter_downloader::download_chapter_pages_as_cbz, model::ChapterId,
+    settings::Settings, source::Source, source_manager::SourceManager,
 };
 use std::{collections::HashMap, env, io, path::PathBuf, sync::Arc};
 use tokio::sync::Mutex;
@@ -51,6 +51,12 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
                 pages.clone(),
                 4,
                 false,
+                None,
+                &ChapterId::from_strings(
+                    "benchmark_source".into(),
+                    "benchmark_manga".into(),
+                    "benchmark_chapter".into(),
+                ),
             )
             .await;
         })

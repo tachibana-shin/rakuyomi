@@ -218,7 +218,7 @@ function MenuItemCover:init()
       -- risk being shifted later and becoming misaligned
       local name_baseline = item_name[1]:getBaseline()
       local mdtr_baseline = mandatory_widget:getBaseline()
-      local name_height = item_name[1]:getSize().h
+      -- local name_height = item_name[1]:getSize().h
       local mdtr_height = mandatory_widget:getSize().h
       -- Make all the TextWidgets be self.dimen.h
       item_name.forced_height = self.dimen.h
@@ -229,15 +229,15 @@ function MenuItemCover:init()
       -- And adjust their baselines for proper centering and alignment
       -- (We made sure the font sizes wouldn't exceed self.dimen.h, so we
       -- get only non-negative pad_top here, and we're moving them down.)
-      local name_missing_pad_top = math.floor((self.dimen.h - name_height) / 2)
+      -- local name_missing_pad_top = math.floor((self.dimen.h - name_height) / 2)
       local mdtr_missing_pad_top = math.floor((self.dimen.h - mdtr_height) / 2)
-      name_baseline = name_baseline + name_missing_pad_top
+      -- name_baseline = name_baseline + name_missing_pad_top
       mdtr_baseline = mdtr_baseline + mdtr_missing_pad_top
       local baselines_diff = Math.round(name_baseline - mdtr_baseline)
       if baselines_diff > 0 then
         mdtr_baseline = mdtr_baseline + baselines_diff
-      else
-        name_baseline = name_baseline - baselines_diff
+      -- else
+      --   name_baseline = name_baseline - baselines_diff
       end
       -- item_name[1].forced_baseline = name_baseline
       mandatory_widget.forced_baseline = mdtr_baseline
@@ -429,17 +429,21 @@ function MenuItemCover:genCover(wleft_width, wleft_height)
 
   local wleft
   if self.entry.manga_cover and starts_with(self.entry.manga_cover, "file://") then
+    local cover_path = self.entry.manga_cover:gsub("^file://", ""):gsub("%%(%x%x)", function(hex)
+      return string.char(tonumber(hex, 16))
+    end)
     local wimage = ImageWidget:new {
-      file = self.entry.manga_cover:gsub("^file://", ""),
-      -- scale_factor = 0.5
+      file = cover_path,
+      file_do_cache = false,
     }
     wimage:_loadfile()
     local image_size = wimage:getSize() -- get final widget size
     local _, _, scale_factor = getCachedCoverSize(image_size.w, image_size.h, wleft_width, wleft_height)
 
     wimage = ImageWidget:new {
-      file = self.entry.manga_cover:gsub("^file://", ""),
-      scale_factor = scale_factor
+      file = cover_path,
+      scale_factor = scale_factor,
+      file_do_cache = false,
     }
 
     wimage:_render()

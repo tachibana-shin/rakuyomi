@@ -78,3 +78,25 @@ fn decode_jpeg(data: &[u8]) -> Result<ImageData> {
         data: pixels,
     })
 }
+
+/// Convert ARGB `u32` pixel data to RGB bytes for JPEG encoding.
+/// Validates dimensions with checked arithmetic and length matching.
+pub fn decode_argb_to_rgb(width: i32, height: i32, data: &[u32]) -> Result<Vec<u8>> {
+    let pixel_count = (width as u64)
+        .checked_mul(height as u64)
+        .and_then(|p| p.checked_mul(3))
+        .ok_or_else(|| anyhow::anyhow!("image dimensions overflow: {}x{}", width, height))?;
+
+    let rgb_len = usize::try_from(pixel_count)
+        .map_err(|_| anyhow::anyhow!("RGB buffer too large for usize: {}", pixel_count))?;
+    let mut rgb_pixels = vec![0u8; rgb_len];
+
+    for (i, px) in data.iter().enumerate() {
+        let base = i * 3;
+        rgb_pixels[base] = ((px >> 16) & 0xFF) as u8;
+        rgb_pixels[base + 1] = ((px >> 8) & 0xFF) as u8;
+        rgb_pixels[base + 2] = (px & 0xFF) as u8;
+    }
+
+    Ok(rgb_pixels)
+}

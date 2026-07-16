@@ -57,6 +57,29 @@ pub enum LibraryViewMode {
     Grid,
 }
 
+/// Controls how the chapter title is written into ComicInfo.xml.
+/// This affects KOReader's statistics display.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ChapterTitleFormat {
+    /// Chapter title only (default, current behavior)
+    #[default]
+    Title,
+    /// Series name + chapter title
+    SeriesTitle,
+    /// Series name + chapter number
+    SeriesChapterNumber,
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchViewMode {
+    #[default]
+    Base,
+    Cover,
+    Grid,
+}
+
 /// Settings used to configure rakuyomi's behavior.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, JsonSchema)]
 pub struct Settings {
@@ -153,6 +176,47 @@ pub struct Settings {
 
     #[serde(default)]
     pub library_view_mode: LibraryViewMode,
+
+    #[serde(default)]
+    pub search_view_mode: SearchViewMode,
+
+    /// When enabled, downloaded chapters are stored in a RAM-backed tmpfs.
+    /// Data is lost on power off.
+    #[serde(default)]
+    pub ram_storage_enabled: bool,
+
+    /// Size of the RAM storage in MB.
+    #[serde(default = "default_ram_storage_size_mb")]
+    pub ram_storage_size_mb: usize,
+
+    /// Cookie sync server URL (Telegram Bot Deno server).
+    #[serde(default)]
+    pub cookie_sync_server_url: Option<String>,
+
+    /// Device name after pairing with the cookie sync bot.
+    #[serde(default)]
+    pub cookie_sync_device_name: Option<String>,
+
+    /// Telegram chat_id after pairing.
+    #[serde(default)]
+    pub cookie_sync_chat_id: Option<i64>,
+
+    /// API token for authenticating with the cookie sync bot.
+    #[serde(default)]
+    pub cookie_sync_api_token: Option<String>,
+
+    /// An optional HTTP/HTTPS/SOCKS5 proxy URL used for all outgoing requests.
+    /// Examples: `http://proxy.local:8080`, `socks5://127.0.0.1:1080`
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proxy_url: Option<String>,
+
+    /// Controls how the chapter title is formatted in ComicInfo.xml.
+    #[serde(default)]
+    pub chapter_title_format: ChapterTitleFormat,
+}
+
+fn default_ram_storage_size_mb() -> usize {
+    32
 }
 
 fn default_storage_size_limit() -> StorageSizeLimit {
@@ -262,5 +326,146 @@ impl JsonSchema for StorageSizeLimit {
         }
 
         binding
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_storage_size_limit_deserialize_gb() {
+        let json = r#""2 GB""#;
+        let size: StorageSizeLimit = serde_json::from_str(json).unwrap();
+        assert_eq!(size.0, Size::from_gigabytes(2.0));
+    }
+
+    #[test]
+    fn test_storage_size_limit_deserialize_mb() {
+        let json = r#""2048 MB""#;
+        let size: StorageSizeLimit = serde_json::from_str(json).unwrap();
+        assert_eq!(size.0, Size::from_megabytes(2048.0));
+    }
+
+    #[test]
+    fn test_storage_size_limit_deserialize_float() {
+        let json = r#""1.5 GB""#;
+        let size: StorageSizeLimit = serde_json::from_str(json).unwrap();
+        assert_eq!(size.0, Size::from_gigabytes(1.5));
+    }
+
+    #[test]
+    fn test_storage_size_limit_deserialize_no_space() {
+        let json = r#""500MB""#;
+        let size: StorageSizeLimit = serde_json::from_str(json).unwrap();
+        assert_eq!(size.0, Size::from_megabytes(500.0));
+    }
+
+    #[test]
+    fn test_storage_size_limit_deserialize_invalid_format() {
+        let json = r#""500""#;
+        let result: Result<StorageSizeLimit, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_storage_size_limit_deserialize_invalid_dimension() {
+        let json = r#""500 KB""#;
+        let result: Result<StorageSizeLimit, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_storage_size_limit_serialize() {
+        let size = StorageSizeLimit(Size::from_gigabytes(2.0));
+        let json = serde_json::to_string(&size).unwrap();
+        assert!(json.contains("2"));
+        assert!(json.contains("GB"));
+    }
+
+    #[test]
+    fn test_storage_size_limit_default() {
+        let size = StorageSizeLimit::default();
+        assert_eq!(size.0, Size::from_bytes(0));
+    }
+
+    #[test]
+    fn test_chapter_sorting_mode_default() {
+        let mode = ChapterSortingMode::default();
+        assert_eq!(mode, ChapterSortingMode::ChapterDescending);
+    }
+
+    #[test]
+    fn test_library_sorting_mode_default() {
+        let mode = LibrarySortingMode::default();
+        assert_eq!(mode, LibrarySortingMode::Ascending);
+    }
+
+    #[test]
+    fn test_library_view_mode_default() {
+        let mode = LibraryViewMode::default();
+        assert_eq!(mode, LibraryViewMode::Cover);
+    }
+
+    #[test]
+    fn test_search_view_mode_default() {
+        let mode = SearchViewMode::default();
+        assert_eq!(mode, SearchViewMode::Base);
+    }
+
+    #[test]
+    fn test_chapter_title_format_default() {
+        let mode = ChapterTitleFormat::default();
+        assert_eq!(mode, ChapterTitleFormat::Title);
+    }
+
+    #[test]
+    fn test_settings_default() {
+        let settings = Settings::default();
+        assert!(settings.source_lists.is_empty());
+        assert!(settings.languages.is_empty());
+        // Default derive gives StorageSizeLimit(0 bytes)
+        assert_eq!(settings.storage_size_limit.0, Size::from_bytes(0));
+        assert!(settings.storage_path.is_none());
+        assert!(settings.source_settings.is_empty());
+        assert_eq!(
+            settings.chapter_sorting_mode,
+            ChapterSortingMode::ChapterDescending
+        );
+        assert_eq!(settings.library_sorting_mode, LibrarySortingMode::Ascending);
+        assert!(!settings.enabled_cron_check_mangas_update);
+        assert_eq!(settings.preload_chapters, 0);
+        assert!(!settings.optimize_image);
+        assert_eq!(settings.library_view_mode, LibraryViewMode::Cover);
+        assert_eq!(settings.search_view_mode, SearchViewMode::Base);
+        assert!(!settings.ram_storage_enabled);
+        assert_eq!(settings.ram_storage_size_mb, 0);
+        assert_eq!(settings.chapter_title_format, ChapterTitleFormat::Title);
+    }
+
+    #[test]
+    fn test_settings_deserialize_uses_serde_defaults() {
+        let json = r#"{}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        // serde(default = ...) uses default_storage_size_limit()
+        assert_eq!(
+            settings.storage_size_limit,
+            default_storage_size_limit()
+        );
+        assert_eq!(settings.ram_storage_size_mb, 32);
+    }
+
+    #[test]
+    fn test_settings_serialize_roundtrip() {
+        let json = r#"{}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&settings).unwrap();
+        let deserialized: Settings = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.chapter_sorting_mode, settings.chapter_sorting_mode);
+        assert_eq!(deserialized.library_sorting_mode, settings.library_sorting_mode);
+        assert_eq!(deserialized.library_view_mode, settings.library_view_mode);
+        assert_eq!(deserialized.search_view_mode, settings.search_view_mode);
+        assert_eq!(deserialized.ram_storage_size_mb, settings.ram_storage_size_mb);
+        assert_eq!(deserialized.chapter_title_format, settings.chapter_title_format);
     }
 }

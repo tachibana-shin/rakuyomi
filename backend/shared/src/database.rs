@@ -309,7 +309,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -387,7 +387,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -465,7 +465,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -543,7 +543,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -621,7 +621,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -699,7 +699,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -777,7 +777,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -855,7 +855,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -933,7 +933,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -1011,7 +1011,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2407,7 +2407,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2487,7 +2487,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2567,7 +2567,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2647,7 +2647,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2727,7 +2727,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2807,7 +2807,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2887,7 +2887,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -2967,7 +2967,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -3047,7 +3047,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
@@ -3127,7 +3127,7 @@ impl Database {
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = pm.source_id AND ci2.manga_id = pm.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
-                        ) AS total_chapters_count,
+                        ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
                         COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                         CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"

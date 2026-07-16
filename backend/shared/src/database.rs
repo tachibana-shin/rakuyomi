@@ -305,14 +305,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -383,14 +383,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -461,14 +461,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -539,14 +539,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -617,14 +617,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -695,14 +695,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -773,14 +773,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -851,14 +851,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -929,14 +929,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -1007,14 +1007,14 @@ impl Database {
                         mi.author,
                         mi.artist,
                         mi.cover_url,
-                        COUNT(ci.chapter_number) AS unread_chapters_count,
+                        COUNT(ci.chapter_number) AS "unread_chapters_count: i64",
                         (SELECT COUNT(*) FROM chapter_informations ci2
                             WHERE ci2.source_id = ml.source_id AND ci2.manga_id = ml.manga_id
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM manga_library ml
                     JOIN manga_informations mi
                         ON mi.source_id = ml.source_id AND mi.manga_id = ml.manga_id
@@ -2409,8 +2409,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2489,8 +2489,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2569,8 +2569,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2649,8 +2649,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2729,8 +2729,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2809,8 +2809,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2889,8 +2889,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -2969,8 +2969,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -3049,8 +3049,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id
@@ -3129,8 +3129,8 @@ impl Database {
                             AND (ms.preferred_scanlator IS NULL OR ci2.scanlator = ms.preferred_scanlator OR ci2.scanlator IS NULL)
                         ) AS "total_chapters_count: i64",
                         lti.last_read_time AS "last_read?: i64",
-                        COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!"
+                        COALESCE(ms.viewer, md.viewer, 0) AS "viewer: i64",
+                        CASE WHEN ms.viewer IS NOT NULL THEN 1 ELSE 0 END AS "state_viewer!: i64"
                     FROM playlist_mangas pm
                     JOIN manga_informations mi
                         ON mi.source_id = pm.source_id AND mi.manga_id = pm.manga_id

@@ -145,7 +145,11 @@ async fn get_storage_stats(
         ..
     }): StateExtractor<State>,
 ) -> Result<Json<usecases::get_storage_stats::StorageStats>, AppError> {
-    let chapter_storage = chapter_storage.lock().await;
+    // Clone and release the lock immediately: the stats scan is read-only and
+    // can take a while on slow storage, and holding the mutex would block
+    // downloads/reads meanwhile. A concurrent storage change at worst makes
+    // the reported numbers slightly stale, which is fine for a display value.
+    let chapter_storage = chapter_storage.lock().await.clone();
 
     let stats = usecases::get_storage_stats(&database, &chapter_storage).await?;
 

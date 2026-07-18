@@ -37,9 +37,13 @@ impl Tracker for KomgaTracker {
         let api_key = require_api_key(settings)?;
         let client = build_client();
 
-        let request = client
-            .get(format!("{base_url}/api/v1/series"))
-            .basic_auth(&api_key, None::<&str>)
+        let mut request = client.get(format!("{base_url}/api/v1/series"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
+        let request = request.query(&[("search", query)]);
             .query(&[("search", query)]);
 
         let response: SearchResponse =

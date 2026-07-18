@@ -47,6 +47,19 @@ end
 --- @class SuccessfulResponse<T>: { type: 'SUCCESS', body: T }
 --- @class ErrorResponse: { type: 'ERROR', status: number, message: string }
 
+-- Raw (non-JSON) error bodies can be entire HTML pages (e.g. a proxy's 502
+-- page); cap what we surface in error dialogs so they stay readable on e-ink.
+local MAX_ERROR_BODY_LENGTH = 300
+
+--- @param text string
+--- @return string
+local function truncateForDisplay(text)
+  if #text > MAX_ERROR_BODY_LENGTH then
+    return text:sub(1, MAX_ERROR_BODY_LENGTH) .. "..."
+  end
+  return text
+end
+
 --- Performs a HTTP request, using JSON to encode the request body and to decode the response body.
 --- @private
 --- @param request RequestParameters The parameters used for this request.
@@ -103,7 +116,8 @@ function Backend.requestJson(request)
       return {
         type = 'ERROR',
         status = response.status,
-        message = response.body or ("HTTP " .. tostring(response.status)),
+        message = (response.body and response.body ~= "" and truncateForDisplay(response.body))
+            or ("HTTP " .. tostring(response.status)),
       }
     end
 
@@ -120,7 +134,7 @@ function Backend.requestJson(request)
         and parsed_body.message ~= "" then
       error_message = parsed_body.message
     elseif response.body and response.body ~= "" then
-      error_message = tostring(response.body)
+      error_message = truncateForDisplay(tostring(response.body))
     else
       error_message = "HTTP " .. tostring(response.status)
     end

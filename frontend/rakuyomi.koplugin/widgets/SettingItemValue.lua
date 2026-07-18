@@ -138,7 +138,10 @@ function SettingItemValue:createValueWidget()
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "list" then
-    local value = table.concat(self:getCurrentValue() or {}, "\n")
+    local current_val = self:getCurrentValue()
+    -- Guard against corrupt settings where the stored value isn't a table.
+    local value = type(current_val) == "table" and table.concat(current_val, "\n")
+        or tostring(current_val or "")
     if value == "" then
       value = _("Not set")
     end

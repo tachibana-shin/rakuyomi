@@ -10,7 +10,7 @@
     "dev": "deno run --watch --allow-net --allow-env --allow-sys --allow-read --allow-ffi --env-file main.ts",
     "check": "deno check main.ts",
     "lint": "deno lint",
-    "test": "deno test --allow-env --allow-net --env-file=.env"
+    "test": "deno test --allow-net --allow-env --allow-sys --allow-read --allow-ffi --env-file"
   },
   "imports": {
     "@libsql/client": "npm:@libsql/client@^0.17.4",

@@ -10,7 +10,11 @@ app.get("/oauth/:service/:sessionId", async (c) => {
   const parsed = oauthServiceSchema.safeParse(serviceParam)
   if (!parsed.success) {
     return c.html(
-      `<!DOCTYPE html><html><body><h1>Unknown service: ${serviceParam}</h1></body></html>`,
+      <html>
+        <body>
+          <h1>Unknown service: {serviceParam}</h1>
+        </body>
+      </html>,
     )
   }
   const service = parsed.data

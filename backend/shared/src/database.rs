@@ -159,6 +159,35 @@ impl Database {
         Ok(rows.into_iter().map(|row| row.manga_id()).collect())
     }
 
+    /// Returns the chapter IDs of every cached chapter belonging to a single
+    /// manga. Used for best-effort download cleanup on library removal.
+    pub async fn get_manga_chapter_ids(&self, manga_id: &MangaId) -> Result<Vec<ChapterId>> {
+        use sqlx::Row;
+
+        let rows = sqlx::query(
+            r#"
+                SELECT source_id, manga_id, chapter_id
+                FROM chapter_informations
+                WHERE source_id = ? AND manga_id = ?
+            "#,
+        )
+        .bind(manga_id.source_id().value().as_str())
+        .bind(manga_id.value().as_str())
+        .fetch_all(&*self.pool.read().await)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                ChapterId::from_strings(
+                    row.get::<String, _>("source_id"),
+                    row.get::<String, _>("manga_id"),
+                    row.get::<String, _>("chapter_id"),
+                )
+            })
+            .collect())
+    }
+
     pub async fn get_manga_library_and_status(&self) -> Result<Vec<(MangaId, PublishingStatus)>> {
         let rows = sqlx::query!(
             r#"

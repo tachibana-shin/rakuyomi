@@ -394,6 +394,22 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'delete_downloaded_on_remove',
+    {
+      type = 'boolean',
+      title = _("Delete downloads when removing from library"),
+      default = true,
+    }
+  },
+  {
+    'delete_downloaded_after_read',
+    {
+      type = 'boolean',
+      title = _("Delete downloads after marking as read"),
+      default = false,
+    }
+  },
+  {
     'ram_storage_enabled',
     {
       type = 'boolean',

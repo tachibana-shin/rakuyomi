@@ -8,8 +8,8 @@ use crate::{
 /// Sets the read state of a single chapter. A `value` of `None` marks the
 /// chapter as read (the default action). When the chapter ends up marked as
 /// read and `delete_downloaded_after_read` is enabled, its downloaded file is
-/// deleted on a best-effort basis (both persistent and RAM-backed storage);
-/// cleanup failures never affect the already-persisted read state.
+/// deleted on a best-effort basis; cleanup failures never affect the
+/// already-persisted read state.
 pub async fn mark_chapter_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
@@ -22,7 +22,6 @@ pub async fn mark_chapter_as_read(
     let marking_as_read = value.unwrap_or(true);
     if marking_as_read && delete_downloaded_after_read {
         let _ = revoke_manga_chapter(chapter_storage, id, false).await;
-        let _ = revoke_manga_chapter(chapter_storage, id, true).await;
     }
 
     Ok(())

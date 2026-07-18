@@ -32,9 +32,8 @@ pub async fn mark_chapters_as_read(
 
     if state && delete_downloaded_after_read {
         for chapter_id in &selected_ids {
-            // Best-effort cleanup in both persistent and RAM-backed storage.
+            // Best-effort: a failed deletion never affects the read state.
             let _ = revoke_manga_chapter(chapter_storage, chapter_id, false).await;
-            let _ = revoke_manga_chapter(chapter_storage, chapter_id, true).await;
         }
     }
 

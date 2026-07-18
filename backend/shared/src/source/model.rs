@@ -52,9 +52,10 @@ pub enum SettingDefinition {
     #[serde(rename = "button", rename_all = "camelCase")]
     Button {
         key: String,
-        title: String,
+        title: String,        
         confirm_title: Option<String>,
-        confirm_message: Option<String>,
+        // Matches the official Aidoku schema's `confirmText` field.
+        confirm_text: Option<String>,
     },
     #[serde(rename = "switch")]
     Switch {

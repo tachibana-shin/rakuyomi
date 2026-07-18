@@ -2242,7 +2242,7 @@ impl Database {
                 remote_url = excluded.remote_url,
                 total_chapters = excluded.total_chapters,
                 total_volumes = excluded.total_volumes
-            "#, 
+            "#,
             manga_id.source_id().value(),
             manga_id.value(),
             candidate.service.as_str(),

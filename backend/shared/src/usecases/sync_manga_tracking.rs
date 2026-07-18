@@ -162,9 +162,7 @@ fn derive_remote_snapshot(
     let mut result = TrackingProgressSnapshot { status, ..snapshot };
 
     // Auto-set completed_at when status is derived to Completed but not yet set.
-    if matches!(result.status, Some(TrackingStatus::Completed))
-        && result.completed_at.is_none()
-    {
+    if matches!(result.status, Some(TrackingStatus::Completed)) && result.completed_at.is_none() {
         result.completed_at = Some(chrono::Utc::now().timestamp());
     }
 

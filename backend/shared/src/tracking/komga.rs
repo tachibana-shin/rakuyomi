@@ -43,7 +43,8 @@ impl Tracker for KomgaTracker {
         } else {
             request = request.basic_auth(&api_key, None::<&str>);
         }
-        let request = request.query(&[("search", query)]);
+        let request = request
+            .query(&[("search", query)])
             .query(&[("search", query)]);
 
         let response: SearchResponse =

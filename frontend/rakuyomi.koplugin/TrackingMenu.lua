@@ -13,13 +13,14 @@ local TrackingServices = require("TrackingServices")
 
 local TrackingMenu = {}
 
---- Format a Unix timestamp as DD/MM/YYYY, or nil if nil.
+--- Format a UTC Unix timestamp as DD/MM/YYYY, or nil if nil.
 local function formatDate(timestamp)
   if timestamp == nil or timestamp == 0 then return nil end
-  return os.date("%d/%m/%Y", timestamp)
+  local date = os.date("!*t", timestamp)
+  return string.format("%02d/%02d/%04d", date.day, date.month, date.year)
 end
 
---- Parse a DD/MM/YYYY string to Unix timestamp, or nil on failure/empty.
+--- Parse a DD/MM/YYYY string to UTC Unix timestamp, or nil on failure/empty.
 local function parseDate(str)
   if str == nil or str == "" then return nil end
   local day, month, year = str:match("^(%d+)/(%d+)/(%d+)$")
@@ -29,8 +30,10 @@ local function parseDate(str)
   if year < 1970 or year > 2100 then return nil end
   if month < 1 or month > 12 then return nil end
   if day < 1 or day > 31 then return nil end
-  local ts = os.time({ year = year, month = month, day = day, hour = 0, min = 0, sec = 0 })
-  return ts
+  local local_ts = os.time({ year = year, month = month, day = day, hour = 0, min = 0, sec = 0 })
+  local utc_date = os.date("!*t", local_ts)
+  ---@diagnostic disable-next-line: param-type-mismatch
+  return os.time(utc_date)
 end
 
 local function formatTrackingCandidate(candidate)

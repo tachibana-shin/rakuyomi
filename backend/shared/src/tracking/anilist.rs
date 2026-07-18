@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use chrono::{Datelike, Local, NaiveDate, TimeZone};
+use chrono::{Datelike, NaiveDate, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -23,7 +23,7 @@ pub struct AniListDate {
 
 impl AniListDate {
     fn from_timestamp(ts: i64) -> Option<Self> {
-        let date = Local.timestamp_opt(ts, 0).single()?.date_naive();
+        let date = Utc.timestamp_opt(ts, 0).single()?.date_naive();
         Some(AniListDate {
             year: Some(date.year() as i64),
             month: Some(date.month() as i64),
@@ -37,7 +37,7 @@ impl AniListDate {
         let day = self.day? as u32;
         let date = NaiveDate::from_ymd_opt(year, month, day)?;
         let datetime = date.and_hms_opt(0, 0, 0)?;
-        Some(Local.from_local_datetime(&datetime).single()?.timestamp())
+        Some(datetime.and_utc().timestamp())
     }
 }
 

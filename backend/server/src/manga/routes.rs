@@ -140,20 +140,12 @@ async fn get_manga_library(
 
 async fn get_storage_stats(
     StateExtractor(State {
-        database,
-        chapter_storage,
-        ..
+        chapter_storage, ..
     }): StateExtractor<State>,
-) -> Result<Json<usecases::get_storage_stats::StorageStats>, AppError> {
-    // Clone and release the lock immediately: the stats scan is read-only and
-    // can take a while on slow storage, and holding the mutex would block
-    // downloads/reads meanwhile. A concurrent storage change at worst makes
-    // the reported numbers slightly stale, which is fine for a display value.
-    let chapter_storage = chapter_storage.lock().await.clone();
+) -> Json<usecases::get_storage_stats::StorageStats> {
+    let chapter_storage = chapter_storage.lock().await;
 
-    let stats = usecases::get_storage_stats(&database, &chapter_storage).await?;
-
-    Ok(Json(stats))
+    Json(usecases::get_storage_stats(&chapter_storage))
 }
 
 async fn find_orphan_or_read_files(

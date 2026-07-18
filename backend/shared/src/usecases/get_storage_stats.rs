@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::Serialize;
 
 use crate::{chapter_storage::ChapterStorage, database::Database, model::ChapterId};
@@ -28,20 +28,35 @@ pub struct StorageStats {
 /// Computes how much space the downloaded chapters of every manga in the
 /// library currently occupy, both in total and broken down per manga.
 /// Includes RAM-backed (tmpfs) downloads when RAM storage is enabled.
+///
+/// The filesystem scan runs on a blocking thread so the async executor is
+/// never stalled. It is deliberately sequential: e-reader eMMC gains nothing
+/// from parallel I/O, and a sequential metadata-only walk keeps I/O pressure
+/// at a minimum.
 pub async fn get_storage_stats(
     db: &Database,
     chapter_storage: &ChapterStorage,
 ) -> Result<StorageStats> {
     let chapter_ids = db.get_library_chapter_ids().await?;
+    let chapter_storage = chapter_storage.clone();
 
+    tokio::task::spawn_blocking(move || scan_stored_chapters(&chapter_storage, chapter_ids))
+        .await
+        .context("storage stats scan task failed")
+}
+
+fn scan_stored_chapters(
+    chapter_storage: &ChapterStorage,
+    chapter_ids: Vec<ChapterId>,
+) -> StorageStats {
     let mut totals: HashMap<(String, String), u64> = HashMap::new();
     let mut total_bytes: u64 = 0;
     let include_ram = chapter_storage.is_ram_enabled();
 
     for chapter_id in chapter_ids {
-        let mut chapter_bytes = stored_chapter_size(chapter_storage, &chapter_id, false).await;
+        let mut chapter_bytes = stored_chapter_size(chapter_storage, &chapter_id, false);
         if include_ram {
-            chapter_bytes += stored_chapter_size(chapter_storage, &chapter_id, true).await;
+            chapter_bytes += stored_chapter_size(chapter_storage, &chapter_id, true);
         }
 
         if chapter_bytes > 0 {
@@ -64,15 +79,15 @@ pub async fn get_storage_stats(
         })
         .collect();
 
-    Ok(StorageStats {
+    StorageStats {
         total_bytes,
         per_manga,
-    })
+    }
 }
 
 /// Returns the size in bytes of a chapter's stored file, or 0 when the
 /// chapter isn't stored (or its metadata can't be read).
-async fn stored_chapter_size(
+fn stored_chapter_size(
     chapter_storage: &ChapterStorage,
     chapter_id: &ChapterId,
     use_ram: bool,
@@ -81,7 +96,7 @@ async fn stored_chapter_size(
         return 0;
     };
 
-    match tokio::fs::metadata(&path).await {
+    match std::fs::metadata(&path) {
         Ok(metadata) => metadata.len(),
         Err(_) => 0,
     }

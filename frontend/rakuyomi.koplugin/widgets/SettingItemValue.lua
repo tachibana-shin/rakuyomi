@@ -84,8 +84,10 @@ function SettingItemValue:createValueWidget()
       label_for_value[option.value] = option.label
     end
 
+    local current_val = self:getCurrentValue()
+    local display_text = (current_val ~= nil and label_for_value[current_val]) or tostring(current_val or "")
     return TextWidget:new {
-      text = label_for_value[self:getCurrentValue()] .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = display_text .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -119,21 +121,29 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "integer" then
     return TextWidget:new {
-      text = self:getCurrentValue() .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
+      text = (self:getCurrentValue() or self.value_definition.default or 0) .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "string" then
+    local value = self:getCurrentValue()
+    if value == nil or value == "" then
+      value = _("Not set")
+    end
     return TextWidget:new {
-      text = self:getCurrentValue() or "<empty>",
+      text = value .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "list" then
+    local value = table.concat(self:getCurrentValue() or {}, "\n")
+    if value == "" then
+      value = _("Not set")
+    end
     return TextWidget:new {
-      text = table.concat(self:getCurrentValue() or {}, "\n") or "<empty>",
+      text = value,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -348,6 +358,11 @@ function SettingItemValue:onTap()
     })
     UIManager:show(path_chooser)
   end
+
+  -- Consume the tap: otherwise it keeps bubbling up to the containing view,
+  -- whose top-zone gesture handler may open the KOReader menu on top of the
+  -- dialog we just showed.
+  return true
 end
 
 --- @private

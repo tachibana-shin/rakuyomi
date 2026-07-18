@@ -1438,9 +1438,9 @@ function LibraryView:openSettings()
       self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
-    Settings:fetchAndShow(onReturnCallback)
-
-    self:onClose(true)
+    if Settings:fetchAndShow(onReturnCallback) then
+      self:onClose(true)
+    end
   end)
 end
 

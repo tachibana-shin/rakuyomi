@@ -67,13 +67,16 @@ impl Tracker for SuwayomiTracker {
             }
         "#;
 
-        let request = client
-            .post(format!("{base_url}/graphql"))
-            .basic_auth(api_key, None::<&str>)
-            .json(&GraphqlRequest {
-                query: graphql_query.to_string(),
-                variables: Some(serde_json::json!({ "query": query })),
-            });
+        let mut request = client.post(format!("{base_url}/graphql"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
+        let request = request.json(&GraphqlRequest {
+            query: graphql_query.to_string(),
+            variables: Some(serde_json::json!({ "query": query })),
+        });
 
         let response: SearchResponse = request
             .send()
@@ -156,13 +159,16 @@ impl Tracker for SuwayomiTracker {
             }
         "#;
 
-        let request = client
-            .post(format!("{base_url}/graphql"))
-            .basic_auth(api_key, None::<&str>)
-            .json(&GraphqlRequest {
-                query: graphql_query.to_string(),
-                variables: Some(serde_json::json!({ "id": media_id })),
-            });
+        let mut request = client.post(format!("{base_url}/graphql"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
+        let request = request.json(&GraphqlRequest {
+            query: graphql_query.to_string(),
+            variables: Some(serde_json::json!({ "id": media_id })),
+        });
 
         let response: FetchResponse = request
             .send()
@@ -226,13 +232,16 @@ impl Tracker for SuwayomiTracker {
                         }
                     }
                 "#;
-                let request = client
-                    .post(format!("{base_url}/graphql"))
-                    .basic_auth(api_key, None::<&str>)
-                    .json(&GraphqlRequest {
-                        query: graphql_mutation.to_string(),
-                        variables: Some(serde_json::json!({ "ids": chapters })),
-                    });
+                let mut request = client.post(format!("{base_url}/graphql"));
+                if let Some((user, pass)) = api_key.split_once(':') {
+                    request = request.basic_auth(user, Some(pass));
+                } else {
+                    request = request.basic_auth(&api_key, None::<&str>);
+                }
+                let request = request.json(&GraphqlRequest {
+                    query: graphql_mutation.to_string(),
+                    variables: Some(serde_json::json!({ "ids": chapters })),
+                });
                 request.send().await?.error_for_status()?;
             }
         }
@@ -290,13 +299,16 @@ impl SuwayomiTracker {
             }
         "#;
 
-        let request = client
-            .post(format!("{base_url}/graphql"))
-            .basic_auth(api_key, None::<&str>)
-            .json(&GraphqlRequest {
-                query: graphql_query.to_string(),
-                variables: Some(serde_json::json!({ "id": manga_id })),
-            });
+        let mut request = client.post(format!("{base_url}/graphql"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
+        let request = request.json(&GraphqlRequest {
+            query: graphql_query.to_string(),
+            variables: Some(serde_json::json!({ "id": manga_id })),
+        });
 
         let response: Response = request
             .send()

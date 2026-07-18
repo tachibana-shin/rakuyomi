@@ -14,6 +14,9 @@ export async function exchangeMalCode(
     redirect_uri: redirectUri,
     code_verifier: codeVerifier,
   });
+  if (cfg.client_secret) {
+    body.set("client_secret", cfg.client_secret);
+  }
   const res = await fetch(cfg.token_url, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

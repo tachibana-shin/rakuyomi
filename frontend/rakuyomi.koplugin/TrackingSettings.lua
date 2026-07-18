@@ -522,6 +522,8 @@ function TrackingSettings:fetchAndShowUsername(service)
   end
   self.settings[service] = svc
 
+  -- not need update because getTrackingUser is function get data in database
+  -- Backend.setSettings(self.settings)
   self:showUsername(service)
   return username
 end

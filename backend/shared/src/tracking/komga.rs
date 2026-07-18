@@ -85,11 +85,14 @@ impl Tracker for KomgaTracker {
 
         let series_id = media_id_to_string(media_id);
 
-        let request = client
-            .get(format!(
-                "{base_url}/api/v2/series/{series_id}/read-progress/tachiyomi"
-            ))
-            .basic_auth(&api_key, None::<&str>);
+        let mut request = client.get(format!(
+            "{base_url}/api/v2/series/{series_id}/read-progress/tachiyomi"
+        ));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
 
         let response = request.send().await?;
 
@@ -145,12 +148,15 @@ impl Tracker for KomgaTracker {
         if let Some(status) = snapshot.status {
             // Always sync readStatus metadata on the series
             let status_str = format_status(status);
-            let request = client
-                .patch(format!("{base_url}/api/v1/series/{series_id}"))
-                .basic_auth(&api_key, None::<&str>)
-                .json(&serde_json::json!({
-                    "readStatus": status_str,
-                }));
+            let mut request = client.patch(format!("{base_url}/api/v1/series/{series_id}"));
+            if let Some((user, pass)) = api_key.split_once(':') {
+                request = request.basic_auth(user, Some(pass));
+            } else {
+                request = request.basic_auth(&api_key, None::<&str>);
+            }
+            let request = request.json(&serde_json::json!({
+                "readStatus": status_str,
+            }));
             request.send().await?.error_for_status()?;
         }
 
@@ -172,9 +178,12 @@ impl KomgaTracker {
             readStatus: Option<String>,
         }
 
-        let request = client
-            .get(format!("{base_url}/api/v1/series/{series_id}"))
-            .basic_auth(api_key, None::<&str>);
+        let mut request = client.get(format!("{base_url}/api/v1/series/{series_id}"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(&api_key, None::<&str>);
+        }
 
         let response: SeriesDetail =
             get_json(request, "failed to decode Komga series details").await?;

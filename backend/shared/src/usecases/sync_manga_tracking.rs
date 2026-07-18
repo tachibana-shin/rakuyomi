@@ -26,32 +26,56 @@ pub async fn sync_manga_tracking(
         let local_snapshot = db.get_local_tracking_progress(manga_id).await?;
 
         for binding in bindings {
-            let local_snapshot =
-                derive_remote_snapshot(local_snapshot.clone(), binding.total_chapters)?;
-            // Carry dates from the binding so push doesn't overwrite them with null.
-            let local_snapshot = TrackingProgressSnapshot {
-                started_at: binding.started_at.or(local_snapshot.started_at),
-                completed_at: binding.completed_at.or(local_snapshot.completed_at),
-                ..local_snapshot
-            };
-            let remote = tracking::push_progress(settings, &binding, &local_snapshot).await?;
-            db.set_tracking_sync_state(
-                manga_id,
-                binding.service,
-                remote.chapter_progress,
-                remote.updated_at,
-                remote.started_at,
-                remote.completed_at,
-            )
-            .await?;
+            let result = (async {
+                let local_snapshot =
+                    derive_remote_snapshot(local_snapshot.clone(), binding.total_chapters)?;
+                // Carry dates from the binding so push doesn't overwrite them with null.
+                let local_snapshot = TrackingProgressSnapshot {
+                    started_at: binding.started_at.or(local_snapshot.started_at),
+                    completed_at: binding.completed_at.or(local_snapshot.completed_at),
+                    ..local_snapshot
+                };
+                let remote =
+                    tracking::push_progress(settings, &binding, &local_snapshot).await?;
+                db.set_tracking_sync_state(
+                    manga_id,
+                    binding.service,
+                    remote.chapter_progress,
+                    remote.updated_at,
+                    remote.started_at,
+                    remote.completed_at,
+                )
+                .await?;
+                Ok::<_, anyhow::Error>((local_snapshot, remote))
+            })
+            .await;
 
-            results.push(TrackingSyncResult {
-                service: binding.service,
-                direction,
-                local_progress: local_snapshot.chapter_progress,
-                remote_progress: remote.chapter_progress,
-                message: format!("Pushed progress to {}", binding.service.display_name()),
-            });
+            match result {
+                Ok((local_snapshot, remote)) => {
+                    results.push(TrackingSyncResult {
+                        service: binding.service,
+                        direction,
+                        local_progress: local_snapshot.chapter_progress,
+                        remote_progress: remote.chapter_progress,
+                        message: format!(
+                            "Pushed progress to {}",
+                            binding.service.display_name()
+                        ),
+                    });
+                }
+                Err(e) => {
+                    results.push(TrackingSyncResult {
+                        service: binding.service,
+                        direction,
+                        local_progress: None,
+                        remote_progress: None,
+                        message: format!(
+                            "Failed to push to {}: {e}",
+                            binding.service.display_name()
+                        ),
+                    });
+                }
+            }
         }
 
         return Ok(results);
@@ -61,25 +85,48 @@ pub async fn sync_manga_tracking(
         .find_cached_chapters(manga_id, chapter_storage, true)
         .await?;
     for binding in bindings {
-        let remote = tracking::fetch_remote_progress(settings, &binding).await?;
-        apply_remote_progress(db, manga_id, &chapters, &remote).await?;
-        db.set_tracking_sync_state(
-            manga_id,
-            binding.service,
-            remote.chapter_progress,
-            remote.updated_at,
-            remote.started_at,
-            remote.completed_at,
-        )
-        .await?;
+        let result = (async {
+            let remote = tracking::fetch_remote_progress(settings, &binding).await?;
+            apply_remote_progress(db, manga_id, &chapters, &remote).await?;
+            db.set_tracking_sync_state(
+                manga_id,
+                binding.service,
+                remote.chapter_progress,
+                remote.updated_at,
+                remote.started_at,
+                remote.completed_at,
+            )
+            .await?;
+            Ok::<_, anyhow::Error>(remote)
+        })
+        .await;
 
-        results.push(TrackingSyncResult {
-            service: binding.service,
-            direction,
-            local_progress: remote.chapter_progress,
-            remote_progress: remote.chapter_progress,
-            message: format!("Pulled progress from {}", binding.service.display_name()),
-        });
+        match result {
+            Ok(remote) => {
+                results.push(TrackingSyncResult {
+                    service: binding.service,
+                    direction,
+                    local_progress: remote.chapter_progress,
+                    remote_progress: remote.chapter_progress,
+                    message: format!(
+                        "Pulled progress from {}",
+                        binding.service.display_name()
+                    ),
+                });
+            }
+            Err(e) => {
+                results.push(TrackingSyncResult {
+                    service: binding.service,
+                    direction,
+                    local_progress: None,
+                    remote_progress: None,
+                    message: format!(
+                        "Failed to pull from {}: {e}",
+                        binding.service.display_name()
+                    ),
+                });
+            }
+        }
     }
 
     Ok(results)

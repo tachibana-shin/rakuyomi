@@ -54,7 +54,7 @@ pub enum SettingDefinition {
         key: String,
         title: String,        
         confirm_title: Option<String>,
-        // Matches the official Aidoku schema's `confirmText` field.
+        /// Matches the official Aidoku schema's `confirmText` field.
         confirm_text: Option<String>,
     },
     #[serde(rename = "switch")]

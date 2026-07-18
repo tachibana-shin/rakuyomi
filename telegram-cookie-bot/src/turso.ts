@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client"
-import { getConfig } from "../config.ts"
+import { getConfig } from "./config.ts"
 
 let client: Awaited<ReturnType<typeof createClient>> | null = null
 

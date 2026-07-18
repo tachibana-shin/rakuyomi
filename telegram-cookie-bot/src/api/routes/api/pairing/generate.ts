@@ -1,9 +1,29 @@
-import { Hono } from "hono"
+import { OpenAPIHono } from "@hono/zod-openapi"
+import { createRoute, z } from "@hono/zod-openapi"
 import { createPairingCode } from "../../../../kv.ts"
 
-const app = new Hono()
+const PairingGenerateResponse = z.object({
+  pairing_code: z.string().openapi({ example: "ABC12345" }),
+})
 
-app.get("/api/pairing/generate", async (c) => {
+const route = createRoute({
+  method: "get",
+  path: "/api/pairing/generate",
+  tags: ["Pairing"],
+  description: "Generate a new pairing code for linking a device",
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: PairingGenerateResponse },
+      },
+      description: "Pairing code generated",
+    },
+  },
+})
+
+const app = new OpenAPIHono()
+
+app.openapi(route, async (c) => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   const bytes = new Uint8Array(8)
   crypto.getRandomValues(bytes)

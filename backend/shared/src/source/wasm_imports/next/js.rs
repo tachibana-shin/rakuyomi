@@ -22,7 +22,12 @@ pub fn register_js_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     register_wasm_function!(linker, "js", "webview_wait_for_load", webview_wait_for_load)?;
     register_wasm_function!(linker, "js", "webview_eval", webview_eval)?;
     register_wasm_function!(linker, "js", "webview_eval_async", webview_eval_async)?;
-    register_wasm_function!(linker, "js", "webview_add_user_script", webview_add_user_script)?;
+    register_wasm_function!(
+        linker,
+        "js",
+        "webview_add_user_script",
+        webview_add_user_script
+    )?;
     Ok(())
 }
 
@@ -90,7 +95,6 @@ fn context_eval_async(
     ctx_id: i32,
     src: Option<String>,
 ) -> FFIResult {
-    
     context_eval(caller, ctx_id, src)
 }
 
@@ -278,7 +282,9 @@ fn webview_add_user_script(
             return Ok(ResultContext::InvalidString.into());
         };
 
-        if let Err(e) = webview.add_user_script(&source, at_document_end != 0, for_main_frame_only != 0) {
+        if let Err(e) =
+            webview.add_user_script(&source, at_document_end != 0, for_main_frame_only != 0)
+        {
             log::error!("webview_add_user_script failed: {e}");
             return Ok(ResultContext::InvalidRuleList.into());
         }

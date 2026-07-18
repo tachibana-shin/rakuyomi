@@ -6,7 +6,7 @@ use size::{consts, Size};
 
 use crate::settings::{
     ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode, LibraryViewMode, SearchViewMode,
-    Settings, StorageSizeLimit,
+    Settings, StorageSizeLimit, TrackingServiceSettings,
 };
 
 pub fn update_settings(
@@ -14,8 +14,6 @@ pub fn update_settings(
     settings_path: &Path,
     settings_to_update: UpdateableSettings,
 ) -> Result<()> {
-    // Clone the settings and save the cloned one first, so that we only change the application settings
-    // iff everything goes well
     let mut updated_settings = settings.clone();
     settings_to_update.apply_updates(&mut updated_settings);
     updated_settings.save_to_file(settings_path)?;
@@ -34,32 +32,33 @@ pub struct UpdateableSettings {
     concurrent_requests_pages: Option<usize>,
     api_sync: Option<String>,
     tracking_auto_sync: bool,
-    anilist_access_token: Option<String>,
-    mal_client_id: Option<String>,
-    mal_client_secret: Option<String>,
-    mal_access_token: Option<String>,
-    mal_refresh_token: Option<String>,
-    anilist_refresh_token: Option<String>,
-    shikimori_client_id: Option<String>,
-    shikimori_client_secret: Option<String>,
-    shikimori_access_token: Option<String>,
-    shikimori_refresh_token: Option<String>,
-    kavita_url: Option<String>,
-    kavita_api_key: Option<String>,
+    anilist: TrackingServiceSettings,
+    myanimelist: TrackingServiceSettings,
+    shikimori: TrackingServiceSettings,
+    kavita: TrackingServiceSettings,
+    bangumi: TrackingServiceSettings,
+    mangabaka: TrackingServiceSettings,
+    komga: TrackingServiceSettings,
+    suwayomi: TrackingServiceSettings,
     enabled_cron_check_mangas_update: bool,
     source_skip_cron: Option<String>,
     preload_chapters: usize,
     optimize_image: bool,
     library_view_mode: LibraryViewMode,
     search_view_mode: SearchViewMode,
-    ram_storage_enabled: bool, // readonly not allow UpdateableSettings update value
-    ram_storage_size_mb: usize, // readonly not allow UpdateableSettings update value
+    ram_storage_enabled: bool,
+    ram_storage_size_mb: usize,
     cookie_sync_server_url: Option<String>,
     cookie_sync_device_name: Option<String>,
     cookie_sync_chat_id: Option<i64>,
     proxy_url: Option<String>,
+    oauth_server_url: String,
     #[serde(default)]
     chapter_title_format: ChapterTitleFormat,
+}
+
+fn clean_opt(s: Option<String>) -> Option<String> {
+    s.filter(|v| !v.trim().is_empty())
 }
 
 impl UpdateableSettings {
@@ -72,18 +71,27 @@ impl UpdateableSettings {
         settings.concurrent_requests_pages = self.concurrent_requests_pages;
         settings.api_sync = self.api_sync;
         settings.tracking_auto_sync = self.tracking_auto_sync;
-        settings.anilist_access_token = self.anilist_access_token.filter(|v| !v.trim().is_empty());
-        settings.mal_client_id = self.mal_client_id.filter(|v| !v.trim().is_empty());
-        settings.mal_client_secret = self.mal_client_secret.filter(|v| !v.trim().is_empty());
-        settings.mal_access_token = self.mal_access_token.filter(|v| !v.trim().is_empty());
-        settings.mal_refresh_token = self.mal_refresh_token.filter(|v| !v.trim().is_empty());
-        settings.anilist_refresh_token = self.anilist_refresh_token.filter(|v| !v.trim().is_empty());
-        settings.shikimori_client_id = self.shikimori_client_id.filter(|v| !v.trim().is_empty());
-        settings.shikimori_client_secret = self.shikimori_client_secret.filter(|v| !v.trim().is_empty());
-        settings.shikimori_access_token = self.shikimori_access_token.filter(|v| !v.trim().is_empty());
-        settings.shikimori_refresh_token = self.shikimori_refresh_token.filter(|v| !v.trim().is_empty());
-        settings.kavita_url = self.kavita_url.filter(|v| !v.trim().is_empty());
-        settings.kavita_api_key = self.kavita_api_key.filter(|v| !v.trim().is_empty());
+
+        // Tracking services — update credentials but preserve username (set by backend)
+        let update_service = |target: &mut TrackingServiceSettings,
+                              src: TrackingServiceSettings| {
+            target.client_id = clean_opt(src.client_id);
+            target.client_secret = clean_opt(src.client_secret);
+            target.access_token = clean_opt(src.access_token);
+            target.refresh_token = clean_opt(src.refresh_token);
+            target.api_key = clean_opt(src.api_key);
+            target.url = clean_opt(src.url);
+            // username is read-only — not updated from frontend
+        };
+        update_service(&mut settings.anilist, self.anilist);
+        update_service(&mut settings.myanimelist, self.myanimelist);
+        update_service(&mut settings.shikimori, self.shikimori);
+        update_service(&mut settings.kavita, self.kavita);
+        update_service(&mut settings.bangumi, self.bangumi);
+        update_service(&mut settings.mangabaka, self.mangabaka);
+        update_service(&mut settings.komga, self.komga);
+        update_service(&mut settings.suwayomi, self.suwayomi);
+
         settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
         settings.source_skip_cron = self.source_skip_cron;
         settings.preload_chapters = self.preload_chapters;
@@ -101,6 +109,7 @@ impl UpdateableSettings {
                 Some(trimmed.to_string())
             }
         });
+        settings.oauth_server_url = self.oauth_server_url;
         settings.chapter_title_format = self.chapter_title_format;
     }
 }
@@ -117,18 +126,14 @@ impl From<&Settings> for UpdateableSettings {
             concurrent_requests_pages: value.concurrent_requests_pages,
             api_sync: value.api_sync.clone(),
             tracking_auto_sync: value.tracking_auto_sync,
-            anilist_access_token: value.anilist_access_token.clone(),
-            mal_client_id: value.mal_client_id.clone(),
-            mal_client_secret: value.mal_client_secret.clone(),
-            mal_access_token: value.mal_access_token.clone(),
-            mal_refresh_token: value.mal_refresh_token.clone(),
-            anilist_refresh_token: value.anilist_refresh_token.clone(),
-            shikimori_client_id: value.shikimori_client_id.clone(),
-            shikimori_client_secret: value.shikimori_client_secret.clone(),
-            shikimori_access_token: value.shikimori_access_token.clone(),
-            shikimori_refresh_token: value.shikimori_refresh_token.clone(),
-            kavita_url: value.kavita_url.clone(),
-            kavita_api_key: value.kavita_api_key.clone(),
+            anilist: value.anilist.clone(),
+            myanimelist: value.myanimelist.clone(),
+            shikimori: value.shikimori.clone(),
+            kavita: value.kavita.clone(),
+            bangumi: value.bangumi.clone(),
+            mangabaka: value.mangabaka.clone(),
+            komga: value.komga.clone(),
+            suwayomi: value.suwayomi.clone(),
             enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
             source_skip_cron: value.source_skip_cron.clone(),
             preload_chapters: value.preload_chapters,
@@ -141,6 +146,7 @@ impl From<&Settings> for UpdateableSettings {
             cookie_sync_device_name: value.cookie_sync_device_name.clone(),
             cookie_sync_chat_id: value.cookie_sync_chat_id,
             proxy_url: value.proxy_url.clone(),
+            oauth_server_url: value.oauth_server_url.clone(),
             chapter_title_format: value.chapter_title_format,
         }
     }

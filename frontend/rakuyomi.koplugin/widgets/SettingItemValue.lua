@@ -29,7 +29,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class EnumValueDefinition: { type: 'enum', title: string, options: EnumValueDefinitionOption[], default: string|nil }
 --- @class MultiEnumValueDefinition: { type: 'multi-enum', title: string, options: EnumValueDefinitionOption[] }
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
---- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate?: fun(value: string): boolean, validate_error?: string }
+--- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate_error?: string, validate?: fun(value: string): boolean }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }

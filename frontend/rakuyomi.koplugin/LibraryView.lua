@@ -26,6 +26,8 @@ local ChapterListing = require("ChapterListing")
 local MangaSearchResults = require("MangaSearchResults")
 local Menu = require("widgets/Menu")
 local Settings = require("Settings")
+local TrackingSettings = require("TrackingSettings")
+local TrackingMenu = require("TrackingMenu")
 local Testing = require("testing")
 local UpdateChecker = require("UpdateChecker")
 local calcLastReadText = require("utils/calcLastReadText")
@@ -623,6 +625,15 @@ function LibraryView:onContextMenuChoice(item)
     },
     {
       {
+        text = Icons.SYNC .. " " .. _("Tracking"),
+        callback = function()
+          UIManager:close(dialog_context_menu)
+          TrackingMenu.openTrackingMenu(manga)
+        end
+      },
+    },
+    {
+      {
         text = Icons.FA_PLUS .. " " .. _("Add to Playlist"),
         callback = function()
           UIManager:close(dialog_context_menu)
@@ -910,11 +921,11 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = Icons.FA_ARROW_UP .. " " .. _("Check for updates"),
+        text = Icons.FA_BELL .. " " .. _("Tracking"),
         callback = function()
           UIManager:close(dialog)
 
-          UpdateChecker:checkForUpdates()
+          self:openTrackingSettings()
         end
       },
     },
@@ -1087,6 +1098,14 @@ function LibraryView:openMenu()
               text = table.concat(parts, "\n\n"),
             })
           end)
+        end
+      },
+      {
+        text = Icons.FA_ARROW_UP .. " " .. _("Check for updates"),
+        callback = function()
+          UIManager:close(dialog)
+
+          UpdateChecker:checkForUpdates()
         end
       },
     },
@@ -1439,6 +1458,19 @@ function LibraryView:openSettings()
     end
 
     Settings:fetchAndShow(onReturnCallback)
+
+    self:onClose(true)
+  end)
+end
+
+--- @private
+function LibraryView:openTrackingSettings()
+  Trapper:wrap(function()
+    local onReturnCallback = function()
+      self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+    end
+
+    TrackingSettings:fetchAndShow(onReturnCallback)
 
     self:onClose(true)
   end)

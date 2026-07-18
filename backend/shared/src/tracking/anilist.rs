@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use reqwest::header::AUTHORIZATION;
+use chrono::{Datelike, NaiveDate, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -8,14 +8,47 @@ use crate::{
     settings::Settings,
 };
 
-use super::{build_client, post_json, title_candidates};
+use super::{build_client, post_json, title_candidates, Tracker};
 
 const ANILIST_API_URL: &str = "https://graphql.anilist.co";
 
+/// AniList FuzzyDate: `{ year: Int, month: Int, day: Int }`.
+/// Fields are optional — partial dates are common.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub struct AniListDate {
+    pub year: Option<i64>,
+    pub month: Option<i64>,
+    pub day: Option<i64>,
+}
+
+impl AniListDate {
+    fn from_timestamp(ts: i64) -> Option<Self> {
+        let date = Utc.timestamp_opt(ts, 0).single()?.date_naive();
+        Some(AniListDate {
+            year: Some(date.year() as i64),
+            month: Some(date.month() as i64),
+            day: Some(date.day() as i64),
+        })
+    }
+
+    fn to_timestamp(self) -> Option<i64> {
+        let year = self.year? as i32;
+        let month = self.month? as u32;
+        let day = self.day? as u32;
+        let date = NaiveDate::from_ymd_opt(year, month, day)?;
+        let datetime = date.and_hms_opt(0, 0, 0)?;
+        Some(Utc.from_utc_datetime(&datetime).timestamp())
+    }
+}
+
 pub struct AnilistTracker;
 
-impl AnilistTracker {
-    pub async fn search(&self, query: &str) -> Result<Vec<TrackingCandidate>> {
+impl Tracker for AnilistTracker {
+    fn service(&self) -> TrackingService {
+        TrackingService::Anilist
+    }
+
+    async fn search(&self, _settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
         #[derive(Serialize)]
         struct GraphQlRequest<'a> {
             query: &'a str,
@@ -90,7 +123,7 @@ impl AnilistTracker {
                     .media
                     .into_iter()
                     .map(|media| TrackingCandidate {
-                        service: TrackingService::AniList,
+                        service: TrackingService::Anilist,
                         remote_media_id: media.id,
                         title: title_candidates(
                             media.title.user_preferred,
@@ -107,7 +140,7 @@ impl AnilistTracker {
             .unwrap_or_default())
     }
 
-    pub async fn fetch_progress(
+    async fn fetch_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -143,6 +176,10 @@ impl AnilistTracker {
             progress_volumes: Option<i64>,
             #[serde(rename = "updatedAt")]
             updated_at: Option<i64>,
+            #[serde(rename = "startedAt")]
+            started_at: Option<AniListDate>,
+            #[serde(rename = "completedAt")]
+            completed_at: Option<AniListDate>,
         }
 
         let token = require_token(settings)?;
@@ -156,6 +193,8 @@ impl AnilistTracker {
                       progress
                       progressVolumes
                       updatedAt
+                      startedAt { year month day }
+                      completedAt { year month day }
                     }
                   }
                 }
@@ -176,11 +215,13 @@ impl AnilistTracker {
                 chapter_progress: entry.progress,
                 volume_progress: entry.progress_volumes,
                 updated_at: entry.updated_at,
+                started_at: entry.started_at.and_then(|d| d.to_timestamp()),
+                completed_at: entry.completed_at.and_then(|d| d.to_timestamp()),
             })
             .unwrap_or_default())
     }
 
-    pub async fn push_progress(
+    async fn push_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -211,31 +252,48 @@ impl AnilistTracker {
             progress_volumes: Option<i64>,
             #[serde(rename = "updatedAt")]
             updated_at: Option<i64>,
+            #[serde(rename = "startedAt")]
+            started_at: Option<AniListDate>,
+            #[serde(rename = "completedAt")]
+            completed_at: Option<AniListDate>,
         }
 
         let token = require_token(settings)?;
         let client = build_client();
         let request = GraphQlRequest {
             query: r#"
-                mutation ($mediaId: Int!, $status: MediaListStatus, $progress: Int, $progressVolumes: Int) {
+                mutation (
+                  $mediaId: Int!,
+                  $status: MediaListStatus,
+                  $progress: Int,
+                  $progressVolumes: Int,
+                  $startedAt: FuzzyDateInput,
+                  $completedAt: FuzzyDateInput
+                ) {
                   SaveMediaListEntry(
                     mediaId: $mediaId,
                     status: $status,
                     progress: $progress,
-                    progressVolumes: $progressVolumes
+                    progressVolumes: $progressVolumes,
+                    startedAt: $startedAt,
+                    completedAt: $completedAt
                   ) {
                     status
                     progress
                     progressVolumes
                     updatedAt
+                    startedAt { year month day }
+                    completedAt { year month day }
                   }
                 }
             "#,
             variables: serde_json::json!({
                 "mediaId": media_id,
                 "status": snapshot.status.as_ref().map(|status| format_status(*status)),
-                "progress": snapshot.chapter_progress,
-                "progressVolumes": snapshot.volume_progress,
+                "progress": snapshot.chapter_progress.unwrap_or(0),
+                "progressVolumes": snapshot.volume_progress.unwrap_or(0),
+                "startedAt": snapshot.started_at.and_then(AniListDate::from_timestamp),
+                "completedAt": snapshot.completed_at.and_then(AniListDate::from_timestamp),
             }),
         };
 
@@ -251,13 +309,61 @@ impl AnilistTracker {
             chapter_progress: entry.progress,
             volume_progress: entry.progress_volumes,
             updated_at: entry.updated_at,
+            started_at: entry.started_at.and_then(|d| d.to_timestamp()),
+            completed_at: entry.completed_at.and_then(|d| d.to_timestamp()),
         })
+    }
+
+    async fn get_user(&self, settings: &Settings) -> Result<Option<String>> {
+        #[derive(Serialize)]
+        struct GraphQlRequest<'a> {
+            query: &'a str,
+        }
+
+        #[derive(Deserialize)]
+        struct GraphQlResponse {
+            data: Option<ViewerData>,
+        }
+
+        #[derive(Deserialize)]
+        struct ViewerData {
+            #[serde(rename = "Viewer")]
+            viewer: Option<Viewer>,
+        }
+
+        #[derive(Deserialize)]
+        struct Viewer {
+            name: Option<String>,
+        }
+
+        let token = match require_token(settings) {
+            Ok(t) => t,
+            Err(_) => return Ok(None),
+        };
+        let client = build_client();
+        let request = GraphQlRequest {
+            query: r#"
+                query {
+                  Viewer {
+                    name
+                  }
+                }
+            "#,
+        };
+        let response: GraphQlResponse =
+            post_json(&client, ANILIST_API_URL, &request, Some(token)).await?;
+
+        Ok(response
+            .data
+            .and_then(|data| data.viewer)
+            .and_then(|v| v.name))
     }
 }
 
 fn require_token(settings: &Settings) -> Result<&str> {
     settings
-        .anilist_access_token
+        .anilist
+        .access_token
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("AniList access token is not configured")
@@ -283,5 +389,37 @@ fn format_status(status: TrackingStatus) -> &'static str {
         TrackingStatus::Dropped => "DROPPED",
         TrackingStatus::Planning => "PLANNING",
         TrackingStatus::Repeating => "REPEATING",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_status_all_variants() {
+        assert_eq!(parse_status("CURRENT"), Some(TrackingStatus::Current));
+        assert_eq!(parse_status("COMPLETED"), Some(TrackingStatus::Completed));
+        assert_eq!(parse_status("PAUSED"), Some(TrackingStatus::Paused));
+        assert_eq!(parse_status("DROPPED"), Some(TrackingStatus::Dropped));
+        assert_eq!(parse_status("PLANNING"), Some(TrackingStatus::Planning));
+        assert_eq!(parse_status("REPEATING"), Some(TrackingStatus::Repeating));
+        assert_eq!(parse_status("UNKNOWN"), None);
+    }
+
+    #[test]
+    fn format_status_roundtrip() {
+        let statuses = [
+            TrackingStatus::Current,
+            TrackingStatus::Completed,
+            TrackingStatus::Paused,
+            TrackingStatus::Dropped,
+            TrackingStatus::Planning,
+            TrackingStatus::Repeating,
+        ];
+        for status in statuses {
+            let formatted = format_status(status);
+            assert_eq!(parse_status(formatted), Some(status));
+        }
     }
 }

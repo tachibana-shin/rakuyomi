@@ -8,14 +8,20 @@ use crate::{
     settings::Settings,
 };
 
-use super::{build_client, default_status_for_progress, get_json, parse_iso8601_timestamp};
+use super::{
+    build_client, default_status_for_progress, get_json, parse_iso8601_timestamp, Tracker,
+};
 
 const MAL_API_URL: &str = "https://api.myanimelist.net/v2";
 
 pub struct MalTracker;
 
-impl MalTracker {
-    pub async fn search(&self, settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
+impl Tracker for MalTracker {
+    fn service(&self) -> TrackingService {
+        TrackingService::MyAnimeList
+    }
+
+    async fn search(&self, settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
         #[derive(Deserialize)]
         struct SearchResponse {
             data: Vec<SearchEntry>,
@@ -61,7 +67,7 @@ impl MalTracker {
             .collect())
     }
 
-    pub async fn fetch_progress(
+    async fn fetch_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -104,11 +110,13 @@ impl MalTracker {
                     .updated_at
                     .as_deref()
                     .and_then(parse_iso8601_timestamp),
+                started_at: None,
+                completed_at: None,
             })
             .unwrap_or_default())
     }
 
-    pub async fn push_progress(
+    async fn push_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -143,21 +151,66 @@ impl MalTracker {
         self.fetch_progress(settings, media_id).await
     }
 
-    pub async fn refresh_access_token(&self, settings: &Settings) -> Result<(String, Option<String>)> {
-        let client_id = settings.mal_client_id.as_deref().context("MyAnimeList client ID is not configured")?;
-        let client_secret = settings.mal_client_secret.as_deref().context("MyAnimeList client secret is not configured")?;
-        let refresh_token = settings.mal_refresh_token.as_deref().context("MyAnimeList refresh token is not configured")?;
+    async fn get_user(&self, settings: &Settings) -> Result<Option<String>> {
+        #[derive(Deserialize)]
+        struct UserResponse {
+            name: Option<String>,
+        }
+
+        let client_id = match require_client_id(settings) {
+            Ok(t) => t,
+            Err(_) => return Ok(None),
+        };
+        let access_token = match require_access_token(settings) {
+            Ok(t) => t,
+            Err(_) => return Ok(None),
+        };
+        let client = build_client();
+        let request = client
+            .get(format!("{MAL_API_URL}/users/@me"))
+            .header("X-MAL-CLIENT-ID", client_id)
+            .header(AUTHORIZATION, format!("Bearer {access_token}"));
+        let response: UserResponse =
+            get_json(request, "failed to decode MyAnimeList user info").await?;
+
+        Ok(response.name)
+    }
+}
+
+impl MalTracker {
+    pub async fn refresh_access_token(
+        &self,
+        settings: &Settings,
+    ) -> Result<(String, Option<String>)> {
+        let client_id = settings
+            .myanimelist
+            .client_id
+            .as_deref()
+            .context("MyAnimeList client ID is not configured")?;
+        let refresh_token = settings
+            .myanimelist
+            .refresh_token
+            .as_deref()
+            .context("MyAnimeList refresh token is not configured")?;
 
         let client = build_client();
+        let mut form = vec![
+            ("grant_type".to_owned(), "refresh_token".to_owned()),
+            ("refresh_token".to_owned(), refresh_token.to_owned()),
+            ("client_id".to_owned(), client_id.to_owned()),
+        ];
+        if let Some(secret) = settings
+            .myanimelist
+            .client_secret
+            .as_deref()
+            .filter(|v| !v.trim().is_empty())
+        {
+            form.push(("client_secret".to_owned(), secret.to_owned()));
+        }
         let response = client
             .post("https://myanimelist.net/v1/oauth2/token")
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
-            .form(&[
-                ("grant_type", "refresh_token"),
-                ("refresh_token", refresh_token),
-                ("client_id", client_id),
-                ("client_secret", client_secret),
-            ])
+            .form(&form)
             .send()
             .await?
             .error_for_status()?;
@@ -175,7 +228,8 @@ impl MalTracker {
 
 fn require_client_id(settings: &Settings) -> Result<&str> {
     settings
-        .mal_client_id
+        .myanimelist
+        .client_id
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("MyAnimeList client ID is not configured")
@@ -183,7 +237,8 @@ fn require_client_id(settings: &Settings) -> Result<&str> {
 
 fn require_access_token(settings: &Settings) -> Result<&str> {
     settings
-        .mal_access_token
+        .myanimelist
+        .access_token
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("MyAnimeList access token is not configured")
@@ -207,5 +262,41 @@ fn format_status(status: TrackingStatus) -> &'static str {
         TrackingStatus::Paused => "on_hold",
         TrackingStatus::Dropped => "dropped",
         TrackingStatus::Planning => "plan_to_read",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_status_all_variants() {
+        assert_eq!(parse_status("reading"), Some(TrackingStatus::Current));
+        assert_eq!(parse_status("completed"), Some(TrackingStatus::Completed));
+        assert_eq!(parse_status("on_hold"), Some(TrackingStatus::Paused));
+        assert_eq!(parse_status("dropped"), Some(TrackingStatus::Dropped));
+        assert_eq!(parse_status("plan_to_read"), Some(TrackingStatus::Planning));
+        assert_eq!(parse_status("unknown"), None);
+    }
+
+    #[test]
+    fn format_status_roundtrip() {
+        let statuses = [
+            TrackingStatus::Current,
+            TrackingStatus::Completed,
+            TrackingStatus::Paused,
+            TrackingStatus::Dropped,
+            TrackingStatus::Planning,
+            TrackingStatus::Repeating,
+        ];
+        for status in statuses {
+            let formatted = format_status(status);
+            assert!(
+                parse_status(formatted).is_some(),
+                "roundtrip failed for {:?} -> {}",
+                status,
+                formatted
+            );
+        }
     }
 }

@@ -257,7 +257,10 @@ impl WebView {
         (WEBVIEW_ADD_USER_SCRIPT
             .get()
             .expect("Please set WEBVIEW_ADD_USER_SCRIPT"))(
-            self.id, source, at_document_end, for_main_frame_only
+            self.id,
+            source,
+            at_document_end,
+            for_main_frame_only,
         )
     }
     pub fn destroy(&self) {

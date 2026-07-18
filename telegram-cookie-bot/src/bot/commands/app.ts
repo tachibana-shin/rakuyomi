@@ -1,6 +1,6 @@
 import { Context, InlineKeyboard } from "grammy"
 import { t } from "../../i18n.ts"
-import { getConfig } from "../../../config.ts"
+import { getConfig } from "../../config.ts"
 
 export async function appCommand(ctx: Context) {
   const chatId = ctx.chat?.id

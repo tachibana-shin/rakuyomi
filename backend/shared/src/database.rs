@@ -22,7 +22,7 @@ use crate::{
         TrackingBinding, TrackingCandidate, TrackingProgressSnapshot, TrackingService,
         TrackingStatus,
     },
-    source::model::{PublishingStatus, MangaViewer},
+    source::model::{MangaViewer, PublishingStatus},
     source_collection::SourceCollection,
 };
 
@@ -1716,11 +1716,7 @@ impl Database {
         Ok(())
     }
 
-    pub async fn upsert_manga_viewer(
-        &self,
-        manga_id: &MangaId,
-        viewer: Option<i64>,
-    ) -> Result<()> {
+    pub async fn upsert_manga_viewer(&self, manga_id: &MangaId, viewer: Option<i64>) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -2202,7 +2198,9 @@ impl Database {
                 total_chapters,
                 total_volumes,
                 last_synced_progress,
-                last_synced_at
+                last_synced_at,
+                started_at,
+                completed_at
             FROM manga_tracking
             WHERE source_id = ?1 AND manga_id = ?2
             ORDER BY service ASC
@@ -2210,7 +2208,7 @@ impl Database {
         )
         .bind(manga_id.source_id().value())
         .bind(manga_id.value())
-        .fetch_all(&self.pool)
+        .fetch_all(&*self.pool.read().await)
         .await?;
 
         rows.into_iter()
@@ -2253,7 +2251,7 @@ impl Database {
         .bind(candidate.url.as_ref().map(|value| value.to_string()))
         .bind(candidate.total_chapters)
         .bind(candidate.total_volumes)
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -2273,7 +2271,7 @@ impl Database {
         .bind(manga_id.source_id().value())
         .bind(manga_id.value())
         .bind(service.as_str())
-        .execute(&self.pool)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -2285,12 +2283,16 @@ impl Database {
         service: TrackingService,
         progress: Option<i64>,
         synced_at: Option<i64>,
+        started_at: Option<i64>,
+        completed_at: Option<i64>,
     ) -> Result<()> {
         sqlx::query(
             r#"
             UPDATE manga_tracking
             SET last_synced_progress = ?4,
-                last_synced_at = ?5
+                last_synced_at = ?5,
+                started_at = COALESCE(?6, started_at),
+                completed_at = COALESCE(?7, completed_at)
             WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
             "#,
         )
@@ -2299,7 +2301,35 @@ impl Database {
         .bind(service.as_str())
         .bind(progress)
         .bind(synced_at)
-        .execute(&self.pool)
+        .bind(started_at)
+        .bind(completed_at)
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_tracking_dates(
+        &self,
+        manga_id: &MangaId,
+        service: TrackingService,
+        started_at: Option<i64>,
+        completed_at: Option<i64>,
+    ) -> Result<()> {
+        sqlx::query(
+            r#"
+            UPDATE manga_tracking
+            SET started_at = ?4,
+                completed_at = ?5
+            WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
+            "#,
+        )
+        .bind(manga_id.source_id().value())
+        .bind(manga_id.value())
+        .bind(service.as_str())
+        .bind(started_at)
+        .bind(completed_at)
+        .execute(&*self.pool.read().await)
         .await?;
 
         Ok(())
@@ -2334,7 +2364,7 @@ impl Database {
         )
         .bind(manga_id.source_id().value())
         .bind(manga_id.value())
-        .fetch_one(&self.pool)
+        .fetch_one(&*self.pool.read().await)
         .await?;
 
         let chapter_progress = row
@@ -2353,6 +2383,8 @@ impl Database {
             chapter_progress,
             volume_progress: None,
             updated_at: Some(chrono::Utc::now().timestamp()),
+            started_at: None,
+            completed_at: None,
         })
     }
 
@@ -3244,7 +3276,7 @@ pub struct MangaLibraryRowWithReadCount {
 
     /// Effective viewer: COALESCE(manga_state.viewer, manga_informations.viewer, 0)
     pub viewer: Option<i64>,
-    pub state_viewer: i64
+    pub state_viewer: i64,
 }
 
 #[derive(sqlx::FromRow)]
@@ -3477,6 +3509,8 @@ struct TrackingBindingRow {
     total_volumes: Option<i64>,
     last_synced_progress: Option<i64>,
     last_synced_at: Option<i64>,
+    started_at: Option<i64>,
+    completed_at: Option<i64>,
 }
 
 impl TryFrom<TrackingBindingRow> for TrackingBinding {
@@ -3492,6 +3526,8 @@ impl TryFrom<TrackingBindingRow> for TrackingBinding {
             total_volumes: value.total_volumes,
             last_synced_progress: value.last_synced_progress,
             last_synced_at: value.last_synced_at,
+            started_at: value.started_at,
+            completed_at: value.completed_at,
         })
     }
 }

@@ -79,7 +79,7 @@ class MemoryKv {
 
 let kvImpl: Deno.Kv | MemoryKv | null = null
 
-async function getKv(): Promise<Deno.Kv | MemoryKv> {
+export async function getKv(): Promise<Deno.Kv | MemoryKv> {
   if (kvImpl) return kvImpl
   try {
     kvImpl = await Deno.openKv()

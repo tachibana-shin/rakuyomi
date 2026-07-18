@@ -8,14 +8,18 @@ use crate::{
     settings::Settings,
 };
 
-use super::{build_client, get_json, post_json};
+use super::{build_client, get_json, Tracker};
 
 const SHIKIMORI_API_URL: &str = "https://shikimori.one/api";
 
 pub struct ShikimoriTracker;
 
-impl ShikimoriTracker {
-    pub async fn search(&self, query: &str) -> Result<Vec<TrackingCandidate>> {
+impl Tracker for ShikimoriTracker {
+    fn service(&self) -> TrackingService {
+        TrackingService::Shikimori
+    }
+
+    async fn search(&self, _settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
         #[derive(Deserialize)]
         struct MangaNode {
             id: i64,
@@ -30,7 +34,8 @@ impl ShikimoriTracker {
         let request = client
             .get(format!("{SHIKIMORI_API_URL}/mangas"))
             .query(&[("search", query), ("limit", "5")]);
-        let response: Vec<MangaNode> = get_json(request, "failed to decode Shikimori search results").await?;
+        let response: Vec<MangaNode> =
+            get_json(request, "failed to decode Shikimori search results").await?;
 
         Ok(response
             .into_iter()
@@ -45,7 +50,7 @@ impl ShikimoriTracker {
             .collect())
     }
 
-    pub async fn fetch_progress(
+    async fn fetch_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -60,8 +65,8 @@ impl ShikimoriTracker {
 
         let token = require_access_token(settings)?;
         let client = build_client();
-        
-        // We need to find the user rate for this manga. 
+
+        // We need to find the user rate for this manga.
         // Unfortunately, Shikimori doesn't have a direct "get my rate for this media" by media_id alone without user_id or listing all rates.
         // Actually, we can use /api/v2/user_rates with target_id and target_type.
         let target_id_str = media_id.to_string();
@@ -72,8 +77,9 @@ impl ShikimoriTracker {
                 ("target_id", target_id_str.as_str()),
                 ("target_type", "Manga"),
             ]);
-        
-        let response: Vec<UserRate> = get_json(request, "failed to decode Shikimori user rates").await?;
+
+        let response: Vec<UserRate> =
+            get_json(request, "failed to decode Shikimori user rates").await?;
         let entry = response.into_iter().next();
 
         Ok(entry
@@ -82,11 +88,13 @@ impl ShikimoriTracker {
                 chapter_progress: e.chapters,
                 volume_progress: e.volumes,
                 updated_at: e.updated_at.as_deref().and_then(parse_timestamp),
+                started_at: None,
+                completed_at: None,
             })
             .unwrap_or_default())
     }
 
-    pub async fn push_progress(
+    async fn push_progress(
         &self,
         settings: &Settings,
         media_id: i64,
@@ -109,10 +117,11 @@ impl ShikimoriTracker {
                 ("target_id", target_id_str.as_str()),
                 ("target_type", "Manga"),
             ]);
-        let existing: Vec<UserRate> = get_json(check_request, "failed to check Shikimori user rate").await?;
+        let existing: Vec<UserRate> =
+            get_json(check_request, "failed to check Shikimori user rate").await?;
 
         let status_str = snapshot.status.map(format_status);
-        
+
         if let Some(rate) = existing.into_iter().next() {
             // PATCH
             let mut body = serde_json::json!({});
@@ -130,7 +139,7 @@ impl ShikimoriTracker {
                 .patch(format!("{SHIKIMORI_API_URL}/v2/user_rates/{}", rate.id))
                 .header(AUTHORIZATION, format!("Bearer {token}"))
                 .json(&serde_json::json!({ "user_rate": body }));
-            
+
             patch_request.send().await?.error_for_status()?;
         } else {
             // POST
@@ -152,17 +161,54 @@ impl ShikimoriTracker {
                 .post(format!("{SHIKIMORI_API_URL}/v2/user_rates"))
                 .header(AUTHORIZATION, format!("Bearer {token}"))
                 .json(&serde_json::json!({ "user_rate": body }));
-            
+
             post_request.send().await?.error_for_status()?;
         }
 
         self.fetch_progress(settings, media_id).await
     }
 
-    pub async fn refresh_access_token(&self, settings: &Settings) -> Result<(String, Option<String>)> {
-        let client_id = settings.shikimori_client_id.as_deref().context("Shikimori client ID is not configured")?;
-        let client_secret = settings.shikimori_client_secret.as_deref().context("Shikimori client secret is not configured")?;
-        let refresh_token = settings.shikimori_refresh_token.as_deref().context("Shikimori refresh token is not configured")?;
+    async fn get_user(&self, settings: &Settings) -> Result<Option<String>> {
+        #[derive(Deserialize)]
+        struct WhoamiResponse {
+            nickname: Option<String>,
+        }
+
+        let token = match require_access_token(settings) {
+            Ok(t) => t,
+            Err(_) => return Ok(None),
+        };
+        let client = build_client();
+        let request = client
+            .get(format!("{SHIKIMORI_API_URL}/users/whoami"))
+            .header(AUTHORIZATION, format!("Bearer {token}"));
+        let response: WhoamiResponse =
+            get_json(request, "failed to decode Shikimori user info").await?;
+
+        Ok(response.nickname)
+    }
+}
+
+impl ShikimoriTracker {
+    pub async fn refresh_access_token(
+        &self,
+        settings: &Settings,
+    ) -> Result<(String, Option<String>)> {
+        let client_id = settings
+            .shikimori
+            .client_id
+            .as_deref()
+            .context("Shikimori client ID is not configured")?;
+        let client_secret = settings
+            .shikimori
+            .client_secret
+            .as_deref()
+            .context("Shikimori client secret is not configured")?;
+        let refresh_token = settings
+            .shikimori
+            .refresh_token
+            .as_deref()
+            .context("Shikimori refresh token is not configured")?;
 
         let client = build_client();
         let response = client
@@ -190,7 +236,8 @@ impl ShikimoriTracker {
 
 fn require_access_token(settings: &Settings) -> Result<&str> {
     settings
-        .shikimori_access_token
+        .shikimori
+        .access_token
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("Shikimori access token is not configured")
@@ -210,12 +257,49 @@ fn parse_status(status: &str) -> Option<TrackingStatus> {
 
 fn format_status(status: TrackingStatus) -> &'static str {
     match status {
-        TrackingStatus::Planning => "planned",
         TrackingStatus::Current => "watching",
-        TrackingStatus::Repeating => "rewatching",
         TrackingStatus::Completed => "completed",
         TrackingStatus::Paused => "on_hold",
         TrackingStatus::Dropped => "dropped",
+        TrackingStatus::Planning => "planned",
+        TrackingStatus::Repeating => "rewatching",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_status_all_variants() {
+        assert_eq!(parse_status("watching"), Some(TrackingStatus::Current));
+        assert_eq!(parse_status("completed"), Some(TrackingStatus::Completed));
+        assert_eq!(parse_status("on_hold"), Some(TrackingStatus::Paused));
+        assert_eq!(parse_status("dropped"), Some(TrackingStatus::Dropped));
+        assert_eq!(parse_status("planned"), Some(TrackingStatus::Planning));
+        assert_eq!(parse_status("rewatching"), Some(TrackingStatus::Repeating));
+        assert_eq!(parse_status("unknown"), None);
+    }
+
+    #[test]
+    fn format_status_roundtrip() {
+        let statuses = [
+            TrackingStatus::Current,
+            TrackingStatus::Completed,
+            TrackingStatus::Paused,
+            TrackingStatus::Dropped,
+            TrackingStatus::Planning,
+            TrackingStatus::Repeating,
+        ];
+        for status in statuses {
+            let formatted = format_status(status);
+            assert!(
+                parse_status(formatted).is_some(),
+                "roundtrip failed for {:?} -> {}",
+                status,
+                formatted
+            );
+        }
     }
 }
 

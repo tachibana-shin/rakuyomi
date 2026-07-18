@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use serde::Deserialize;
 use url::Url;
 
@@ -7,18 +7,23 @@ use crate::{
     settings::Settings,
 };
 
-use super::{build_client, get_json};
+use super::{build_client, get_json, Tracker};
 
 pub struct KavitaTracker;
 
-impl KavitaTracker {
-    pub async fn search(&self, settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
+impl Tracker for KavitaTracker {
+    fn service(&self) -> TrackingService {
+        TrackingService::Kavita
+    }
+
+    async fn search(&self, settings: &Settings, query: &str) -> Result<Vec<TrackingCandidate>> {
         #[derive(Deserialize)]
         struct SearchResponse {
             series: Vec<SeriesNode>,
         }
 
         #[derive(Deserialize)]
+        #[allow(dead_code)]
         struct SeriesNode {
             id: i64,
             name: String,
@@ -29,13 +34,14 @@ impl KavitaTracker {
         let base_url = require_url(settings)?;
         let api_key = require_api_key(settings)?;
         let client = build_client();
-        
+
         let request = client
             .get(format!("{base_url}/api/Search"))
             .header("x-api-key", api_key)
             .query(&[("term", query)]);
-        
-        let response: SearchResponse = get_json(request, "failed to decode Kavita search results").await?;
+
+        let response: SearchResponse =
+            get_json(request, "failed to decode Kavita search results").await?;
 
         Ok(response
             .series
@@ -51,12 +57,13 @@ impl KavitaTracker {
             .collect())
     }
 
-    pub async fn fetch_progress(
+    async fn fetch_progress(
         &self,
         settings: &Settings,
         media_id: i64,
     ) -> Result<TrackingProgressSnapshot> {
         #[derive(Deserialize)]
+        #[allow(dead_code)]
         struct SeriesDetail {
             pages_read: i64,
             total_pages: i64,
@@ -75,27 +82,26 @@ impl KavitaTracker {
         let request = client
             .get(format!("{base_url}/api/Series/{}", media_id))
             .header("x-api-key", api_key);
-        
-        let response: SeriesDetail = get_json(request, "failed to decode Kavita series details").await?;
+
+        let response: SeriesDetail =
+            get_json(request, "failed to decode Kavita series details").await?;
 
         Ok(TrackingProgressSnapshot {
             status: response.user_review.and_then(|r| parse_status(r.status)),
-            chapter_progress: Some(response.pages_read), // Using pages as "chapters" proxy or just raw value
+            chapter_progress: None,
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         })
     }
 
-    pub async fn push_progress(
+    async fn push_progress(
         &self,
         settings: &Settings,
         media_id: i64,
         snapshot: &TrackingProgressSnapshot,
     ) -> Result<TrackingProgressSnapshot> {
-        // Kavita progress push is often done per chapter/volume. 
-        // For a generic "push", we might want to use the /api/Reader/mark-as-read or similar.
-        // Or /api/Series/update-user-review for status.
-        
         let base_url = require_url(settings)?;
         let api_key = require_api_key(settings)?;
         let client = build_client();
@@ -112,16 +118,14 @@ impl KavitaTracker {
             request.send().await?.error_for_status()?;
         }
 
-        // Kavita doesn't easily allow pushing raw page counts for a whole series via a single API call if not via OPDS/KOReader sync.
-        // We'll stick to status for now.
-
         self.fetch_progress(settings, media_id).await
     }
 }
 
 fn require_url(settings: &Settings) -> Result<&str> {
     settings
-        .kavita_url
+        .kavita
+        .url
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("Kavita URL is not configured")
@@ -129,7 +133,8 @@ fn require_url(settings: &Settings) -> Result<&str> {
 
 fn require_api_key(settings: &Settings) -> Result<&str> {
     settings
-        .kavita_api_key
+        .kavita
+        .api_key
         .as_deref()
         .filter(|v| !v.trim().is_empty())
         .context("Kavita API key is not configured")
@@ -153,5 +158,30 @@ fn format_status(status: TrackingStatus) -> i64 {
         TrackingStatus::Completed => 2,
         TrackingStatus::Paused => 3,
         TrackingStatus::Dropped => 4,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_status_all_variants() {
+        assert_eq!(parse_status(0), Some(TrackingStatus::Planning));
+        assert_eq!(parse_status(1), Some(TrackingStatus::Current));
+        assert_eq!(parse_status(2), Some(TrackingStatus::Completed));
+        assert_eq!(parse_status(3), Some(TrackingStatus::Paused));
+        assert_eq!(parse_status(4), Some(TrackingStatus::Dropped));
+        assert_eq!(parse_status(99), None);
+    }
+
+    #[test]
+    fn format_status_values() {
+        assert_eq!(format_status(TrackingStatus::Planning), 0);
+        assert_eq!(format_status(TrackingStatus::Current), 1);
+        assert_eq!(format_status(TrackingStatus::Repeating), 1);
+        assert_eq!(format_status(TrackingStatus::Completed), 2);
+        assert_eq!(format_status(TrackingStatus::Paused), 3);
+        assert_eq!(format_status(TrackingStatus::Dropped), 4);
     }
 }

@@ -80,6 +80,25 @@ pub enum SearchViewMode {
     Grid,
 }
 
+/// Per-service tracking credentials and user info.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct TrackingServiceSettings {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_secret: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub access_token: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refresh_token: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+}
+
 /// Settings used to configure rakuyomi's behavior.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, JsonSchema)]
 pub struct Settings {
@@ -127,40 +146,28 @@ pub struct Settings {
     pub tracking_auto_sync: bool,
 
     #[serde(default)]
-    pub anilist_access_token: Option<String>,
+    pub anilist: TrackingServiceSettings,
 
     #[serde(default)]
-    pub mal_client_id: Option<String>,
+    pub myanimelist: TrackingServiceSettings,
 
     #[serde(default)]
-    pub mal_client_secret: Option<String>,
+    pub shikimori: TrackingServiceSettings,
 
     #[serde(default)]
-    pub mal_access_token: Option<String>,
+    pub kavita: TrackingServiceSettings,
 
     #[serde(default)]
-    pub mal_refresh_token: Option<String>,
-    
-    #[serde(default)]
-    pub anilist_refresh_token: Option<String>,
+    pub bangumi: TrackingServiceSettings,
 
     #[serde(default)]
-    pub shikimori_client_id: Option<String>,
+    pub mangabaka: TrackingServiceSettings,
 
     #[serde(default)]
-    pub shikimori_client_secret: Option<String>,
+    pub komga: TrackingServiceSettings,
 
     #[serde(default)]
-    pub shikimori_access_token: Option<String>,
-
-    #[serde(default)]
-    pub shikimori_refresh_token: Option<String>,
-
-    #[serde(default)]
-    pub kavita_url: Option<String>,
-
-    #[serde(default)]
-    pub kavita_api_key: Option<String>,
+    pub suwayomi: TrackingServiceSettings,
 
     #[serde(default = "default_false")]
     pub enabled_cron_check_mangas_update: bool,
@@ -210,6 +217,10 @@ pub struct Settings {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub proxy_url: Option<String>,
 
+    /// OAuth bridge server URL (Telegram Bot Deno server) for tracking sign-in.
+    #[serde(default = "default_oauth_server_url")]
+    pub oauth_server_url: String,
+
     /// Controls how the chapter title is formatted in ComicInfo.xml.
     #[serde(default)]
     pub chapter_title_format: ChapterTitleFormat,
@@ -221,6 +232,10 @@ fn default_ram_storage_size_mb() -> usize {
 
 fn default_storage_size_limit() -> StorageSizeLimit {
     StorageSizeLimit(Size::from_megabytes(2000))
+}
+
+fn default_oauth_server_url() -> String {
+    "https://rakuyomi.tachibana-shin.deno.net/".to_owned()
 }
 
 fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {
@@ -448,10 +463,7 @@ mod tests {
         let json = r#"{}"#;
         let settings: Settings = serde_json::from_str(json).unwrap();
         // serde(default = ...) uses default_storage_size_limit()
-        assert_eq!(
-            settings.storage_size_limit,
-            default_storage_size_limit()
-        );
+        assert_eq!(settings.storage_size_limit, default_storage_size_limit());
         assert_eq!(settings.ram_storage_size_mb, 32);
     }
 
@@ -461,11 +473,23 @@ mod tests {
         let settings: Settings = serde_json::from_str(json).unwrap();
         let serialized = serde_json::to_string(&settings).unwrap();
         let deserialized: Settings = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(deserialized.chapter_sorting_mode, settings.chapter_sorting_mode);
-        assert_eq!(deserialized.library_sorting_mode, settings.library_sorting_mode);
+        assert_eq!(
+            deserialized.chapter_sorting_mode,
+            settings.chapter_sorting_mode
+        );
+        assert_eq!(
+            deserialized.library_sorting_mode,
+            settings.library_sorting_mode
+        );
         assert_eq!(deserialized.library_view_mode, settings.library_view_mode);
         assert_eq!(deserialized.search_view_mode, settings.search_view_mode);
-        assert_eq!(deserialized.ram_storage_size_mb, settings.ram_storage_size_mb);
-        assert_eq!(deserialized.chapter_title_format, settings.chapter_title_format);
+        assert_eq!(
+            deserialized.ram_storage_size_mb,
+            settings.ram_storage_size_mb
+        );
+        assert_eq!(
+            deserialized.chapter_title_format,
+            settings.chapter_title_format
+        );
     }
 }

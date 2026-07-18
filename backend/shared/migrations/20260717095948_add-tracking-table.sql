@@ -1,3 +1,4 @@
+-- Add migration script here
 CREATE TABLE IF NOT EXISTS manga_tracking (
     source_id TEXT NOT NULL,
     manga_id TEXT NOT NULL,

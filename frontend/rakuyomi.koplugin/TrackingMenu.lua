@@ -314,6 +314,9 @@ function TrackingMenu.showTrackingCandidates(manga, service, candidates, on_pull
     buttons = buttons,
   }
 
+  -- because after linked rust call pull
+  if on_pull_completed ~= nil then on_pull_completed() end
+
   UIManager:show(dialog)
 end
 

@@ -22,8 +22,6 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
-local Trapper = require("ui/trapper")
-local LoadingDialog = require("LoadingDialog")
 
 local ffi = require("ffi")
 

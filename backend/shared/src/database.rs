@@ -2188,7 +2188,8 @@ impl Database {
     }
 
     pub async fn list_tracking_bindings(&self, manga_id: &MangaId) -> Result<Vec<TrackingBinding>> {
-        let rows: Vec<TrackingBindingRow> = sqlx::query_as::<_, TrackingBindingRow>(
+        let rows: Vec<TrackingBindingRow> = sqlx::query_as!(
+            TrackingBindingRow,
             r#"
             SELECT
                 service,
@@ -2205,9 +2206,9 @@ impl Database {
             WHERE source_id = ?1 AND manga_id = ?2
             ORDER BY service ASC
             "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
         .fetch_all(&*self.pool.read().await)
         .await?;
 
@@ -2222,7 +2223,7 @@ impl Database {
         manga_id: &MangaId,
         candidate: &TrackingCandidate,
     ) -> Result<()> {
-        sqlx::query(
+        sqlx::query!(
             r#"
             INSERT INTO manga_tracking (
                 source_id,
@@ -2241,16 +2242,16 @@ impl Database {
                 remote_url = excluded.remote_url,
                 total_chapters = excluded.total_chapters,
                 total_volumes = excluded.total_volumes
-            "#,
+            "#, 
+            manga_id.source_id().value(),
+            manga_id.value(),
+            candidate.service.as_str(),
+            candidate.remote_media_id,
+            &candidate.title,
+            candidate.url.as_ref().map(|value| value.to_string()),
+            candidate.total_chapters,
+            candidate.total_volumes
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
-        .bind(candidate.service.as_str())
-        .bind(candidate.remote_media_id)
-        .bind(&candidate.title)
-        .bind(candidate.url.as_ref().map(|value| value.to_string()))
-        .bind(candidate.total_chapters)
-        .bind(candidate.total_volumes)
         .execute(&*self.pool.read().await)
         .await?;
 
@@ -2262,15 +2263,15 @@ impl Database {
         manga_id: &MangaId,
         service: TrackingService,
     ) -> Result<()> {
-        sqlx::query(
+        sqlx::query!(
             r#"
             DELETE FROM manga_tracking
             WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
             "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str()
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
-        .bind(service.as_str())
         .execute(&*self.pool.read().await)
         .await?;
 
@@ -2286,23 +2287,23 @@ impl Database {
         started_at: Option<i64>,
         completed_at: Option<i64>,
     ) -> Result<()> {
-        sqlx::query(
+        sqlx::query!(
             r#"
             UPDATE manga_tracking
             SET last_synced_progress = ?4,
                 last_synced_at = ?5,
-                started_at = COALESCE(?6, started_at),
-                completed_at = COALESCE(?7, completed_at)
+                started_at = ?6,
+                completed_at = ?7
             WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
             "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str(),
+            progress,
+            synced_at,
+            started_at,
+            completed_at,
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
-        .bind(service.as_str())
-        .bind(progress)
-        .bind(synced_at)
-        .bind(started_at)
-        .bind(completed_at)
         .execute(&*self.pool.read().await)
         .await?;
 
@@ -2316,19 +2317,19 @@ impl Database {
         started_at: Option<i64>,
         completed_at: Option<i64>,
     ) -> Result<()> {
-        sqlx::query(
+        sqlx::query!(
             r#"
             UPDATE manga_tracking
             SET started_at = ?4,
                 completed_at = ?5
             WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
             "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str(),
+            started_at,
+            completed_at
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
-        .bind(service.as_str())
-        .bind(started_at)
-        .bind(completed_at)
         .execute(&*self.pool.read().await)
         .await?;
 
@@ -2339,7 +2340,8 @@ impl Database {
         &self,
         manga_id: &MangaId,
     ) -> Result<TrackingProgressSnapshot> {
-        let row = sqlx::query_as::<_, LocalTrackingProgressRow>(
+        let row = sqlx::query_as!(
+            LocalTrackingProgressRow,
             r#"
             SELECT
                 MAX(CASE WHEN cs.read = 1 OR cs.last_read IS NOT NULL THEN ci.chapter_number END) AS progress_number,
@@ -2361,9 +2363,9 @@ impl Database {
                     OR ci.scanlator IS NULL
                 )
             "#,
+            manga_id.source_id().value(),
+            manga_id.value()
         )
-        .bind(manga_id.source_id().value())
-        .bind(manga_id.value())
         .fetch_one(&*self.pool.read().await)
         .await?;
 

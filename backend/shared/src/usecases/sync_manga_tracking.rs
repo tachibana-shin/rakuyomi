@@ -159,7 +159,16 @@ fn derive_remote_snapshot(
         _ => snapshot.status.or(Some(TrackingStatus::Current)),
     };
 
-    Ok(TrackingProgressSnapshot { status, ..snapshot })
+    let mut result = TrackingProgressSnapshot { status, ..snapshot };
+
+    // Auto-set completed_at when status is derived to Completed but not yet set.
+    if matches!(result.status, Some(TrackingStatus::Completed))
+        && result.completed_at.is_none()
+    {
+        result.completed_at = Some(chrono::Utc::now().timestamp());
+    }
+
+    Ok(result)
 }
 
 async fn apply_remote_progress(
@@ -258,6 +267,8 @@ mod tests {
                 total_volumes: None,
                 last_synced_progress: None,
                 last_synced_at: None,
+                started_at: None,
+                completed_at: None,
             },
             TrackingBinding {
                 service: TrackingService::MyAnimeList,
@@ -268,6 +279,8 @@ mod tests {
                 total_volumes: None,
                 last_synced_progress: None,
                 last_synced_at: None,
+                started_at: None,
+                completed_at: None,
             },
         ];
 
@@ -286,6 +299,8 @@ mod tests {
             chapter_progress: Some(10),
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let derived = derive_remote_snapshot(snapshot, Some(10)).unwrap();
         assert_eq!(derived.status, Some(TrackingStatus::Completed));
@@ -298,6 +313,8 @@ mod tests {
             chapter_progress: Some(5),
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let derived = derive_remote_snapshot(snapshot, Some(10)).unwrap();
         assert_eq!(derived.status, Some(TrackingStatus::Current));
@@ -310,6 +327,8 @@ mod tests {
             chapter_progress: Some(0),
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let derived = derive_remote_snapshot(snapshot, Some(10)).unwrap();
         assert_eq!(derived.status, Some(TrackingStatus::Planning));
@@ -323,6 +342,8 @@ mod tests {
             chapter_progress: None,
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let ids = chapter_ids_from_remote_progress(&chapters, &remote);
         assert_eq!(ids.len(), 5);
@@ -336,6 +357,8 @@ mod tests {
             chapter_progress: Some(3),
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let ids = chapter_ids_from_remote_progress(&chapters, &remote);
         assert_eq!(ids.len(), 3);
@@ -349,6 +372,8 @@ mod tests {
             chapter_progress: Some(0),
             volume_progress: None,
             updated_at: None,
+            started_at: None,
+            completed_at: None,
         };
         let ids = chapter_ids_from_remote_progress(&chapters, &remote);
         assert!(ids.is_empty());

@@ -1,0 +1,134 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                service,\n                remote_media_id,\n                remote_title,\n                remote_url,\n                total_chapters,\n                total_volumes,\n                last_synced_progress,\n                last_synced_at,\n                started_at,\n                completed_at\n            FROM manga_tracking\n            WHERE source_id = ?1 AND manga_id = ?2\n            ORDER BY service ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "service",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "service"
+          }
+        }
+      },
+      {
+        "name": "remote_media_id",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "remote_media_id"
+          }
+        }
+      },
+      {
+        "name": "remote_title",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "remote_title"
+          }
+        }
+      },
+      {
+        "name": "remote_url",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "remote_url"
+          }
+        }
+      },
+      {
+        "name": "total_chapters",
+        "ordinal": 4,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "total_chapters"
+          }
+        }
+      },
+      {
+        "name": "total_volumes",
+        "ordinal": 5,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "total_volumes"
+          }
+        }
+      },
+      {
+        "name": "last_synced_progress",
+        "ordinal": 6,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "last_synced_progress"
+          }
+        }
+      },
+      {
+        "name": "last_synced_at",
+        "ordinal": 7,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "last_synced_at"
+          }
+        }
+      },
+      {
+        "name": "started_at",
+        "ordinal": 8,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "started_at"
+          }
+        }
+      },
+      {
+        "name": "completed_at",
+        "ordinal": 9,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "manga_tracking",
+            "name": "completed_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "8a72956f214ec3243e7ba44de1e555312eecbe5fe64fc662fec23e7d3005d039"
+}

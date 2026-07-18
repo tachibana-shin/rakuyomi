@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE manga_tracking\n            SET started_at = ?4,\n                completed_at = ?5\n            WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "a082de4feb711b9bd9b63c8be3e3cfb6dcbb82d33ac4d9f2b7761c6521f8b210"
+}

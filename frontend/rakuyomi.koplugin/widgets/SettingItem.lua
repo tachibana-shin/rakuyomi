@@ -51,10 +51,7 @@ function SettingItem:init()
     self.value_widget,
   }
 
-  -- Make the whole row tappable, not just the value widget on the right:
-  -- taps on the label half otherwise bubble up to the containing view, where
-  -- the top-zone gesture handler may hijack them (e.g. the first settings row
-  -- opening the KOReader menu).
+  -- Make the whole row tappable, forwarding taps to the value widget.
   self.ges_events = {
     Tap = {
       GestureRange:new {

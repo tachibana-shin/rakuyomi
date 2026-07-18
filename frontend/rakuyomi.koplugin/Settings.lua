@@ -390,8 +390,7 @@ Settings.setting_value_definitions = {
       title = _('Storage size limit'),
       min_value = 1,
       max_value = 10240,
-      unit = 'MB',
-      default = 2000,
+      unit = 'MB'
     }
   },
   {
@@ -563,20 +562,9 @@ function Settings:init()
       })
     else
       -- FIXME shouldn't the backend return the default value when unset?
-      -- Write defaults back into the settings table when the backend response
-      -- omits a field (e.g. older servers), so the value shown in the UI is
-      -- also what gets persisted on the next save.
       local value = self.settings[key]
-      if value == nil and definition.default ~= nil then
-        value = definition.default
-        self.settings[key] = value
-      elseif value == nil and definition.type == 'boolean' then
-        value = false
-        self.settings[key] = value
-      end
       if key == 'storage_path' and value == nil then
         value = Paths.getHomeDirectory() .. '/downloads'
-        self.settings[key] = value
       end
 
       table.insert(vertical_group, SettingItem:new {
@@ -712,33 +700,19 @@ function Settings:updateSetting(key, value)
   end
 end
 
---- @param on_return_callback function|nil Called when the settings screen is closed.
---- @return boolean # true when the settings screen was shown
 function Settings:fetchAndShow(on_return_callback)
   local response = Backend.getSettings()
   if response.type == 'ERROR' then
     ErrorDialog:show(response.message)
-    return false
+    return
   end
 
-  -- Building the settings screen involves many widgets; guard it so a single
-  -- bad value can't crash the whole plugin.
-  local ok, ui = pcall(function()
-    return Settings:new {
-      settings = response.body,
-      on_return_callback = on_return_callback,
-    }
-  end)
-
-  if not ok then
-    ErrorDialog:show(tostring(ui))
-    return false
-  end
-
+  local ui = Settings:new {
+    settings = response.body,
+    on_return_callback = on_return_callback
+  }
   ui.on_return_callback = on_return_callback
   UIManager:show(ui)
-
-  return true
 end
 
 return Settings

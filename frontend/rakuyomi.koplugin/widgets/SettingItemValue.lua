@@ -84,10 +84,8 @@ function SettingItemValue:createValueWidget()
       label_for_value[option.value] = option.label
     end
 
-    local current_val = self:getCurrentValue()
-    local display_text = (current_val ~= nil and label_for_value[current_val]) or tostring(current_val or "")
     return TextWidget:new {
-      text = display_text .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = label_for_value[self:getCurrentValue()] .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -121,7 +119,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "integer" then
     return TextWidget:new {
-      text = (self:getCurrentValue() or self.value_definition.default or 0) .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
+      text = self:getCurrentValue() .. (self.value_definition.unit and (' ' .. self.value_definition.unit) or '') .. ' ' .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -132,16 +130,13 @@ function SettingItemValue:createValueWidget()
       value = _("Not set")
     end
     return TextWidget:new {
-      text = value .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = value,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "list" then
-    local current_val = self:getCurrentValue()
-    -- Guard against corrupt settings where the stored value isn't a table.
-    local value = type(current_val) == "table" and table.concat(current_val, "\n")
-        or tostring(current_val or "")
+    local value = table.concat(self:getCurrentValue() or {}, "\n")
     if value == "" then
       value = _("Not set")
     end
@@ -169,8 +164,34 @@ function SettingItemValue:createValueWidget()
     return ButtonWidget:new {
       text = self.value_definition.title,
       callback = function()
-        -- Delegate to onTap so button taps and row-label taps behave the same.
-        self:onTap()
+        local confirm_dialog
+        confirm_dialog = ConfirmBox:new {
+          text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
+          ok_text = _("Ok"),
+          cancel_text = _("Cancel"),
+          ok_callback = function()
+            UIManager:close(confirm_dialog)
+            Trapper:wrap(function()
+              local response = LoadingDialog:showAndRun(
+                _("Executing..."),
+                function()
+                  return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
+                    self.value_definition.key)
+                end
+              )
+
+              if response.type == 'ERROR' then
+                ErrorDialog:show(response.message)
+
+                return
+              end
+
+              UIManager:show(InfoMessage:new { text = _("Done") })
+            end)
+          end,
+        }
+
+        UIManager:show(confirm_dialog)
       end
     }
   else
@@ -334,35 +355,6 @@ function SettingItemValue:onTap()
       show_current_dir_for_hold = true,
     })
     UIManager:show(path_chooser)
-  elseif self.value_definition.type == "button" then
-    local confirm_dialog
-    confirm_dialog = ConfirmBox:new {
-      text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
-      ok_text = _("Ok"),
-      cancel_text = _("Cancel"),
-      ok_callback = function()
-        UIManager:close(confirm_dialog)
-        Trapper:wrap(function()
-          local response = LoadingDialog:showAndRun(
-            _("Executing..."),
-            function()
-              return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
-                self.value_definition.key)
-            end
-          )
-
-          if response.type == 'ERROR' then
-            ErrorDialog:show(response.message)
-
-            return
-          end
-
-          UIManager:show(InfoMessage:new { text = _("Done") })
-        end)
-      end,
-    }
-
-    UIManager:show(confirm_dialog)
   end
 
   -- Consume the tap: otherwise it keeps bubbling up to the containing view,

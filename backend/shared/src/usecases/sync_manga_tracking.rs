@@ -28,6 +28,12 @@ pub async fn sync_manga_tracking(
         for binding in bindings {
             let local_snapshot =
                 derive_remote_snapshot(local_snapshot.clone(), binding.total_chapters)?;
+            // Carry dates from the binding so push doesn't overwrite them with null.
+            let local_snapshot = TrackingProgressSnapshot {
+                started_at: binding.started_at.or(local_snapshot.started_at),
+                completed_at: binding.completed_at.or(local_snapshot.completed_at),
+                ..local_snapshot
+            };
             let remote = tracking::push_progress(settings, &binding, &local_snapshot).await?;
             db.set_tracking_sync_state(
                 manga_id,
@@ -94,6 +100,12 @@ pub async fn sync_manga_tracking_push(
     for binding in bindings {
         let local_snapshot =
             derive_remote_snapshot(local_snapshot.clone(), binding.total_chapters)?;
+        // Carry dates from the binding so push doesn't overwrite them with null.
+        let local_snapshot = TrackingProgressSnapshot {
+            started_at: binding.started_at.or(local_snapshot.started_at),
+            completed_at: binding.completed_at.or(local_snapshot.completed_at),
+            ..local_snapshot
+        };
         let remote = tracking::push_progress(settings, &binding, &local_snapshot).await?;
         db.set_tracking_sync_state(
             manga_id,

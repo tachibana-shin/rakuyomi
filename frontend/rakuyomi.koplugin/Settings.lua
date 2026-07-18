@@ -22,6 +22,7 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
+local formatBytes = require("utils/formatBytes")
 
 local ffi = require("ffi")
 
@@ -72,6 +73,7 @@ end
 local Settings = FocusManager:extend {
   settings = {},
   on_return_callback = nil,
+  storage_total_text = '',
   paths = { 0 }
 }
 
@@ -394,6 +396,14 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'storage_total_display',
+    {
+      type = 'label',
+      title = _("Total downloaded"),
+      text = '',
+    }
+  },
+  {
     'ram_storage_enabled',
     {
       type = 'boolean',
@@ -548,6 +558,24 @@ function Settings:init()
         text = definition.title,
         face = Font:getFace("cfont"),
         bold = true,
+      })
+    elseif definition.type == 'label' then
+      local text = definition.text
+      if key == 'storage_total_display' then
+        text = self.storage_total_text ~= '' and self.storage_total_text or _("Unknown")
+      end
+
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = {
+          type = 'label',
+          title = definition.title,
+          text = text,
+        },
+        value = nil,
+        on_value_changed_callback = function() end,
       })
     elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {
@@ -707,8 +735,22 @@ function Settings:fetchAndShow(on_return_callback)
     return
   end
 
+  -- Best effort: older servers without /storage-stats simply show "Unknown".
+  local storage_total_text = ''
+  local stats_ok, stats_result = pcall(function()
+    local stats_response = Backend.getStorageStats()
+    if stats_response.type == 'SUCCESS' and stats_response.body then
+      return formatBytes(stats_response.body.total_bytes)
+    end
+    return ''
+  end)
+  if stats_ok and stats_result then
+    storage_total_text = stats_result
+  end
+
   local ui = Settings:new {
     settings = response.body,
+    storage_total_text = storage_total_text,
     on_return_callback = on_return_callback
   }
   ui.on_return_callback = on_return_callback

@@ -359,6 +359,23 @@ function Backend.getMangasInLibrary()
   })
 end
 
+--- @class MangaStorageUsage
+--- @field source_id string The ID of the source.
+--- @field manga_id string The ID of the manga.
+--- @field bytes number The number of bytes occupied by this manga's downloaded chapters.
+
+--- @class StorageStats
+--- @field total_bytes number The total number of bytes used by downloaded chapters in the library.
+--- @field per_manga MangaStorageUsage[] Per-manga storage usage breakdown.
+
+--- Gets disk usage statistics for downloaded chapters of mangas in the library.
+--- @return SuccessfulResponse<StorageStats>|ErrorResponse
+function Backend.getStorageStats()
+  return Backend.requestJson({
+    path = "/storage-stats",
+  })
+end
+
 --- Lists path files invalidate
 --- @param modeInvalid boolean
 --- @return SuccessfulResponse<FileSummary>|ErrorResponse

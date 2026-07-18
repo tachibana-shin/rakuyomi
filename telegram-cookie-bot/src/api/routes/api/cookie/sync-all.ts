@@ -13,6 +13,7 @@ const SyncAllChangedResponse = z.object({
   changed: z.literal(true),
   hash: z.string().nullable(),
   payload: z.record(
+    z.string(),
     z.object({
       cookies: z.array(z.unknown()),
       user_agent: z.string().optional(),

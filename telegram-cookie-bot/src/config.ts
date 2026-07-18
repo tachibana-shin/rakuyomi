@@ -3,10 +3,7 @@ import type { OAuthService } from "./oauth_kv.ts";
 // --- App config ---
 
 export function getConfig() {
-  const BOT_TOKEN = Deno.env.get("BOT_TOKEN");
-  // if (!BOT_TOKEN) {
-  //   throw new Error("BOT_TOKEN environment variable is required")
-  // }
+  const BOT_TOKEN = Deno.env.get("BOT_TOKEN") ?? "";
 
   const USE_WEBHOOK = Deno.env.get("USE_WEBHOOK") === "true";
   const PUBLIC_URL = Deno.env.get("PUBLIC_URL") ?? "";

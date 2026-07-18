@@ -37,7 +37,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- Note: confirm_title/confirm_text mirror the official Aidoku schema's `confirmTitle`/`confirmText`
 --- fields, both of which are optional on a button setting.
 
---- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
+--- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition|ButtonDefinition
 
 --- @class SettingItemValue: { [any]: any }
 --- @field value_definition ValueDefinition

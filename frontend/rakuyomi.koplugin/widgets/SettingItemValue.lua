@@ -169,34 +169,8 @@ function SettingItemValue:createValueWidget()
     return ButtonWidget:new {
       text = self.value_definition.title,
       callback = function()
-        local confirm_dialog
-        confirm_dialog = ConfirmBox:new {
-          text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
-          ok_text = _("Ok"),
-          cancel_text = _("Cancel"),
-          ok_callback = function()
-            UIManager:close(confirm_dialog)
-            Trapper:wrap(function()
-              local response = LoadingDialog:showAndRun(
-                _("Executing..."),
-                function()
-                  return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
-                    self.value_definition.key)
-                end
-              )
-
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
-
-                return
-              end
-
-              UIManager:show(InfoMessage:new { text = _("Done") })
-            end)
-          end,
-        }
-
-        UIManager:show(confirm_dialog)
+        -- Delegate to onTap so button taps and row-label taps behave the same.
+        self:onTap()
       end
     }
   else
@@ -360,6 +334,35 @@ function SettingItemValue:onTap()
       show_current_dir_for_hold = true,
     })
     UIManager:show(path_chooser)
+  elseif self.value_definition.type == "button" then
+    local confirm_dialog
+    confirm_dialog = ConfirmBox:new {
+      text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
+      ok_text = _("Ok"),
+      cancel_text = _("Cancel"),
+      ok_callback = function()
+        UIManager:close(confirm_dialog)
+        Trapper:wrap(function()
+          local response = LoadingDialog:showAndRun(
+            _("Executing..."),
+            function()
+              return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
+                self.value_definition.key)
+            end
+          )
+
+          if response.type == 'ERROR' then
+            ErrorDialog:show(response.message)
+
+            return
+          end
+
+          UIManager:show(InfoMessage:new { text = _("Done") })
+        end)
+      end,
+    }
+
+    UIManager:show(confirm_dialog)
   end
 
   -- Consume the tap: otherwise it keeps bubbling up to the containing view,

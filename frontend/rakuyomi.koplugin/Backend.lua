@@ -122,7 +122,7 @@ function Backend.requestJson(request)
     end
 
     error("Expected to be able to decode the response body as JSON: " ..
-      response.body .. "(status code: " .. response.status .. ")")
+      tostring(response.body) .. " (status code: " .. tostring(response.status) .. ")")
   end
 
   if not (response.status and response.status >= 200 and response.status <= 299) then

@@ -218,6 +218,7 @@ end
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
 --- @field version number The version of the source.
+--- @field supported_sort_buckets string[] Sort buckets this source's `sort` filter maps to.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga

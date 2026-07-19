@@ -22,6 +22,7 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
+local formatBytes = require("utils/formatBytes")
 
 local ffi = require("ffi")
 
@@ -226,8 +227,8 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Chapter title in statistics (ComicInfo)"),
       options = {
-        { label = _("Chapter title only"),   value = 'title' },
-        { label = _("Series + chapter title"), value = 'series_title' },
+        { label = _("Chapter title only"),      value = 'title' },
+        { label = _("Series + chapter title"),  value = 'series_title' },
         { label = _("Series + chapter number"), value = 'series_chapter_number' },
       },
       default = 'title',
@@ -394,6 +395,27 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    nil,
+    {
+      type = 'label',
+      title = _("Total downloaded"),
+      text = function()
+        local stats_ok, stats_result = pcall(function()
+          local stats_response = Backend.getStorageStats()
+          if stats_response.type == 'SUCCESS' and stats_response.body then
+            return formatBytes(stats_response.body.total_bytes)
+          end
+          return ''
+        end)
+        if stats_ok and stats_result then
+          return stats_result
+        end
+
+        return _('Unknown')
+      end
+    }
+  },
+  {
     'ram_storage_enabled',
     {
       type = 'boolean',
@@ -548,6 +570,18 @@ function Settings:init()
         text = definition.title,
         face = Font:getFace("cfont"),
         bold = true,
+      })
+    elseif definition.type == 'label' then
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = {
+          type = 'label',
+          title = definition.title,
+          text = definition.text(),
+        },
+        value = nil,
       })
     elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {

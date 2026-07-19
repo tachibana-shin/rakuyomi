@@ -586,6 +586,13 @@ impl ChapterStorage {
         Size::from_bytes(self.cached_storage_size.load(Ordering::Relaxed))
     }
 
+    /// Total size in bytes of persistently stored chapters, read from the
+    /// in-memory counter maintained at startup and updated on every
+    /// persist/delete. Performs no filesystem I/O.
+    pub fn stored_size_bytes(&self) -> u64 {
+        self.cached_storage_size.load(Ordering::Relaxed)
+    }
+
     pub fn refresh_storage_size(&self) {
         self.cached_storage_size.store(
             self.calculate_storage_size().bytes() as u64,

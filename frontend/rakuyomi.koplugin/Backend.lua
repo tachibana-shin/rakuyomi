@@ -359,6 +359,18 @@ function Backend.getMangasInLibrary()
   })
 end
 
+--- @class StorageStats
+--- @field total_bytes number The total number of bytes used by downloaded chapters.
+
+--- Gets the total size of downloaded chapters. Served from an in-memory
+--- counter on the backend, so this is cheap to call.
+--- @return SuccessfulResponse<StorageStats>|ErrorResponse
+function Backend.getStorageStats()
+  return Backend.requestJson({
+    path = "/storage-stats",
+  })
+end
+
 --- Lists path files invalidate
 --- @param modeInvalid boolean
 --- @return SuccessfulResponse<FileSummary>|ErrorResponse

@@ -35,7 +35,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 --- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
 
---- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition
+--- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition|ButtonDefinition
 
 --- @class SettingItemValue: { [any]: any }
 --- @field value_definition ValueDefinition
@@ -164,34 +164,57 @@ function SettingItemValue:createValueWidget()
     return ButtonWidget:new {
       text = self.value_definition.title,
       callback = function()
-        local confirm_dialog
-        confirm_dialog = ConfirmBox:new {
-          text = self.value_definition.confirm_title .. "\n\n" .. self.value_definition.confirm_message,
-          ok_text = _("Ok"),
-          cancel_text = _("Cancel"),
-          ok_callback = function()
-            UIManager:close(confirm_dialog)
-            Trapper:wrap(function()
-              local response = LoadingDialog:showAndRun(
-                _("Executing..."),
-                function()
-                  return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
-                    self.value_definition.key)
-                end
-              )
-
-              if response.type == 'ERROR' then
-                ErrorDialog:show(response.message)
-
-                return
+        local function executeAction()
+          Trapper:wrap(function()
+            local response = LoadingDialog:showAndRun(
+              _("Executing..."),
+              function()
+                return Backend.handleSourceNotification(Backend.createCancelId(), self.source_id,
+                  self.value_definition.key)
               end
+            )
 
-              UIManager:show(InfoMessage:new { text = _("Done") })
-            end)
-          end,
-        }
+            if response.type == 'ERROR' then
+              ErrorDialog:show(response.message)
 
-        UIManager:show(confirm_dialog)
+              return
+            end
+
+            UIManager:show(InfoMessage:new { text = _("Done") })
+          end)
+        end
+
+        -- Per the official Aidoku schema, both `confirmTitle` and `confirmText` (`confirm_message`
+        -- here) are optional on a button setting. Only show a confirmation dialog when at least
+        -- one of them is present, and only concatenate the parts that actually exist, so we never
+        -- try to concatenate a nil value.
+        local confirm_title = self.value_definition.confirm_title
+        local confirm_message = self.value_definition.confirm_message
+
+        if confirm_title or confirm_message then
+          local text_parts = {}
+          if confirm_title then
+            table.insert(text_parts, confirm_title)
+          end
+          if confirm_message then
+            table.insert(text_parts, confirm_message)
+          end
+
+          local confirm_dialog
+          confirm_dialog = ConfirmBox:new {
+            text = table.concat(text_parts, "\n\n"),
+            ok_text = _("Ok"),
+            cancel_text = _("Cancel"),
+            ok_callback = function()
+              UIManager:close(confirm_dialog)
+              executeAction()
+            end,
+          }
+
+          UIManager:show(confirm_dialog)
+        else
+          executeAction()
+        end
       end
     }
   else

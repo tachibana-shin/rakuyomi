@@ -455,12 +455,27 @@ async fn handle_source_notification(
 }
 
 async fn remove_manga_from_library(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        settings,
+        ..
+    }): StateExtractor<State>,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
+    // Copy the flag and release the settings lock before the long-running
+    // removal work, so concurrent settings access isn't blocked.
+    let delete_downloaded_on_remove = settings.lock().await.delete_downloaded_on_remove;
+    let chapter_storage = chapter_storage.lock().await;
 
-    usecases::remove_manga_from_library(&database, manga_id).await?;
+    usecases::remove_manga_from_library(
+        &database,
+        &chapter_storage,
+        delete_downloaded_on_remove,
+        manga_id,
+    )
+    .await?;
 
     Ok(Json(()))
 }
@@ -572,6 +587,7 @@ async fn mark_chapters_as_read(
     StateExtractor(State {
         database,
         chapter_storage,
+        settings,
         ..
     }): StateExtractor<State>,
     Path(params): Path<MangaChaptersPathParams>,
@@ -579,11 +595,18 @@ async fn mark_chapters_as_read(
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
 
+    let delete_downloaded_after_read = settings.lock().await.delete_downloaded_after_read;
     let chapter_storage = &*chapter_storage.lock().await;
 
-    let count =
-        usecases::mark_chapters_as_read(&database, chapter_storage, manga_id, &range, state)
-            .await?;
+    let count = usecases::mark_chapters_as_read(
+        &database,
+        chapter_storage,
+        delete_downloaded_after_read,
+        manga_id,
+        &range,
+        state,
+    )
+    .await?;
 
     Ok(Json(count))
 }
@@ -684,14 +707,28 @@ struct MarkChapterAsReadBody {
     state: Option<bool>,
 }
 async fn mark_chapter_as_read(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        settings,
+        ..
+    }): StateExtractor<State>,
     SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
+    let delete_downloaded_after_read = settings.lock().await.delete_downloaded_after_read;
+    let chapter_storage = chapter_storage.lock().await;
 
-    usecases::mark_chapter_as_read(&database, &chapter_id, state).await?;
+    usecases::mark_chapter_as_read(
+        &database,
+        &chapter_storage,
+        delete_downloaded_after_read,
+        &chapter_id,
+        state,
+    )
+    .await?;
 
     Ok(Json(()))
 }

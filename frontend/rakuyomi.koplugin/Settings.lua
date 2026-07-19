@@ -22,6 +22,7 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
+local formatBytes = require("utils/formatBytes")
 
 local ffi = require("ffi")
 
@@ -102,16 +103,16 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Library sorting mode"),
       options = {
-        { label = _("Order added ascending (Default)"),  value = 'ascending' },
-        { label = _("Order added descending"),           value = 'descending' },
-        { label = _("Title manga ascending"),            value = 'title_asc' },
-        { label = _("Title manga descending"),           value = 'title_desc' },
-        { label = _("Count unread chapters ascending"),  value = 'unread_asc' },
-        { label = _("Count unread chapters descending"), value = 'unread_desc' },
-        { label = _("Last read ascending"),              value = 'last_read_asc' },
-        { label = _("Last read descending"),             value = 'last_read_desc' },
-        { label = _("Source ascending"),                 value = 'source_asc' },
-        { label = _("Source descending"),                value = 'source_desc' },
+        { label = _("Date added (oldest)"), value = 'ascending' },
+        { label = _("Date added (newest)"), value = 'descending' },
+        { label = _("Title (A-Z)"),         value = 'title_asc' },
+        { label = _("Title (Z-A)"),         value = 'title_desc' },
+        { label = _("Unread (fewest)"),     value = 'unread_asc' },
+        { label = _("Unread (most)"),       value = 'unread_desc' },
+        { label = _("Last read (oldest)"),  value = 'last_read_asc' },
+        { label = _("Last read (newest)"),  value = 'last_read_desc' },
+        { label = _("Source (A-Z)"),        value = 'source_asc' },
+        { label = _("Source (Z-A)"),        value = 'source_desc' },
       }
     }
   },
@@ -226,8 +227,8 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Chapter title in statistics (ComicInfo)"),
       options = {
-        { label = _("Chapter title only"),   value = 'title' },
-        { label = _("Series + chapter title"), value = 'series_title' },
+        { label = _("Chapter title only"),      value = 'title' },
+        { label = _("Series + chapter title"),  value = 'series_title' },
         { label = _("Series + chapter number"), value = 'series_chapter_number' },
       },
       default = 'title',
@@ -410,6 +411,27 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    nil,
+    {
+      type = 'label',
+      title = _("Total downloaded"),
+      text = function()
+        local stats_ok, stats_result = pcall(function()
+          local stats_response = Backend.getStorageStats()
+          if stats_response.type == 'SUCCESS' and stats_response.body then
+            return formatBytes(stats_response.body.total_bytes)
+          end
+          return ''
+        end)
+        if stats_ok and stats_result then
+          return stats_result
+        end
+
+        return _('Unknown')
+      end
+    }
+  },
+  {
     'ram_storage_enabled',
     {
       type = 'boolean',
@@ -556,7 +578,7 @@ function Settings:init()
     align = "left",
   }
 
-  for _, tuple in ipairs(Settings.setting_value_definitions) do
+  for __, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
     if definition.type == 'divider' then
@@ -564,6 +586,18 @@ function Settings:init()
         text = definition.title,
         face = Font:getFace("cfont"),
         bold = true,
+      })
+    elseif definition.type == 'label' then
+      table.insert(vertical_group, SettingItem:new {
+        show_parent = self,
+        width = self.item_width,
+        label = definition.title,
+        value_definition = {
+          type = 'label',
+          title = definition.title,
+          text = definition.text(),
+        },
+        value = nil,
       })
     elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {

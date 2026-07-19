@@ -1,4 +1,5 @@
 local Font = require("ui/font")
+local GestureRange = require("ui/gesturerange")
 local InputContainer = require("ui/widget/container/inputcontainer")
 local Screen = require("device").screen
 local TextBoxWidget = require("ui/widget/textboxwidget")
@@ -49,6 +50,23 @@ function SettingItem:init()
     self.label_widget,
     self.value_widget,
   }
+
+  -- Make the whole row tappable, forwarding taps to the value widget.
+  self.ges_events = {
+    Tap = {
+      GestureRange:new {
+        ges = "tap",
+        range = function()
+          return self.dimen
+        end
+      }
+    },
+  }
+end
+
+--- @private
+function SettingItem:onTap()
+  return self.value_widget:onTap()
 end
 
 --- @private

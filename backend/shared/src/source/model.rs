@@ -54,6 +54,10 @@ pub enum SettingDefinition {
         key: String,
         title: String,
         confirm_title: Option<String>,
+        /// Matches the official Aidoku schema's `confirmText` field.
+        /// The `confirmMessage` alias keeps backward compatibility with
+        /// sources built against Rakuyomi's old, non-standard field name.
+        #[serde(alias = "confirm_text")]
         confirm_message: Option<String>,
     },
     #[serde(rename = "switch")]

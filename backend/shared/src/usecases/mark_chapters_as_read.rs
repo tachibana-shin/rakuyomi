@@ -6,21 +6,37 @@ use crate::{
     chapter_storage::ChapterStorage,
     database::Database,
     model::{Chapter, ChapterId, MangaId},
+    usecases::revoke_manga_chapter::revoke_manga_chapter,
 };
 
+/// Sets the read state of the chapters selected by `text` (a comma-separated
+/// list of chapter numbers and ranges; an empty string selects every
+/// chapter). Returns the remaining unread chapter count, when known. When
+/// marking as read and `delete_downloaded_after_read` is enabled, the
+/// selected chapters' downloaded files are deleted on a best-effort basis.
 pub async fn mark_chapters_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
+    delete_downloaded_after_read: bool,
     manga_id: &MangaId,
     text: &str,
     state: bool,
 ) -> Result<Option<usize>> {
-    let chapters = super::get_cached_manga_chapters(db, chapter_storage, &manga_id, false).await?;
+    let chapters = super::get_cached_manga_chapters(db, chapter_storage, manga_id, false).await?;
 
     let selected_ids = parse_chapter_ranges(&chapters, text)?;
 
-    db.set_chapters_read_state(manga_id, &selected_ids, state)
-        .await
+    let unread_count = db
+        .set_chapters_read_state(manga_id, &selected_ids, state)
+        .await?;
+
+    if state && delete_downloaded_after_read {
+        for chapter_id in &selected_ids {
+            let _ = revoke_manga_chapter(chapter_storage, chapter_id, false).await;
+        }
+    }
+
+    Ok(unread_count)
 }
 
 fn parse_chapter_ranges(chapters: &[Chapter], text: &str) -> Result<Vec<ChapterId>> {

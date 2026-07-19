@@ -37,6 +37,7 @@ fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
 pub fn routes() -> Router<State> {
     Router::new()
         .route("/library", get(get_manga_library))
+        .route("/storage-stats", get(get_storage_stats))
         .route("/find-orphan-or-read-files", get(find_orphan_or_read_files))
         .route("/delete-file", post(delete_file))
         .route("/sync-database", post(sync_database))
@@ -165,6 +166,16 @@ async fn get_manga_library(
     Ok(Json(
         mangas.into_iter().map(Manga::from).collect::<Vec<_>>(),
     ))
+}
+
+async fn get_storage_stats(
+    StateExtractor(State {
+        chapter_storage, ..
+    }): StateExtractor<State>,
+) -> Json<usecases::get_storage_stats::StorageStats> {
+    let chapter_storage = chapter_storage.lock().await;
+
+    Json(usecases::get_storage_stats(&chapter_storage))
 }
 
 async fn find_orphan_or_read_files(
@@ -389,7 +400,6 @@ async fn add_manga_to_library(
         settings,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
@@ -474,12 +484,27 @@ async fn handle_source_notification(
 }
 
 async fn remove_manga_from_library(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
+    StateExtractor(State {
+        database,
+        chapter_storage,
+        settings,
+        ..
+    }): StateExtractor<State>,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
+    // Copy the flag and release the settings lock before the long-running
+    // removal work, so concurrent settings access isn't blocked.
+    let delete_downloaded_on_remove = settings.lock().await.delete_downloaded_on_remove;
+    let chapter_storage = chapter_storage.lock().await;
 
-    usecases::remove_manga_from_library(&database, manga_id).await?;
+    usecases::remove_manga_from_library(
+        &database,
+        &chapter_storage,
+        delete_downloaded_on_remove,
+        manga_id,
+    )
+    .await?;
 
     Ok(Json(()))
 }
@@ -491,7 +516,6 @@ async fn get_cached_manga_chapters(
         settings,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<Vec<Chapter>>, AppError> {
     let manga_id = MangaId::from(params);
@@ -537,7 +561,6 @@ async fn get_cached_manga_details(
         ..
     }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
     Query(GetCheckMangasUpdate { cancel_id }): Query<GetCheckMangasUpdate>,
 ) -> Result<Json<(shared::source::model::Manga, f64)>, AppError> {
@@ -599,20 +622,28 @@ async fn mark_chapters_as_read(
     Json(MangaMarkChaptersAsRead { range, state }): Json<MangaMarkChaptersAsRead>,
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
-    let database_handle = database.clone();
-    let settings_handle = settings.clone();
+
+    let (delete_downloaded_after_read, tracking_auto_sync) = {
+        let settings = settings.lock().await;
+        (
+            settings.delete_downloaded_after_read,
+            settings.tracking_auto_sync,
+        )
+    };
     let chapter_storage = &*chapter_storage.lock().await;
 
-    let count =
-        usecases::mark_chapters_as_read(&database, chapter_storage, &manga_id, &range, state)
-            .await?;
-
-    spawn_tracking_sync_after_local_update(
-        database_handle,
-        settings_handle,
-        settings_path,
-        manga_id,
-    );
+    let count = usecases::mark_chapters_as_read(
+        &database,
+        chapter_storage,
+        delete_downloaded_after_read,
+        &manga_id,
+        &range,
+        state,
+    )
+    .await?;
+    if tracking_auto_sync {
+        spawn_tracking_sync_after_local_update(database, settings, settings_path, manga_id);
+    }
 
     Ok(Json(count))
 }
@@ -717,23 +748,39 @@ async fn mark_chapter_as_read(
         database,
         settings,
         settings_path,
+        chapter_storage,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
     Json(MarkChapterAsReadBody { state }): Json<MarkChapterAsReadBody>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
-    let database_handle = database.clone();
-    let settings_handle = settings.clone();
 
-    usecases::mark_chapter_as_read(&database, &chapter_id, state).await?;
-    spawn_tracking_sync_after_local_update(
-        database_handle,
-        settings_handle,
-        settings_path,
-        chapter_id.manga_id().clone(),
-    );
+    let (delete_downloaded_after_read, tracking_auto_sync) = {
+        let settings = settings.lock().await;
+        (
+            settings.delete_downloaded_after_read,
+            settings.tracking_auto_sync,
+        )
+    };
+    let chapter_storage = chapter_storage.lock().await;
+
+    usecases::mark_chapter_as_read(
+        &database,
+        &chapter_storage,
+        delete_downloaded_after_read,
+        &chapter_id,
+        state,
+    )
+    .await?;
+    if tracking_auto_sync {
+        spawn_tracking_sync_after_local_update(
+            database,
+            settings,
+            settings_path,
+            chapter_id.manga_id().clone(),
+        );
+    }
 
     Ok(Json(()))
 }
@@ -745,20 +792,25 @@ async fn update_last_read(
         settings_path,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
-    let database_handle = database.clone();
-    let settings_handle = settings.clone();
+
+    let tracking_auto_sync = {
+        let settings = settings.lock().await;
+
+        settings.tracking_auto_sync
+    };
 
     usecases::update_last_read_chapter(&database, &chapter_id).await?;
-    spawn_tracking_sync_after_local_update(
-        database_handle,
-        settings_handle,
-        settings_path,
-        chapter_id.manga_id().clone(),
-    );
+    if tracking_auto_sync {
+        spawn_tracking_sync_after_local_update(
+            database,
+            settings,
+            settings_path,
+            chapter_id.manga_id().clone(),
+        );
+    }
 
     Ok(Json(()))
 }
@@ -771,7 +823,6 @@ struct SetPreferredScanlatorBody {
 
 async fn get_manga_preferred_scanlator(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<Option<String>>, AppError> {
     let manga_id = MangaId::from(params);
@@ -783,7 +834,6 @@ async fn get_manga_preferred_scanlator(
 
 async fn set_manga_preferred_scanlator(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
     Json(body): Json<SetPreferredScanlatorBody>,
 ) -> Result<Json<()>, AppError> {
@@ -796,7 +846,6 @@ async fn set_manga_preferred_scanlator(
 
 async fn list_tracking_bindings(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<Vec<shared::model::TrackingBinding>>, AppError> {
     let manga_id = MangaId::from(params);
@@ -818,8 +867,6 @@ async fn search_tracking_candidates(
         settings_path,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
-    Path(_params): Path<MangaChaptersPathParams>,
     Json(body): Json<SearchTrackingCandidatesBody>,
 ) -> Result<Json<Vec<TrackingCandidate>>, AppError> {
     let mut settings = settings.lock().await;
@@ -839,7 +886,6 @@ async fn link_tracking_binding(
         settings_path,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
     Json(candidate): Json<TrackingCandidate>,
 ) -> Result<Json<()>, AppError> {
@@ -872,7 +918,6 @@ struct SetViewerBody {
 
 async fn set_manga_viewer(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
     Json(body): Json<SetViewerBody>,
 ) -> Result<Json<()>, AppError> {
@@ -906,7 +951,6 @@ async fn sync_tracking_bindings(
         settings_path,
         ..
     }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
     Json(body): Json<SyncTrackingBindingsBody>,
 ) -> Result<Json<Vec<TrackingSyncResult>>, AppError> {
@@ -938,7 +982,6 @@ struct TrackingBindingPathParams {
 
 async fn unlink_tracking_binding(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<TrackingBindingPathParams>,
 ) -> Result<Json<()>, AppError> {
     let service = TrackingService::try_from(params.service.as_str())?;
@@ -957,7 +1000,6 @@ struct SetTrackingDatesBody {
 
 async fn set_tracking_dates(
     StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(_source): SourceExtractor,
     Path(params): Path<TrackingBindingPathParams>,
     Json(body): Json<SetTrackingDatesBody>,
 ) -> Result<Json<()>, AppError> {
@@ -975,8 +1017,8 @@ static TRACKING_SYNC_TOKENS: LazyLock<Arc<Mutex<HashMap<String, CancellationToke
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 fn spawn_tracking_sync_after_local_update(
-    database: std::sync::Arc<shared::database::Database>,
-    settings: std::sync::Arc<tokio::sync::Mutex<shared::settings::Settings>>,
+    database: Arc<shared::database::Database>,
+    settings: Arc<Mutex<shared::settings::Settings>>,
     settings_path: std::path::PathBuf,
     manga_id: MangaId,
 ) {

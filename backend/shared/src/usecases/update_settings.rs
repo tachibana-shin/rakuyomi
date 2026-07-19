@@ -55,6 +55,8 @@ pub struct UpdateableSettings {
     oauth_server_url: String,
     #[serde(default)]
     chapter_title_format: ChapterTitleFormat,
+    delete_downloaded_on_remove: bool,
+    delete_downloaded_after_read: bool,
 }
 
 fn clean_opt(s: Option<String>) -> Option<String> {
@@ -111,6 +113,8 @@ impl UpdateableSettings {
         });
         settings.oauth_server_url = self.oauth_server_url;
         settings.chapter_title_format = self.chapter_title_format;
+        settings.delete_downloaded_on_remove = self.delete_downloaded_on_remove;
+        settings.delete_downloaded_after_read = self.delete_downloaded_after_read;
     }
 }
 
@@ -148,6 +152,8 @@ impl From<&Settings> for UpdateableSettings {
             proxy_url: value.proxy_url.clone(),
             oauth_server_url: value.oauth_server_url.clone(),
             chapter_title_format: value.chapter_title_format,
+            delete_downloaded_on_remove: value.delete_downloaded_on_remove,
+            delete_downloaded_after_read: value.delete_downloaded_after_read,
         }
     }
 }

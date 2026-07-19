@@ -290,6 +290,7 @@ struct GetMangasQuery {
     exclude: Option<String>,
     q: String,
     page: Option<i32>,
+    sort: Option<String>,
 }
 
 async fn get_mangas(
@@ -306,6 +307,7 @@ async fn get_mangas(
         exclude,
         q,
         page,
+        sort,
     }): Query<GetMangasQuery>,
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
     let chapter_storage = chapter_storage.lock().await;
@@ -320,6 +322,7 @@ async fn get_mangas(
     });
 
     let page = page.unwrap_or(1).max(1);
+    let sort_bucket = sort.and_then(|s| s.parse::<shared::source::SortBucket>().ok());
 
     let (mut mangas, errors, has_next_page) =
         cancel_after(&token.0, Duration::from_secs(59), |token| {
@@ -333,6 +336,7 @@ async fn get_mangas(
                 &exclude,
                 page,
                 30,
+                sort_bucket,
             )
         })
         .await

@@ -33,10 +33,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
---- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_text: string|nil }
---- Note: confirm_title/confirm_text mirror the official Aidoku schema's `confirmTitle`/`confirmText`
---- fields, both of which are optional on a button setting.
-
+--- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
 --- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition|ButtonDefinition
 
 --- @class SettingItemValue: { [any]: any }
@@ -178,20 +175,20 @@ function SettingItemValue:createValueWidget()
           end)
         end
 
-        -- Per the official Aidoku schema, both `confirmTitle` and `confirmText` (`confirm_text`
+        -- Per the official Aidoku schema, both `confirmTitle` and `confirmText` (`confirm_message`
         -- here) are optional on a button setting. Only show a confirmation dialog when at least
         -- one of them is present, and only concatenate the parts that actually exist, so we never
         -- try to concatenate a nil value.
         local confirm_title = self.value_definition.confirm_title
-        local confirm_text = self.value_definition.confirm_text
+        local confirm_message = self.value_definition.confirm_message
 
-        if confirm_title or confirm_text then
+        if confirm_title or confirm_message then
           local text_parts = {}
           if confirm_title then
             table.insert(text_parts, confirm_title)
           end
-          if confirm_text then
-            table.insert(text_parts, confirm_text)
+          if confirm_message then
+            table.insert(text_parts, confirm_message)
           end
 
           local confirm_dialog

@@ -73,7 +73,6 @@ end
 local Settings = FocusManager:extend {
   settings = {},
   on_return_callback = nil,
-  storage_total_text = '',
   paths = { 0 }
 }
 
@@ -228,8 +227,8 @@ Settings.setting_value_definitions = {
       type = 'enum',
       title = _("Chapter title in statistics (ComicInfo)"),
       options = {
-        { label = _("Chapter title only"),   value = 'title' },
-        { label = _("Series + chapter title"), value = 'series_title' },
+        { label = _("Chapter title only"),      value = 'title' },
+        { label = _("Series + chapter title"),  value = 'series_title' },
         { label = _("Series + chapter number"), value = 'series_chapter_number' },
       },
       default = 'title',
@@ -396,11 +395,24 @@ Settings.setting_value_definitions = {
     }
   },
   {
-    'storage_total_display',
+    nil,
     {
       type = 'label',
       title = _("Total downloaded"),
-      text = '',
+      text = function()
+        local stats_ok, stats_result = pcall(function()
+          local stats_response = Backend.getStorageStats()
+          if stats_response.type == 'SUCCESS' and stats_response.body then
+            return formatBytes(stats_response.body.total_bytes)
+          end
+          return ''
+        end)
+        if stats_ok and stats_result then
+          return stats_result
+        end
+
+        return _('Unknown')
+      end
     }
   },
   {
@@ -560,11 +572,6 @@ function Settings:init()
         bold = true,
       })
     elseif definition.type == 'label' then
-      local text = definition.text
-      if key == 'storage_total_display' then
-        text = self.storage_total_text ~= '' and self.storage_total_text or _("Unknown")
-      end
-
       table.insert(vertical_group, SettingItem:new {
         show_parent = self,
         width = self.item_width,
@@ -572,10 +579,9 @@ function Settings:init()
         value_definition = {
           type = 'label',
           title = definition.title,
-          text = text,
+          text = definition.text(),
         },
         value = nil,
-        on_value_changed_callback = function() end,
       })
     elseif definition.is_local then
       table.insert(vertical_group, SettingItem:new {
@@ -735,22 +741,8 @@ function Settings:fetchAndShow(on_return_callback)
     return
   end
 
-  -- Best effort: older servers without /storage-stats simply show "Unknown".
-  local storage_total_text = ''
-  local stats_ok, stats_result = pcall(function()
-    local stats_response = Backend.getStorageStats()
-    if stats_response.type == 'SUCCESS' and stats_response.body then
-      return formatBytes(stats_response.body.total_bytes)
-    end
-    return ''
-  end)
-  if stats_ok and stats_result then
-    storage_total_text = stats_result
-  end
-
   local ui = Settings:new {
     settings = response.body,
-    storage_total_text = storage_total_text,
     on_return_callback = on_return_callback
   }
   ui.on_return_callback = on_return_callback

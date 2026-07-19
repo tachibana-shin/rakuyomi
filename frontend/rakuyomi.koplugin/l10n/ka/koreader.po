@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 00:12+0700\n"
+"POT-Creation-Date: 2026-07-18 21:06+0700\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,8 +31,8 @@ msgstr "ინსტალაციადია"
 msgid "version"
 msgstr "ვერსია"
 
-#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:285
-#: ../ChapterListing.lua:346 ../InstalledSourcesListing.lua:83
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
+#: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
 #: ../MangaInfoWidget.lua:458
 msgid "Unknown"
 msgstr "უცნობი"
@@ -78,7 +78,7 @@ msgstr "უცნობი შეცდომა"
 msgid "Error"
 msgstr "შეცდომა"
 
-#: ../ChapterListPopup.lua:129
+#: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
 msgid "Chapters"
 msgstr "თავები"
 
@@ -87,12 +87,13 @@ msgid "Search chapters"
 msgstr "თავების ძიება"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
-#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
-#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+#: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1339 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
+#: ../LibraryView.lua:1221 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
+#: ../widgets/SettingItemValue.lua:272
 msgid "Cancel"
 msgstr "გაუქმება"
 
@@ -108,289 +109,294 @@ msgstr "გვერდზე გადასვლა"
 msgid "Go"
 msgstr "წადი"
 
-#: ../ChapterListing.lua:58
+#: ../ChapterListing.lua:59
 msgid "Chapter listing"
 msgstr "თავების ჩამონათვალი"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
+#: ../ChapterListing.lua:256 ../ChapterListing.lua:1184
 msgid "Languages"
 msgstr "ენები"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "No chapters found"
 msgstr "თავები ვერ მოიძებნა"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "Try swiping down to refresh the chapter list."
 msgstr "სცადეთ გადაფურცვლა ქვემოთ, რათა განაახლოთ თავების სია."
 
-#: ../ChapterListing.lua:389
+#: ../ChapterListing.lua:406
 msgid "Volume"
 msgstr "მოცულობა"
 
-#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:410 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "თავი"
 
-#: ../ChapterListing.lua:420
+#: ../ChapterListing.lua:437
 msgid "Locked"
 msgstr "ჩაკეტილი"
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
+#: ../ChapterListing.lua:471 ../ChapterListing.lua:690
 msgid "Refreshing chapters..."
 msgstr "მიმდინარეობს თავების განახლება..."
 
-#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
-#: ../ChapterListing.lua:1417
+#: ../ChapterListing.lua:479 ../ChapterListing.lua:697
+#: ../ChapterListing.lua:1450
 msgid "Cancelled."
 msgstr "გაუქმდა."
 
-#: ../ChapterListing.lua:474
+#: ../ChapterListing.lua:491
 msgid "Refresh chapter error"
 msgstr "თავის განახლების შეცდომა"
 
-#: ../ChapterListing.lua:524
+#: ../ChapterListing.lua:541
 msgid "Chapter is locked"
 msgstr "თავი დაკეტილია"
 
-#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:558 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "გახსენით"
 
-#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
+#: ../ChapterListing.lua:568 ../ChapterListing.lua:1094 ../LibraryView.lua:559
 msgid "Refresh"
 msgstr "განაახლეთ"
 
-#: ../ChapterListing.lua:557
+#: ../ChapterListing.lua:574
 msgid "Chapter refreshed"
 msgstr "თავი განახლებულია"
 
-#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
-#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
+#: ../ChapterListing.lua:580 ../ChapterListing.lua:723
+#: ../ChapterListing.lua:1140 ../LibraryView.lua:606
 msgid "Mark unread"
 msgstr "მონიშნე წაუკითხავად"
 
-#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
+#: ../ChapterListing.lua:591 ../ChapterListing.lua:1346
 msgid "Download"
 msgstr "ჩამოტვირთვა"
 
-#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:591 ../LibraryView.lua:809 ../LibraryView.lua:829
 msgid "Remove"
 msgstr "ამოღება"
 
-#: ../ChapterListing.lua:583
+#: ../ChapterListing.lua:600
 msgid "Chapter downloaded"
 msgstr "თავი ჩამოტვირთულია"
 
-#: ../ChapterListing.lua:602
+#: ../ChapterListing.lua:619
 msgid "Revoke chapter..."
 msgstr "თავის გაუქმება..."
 
-#: ../ChapterListing.lua:620
+#: ../ChapterListing.lua:637
 msgid "Removed chapter"
 msgstr "თავი ამოღებულია"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Marking"
 msgstr "მარკირება"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Un-marking"
 msgstr "მარკირების გაუქმება"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "chapter..."
 msgstr "თავი..."
 
-#: ../ChapterListing.lua:665
+#: ../ChapterListing.lua:682
 msgid "Cannot refresh chapters while offline"
 msgstr "თავების განახლება შეუძლებელია ხაზგარეშე რეჟიმში"
 
-#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
+#: ../ChapterListing.lua:723 ../ChapterListing.lua:1130 ../LibraryView.lua:595
 msgid "Mark read"
 msgstr "მონიშნე წაკითხული"
 
-#: ../ChapterListing.lua:707
+#: ../ChapterListing.lua:724
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Leaving blank will select all"
 msgstr "ცარიელი დატოვეთ ყველა აირჩევა"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Mark chapters as read or unread"
 msgstr "მონიშნეთ თავი წაკითხულად ან წაუკითხავად"
 
-#: ../ChapterListing.lua:719
+#: ../ChapterListing.lua:736
 msgid "Mark"
 msgstr "მარკო"
 
-#: ../ChapterListing.lua:729
+#: ../ChapterListing.lua:746
 msgid "Marking..."
 msgstr "მარკირება..."
 
-#: ../ChapterListing.lua:739
+#: ../ChapterListing.lua:756
 msgid "Marked"
 msgstr "მონიშნულია"
 
-#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "შეცდომები არ არის"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "Page"
 msgstr "გვერდი"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "attempts"
 msgstr "მცდელობები"
 
-#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:792 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… და კიდევ %d შეცდომა"
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:814
 msgid "Could not download chapter."
 msgstr "თავის ჩამოტვირთვა ვერ მოხერხდა."
 
-#: ../ChapterListing.lua:805
+#: ../ChapterListing.lua:822
 msgid "Loading chapter..."
 msgstr "იტვირთება თავი..."
 
-#: ../ChapterListing.lua:806
+#: ../ChapterListing.lua:823
 msgid "unknown"
 msgstr "უცნობი"
 
-#: ../ChapterListing.lua:824
+#: ../ChapterListing.lua:841
 msgid "Download cancelled."
 msgstr "ჩამოტვირთვა გაუქმდა."
 
-#: ../ChapterListing.lua:830
+#: ../ChapterListing.lua:847
 msgid "Are you sure you want to cancel the download?"
 msgstr "დარწმუნებული ხართ, რომ გსურთ ჩამოტვირთვის გაუქმება?"
 
-#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1084 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "ბიბლიოთეკაში დამატება"
 
-#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1102 ../LibraryView.lua:579
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "დეტალები"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
+#: ../TrackingSettings.lua:416
+msgid "Tracking"
+msgstr "თვალთვალი"
+
+#: ../ChapterListing.lua:1152
 msgid "Resume"
 msgstr "რეზიუმე"
 
-#: ../ChapterListing.lua:1133
+#: ../ChapterListing.lua:1160
 msgid "Next Chapter"
 msgstr "შემდეგი თავი"
 
-#: ../ChapterListing.lua:1143
+#: ../ChapterListing.lua:1170
 msgid "Download unread chapters…"
 msgstr "ჩამოტვირთეთ წაუკითხავი თავები…"
 
-#: ../ChapterListing.lua:1170
+#: ../ChapterListing.lua:1197
 msgid "Group"
 msgstr "ჯგუფი"
 
-#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
+#: ../ChapterListing.lua:1198 ../ChapterListing.lua:1320
 msgid "Filter by Group"
 msgstr "გაფილტვრა ჯგუფის მიხედვით"
 
-#: ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1227
 msgid "Adding to library..."
 msgstr "ბიბლიოთეკაში დამატება..."
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1234
 msgid "Failed to add to library"
 msgstr "ბიბლიოთეკაში დამატება ვერ მოხერხდა"
 
-#: ../ChapterListing.lua:1206
+#: ../ChapterListing.lua:1239
 msgid "Added to library."
 msgstr "დამატებულია ბიბლიოთეკაში."
 
-#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1251 ../LibraryView.lua:753
 msgid "Sadly, no next chapter available! :c"
 msgstr "სამწუხაროდ, შემდეგი თავი არ არის ხელმისაწვდომი! "
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "Next"
 msgstr "შემდეგი"
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "reading with"
 msgstr "კითხულობს"
 
-#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1261 ../LibraryView.lua:790
 msgid "Read"
 msgstr "წაიკითხეთ"
 
-#: ../ChapterListing.lua:1250
+#: ../ChapterListing.lua:1283
 msgid "Show All"
 msgstr "ყველას ჩვენება"
 
-#: ../ChapterListing.lua:1259
+#: ../ChapterListing.lua:1292
 msgid "Showing all groups"
 msgstr "ნაჩვენებია ყველა ჯგუფი"
 
-#: ../ChapterListing.lua:1280
+#: ../ChapterListing.lua:1313
 msgid "Filtered to"
 msgstr "გაფილტრული"
 
-#: ../ChapterListing.lua:1297
+#: ../ChapterListing.lua:1330
 msgid "Download unread chapters..."
 msgstr "ჩამოტვირთეთ წაუკითხავი თავები..."
 
-#: ../ChapterListing.lua:1299
+#: ../ChapterListing.lua:1332
 msgid "Amount of unread chapters (default: all)"
 msgstr "წაუკითხავი თავების რაოდენობა (ნაგულისხმევი: ყველა)"
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Specify amount or leave empty for all."
 msgstr "მიუთითეთ თანხა ან დატოვეთ ცარიელი ყველასთვის."
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Will download from"
 msgstr "ჩამოიტვირთება დან"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "Specify the amount of unread chapters to download"
 msgstr "მიუთითეთ წაუკითხავი თავების რაოდენობა ჩამოსატვირთად"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "or leave empty to download all of them."
 msgstr "ან დატოვეთ ცარიელი ყველა ჩამოსატვირთად."
 
-#: ../ChapterListing.lua:1323
+#: ../ChapterListing.lua:1356
 msgid "Invalid amount of chapters!"
 msgstr "თავების არასწორი რაოდენობა!"
 
-#: ../ChapterListing.lua:1344
+#: ../ChapterListing.lua:1377
 msgid "No unread chapters found for"
 msgstr "ამისთვის წაუკითხავი თავები ვერ მოიძებნა"
 
-#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
+#: ../ChapterListing.lua:1402 ../ChapterListing.lua:1477
 msgid "Downloading all chapters, this will take a while…"
 msgstr "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება…"
 
-#: ../ChapterListing.lua:1454
+#: ../ChapterListing.lua:1487
 msgid "Waiting for download to be cancelled…"
 msgstr "ელოდება ჩამოტვირთვის გაუქმებას…"
 
-#: ../ChapterListing.lua:1456
+#: ../ChapterListing.lua:1489
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "ყველა თავის ჩამოტვირთვას, ამას გარკვეული დრო დასჭირდება… ("
 
-#: ../ChapterListing.lua:1459
+#: ../ChapterListing.lua:1492
 msgid "Tap outside this message to cancel."
 msgstr "შეეხეთ ამ შეტყობინების გარეთ გასაუქმებლად."
 
-#: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
+#: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
 msgstr "ქუქიების სინქრონიზაცია"
 
@@ -507,19 +513,19 @@ msgstr ""
 msgid "Check Again"
 msgstr "შეამოწმეთ ისევ"
 
-#: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
+#: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
 msgid "Syncing cookies..."
 msgstr "მიმდინარეობს ქუქიების სინქრონიზაცია..."
 
-#: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
+#: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
 msgstr "ქუქიების სინქრონიზაცია ვერ მოხერხდა:"
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
 msgstr "დომენ(ებ)ი."
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
 msgstr "სინქრონიზებული ქუქიები ამისთვის"
 
@@ -591,316 +597,316 @@ msgstr "გსურთ ამოიღოთ"
 msgid "source?"
 msgstr "წყარო?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:86
+#: ../LibraryView.lua:76 ../Settings.lua:84
 msgid "Library"
 msgstr "ბიბლიოთეკა"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "No mangas found in library"
 msgstr "ბიბლიოთეკაში მანგა არ მოიძებნა"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "Try adding some by holding their name on the search results!"
 msgstr "სცადეთ ზოგიერთის დამატება ძიების შედეგებზე მათი სახელის დაჭერით!"
 
-#: ../LibraryView.lua:568
+#: ../LibraryView.lua:570
 msgid "Refreshed manga"
 msgstr "განახლებული მანგა"
 
-#: ../LibraryView.lua:617
+#: ../LibraryView.lua:619
 msgid "Continue Reading"
 msgstr "განაგრძეთ კითხვა"
 
-#: ../LibraryView.lua:626 ../MangaSearchResults.lua:424
+#: ../LibraryView.lua:637 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "დასაკრავ სიაში დამატება"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:649
 msgid "List chapters"
 msgstr "ჩამოთვალეთ თავები"
 
-#: ../LibraryView.lua:656 ../MangaSearchResults.lua:358
+#: ../LibraryView.lua:667 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "ბიბლიოთეკიდან წაშლა"
 
-#: ../LibraryView.lua:666
+#: ../LibraryView.lua:677
 msgid "Remove from Playlist"
 msgstr "წაშლა დასაკრავი სიიდან"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:709
 msgid "Finding next chapter..."
 msgstr "შემდეგი თავის პოვნა..."
 
-#: ../LibraryView.lua:710
+#: ../LibraryView.lua:720
 msgid "No chapters found for this manga."
 msgstr "ამ მანგასთვის თავები ვერ მოიძებნა."
 
-#: ../LibraryView.lua:779
+#: ../LibraryView.lua:789
 msgid "Resume reading with:"
 msgstr "განაახლეთ კითხვა:"
 
-#: ../LibraryView.lua:798 ../LibraryView.lua:818
+#: ../LibraryView.lua:808 ../LibraryView.lua:828
 msgid "Do you want to remove"
 msgstr "გსურთ წაშალოთ"
 
-#: ../LibraryView.lua:798
+#: ../LibraryView.lua:808
 msgid "from your library?"
 msgstr "თქვენი ბიბლიოთეკიდან?"
 
-#: ../LibraryView.lua:818
+#: ../LibraryView.lua:828
 msgid "from your playlist?"
 msgstr "თქვენი დასაკრავი სიიდან?"
 
-#: ../LibraryView.lua:841
+#: ../LibraryView.lua:851
 msgid "Search for mangas"
 msgstr "მანგას ძებნა"
 
-#: ../LibraryView.lua:851
+#: ../LibraryView.lua:861
 msgid "Search favorites"
 msgstr "მოძებნეთ რჩეულები"
 
-#: ../LibraryView.lua:861 ../PlaylistDialog.lua:304
+#: ../LibraryView.lua:871 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "დასაკრავი სიები"
 
-#: ../LibraryView.lua:870
+#: ../LibraryView.lua:880
 msgid "Refresh mangas"
 msgstr "განაახლეთ მანგა"
 
-#: ../LibraryView.lua:878
+#: ../LibraryView.lua:888
 msgid "Refresh details"
 msgstr "განაახლეთ დეტალები"
 
-#: ../LibraryView.lua:888
+#: ../LibraryView.lua:898
 msgid "Cleaner chapters"
 msgstr "უფრო სუფთა თავები"
 
-#: ../LibraryView.lua:896
+#: ../LibraryView.lua:906
 msgid "Manage sources"
 msgstr "მართეთ წყაროები"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
 msgid "Settings"
 msgstr "პარამეტრები"
 
-#: ../LibraryView.lua:914
-msgid "Check for updates"
-msgstr "შეამოწმეთ განახლებები"
-
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:933
 msgid "Sync Database (Beta)"
 msgstr "მონაცემთა ბაზის სინქრონიზაცია (ბეტა)"
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:937
 msgid "Sync to WebDAV..."
 msgstr "სინქრონიზაცია WebDAV-თან..."
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "Do you want to migrate your local database from the server?"
 msgstr "გსურთ თქვენი ადგილობრივი მონაცემთა ბაზის მიგრაცია სერვერიდან?"
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "The remote database is newer than the local one."
 msgstr "დისტანციური მონაცემთა ბაზა უფრო ახალია, ვიდრე ადგილობრივი."
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "This action cannot be undone."
 msgstr "ამ მოქმედების გაუქმება შეუძლებელია."
 
-#: ../LibraryView.lua:940
+#: ../LibraryView.lua:950
 msgid "Migrate"
 msgstr "მიგრაცია"
 
-#: ../LibraryView.lua:944
+#: ../LibraryView.lua:954
 msgid "Migrating database..."
 msgstr "მონაცემთა ბაზის მიგრაცია..."
 
-#: ../LibraryView.lua:955 ../LibraryView.lua:1002
+#: ../LibraryView.lua:965 ../LibraryView.lua:1012
 msgid "Local database has been migrated from the server!"
 msgstr "ლოკალური მონაცემთა ბაზა გადატანილია სერვერიდან!"
 
-#: ../LibraryView.lua:966
+#: ../LibraryView.lua:976
 msgid "Replace Cloud"
 msgstr "შეცვალეთ ღრუბელი"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:980
 msgid "Replacing cloud..."
 msgstr "ღრუბლის ჩანაცვლება..."
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:990
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "ღრუბლოვანი მონაცემთა ბაზა იძულებით შეიცვალა ლოკალურით!"
 
-#: ../LibraryView.lua:998
+#: ../LibraryView.lua:1008
 msgid "Database is already up to date!"
 msgstr "მონაცემთა ბაზა უკვე განახლებულია!"
 
-#: ../LibraryView.lua:1000
+#: ../LibraryView.lua:1010
 msgid "Database has been synced to the server!"
 msgstr "მონაცემთა ბაზა სინქრონიზებულია სერვერთან!"
 
-#: ../LibraryView.lua:1004
+#: ../LibraryView.lua:1014
 msgid "Sync completed!"
 msgstr "სინქრონიზაცია დასრულდა!"
 
-#: ../LibraryView.lua:1022
+#: ../LibraryView.lua:1032
 msgid "Sync Cookies"
 msgstr "ქუქიების სინქრონიზაცია"
 
-#: ../LibraryView.lua:1052
+#: ../LibraryView.lua:1062
 msgid "System resources"
 msgstr "სისტემის რესურსები"
 
-#: ../LibraryView.lua:1067
+#: ../LibraryView.lua:1077
 msgid "CPU"
 msgstr "CPU"
 
-#: ../LibraryView.lua:1068
+#: ../LibraryView.lua:1078
 msgid "Cores"
 msgstr "ბირთვები"
 
-#: ../LibraryView.lua:1069
+#: ../LibraryView.lua:1079
 msgid "Usage"
 msgstr "გამოყენება"
 
-#: ../LibraryView.lua:1070
+#: ../LibraryView.lua:1080
 msgid "Memory"
 msgstr "მეხსიერება"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:364
+#: ../LibraryView.lua:1083 ../Settings.lua:375
 msgid "Storage"
 msgstr "შენახვა"
 
-#: ../LibraryView.lua:1077 ../LibraryView.lua:1081
+#: ../LibraryView.lua:1087 ../LibraryView.lua:1091
 msgid "Tmpfs"
 msgstr "ტმპფს"
 
-#: ../LibraryView.lua:1081
+#: ../LibraryView.lua:1091
 msgid "unavailable"
 msgstr "მიუწვდომელია"
 
-#: ../LibraryView.lua:1084
+#: ../LibraryView.lua:1094
 msgid "Process RSS"
 msgstr "RSS-ის დამუშავება"
 
-#: ../LibraryView.lua:1085
+#: ../LibraryView.lua:1095
 msgid "Virtual"
 msgstr "ვირტუალური"
 
-#: ../LibraryView.lua:1121
+#: ../LibraryView.lua:1104
+msgid "Check for updates"
+msgstr "შეამოწმეთ განახლებები"
+
+#: ../LibraryView.lua:1139
 msgid "Manga search..."
 msgstr "მანგას ძებნა..."
 
-#: ../LibraryView.lua:1122
+#: ../LibraryView.lua:1140
 msgid "Houseki no Kuni"
 msgstr "ჰაუსკი არა კუნი"
 
-#: ../LibraryView.lua:1123 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1141 ../LibraryView.lua:1217
 msgid "Type the manga name to search for"
 msgstr "ჩაწერეთ მანგას სახელი საძიებლად"
 
-#: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:195
+#: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "ძიება"
 
-#: ../LibraryView.lua:1181
+#: ../LibraryView.lua:1199
 msgid "Exclude source search for"
 msgstr "გამორიცხეთ წყაროს ძებნა"
 
-#: ../LibraryView.lua:1196
+#: ../LibraryView.lua:1214
 msgid "Favorite search..."
 msgstr "საყვარელი ძიება..."
 
-#: ../LibraryView.lua:1198
+#: ../LibraryView.lua:1216
 msgid "Tonikaku Kawaii"
 msgstr "ტონიკაკუ კავაი"
 
-#: ../LibraryView.lua:1250
+#: ../LibraryView.lua:1268
 msgid "Scaning files..."
 msgstr "მიმდინარეობს ფაილების სკანირება..."
 
-#: ../LibraryView.lua:1265
+#: ../LibraryView.lua:1283
 #, lua-format
 msgid "Found %d files."
 msgstr "ნაპოვნია %d ფაილი."
 
-#: ../LibraryView.lua:1266
+#: ../LibraryView.lua:1284
 #, lua-format
 msgid "Total size %s."
 msgstr "საერთო ზომა %s."
 
-#: ../LibraryView.lua:1267
+#: ../LibraryView.lua:1285
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "RendOnly ფაილი .cbz და .epub სკანირება."
 
-#: ../LibraryView.lua:1271
+#: ../LibraryView.lua:1289
 msgid "Clean"
 msgstr "სუფთა"
 
-#: ../LibraryView.lua:1276
+#: ../LibraryView.lua:1294
 msgid "Deleting..."
 msgstr "მიმდინარეობს წაშლა..."
 
-#: ../LibraryView.lua:1294
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "გაწმენდილი უფასო %s საცავი"
 
-#: ../LibraryView.lua:1309 ../LibraryView.lua:1321 ../LibraryView.lua:1342
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "ხაზგარეშე რეჟიმში განახლება შეუძლებელია"
 
-#: ../LibraryView.lua:1331
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "განაახლეთ მანგასი..."
 
-#: ../LibraryView.lua:1332
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "მანგას ყველა თავი განახლებულია!"
 
-#: ../LibraryView.lua:1333
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "მანგას ზოგიერთი განახლება ვერ ხერხდება:"
 
-#: ../LibraryView.lua:1352
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "მანგას დეტალების განახლება..."
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "მანგას ყველა დეტალის განახლება!"
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "მანგას ზოგიერთი დეტალის განახლება ვერ მოხერხდა:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "პროგრესი"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "დამლაგებელი"
 
-#: ../LibraryView.lua:1389
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "იპოვეთ და წაშალეთ არასწორი ფაილები, მათ შორის ფაილები წაშლილი წყაროებიდან"
 
-#: ../LibraryView.lua:1389 ../LibraryView.lua:1392
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "ნორმალური"
 
-#: ../LibraryView.lua:1390 ../LibraryView.lua:1398
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "წაკითხული თავი შესრულებულია"
 
-#: ../LibraryView.lua:1390
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "იპოვეთ და წაშალეთ წაკითხული თავები"
 
-#: ../LibraryView.lua:1391
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "მნიშვნელოვანია: მეტა ფაილები (სანიშნე, ისტორია) არ ინახება!"
 
@@ -997,23 +1003,23 @@ msgstr "არა"
 msgid "View Mode"
 msgstr "ნახვის რეჟიმი"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
 msgid "Default"
 msgstr "ნაგულისხმევი"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
 msgid "Scroll"
 msgstr "გადახვევა"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
 msgid "Vertical"
 msgstr "ვერტიკალური"
 
@@ -1023,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
 msgid "Off"
 msgstr "გამორთულია"
 
@@ -1076,6 +1082,54 @@ msgstr "წაშალოთ ეს შეტყობინება?"
 msgid "Delete"
 msgstr "წაშლა"
 
+#: ../OAuthFlowView.lua:65
+msgid "Sign in with "
+msgstr "შედით სისტემაში"
+
+#: ../OAuthFlowView.lua:79
+msgid "Scan this QR code on your phone to sign in."
+msgstr "დაასკანირეთ ეს QR კოდი თქვენს ტელეფონში შესასვლელად."
+
+#: ../OAuthFlowView.lua:104
+msgid "Error: No bridge URL available."
+msgstr "შეცდომა: ხიდის URL მიუწვდომელია."
+
+#: ../OAuthFlowView.lua:114
+msgid "Scan the QR code, then check sign-in status."
+msgstr "დაასკანირეთ QR კოდი, შემდეგ შეამოწმეთ შესვლის სტატუსი."
+
+#: ../OAuthFlowView.lua:125
+msgid "Check sign-in status"
+msgstr "შეამოწმეთ შესვლის სტატუსი"
+
+#: ../OAuthFlowView.lua:209
+msgid "Checking..."
+msgstr "მიმდინარეობს შემოწმება..."
+
+#: ../OAuthFlowView.lua:215
+msgid "Network error. Please try again."
+msgstr "ქსელის შეცდომა. "
+
+#: ../OAuthFlowView.lua:222
+msgid "Waiting for sign-in. Scan the QR code, then tap Check."
+msgstr "ელოდება შესვლას. "
+
+#: ../OAuthFlowView.lua:225
+msgid "Sign-in successful!"
+msgstr "შესვლა წარმატებით დასრულდა!"
+
+#: ../OAuthFlowView.lua:231
+msgid "Error: "
+msgstr "შეცდომა:"
+
+#: ../OAuthFlowView.lua:289
+msgid "Creating sign-in session..."
+msgstr "მიმდინარეობს შესვლის სესიის შექმნა..."
+
+#: ../OAuthFlowView.lua:301
+msgid "Failed to start sign-in: "
+msgstr "შესვლის დაწყება ვერ მოხერხდა:"
+
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
 msgstr "ზოგიერთი ფუნქცია შეიძლება შეზღუდული იყოს"
@@ -1104,7 +1158,8 @@ msgstr "აღარ აჩვენო ეს შეტყობინება
 msgid "Rename Playlist"
 msgstr "გადარქმევა დასაკრავი სია"
 
-#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
+#: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
+#: ../widgets/SettingItemValue.lua:279
 msgid "Save"
 msgstr "შენახვა"
 
@@ -1132,293 +1187,510 @@ msgstr "შექმნა"
 msgid "No playlists yet."
 msgstr "დასაკრავი სიები ჯერ არ არის."
 
-#: ../Settings.lua:92
+#: ../Settings.lua:90
 msgid "Library view mode"
 msgstr "ბიბლიოთეკის ნახვის რეჟიმი"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:92 ../Settings.lua:201
 msgid "Base"
 msgstr "ბაზა"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Cover"
 msgstr "საფარი"
 
-#: ../Settings.lua:96 ../Settings.lua:205
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Grid"
 msgstr "ბადე"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:103
 msgid "Library sorting mode"
 msgstr "ბიბლიოთეკის დახარისხების რეჟიმი"
 
-#: ../Settings.lua:107
+#: ../Settings.lua:105
 msgid "Order added ascending (Default)"
 msgstr "შეკვეთა დამატებულია ზრდადობით (ნაგულისხმევი)"
 
-#: ../Settings.lua:108
+#: ../Settings.lua:106
 msgid "Order added descending"
 msgstr "შეკვეთა დამატებულია კლებადობით"
 
-#: ../Settings.lua:109
+#: ../Settings.lua:107
 msgid "Title manga ascending"
 msgstr "სათაური მანგა აღმავალი"
 
-#: ../Settings.lua:110
+#: ../Settings.lua:108
 msgid "Title manga descending"
 msgstr "სათაური მანგა დაღმავალი"
 
-#: ../Settings.lua:111
+#: ../Settings.lua:109
 msgid "Count unread chapters ascending"
 msgstr "დაითვალეთ წაუკითხავი თავები აღმავალზე"
 
-#: ../Settings.lua:112
+#: ../Settings.lua:110
 msgid "Count unread chapters descending"
 msgstr "დათვალეთ წაუკითხავი თავები კლებად"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:111
 msgid "Last read ascending"
 msgstr "ბოლო წაკითხვა აღმავალი"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:112
 msgid "Last read descending"
 msgstr "ბოლო წაკითხვა კლებადობით"
 
-#: ../Settings.lua:115
+#: ../Settings.lua:113
 msgid "Source ascending"
 msgstr "წყარო აღმავალი"
 
-#: ../Settings.lua:116
+#: ../Settings.lua:114
 msgid "Source descending"
 msgstr "წყარო დაღმავალი"
 
-#: ../Settings.lua:124
+#: ../Settings.lua:122
 msgid "Items per page (0 = auto)"
 msgstr "ერთეულები თითო გვერდზე (0 = ავტომატური)"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:133
 msgid "Grid columns"
 msgstr "ბადის სვეტები"
 
-#: ../Settings.lua:146
+#: ../Settings.lua:144
 msgid "Grid rows"
 msgstr "ბადის რიგები"
 
-#: ../Settings.lua:157
+#: ../Settings.lua:155
 msgid "Show title in grid mode"
 msgstr "სათაურის ჩვენება ბადის რეჟიმში"
 
-#: ../Settings.lua:166
+#: ../Settings.lua:164
 msgid "Show metadata in grid mode"
 msgstr "მეტამონაცემების ჩვენება ბადის რეჟიმში"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:173
 msgid "Tap manga action"
 msgstr "შეეხეთ მანგას მოქმედებას"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:175
 msgid "Open chapter list"
 msgstr "გახსენით თავების სია"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:176
 msgid "Continue reading"
 msgstr "განაგრძეთ კითხვა"
 
-#: ../Settings.lua:188
+#: ../Settings.lua:186
 msgid "Skip resume reading confirmation"
 msgstr "გამოტოვეთ განახლების წაკითხვის დადასტურება"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:199
 msgid "Search view mode"
 msgstr "ძიების ხედვის რეჟიმი"
 
-#: ../Settings.lua:212
+#: ../Settings.lua:210
 msgid "Reader"
 msgstr "მკითხველი"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:216
 msgid "Chapter sorting mode"
 msgstr "თავების დახარისხების რეჟიმი"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:218
 msgid "By chapter ascending"
 msgstr "თავით აღმავალი"
 
-#: ../Settings.lua:221
+#: ../Settings.lua:219
 msgid "By chapter descending"
 msgstr "თავის კლებით"
 
+#: ../Settings.lua:227
+msgid "Chapter title in statistics (ComicInfo)"
+msgstr "თავის სათაური სტატისტიკაში (ComicInfo)"
+
 #: ../Settings.lua:229
+msgid "Chapter title only"
+msgstr "მხოლოდ თავის სათაური"
+
+#: ../Settings.lua:230
+msgid "Series + chapter title"
+msgstr "სერია + თავის სათაური"
+
+#: ../Settings.lua:231
+msgid "Series + chapter number"
+msgstr "სერია + თავის ნომერი"
+
+#: ../Settings.lua:240
 msgid "Preload chapters on reader open"
 msgstr "მკითხველზე თავების წინასწარ ჩატვირთვა ღიაა"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:251
 msgid "Optimize page images (experimental)"
 msgstr "გვერდის სურათების ოპტიმიზაცია (ექსპერიმენტული)"
 
-#: ../Settings.lua:248
+#: ../Settings.lua:259
 msgid "Concurrent page requests"
 msgstr "თანმხლები გვერდის მოთხოვნები"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:270
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "არასოდეს ჩართოთ RTL, თუნდაც იაპონური მანგასთვის"
 
-#: ../Settings.lua:268
+#: ../Settings.lua:279
 msgid "Automatically set the viewer to manga mode"
 msgstr "ავტომატურად დააყენეთ მაყურებელი მანგას რეჟიმში"
 
-#: ../Settings.lua:277
+#: ../Settings.lua:288
 msgid "Global viewer override"
 msgstr "გლობალური მაყურებლის უგულებელყოფა"
 
-#: ../Settings.lua:294
+#: ../Settings.lua:305
 msgid "Show button previous chapter in toolbar reader"
 msgstr "ღილაკის ჩვენება წინა თავი ინსტრუმენტთა ზოლის მკითხველში"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:314
 msgid "Show button next chapter in toolbar reader"
 msgstr "ღილაკის ჩვენება შემდეგი თავის ინსტრუმენტთა ზოლის მკითხველში"
 
-#: ../Settings.lua:312
+#: ../Settings.lua:323
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "აჩვენეთ გაფართოებული rakuyomi ქვედა პანელი მკითხველში"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:326
 msgid "On bottom toolbar"
 msgstr "ქვედა პანელზე"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:327
 msgid "On top toolbar"
 msgstr "ზედა ხელსაწყოთა პანელზე"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:335
 msgid "Recommended reader settings"
 msgstr "მკითხველის რეკომენდებული პარამეტრები"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:341
 msgid "Turn off all margins"
 msgstr "გამორთეთ ყველა ზღვარი"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:350
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "ზედმეტი კიდეების ავტომატურად ამოჭრა ფოტოებიდან (ცოტა ნელი)"
 
-#: ../Settings.lua:348
+#: ../Settings.lua:359
 msgid "Zoom to full screen"
 msgstr "მასშტაბირება სრულ ეკრანზე"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:368
 msgid "Zoom to fit image size"
 msgstr "მასშტაბირება სურათის ზომაზე მორგებისთვის"
 
-#: ../Settings.lua:370
+#: ../Settings.lua:381
 msgid "Chapter storage path"
 msgstr "თავის შენახვის გზა"
 
-#: ../Settings.lua:379
+#: ../Settings.lua:390
 msgid "Storage size limit"
 msgstr "შენახვის ზომის ლიმიტი"
 
-#: ../Settings.lua:389
+#: ../Settings.lua:400
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "ჩაწერეთ თავები RAM-ში (დაიცავით eMMC)"
 
-#: ../Settings.lua:397
+#: ../Settings.lua:408
 msgid "RAM storage size. Your RAM is: "
 msgstr "ოპერატიული მეხსიერების მოცულობა. "
 
-#: ../Settings.lua:406
+#: ../Settings.lua:417
 msgid "Network"
 msgstr "ქსელი"
 
-#: ../Settings.lua:412
+#: ../Settings.lua:423
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS ან SOCKS5 პროქსი"
 
-#: ../Settings.lua:415
+#: ../Settings.lua:426
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "პროქსის URL უნდა დაიწყოს http://, https:// ან socks5://-ით"
 
-#: ../Settings.lua:420
+#: ../Settings.lua:431
 msgid "Sync & Updates"
 msgstr "სინქრონიზაცია და განახლებები"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:437
 msgid "WebDAV Sync"
 msgstr "WebDAV სინქრონიზაცია"
 
-#: ../Settings.lua:434
+#: ../Settings.lua:445
 msgid "Enabled cron check for manga updates"
 msgstr "ჩართულია cron შემოწმება მანგას განახლებისთვის"
 
-#: ../Settings.lua:442
+#: ../Settings.lua:453
 msgid "Source IDs skip check update"
 msgstr "წყაროს ID-ების გამოტოვება შემოწმების განახლება"
 
-#: ../Settings.lua:448
+#: ../Settings.lua:459
 msgid "System"
 msgstr "სისტემა"
 
-#: ../Settings.lua:454
+#: ../Settings.lua:465
 msgid "Allow requisition of the back button"
 msgstr "დაუშვით უკანა ღილაკის მოთხოვნა"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:472
 msgid "Server"
 msgstr "სერვერი"
 
-#: ../Settings.lua:467
+#: ../Settings.lua:478
 msgid "Auto-stop server when leaving library view"
 msgstr "სერვერის ავტომატური გაჩერება ბიბლიოთეკის ხედიდან გასვლისას"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:480
 msgid "Disabled"
 msgstr "გამორთულია"
 
-#: ../Settings.lua:470
+#: ../Settings.lua:481
 msgid "Immediate"
 msgstr "დაუყოვნებლივ"
 
-#: ../Settings.lua:471
+#: ../Settings.lua:482
 msgid "After 30 seconds"
 msgstr "30 წამის შემდეგ"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:483
 msgid "After 1 minute"
 msgstr "1 წუთის შემდეგ"
 
-#: ../Settings.lua:473
+#: ../Settings.lua:484
 msgid "After 5 minutes"
 msgstr "5 წუთის შემდეგ"
 
-#: ../Settings.lua:474
+#: ../Settings.lua:485
 msgid "After 10 minutes"
 msgstr "10 წუთის შემდეგ"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:495
 msgid "Show chapter download progress"
 msgstr "თავის ჩამოტვირთვის პროგრესის ჩვენება"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:502
 msgid "Logging"
 msgstr "ხე-ტყე"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:508
 msgid "Disable logging"
 msgstr "ჩაწერის გამორთვა"
 
-#: ../Settings.lua:675
-msgid "Testing proxy..."
-msgstr "პროქსის ტესტირება..."
-
-#: ../Settings.lua:684
+#: ../Settings.lua:683
 msgid "Failed to test proxy"
 msgstr "პროქსის ტესტირება ვერ მოხერხდა"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "წყაროს პარამეტრები"
+
+#: ../TrackingMenu.lua:45
+msgid "Volumes"
+msgstr "ტომი"
+
+#: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
+msgid "Loading tracking..."
+msgstr "მიკვლევის ჩატვირთვა..."
+
+#: ../TrackingMenu.lua:123
+msgid "Select Tracking Service"
+msgstr "აირჩიეთ თვალთვალის სერვისი"
+
+#: ../TrackingMenu.lua:152
+msgid "Link"
+msgstr "ბმული"
+
+#: ../TrackingMenu.lua:152
+msgid "Relink"
+msgstr "ხელახლა მიბმა"
+
+#: ../TrackingMenu.lua:164
+msgid "Pull progress"
+msgstr "გაიყვანეთ პროგრესი"
+
+#: ../TrackingMenu.lua:171
+msgid "Push progress"
+msgstr "დააჩქარეთ პროგრესი"
+
+#: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+msgid "Not set"
+msgstr "არ არის დაყენებული"
+
+#: ../TrackingMenu.lua:182
+msgid "Start"
+msgstr "დაწყება"
+
+#: ../TrackingMenu.lua:189
+msgid "End"
+msgstr "დასასრული"
+
+#: ../TrackingMenu.lua:200
+msgid "Unlink"
+msgstr "გაუქმება"
+
+#: ../TrackingMenu.lua:212
+msgid "Other services"
+msgstr "სხვა სერვისები"
+
+#: ../TrackingMenu.lua:232
+msgid "Search tracker title"
+msgstr "მოძებნეთ ტრეკერის სათაური"
+
+#: ../TrackingMenu.lua:235
+msgid "Search for a matching manga entry to link with this title."
+msgstr "მოძებნეთ შესაბამისი მანგას ჩანაწერი ამ სათაურის დასაკავშირებლად."
+
+#: ../TrackingMenu.lua:254
+msgid "Searching tracker..."
+msgstr "ტრეკერის ძიება..."
+
+#: ../TrackingMenu.lua:266
+msgid "No tracking results found."
+msgstr "თვალთვალის შედეგები ვერ მოიძებნა."
+
+#: ../TrackingMenu.lua:295
+msgid "Linking tracker entry..."
+msgstr "მიმდინარეობს ტრეკერის ჩანაწერის დაკავშირება..."
+
+#: ../TrackingMenu.lua:307
+msgid "Linked with"
+msgstr "უკავშირდება"
+
+#: ../TrackingMenu.lua:329
+msgid "Pulling tracking progress..."
+msgstr "მიმდინარეობს პროგრესის თვალის დევნება..."
+
+#: ../TrackingMenu.lua:329
+msgid "Pushing tracking progress..."
+msgstr "მიმდინარეობს პროგრესის თვალის დევნება..."
+
+#: ../TrackingMenu.lua:341
+msgid "No tracking binding found for this service."
+msgstr "ამ სერვისისთვის თვალთვალის სავალდებულო არ მოიძებნა."
+
+#: ../TrackingMenu.lua:363
+msgid "End date"
+msgstr "დასრულების თარიღი"
+
+#: ../TrackingMenu.lua:363
+msgid "Start date"
+msgstr "დაწყების თარიღი"
+
+#: ../TrackingMenu.lua:370
+msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
+msgstr "შეიყვანეთ თარიღი DD/MM/YYYY ფორმატში ან დატოვეთ ცარიელი გასასუფთავებლად."
+
+#: ../TrackingMenu.lua:393
+msgid "Saving date..."
+msgstr "თარიღის შენახვა..."
+
+#: ../TrackingMenu.lua:411
+msgid "cleared"
+msgstr "გასუფთავებული"
+
+#: ../TrackingMenu.lua:427
+msgid "Removing tracking binding..."
+msgstr "მიმდინარეობს თვალთვალის დაკავშირების წაშლა..."
+
+#: ../TrackingMenu.lua:439
+msgid "Unlinked"
+msgstr "გაუქმებულია"
+
+#: ../TrackingSettings.lua:96
+msgid "Paste AniList token"
+msgstr "ჩასვით AniList ჟეტონი"
+
+#: ../TrackingSettings.lua:103
+msgid "Paste MAL client ID"
+msgstr "ჩასვით MAL კლიენტის ID"
+
+#: ../TrackingSettings.lua:104
+msgid "Paste MAL client secret"
+msgstr "ჩასვით MAL კლიენტის საიდუმლო"
+
+#: ../TrackingSettings.lua:105
+msgid "Paste MAL refresh token"
+msgstr "ჩასვით MAL განახლების ჟეტონი"
+
+#: ../TrackingSettings.lua:112
+msgid "Paste Shikimori client ID"
+msgstr "ჩასვით Shikimori კლიენტის ID"
+
+#: ../TrackingSettings.lua:113
+msgid "Paste Shikimori client secret"
+msgstr "ჩასვით Shikimori კლიენტის საიდუმლო"
+
+#: ../TrackingSettings.lua:114
+msgid "Paste Shikimori refresh token"
+msgstr "ჩასვით Shikimori განახლების ჟეტონი"
+
+#: ../TrackingSettings.lua:121
+msgid "Paste Bangumi refresh token"
+msgstr "ჩასვით Bangumi განახლების ჟეტონი"
+
+#: ../TrackingSettings.lua:128
+msgid "Paste MangaBaka refresh token"
+msgstr "ჩასვით MangaBaka განახლების ჟეტონი"
+
+#: ../TrackingSettings.lua:129
+msgid "Paste MangaBaka API Key (mb-...)"
+msgstr "ჩასვით MangaBaka API გასაღები (მბ-...)"
+
+#: ../TrackingSettings.lua:136
+msgid "Paste Kavita API Key"
+msgstr "ჩასვით Kavita API გასაღები"
+
+#: ../TrackingSettings.lua:143
+msgid "Komga API key or username:password"
+msgstr "Komga API გასაღები ან მომხმარებლის სახელი: პაროლი"
+
+#: ../TrackingSettings.lua:150
+msgid "Suwayomi Basic Auth username:password"
+msgstr "Suwayomi Basic Auth მომხმარებლის სახელი: პაროლი"
+
+#: ../TrackingSettings.lua:161
+msgid "Sign out"
+msgstr "გასვლა"
+
+#: ../TrackingSettings.lua:163
+msgid "Sign in"
+msgstr "შესვლა"
+
+#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+msgid "Validate "
+msgstr "გადამოწმება"
+
+#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+msgid "Validating..."
+msgstr "მიმდინარეობს გადამოწმება..."
+
+#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
+#: ../TrackingSettings.lua:229
+msgid "Credentials are valid."
+msgstr "რწმუნებათა სიგელები მოქმედებს."
+
+#: ../TrackingSettings.lua:240
+msgid "Auto sync reading progress"
+msgstr "კითხვის ავტომატური სინქრონიზაციის პროგრესი"
+
+#: ../TrackingSettings.lua:246
+msgid "OAuth Bridge Server"
+msgstr "OAuth Bridge სერვერი"
+
+#: ../TrackingSettings.lua:252
+msgid "OAuth Bridge Server URL"
+msgstr "OAuth Bridge სერვერის URL"
+
+#: ../TrackingSettings.lua:499
+msgid "Signed in as "
+msgstr "შესული, როგორც"
+
+#: ../TrackingSettings.lua:501
+msgid "No sign"
+msgstr "არანაირი ნიშანი"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1593,26 +1865,26 @@ msgstr "ტ."
 msgid "Ch."
 msgstr "ჩ."
 
-#: ../widgets/Menu.lua:82
+#: ../widgets/Menu.lua:84
 msgid "Offline mode"
 msgstr "ოფლაინ რეჟიმი"
 
-#: ../widgets/SettingItemValue.lua:162
+#: ../widgets/SettingItemValue.lua:166
 msgid "Ok"
 msgstr "კარგი"
 
-#: ../widgets/SettingItemValue.lua:168
+#: ../widgets/SettingItemValue.lua:172
 msgid "Executing..."
 msgstr "მიმდინარეობს შესრულება..."
 
-#: ../widgets/SettingItemValue.lua:181
+#: ../widgets/SettingItemValue.lua:185
 msgid "Done"
 msgstr "შესრულებულია"
 
-#: ../widgets/SettingItemValue.lua:236
+#: ../widgets/SettingItemValue.lua:240
 msgid "Select"
 msgstr "აირჩიეთ"
 
-#: ../widgets/SettingItemValue.lua:359
+#: ../widgets/SettingItemValue.lua:363
 msgid "Invalid value"
 msgstr "არასწორი მნიშვნელობა"

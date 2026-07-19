@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 21:06+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,7 +34,7 @@ msgstr "verzija"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "Nepoznato"
 
@@ -93,8 +93,8 @@ msgstr "Pretražite poglavlja"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
 #: ../LibraryView.lua:1221 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
-#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
-#: ../widgets/SettingItemValue.lua:272
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "Otkazati"
 
@@ -598,7 +598,7 @@ msgstr "Želite li ukloniti"
 msgid "source?"
 msgstr "izvor?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:84
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "Knjižnica"
 
@@ -686,7 +686,7 @@ msgstr "Čišća poglavlja"
 msgid "Manage sources"
 msgstr "Upravljanje izvorima"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "postavke"
 
@@ -770,7 +770,7 @@ msgstr "Korištenje"
 msgid "Memory"
 msgstr "Memorija"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:375
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "Skladištenje"
 
@@ -807,7 +807,7 @@ msgid "Type the manga name to search for"
 msgstr "Upišite naziv mange za pretraživanje"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "Pretraživanje"
 
@@ -1004,23 +1004,23 @@ msgstr "Ne"
 msgid "View Mode"
 msgstr "Način prikaza"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "Zadano"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "Svitak"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "Okomito"
 
@@ -1030,7 +1030,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "Isključeno"
 
@@ -1160,7 +1160,7 @@ msgid "Rename Playlist"
 msgstr "Preimenuj popis za reprodukciju"
 
 #: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
-#: ../widgets/SettingItemValue.lua:279
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "Uštedjeti"
 
@@ -1188,299 +1188,314 @@ msgstr "Stvoriti"
 msgid "No playlists yet."
 msgstr "Još nema popisa za reprodukciju."
 
-#: ../Settings.lua:90
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "Način prikaza biblioteke"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "Baza"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "Poklopac"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "Mreža"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "Način sortiranja biblioteke"
 
-#: ../Settings.lua:105
-msgid "Order added ascending (Default)"
-msgstr "Poredak dodan uzlazno (zadano)"
-
 #: ../Settings.lua:106
-msgid "Order added descending"
-msgstr "Dodan silazni poredak"
+msgid "Date added (oldest)"
+msgstr ""
 
 #: ../Settings.lua:107
-msgid "Title manga ascending"
-msgstr "Naslov mange uzlazno"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Title manga descending"
-msgstr "Silazni naslov mange"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Count unread chapters ascending"
-msgstr "Broj nepročitanih poglavlja uzlazno"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Count unread chapters descending"
-msgstr "Broj nepročitanih poglavlja silaznim redom"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Last read ascending"
-msgstr "Zadnje čitanje uzlazno"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "Zadnje čitanje silazno"
 
 #: ../Settings.lua:113
-msgid "Source ascending"
-msgstr "Izvor uzlazno"
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "Zadnje čitanje: %1"
 
 #: ../Settings.lua:114
-msgid "Source descending"
-msgstr "Izvor pada"
+msgid "Source (A-Z)"
+msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:115
+msgid "Source (Z-A)"
+msgstr ""
+
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "Stavki po stranici (0 = automatski)"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "Mrežni stupci"
 
-#: ../Settings.lua:144
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "Redovi mreže"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "Prikaži naslov u mrežnom načinu"
 
-#: ../Settings.lua:164
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "Prikaži metapodatke u mrežnom načinu"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "Dodirnite manga akciju"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "Otvaranje popisa poglavlja"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "Nastavite čitati"
 
-#: ../Settings.lua:186
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "Preskoči potvrdu za nastavak čitanja"
 
-#: ../Settings.lua:199
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "Način prikaza pretraživanja"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "Čitač"
 
-#: ../Settings.lua:216
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "Način sortiranja poglavlja"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "Po poglavlju uzlazno"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "Po poglavlju silazno"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:228
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "Naslov poglavlja u statistici (ComicInfo)"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:230
 msgid "Chapter title only"
 msgstr "Samo naslov poglavlja"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Series + chapter title"
 msgstr "Serija + naslov poglavlja"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter number"
 msgstr "Serija + broj poglavlja"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "Unaprijed učitaj poglavlja na otvorenom čitaču"
 
-#: ../Settings.lua:251
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "Optimizirajte slike stranica (eksperimentalno)"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "Istovremeni zahtjevi za stranicu"
 
-#: ../Settings.lua:270
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "Nikad ne uključujte RTL, čak ni za japanske mange"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "Automatski postavite preglednik na manga mod"
 
-#: ../Settings.lua:288
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "Nadjačavanje globalnog gledatelja"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "Prikaži gumb prethodno poglavlje u čitaču alatne trake"
 
-#: ../Settings.lua:314
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "Prikaži gumb sljedeće poglavlje u čitaču alatne trake"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "Prikaži proširenu rakuyomi donju alatnu traku u čitaču"
 
-#: ../Settings.lua:326
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "Na donjoj alatnoj traci"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "Na gornjoj alatnoj traci"
 
-#: ../Settings.lua:335
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "Preporučene postavke čitača"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "Isključite sve margine"
 
-#: ../Settings.lua:350
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "Automatski izrežite višak rubova s ​​fotografija (malo sporo)"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "Povećaj na cijeli zaslon"
 
-#: ../Settings.lua:368
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "Zumirajte da odgovara veličini slike"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "Putanja za pohranjivanje poglavlja"
 
-#: ../Settings.lua:390
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "Ograničenje veličine pohrane"
 
-#: ../Settings.lua:400
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "Poglavlje preuzeto"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Pisanje poglavlja u RAM (zaštitite eMMC)"
 
-#: ../Settings.lua:408
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "Veličina RAM memorije. "
 
-#: ../Settings.lua:417
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "Mreža"
 
-#: ../Settings.lua:423
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS ili SOCKS5 proxy"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "Proxy URL mora započeti s http://, https:// ili socks5://"
 
-#: ../Settings.lua:431
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "Sinkronizacija i ažuriranja"
 
-#: ../Settings.lua:437
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "WebDAV sinkronizacija"
 
-#: ../Settings.lua:445
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "Omogućena cron provjera ažuriranja mange"
 
-#: ../Settings.lua:453
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "ID-ovi izvora preskaču ažuriranje provjere"
 
-#: ../Settings.lua:459
+#: ../Settings.lua:497
 msgid "System"
 msgstr "sustav"
 
-#: ../Settings.lua:465
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "Dopusti traženje gumba za povratak"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "poslužitelj"
 
-#: ../Settings.lua:478
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "Automatsko zaustavljanje poslužitelja pri napuštanju prikaza knjižnice"
 
-#: ../Settings.lua:480
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "Onesposobljeno"
 
-#: ../Settings.lua:481
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "Odmah"
 
-#: ../Settings.lua:482
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "Nakon 30 sekundi"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "Nakon 1 minute"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "Nakon 5 minuta"
 
-#: ../Settings.lua:485
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "Nakon 10 minuta"
 
-#: ../Settings.lua:495
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "Prikaži napredak preuzimanja poglavlja"
 
-#: ../Settings.lua:502
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "Sječa drva"
 
-#: ../Settings.lua:508
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "Onemogući bilježenje"
 
-#: ../Settings.lua:683
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "Testiranje proxyja nije uspjelo"
 
@@ -1517,6 +1532,7 @@ msgid "Push progress"
 msgstr "Push napredak"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
 msgid "Not set"
 msgstr "Nije postavljeno"
 
@@ -1870,22 +1886,49 @@ msgstr "Ch."
 msgid "Offline mode"
 msgstr "Izvanmrežni način rada"
 
-#: ../widgets/SettingItemValue.lua:166
-msgid "Ok"
-msgstr "U redu"
-
-#: ../widgets/SettingItemValue.lua:172
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "Izvršavanje..."
 
-#: ../widgets/SettingItemValue.lua:185
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "Gotovo"
 
-#: ../widgets/SettingItemValue.lua:240
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "U redu"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "Odaberite"
 
-#: ../widgets/SettingItemValue.lua:363
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Nevažeća vrijednost"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "Broj nepročitanih poglavlja uzlazno"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "Broj nepročitanih poglavlja silaznim redom"
+
+#~ msgid "Last read ascending"
+#~ msgstr "Zadnje čitanje uzlazno"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "Poredak dodan uzlazno (zadano)"
+
+#~ msgid "Order added descending"
+#~ msgstr "Dodan silazni poredak"
+
+#~ msgid "Source ascending"
+#~ msgstr "Izvor uzlazno"
+
+#~ msgid "Source descending"
+#~ msgstr "Izvor pada"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "Naslov mange uzlazno"
+
+#~ msgid "Title manga descending"
+#~ msgstr "Silazni naslov mange"

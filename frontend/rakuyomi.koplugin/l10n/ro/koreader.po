@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 21:06+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,7 +34,7 @@ msgstr "versiune"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "Necunoscut"
 
@@ -93,8 +93,8 @@ msgstr "Căutați capitole"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
 #: ../LibraryView.lua:1221 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
-#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
-#: ../widgets/SettingItemValue.lua:272
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "Anula"
 
@@ -598,7 +598,7 @@ msgstr "Doriți să eliminați"
 msgid "source?"
 msgstr "sursă?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:84
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "Bibliotecă"
 
@@ -686,7 +686,7 @@ msgstr "Capitole mai curate"
 msgid "Manage sources"
 msgstr "Gestionați sursele"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "Setări"
 
@@ -770,7 +770,7 @@ msgstr "Utilizare"
 msgid "Memory"
 msgstr "Memorie"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:375
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "Depozitare"
 
@@ -807,7 +807,7 @@ msgid "Type the manga name to search for"
 msgstr "Tastați numele manga de căutat"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "Căutare"
 
@@ -1004,23 +1004,23 @@ msgstr "Nu"
 msgid "View Mode"
 msgstr "Mod Vizualizare"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "Implicit"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "Derulați"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "Vertical"
 
@@ -1030,7 +1030,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "Oprit"
 
@@ -1160,7 +1160,7 @@ msgid "Rename Playlist"
 msgstr "Redenumiți lista de redare"
 
 #: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
-#: ../widgets/SettingItemValue.lua:279
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "Salva"
 
@@ -1188,299 +1188,314 @@ msgstr "Crea"
 msgid "No playlists yet."
 msgstr "Încă nu există liste de redare."
 
-#: ../Settings.lua:90
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "Modul de vizualizare a bibliotecii"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "Baza"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "Acoperi"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "Grilă"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "Modul de sortare a bibliotecii"
 
-#: ../Settings.lua:105
-msgid "Order added ascending (Default)"
-msgstr "Comanda adăugată crescător (implicit)"
-
 #: ../Settings.lua:106
-msgid "Order added descending"
-msgstr "Comanda adăugată descrescătoare"
+msgid "Date added (oldest)"
+msgstr ""
 
 #: ../Settings.lua:107
-msgid "Title manga ascending"
-msgstr "Titlul manga ascendent"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Title manga descending"
-msgstr "Titlul manga descendent"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Count unread chapters ascending"
-msgstr "Numărați ascendent capitolele necitite"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Count unread chapters descending"
-msgstr "Numără capitolele necitite descendent"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Last read ascending"
-msgstr "Ultima citire crescător"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "Ultima citire descendentă"
 
 #: ../Settings.lua:113
-msgid "Source ascending"
-msgstr "Sursa crescătoare"
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "Ultima citire: %1"
 
 #: ../Settings.lua:114
-msgid "Source descending"
-msgstr "Sursa descendentă"
+msgid "Source (A-Z)"
+msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:115
+msgid "Source (Z-A)"
+msgstr ""
+
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "Articole pe pagină (0 = automat)"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "Coloane de grilă"
 
-#: ../Settings.lua:144
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "Rânduri de grilă"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "Afișează titlul în modul grilă"
 
-#: ../Settings.lua:164
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "Afișați metadatele în modul grilă"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "Atingeți acțiune manga"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "Deschideți lista de capitole"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "Continuați să citiți"
 
-#: ../Settings.lua:186
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "Omiteți confirmarea reluării citirii"
 
-#: ../Settings.lua:199
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "Modul de vizualizare de căutare"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "Cititor"
 
-#: ../Settings.lua:216
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "Modul de sortare a capitolelor"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "După capitol crescător"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "Pe capitol descendent"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:228
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "Titlul capitolului în statistici (ComicInfo)"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:230
 msgid "Chapter title only"
 msgstr "Doar titlul capitolului"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Series + chapter title"
 msgstr "Seria + titlul capitolului"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter number"
 msgstr "Seria + numărul capitolului"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "Preîncărcați capitolele pe cititorul deschis"
 
-#: ../Settings.lua:251
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "Optimizați imaginile paginii (experimental)"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "Solicitări simultane de pagini"
 
-#: ../Settings.lua:270
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "Nu activați niciodată RTL, nici măcar pentru manga japoneză"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "Setați automat vizualizatorul în modul manga"
 
-#: ../Settings.lua:288
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "Modificare globală a vizualizatorului"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "Butonul Afișează capitolul anterior în cititorul barei de instrumente"
 
-#: ../Settings.lua:314
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "Afișați butonul următor capitol în cititorul barei de instrumente"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "Afișați bara de instrumente inferioară rakuyomi extinsă în cititor"
 
-#: ../Settings.lua:326
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "Pe bara de instrumente de jos"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "Pe bara de instrumente de sus"
 
-#: ../Settings.lua:335
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "Setări recomandate pentru cititor"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "Dezactivați toate marginile"
 
-#: ../Settings.lua:350
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "Decupați automat marginile în exces din fotografii (un pic lent)"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "Măriți la ecran complet"
 
-#: ../Settings.lua:368
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "Măriți pentru a se potrivi cu dimensiunea imaginii"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "Calea de stocare a capitolului"
 
-#: ../Settings.lua:390
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "Limită de dimensiune de stocare"
 
-#: ../Settings.lua:400
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "Capitolul descărcat"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Scrieți capitole în RAM (protejați eMMC)"
 
-#: ../Settings.lua:408
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "Dimensiunea memoriei RAM. "
 
-#: ../Settings.lua:417
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "Reţea"
 
-#: ../Settings.lua:423
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "Proxy HTTP, HTTPS sau SOCKS5"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "Adresa URL proxy trebuie să înceapă cu http://, https:// sau socks5://"
 
-#: ../Settings.lua:431
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "Sincronizare și actualizări"
 
-#: ../Settings.lua:437
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "Sincronizare WebDAV"
 
-#: ../Settings.lua:445
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "S-a activat verificarea cron pentru actualizări manga"
 
-#: ../Settings.lua:453
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "ID-urile sursei nu verifică actualizarea"
 
-#: ../Settings.lua:459
+#: ../Settings.lua:497
 msgid "System"
 msgstr "Sistem"
 
-#: ../Settings.lua:465
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "Permiteți solicitarea butonului înapoi"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "Server"
 
-#: ../Settings.lua:478
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "Opriți automat serverul când părăsiți vizualizarea bibliotecii"
 
-#: ../Settings.lua:480
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "Dezactivat"
 
-#: ../Settings.lua:481
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "Imediat"
 
-#: ../Settings.lua:482
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "După 30 de secunde"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "După 1 minut"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "După 5 minute"
 
-#: ../Settings.lua:485
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "După 10 minute"
 
-#: ../Settings.lua:495
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "Afișează progresul de descărcare a capitolului"
 
-#: ../Settings.lua:502
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "Înregistrare"
 
-#: ../Settings.lua:508
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "Dezactivați înregistrarea în jurnal"
 
-#: ../Settings.lua:683
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "Proxy-ul nu a fost testat"
 
@@ -1517,6 +1532,7 @@ msgid "Push progress"
 msgstr "Împingeți progresul"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
 msgid "Not set"
 msgstr "Nu setat"
 
@@ -1870,22 +1886,49 @@ msgstr "Ch."
 msgid "Offline mode"
 msgstr "Modul offline"
 
-#: ../widgets/SettingItemValue.lua:166
-msgid "Ok"
-msgstr "Bine"
-
-#: ../widgets/SettingItemValue.lua:172
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "Se execută..."
 
-#: ../widgets/SettingItemValue.lua:185
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "Făcut"
 
-#: ../widgets/SettingItemValue.lua:240
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "Bine"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "Selecta"
 
-#: ../widgets/SettingItemValue.lua:363
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Valoare nevalidă"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "Numărați ascendent capitolele necitite"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "Numără capitolele necitite descendent"
+
+#~ msgid "Last read ascending"
+#~ msgstr "Ultima citire crescător"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "Comanda adăugată crescător (implicit)"
+
+#~ msgid "Order added descending"
+#~ msgstr "Comanda adăugată descrescătoare"
+
+#~ msgid "Source ascending"
+#~ msgstr "Sursa crescătoare"
+
+#~ msgid "Source descending"
+#~ msgstr "Sursa descendentă"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "Titlul manga ascendent"
+
+#~ msgid "Title manga descending"
+#~ msgstr "Titlul manga descendent"

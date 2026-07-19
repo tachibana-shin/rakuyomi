@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 21:06+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgstr "รุ่น"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "ไม่ทราบ"
 
@@ -92,8 +92,8 @@ msgstr "ค้นหาบท"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
 #: ../LibraryView.lua:1221 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
-#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
-#: ../widgets/SettingItemValue.lua:272
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "ยกเลิก"
 
@@ -597,7 +597,7 @@ msgstr "คุณต้องการลบ"
 msgid "source?"
 msgstr "แหล่งที่มา?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:84
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "ห้องสมุด"
 
@@ -685,7 +685,7 @@ msgstr "บทที่สะอาดกว่า"
 msgid "Manage sources"
 msgstr "จัดการแหล่งที่มา"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "การตั้งค่า"
 
@@ -769,7 +769,7 @@ msgstr "การใช้งาน"
 msgid "Memory"
 msgstr "หน่วยความจำ"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:375
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "พื้นที่จัดเก็บ"
 
@@ -806,7 +806,7 @@ msgid "Type the manga name to search for"
 msgstr "พิมพ์ชื่อมังงะที่จะค้นหา"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "ค้นหา"
 
@@ -1003,23 +1003,23 @@ msgstr "เลขที่"
 msgid "View Mode"
 msgstr "โหมดการดู"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "ค่าเริ่มต้น"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "ลิตร"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "ร.ต.ท"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "เลื่อน"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "แนวตั้ง"
 
@@ -1029,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "ปิด"
 
@@ -1159,7 +1159,7 @@ msgid "Rename Playlist"
 msgstr "เปลี่ยนชื่อเพลย์ลิสต์"
 
 #: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
-#: ../widgets/SettingItemValue.lua:279
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "บันทึก"
 
@@ -1187,299 +1187,314 @@ msgstr "สร้าง"
 msgid "No playlists yet."
 msgstr "ยังไม่มีเพลย์ลิสต์"
 
-#: ../Settings.lua:90
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "โหมดมุมมองห้องสมุด"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "ฐาน"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "ปิดบัง"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "กริด"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "โหมดการเรียงลำดับห้องสมุด"
 
-#: ../Settings.lua:105
-msgid "Order added ascending (Default)"
-msgstr "คำสั่งซื้อที่เพิ่มจากน้อยไปหามาก (ค่าเริ่มต้น)"
-
 #: ../Settings.lua:106
-msgid "Order added descending"
-msgstr "ลำดับเพิ่มจากมากไปหาน้อย"
+msgid "Date added (oldest)"
+msgstr ""
 
 #: ../Settings.lua:107
-msgid "Title manga ascending"
-msgstr "ชื่อเรื่องมังงะจากน้อยไปหามาก"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Title manga descending"
-msgstr "ชื่อเรื่องมังงะจากมากไปน้อย"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Count unread chapters ascending"
-msgstr "นับบทที่ยังไม่ได้อ่านจากน้อยไปมาก"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Count unread chapters descending"
-msgstr "นับบทที่ยังไม่ได้อ่านจากมากไปน้อย"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Last read ascending"
-msgstr "อ่านครั้งสุดท้ายจากน้อยไปหามาก"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "อ่านครั้งสุดท้ายจากมากไปน้อย"
 
 #: ../Settings.lua:113
-msgid "Source ascending"
-msgstr "แหล่งที่มาจากน้อยไปหามาก"
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "อ่านครั้งล่าสุด: %1"
 
 #: ../Settings.lua:114
-msgid "Source descending"
-msgstr "แหล่งที่มาจากมากไปน้อย"
+msgid "Source (A-Z)"
+msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:115
+msgid "Source (Z-A)"
+msgstr ""
+
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "รายการต่อหน้า (0 = อัตโนมัติ)"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "คอลัมน์ตาราง"
 
-#: ../Settings.lua:144
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "แถวตาราง"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "แสดงชื่อในโหมดกริด"
 
-#: ../Settings.lua:164
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "แสดงข้อมูลเมตาในโหมดตาราง"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "แตะการกระทำของมังงะ"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "เปิดรายการบท"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "อ่านต่อ"
 
-#: ../Settings.lua:186
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "ข้ามการยืนยันการอ่านต่อ"
 
-#: ../Settings.lua:199
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "โหมดมุมมองการค้นหา"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "ผู้อ่าน"
 
-#: ../Settings.lua:216
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "โหมดการเรียงลำดับบท"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "โดยบทจากน้อยไปหามาก"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "ตามบทจากมากไปน้อย"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:228
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "ชื่อบทในสถิติ (ComicInfo)"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:230
 msgid "Chapter title only"
 msgstr "ชื่อบทเท่านั้น"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Series + chapter title"
 msgstr "ชื่อซีรี่ส์ + ตอน"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter number"
 msgstr "ซีรี่ส์ + หมายเลขบท"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "โหลดบทล่วงหน้าเมื่อเปิดโปรแกรมอ่าน"
 
-#: ../Settings.lua:251
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "ปรับภาพหน้าให้เหมาะสม (ทดลอง)"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "การร้องขอเพจพร้อมกัน"
 
-#: ../Settings.lua:270
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "อย่าเปิด RTL แม้แต่การ์ตูนญี่ปุ่นก็ตาม"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "ตั้งค่าผู้ชมเป็นโหมดมังงะโดยอัตโนมัติ"
 
-#: ../Settings.lua:288
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "การแทนที่ผู้ดูทั่วโลก"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "ปุ่มแสดงบทก่อนหน้าในตัวอ่านแถบเครื่องมือ"
 
-#: ../Settings.lua:314
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "แสดงปุ่มบทถัดไปในตัวอ่านแถบเครื่องมือ"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "แสดงแถบเครื่องมือด้านล่าง rakuyomi ที่ขยายในตัวอ่าน"
 
-#: ../Settings.lua:326
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "บนแถบเครื่องมือด้านล่าง"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "บนแถบเครื่องมือด้านบน"
 
-#: ../Settings.lua:335
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "การตั้งค่าเครื่องอ่านที่แนะนำ"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "ปิดระยะขอบทั้งหมด"
 
-#: ../Settings.lua:350
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "ครอบตัดขอบส่วนเกินจากรูปภาพโดยอัตโนมัติ (ช้าเล็กน้อย)"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "ซูมให้เต็มหน้าจอ"
 
-#: ../Settings.lua:368
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "ซูมให้พอดีกับขนาดภาพ"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "เส้นทางการจัดเก็บบท"
 
-#: ../Settings.lua:390
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "ขีดจำกัดขนาดพื้นที่เก็บข้อมูล"
 
-#: ../Settings.lua:400
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "ดาวน์โหลดบทแล้ว"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "เขียนบทลง RAM (ป้องกัน eMMC)"
 
-#: ../Settings.lua:408
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "ขนาดพื้นที่เก็บข้อมูลแรม "
 
-#: ../Settings.lua:417
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "เครือข่าย"
 
-#: ../Settings.lua:423
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS หรือพร็อกซี SOCKS5"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "URL ของพร็อกซีต้องขึ้นต้นด้วย http://, https:// หรือ Socks5://"
 
-#: ../Settings.lua:431
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "ซิงค์และอัปเดต"
 
-#: ../Settings.lua:437
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "การซิงค์ WebDAV"
 
-#: ../Settings.lua:445
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "เปิดใช้งานการตรวจสอบ cron สำหรับการอัพเดตมังงะ"
 
-#: ../Settings.lua:453
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "รหัสแหล่งที่มาข้ามการอัปเดตการตรวจสอบ"
 
-#: ../Settings.lua:459
+#: ../Settings.lua:497
 msgid "System"
 msgstr "ระบบ"
 
-#: ../Settings.lua:465
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "อนุญาตให้มีใบขอซื้อปุ่มย้อนกลับ"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "เซิร์ฟเวอร์"
 
-#: ../Settings.lua:478
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "หยุดเซิร์ฟเวอร์อัตโนมัติเมื่อออกจากมุมมองไลบรารี"
 
-#: ../Settings.lua:480
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "พิการ"
 
-#: ../Settings.lua:481
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "ทันที"
 
-#: ../Settings.lua:482
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "หลังจากผ่านไป 30 วินาที"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "หลังจากผ่านไป 1 นาที"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "หลังจากผ่านไป 5 นาที"
 
-#: ../Settings.lua:485
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "หลังจากผ่านไป 10 นาที"
 
-#: ../Settings.lua:495
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "แสดงความคืบหน้าการดาวน์โหลดบท"
 
-#: ../Settings.lua:502
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "การบันทึก"
 
-#: ../Settings.lua:508
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "ปิดการใช้งานการบันทึก"
 
-#: ../Settings.lua:683
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "ทดสอบพร็อกซีไม่สำเร็จ"
 
@@ -1516,6 +1531,7 @@ msgid "Push progress"
 msgstr "ผลักดันความก้าวหน้า"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
 msgid "Not set"
 msgstr "ไม่ได้ตั้งค่า"
 
@@ -1869,22 +1885,49 @@ msgstr "ช."
 msgid "Offline mode"
 msgstr "โหมดออฟไลน์"
 
-#: ../widgets/SettingItemValue.lua:166
-msgid "Ok"
-msgstr "ตกลง"
-
-#: ../widgets/SettingItemValue.lua:172
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "กำลังดำเนินการ..."
 
-#: ../widgets/SettingItemValue.lua:185
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "เสร็จแล้ว"
 
-#: ../widgets/SettingItemValue.lua:240
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "ตกลง"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "เลือก"
 
-#: ../widgets/SettingItemValue.lua:363
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "ค่าไม่ถูกต้อง"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "นับบทที่ยังไม่ได้อ่านจากน้อยไปมาก"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "นับบทที่ยังไม่ได้อ่านจากมากไปน้อย"
+
+#~ msgid "Last read ascending"
+#~ msgstr "อ่านครั้งสุดท้ายจากน้อยไปหามาก"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "คำสั่งซื้อที่เพิ่มจากน้อยไปหามาก (ค่าเริ่มต้น)"
+
+#~ msgid "Order added descending"
+#~ msgstr "ลำดับเพิ่มจากมากไปหาน้อย"
+
+#~ msgid "Source ascending"
+#~ msgstr "แหล่งที่มาจากน้อยไปหามาก"
+
+#~ msgid "Source descending"
+#~ msgstr "แหล่งที่มาจากมากไปน้อย"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "ชื่อเรื่องมังงะจากน้อยไปหามาก"
+
+#~ msgid "Title manga descending"
+#~ msgstr "ชื่อเรื่องมังงะจากมากไปน้อย"

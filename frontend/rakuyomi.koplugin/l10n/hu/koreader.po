@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 21:06+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,7 +34,7 @@ msgstr "változat"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "Ismeretlen"
 
@@ -93,8 +93,8 @@ msgstr "Fejezetek keresése"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
 #: ../LibraryView.lua:1221 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
-#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
-#: ../widgets/SettingItemValue.lua:272
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -598,7 +598,7 @@ msgstr "Szeretné eltávolítani a"
 msgid "source?"
 msgstr "forrás?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:84
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "Könyvtár"
 
@@ -686,7 +686,7 @@ msgstr "Tisztább fejezetek"
 msgid "Manage sources"
 msgstr "Források kezelése"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "Beállítások elemre"
 
@@ -770,7 +770,7 @@ msgstr "Használat"
 msgid "Memory"
 msgstr "Memória"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:375
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "Tárolás"
 
@@ -807,7 +807,7 @@ msgid "Type the manga name to search for"
 msgstr "Írja be a keresendő manga nevét"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "Keresés"
 
@@ -1004,23 +1004,23 @@ msgstr "Nem"
 msgid "View Mode"
 msgstr "Nézet mód"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "Alapértelmezett"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "Görgetés"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "Függőleges"
 
@@ -1030,7 +1030,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "Le"
 
@@ -1160,7 +1160,7 @@ msgid "Rename Playlist"
 msgstr "Lejátszási lista átnevezése"
 
 #: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
-#: ../widgets/SettingItemValue.lua:279
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "Megtakarítás"
 
@@ -1188,299 +1188,314 @@ msgstr "Teremt"
 msgid "No playlists yet."
 msgstr "Még nincsenek lejátszási listák."
 
-#: ../Settings.lua:90
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "Könyvtárnézet mód"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "Bázis"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "Borító"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "Rács"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "Könyvtári rendezési mód"
 
-#: ../Settings.lua:105
-msgid "Order added ascending (Default)"
-msgstr "Rendelés hozzáadva növekvő sorrendben (alapértelmezett)"
-
 #: ../Settings.lua:106
-msgid "Order added descending"
-msgstr "Megrendelés hozzáadva csökkenő sorrendben"
+msgid "Date added (oldest)"
+msgstr ""
 
 #: ../Settings.lua:107
-msgid "Title manga ascending"
-msgstr "Cím manga növekvő"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Title manga descending"
-msgstr "Cím manga csökkenő"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Count unread chapters ascending"
-msgstr "Az olvasatlan fejezetek számlálása növekvő sorrendben"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Count unread chapters descending"
-msgstr "Az olvasatlan fejezetek számolása csökkenő sorrendben"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Last read ascending"
-msgstr "Utolsó olvasás növekvő sorrendben"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "Utolsó olvasás csökkenő sorrendben"
 
 #: ../Settings.lua:113
-msgid "Source ascending"
-msgstr "Forrás növekvő"
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "Utoljára olvasva: %1"
 
 #: ../Settings.lua:114
-msgid "Source descending"
-msgstr "Forrás csökkenő"
+msgid "Source (A-Z)"
+msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:115
+msgid "Source (Z-A)"
+msgstr ""
+
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "Elemek oldalanként (0 = automatikus)"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "Rács oszlopok"
 
-#: ../Settings.lua:144
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "Rács sorok"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "Cím megjelenítése rács módban"
 
-#: ../Settings.lua:164
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "Metaadatok megjelenítése rács módban"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "Koppintson a manga műveletre"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "Fejezetlista megnyitása"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "Olvass tovább"
 
-#: ../Settings.lua:186
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "Az olvasás folytatásának megerősítése kihagyása"
 
-#: ../Settings.lua:199
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "Keresési nézet mód"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "Olvasó"
 
-#: ../Settings.lua:216
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "Fejezetrendezési mód"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "Fejezetenként növekvő sorrendben"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "Fejezetenként csökkenő sorrendben"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:228
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "Fejezet címe a statisztikákban (ComicInfo)"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:230
 msgid "Chapter title only"
 msgstr "Csak a fejezet címe"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Series + chapter title"
 msgstr "Sorozat + fejezetcím"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter number"
 msgstr "Sorozat + fejezetszám"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "Fejezetek előtöltése az olvasóban nyitva"
 
-#: ../Settings.lua:251
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "Oldalképek optimalizálása (kísérleti)"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "Egyidejű oldalkérések"
 
-#: ../Settings.lua:270
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "Soha ne kapcsold be az RTL-t, még japán mangánál sem"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "A megtekintő automatikus beállítása manga módba"
 
-#: ../Settings.lua:288
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "Globális megtekintő felülbírálása"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "A gomb előző fejezetének megjelenítése az eszköztár-olvasóban"
 
-#: ../Settings.lua:314
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "A gomb következő fejezetének megjelenítése az eszköztár-olvasóban"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "Jelenítse meg a kibontott rakuyomi alsó eszköztárat az olvasóban"
 
-#: ../Settings.lua:326
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "Az alsó eszköztáron"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "A felső eszköztáron"
 
-#: ../Settings.lua:335
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "Ajánlott olvasói beállítások"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "Kapcsolja ki az összes margót"
 
-#: ../Settings.lua:350
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "A fotók felesleges széleinek automatikus levágása (kicsit lassú)"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "Nagyítás teljes képernyőre"
 
-#: ../Settings.lua:368
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "Nagyítás a kép méretéhez"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "Fejezet tárolási útvonala"
 
-#: ../Settings.lua:390
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "A tárhely méretének korlátja"
 
-#: ../Settings.lua:400
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "Fejezet letöltve"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Fejezetek írása a RAM-ba (az eMMC védelme)"
 
-#: ../Settings.lua:408
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM tárhely mérete. "
 
-#: ../Settings.lua:417
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "Hálózat"
 
-#: ../Settings.lua:423
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS vagy SOCKS5 proxy"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "A proxy URL-jének http://, https:// vagy socks5:// előtaggal kell kezdődnie"
 
-#: ../Settings.lua:431
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "Szinkronizálás és frissítések"
 
-#: ../Settings.lua:437
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "WebDAV szinkronizálás"
 
-#: ../Settings.lua:445
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "Engedélyezte a cron ellenőrzését a manga frissítésekért"
 
-#: ../Settings.lua:453
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "A forrásazonosítók kihagyják az ellenőrzési frissítést"
 
-#: ../Settings.lua:459
+#: ../Settings.lua:497
 msgid "System"
 msgstr "Rendszer"
 
-#: ../Settings.lua:465
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "Engedélyezze a vissza gomb igénylését"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "Szerver"
 
-#: ../Settings.lua:478
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "A szerver automatikus leállítása a könyvtár nézet elhagyásakor"
 
-#: ../Settings.lua:480
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "Letiltva"
 
-#: ../Settings.lua:481
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "Azonnali"
 
-#: ../Settings.lua:482
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "30 másodperc után"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "1 perc múlva"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "5 perc múlva"
 
-#: ../Settings.lua:485
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "10 perc múlva"
 
-#: ../Settings.lua:495
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "Fejezet letöltési folyamatának megjelenítése"
 
-#: ../Settings.lua:502
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "Fakitermelés"
 
-#: ../Settings.lua:508
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "Naplózás letiltása"
 
-#: ../Settings.lua:683
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "A proxy tesztelése nem sikerült"
 
@@ -1517,6 +1532,7 @@ msgid "Push progress"
 msgstr "Nyomja meg a haladást"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
 msgid "Not set"
 msgstr "Nincs beállítva"
 
@@ -1870,22 +1886,49 @@ msgstr "Ch."
 msgid "Offline mode"
 msgstr "Offline mód"
 
-#: ../widgets/SettingItemValue.lua:166
-msgid "Ok"
-msgstr "Rendben"
-
-#: ../widgets/SettingItemValue.lua:172
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "Végrehajtó..."
 
-#: ../widgets/SettingItemValue.lua:185
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "Kész"
 
-#: ../widgets/SettingItemValue.lua:240
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "Rendben"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "Válassza ki"
 
-#: ../widgets/SettingItemValue.lua:363
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Érvénytelen érték"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "Az olvasatlan fejezetek számlálása növekvő sorrendben"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "Az olvasatlan fejezetek számolása csökkenő sorrendben"
+
+#~ msgid "Last read ascending"
+#~ msgstr "Utolsó olvasás növekvő sorrendben"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "Rendelés hozzáadva növekvő sorrendben (alapértelmezett)"
+
+#~ msgid "Order added descending"
+#~ msgstr "Megrendelés hozzáadva csökkenő sorrendben"
+
+#~ msgid "Source ascending"
+#~ msgstr "Forrás növekvő"
+
+#~ msgid "Source descending"
+#~ msgstr "Forrás csökkenő"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "Cím manga növekvő"
+
+#~ msgid "Title manga descending"
+#~ msgstr "Cím manga csökkenő"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 21:06+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgstr "संस्करण"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "अज्ञात"
 
@@ -92,8 +92,8 @@ msgstr "अध्याय खोजें"
 #: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
 #: ../LibraryView.lua:1221 ../NotificationView.lua:162
 #: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
-#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:167
-#: ../widgets/SettingItemValue.lua:272
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "रद्द करना"
 
@@ -597,7 +597,7 @@ msgstr "क्या आप हटाना चाहते हैं"
 msgid "source?"
 msgstr "स्रोत?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:84
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "पुस्तकालय"
 
@@ -685,7 +685,7 @@ msgstr "स्वच्छ अध्याय"
 msgid "Manage sources"
 msgstr "स्रोत प्रबंधित करें"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:584
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "सेटिंग्स"
 
@@ -769,7 +769,7 @@ msgstr "प्रयोग"
 msgid "Memory"
 msgstr "याद"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:375
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "भंडारण"
 
@@ -806,7 +806,7 @@ msgid "Type the manga name to search for"
 msgstr "खोजने के लिए मंगा नाम टाइप करें"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:193 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "खोज"
 
@@ -1003,23 +1003,23 @@ msgstr "नहीं"
 msgid "View Mode"
 msgstr "दृश्य मोड"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:291
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "गलती करना"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "एलटीआर"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "आरटीएल"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "स्क्रॉल"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "खड़ा"
 
@@ -1029,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:290 ../Settings.lua:325
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "बंद"
 
@@ -1159,7 +1159,7 @@ msgid "Rename Playlist"
 msgstr "प्लेलिस्ट का नाम बदलें"
 
 #: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
-#: ../widgets/SettingItemValue.lua:279
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "बचाना"
 
@@ -1187,299 +1187,314 @@ msgstr "बनाएं"
 msgid "No playlists yet."
 msgstr "अभी तक कोई प्लेलिस्ट नहीं."
 
-#: ../Settings.lua:90
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "लाइब्रेरी व्यू मोड"
 
-#: ../Settings.lua:92 ../Settings.lua:201
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "आधार"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "ढकना"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "ग्रिड"
 
-#: ../Settings.lua:103
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "लाइब्रेरी सॉर्टिंग मोड"
 
-#: ../Settings.lua:105
-msgid "Order added ascending (Default)"
-msgstr "क्रम आरोही रूप में जोड़ा गया (डिफ़ॉल्ट)"
-
 #: ../Settings.lua:106
-msgid "Order added descending"
-msgstr "क्रम अवरोही रूप से जोड़ा गया"
+msgid "Date added (oldest)"
+msgstr ""
 
 #: ../Settings.lua:107
-msgid "Title manga ascending"
-msgstr "शीर्षक मंगा आरोही"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Title manga descending"
-msgstr "शीर्षक मंगा अवरोही"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Count unread chapters ascending"
-msgstr "अपठित अध्यायों को बढ़ते हुए गिनें"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Count unread chapters descending"
-msgstr "अपठित अध्यायों को घटते क्रम में गिनें"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Last read ascending"
-msgstr "अंतिम पाठ आरोही है"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "अंतिम पाठ अवरोही है"
 
 #: ../Settings.lua:113
-msgid "Source ascending"
-msgstr "स्रोत आरोही"
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "अंतिम पढ़ा: %1"
 
 #: ../Settings.lua:114
-msgid "Source descending"
-msgstr "स्रोत अवरोही"
+msgid "Source (A-Z)"
+msgstr ""
 
-#: ../Settings.lua:122
+#: ../Settings.lua:115
+msgid "Source (Z-A)"
+msgstr ""
+
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "प्रति पृष्ठ आइटम (0 = स्वचालित)"
 
-#: ../Settings.lua:133
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "ग्रिड कॉलम"
 
-#: ../Settings.lua:144
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "ग्रिड पंक्तियाँ"
 
-#: ../Settings.lua:155
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "शीर्षक को ग्रिड मोड में दिखाएँ"
 
-#: ../Settings.lua:164
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "ग्रिड मोड में मेटाडेटा दिखाएं"
 
-#: ../Settings.lua:173
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "मंगा एक्शन टैप करें"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "अध्याय सूची खोलें"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "जारी रखें पढ़ रहे हैं"
 
-#: ../Settings.lua:186
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "बायोडाटा पढ़ने की पुष्टि छोड़ें"
 
-#: ../Settings.lua:199
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "खोज दृश्य मोड"
 
-#: ../Settings.lua:210
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "पाठक"
 
-#: ../Settings.lua:216
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "अध्याय छँटाई मोड"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "अध्याय चढ़ते हुए"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "अध्याय अवरोह द्वारा"
 
-#: ../Settings.lua:227
+#: ../Settings.lua:228
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "सांख्यिकी में अध्याय का शीर्षक (कॉमिकइन्फो)"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:230
 msgid "Chapter title only"
 msgstr "केवल अध्याय का शीर्षक"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Series + chapter title"
 msgstr "शृंखला + अध्याय शीर्षक"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter number"
 msgstr "शृंखला + अध्याय संख्या"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "रीडर पर प्रीलोड अध्याय खुले"
 
-#: ../Settings.lua:251
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "पृष्ठ छवियों को अनुकूलित करें (प्रयोगात्मक)"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "समवर्ती पृष्ठ अनुरोध"
 
-#: ../Settings.lua:270
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "आरटीएल को कभी भी चालू न करें, यहां तक ​​कि जापानी मंगा के लिए भी"
 
-#: ../Settings.lua:279
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "व्यूअर को स्वचालित रूप से मंगा मोड पर सेट करें"
 
-#: ../Settings.lua:288
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "वैश्विक दर्शक ओवरराइड"
 
-#: ../Settings.lua:305
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "टूलबार रीडर में बटन पिछला अध्याय दिखाएँ"
 
-#: ../Settings.lua:314
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "टूलबार रीडर में अगला अध्याय बटन दिखाएँ"
 
-#: ../Settings.lua:323
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "रीडर में विस्तारित राकुयोमी बॉटम टूलबार प्रदर्शित करें"
 
-#: ../Settings.lua:326
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "निचले टूलबार पर"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "शीर्ष टूलबार पर"
 
-#: ../Settings.lua:335
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "अनुशंसित पाठक सेटिंग्स"
 
-#: ../Settings.lua:341
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "सभी मार्जिन बंद करें"
 
-#: ../Settings.lua:350
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "फ़ोटो से अतिरिक्त किनारों को स्वचालित रूप से काटें (थोड़ा धीमा)"
 
-#: ../Settings.lua:359
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "पूर्ण स्क्रीन पर ज़ूम करें"
 
-#: ../Settings.lua:368
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "छवि के आकार को फिट करने के लिए ज़ूम करें"
 
-#: ../Settings.lua:381
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "अध्याय भंडारण पथ"
 
-#: ../Settings.lua:390
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "भंडारण आकार सीमा"
 
-#: ../Settings.lua:400
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "अध्याय डाउनलोड किया गया"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM में अध्याय लिखें (eMMC को सुरक्षित रखें)"
 
-#: ../Settings.lua:408
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "रैम भंडारण का आकार. "
 
-#: ../Settings.lua:417
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "नेटवर्क"
 
-#: ../Settings.lua:423
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS या SOCKS5 प्रॉक्सी"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "प्रॉक्सी यूआरएल http://, https://, या socks5:// से शुरू होना चाहिए"
 
-#: ../Settings.lua:431
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "सिंक और अपडेट"
 
-#: ../Settings.lua:437
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "वेबडीएवी सिंक"
 
-#: ../Settings.lua:445
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "मंगा अपडेट के लिए सक्षम क्रॉन चेक"
 
-#: ../Settings.lua:453
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "स्रोत आईडी चेक अपडेट छोड़ें"
 
-#: ../Settings.lua:459
+#: ../Settings.lua:497
 msgid "System"
 msgstr "प्रणाली"
 
-#: ../Settings.lua:465
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "बैक बटन की मांग की अनुमति दें"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "सर्वर"
 
-#: ../Settings.lua:478
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "लाइब्रेरी दृश्य छोड़ते समय सर्वर स्वतः बंद हो जाता है"
 
-#: ../Settings.lua:480
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "अक्षम"
 
-#: ../Settings.lua:481
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "तुरंत"
 
-#: ../Settings.lua:482
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "30 सेकंड के बाद"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "1 मिनट बाद"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "5 मिनिट बाद"
 
-#: ../Settings.lua:485
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "10 मिनट बाद"
 
-#: ../Settings.lua:495
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "अध्याय डाउनलोड प्रगति दिखाएँ"
 
-#: ../Settings.lua:502
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "लॉगिंग"
 
-#: ../Settings.lua:508
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "लॉगिंग अक्षम करें"
 
-#: ../Settings.lua:683
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "प्रॉक्सी का परीक्षण करने में विफल"
 
@@ -1516,6 +1531,7 @@ msgid "Push progress"
 msgstr "प्रगति को आगे बढ़ाएं"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
 msgid "Not set"
 msgstr "सेट नहीं"
 
@@ -1869,22 +1885,49 @@ msgstr "चौ."
 msgid "Offline mode"
 msgstr "ऑफ़लाइन मोड"
 
-#: ../widgets/SettingItemValue.lua:166
-msgid "Ok"
-msgstr "ठीक है"
-
-#: ../widgets/SettingItemValue.lua:172
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "क्रियान्वयन..."
 
-#: ../widgets/SettingItemValue.lua:185
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "हो गया"
 
-#: ../widgets/SettingItemValue.lua:240
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "ठीक है"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "चुनना"
 
-#: ../widgets/SettingItemValue.lua:363
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "अमान्य मान"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "अपठित अध्यायों को बढ़ते हुए गिनें"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "अपठित अध्यायों को घटते क्रम में गिनें"
+
+#~ msgid "Last read ascending"
+#~ msgstr "अंतिम पाठ आरोही है"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "क्रम आरोही रूप में जोड़ा गया (डिफ़ॉल्ट)"
+
+#~ msgid "Order added descending"
+#~ msgstr "क्रम अवरोही रूप से जोड़ा गया"
+
+#~ msgid "Source ascending"
+#~ msgstr "स्रोत आरोही"
+
+#~ msgid "Source descending"
+#~ msgstr "स्रोत अवरोही"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "शीर्षक मंगा आरोही"
+
+#~ msgid "Title manga descending"
+#~ msgstr "शीर्षक मंगा अवरोही"

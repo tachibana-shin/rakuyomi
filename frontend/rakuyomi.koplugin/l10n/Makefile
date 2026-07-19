@@ -1,5 +1,7 @@
 # fork from https://github.com/omer-faruq/assistant.koplugin
 
+SHELL := /bin/bash
+
 .PHONY: all translate template update extract-untranslated ai-translate check-ai-results import-translation check clean init-dirs fmt
 
 all: translate
@@ -119,24 +121,26 @@ g-translate:
 		TO_TRANSLATE=$$(for lang in $(LANGS); do if [ -s "$$lang/untranslated.po" ]; then echo $$lang; fi; done); \
 		TOTAL=$$(echo $$TO_TRANSLATE | wc -w); \
 		COUNT=0; \
+		MAX_JOBS=$${L10N_JOBS:-20}; \
 		for lang in $$TO_TRANSLATE; do \
 			COUNT=$$((COUNT+1)); \
+			while [ $$(jobs -pr | wc -l) -ge $$MAX_JOBS ]; do \
+				wait -n || true; \
+			 done; \
 			echo "Translating language $$COUNT of $$TOTAL ($$lang)..."; \
-			./GOOGLE_TRANSLATE.sh $$lang && { \
-				if [ ! -f "$$lang/updated_translated.po" ]; then \
-					echo "\033[0;31mError: Google translation for '$$lang' failed.\033[0m"; \
-					echo "File '$$lang/updated_translated.po' was not created, but '$$lang/untranslated.po' was not empty."; \
-					echo "This might be due to an API error or network issue."; \
-					echo "Please check the output above for any error messages from the Google translation script."; \
-					echo "You can try running the translation for this language again with: make ai-translate L10N_LANG=$$lang"; \
-					exit 1; \
-				fi; \
-				if [ -n "$$API_WAIT" ]; then \
-					echo "... waiting $$API_WAIT seconds to avoid API rate limits."; \
-					sleep $$API_WAIT; \
-				fi; \
-			} || exit 1; \
-		done; \
+			./GOOGLE_TRANSLATE.sh $$lang & \
+			done; \
+		wait; \
+		for lang in $$TO_TRANSLATE; do \
+			if [ ! -f "$$lang/updated_translated.po" ]; then \
+				echo "\033[0;31mError: Google translation for '$$lang' failed.\033[0m"; \
+				echo "File '$$lang/updated_translated.po' was not created, but '$$lang/untranslated.po' was not empty."; \
+				echo "This might be due to an API error or network issue."; \
+				echo "Please check the output above for any error messages from the Google translation script."; \
+				echo "You can try running the translation for this language again with: make ai-translate L10N_LANG=$$lang"; \
+				exit 1; \
+			fi; \
+			done; \
 		if [ -z "$$TO_TRANSLATE" ]; then \
 			echo "All languages are up to date. Nothing to translate."; \
 		fi; \

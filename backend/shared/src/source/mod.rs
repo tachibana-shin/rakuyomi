@@ -191,6 +191,19 @@ impl Source {
     );
 
     wrap_blocking_source_fn!(
+        search_mangas_sorted,
+        Result<(Vec<Manga>, bool)>,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        sort_bucket: Option<SortBucket>
+    );
+
+    pub fn supported_sort_buckets(&self) -> Vec<SortBucket> {
+        self.0.lock().unwrap().supported_sort_buckets()
+    }
+    
+    wrap_blocking_source_fn!(
         get_manga_details,
         Result<Manga>,
         cancellation_token: CancellationToken,

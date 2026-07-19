@@ -98,30 +98,14 @@ function Backend.requestJson(request)
   -- is not 2xx
   local parsed_body, err = rapidjson.decode(response.body)
   if err then
-    if not (response.status and response.status >= 200 and response.status <= 299) then
-      logger.err("Request failed with status code", response.status, "and non-JSON body", response.body)
-      return {
-        type = 'ERROR',
-        status = response.status,
-        message = "HTTP " .. tostring(response.status),
-      }
-    end
-
     error("Expected to be able to decode the response body as JSON: " ..
-      tostring(response.body) .. " (status code: " .. tostring(response.status) .. ")")
+      response.body .. "(status code: " .. response.status .. ")")
   end
 
   if not (response.status and response.status >= 200 and response.status <= 299) then
     logger.err("Request failed with status code", response.status, "and body", parsed_body)
-    -- The decoded body may be a JSON scalar (e.g. a bare string), so only
-    -- read `message` when it's actually a table.
-    local error_message
-    if type(parsed_body) == "table" and type(parsed_body.message) == "string"
-        and parsed_body.message ~= "" then
-      error_message = parsed_body.message
-    else
-      error_message = "HTTP " .. tostring(response.status)
-    end
+    local error_message = parsed_body.message
+    assert(error_message ~= nil, "Request failed without error message")
 
     return { type = 'ERROR', status = response.status, message = error_message }
   end

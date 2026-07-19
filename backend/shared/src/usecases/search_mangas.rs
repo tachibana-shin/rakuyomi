@@ -32,7 +32,9 @@ pub async fn search_mangas(
     exclude: &Option<Vec<String>>,
     page: i32,
     seconds: u64,
+    sort_bucket: Option<crate::source::SortBucket>,
 ) -> Result<(Vec<Manga>, Vec<SearchError>, bool), Error> {
+
     // FIXME this looks awful
     let query = &query;
 
@@ -73,7 +75,7 @@ pub async fn search_mangas(
                     let token = cancellation_token.child_token();
 
                     let fetch_task =
-                        async { source.search_mangas(token.clone(), query, page).await };
+                        async { source.search_mangas_sorted(token.clone(), query, page, sort_bucket).await };
 
                     let (manga_informations, has_next, error) =
                         match timeout(Duration::from_secs(seconds), fetch_task).await {

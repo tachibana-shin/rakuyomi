@@ -1597,7 +1597,7 @@ const NON_SORT_SIGNAL: &[&str] = &[
 ];
 
 fn strip_accents(s: &str) -> String {
-    s.nfkd().filter(|c| !c.is_mark_nonspacing()).collect()
+    s.nfkd().filter(char::is_ascii).collect()
 }
 
 fn match_sort_bucket(label: &str) -> Option<SortBucket> {

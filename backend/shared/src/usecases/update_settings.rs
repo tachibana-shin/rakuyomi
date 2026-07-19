@@ -25,10 +25,6 @@ pub fn update_settings(
     Ok(())
 }
 
-fn default_true() -> bool {
-    true
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct UpdateableSettings {
     chapter_sorting_mode: ChapterSortingMode,
@@ -51,9 +47,7 @@ pub struct UpdateableSettings {
     proxy_url: Option<String>,
     #[serde(default)]
     chapter_title_format: ChapterTitleFormat,
-    #[serde(default = "default_true")]
     delete_downloaded_on_remove: bool,
-    #[serde(default)]
     delete_downloaded_after_read: bool,
 }
 

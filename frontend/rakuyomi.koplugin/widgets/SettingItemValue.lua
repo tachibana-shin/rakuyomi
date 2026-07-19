@@ -357,9 +357,6 @@ function SettingItemValue:onTap()
     UIManager:show(path_chooser)
   end
 
-  -- Consume the tap: otherwise it keeps bubbling up to the containing view,
-  -- whose top-zone gesture handler may open the KOReader menu on top of the
-  -- dialog we just showed.
   return true
 end
 

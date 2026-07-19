@@ -35,8 +35,7 @@ pub async fn sync_manga_tracking(
                     completed_at: binding.completed_at.or(local_snapshot.completed_at),
                     ..local_snapshot
                 };
-                let remote =
-                    tracking::push_progress(settings, &binding, &local_snapshot).await?;
+                let remote = tracking::push_progress(settings, &binding, &local_snapshot).await?;
                 db.set_tracking_sync_state(
                     manga_id,
                     binding.service,
@@ -57,10 +56,7 @@ pub async fn sync_manga_tracking(
                         direction,
                         local_progress: local_snapshot.chapter_progress,
                         remote_progress: remote.chapter_progress,
-                        message: format!(
-                            "Pushed progress to {}",
-                            binding.service.display_name()
-                        ),
+                        message: format!("Pushed progress to {}", binding.service.display_name()),
                     });
                 }
                 Err(e) => {
@@ -108,10 +104,7 @@ pub async fn sync_manga_tracking(
                     direction,
                     local_progress: remote.chapter_progress,
                     remote_progress: remote.chapter_progress,
-                    message: format!(
-                        "Pulled progress from {}",
-                        binding.service.display_name()
-                    ),
+                    message: format!("Pulled progress from {}", binding.service.display_name()),
                 });
             }
             Err(e) => {

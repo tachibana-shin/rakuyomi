@@ -240,10 +240,6 @@ fn default_ram_storage_size_mb() -> usize {
     32
 }
 
-fn default_true() -> bool {
-    true
-}
-
 fn default_storage_size_limit() -> StorageSizeLimit {
     StorageSizeLimit(Size::from_megabytes(2000))
 }

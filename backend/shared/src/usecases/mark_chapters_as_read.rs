@@ -18,21 +18,20 @@ pub async fn mark_chapters_as_read(
     db: &Database,
     chapter_storage: &ChapterStorage,
     delete_downloaded_after_read: bool,
-    manga_id: MangaId,
+    manga_id: &MangaId,
     text: &str,
     state: bool,
 ) -> Result<Option<usize>> {
-    let chapters = super::get_cached_manga_chapters(db, chapter_storage, &manga_id, false).await?;
+    let chapters = super::get_cached_manga_chapters(db, chapter_storage, manga_id, false).await?;
 
     let selected_ids = parse_chapter_ranges(&chapters, text)?;
 
     let unread_count = db
-        .set_chapters_read_state(&manga_id, &selected_ids, state)
+        .set_chapters_read_state(manga_id, &selected_ids, state)
         .await?;
 
     if state && delete_downloaded_after_read {
         for chapter_id in &selected_ids {
-            // Best-effort: a failed deletion never affects the read state.
             let _ = revoke_manga_chapter(chapter_storage, chapter_id, false).await;
         }
     }

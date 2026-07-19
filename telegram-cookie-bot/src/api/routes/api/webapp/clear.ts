@@ -1,6 +1,6 @@
 import { OpenAPIHono, z } from "@hono/zod-openapi"
 import { zValidator } from "@hono/zod-validator"
-import { getConfig } from "../../../../../config.ts"
+import { getConfig } from "../../../../config.ts"
 import { verifyTelegramWebAppData } from "../../../../utils/telegram-webapp.ts"
 import {
   clearAllCookies,

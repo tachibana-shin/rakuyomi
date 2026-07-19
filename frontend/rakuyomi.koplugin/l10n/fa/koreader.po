@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 00:12+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,9 +31,9 @@ msgstr "قابل نصب"
 msgid "version"
 msgstr "نسخه"
 
-#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:285
-#: ../ChapterListing.lua:346 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
+#: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "ناشناس"
 
@@ -78,7 +78,7 @@ msgstr "خطای ناشناخته"
 msgid "Error"
 msgstr "خطا"
 
-#: ../ChapterListPopup.lua:129
+#: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
 msgid "Chapters"
 msgstr "فصل ها"
 
@@ -87,12 +87,13 @@ msgid "Search chapters"
 msgstr "جستجو در فصل ها"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
-#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
-#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+#: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1339 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
+#: ../LibraryView.lua:1221 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "لغو کنید"
 
@@ -108,289 +109,294 @@ msgstr "برو به صفحه"
 msgid "Go"
 msgstr "برو"
 
-#: ../ChapterListing.lua:58
+#: ../ChapterListing.lua:59
 msgid "Chapter listing"
 msgstr "فهرست فصل"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
+#: ../ChapterListing.lua:256 ../ChapterListing.lua:1184
 msgid "Languages"
 msgstr "زبان ها"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "No chapters found"
 msgstr "هیچ فصلی یافت نشد"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "Try swiping down to refresh the chapter list."
 msgstr "برای بازخوانی فهرست فصل، انگشت خود را به پایین بکشید."
 
-#: ../ChapterListing.lua:389
+#: ../ChapterListing.lua:406
 msgid "Volume"
 msgstr "حجم"
 
-#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:410 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "فصل"
 
-#: ../ChapterListing.lua:420
+#: ../ChapterListing.lua:437
 msgid "Locked"
 msgstr "قفل شده است"
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
+#: ../ChapterListing.lua:471 ../ChapterListing.lua:690
 msgid "Refreshing chapters..."
 msgstr "در حال تازه کردن فصل ها..."
 
-#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
-#: ../ChapterListing.lua:1417
+#: ../ChapterListing.lua:479 ../ChapterListing.lua:697
+#: ../ChapterListing.lua:1450
 msgid "Cancelled."
 msgstr "لغو شد."
 
-#: ../ChapterListing.lua:474
+#: ../ChapterListing.lua:491
 msgid "Refresh chapter error"
 msgstr "خطای بازخوانی فصل"
 
-#: ../ChapterListing.lua:524
+#: ../ChapterListing.lua:541
 msgid "Chapter is locked"
 msgstr "فصل قفل شده است"
 
-#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:558 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "باز کنید"
 
-#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
+#: ../ChapterListing.lua:568 ../ChapterListing.lua:1094 ../LibraryView.lua:559
 msgid "Refresh"
 msgstr "تازه کردن"
 
-#: ../ChapterListing.lua:557
+#: ../ChapterListing.lua:574
 msgid "Chapter refreshed"
 msgstr "فصل به روز شد"
 
-#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
-#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
+#: ../ChapterListing.lua:580 ../ChapterListing.lua:723
+#: ../ChapterListing.lua:1140 ../LibraryView.lua:606
 msgid "Mark unread"
 msgstr "علامت گذاری به عنوان خوانده نشده"
 
-#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
+#: ../ChapterListing.lua:591 ../ChapterListing.lua:1346
 msgid "Download"
 msgstr "دانلود کنید"
 
-#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:591 ../LibraryView.lua:809 ../LibraryView.lua:829
 msgid "Remove"
 msgstr "حذف کنید"
 
-#: ../ChapterListing.lua:583
+#: ../ChapterListing.lua:600
 msgid "Chapter downloaded"
 msgstr "فصل دانلود شد"
 
-#: ../ChapterListing.lua:602
+#: ../ChapterListing.lua:619
 msgid "Revoke chapter..."
 msgstr "لغو فصل ..."
 
-#: ../ChapterListing.lua:620
+#: ../ChapterListing.lua:637
 msgid "Removed chapter"
 msgstr "فصل حذف شد"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Marking"
 msgstr "علامت گذاری"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Un-marking"
 msgstr "علامت گذاری کردن"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "chapter..."
 msgstr "فصل..."
 
-#: ../ChapterListing.lua:665
+#: ../ChapterListing.lua:682
 msgid "Cannot refresh chapters while offline"
 msgstr "نمی‌توان فصل‌ها را در حالت آفلاین بازخوانی کرد"
 
-#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
+#: ../ChapterListing.lua:723 ../ChapterListing.lua:1130 ../LibraryView.lua:595
 msgid "Mark read"
 msgstr "علامت گذاری به عنوان خوانده شده"
 
-#: ../ChapterListing.lua:707
+#: ../ChapterListing.lua:724
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10.5، 20 - 100"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Leaving blank will select all"
 msgstr "خالی گذاشتن همه را انتخاب می کند"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Mark chapters as read or unread"
 msgstr "فصل ها را به عنوان خوانده شده یا خوانده نشده علامت گذاری کنید"
 
-#: ../ChapterListing.lua:719
+#: ../ChapterListing.lua:736
 msgid "Mark"
 msgstr "علامت گذاری کنید"
 
-#: ../ChapterListing.lua:729
+#: ../ChapterListing.lua:746
 msgid "Marking..."
 msgstr "علامت گذاری..."
 
-#: ../ChapterListing.lua:739
+#: ../ChapterListing.lua:756
 msgid "Marked"
 msgstr "علامت گذاری شده است"
 
-#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "بدون خطا"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "Page"
 msgstr "صفحه"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "attempts"
 msgstr "تلاش می کند"
 
-#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:792 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… و %d خطای دیگر"
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:814
 msgid "Could not download chapter."
 msgstr "فصل دانلود نشد."
 
-#: ../ChapterListing.lua:805
+#: ../ChapterListing.lua:822
 msgid "Loading chapter..."
 msgstr "در حال بارگیری فصل..."
 
-#: ../ChapterListing.lua:806
+#: ../ChapterListing.lua:823
 msgid "unknown"
 msgstr "ناشناخته"
 
-#: ../ChapterListing.lua:824
+#: ../ChapterListing.lua:841
 msgid "Download cancelled."
 msgstr "دانلود لغو شد."
 
-#: ../ChapterListing.lua:830
+#: ../ChapterListing.lua:847
 msgid "Are you sure you want to cancel the download?"
 msgstr "آیا مطمئنید که می خواهید دانلود را لغو کنید؟"
 
-#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1084 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "افزودن به کتابخانه"
 
-#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1102 ../LibraryView.lua:579
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "جزئیات"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
+#: ../TrackingSettings.lua:416
+msgid "Tracking"
+msgstr "ردیابی"
+
+#: ../ChapterListing.lua:1152
 msgid "Resume"
 msgstr "رزومه"
 
-#: ../ChapterListing.lua:1133
+#: ../ChapterListing.lua:1160
 msgid "Next Chapter"
 msgstr "فصل بعدی"
 
-#: ../ChapterListing.lua:1143
+#: ../ChapterListing.lua:1170
 msgid "Download unread chapters…"
 msgstr "دانلود فصل های خوانده نشده …"
 
-#: ../ChapterListing.lua:1170
+#: ../ChapterListing.lua:1197
 msgid "Group"
 msgstr "گروه"
 
-#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
+#: ../ChapterListing.lua:1198 ../ChapterListing.lua:1320
 msgid "Filter by Group"
 msgstr "فیلتر بر اساس گروه"
 
-#: ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1227
 msgid "Adding to library..."
 msgstr "در حال افزودن به کتابخانه..."
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1234
 msgid "Failed to add to library"
 msgstr "افزودن به کتابخانه انجام نشد"
 
-#: ../ChapterListing.lua:1206
+#: ../ChapterListing.lua:1239
 msgid "Added to library."
 msgstr "به کتابخانه اضافه شد"
 
-#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1251 ../LibraryView.lua:753
 msgid "Sadly, no next chapter available! :c"
 msgstr "متاسفانه فصل بعدی موجود نیست! "
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "Next"
 msgstr "بعدی"
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "reading with"
 msgstr "خواندن با"
 
-#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1261 ../LibraryView.lua:790
 msgid "Read"
 msgstr "بخوانید"
 
-#: ../ChapterListing.lua:1250
+#: ../ChapterListing.lua:1283
 msgid "Show All"
 msgstr "نمایش همه"
 
-#: ../ChapterListing.lua:1259
+#: ../ChapterListing.lua:1292
 msgid "Showing all groups"
 msgstr "نمایش همه گروه ها"
 
-#: ../ChapterListing.lua:1280
+#: ../ChapterListing.lua:1313
 msgid "Filtered to"
 msgstr "فیلتر شده به"
 
-#: ../ChapterListing.lua:1297
+#: ../ChapterListing.lua:1330
 msgid "Download unread chapters..."
 msgstr "دانلود فصل های خوانده نشده..."
 
-#: ../ChapterListing.lua:1299
+#: ../ChapterListing.lua:1332
 msgid "Amount of unread chapters (default: all)"
 msgstr "تعداد فصل های خوانده نشده (پیش فرض: همه)"
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Specify amount or leave empty for all."
 msgstr "مقدار را مشخص کنید یا برای همه خالی بگذارید."
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Will download from"
 msgstr "دانلود خواهد شد از"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "Specify the amount of unread chapters to download"
 msgstr "مقدار فصل های خوانده نشده را برای دانلود مشخص کنید"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "or leave empty to download all of them."
 msgstr "یا خالی بگذارید تا همه آنها را دانلود کنید."
 
-#: ../ChapterListing.lua:1323
+#: ../ChapterListing.lua:1356
 msgid "Invalid amount of chapters!"
 msgstr "تعداد فصل نامعتبر است!"
 
-#: ../ChapterListing.lua:1344
+#: ../ChapterListing.lua:1377
 msgid "No unread chapters found for"
 msgstr "هیچ فصل خوانده نشده ای برای"
 
-#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
+#: ../ChapterListing.lua:1402 ../ChapterListing.lua:1477
 msgid "Downloading all chapters, this will take a while…"
 msgstr "دانلود همه فصل‌ها، مدتی طول می‌کشد…"
 
-#: ../ChapterListing.lua:1454
+#: ../ChapterListing.lua:1487
 msgid "Waiting for download to be cancelled…"
 msgstr "در انتظار لغو دانلود…"
 
-#: ../ChapterListing.lua:1456
+#: ../ChapterListing.lua:1489
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "دانلود همه فصل‌ها، مدتی طول می‌کشد… ("
 
-#: ../ChapterListing.lua:1459
+#: ../ChapterListing.lua:1492
 msgid "Tap outside this message to cancel."
 msgstr "برای لغو، خارج از این پیام ضربه بزنید."
 
-#: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
+#: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
 msgstr "همگام سازی کوکی ها"
 
@@ -507,19 +513,19 @@ msgstr ""
 msgid "Check Again"
 msgstr "دوباره چک کنید"
 
-#: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
+#: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
 msgid "Syncing cookies..."
 msgstr "در حال همگام سازی کوکی ها..."
 
-#: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
+#: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
 msgstr "همگام سازی کوکی ها انجام نشد:"
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
 msgstr "دامنه (ها)."
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
 msgstr "کوکی‌های همگام‌سازی شده برای"
 
@@ -591,316 +597,316 @@ msgstr "آیا می خواهید حذف کنید"
 msgid "source?"
 msgstr "منبع؟"
 
-#: ../LibraryView.lua:74 ../Settings.lua:86
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "کتابخانه"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "No mangas found in library"
 msgstr "هیچ مانگایی در کتابخانه یافت نشد"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "Try adding some by holding their name on the search results!"
 msgstr "سعی کنید تعدادی را با نگه داشتن نام آنها در نتایج جستجو اضافه کنید!"
 
-#: ../LibraryView.lua:568
+#: ../LibraryView.lua:570
 msgid "Refreshed manga"
 msgstr "مانگای تازه شده"
 
-#: ../LibraryView.lua:617
+#: ../LibraryView.lua:619
 msgid "Continue Reading"
 msgstr "به خواندن ادامه دهید"
 
-#: ../LibraryView.lua:626 ../MangaSearchResults.lua:424
+#: ../LibraryView.lua:637 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "به لیست پخش اضافه کنید"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:649
 msgid "List chapters"
 msgstr "فصول را فهرست کنید"
 
-#: ../LibraryView.lua:656 ../MangaSearchResults.lua:358
+#: ../LibraryView.lua:667 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "حذف از کتابخانه"
 
-#: ../LibraryView.lua:666
+#: ../LibraryView.lua:677
 msgid "Remove from Playlist"
 msgstr "حذف از لیست پخش"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:709
 msgid "Finding next chapter..."
 msgstr "یافتن فصل بعدی..."
 
-#: ../LibraryView.lua:710
+#: ../LibraryView.lua:720
 msgid "No chapters found for this manga."
 msgstr "هیچ فصلی برای این مانگا یافت نشد."
 
-#: ../LibraryView.lua:779
+#: ../LibraryView.lua:789
 msgid "Resume reading with:"
 msgstr "از سرگیری خواندن با:"
 
-#: ../LibraryView.lua:798 ../LibraryView.lua:818
+#: ../LibraryView.lua:808 ../LibraryView.lua:828
 msgid "Do you want to remove"
 msgstr "آیا می خواهید حذف کنید"
 
-#: ../LibraryView.lua:798
+#: ../LibraryView.lua:808
 msgid "from your library?"
 msgstr "از کتابخانه شما؟"
 
-#: ../LibraryView.lua:818
+#: ../LibraryView.lua:828
 msgid "from your playlist?"
 msgstr "از لیست پخش شما؟"
 
-#: ../LibraryView.lua:841
+#: ../LibraryView.lua:851
 msgid "Search for mangas"
 msgstr "جستجو برای مانگا"
 
-#: ../LibraryView.lua:851
+#: ../LibraryView.lua:861
 msgid "Search favorites"
 msgstr "جستجوی موارد دلخواه"
 
-#: ../LibraryView.lua:861 ../PlaylistDialog.lua:304
+#: ../LibraryView.lua:871 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "لیست های پخش"
 
-#: ../LibraryView.lua:870
+#: ../LibraryView.lua:880
 msgid "Refresh mangas"
 msgstr "مانگا را تازه کنید"
 
-#: ../LibraryView.lua:878
+#: ../LibraryView.lua:888
 msgid "Refresh details"
 msgstr "بازخوانی جزئیات"
 
-#: ../LibraryView.lua:888
+#: ../LibraryView.lua:898
 msgid "Cleaner chapters"
 msgstr "فصل های تمیزتر"
 
-#: ../LibraryView.lua:896
+#: ../LibraryView.lua:906
 msgid "Manage sources"
 msgstr "مدیریت منابع"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "تنظیمات"
 
-#: ../LibraryView.lua:914
-msgid "Check for updates"
-msgstr "به روز رسانی را بررسی کنید"
-
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:933
 msgid "Sync Database (Beta)"
 msgstr "همگام سازی پایگاه داده (بتا)"
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:937
 msgid "Sync to WebDAV..."
 msgstr "همگام سازی با WebDAV..."
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "Do you want to migrate your local database from the server?"
 msgstr "آیا می خواهید پایگاه داده محلی خود را از سرور منتقل کنید؟"
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "The remote database is newer than the local one."
 msgstr "پایگاه داده راه دور جدیدتر از پایگاه داده محلی است."
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "This action cannot be undone."
 msgstr "این عمل قابل لغو نیست."
 
-#: ../LibraryView.lua:940
+#: ../LibraryView.lua:950
 msgid "Migrate"
 msgstr "مهاجرت کنید"
 
-#: ../LibraryView.lua:944
+#: ../LibraryView.lua:954
 msgid "Migrating database..."
 msgstr "انتقال پایگاه داده..."
 
-#: ../LibraryView.lua:955 ../LibraryView.lua:1002
+#: ../LibraryView.lua:965 ../LibraryView.lua:1012
 msgid "Local database has been migrated from the server!"
 msgstr "پایگاه داده محلی از سرور منتقل شده است!"
 
-#: ../LibraryView.lua:966
+#: ../LibraryView.lua:976
 msgid "Replace Cloud"
 msgstr "Cloud را جایگزین کنید"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:980
 msgid "Replacing cloud..."
 msgstr "جایگزینی ابر ..."
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:990
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "پایگاه داده ابری به اجبار با محلی جایگزین شده است!"
 
-#: ../LibraryView.lua:998
+#: ../LibraryView.lua:1008
 msgid "Database is already up to date!"
 msgstr "پایگاه داده در حال حاضر به روز است!"
 
-#: ../LibraryView.lua:1000
+#: ../LibraryView.lua:1010
 msgid "Database has been synced to the server!"
 msgstr "پایگاه داده با سرور همگام سازی شده است!"
 
-#: ../LibraryView.lua:1004
+#: ../LibraryView.lua:1014
 msgid "Sync completed!"
 msgstr "همگام سازی کامل شد!"
 
-#: ../LibraryView.lua:1022
+#: ../LibraryView.lua:1032
 msgid "Sync Cookies"
 msgstr "همگام سازی کوکی ها"
 
-#: ../LibraryView.lua:1052
+#: ../LibraryView.lua:1062
 msgid "System resources"
 msgstr "منابع سیستم"
 
-#: ../LibraryView.lua:1067
+#: ../LibraryView.lua:1077
 msgid "CPU"
 msgstr "CPU"
 
-#: ../LibraryView.lua:1068
+#: ../LibraryView.lua:1078
 msgid "Cores"
 msgstr "هسته ها"
 
-#: ../LibraryView.lua:1069
+#: ../LibraryView.lua:1079
 msgid "Usage"
 msgstr "استفاده"
 
-#: ../LibraryView.lua:1070
+#: ../LibraryView.lua:1080
 msgid "Memory"
 msgstr "حافظه"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:364
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "ذخیره سازی"
 
-#: ../LibraryView.lua:1077 ../LibraryView.lua:1081
+#: ../LibraryView.lua:1087 ../LibraryView.lua:1091
 msgid "Tmpfs"
 msgstr "Tmpfs"
 
-#: ../LibraryView.lua:1081
+#: ../LibraryView.lua:1091
 msgid "unavailable"
 msgstr "در دسترس نیست"
 
-#: ../LibraryView.lua:1084
+#: ../LibraryView.lua:1094
 msgid "Process RSS"
 msgstr "پردازش RSS"
 
-#: ../LibraryView.lua:1085
+#: ../LibraryView.lua:1095
 msgid "Virtual"
 msgstr "مجازی"
 
-#: ../LibraryView.lua:1121
+#: ../LibraryView.lua:1104
+msgid "Check for updates"
+msgstr "به روز رسانی را بررسی کنید"
+
+#: ../LibraryView.lua:1139
 msgid "Manga search..."
 msgstr "جستجوی مانگا..."
 
-#: ../LibraryView.lua:1122
+#: ../LibraryView.lua:1140
 msgid "Houseki no Kuni"
 msgstr "هاوسکی نو کونی"
 
-#: ../LibraryView.lua:1123 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1141 ../LibraryView.lua:1217
 msgid "Type the manga name to search for"
 msgstr "نام مانگا را برای جستجو تایپ کنید"
 
-#: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:195
+#: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "جستجو کنید"
 
-#: ../LibraryView.lua:1181
+#: ../LibraryView.lua:1199
 msgid "Exclude source search for"
 msgstr "حذف جستجوی منبع برای"
 
-#: ../LibraryView.lua:1196
+#: ../LibraryView.lua:1214
 msgid "Favorite search..."
 msgstr "جستجوی مورد علاقه..."
 
-#: ../LibraryView.lua:1198
+#: ../LibraryView.lua:1216
 msgid "Tonikaku Kawaii"
 msgstr "تونیکاکو کاوایی"
 
-#: ../LibraryView.lua:1250
+#: ../LibraryView.lua:1268
 msgid "Scaning files..."
 msgstr "اسکن فایل ها..."
 
-#: ../LibraryView.lua:1265
+#: ../LibraryView.lua:1283
 #, lua-format
 msgid "Found %d files."
 msgstr "%d فایل پیدا شد."
 
-#: ../LibraryView.lua:1266
+#: ../LibraryView.lua:1284
 #, lua-format
 msgid "Total size %s."
 msgstr "اندازه کل %s."
 
-#: ../LibraryView.lua:1267
+#: ../LibraryView.lua:1285
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "فایل RendOnly.cbz. و اسکن epub."
 
-#: ../LibraryView.lua:1271
+#: ../LibraryView.lua:1289
 msgid "Clean"
 msgstr "تمیز"
 
-#: ../LibraryView.lua:1276
+#: ../LibraryView.lua:1294
 msgid "Deleting..."
 msgstr "در حال حذف..."
 
-#: ../LibraryView.lua:1294
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "فضای ذخیره %s رایگان را پاک کرد"
 
-#: ../LibraryView.lua:1309 ../LibraryView.lua:1321 ../LibraryView.lua:1342
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "در حالت آفلاین نمی توان بازخوانی کرد"
 
-#: ../LibraryView.lua:1331
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "تازه کردن مانگا..."
 
-#: ../LibraryView.lua:1332
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "همه فصل‌ها مانگا به‌روزرسانی شدند!"
 
-#: ../LibraryView.lua:1333
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "برخی از به‌روزرسانی‌های مانگا با شکست مواجه می‌شوند:"
 
-#: ../LibraryView.lua:1352
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "بازخوانی جزئیات مانگا..."
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "تمام جزئیات مانگا تازه کردن!"
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "برخی از جزئیات مانگا با شکست مواجه می شوند:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "پیشرفت"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "تمیز کننده"
 
-#: ../LibraryView.lua:1389
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "فایل های نامعتبر از جمله فایل های منابع حذف شده را پیدا و حذف کنید"
 
-#: ../LibraryView.lua:1389 ../LibraryView.lua:1392
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "عادی"
 
-#: ../LibraryView.lua:1390 ../LibraryView.lua:1398
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "فصل خوانده شد انجام شد"
 
-#: ../LibraryView.lua:1390
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "فصل های خوانده شده را پیدا و حذف کنید"
 
-#: ../LibraryView.lua:1391
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "مهم: فایل های متا (نشانک، تاریخچه) نگهداری نمی شوند!"
 
@@ -997,23 +1003,23 @@ msgstr "خیر"
 msgid "View Mode"
 msgstr "حالت مشاهده"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "پیش فرض"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "اسکرول کنید"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "عمودی"
 
@@ -1023,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "خاموش"
 
@@ -1076,6 +1082,54 @@ msgstr "این اعلان حذف شود؟"
 msgid "Delete"
 msgstr "حذف کنید"
 
+#: ../OAuthFlowView.lua:65
+msgid "Sign in with "
+msgstr "وارد شوید با"
+
+#: ../OAuthFlowView.lua:79
+msgid "Scan this QR code on your phone to sign in."
+msgstr "برای ورود به سیستم، این کد QR را روی تلفن خود اسکن کنید."
+
+#: ../OAuthFlowView.lua:104
+msgid "Error: No bridge URL available."
+msgstr "خطا: URL پل موجود نیست."
+
+#: ../OAuthFlowView.lua:114
+msgid "Scan the QR code, then check sign-in status."
+msgstr "کد QR را اسکن کنید، سپس وضعیت ورود به سیستم را بررسی کنید."
+
+#: ../OAuthFlowView.lua:125
+msgid "Check sign-in status"
+msgstr "وضعیت ورود به سیستم را بررسی کنید"
+
+#: ../OAuthFlowView.lua:209
+msgid "Checking..."
+msgstr "در حال بررسی..."
+
+#: ../OAuthFlowView.lua:215
+msgid "Network error. Please try again."
+msgstr "خطای شبکه "
+
+#: ../OAuthFlowView.lua:222
+msgid "Waiting for sign-in. Scan the QR code, then tap Check."
+msgstr "در انتظار ورود به سیستم "
+
+#: ../OAuthFlowView.lua:225
+msgid "Sign-in successful!"
+msgstr "ورود به سیستم با موفقیت انجام شد!"
+
+#: ../OAuthFlowView.lua:231
+msgid "Error: "
+msgstr "خطا:"
+
+#: ../OAuthFlowView.lua:289
+msgid "Creating sign-in session..."
+msgstr "در حال ایجاد جلسه ورود به سیستم..."
+
+#: ../OAuthFlowView.lua:301
+msgid "Failed to start sign-in: "
+msgstr "ورود به سیستم شروع نشد:"
+
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
 msgstr "برخی از ویژگی ها ممکن است محدود باشد"
@@ -1104,7 +1158,8 @@ msgstr "این پیام را دیگر نشان ندهید"
 msgid "Rename Playlist"
 msgstr "تغییر نام لیست پخش"
 
-#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
+#: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "ذخیره کنید"
 
@@ -1132,293 +1187,526 @@ msgstr "ایجاد کنید"
 msgid "No playlists yet."
 msgstr "هنوز لیست پخشی وجود ندارد."
 
-#: ../Settings.lua:92
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "حالت مشاهده کتابخانه"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "پایه"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "پوشش"
 
-#: ../Settings.lua:96 ../Settings.lua:205
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "شبکه"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "حالت مرتب سازی کتابخانه"
 
+#: ../Settings.lua:106
+msgid "Date added (oldest)"
+msgstr ""
+
 #: ../Settings.lua:107
-msgid "Order added ascending (Default)"
-msgstr "سفارش به صورت صعودی اضافه شد (پیش‌فرض)"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Order added descending"
-msgstr "ترتیب نزولی اضافه شد"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Title manga ascending"
-msgstr "عنوان مانگا صعودی"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Title manga descending"
-msgstr "مانگا عنوان نزولی"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Count unread chapters ascending"
-msgstr "فصل های خوانده نشده را به صورت صعودی بشمارید"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Count unread chapters descending"
-msgstr "فصل های خوانده نشده را به صورت نزولی بشمارید"
-
-#: ../Settings.lua:113
-msgid "Last read ascending"
-msgstr "آخرین خواندن صعودی"
-
-#: ../Settings.lua:114
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "آخرین خواندن نزولی"
 
+#: ../Settings.lua:113
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "آخرین خوانده شده: %1"
+
+#: ../Settings.lua:114
+msgid "Source (A-Z)"
+msgstr ""
+
 #: ../Settings.lua:115
-msgid "Source ascending"
-msgstr "منبع صعودی"
+msgid "Source (Z-A)"
+msgstr ""
 
-#: ../Settings.lua:116
-msgid "Source descending"
-msgstr "منبع نزولی"
-
-#: ../Settings.lua:124
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "موارد در هر صفحه (0 = خودکار)"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "ستون های شبکه"
 
-#: ../Settings.lua:146
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "ردیف های شبکه ای"
 
-#: ../Settings.lua:157
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "نمایش عنوان در حالت شبکه"
 
-#: ../Settings.lua:166
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "نمایش ابرداده در حالت شبکه"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "روی اقدام مانگا ضربه بزنید"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "فهرست فصل را باز کنید"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "به خواندن ادامه دهید"
 
-#: ../Settings.lua:188
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "از تأیید خواندن رزومه صرفنظر کنید"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "حالت مشاهده جستجو"
 
-#: ../Settings.lua:212
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "خواننده"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "حالت مرتب‌سازی فصل"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "با فصل صعودی"
 
-#: ../Settings.lua:221
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "با نزول فصل"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:228
+msgid "Chapter title in statistics (ComicInfo)"
+msgstr "عنوان فصل در آمار (ComicInfo)"
+
+#: ../Settings.lua:230
+msgid "Chapter title only"
+msgstr "فقط عنوان فصل"
+
+#: ../Settings.lua:231
+msgid "Series + chapter title"
+msgstr "عنوان سریال + فصل"
+
+#: ../Settings.lua:232
+msgid "Series + chapter number"
+msgstr "سری + شماره فصل"
+
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "فصل‌ها را از قبل بارگیری کنید در خواننده باز است"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "بهینه سازی تصاویر صفحه (تجربی)"
 
-#: ../Settings.lua:248
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "درخواست های همزمان صفحه"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "هرگز RTL را روشن نکنید، حتی برای مانگای ژاپنی"
 
-#: ../Settings.lua:268
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "به طور خودکار بیننده را روی حالت مانگا تنظیم کنید"
 
-#: ../Settings.lua:277
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "نادیده گرفتن بیننده جهانی"
 
-#: ../Settings.lua:294
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "دکمه نمایش فصل قبل در نوار ابزار خواننده"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "نمایش دکمه فصل بعدی در نوار ابزار خواننده"
 
-#: ../Settings.lua:312
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "نوار ابزار پایین rakuyomi گسترش یافته را در خواننده نمایش دهید"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "در نوار ابزار پایین"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "در نوار ابزار بالا"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "تنظیمات خواننده توصیه شده"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "تمام حاشیه ها را خاموش کنید"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "برش خودکار لبه های اضافی از عکس ها (کمی کند)"
 
-#: ../Settings.lua:348
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "زوم تا تمام صفحه"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "بزرگنمایی متناسب با اندازه تصویر"
 
-#: ../Settings.lua:370
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "مسیر ذخیره فصل"
 
-#: ../Settings.lua:379
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "محدودیت اندازه ذخیره سازی"
 
-#: ../Settings.lua:389
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "فصل دانلود شد"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "نوشتن فصل در RAM (محافظت از eMMC)"
 
-#: ../Settings.lua:397
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "اندازه حافظه رم "
 
-#: ../Settings.lua:406
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "شبکه"
 
-#: ../Settings.lua:412
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "پروکسی HTTP، HTTPS یا SOCKS5"
 
-#: ../Settings.lua:415
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "URL پروکسی باید با http://، https://، یا socks5:// شروع شود"
 
-#: ../Settings.lua:420
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "همگام سازی و به روز رسانی"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "WebDAV Sync"
 
-#: ../Settings.lua:434
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "بررسی cron برای به‌روزرسانی‌های مانگا فعال شد"
 
-#: ../Settings.lua:442
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "شناسه منبع به‌روزرسانی بررسی را رد می‌کند"
 
-#: ../Settings.lua:448
+#: ../Settings.lua:497
 msgid "System"
 msgstr "سیستم"
 
-#: ../Settings.lua:454
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "اجازه درخواست دکمه برگشت را بدهید"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "سرور"
 
-#: ../Settings.lua:467
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "توقف خودکار سرور هنگام خروج از نمای کتابخانه"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "از کار افتاده است"
 
-#: ../Settings.lua:470
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "فوری"
 
-#: ../Settings.lua:471
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "بعد از 30 ثانیه"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "بعد از 1 دقیقه"
 
-#: ../Settings.lua:473
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "بعد از 5 دقیقه"
 
-#: ../Settings.lua:474
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "بعد از 10 دقیقه"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "نمایش پیشرفت دانلود فصل"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "ورود به سیستم"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "غیرفعال کردن ورود به سیستم"
 
-#: ../Settings.lua:675
-msgid "Testing proxy..."
-msgstr "تست پروکسی..."
-
-#: ../Settings.lua:684
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "پروکسی آزمایش نشد"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "تنظیمات منبع"
+
+#: ../TrackingMenu.lua:45
+msgid "Volumes"
+msgstr "حجم ها"
+
+#: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
+msgid "Loading tracking..."
+msgstr "در حال بارگیری ردیابی..."
+
+#: ../TrackingMenu.lua:123
+msgid "Select Tracking Service"
+msgstr "خدمات ردیابی را انتخاب کنید"
+
+#: ../TrackingMenu.lua:152
+msgid "Link"
+msgstr "پیوند"
+
+#: ../TrackingMenu.lua:152
+msgid "Relink"
+msgstr "پیوند مجدد"
+
+#: ../TrackingMenu.lua:164
+msgid "Pull progress"
+msgstr "پیشرفت را بکشید"
+
+#: ../TrackingMenu.lua:171
+msgid "Push progress"
+msgstr "پیشرفت را فشار دهید"
+
+#: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
+msgid "Not set"
+msgstr "تنظیم نشده است"
+
+#: ../TrackingMenu.lua:182
+msgid "Start"
+msgstr "شروع کنید"
+
+#: ../TrackingMenu.lua:189
+msgid "End"
+msgstr "پایان"
+
+#: ../TrackingMenu.lua:200
+msgid "Unlink"
+msgstr "لغو پیوند"
+
+#: ../TrackingMenu.lua:212
+msgid "Other services"
+msgstr "سایر خدمات"
+
+#: ../TrackingMenu.lua:232
+msgid "Search tracker title"
+msgstr "جستجوی عنوان ردیاب"
+
+#: ../TrackingMenu.lua:235
+msgid "Search for a matching manga entry to link with this title."
+msgstr "برای پیوند با این عنوان، یک ورودی مانگا منطبق را جستجو کنید."
+
+#: ../TrackingMenu.lua:254
+msgid "Searching tracker..."
+msgstr "جستجوی ردیاب..."
+
+#: ../TrackingMenu.lua:266
+msgid "No tracking results found."
+msgstr "هیچ نتیجه ردیابی یافت نشد."
+
+#: ../TrackingMenu.lua:295
+msgid "Linking tracker entry..."
+msgstr "پیوند ورودی ردیاب..."
+
+#: ../TrackingMenu.lua:307
+msgid "Linked with"
+msgstr "مرتبط با"
+
+#: ../TrackingMenu.lua:329
+msgid "Pulling tracking progress..."
+msgstr "کشیدن پیشرفت ردیابی..."
+
+#: ../TrackingMenu.lua:329
+msgid "Pushing tracking progress..."
+msgstr "فشار دادن ردیابی پیشرفت..."
+
+#: ../TrackingMenu.lua:341
+msgid "No tracking binding found for this service."
+msgstr "هیچ پیوند ردیابی برای این سرویس یافت نشد."
+
+#: ../TrackingMenu.lua:363
+msgid "End date"
+msgstr "تاریخ پایان"
+
+#: ../TrackingMenu.lua:363
+msgid "Start date"
+msgstr "تاریخ شروع"
+
+#: ../TrackingMenu.lua:370
+msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
+msgstr "تاریخ را در قالب DD/MM/YYYY وارد کنید، یا خالی بگذارید تا پاک شود."
+
+#: ../TrackingMenu.lua:393
+msgid "Saving date..."
+msgstr "ذخیره تاریخ..."
+
+#: ../TrackingMenu.lua:411
+msgid "cleared"
+msgstr "پاک شد"
+
+#: ../TrackingMenu.lua:427
+msgid "Removing tracking binding..."
+msgstr "در حال حذف اتصال ردیابی..."
+
+#: ../TrackingMenu.lua:439
+msgid "Unlinked"
+msgstr "بدون پیوند"
+
+#: ../TrackingSettings.lua:96
+msgid "Paste AniList token"
+msgstr "توکن AniList را بچسبانید"
+
+#: ../TrackingSettings.lua:103
+msgid "Paste MAL client ID"
+msgstr "شناسه مشتری MAL را جای‌گذاری کنید"
+
+#: ../TrackingSettings.lua:104
+msgid "Paste MAL client secret"
+msgstr "راز کلاینت MAL را جایگذاری کنید"
+
+#: ../TrackingSettings.lua:105
+msgid "Paste MAL refresh token"
+msgstr "رمز نوسازی MAL را جای‌گذاری کنید"
+
+#: ../TrackingSettings.lua:112
+msgid "Paste Shikimori client ID"
+msgstr "شناسه مشتری Shikimori را جایگذاری کنید"
+
+#: ../TrackingSettings.lua:113
+msgid "Paste Shikimori client secret"
+msgstr "راز مشتری شیکیموری را بچسبانید"
+
+#: ../TrackingSettings.lua:114
+msgid "Paste Shikimori refresh token"
+msgstr "رمز نوسازی شیکیموری را بچسبانید"
+
+#: ../TrackingSettings.lua:121
+msgid "Paste Bangumi refresh token"
+msgstr "رمز نوسازی Bangumi را بچسبانید"
+
+#: ../TrackingSettings.lua:128
+msgid "Paste MangaBaka refresh token"
+msgstr "رمز بازخوانی MangaBaka را بچسبانید"
+
+#: ../TrackingSettings.lua:129
+msgid "Paste MangaBaka API Key (mb-...)"
+msgstr "جای‌گذاری کلید MangaBaka API (mb-...)"
+
+#: ../TrackingSettings.lua:136
+msgid "Paste Kavita API Key"
+msgstr "کلید Kavita API را جایگذاری کنید"
+
+#: ../TrackingSettings.lua:143
+msgid "Komga API key or username:password"
+msgstr "کلید Komga API یا نام کاربری: رمز عبور"
+
+#: ../TrackingSettings.lua:150
+msgid "Suwayomi Basic Auth username:password"
+msgstr "Suwayomi Basic Auth نام کاربری: رمز عبور"
+
+#: ../TrackingSettings.lua:161
+msgid "Sign out"
+msgstr "از سیستم خارج شوید"
+
+#: ../TrackingSettings.lua:163
+msgid "Sign in"
+msgstr "وارد شوید"
+
+#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+msgid "Validate "
+msgstr "اعتبار سنجی"
+
+#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+msgid "Validating..."
+msgstr "در حال اعتبارسنجی..."
+
+#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
+#: ../TrackingSettings.lua:229
+msgid "Credentials are valid."
+msgstr "مدارک معتبر هستند."
+
+#: ../TrackingSettings.lua:240
+msgid "Auto sync reading progress"
+msgstr "همگام سازی خودکار پیشرفت خواندن"
+
+#: ../TrackingSettings.lua:246
+msgid "OAuth Bridge Server"
+msgstr "سرور پل OAuth"
+
+#: ../TrackingSettings.lua:252
+msgid "OAuth Bridge Server URL"
+msgstr "URL سرور OAuth Bridge"
+
+#: ../TrackingSettings.lua:499
+msgid "Signed in as "
+msgstr "به عنوان وارد شده است"
+
+#: ../TrackingSettings.lua:501
+msgid "No sign"
+msgstr "بدون علامت"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1593,26 +1881,53 @@ msgstr "جلد"
 msgid "Ch."
 msgstr "چ."
 
-#: ../widgets/Menu.lua:82
+#: ../widgets/Menu.lua:84
 msgid "Offline mode"
 msgstr "حالت آفلاین"
 
-#: ../widgets/SettingItemValue.lua:162
-msgid "Ok"
-msgstr "باشه"
-
-#: ../widgets/SettingItemValue.lua:168
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "در حال اجرا..."
 
-#: ../widgets/SettingItemValue.lua:181
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "انجام شد"
 
-#: ../widgets/SettingItemValue.lua:236
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "باشه"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "انتخاب کنید"
 
-#: ../widgets/SettingItemValue.lua:359
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "مقدار نامعتبر است"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "فصل های خوانده نشده را به صورت صعودی بشمارید"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "فصل های خوانده نشده را به صورت نزولی بشمارید"
+
+#~ msgid "Last read ascending"
+#~ msgstr "آخرین خواندن صعودی"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "سفارش به صورت صعودی اضافه شد (پیش‌فرض)"
+
+#~ msgid "Order added descending"
+#~ msgstr "ترتیب نزولی اضافه شد"
+
+#~ msgid "Source ascending"
+#~ msgstr "منبع صعودی"
+
+#~ msgid "Source descending"
+#~ msgstr "منبع نزولی"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "عنوان مانگا صعودی"
+
+#~ msgid "Title manga descending"
+#~ msgstr "مانگا عنوان نزولی"

@@ -7,18 +7,18 @@
     "semiColons": false
   },
   "tasks": {
-    "dev": "deno run --watch --allow-net --allow-env --env-file main.ts",
+    "dev": "deno run --watch --allow-net --allow-env --allow-sys --allow-read --allow-ffi --env-file main.ts",
     "check": "deno check main.ts",
     "lint": "deno lint",
-    "test": "deno test --allow-env --allow-net --env-file=.env"
+    "test": "deno test --allow-net --allow-env --allow-sys --allow-read --allow-ffi --env-file"
   },
   "imports": {
-    "@libsql/client": "npm:@libsql/client@^0.14.0",
+    "@libsql/client": "npm:@libsql/client@^0.17.4",
 
     "grammy": "npm:grammy@1.34.1",
     "hono": "npm:hono@^4.12.28",
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.4.0",
-    "@hono/zod-validator": "npm:@hono/zod-validator@^0.4.0",
-    "zod": "npm:zod@^3.24.4"
+    "@hono/zod-validator": "npm:@hono/zod-validator@^0.9.0",
+    "zod": "npm:zod@^4.4.3"
   }
 }

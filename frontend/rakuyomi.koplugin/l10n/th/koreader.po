@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 00:12+0700\n"
+"POT-Creation-Date: 2026-07-19 06:54+0000\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -31,9 +31,9 @@ msgstr "ติดตั้งได้"
 msgid "version"
 msgstr "รุ่น"
 
-#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:285
-#: ../ChapterListing.lua:346 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458
+#: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
+#: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
 msgid "Unknown"
 msgstr "ไม่ทราบ"
 
@@ -78,7 +78,7 @@ msgstr "ข้อผิดพลาดที่ไม่รู้จัก"
 msgid "Error"
 msgstr "ข้อผิดพลาด"
 
-#: ../ChapterListPopup.lua:129
+#: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
 msgid "Chapters"
 msgstr "บท"
 
@@ -87,12 +87,13 @@ msgid "Search chapters"
 msgstr "ค้นหาบท"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
-#: ../ChapterListing.lua:712 ../ChapterListing.lua:1229
-#: ../ChapterListing.lua:1306 ../CookieSyncView.lua:278
-#: ../CookieSyncView.lua:423 ../LibraryView.lua:781 ../LibraryView.lua:1155
-#: ../LibraryView.lua:1203 ../NotificationView.lua:162
-#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253
-#: ../widgets/SettingItemValue.lua:163 ../widgets/SettingItemValue.lua:268
+#: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
+#: ../ChapterListing.lua:1339 ../CookieSyncView.lua:278
+#: ../CookieSyncView.lua:423 ../LibraryView.lua:791 ../LibraryView.lua:1173
+#: ../LibraryView.lua:1221 ../NotificationView.lua:162
+#: ../PlaylistDialog.lua:133 ../PlaylistDialog.lua:253 ../TrackingMenu.lua:239
+#: ../TrackingMenu.lua:374 ../widgets/SettingItemValue.lua:207
+#: ../widgets/SettingItemValue.lua:299
 msgid "Cancel"
 msgstr "ยกเลิก"
 
@@ -108,289 +109,294 @@ msgstr "ไปที่หน้า"
 msgid "Go"
 msgstr "ไป"
 
-#: ../ChapterListing.lua:58
+#: ../ChapterListing.lua:59
 msgid "Chapter listing"
 msgstr "รายการบท"
 
-#: ../ChapterListing.lua:239 ../ChapterListing.lua:1157
+#: ../ChapterListing.lua:256 ../ChapterListing.lua:1184
 msgid "Languages"
 msgstr "ภาษา"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "No chapters found"
 msgstr "ไม่พบบท"
 
-#: ../ChapterListing.lua:332
+#: ../ChapterListing.lua:349
 msgid "Try swiping down to refresh the chapter list."
 msgstr "ลองปัดลงเพื่อรีเฟรชรายการบท"
 
-#: ../ChapterListing.lua:389
+#: ../ChapterListing.lua:406
 msgid "Volume"
 msgstr "ปริมาณ"
 
-#: ../ChapterListing.lua:393 ../utils/getChapterDisplayName.lua:15
+#: ../ChapterListing.lua:410 ../utils/getChapterDisplayName.lua:15
 msgid "Chapter"
 msgstr "บท"
 
-#: ../ChapterListing.lua:420
+#: ../ChapterListing.lua:437
 msgid "Locked"
 msgstr "ล็อคแล้ว"
 
-#: ../ChapterListing.lua:454 ../ChapterListing.lua:673
+#: ../ChapterListing.lua:471 ../ChapterListing.lua:690
 msgid "Refreshing chapters..."
 msgstr "กำลังรีเฟรชบท..."
 
-#: ../ChapterListing.lua:462 ../ChapterListing.lua:680
-#: ../ChapterListing.lua:1417
+#: ../ChapterListing.lua:479 ../ChapterListing.lua:697
+#: ../ChapterListing.lua:1450
 msgid "Cancelled."
 msgstr "ยกเลิก."
 
-#: ../ChapterListing.lua:474
+#: ../ChapterListing.lua:491
 msgid "Refresh chapter error"
 msgstr "ข้อผิดพลาดในการรีเฟรชบท"
 
-#: ../ChapterListing.lua:524
+#: ../ChapterListing.lua:541
 msgid "Chapter is locked"
 msgstr "บทถูกล็อค"
 
-#: ../ChapterListing.lua:541 ../PlaylistDialog.lua:218
+#: ../ChapterListing.lua:558 ../PlaylistDialog.lua:218
 msgid "Open"
 msgstr "เปิด"
 
-#: ../ChapterListing.lua:551 ../ChapterListing.lua:1077 ../LibraryView.lua:557
+#: ../ChapterListing.lua:568 ../ChapterListing.lua:1094 ../LibraryView.lua:559
 msgid "Refresh"
 msgstr "รีเฟรช"
 
-#: ../ChapterListing.lua:557
+#: ../ChapterListing.lua:574
 msgid "Chapter refreshed"
 msgstr "รีเฟรชบทแล้ว"
 
-#: ../ChapterListing.lua:563 ../ChapterListing.lua:706
-#: ../ChapterListing.lua:1113 ../LibraryView.lua:604
+#: ../ChapterListing.lua:580 ../ChapterListing.lua:723
+#: ../ChapterListing.lua:1140 ../LibraryView.lua:606
 msgid "Mark unread"
 msgstr "ทำเครื่องหมายว่ายังไม่ได้อ่าน"
 
-#: ../ChapterListing.lua:574 ../ChapterListing.lua:1313
+#: ../ChapterListing.lua:591 ../ChapterListing.lua:1346
 msgid "Download"
 msgstr "ดาวน์โหลด"
 
-#: ../ChapterListing.lua:574 ../LibraryView.lua:799 ../LibraryView.lua:819
+#: ../ChapterListing.lua:591 ../LibraryView.lua:809 ../LibraryView.lua:829
 msgid "Remove"
 msgstr "ลบ"
 
-#: ../ChapterListing.lua:583
+#: ../ChapterListing.lua:600
 msgid "Chapter downloaded"
 msgstr "ดาวน์โหลดบทแล้ว"
 
-#: ../ChapterListing.lua:602
+#: ../ChapterListing.lua:619
 msgid "Revoke chapter..."
 msgstr "เพิกถอนบท..."
 
-#: ../ChapterListing.lua:620
+#: ../ChapterListing.lua:637
 msgid "Removed chapter"
 msgstr "บทที่ถูกลบออก"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Marking"
 msgstr "การทำเครื่องหมาย"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "Un-marking"
 msgstr "ยกเลิกการทำเครื่องหมาย"
 
-#: ../ChapterListing.lua:631
+#: ../ChapterListing.lua:648
 msgid "chapter..."
 msgstr "บท..."
 
-#: ../ChapterListing.lua:665
+#: ../ChapterListing.lua:682
 msgid "Cannot refresh chapters while offline"
 msgstr "ไม่สามารถรีเฟรชบทขณะออฟไลน์ได้"
 
-#: ../ChapterListing.lua:706 ../ChapterListing.lua:1103 ../LibraryView.lua:593
+#: ../ChapterListing.lua:723 ../ChapterListing.lua:1130 ../LibraryView.lua:595
 msgid "Mark read"
 msgstr "มาร์คอ่านแล้ว."
 
-#: ../ChapterListing.lua:707
+#: ../ChapterListing.lua:724
 msgid "1 - 10.5, 20 - 100"
 msgstr "1 - 10.5, 20 - 100"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Leaving blank will select all"
 msgstr "เว้นว่างไว้จะเป็นการเลือกทั้งหมด"
 
-#: ../ChapterListing.lua:708
+#: ../ChapterListing.lua:725
 msgid "Mark chapters as read or unread"
 msgstr "ทำเครื่องหมายบทว่าอ่านแล้วหรือยังไม่ได้อ่าน"
 
-#: ../ChapterListing.lua:719
+#: ../ChapterListing.lua:736
 msgid "Mark"
 msgstr "เครื่องหมาย"
 
-#: ../ChapterListing.lua:729
+#: ../ChapterListing.lua:746
 msgid "Marking..."
 msgstr "กำลังทำเครื่องหมาย..."
 
-#: ../ChapterListing.lua:739
+#: ../ChapterListing.lua:756
 msgid "Marked"
 msgstr "ทำเครื่องหมาย"
 
-#: ../ChapterListing.lua:758 ../MangaSearchResults.lua:181
+#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:181
 msgid "No errors"
 msgstr "ไม่มีข้อผิดพลาด"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "Page"
 msgstr "หน้าหนังสือ"
 
-#: ../ChapterListing.lua:767
+#: ../ChapterListing.lua:784
 #, lua-format
 msgid "attempts"
 msgstr "ความพยายาม"
 
-#: ../ChapterListing.lua:775 ../MangaSearchResults.lua:197
+#: ../ChapterListing.lua:792 ../MangaSearchResults.lua:197
 #, lua-format
 msgid "… and %d more errors"
 msgstr "… และข้อผิดพลาดอีก %d รายการ"
 
-#: ../ChapterListing.lua:797
+#: ../ChapterListing.lua:814
 msgid "Could not download chapter."
 msgstr "ไม่สามารถดาวน์โหลดบทได้"
 
-#: ../ChapterListing.lua:805
+#: ../ChapterListing.lua:822
 msgid "Loading chapter..."
 msgstr "กำลังโหลดบท..."
 
-#: ../ChapterListing.lua:806
+#: ../ChapterListing.lua:823
 msgid "unknown"
 msgstr "ไม่ทราบ"
 
-#: ../ChapterListing.lua:824
+#: ../ChapterListing.lua:841
 msgid "Download cancelled."
 msgstr "การดาวน์โหลดถูกยกเลิก"
 
-#: ../ChapterListing.lua:830
+#: ../ChapterListing.lua:847
 msgid "Are you sure you want to cancel the download?"
 msgstr "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการดาวน์โหลด"
 
-#: ../ChapterListing.lua:1067 ../MangaSearchResults.lua:361
+#: ../ChapterListing.lua:1084 ../MangaSearchResults.lua:361
 msgid "Add to Library"
 msgstr "เพิ่มลงในห้องสมุด"
 
-#: ../ChapterListing.lua:1085 ../LibraryView.lua:577
+#: ../ChapterListing.lua:1102 ../LibraryView.lua:579
 #: ../MangaSearchResults.lua:433
 msgid "Details"
 msgstr "รายละเอียด"
 
-#: ../ChapterListing.lua:1125
+#: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
+#: ../TrackingSettings.lua:416
+msgid "Tracking"
+msgstr "การติดตาม"
+
+#: ../ChapterListing.lua:1152
 msgid "Resume"
 msgstr "ประวัติย่อ"
 
-#: ../ChapterListing.lua:1133
+#: ../ChapterListing.lua:1160
 msgid "Next Chapter"
 msgstr "บทต่อไป"
 
-#: ../ChapterListing.lua:1143
+#: ../ChapterListing.lua:1170
 msgid "Download unread chapters…"
 msgstr "ดาวน์โหลดบทที่ยังไม่ได้อ่าน..."
 
-#: ../ChapterListing.lua:1170
+#: ../ChapterListing.lua:1197
 msgid "Group"
 msgstr "กลุ่ม"
 
-#: ../ChapterListing.lua:1171 ../ChapterListing.lua:1287
+#: ../ChapterListing.lua:1198 ../ChapterListing.lua:1320
 msgid "Filter by Group"
 msgstr "กรองตามกลุ่ม"
 
-#: ../ChapterListing.lua:1194
+#: ../ChapterListing.lua:1227
 msgid "Adding to library..."
 msgstr "กำลังเพิ่มลงในห้องสมุด..."
 
-#: ../ChapterListing.lua:1201
+#: ../ChapterListing.lua:1234
 msgid "Failed to add to library"
 msgstr "ไม่สามารถเพิ่มลงในห้องสมุด"
 
-#: ../ChapterListing.lua:1206
+#: ../ChapterListing.lua:1239
 msgid "Added to library."
 msgstr "เพิ่มลงในห้องสมุดแล้ว"
 
-#: ../ChapterListing.lua:1218 ../LibraryView.lua:743
+#: ../ChapterListing.lua:1251 ../LibraryView.lua:753
 msgid "Sadly, no next chapter available! :c"
 msgstr "น่าเสียดายที่ไม่มีตอนต่อไป! "
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "Next"
 msgstr "ต่อไป"
 
-#: ../ChapterListing.lua:1227
+#: ../ChapterListing.lua:1260
 msgid "reading with"
 msgstr "การอ่านด้วย"
 
-#: ../ChapterListing.lua:1228 ../LibraryView.lua:780
+#: ../ChapterListing.lua:1261 ../LibraryView.lua:790
 msgid "Read"
 msgstr "อ่าน"
 
-#: ../ChapterListing.lua:1250
+#: ../ChapterListing.lua:1283
 msgid "Show All"
 msgstr "แสดงทั้งหมด"
 
-#: ../ChapterListing.lua:1259
+#: ../ChapterListing.lua:1292
 msgid "Showing all groups"
 msgstr "กำลังแสดงทุกกลุ่ม"
 
-#: ../ChapterListing.lua:1280
+#: ../ChapterListing.lua:1313
 msgid "Filtered to"
 msgstr "กรองเป็น"
 
-#: ../ChapterListing.lua:1297
+#: ../ChapterListing.lua:1330
 msgid "Download unread chapters..."
 msgstr "ดาวน์โหลดบทที่ยังไม่ได้อ่าน..."
 
-#: ../ChapterListing.lua:1299
+#: ../ChapterListing.lua:1332
 msgid "Amount of unread chapters (default: all)"
 msgstr "จำนวนบทที่ยังไม่ได้อ่าน (ค่าเริ่มต้น: ทั้งหมด)"
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Specify amount or leave empty for all."
 msgstr "ระบุจำนวนหรือเว้นว่างไว้ทั้งหมด"
 
-#: ../ChapterListing.lua:1301
+#: ../ChapterListing.lua:1334
 msgid "Will download from"
 msgstr "จะดาวน์โหลดจาก"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "Specify the amount of unread chapters to download"
 msgstr "ระบุจำนวนบทที่ยังไม่ได้อ่านเพื่อดาวน์โหลด"
 
-#: ../ChapterListing.lua:1302
+#: ../ChapterListing.lua:1335
 msgid "or leave empty to download all of them."
 msgstr "หรือเว้นว่างไว้เพื่อดาวน์โหลดทั้งหมด"
 
-#: ../ChapterListing.lua:1323
+#: ../ChapterListing.lua:1356
 msgid "Invalid amount of chapters!"
 msgstr "จำนวนบทไม่ถูกต้อง!"
 
-#: ../ChapterListing.lua:1344
+#: ../ChapterListing.lua:1377
 msgid "No unread chapters found for"
 msgstr "ไม่พบบทที่ยังไม่ได้อ่านสำหรับ"
 
-#: ../ChapterListing.lua:1369 ../ChapterListing.lua:1444
+#: ../ChapterListing.lua:1402 ../ChapterListing.lua:1477
 msgid "Downloading all chapters, this will take a while…"
 msgstr "กำลังดาวน์โหลดบททั้งหมด จะใช้เวลาสักครู่..."
 
-#: ../ChapterListing.lua:1454
+#: ../ChapterListing.lua:1487
 msgid "Waiting for download to be cancelled…"
 msgstr "กำลังรอให้การดาวน์โหลดถูกยกเลิก..."
 
-#: ../ChapterListing.lua:1456
+#: ../ChapterListing.lua:1489
 msgid "Downloading all chapters, this will take a while… ("
 msgstr "กำลังดาวน์โหลดทุกบท ซึ่งจะใช้เวลาสักครู่… ("
 
-#: ../ChapterListing.lua:1459
+#: ../ChapterListing.lua:1492
 msgid "Tap outside this message to cancel."
 msgstr "แตะด้านนอกข้อความนี้เพื่อยกเลิก"
 
-#: ../CookieSyncView.lua:58 ../LibraryView.lua:1015
+#: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
 msgstr "การซิงค์คุกกี้"
 
@@ -507,19 +513,19 @@ msgstr ""
 msgid "Check Again"
 msgstr "ตรวจสอบอีกครั้ง"
 
-#: ../CookieSyncView.lua:382 ../LibraryView.lua:1030
+#: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
 msgid "Syncing cookies..."
 msgstr "กำลังซิงค์คุกกี้..."
 
-#: ../CookieSyncView.lua:394 ../LibraryView.lua:1039
+#: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
 msgstr "ไม่สามารถซิงค์คุกกี้:"
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
 msgstr "โดเมน"
 
-#: ../CookieSyncView.lua:401 ../LibraryView.lua:1045
+#: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
 msgstr "คุกกี้ที่ซิงค์สำหรับ"
 
@@ -591,316 +597,316 @@ msgstr "คุณต้องการลบ"
 msgid "source?"
 msgstr "แหล่งที่มา?"
 
-#: ../LibraryView.lua:74 ../Settings.lua:86
+#: ../LibraryView.lua:76 ../Settings.lua:85
 msgid "Library"
 msgstr "ห้องสมุด"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "No mangas found in library"
 msgstr "ไม่พบมังงะในห้องสมุด"
 
-#: ../LibraryView.lua:460
+#: ../LibraryView.lua:462
 msgid "Try adding some by holding their name on the search results!"
 msgstr "ลองเพิ่มบางส่วนโดยเก็บชื่อไว้ในผลการค้นหา!"
 
-#: ../LibraryView.lua:568
+#: ../LibraryView.lua:570
 msgid "Refreshed manga"
 msgstr "มังงะที่รีเฟรช"
 
-#: ../LibraryView.lua:617
+#: ../LibraryView.lua:619
 msgid "Continue Reading"
 msgstr "อ่านต่อ"
 
-#: ../LibraryView.lua:626 ../MangaSearchResults.lua:424
+#: ../LibraryView.lua:637 ../MangaSearchResults.lua:424
 msgid "Add to Playlist"
 msgstr "เพิ่มลงในเพลย์ลิสต์"
 
-#: ../LibraryView.lua:638
+#: ../LibraryView.lua:649
 msgid "List chapters"
 msgstr "รายชื่อบท"
 
-#: ../LibraryView.lua:656 ../MangaSearchResults.lua:358
+#: ../LibraryView.lua:667 ../MangaSearchResults.lua:358
 msgid "Remove from Library"
 msgstr "ลบออกจากห้องสมุด"
 
-#: ../LibraryView.lua:666
+#: ../LibraryView.lua:677
 msgid "Remove from Playlist"
 msgstr "ลบออกจากเพลย์ลิสต์"
 
-#: ../LibraryView.lua:699
+#: ../LibraryView.lua:709
 msgid "Finding next chapter..."
 msgstr "กำลังค้นหาบทต่อไป..."
 
-#: ../LibraryView.lua:710
+#: ../LibraryView.lua:720
 msgid "No chapters found for this manga."
 msgstr "ไม่พบตอนสำหรับมังงะเรื่องนี้"
 
-#: ../LibraryView.lua:779
+#: ../LibraryView.lua:789
 msgid "Resume reading with:"
 msgstr "อ่านต่อด้วย:"
 
-#: ../LibraryView.lua:798 ../LibraryView.lua:818
+#: ../LibraryView.lua:808 ../LibraryView.lua:828
 msgid "Do you want to remove"
 msgstr "คุณต้องการลบออก"
 
-#: ../LibraryView.lua:798
+#: ../LibraryView.lua:808
 msgid "from your library?"
 msgstr "จากห้องสมุดของคุณเหรอ?"
 
-#: ../LibraryView.lua:818
+#: ../LibraryView.lua:828
 msgid "from your playlist?"
 msgstr "จากเพลย์ลิสต์ของคุณเหรอ?"
 
-#: ../LibraryView.lua:841
+#: ../LibraryView.lua:851
 msgid "Search for mangas"
 msgstr "ค้นหามังงะ"
 
-#: ../LibraryView.lua:851
+#: ../LibraryView.lua:861
 msgid "Search favorites"
 msgstr "ค้นหารายการโปรด"
 
-#: ../LibraryView.lua:861 ../PlaylistDialog.lua:304
+#: ../LibraryView.lua:871 ../PlaylistDialog.lua:304
 msgid "Playlists"
 msgstr "เพลย์ลิสต์"
 
-#: ../LibraryView.lua:870
+#: ../LibraryView.lua:880
 msgid "Refresh mangas"
 msgstr "รีเฟรชมังงะ"
 
-#: ../LibraryView.lua:878
+#: ../LibraryView.lua:888
 msgid "Refresh details"
 msgstr "รีเฟรชรายละเอียด"
 
-#: ../LibraryView.lua:888
+#: ../LibraryView.lua:898
 msgid "Cleaner chapters"
 msgstr "บทที่สะอาดกว่า"
 
-#: ../LibraryView.lua:896
+#: ../LibraryView.lua:906
 msgid "Manage sources"
 msgstr "จัดการแหล่งที่มา"
 
-#: ../LibraryView.lua:906 ../LibraryView.lua:1149 ../Settings.lua:573
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
 msgid "Settings"
 msgstr "การตั้งค่า"
 
-#: ../LibraryView.lua:914
-msgid "Check for updates"
-msgstr "ตรวจสอบการอัปเดต"
-
-#: ../LibraryView.lua:923
+#: ../LibraryView.lua:933
 msgid "Sync Database (Beta)"
 msgstr "ซิงค์ฐานข้อมูล (เบต้า)"
 
-#: ../LibraryView.lua:927
+#: ../LibraryView.lua:937
 msgid "Sync to WebDAV..."
 msgstr "ซิงค์กับ WebDAV..."
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "Do you want to migrate your local database from the server?"
 msgstr "คุณต้องการย้ายฐานข้อมูลภายในเครื่องของคุณจากเซิร์ฟเวอร์หรือไม่?"
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "The remote database is newer than the local one."
 msgstr "ฐานข้อมูลระยะไกลใหม่กว่าฐานข้อมูลในเครื่อง"
 
-#: ../LibraryView.lua:939
+#: ../LibraryView.lua:949
 msgid "This action cannot be undone."
 msgstr "การดำเนินการนี้ไม่สามารถยกเลิกได้"
 
-#: ../LibraryView.lua:940
+#: ../LibraryView.lua:950
 msgid "Migrate"
 msgstr "โยกย้าย"
 
-#: ../LibraryView.lua:944
+#: ../LibraryView.lua:954
 msgid "Migrating database..."
 msgstr "กำลังย้ายฐานข้อมูล..."
 
-#: ../LibraryView.lua:955 ../LibraryView.lua:1002
+#: ../LibraryView.lua:965 ../LibraryView.lua:1012
 msgid "Local database has been migrated from the server!"
 msgstr "ฐานข้อมูลท้องถิ่นถูกย้ายจากเซิร์ฟเวอร์แล้ว!"
 
-#: ../LibraryView.lua:966
+#: ../LibraryView.lua:976
 msgid "Replace Cloud"
 msgstr "แทนที่คลาวด์"
 
-#: ../LibraryView.lua:970
+#: ../LibraryView.lua:980
 msgid "Replacing cloud..."
 msgstr "กำลังแทนที่คลาวด์..."
 
-#: ../LibraryView.lua:980
+#: ../LibraryView.lua:990
 msgid "Cloud database has been forcedly replaced with local one!"
 msgstr "ฐานข้อมูลคลาวด์ถูกบังคับให้แทนที่ด้วยฐานข้อมูลในเครื่อง!"
 
-#: ../LibraryView.lua:998
+#: ../LibraryView.lua:1008
 msgid "Database is already up to date!"
 msgstr "ฐานข้อมูลเป็นปัจจุบันแล้ว!"
 
-#: ../LibraryView.lua:1000
+#: ../LibraryView.lua:1010
 msgid "Database has been synced to the server!"
 msgstr "ฐานข้อมูลถูกซิงค์กับเซิร์ฟเวอร์แล้ว!"
 
-#: ../LibraryView.lua:1004
+#: ../LibraryView.lua:1014
 msgid "Sync completed!"
 msgstr "การซิงค์เสร็จสมบูรณ์!"
 
-#: ../LibraryView.lua:1022
+#: ../LibraryView.lua:1032
 msgid "Sync Cookies"
 msgstr "ซิงค์คุกกี้"
 
-#: ../LibraryView.lua:1052
+#: ../LibraryView.lua:1062
 msgid "System resources"
 msgstr "ทรัพยากรระบบ"
 
-#: ../LibraryView.lua:1067
+#: ../LibraryView.lua:1077
 msgid "CPU"
 msgstr "ซีพียู"
 
-#: ../LibraryView.lua:1068
+#: ../LibraryView.lua:1078
 msgid "Cores"
 msgstr "แกน"
 
-#: ../LibraryView.lua:1069
+#: ../LibraryView.lua:1079
 msgid "Usage"
 msgstr "การใช้งาน"
 
-#: ../LibraryView.lua:1070
+#: ../LibraryView.lua:1080
 msgid "Memory"
 msgstr "หน่วยความจำ"
 
-#: ../LibraryView.lua:1073 ../Settings.lua:364
+#: ../LibraryView.lua:1083 ../Settings.lua:376
 msgid "Storage"
 msgstr "พื้นที่จัดเก็บ"
 
-#: ../LibraryView.lua:1077 ../LibraryView.lua:1081
+#: ../LibraryView.lua:1087 ../LibraryView.lua:1091
 msgid "Tmpfs"
 msgstr "Tmpfs"
 
-#: ../LibraryView.lua:1081
+#: ../LibraryView.lua:1091
 msgid "unavailable"
 msgstr "ไม่พร้อมใช้งาน"
 
-#: ../LibraryView.lua:1084
+#: ../LibraryView.lua:1094
 msgid "Process RSS"
 msgstr "ประมวลผล RSS"
 
-#: ../LibraryView.lua:1085
+#: ../LibraryView.lua:1095
 msgid "Virtual"
 msgstr "เสมือน"
 
-#: ../LibraryView.lua:1121
+#: ../LibraryView.lua:1104
+msgid "Check for updates"
+msgstr "ตรวจสอบการอัปเดต"
+
+#: ../LibraryView.lua:1139
 msgid "Manga search..."
 msgstr "ค้นหามังงะ..."
 
-#: ../LibraryView.lua:1122
+#: ../LibraryView.lua:1140
 msgid "Houseki no Kuni"
 msgstr "เฮาส์กิ โนะ คุนิ"
 
-#: ../LibraryView.lua:1123 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1141 ../LibraryView.lua:1217
 msgid "Type the manga name to search for"
 msgstr "พิมพ์ชื่อมังงะที่จะค้นหา"
 
-#: ../LibraryView.lua:1127 ../LibraryView.lua:1136 ../LibraryView.lua:1181
-#: ../LibraryView.lua:1210 ../Settings.lua:195
+#: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
+#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "ค้นหา"
 
-#: ../LibraryView.lua:1181
+#: ../LibraryView.lua:1199
 msgid "Exclude source search for"
 msgstr "ไม่รวมการค้นหาแหล่งที่มา"
 
-#: ../LibraryView.lua:1196
+#: ../LibraryView.lua:1214
 msgid "Favorite search..."
 msgstr "ค้นหาที่ชื่นชอบ..."
 
-#: ../LibraryView.lua:1198
+#: ../LibraryView.lua:1216
 msgid "Tonikaku Kawaii"
 msgstr "โทนิคาคุ คาวาอิ"
 
-#: ../LibraryView.lua:1250
+#: ../LibraryView.lua:1268
 msgid "Scaning files..."
 msgstr "กำลังสแกนไฟล์..."
 
-#: ../LibraryView.lua:1265
+#: ../LibraryView.lua:1283
 #, lua-format
 msgid "Found %d files."
 msgstr "พบ %d ไฟล์"
 
-#: ../LibraryView.lua:1266
+#: ../LibraryView.lua:1284
 #, lua-format
 msgid "Total size %s."
 msgstr "ขนาดทั้งหมด %s"
 
-#: ../LibraryView.lua:1267
+#: ../LibraryView.lua:1285
 #, lua-format
 msgid "RendOnly file .cbz and .epub scan."
 msgstr "สแกนไฟล์ RendOnly .cbz และ .epub"
 
-#: ../LibraryView.lua:1271
+#: ../LibraryView.lua:1289
 msgid "Clean"
 msgstr "ทำความสะอาด"
 
-#: ../LibraryView.lua:1276
+#: ../LibraryView.lua:1294
 msgid "Deleting..."
 msgstr "กำลังลบ..."
 
-#: ../LibraryView.lua:1294
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "ทำความสะอาดพื้นที่เก็บข้อมูล %s ฟรีแล้ว"
 
-#: ../LibraryView.lua:1309 ../LibraryView.lua:1321 ../LibraryView.lua:1342
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "ไม่สามารถรีเฟรชขณะออฟไลน์"
 
-#: ../LibraryView.lua:1331
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "รีเฟรชมังงะ..."
 
-#: ../LibraryView.lua:1332
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "อัปเดตมังงะทุกบทแล้ว!"
 
-#: ../LibraryView.lua:1333
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "การอัปเดตมังงะบางเรื่องล้มเหลว:"
 
-#: ../LibraryView.lua:1352
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "รีเฟรชรายละเอียดมังงะ..."
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "รายละเอียดมังงะทั้งหมดรีเฟรช!"
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "การรีเฟรชรายละเอียดมังงะบางส่วนล้มเหลว:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "ความคืบหน้า"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "ทำความสะอาด"
 
-#: ../LibraryView.lua:1389
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "ค้นหาและลบไฟล์ที่ไม่ถูกต้อง รวมถึงไฟล์จากแหล่งที่ถูกลบ"
 
-#: ../LibraryView.lua:1389 ../LibraryView.lua:1392
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "ปกติ"
 
-#: ../LibraryView.lua:1390 ../LibraryView.lua:1398
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "อ่านบทจบแล้ว"
 
-#: ../LibraryView.lua:1390
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "ค้นหาและลบบทที่อ่านแล้ว"
 
-#: ../LibraryView.lua:1391
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "สำคัญ: ไฟล์ Meta (บุ๊กมาร์ก, ประวัติ) ไม่เก็บไว้!"
 
@@ -997,23 +1003,23 @@ msgstr "เลขที่"
 msgid "View Mode"
 msgstr "โหมดการดู"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:280
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
 msgid "Default"
 msgstr "ค่าเริ่มต้น"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:282
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
 msgid "LTR"
 msgstr "ลิตร"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:281
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
 msgid "RTL"
 msgstr "ร.ต.ท"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:284
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
 msgid "Scroll"
 msgstr "เลื่อน"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:283
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
 msgid "Vertical"
 msgstr "แนวตั้ง"
 
@@ -1023,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:279 ../Settings.lua:314
+#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
 msgid "Off"
 msgstr "ปิด"
 
@@ -1076,6 +1082,54 @@ msgstr "ลบการแจ้งเตือนนี้ใช่ไหม"
 msgid "Delete"
 msgstr "ลบ"
 
+#: ../OAuthFlowView.lua:65
+msgid "Sign in with "
+msgstr "เข้าสู่ระบบด้วย"
+
+#: ../OAuthFlowView.lua:79
+msgid "Scan this QR code on your phone to sign in."
+msgstr "สแกนโค้ด QR นี้บนโทรศัพท์ของคุณเพื่อลงชื่อเข้าใช้"
+
+#: ../OAuthFlowView.lua:104
+msgid "Error: No bridge URL available."
+msgstr "ข้อผิดพลาด: ไม่มี URL ของบริดจ์"
+
+#: ../OAuthFlowView.lua:114
+msgid "Scan the QR code, then check sign-in status."
+msgstr "สแกนโค้ด QR จากนั้นตรวจสอบสถานะการลงชื่อเข้าใช้"
+
+#: ../OAuthFlowView.lua:125
+msgid "Check sign-in status"
+msgstr "ตรวจสอบสถานะการลงชื่อเข้าใช้"
+
+#: ../OAuthFlowView.lua:209
+msgid "Checking..."
+msgstr "กำลังตรวจสอบ..."
+
+#: ../OAuthFlowView.lua:215
+msgid "Network error. Please try again."
+msgstr "ข้อผิดพลาดของเครือข่าย "
+
+#: ../OAuthFlowView.lua:222
+msgid "Waiting for sign-in. Scan the QR code, then tap Check."
+msgstr "กำลังรอการลงชื่อเข้าใช้ "
+
+#: ../OAuthFlowView.lua:225
+msgid "Sign-in successful!"
+msgstr "ลงชื่อเข้าใช้สำเร็จ!"
+
+#: ../OAuthFlowView.lua:231
+msgid "Error: "
+msgstr "ข้อผิดพลาด:"
+
+#: ../OAuthFlowView.lua:289
+msgid "Creating sign-in session..."
+msgstr "กำลังสร้างเซสชันการลงชื่อเข้าใช้..."
+
+#: ../OAuthFlowView.lua:301
+msgid "Failed to start sign-in: "
+msgstr "ไม่สามารถเริ่มการลงชื่อเข้าใช้ได้:"
+
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
 msgstr "คุณสมบัติบางอย่างอาจถูกจำกัด"
@@ -1104,7 +1158,8 @@ msgstr "อย่าแสดงข้อความนี้อีก"
 msgid "Rename Playlist"
 msgstr "เปลี่ยนชื่อเพลย์ลิสต์"
 
-#: ../PlaylistDialog.lua:134 ../widgets/SettingItemValue.lua:275
+#: ../PlaylistDialog.lua:134 ../TrackingMenu.lua:381
+#: ../widgets/SettingItemValue.lua:306
 msgid "Save"
 msgstr "บันทึก"
 
@@ -1132,293 +1187,526 @@ msgstr "สร้าง"
 msgid "No playlists yet."
 msgstr "ยังไม่มีเพลย์ลิสต์"
 
-#: ../Settings.lua:92
+#: ../Settings.lua:91
 msgid "Library view mode"
 msgstr "โหมดมุมมองห้องสมุด"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:93 ../Settings.lua:202
 msgid "Base"
 msgstr "ฐาน"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Cover"
 msgstr "ปิดบัง"
 
-#: ../Settings.lua:96 ../Settings.lua:205
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Grid"
 msgstr "กริด"
 
-#: ../Settings.lua:105
+#: ../Settings.lua:104
 msgid "Library sorting mode"
 msgstr "โหมดการเรียงลำดับห้องสมุด"
 
+#: ../Settings.lua:106
+msgid "Date added (oldest)"
+msgstr ""
+
 #: ../Settings.lua:107
-msgid "Order added ascending (Default)"
-msgstr "คำสั่งซื้อที่เพิ่มจากน้อยไปหามาก (ค่าเริ่มต้น)"
+msgid "Date added (newest)"
+msgstr ""
 
 #: ../Settings.lua:108
-msgid "Order added descending"
-msgstr "ลำดับเพิ่มจากมากไปหาน้อย"
+msgid "Title (A-Z)"
+msgstr ""
 
 #: ../Settings.lua:109
-msgid "Title manga ascending"
-msgstr "ชื่อเรื่องมังงะจากน้อยไปหามาก"
+msgid "Title (Z-A)"
+msgstr ""
 
 #: ../Settings.lua:110
-msgid "Title manga descending"
-msgstr "ชื่อเรื่องมังงะจากมากไปน้อย"
+msgid "Unread (fewest)"
+msgstr ""
 
 #: ../Settings.lua:111
-msgid "Count unread chapters ascending"
-msgstr "นับบทที่ยังไม่ได้อ่านจากน้อยไปมาก"
+msgid "Unread (most)"
+msgstr ""
 
 #: ../Settings.lua:112
-msgid "Count unread chapters descending"
-msgstr "นับบทที่ยังไม่ได้อ่านจากมากไปน้อย"
-
-#: ../Settings.lua:113
-msgid "Last read ascending"
-msgstr "อ่านครั้งสุดท้ายจากน้อยไปหามาก"
-
-#: ../Settings.lua:114
-msgid "Last read descending"
+#, fuzzy
+msgid "Last read (oldest)"
 msgstr "อ่านครั้งสุดท้ายจากมากไปน้อย"
 
+#: ../Settings.lua:113
+#, fuzzy
+msgid "Last read (newest)"
+msgstr "อ่านครั้งล่าสุด: %1"
+
+#: ../Settings.lua:114
+msgid "Source (A-Z)"
+msgstr ""
+
 #: ../Settings.lua:115
-msgid "Source ascending"
-msgstr "แหล่งที่มาจากน้อยไปหามาก"
+msgid "Source (Z-A)"
+msgstr ""
 
-#: ../Settings.lua:116
-msgid "Source descending"
-msgstr "แหล่งที่มาจากมากไปน้อย"
-
-#: ../Settings.lua:124
+#: ../Settings.lua:123
 msgid "Items per page (0 = auto)"
 msgstr "รายการต่อหน้า (0 = อัตโนมัติ)"
 
-#: ../Settings.lua:135
+#: ../Settings.lua:134
 msgid "Grid columns"
 msgstr "คอลัมน์ตาราง"
 
-#: ../Settings.lua:146
+#: ../Settings.lua:145
 msgid "Grid rows"
 msgstr "แถวตาราง"
 
-#: ../Settings.lua:157
+#: ../Settings.lua:156
 msgid "Show title in grid mode"
 msgstr "แสดงชื่อในโหมดกริด"
 
-#: ../Settings.lua:166
+#: ../Settings.lua:165
 msgid "Show metadata in grid mode"
 msgstr "แสดงข้อมูลเมตาในโหมดตาราง"
 
-#: ../Settings.lua:175
+#: ../Settings.lua:174
 msgid "Tap manga action"
 msgstr "แตะการกระทำของมังงะ"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:176
 msgid "Open chapter list"
 msgstr "เปิดรายการบท"
 
-#: ../Settings.lua:178
+#: ../Settings.lua:177
 msgid "Continue reading"
 msgstr "อ่านต่อ"
 
-#: ../Settings.lua:188
+#: ../Settings.lua:187
 msgid "Skip resume reading confirmation"
 msgstr "ข้ามการยืนยันการอ่านต่อ"
 
-#: ../Settings.lua:201
+#: ../Settings.lua:200
 msgid "Search view mode"
 msgstr "โหมดมุมมองการค้นหา"
 
-#: ../Settings.lua:212
+#: ../Settings.lua:211
 msgid "Reader"
 msgstr "ผู้อ่าน"
 
-#: ../Settings.lua:218
+#: ../Settings.lua:217
 msgid "Chapter sorting mode"
 msgstr "โหมดการเรียงลำดับบท"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:219
 msgid "By chapter ascending"
 msgstr "โดยบทจากน้อยไปหามาก"
 
-#: ../Settings.lua:221
+#: ../Settings.lua:220
 msgid "By chapter descending"
 msgstr "ตามบทจากมากไปน้อย"
 
-#: ../Settings.lua:229
+#: ../Settings.lua:228
+msgid "Chapter title in statistics (ComicInfo)"
+msgstr "ชื่อบทในสถิติ (ComicInfo)"
+
+#: ../Settings.lua:230
+msgid "Chapter title only"
+msgstr "ชื่อบทเท่านั้น"
+
+#: ../Settings.lua:231
+msgid "Series + chapter title"
+msgstr "ชื่อซีรี่ส์ + ตอน"
+
+#: ../Settings.lua:232
+msgid "Series + chapter number"
+msgstr "ซีรี่ส์ + หมายเลขบท"
+
+#: ../Settings.lua:241
 msgid "Preload chapters on reader open"
 msgstr "โหลดบทล่วงหน้าเมื่อเปิดโปรแกรมอ่าน"
 
-#: ../Settings.lua:240
+#: ../Settings.lua:252
 msgid "Optimize page images (experimental)"
 msgstr "ปรับภาพหน้าให้เหมาะสม (ทดลอง)"
 
-#: ../Settings.lua:248
+#: ../Settings.lua:260
 msgid "Concurrent page requests"
 msgstr "การร้องขอเพจพร้อมกัน"
 
-#: ../Settings.lua:259
+#: ../Settings.lua:271
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "อย่าเปิด RTL แม้แต่การ์ตูนญี่ปุ่นก็ตาม"
 
-#: ../Settings.lua:268
+#: ../Settings.lua:280
 msgid "Automatically set the viewer to manga mode"
 msgstr "ตั้งค่าผู้ชมเป็นโหมดมังงะโดยอัตโนมัติ"
 
-#: ../Settings.lua:277
+#: ../Settings.lua:289
 msgid "Global viewer override"
 msgstr "การแทนที่ผู้ดูทั่วโลก"
 
-#: ../Settings.lua:294
+#: ../Settings.lua:306
 msgid "Show button previous chapter in toolbar reader"
 msgstr "ปุ่มแสดงบทก่อนหน้าในตัวอ่านแถบเครื่องมือ"
 
-#: ../Settings.lua:303
+#: ../Settings.lua:315
 msgid "Show button next chapter in toolbar reader"
 msgstr "แสดงปุ่มบทถัดไปในตัวอ่านแถบเครื่องมือ"
 
-#: ../Settings.lua:312
+#: ../Settings.lua:324
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "แสดงแถบเครื่องมือด้านล่าง rakuyomi ที่ขยายในตัวอ่าน"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:327
 msgid "On bottom toolbar"
 msgstr "บนแถบเครื่องมือด้านล่าง"
 
-#: ../Settings.lua:316
+#: ../Settings.lua:328
 msgid "On top toolbar"
 msgstr "บนแถบเครื่องมือด้านบน"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:336
 msgid "Recommended reader settings"
 msgstr "การตั้งค่าเครื่องอ่านที่แนะนำ"
 
-#: ../Settings.lua:330
+#: ../Settings.lua:342
 msgid "Turn off all margins"
 msgstr "ปิดระยะขอบทั้งหมด"
 
-#: ../Settings.lua:339
+#: ../Settings.lua:351
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "ครอบตัดขอบส่วนเกินจากรูปภาพโดยอัตโนมัติ (ช้าเล็กน้อย)"
 
-#: ../Settings.lua:348
+#: ../Settings.lua:360
 msgid "Zoom to full screen"
 msgstr "ซูมให้เต็มหน้าจอ"
 
-#: ../Settings.lua:357
+#: ../Settings.lua:369
 msgid "Zoom to fit image size"
 msgstr "ซูมให้พอดีกับขนาดภาพ"
 
-#: ../Settings.lua:370
+#: ../Settings.lua:382
 msgid "Chapter storage path"
 msgstr "เส้นทางการจัดเก็บบท"
 
-#: ../Settings.lua:379
+#: ../Settings.lua:391
 msgid "Storage size limit"
 msgstr "ขีดจำกัดขนาดพื้นที่เก็บข้อมูล"
 
-#: ../Settings.lua:389
+#: ../Settings.lua:401
+msgid "Delete downloads when removing from library"
+msgstr ""
+
+#: ../Settings.lua:409
+msgid "Delete downloads after marking as read"
+msgstr ""
+
+#: ../Settings.lua:417
+#, fuzzy
+msgid "Total downloaded"
+msgstr "ดาวน์โหลดบทแล้ว"
+
+#: ../Settings.lua:438
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "เขียนบทลง RAM (ป้องกัน eMMC)"
 
-#: ../Settings.lua:397
+#: ../Settings.lua:446
 msgid "RAM storage size. Your RAM is: "
 msgstr "ขนาดพื้นที่เก็บข้อมูลแรม "
 
-#: ../Settings.lua:406
+#: ../Settings.lua:455
 msgid "Network"
 msgstr "เครือข่าย"
 
-#: ../Settings.lua:412
+#: ../Settings.lua:461
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS หรือพร็อกซี SOCKS5"
 
-#: ../Settings.lua:415
+#: ../Settings.lua:464
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "URL ของพร็อกซีต้องขึ้นต้นด้วย http://, https:// หรือ Socks5://"
 
-#: ../Settings.lua:420
+#: ../Settings.lua:469
 msgid "Sync & Updates"
 msgstr "ซิงค์และอัปเดต"
 
-#: ../Settings.lua:426
+#: ../Settings.lua:475
 msgid "WebDAV Sync"
 msgstr "การซิงค์ WebDAV"
 
-#: ../Settings.lua:434
+#: ../Settings.lua:483
 msgid "Enabled cron check for manga updates"
 msgstr "เปิดใช้งานการตรวจสอบ cron สำหรับการอัพเดตมังงะ"
 
-#: ../Settings.lua:442
+#: ../Settings.lua:491
 msgid "Source IDs skip check update"
 msgstr "รหัสแหล่งที่มาข้ามการอัปเดตการตรวจสอบ"
 
-#: ../Settings.lua:448
+#: ../Settings.lua:497
 msgid "System"
 msgstr "ระบบ"
 
-#: ../Settings.lua:454
+#: ../Settings.lua:503
 msgid "Allow requisition of the back button"
 msgstr "อนุญาตให้มีใบขอซื้อปุ่มย้อนกลับ"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:510
 msgid "Server"
 msgstr "เซิร์ฟเวอร์"
 
-#: ../Settings.lua:467
+#: ../Settings.lua:516
 msgid "Auto-stop server when leaving library view"
 msgstr "หยุดเซิร์ฟเวอร์อัตโนมัติเมื่อออกจากมุมมองไลบรารี"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:518
 msgid "Disabled"
 msgstr "พิการ"
 
-#: ../Settings.lua:470
+#: ../Settings.lua:519
 msgid "Immediate"
 msgstr "ทันที"
 
-#: ../Settings.lua:471
+#: ../Settings.lua:520
 msgid "After 30 seconds"
 msgstr "หลังจากผ่านไป 30 วินาที"
 
-#: ../Settings.lua:472
+#: ../Settings.lua:521
 msgid "After 1 minute"
 msgstr "หลังจากผ่านไป 1 นาที"
 
-#: ../Settings.lua:473
+#: ../Settings.lua:522
 msgid "After 5 minutes"
 msgstr "หลังจากผ่านไป 5 นาที"
 
-#: ../Settings.lua:474
+#: ../Settings.lua:523
 msgid "After 10 minutes"
 msgstr "หลังจากผ่านไป 10 นาที"
 
-#: ../Settings.lua:484
+#: ../Settings.lua:533
 msgid "Show chapter download progress"
 msgstr "แสดงความคืบหน้าการดาวน์โหลดบท"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:540
 msgid "Logging"
 msgstr "การบันทึก"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:546
 msgid "Disable logging"
 msgstr "ปิดการใช้งานการบันทึก"
 
-#: ../Settings.lua:675
-msgid "Testing proxy..."
-msgstr "กำลังทดสอบพร็อกซี..."
-
-#: ../Settings.lua:684
+#: ../Settings.lua:733
 msgid "Failed to test proxy"
 msgstr "ทดสอบพร็อกซีไม่สำเร็จ"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "การตั้งค่าแหล่งที่มา"
+
+#: ../TrackingMenu.lua:45
+msgid "Volumes"
+msgstr "เล่ม"
+
+#: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
+msgid "Loading tracking..."
+msgstr "กำลังโหลดการติดตาม..."
+
+#: ../TrackingMenu.lua:123
+msgid "Select Tracking Service"
+msgstr "เลือกบริการติดตาม"
+
+#: ../TrackingMenu.lua:152
+msgid "Link"
+msgstr "ลิงค์"
+
+#: ../TrackingMenu.lua:152
+msgid "Relink"
+msgstr "เชื่อมโยงอีกครั้ง"
+
+#: ../TrackingMenu.lua:164
+msgid "Pull progress"
+msgstr "ดึงความคืบหน้า"
+
+#: ../TrackingMenu.lua:171
+msgid "Push progress"
+msgstr "ผลักดันความก้าวหน้า"
+
+#: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
+#: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
+msgid "Not set"
+msgstr "ไม่ได้ตั้งค่า"
+
+#: ../TrackingMenu.lua:182
+msgid "Start"
+msgstr "เริ่ม"
+
+#: ../TrackingMenu.lua:189
+msgid "End"
+msgstr "จบ"
+
+#: ../TrackingMenu.lua:200
+msgid "Unlink"
+msgstr "ยกเลิกการเชื่อมโยง"
+
+#: ../TrackingMenu.lua:212
+msgid "Other services"
+msgstr "บริการอื่นๆ"
+
+#: ../TrackingMenu.lua:232
+msgid "Search tracker title"
+msgstr "ค้นหาชื่อตัวติดตาม"
+
+#: ../TrackingMenu.lua:235
+msgid "Search for a matching manga entry to link with this title."
+msgstr "ค้นหารายการมังงะที่ตรงกันเพื่อเชื่อมโยงกับชื่อเรื่องนี้"
+
+#: ../TrackingMenu.lua:254
+msgid "Searching tracker..."
+msgstr "กำลังค้นหาตัวติดตาม..."
+
+#: ../TrackingMenu.lua:266
+msgid "No tracking results found."
+msgstr "ไม่พบผลการติดตาม"
+
+#: ../TrackingMenu.lua:295
+msgid "Linking tracker entry..."
+msgstr "กำลังลิงก์รายการติดตาม..."
+
+#: ../TrackingMenu.lua:307
+msgid "Linked with"
+msgstr "เชื่อมโยงกับ"
+
+#: ../TrackingMenu.lua:329
+msgid "Pulling tracking progress..."
+msgstr "กำลังดึงความคืบหน้าในการติดตาม..."
+
+#: ../TrackingMenu.lua:329
+msgid "Pushing tracking progress..."
+msgstr "ผลักดันการติดตามความคืบหน้า..."
+
+#: ../TrackingMenu.lua:341
+msgid "No tracking binding found for this service."
+msgstr "ไม่พบการเชื่อมโยงการติดตามสำหรับบริการนี้"
+
+#: ../TrackingMenu.lua:363
+msgid "End date"
+msgstr "วันที่สิ้นสุด"
+
+#: ../TrackingMenu.lua:363
+msgid "Start date"
+msgstr "วันที่เริ่มต้น"
+
+#: ../TrackingMenu.lua:370
+msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
+msgstr "ป้อนวันที่ในรูปแบบ วว/ดด/ปปปป หรือเว้นว่างไว้เพื่อล้าง"
+
+#: ../TrackingMenu.lua:393
+msgid "Saving date..."
+msgstr "กำลังบันทึกวันที่..."
+
+#: ../TrackingMenu.lua:411
+msgid "cleared"
+msgstr "เคลียร์แล้ว"
+
+#: ../TrackingMenu.lua:427
+msgid "Removing tracking binding..."
+msgstr "กำลังนำการเชื่อมโยงการติดตามออก..."
+
+#: ../TrackingMenu.lua:439
+msgid "Unlinked"
+msgstr "ยกเลิกการลิงก์แล้ว"
+
+#: ../TrackingSettings.lua:96
+msgid "Paste AniList token"
+msgstr "วางโทเค็น AniList"
+
+#: ../TrackingSettings.lua:103
+msgid "Paste MAL client ID"
+msgstr "วางรหัสไคลเอ็นต์ MAL"
+
+#: ../TrackingSettings.lua:104
+msgid "Paste MAL client secret"
+msgstr "วางรหัสลับไคลเอ็นต์ MAL"
+
+#: ../TrackingSettings.lua:105
+msgid "Paste MAL refresh token"
+msgstr "วางโทเค็นการรีเฟรช MAL"
+
+#: ../TrackingSettings.lua:112
+msgid "Paste Shikimori client ID"
+msgstr "วางรหัสลูกค้า Shikimori"
+
+#: ../TrackingSettings.lua:113
+msgid "Paste Shikimori client secret"
+msgstr "วางความลับของลูกค้าชิกิโมริ"
+
+#: ../TrackingSettings.lua:114
+msgid "Paste Shikimori refresh token"
+msgstr "วางโทเค็นการรีเฟรชชิกิโมริ"
+
+#: ../TrackingSettings.lua:121
+msgid "Paste Bangumi refresh token"
+msgstr "วางโทเค็นการรีเฟรช Bangumi"
+
+#: ../TrackingSettings.lua:128
+msgid "Paste MangaBaka refresh token"
+msgstr "วางโทเค็นการรีเฟรช MangaBaka"
+
+#: ../TrackingSettings.lua:129
+msgid "Paste MangaBaka API Key (mb-...)"
+msgstr "วางคีย์ MangaBaka API (mb-...)"
+
+#: ../TrackingSettings.lua:136
+msgid "Paste Kavita API Key"
+msgstr "วางคีย์ Kavita API"
+
+#: ../TrackingSettings.lua:143
+msgid "Komga API key or username:password"
+msgstr "คีย์ Komga API หรือชื่อผู้ใช้: รหัสผ่าน"
+
+#: ../TrackingSettings.lua:150
+msgid "Suwayomi Basic Auth username:password"
+msgstr "ชื่อผู้ใช้การรับรองความถูกต้องพื้นฐานของ Suwayomi: รหัสผ่าน"
+
+#: ../TrackingSettings.lua:161
+msgid "Sign out"
+msgstr "ออกจากระบบ"
+
+#: ../TrackingSettings.lua:163
+msgid "Sign in"
+msgstr "เข้าสู่ระบบ"
+
+#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+msgid "Validate "
+msgstr "ตรวจสอบความถูกต้อง"
+
+#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+msgid "Validating..."
+msgstr "กำลังตรวจสอบ..."
+
+#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
+#: ../TrackingSettings.lua:229
+msgid "Credentials are valid."
+msgstr "ข้อมูลรับรองถูกต้อง"
+
+#: ../TrackingSettings.lua:240
+msgid "Auto sync reading progress"
+msgstr "ความคืบหน้าการอ่านการซิงค์อัตโนมัติ"
+
+#: ../TrackingSettings.lua:246
+msgid "OAuth Bridge Server"
+msgstr "เซิร์ฟเวอร์บริดจ์ OAuth"
+
+#: ../TrackingSettings.lua:252
+msgid "OAuth Bridge Server URL"
+msgstr "URL เซิร์ฟเวอร์บริดจ์ OAuth"
+
+#: ../TrackingSettings.lua:499
+msgid "Signed in as "
+msgstr "ลงชื่อเข้าใช้เป็น"
+
+#: ../TrackingSettings.lua:501
+msgid "No sign"
+msgstr "ไม่มีสัญญาณ"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1593,26 +1881,53 @@ msgstr "ฉบับที่"
 msgid "Ch."
 msgstr "ช."
 
-#: ../widgets/Menu.lua:82
+#: ../widgets/Menu.lua:84
 msgid "Offline mode"
 msgstr "โหมดออฟไลน์"
 
-#: ../widgets/SettingItemValue.lua:162
-msgid "Ok"
-msgstr "ตกลง"
-
-#: ../widgets/SettingItemValue.lua:168
+#: ../widgets/SettingItemValue.lua:170
 msgid "Executing..."
 msgstr "กำลังดำเนินการ..."
 
-#: ../widgets/SettingItemValue.lua:181
+#: ../widgets/SettingItemValue.lua:183
 msgid "Done"
 msgstr "เสร็จแล้ว"
 
-#: ../widgets/SettingItemValue.lua:236
+#: ../widgets/SettingItemValue.lua:206
+msgid "Ok"
+msgstr "ตกลง"
+
+#: ../widgets/SettingItemValue.lua:267
 msgid "Select"
 msgstr "เลือก"
 
-#: ../widgets/SettingItemValue.lua:359
+#: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "ค่าไม่ถูกต้อง"
+
+#~ msgid "Count unread chapters ascending"
+#~ msgstr "นับบทที่ยังไม่ได้อ่านจากน้อยไปมาก"
+
+#~ msgid "Count unread chapters descending"
+#~ msgstr "นับบทที่ยังไม่ได้อ่านจากมากไปน้อย"
+
+#~ msgid "Last read ascending"
+#~ msgstr "อ่านครั้งสุดท้ายจากน้อยไปหามาก"
+
+#~ msgid "Order added ascending (Default)"
+#~ msgstr "คำสั่งซื้อที่เพิ่มจากน้อยไปหามาก (ค่าเริ่มต้น)"
+
+#~ msgid "Order added descending"
+#~ msgstr "ลำดับเพิ่มจากมากไปหาน้อย"
+
+#~ msgid "Source ascending"
+#~ msgstr "แหล่งที่มาจากน้อยไปหามาก"
+
+#~ msgid "Source descending"
+#~ msgstr "แหล่งที่มาจากมากไปน้อย"
+
+#~ msgid "Title manga ascending"
+#~ msgstr "ชื่อเรื่องมังงะจากน้อยไปหามาก"
+
+#~ msgid "Title manga descending"
+#~ msgstr "ชื่อเรื่องมังงะจากมากไปน้อย"

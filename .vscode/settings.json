@@ -2,5 +2,16 @@
   "editor.formatOnSave": true,
   "rust-analyzer.linkedProjects": ["backend/Cargo.toml"],
   "lldb.launch.sourceLanguages": ["rust"],
-  "Lua.diagnostics.globals": ["G_defaults", "G_reader_settings"]
+  "Lua.diagnostics.globals": ["G_defaults", "G_reader_settings"],
+  "cSpell.words": [
+    "Anilist",
+    "Baka",
+    "Bangumi",
+    "Kavita",
+    "Komga",
+    "Mangabaka",
+    "Myanimelist",
+    "Shikimori",
+    "Suwayomi"
+  ]
 }

@@ -19,8 +19,10 @@ use crate::{
     model::{
         Chapter, ChapterId, ChapterInformation, ChapterState, Manga, MangaId, MangaInformation,
         MangaState, NotificationInformation, Playlist, SourceId, SourceInformation,
+        TrackingBinding, TrackingCandidate, TrackingProgressSnapshot, TrackingService,
+        TrackingStatus,
     },
-    source::model::{PublishingStatus, MangaViewer},
+    source::model::{MangaViewer, PublishingStatus},
     source_collection::SourceCollection,
 };
 
@@ -48,6 +50,7 @@ impl Database {
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(SqliteSynchronous::Normal)
+            .pragma("busy_timeout", "5000")
             .pragma("cache_size", "-2000")
             .pragma("temp_store", "MEMORY")
             .foreign_keys(true);
@@ -99,6 +102,7 @@ impl Database {
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(SqliteSynchronous::Normal)
+            .pragma("busy_timeout", "5000")
             .pragma("cache_size", "-2000")
             .pragma("temp_store", "MEMORY")
             .foreign_keys(true);
@@ -1712,11 +1716,7 @@ impl Database {
         Ok(())
     }
 
-    pub async fn upsert_manga_viewer(
-        &self,
-        manga_id: &MangaId,
-        viewer: Option<i64>,
-    ) -> Result<()> {
+    pub async fn upsert_manga_viewer(&self, manga_id: &MangaId, viewer: Option<i64>) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
 
@@ -2185,6 +2185,209 @@ impl Database {
         query.execute(&*self.pool.read().await).await?;
 
         self.count_unread_chapters(manga_id).await
+    }
+
+    pub async fn list_tracking_bindings(&self, manga_id: &MangaId) -> Result<Vec<TrackingBinding>> {
+        let rows: Vec<TrackingBindingRow> = sqlx::query_as!(
+            TrackingBindingRow,
+            r#"
+            SELECT
+                service,
+                remote_media_id,
+                remote_title,
+                remote_url,
+                total_chapters,
+                total_volumes,
+                last_synced_progress,
+                last_synced_at,
+                started_at,
+                completed_at
+            FROM manga_tracking
+            WHERE source_id = ?1 AND manga_id = ?2
+            ORDER BY service ASC
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+        )
+        .fetch_all(&*self.pool.read().await)
+        .await?;
+
+        rows.into_iter()
+            .map(TrackingBinding::try_from)
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(Into::into)
+    }
+
+    pub async fn upsert_tracking_binding(
+        &self,
+        manga_id: &MangaId,
+        candidate: &TrackingCandidate,
+    ) -> Result<()> {
+        sqlx::query!(
+            r#"
+            INSERT INTO manga_tracking (
+                source_id,
+                manga_id,
+                service,
+                remote_media_id,
+                remote_title,
+                remote_url,
+                total_chapters,
+                total_volumes
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+            ON CONFLICT (source_id, manga_id, service) DO UPDATE SET
+                remote_media_id = excluded.remote_media_id,
+                remote_title = excluded.remote_title,
+                remote_url = excluded.remote_url,
+                total_chapters = excluded.total_chapters,
+                total_volumes = excluded.total_volumes
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            candidate.service.as_str(),
+            candidate.remote_media_id,
+            &candidate.title,
+            candidate.url.as_ref().map(|value| value.to_string()),
+            candidate.total_chapters,
+            candidate.total_volumes
+        )
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete_tracking_binding(
+        &self,
+        manga_id: &MangaId,
+        service: TrackingService,
+    ) -> Result<()> {
+        sqlx::query!(
+            r#"
+            DELETE FROM manga_tracking
+            WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str()
+        )
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_tracking_sync_state(
+        &self,
+        manga_id: &MangaId,
+        service: TrackingService,
+        progress: Option<i64>,
+        synced_at: Option<i64>,
+        started_at: Option<i64>,
+        completed_at: Option<i64>,
+    ) -> Result<()> {
+        sqlx::query!(
+            r#"
+            UPDATE manga_tracking
+            SET last_synced_progress = ?4,
+                last_synced_at = ?5,
+                started_at = ?6,
+                completed_at = ?7
+            WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str(),
+            progress,
+            synced_at,
+            started_at,
+            completed_at,
+        )
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_tracking_dates(
+        &self,
+        manga_id: &MangaId,
+        service: TrackingService,
+        started_at: Option<i64>,
+        completed_at: Option<i64>,
+    ) -> Result<()> {
+        sqlx::query!(
+            r#"
+            UPDATE manga_tracking
+            SET started_at = ?4,
+                completed_at = ?5
+            WHERE source_id = ?1 AND manga_id = ?2 AND service = ?3
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value(),
+            service.as_str(),
+            started_at,
+            completed_at
+        )
+        .execute(&*self.pool.read().await)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_local_tracking_progress(
+        &self,
+        manga_id: &MangaId,
+    ) -> Result<TrackingProgressSnapshot> {
+        let row = sqlx::query_as!(
+            LocalTrackingProgressRow,
+            r#"
+            SELECT
+                MAX(CASE WHEN cs.read = 1 OR cs.last_read IS NOT NULL THEN ci.chapter_number END) AS progress_number,
+                SUM(CASE WHEN cs.read = 1 OR cs.last_read IS NOT NULL THEN 1 ELSE 0 END) AS progress_count,
+                COUNT(*) AS total_count
+            FROM chapter_informations ci
+            LEFT JOIN chapter_state cs
+                ON ci.source_id = cs.source_id
+                AND ci.manga_id = cs.manga_id
+                AND ci.chapter_id = cs.chapter_id
+            LEFT JOIN manga_state ms
+                ON ms.source_id = ci.source_id
+                AND ms.manga_id = ci.manga_id
+            WHERE ci.source_id = ?1
+                AND ci.manga_id = ?2
+                AND (
+                    ms.preferred_scanlator IS NULL
+                    OR ci.scanlator = ms.preferred_scanlator
+                    OR ci.scanlator IS NULL
+                )
+            "#,
+            manga_id.source_id().value(),
+            manga_id.value()
+        )
+        .fetch_one(&*self.pool.read().await)
+        .await?;
+
+        let chapter_progress = row
+            .progress_number
+            .map(|value: f64| value.floor() as i64)
+            .or(row.progress_count);
+
+        Ok(TrackingProgressSnapshot {
+            status: if chapter_progress.unwrap_or_default() > 0 {
+                Some(TrackingStatus::Current)
+            } else if row.total_count.unwrap_or_default() > 0 {
+                Some(TrackingStatus::Planning)
+            } else {
+                None
+            },
+            chapter_progress,
+            volume_progress: None,
+            updated_at: Some(chrono::Utc::now().timestamp()),
+            started_at: None,
+            completed_at: None,
+        })
     }
 
     pub async fn get_playlists(&self) -> Result<Vec<Playlist>> {
@@ -3075,7 +3278,7 @@ pub struct MangaLibraryRowWithReadCount {
 
     /// Effective viewer: COALESCE(manga_state.viewer, manga_informations.viewer, 0)
     pub viewer: Option<i64>,
-    pub state_viewer: i64
+    pub state_viewer: i64,
 }
 
 #[derive(sqlx::FromRow)]
@@ -3296,6 +3499,46 @@ struct NotificationInformationRow {
     chapter_title: Option<String>,
     chapter_number: Option<f64>,
     created_at: i64,
+}
+
+#[derive(sqlx::FromRow)]
+struct TrackingBindingRow {
+    service: String,
+    remote_media_id: i64,
+    remote_title: String,
+    remote_url: Option<String>,
+    total_chapters: Option<i64>,
+    total_volumes: Option<i64>,
+    last_synced_progress: Option<i64>,
+    last_synced_at: Option<i64>,
+    started_at: Option<i64>,
+    completed_at: Option<i64>,
+}
+
+impl TryFrom<TrackingBindingRow> for TrackingBinding {
+    type Error = anyhow::Error;
+
+    fn try_from(value: TrackingBindingRow) -> std::result::Result<Self, Self::Error> {
+        Ok(Self {
+            service: TrackingService::try_from(value.service.as_str())?,
+            remote_media_id: value.remote_media_id,
+            remote_title: value.remote_title,
+            remote_url: value.remote_url.and_then(|url| Url::parse(&url).ok()),
+            total_chapters: value.total_chapters,
+            total_volumes: value.total_volumes,
+            last_synced_progress: value.last_synced_progress,
+            last_synced_at: value.last_synced_at,
+            started_at: value.started_at,
+            completed_at: value.completed_at,
+        })
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct LocalTrackingProgressRow {
+    progress_number: Option<f64>,
+    progress_count: Option<i64>,
+    total_count: Option<i64>,
 }
 
 impl From<NotificationInformationRow> for NotificationInformation {

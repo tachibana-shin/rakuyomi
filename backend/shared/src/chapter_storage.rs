@@ -1,5 +1,4 @@
 use std::io::Cursor;
-use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -479,6 +478,21 @@ impl ChapterStorage {
         }
     }
 
+    pub fn is_stored_chapter_in_index(
+        &self,
+        id: &ChapterId,
+        index: &std::collections::HashSet<PathBuf>,
+    ) -> bool {
+        let candidates = [
+            self.path_for_chapter(id, false, false),
+            self.path_for_chapter(id, true, false),
+            self.path_for_chapter_legacy(id, false),
+            self.path_for_chapter_legacy(id, true),
+        ];
+
+        candidates.into_iter().any(|path| index.contains(&path))
+    }
+
     pub fn get_path_to_store_chapter(
         &self,
         id: &ChapterId,
@@ -515,7 +529,7 @@ impl ChapterStorage {
         use_ram: bool,
     ) -> Result<PathBuf> {
         let mut current_size = self.cached_storage_size();
-        let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.size());
+        let persisted_chapter_size = Size::from_bytes(temporary_file.as_file().metadata()?.len());
 
         while current_size + persisted_chapter_size > self.storage_size_limit {
             debug!(
@@ -576,7 +590,7 @@ impl ChapterStorage {
     fn calculate_storage_size(&self) -> Size {
         let size_in_bytes: u64 = self
             .chapter_files_iterator()
-            .filter_map(|entry| entry.metadata().ok().map(|metadata| metadata.size()))
+            .filter_map(|entry| entry.metadata().ok().map(|metadata| metadata.len()))
             .sum();
 
         Size::from_bytes(size_in_bytes)

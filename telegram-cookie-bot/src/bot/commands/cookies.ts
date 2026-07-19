@@ -6,7 +6,7 @@ import {
   getDomainCookieCount,
 } from "../../store.ts"
 import { t } from "../../i18n.ts"
-import { getConfig } from "../../../config.ts"
+import { getConfig } from "../../config.ts"
 
 const MAX_LENGTH = 3500
 

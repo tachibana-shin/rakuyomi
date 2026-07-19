@@ -52,17 +52,11 @@ pub async fn ensure_chapter_is_in_storage(
 ) -> Result<(PathBuf, Vec<DownloadError>), Error> {
     if use_ram {
         if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, true)? {
-            return Ok((
-                output.0,
-                output.1.unwrap_or_default(),
-            ));
+            return Ok((output.0, output.1.unwrap_or_default()));
         }
     }
     if let Some(output) = chapter_storage.get_stored_chapter_and_errors(&chapter.id, false)? {
-        return Ok((
-            output.0,
-            output.1.unwrap_or_default(),
-        ));
+        return Ok((output.0, output.1.unwrap_or_default()));
     }
 
     // FIXME like downloaderror is a really bad name??
@@ -91,8 +85,12 @@ pub async fn ensure_chapter_is_in_storage(
     let output_path: PathBuf =
         chapter_storage.get_path_to_store_chapter(&chapter.id, is_novel, use_ram);
 
-    let metadata =
-        ComicInfo::from_source_metadata(manga.clone(), chapter.clone(), &pages, chapter_title_format);
+    let metadata = ComicInfo::from_source_metadata(
+        manga.clone(),
+        chapter.clone(),
+        &pages,
+        chapter_title_format,
+    );
 
     // Write chapter pages to a temporary file, so that if things go wrong
     // we do not have a borked .cbz file in the chapter storage.

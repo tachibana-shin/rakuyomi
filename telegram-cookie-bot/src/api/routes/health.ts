@@ -1,7 +1,20 @@
-import { Hono } from "hono"
+import { OpenAPIHono } from "@hono/zod-openapi"
+import { createRoute, z } from "@hono/zod-openapi"
 
-const app = new Hono()
+const healthRoute = createRoute({
+  method: "get",
+  path: "/health",
+  tags: ["Health"],
+  responses: {
+    200: {
+      content: { "text/plain": { schema: z.literal("OK") } },
+      description: "Health check",
+    },
+  },
+})
 
-app.get("/health", (c) => c.text("OK"))
+const app = new OpenAPIHono()
+
+app.openapi(healthRoute, (c) => c.text("OK"))
 
 export default app

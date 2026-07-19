@@ -10,7 +10,8 @@ local Platform = require("Platform")
 local device_is_slow = Device:isKobo()
 
 -- Seconds before we log a warning (slow devices) or kill the server (others)
-local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or (device_is_slow and 10 or 5))
+local SERVER_STARTUP_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_TIMEOUT') or
+  (device_is_slow and 10 or 5))
 
 -- Hard cap for slow devices; only used when device_is_slow
 local SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS = tonumber(os.getenv('RAKUYOMI_SERVER_STARTUP_ABSOLUTE_TIMEOUT') or 180)
@@ -132,15 +133,15 @@ local function waitUntilHttpServerIsReady()
 
     local elapsed = os.time() - start_time
     local deadline = device_is_slow and SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS
-                   or SERVER_STARTUP_TIMEOUT_SECONDS
+        or SERVER_STARTUP_TIMEOUT_SECONDS
 
     if elapsed >= deadline then
       return false
     end
 
     if device_is_slow
-      and not patience_warned
-      and elapsed >= SERVER_STARTUP_TIMEOUT_SECONDS then
+        and not patience_warned
+        and elapsed >= SERVER_STARTUP_TIMEOUT_SECONDS then
       patience_warned = true
       logger.warn("Backend not ready after", SERVER_STARTUP_TIMEOUT_SECONDS,
         "s; continuing to wait (max", SERVER_STARTUP_ABSOLUTE_TIMEOUT_SECONDS, "s)")
@@ -703,6 +704,118 @@ function Backend.setPreferredScanlator(source_id, manga_id, preferred_scanlator)
   })
 end
 
+--- @class TrackingBinding
+--- @field service string
+--- @field remote_media_id number
+--- @field remote_title string
+--- @field remote_url string|nil
+--- @field total_chapters number|nil
+--- @field total_volumes number|nil
+--- @field last_synced_progress number|nil
+--- @field last_synced_at number|nil
+
+--- @class TrackingCandidate
+--- @field service string
+--- @field remote_media_id number
+--- @field title string
+--- @field url string|nil
+--- @field total_chapters number|nil
+--- @field total_volumes number|nil
+
+--- @class TrackingSyncResult
+--- @field service string
+--- @field direction string
+--- @field local_progress number|nil
+--- @field remote_progress number|nil
+--- @field message string
+
+--- @return SuccessfulResponse<TrackingBinding[]>|ErrorResponse
+function Backend.getTrackingBindings(source_id, manga_id)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking",
+    method = "GET"
+  })
+end
+
+--- @return SuccessfulResponse<TrackingCandidate[]>|ErrorResponse
+function Backend.searchTrackingCandidates(source_id, manga_id, service, query)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/search",
+    method = "POST",
+    body = {
+      service = service,
+      query = query,
+    }
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.linkTrackingBinding(source_id, manga_id, candidate)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/link",
+    method = "POST",
+    body = candidate,
+  })
+end
+
+--- @return SuccessfulResponse<TrackingSyncResult[]>|ErrorResponse
+function Backend.syncTrackingBindings(source_id, manga_id, service, direction)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/sync",
+    method = "POST",
+    body = {
+      service = service,
+      direction = direction,
+    }
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.unlinkTrackingBinding(source_id, manga_id, service)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/" .. service,
+    method = "DELETE",
+  })
+end
+
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.validateTrackingSettings(service)
+  return Backend.requestJson({
+    path = "/settings/tracking/validate",
+    method = "POST",
+    body = {
+      service = service,
+    }
+  })
+end
+
+--- @param service string
+--- @return SuccessfulResponse<{username: string?}>|ErrorResponse
+function Backend.getTrackingUser(service)
+  return Backend.requestJson({
+    path = "/settings/tracking/user/" .. service,
+    method = "GET",
+  })
+end
+
+--- Sets reading start/completion dates for a tracking binding.
+---@param source_id string
+---@param manga_id string
+---@param service string
+---@param started_at number|nil Unix timestamp in seconds
+---@param completed_at number|nil Unix timestamp in seconds
+--- @return SuccessfulResponse<nil>|ErrorResponse
+function Backend.setTrackingDates(source_id, manga_id, service, started_at, completed_at)
+  return Backend.requestJson({
+    path = "/mangas/" .. source_id .. "/" .. util.urlEncode(manga_id) .. "/tracking/" .. service .. "/dates",
+    method = "PATCH",
+    body = {
+      started_at = started_at,
+      completed_at = completed_at,
+    }
+  })
+end
+
 --- Sets the viewer override for a manga.
 ---@param source_id string
 ---@param manga_id string
@@ -722,7 +835,42 @@ end
 --- @alias LibraryViewMode 'base' | 'cover' | 'grid'
 --- @alias SearchViewMode 'base' | 'cover' | 'grid'
 --- @alias ChapterTitleFormat 'title' | 'series_title' | 'series_chapter_number'
---- @class Settings: { chapter_sorting_mode: ChapterSortingMode, preload_chapters: number, library_view_mode: LibraryViewMode, search_view_mode: SearchViewMode, chapter_title_format: ChapterTitleFormat }
+--- @class TrackingServiceSettings
+--- @field client_id string|nil
+--- @field client_secret string|nil
+--- @field access_token string|nil
+--- @field refresh_token string|nil
+--- @field api_key string|nil
+--- @field url string|nil
+--- @field username string|nil
+
+--- @class Settings
+--- @field chapter_sorting_mode ChapterSortingMode
+--- @field preload_chapters number
+--- @field library_view_mode LibraryViewMode
+--- @field search_view_mode SearchViewMode
+--- @field chapter_title_format ChapterTitleFormat
+--- @field source_lists string[]
+--- @field languages string[]
+--- @field storage_size_limit string
+--- @field storage_path string|nil
+--- @field source_settings table
+--- @field library_sorting_mode string
+--- @field tracking_auto_sync boolean
+--- @field anilist TrackingServiceSettings
+--- @field myanimelist TrackingServiceSettings
+--- @field shikimori TrackingServiceSettings
+--- @field kavita TrackingServiceSettings
+--- @field bangumi TrackingServiceSettings
+--- @field mangabaka TrackingServiceSettings
+--- @field komga TrackingServiceSettings
+--- @field suwayomi TrackingServiceSettings
+--- @field optimize_image boolean
+--- @field ram_storage_enabled boolean
+--- @field ram_storage_size_mb number
+--- @field cookie_sync_server_url string|nil
+--- @field cookie_sync_device_name string|nil
+--- @field cookie_sync_chat_id number|nil
 
 --- Reads the application settings.
 --- @return SuccessfulResponse<Settings>|ErrorResponse
@@ -1119,6 +1267,43 @@ function Backend.listCookies()
   return Backend.requestJson({
     path = "/cookie-sync/cookies",
     method = "GET",
+  })
+end
+
+--- @alias OAuthServiceName 'anilist' | 'myanimelist' | 'shikimori' | 'bangumi' | 'mangabaka'
+
+--- @class StartOAuthSessionResponse
+--- @field session_id string
+--- @field bridge_url string
+
+--- @param service OAuthServiceName
+--- @return SuccessfulResponse<StartOAuthSessionResponse>|ErrorResponse
+function Backend.startOAuthSession(service)
+  return Backend.requestJson({
+    path = "/settings/oauth/start",
+    method = "POST",
+    body = { service = service },
+    timeout = 15,
+  })
+end
+
+--- @class OAuthTokens
+--- @field access_token string|nil
+--- @field refresh_token string|nil
+--- @field client_id string|nil
+
+--- @alias OAuthPollResponse
+--- | { status: 'pending', service: OAuthServiceName }
+--- | { status: 'completed', service: OAuthServiceName, tokens: OAuthTokens|nil }
+--- | { status: 'error', service: OAuthServiceName, message: string }
+
+--- @param session_id string
+--- @return SuccessfulResponse<OAuthPollResponse>|ErrorResponse
+function Backend.pollOAuthStatus(session_id)
+  return Backend.requestJson({
+    path = "/settings/oauth/status/" .. session_id,
+    method = "GET",
+    timeout = 10,
   })
 end
 

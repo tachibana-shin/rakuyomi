@@ -1,0 +1,35 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                MAX(CASE WHEN cs.read = 1 OR cs.last_read IS NOT NULL THEN ci.chapter_number END) AS progress_number,\n                SUM(CASE WHEN cs.read = 1 OR cs.last_read IS NOT NULL THEN 1 ELSE 0 END) AS progress_count,\n                COUNT(*) AS total_count\n            FROM chapter_informations ci\n            LEFT JOIN chapter_state cs\n                ON ci.source_id = cs.source_id\n                AND ci.manga_id = cs.manga_id\n                AND ci.chapter_id = cs.chapter_id\n            LEFT JOIN manga_state ms\n                ON ms.source_id = ci.source_id\n                AND ms.manga_id = ci.manga_id\n            WHERE ci.source_id = ?1\n                AND ci.manga_id = ?2\n                AND (\n                    ms.preferred_scanlator IS NULL\n                    OR ci.scanlator = ms.preferred_scanlator\n                    OR ci.scanlator IS NULL\n                )\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "progress_number",
+        "ordinal": 0,
+        "type_info": "Float",
+        "origin": "Expression"
+      },
+      {
+        "name": "progress_count",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "total_count",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "3d88d630bd155be7336784c25563835aa7bf5e615c24e12d68d7ee8f4afede9b"
+}

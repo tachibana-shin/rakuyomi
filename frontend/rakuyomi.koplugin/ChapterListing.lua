@@ -37,6 +37,7 @@ local filterChaptersByLang = require("utils/filterChaptersByLang")
 local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
 
+local TrackingMenu = require("TrackingMenu")
 local findNextChapter = require("chapters/findNextChapter")
 local findPreviousChapter = require("chapters/findPreviousChapter")
 
@@ -163,6 +164,7 @@ function ChapterListing:updateChapterList()
       self.langs = {}
       self.langs_selected = {}
       self.chapters = self.raw_chapters
+      self:patchTitleBar(0)
     end
 
     self:extractAvailableScanlators()
@@ -196,23 +198,38 @@ function ChapterListing:patchTitleBar(count_lang)
       show_parent = self.title_bar.show_parent,
     },
 
-    VerticalGroup:new {
-      Button:new {
-        text = Icons.LANG .. " " .. count_lang,
-        face = SMALL_FONT_FACE,
-        bordersize = 0,
-        enabled = true,
-        text_font_size = left_icon_size,
-        text_font_bold = false,
-        callback = function()
-          self:showSelectLanguage()
-        end
-      },
-      VerticalSpan:new {
-        width = left_icon_size / 2
-      }
+    IconButton:new {
+      icon = "cre.render.reload",
+      width = left_icon_size,
+      height = left_icon_size,
+      padding = button_padding,
+      padding_bottom = left_icon_size,
+      callback = function()
+        self:openTrackingMenu()
+      end,
+      allow_flash = self.title_bar.left_icon_allow_flash,
+      show_parent = self.title_bar.show_parent,
     },
   }
+  if count_lang >= 2 then
+    table.insert(self.title_bar.left_button,
+      VerticalGroup:new {
+        Button:new {
+          text = Icons.LANG .. " " .. count_lang,
+          face = SMALL_FONT_FACE,
+          bordersize = 0,
+          enabled = true,
+          text_font_size = left_icon_size,
+          text_font_bold = false,
+          callback = function()
+            self:showSelectLanguage()
+          end
+        },
+        VerticalSpan:new {
+          width = left_icon_size / 2
+        }
+      })
+  end
 
   --- [1] title
   --- [2] left button
@@ -1100,6 +1117,16 @@ function ChapterListing:openMenu()
     },
     {
       {
+        text = Icons.SYNC .. " " .. _("Tracking"),
+        callback = function()
+          UIManager:close(dialog)
+
+          self:openTrackingMenu()
+        end
+      }
+    },
+    {
+      {
         text = Icons.CHECK_ALL .. " " .. _("Mark read"),
         callback = function()
           UIManager:close(dialog)
@@ -1186,6 +1213,12 @@ function ChapterListing:openMenu()
   }
 
   UIManager:show(dialog)
+end
+
+function ChapterListing:openTrackingMenu()
+  TrackingMenu.openTrackingMenu(self.manga, function()
+    self:updateChapterList()
+  end)
 end
 
 function ChapterListing:addToLibrary()

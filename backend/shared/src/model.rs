@@ -130,6 +130,128 @@ pub struct MangaState {
     pub preferred_scanlator: Option<String>,
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Hash, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TrackingService {
+    Anilist,
+    MyAnimeList,
+    Shikimori,
+    Kavita,
+    Bangumi,
+    Mangabaka,
+    Komga,
+    Suwayomi,
+}
+
+impl TrackingService {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Anilist => "anilist",
+            Self::MyAnimeList => "myanimelist",
+            Self::Shikimori => "shikimori",
+            Self::Kavita => "kavita",
+            Self::Bangumi => "bangumi",
+            Self::Mangabaka => "mangabaka",
+            Self::Komga => "komga",
+            Self::Suwayomi => "suwayomi",
+        }
+    }
+
+    pub fn display_name(self) -> &'static str {
+        match self {
+            Self::Anilist => "AniList",
+            Self::MyAnimeList => "MyAnimeList",
+            Self::Shikimori => "Shikimori",
+            Self::Kavita => "Kavita",
+            Self::Bangumi => "Bangumi",
+            Self::Mangabaka => "MangaBaka",
+            Self::Komga => "Komga",
+            Self::Suwayomi => "Suwayomi",
+        }
+    }
+}
+
+impl TryFrom<&str> for TrackingService {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> anyhow::Result<Self> {
+        match value {
+            "anilist" => Ok(Self::Anilist),
+            "myanimelist" => Ok(Self::MyAnimeList),
+            "shikimori" => Ok(Self::Shikimori),
+            "kavita" => Ok(Self::Kavita),
+            "bangumi" => Ok(Self::Bangumi),
+            "mangabaka" => Ok(Self::Mangabaka),
+            "komga" => Ok(Self::Komga),
+            "suwayomi" => Ok(Self::Suwayomi),
+            other => Err(anyhow::anyhow!("unsupported tracking service: {other}")),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TrackingStatus {
+    Current,
+    Completed,
+    Paused,
+    Dropped,
+    Planning,
+    Repeating,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TrackingSyncDirection {
+    Push,
+    Pull,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingBinding {
+    pub service: TrackingService,
+    pub remote_media_id: i64,
+    pub remote_title: String,
+    pub remote_url: Option<Url>,
+    pub total_chapters: Option<i64>,
+    pub total_volumes: Option<i64>,
+    pub last_synced_progress: Option<i64>,
+    pub last_synced_at: Option<i64>,
+    pub started_at: Option<i64>,
+    pub completed_at: Option<i64>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingCandidate {
+    pub service: TrackingService,
+    pub remote_media_id: i64,
+    pub title: String,
+    pub url: Option<Url>,
+    pub total_chapters: Option<i64>,
+    pub total_volumes: Option<i64>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct TrackingProgressSnapshot {
+    pub status: Option<TrackingStatus>,
+    pub chapter_progress: Option<i64>,
+    pub volume_progress: Option<i64>,
+    pub updated_at: Option<i64>,
+    /// Unix timestamp in seconds when the user started reading.
+    pub started_at: Option<i64>,
+    /// Unix timestamp in seconds when the user completed the series.
+    pub completed_at: Option<i64>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TrackingSyncResult {
+    pub service: TrackingService,
+    pub direction: TrackingSyncDirection,
+    pub local_progress: Option<i64>,
+    pub remote_progress: Option<i64>,
+    pub message: String,
+}
+
 #[derive(Default)]
 pub struct ChapterState {
     pub read: bool,
@@ -303,37 +425,22 @@ mod tests {
 
     #[test]
     fn test_chapter_id_equality() {
-        let id1 = ChapterId::from_strings(
-            "src".to_string(),
-            "manga".to_string(),
-            "ch1".to_string(),
-        );
-        let id2 = ChapterId::from_strings(
-            "src".to_string(),
-            "manga".to_string(),
-            "ch1".to_string(),
-        );
-        let id3 = ChapterId::from_strings(
-            "src".to_string(),
-            "manga".to_string(),
-            "ch2".to_string(),
-        );
+        let id1 =
+            ChapterId::from_strings("src".to_string(), "manga".to_string(), "ch1".to_string());
+        let id2 =
+            ChapterId::from_strings("src".to_string(), "manga".to_string(), "ch1".to_string());
+        let id3 =
+            ChapterId::from_strings("src".to_string(), "manga".to_string(), "ch2".to_string());
         assert_eq!(id1, id2);
         assert_ne!(id1, id3);
     }
 
     #[test]
     fn test_chapter_id_hash() {
-        let id1 = ChapterId::from_strings(
-            "src".to_string(),
-            "manga".to_string(),
-            "ch1".to_string(),
-        );
-        let id2 = ChapterId::from_strings(
-            "src".to_string(),
-            "manga".to_string(),
-            "ch1".to_string(),
-        );
+        let id1 =
+            ChapterId::from_strings("src".to_string(), "manga".to_string(), "ch1".to_string());
+        let id2 =
+            ChapterId::from_strings("src".to_string(), "manga".to_string(), "ch1".to_string());
         let mut set = std::collections::HashSet::new();
         set.insert(id1);
         assert!(set.contains(&id2));

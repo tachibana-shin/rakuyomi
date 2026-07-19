@@ -7,7 +7,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use log::{info, warn, Log, Metadata, Record, LevelFilter};
+use log::{info, warn, LevelFilter, Log, Metadata, Record};
 use tokio::sync::{Mutex, Semaphore};
 
 #[cfg(feature = "ffi")]
@@ -41,9 +41,7 @@ pub fn init_logging() {
         std::env::set_var("RUST_LOG", "info");
     }
 
-    let max_level = parse_log_level(
-        &std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
-    );
+    let max_level = parse_log_level(&std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()));
 
     #[cfg(not(feature = "ffi"))]
     {
@@ -116,11 +114,7 @@ impl Log for ChannelLogger {
 
         // Compact format: [LEVEL target] message
         // No timestamps — the Lua log capturer adds its own context.
-        let msg = format!(
-            "[{}] {}\n",
-            record.level(),
-            record.args(),
-        );
+        let msg = format!("[{}] {}\n", record.level(), record.args(),);
 
         // Silently drop if the channel is full (bounded at 200).
         let _ = self.sender.try_send(msg);

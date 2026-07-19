@@ -241,7 +241,10 @@ mod tests {
             .build()
             .expect("failed to build insecure client");
         let resp = client.get("https://example.com").send().await;
-        assert!(resp.is_ok(), "insecure client should be able to make requests");
+        assert!(
+            resp.is_ok(),
+            "insecure client should be able to make requests"
+        );
     }
 
     #[test]
@@ -271,7 +274,10 @@ mod tests {
             .build()
             .expect("failed to build client with proxy");
         let result = client.get("https://example.com").send().await;
-        assert!(result.is_err(), "request through non-existent proxy should fail");
+        assert!(
+            result.is_err(),
+            "request through non-existent proxy should fail"
+        );
         set_proxy_url(None);
     }
 
@@ -280,7 +286,10 @@ mod tests {
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
             .build();
-        assert!(client.is_ok(), "client_builder should produce a valid client");
+        assert!(
+            client.is_ok(),
+            "client_builder should produce a valid client"
+        );
     }
 
     #[test]
@@ -288,7 +297,10 @@ mod tests {
         let client = client_builder_insecure()
             .timeout(std::time::Duration::from_secs(5))
             .build();
-        assert!(client.is_ok(), "client_builder_insecure should produce a valid client");
+        assert!(
+            client.is_ok(),
+            "client_builder_insecure should produce a valid client"
+        );
     }
 
     #[test]
@@ -297,7 +309,10 @@ mod tests {
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
             .build();
-        assert!(client.is_ok(), "client_builder with proxy should produce a valid client");
+        assert!(
+            client.is_ok(),
+            "client_builder with proxy should produce a valid client"
+        );
         set_proxy_url(None);
     }
 
@@ -307,7 +322,10 @@ mod tests {
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
             .build();
-        assert!(client.is_ok(), "invalid proxy URL should not prevent client creation");
+        assert!(
+            client.is_ok(),
+            "invalid proxy URL should not prevent client creation"
+        );
         set_proxy_url(None);
     }
 }

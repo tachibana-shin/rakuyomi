@@ -1,5 +1,5 @@
 import { Bot, webhookCallback } from "grammy"
-import { getConfig } from "../../config.ts"
+import { getConfig } from "../config.ts"
 import { getLocale, LANG_MAP, SUPPORTED_LANGUAGES } from "../i18n.ts"
 import { startCommand } from "./commands/start.ts"
 import { helpCommand } from "./commands/help.ts"
@@ -37,6 +37,7 @@ function buildCommands(
 
 export function createBot(): Bot {
   const { BOT_TOKEN } = getConfig()
+  if (!BOT_TOKEN) throw new Error("BOT_TOKEN not found")
   const bot = new Bot(BOT_TOKEN)
 
   // Default parse_mode for all outgoing messages

@@ -95,6 +95,7 @@ pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
     pub version: usize,
+    pub supported_sort_buckets: Vec<String>,
 
     // source of source
     #[serde(skip)]
@@ -281,6 +282,7 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
+            supported_sort_buckets: vec![],
             source_of_source: value.source_of_source,
         }
     }

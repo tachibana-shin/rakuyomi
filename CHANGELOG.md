@@ -1,3 +1,18 @@
+# [1.39.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.38.0...v1.39.0) (2026-07-19)
+
+
+### Bug Fixes
+
+* settings UI and error-handling robustness ([#256](https://github.com/tachibana-shin/rakuyomi/issues/256)) ([cf71152](https://github.com/tachibana-shin/rakuyomi/commit/cf711523f29cd93b643c7b3f4964c2438e6b6528))
+* use confirmText field name to match official Aidoku schema ([#255](https://github.com/tachibana-shin/rakuyomi/issues/255)) ([2fd439b](https://github.com/tachibana-shin/rakuyomi/commit/2fd439b5c7c8b7865df1489cb47c37dd031ce68b))
+
+
+### Features
+
+* downloaded-storage statistics (GET /storage-stats + Settings display) ([#257](https://github.com/tachibana-shin/rakuyomi/issues/257)) ([1bb515a](https://github.com/tachibana-shin/rakuyomi/commit/1bb515ac47fe95419e634410e713bd9780438263))
+* implement manga tracking integration with AniList and MyAnimeList.... ([#260](https://github.com/tachibana-shin/rakuyomi/issues/260)) ([7b8cc3f](https://github.com/tachibana-shin/rakuyomi/commit/7b8cc3f9160bded632fc896f7c6270d414623f17))
+* optional auto-delete of downloaded chapters ([#258](https://github.com/tachibana-shin/rakuyomi/issues/258)) ([81f2d1a](https://github.com/tachibana-shin/rakuyomi/commit/81f2d1a0eade873602532a708f3439f810f5d0fd))
+
 # [1.38.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.37.2...v1.38.0) (2026-07-15)
 
 

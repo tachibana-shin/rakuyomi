@@ -34,6 +34,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class LabelValueDefinition: { type: 'label', title: string, text: string }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 --- @class ButtonDefinition: { type: 'button', title: string, key: string, confirm_title: string|nil, confirm_message: string|nil }
+
 --- @alias ValueDefinition DividerDefinition|BooleanValueDefinition|EnumValueDefinition|MultiEnumValueDefinition|IntegerValueDefinition|StringValueDefinition|ListValueDefinition|LabelValueDefinition|PathValueDefinition|ButtonDefinition
 
 --- @class SettingItemValue: { [any]: any }

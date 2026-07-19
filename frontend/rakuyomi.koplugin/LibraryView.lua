@@ -18,6 +18,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local addToPlaylist = require("handlers/addToPlaylist")
 local NetworkMgr = require("ui/network/manager")
+local hasValue = require("utils/hasValue")
 local logger = require("logger")
 
 local Backend = require("Backend")
@@ -1134,6 +1135,21 @@ end
 
 --- @private
 function LibraryView:openSearchMangasDialog()
+  local exclude_key = "exlucde_source_ids_select_search"
+  local excluded = G_reader_settings:readSetting(exclude_key, {})
+  local supported = { views = false, rating = false, popular = false, bookmarks = false }
+
+  local sources_response = Backend.listInstalledSources()
+  if sources_response.type == 'SUCCESS' then
+    for _, source in ipairs(sources_response.body) do
+      if not hasValue(excluded, source.id) then
+        for _, bucket in ipairs(source.supported_sort_buckets) do
+          supported[bucket] = true
+        end
+      end
+    end
+  end
+
   local dialog
   dialog = InputDialog:new {
     title = _("Manga search..."),
@@ -1156,9 +1172,47 @@ function LibraryView:openSearchMangasDialog()
           callback = function()
             UIManager:close(dialog)
 
-            self:searchMangas(dialog:getInputText(), G_reader_settings:readSetting(
-              "exlucde_source_ids_select_search", {}
-            ))
+            self:searchMangas(dialog:getInputText(), excluded)
+          end,
+        },
+      },
+      {
+        {
+          text = _("Views"),
+          enabled = supported.views,
+          callback = function()
+            UIManager:close(dialog)
+
+            self:searchMangas("", excluded, "views")
+          end,
+        },
+        {
+          text = _("Rating"),
+          enabled = supported.rating,
+          callback = function()
+            UIManager:close(dialog)
+
+            self:searchMangas("", excluded, "rating")
+          end,
+        },
+      },
+      {
+        {
+          text = _("Popular"),
+          enabled = supported.popular,
+          callback = function()
+            UIManager:close(dialog)
+
+            self:searchMangas("", excluded, "popular")
+          end,
+        },
+        {
+          text = _("Bookmarks"),
+          enabled = supported.bookmarks,
+          callback = function()
+            UIManager:close(dialog)
+
+            self:searchMangas("", excluded, "bookmarks")
           end,
         },
       },
@@ -1425,13 +1479,13 @@ function LibraryView:openCleanerDialog()
 end
 
 --- @private
-function LibraryView:searchMangas(search_text, exclude)
+function LibraryView:searchMangas(search_text, exclude, sort_bucket)
   Trapper:wrap(function()
     local onReturnCallback = function()
       self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
     end
 
-    if MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback) then
+    if MangaSearchResults:searchAndShow(search_text, exclude, sort_bucket, onReturnCallback) then
       self:onClose(true)
     end
   end)

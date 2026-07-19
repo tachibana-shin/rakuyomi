@@ -77,7 +77,7 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
       key = setting_definition.key,
       title = setting_definition.title,
       confirm_title = setting_definition.confirmTitle,
-      confirm_text = setting_definition.confirmText
+      confirm_message = setting_definition.confirmMessage
     }
   elseif setting_definition.type == 'editable-list' then
     return {

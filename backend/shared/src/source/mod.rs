@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs,
     io::Read,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 use tokio_util::bytes::Bytes;
@@ -362,7 +362,8 @@ pub struct BlockingSource {
     pub setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
-    pub sort_filter: Option<SortFilterDef>,
+    pub path: PathBuf,
+    pub sort_buckets_cache: Vec<SortBucket>,
 }
 
 #[cfg(feature = "all")]
@@ -374,7 +375,8 @@ struct BlockingSource {
     setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
-    pub sort_filter: Option<SortFilterDef>,
+    pub path: PathBuf,
+    pub sort_buckets_cache: Vec<SortBucket>,
 }
 
 impl BlockingSource {
@@ -549,15 +551,9 @@ impl BlockingSource {
             );
         }
 
-        let sort_filter = archive
-            .by_name("Payload/filters.json")
-            .ok()
-            .and_then(|file| {
-                serde_json::from_reader::<_, Vec<SortFilterDef>>(file)
-                    .map_err(|err| eprintln!("read file filters.json failed {}", err))
-                    .ok()
-            })
-            .and_then(|filters| filters.into_iter().find(|f| f.filter_type == "sort"));
+        let sort_buckets_cache = Self::read_sort_filter_from_archive(&mut archive)
+            .map(|filter| buckets_from_filter(&filter))
+            .unwrap_or_default();
 
         Ok(Self {
             id,
@@ -567,7 +563,8 @@ impl BlockingSource {
             next_sdk: aidoku_sdk_next,
             setting_definitions,
             features,
-            sort_filter,
+            path: path.to_path_buf(),
+            sort_buckets_cache,
         })
     }
 
@@ -652,8 +649,32 @@ impl BlockingSource {
         .map(|mangas| (mangas, false))
     }
 
+    fn read_sort_filter_from_archive<R: Read + std::io::Seek>(
+        archive: &mut ZipArchive<R>,
+    ) -> Option<SortFilterDef> {
+        let file = archive.by_name("Payload/filters.json").ok()?;
+        let filters: Vec<SortFilterDef> = serde_json::from_reader(file)
+            .map_err(|err| eprintln!("read file filters.json failed {}", err))
+            .ok()?;
+        filters.into_iter().find(|f| f.filter_type == "sort")
+    }
+
+    fn read_sort_filter_from_disk(path: &Path) -> Option<SortFilterDef> {
+        let file = fs::File::open(path)
+            .map_err(|err| eprintln!("open source file failed {}", err))
+            .ok()?;
+        let mut archive = ZipArchive::new(file)
+            .map_err(|err| eprintln!("open source archive failed {}", err))
+            .ok()?;
+        Self::read_sort_filter_from_archive(&mut archive)
+    }
+
     pub fn resolve_sort_filter(&self, bucket: SortBucket) -> Option<FilterValue> {
-        let filter = self.sort_filter.as_ref()?;
+        if !self.sort_buckets_cache.contains(&bucket) {
+            return None;
+        }
+
+        let filter = Self::read_sort_filter_from_disk(&self.path)?;
 
         let matches: Vec<usize> = filter
             .options
@@ -675,17 +696,7 @@ impl BlockingSource {
     }
 
     pub fn supported_sort_buckets(&self) -> Vec<SortBucket> {
-        [
-            SortBucket::Popular,
-            SortBucket::Views,
-            SortBucket::Rating,
-            SortBucket::Bookmarks,
-            SortBucket::Updated,
-            SortBucket::Added,
-        ]
-        .into_iter()
-        .filter(|&bucket| self.resolve_sort_filter(bucket).is_some())
-        .collect()
+        self.sort_buckets_cache.clone()
     }
 
     pub fn search_mangas_sorted(
@@ -1685,4 +1696,25 @@ fn match_sort_bucket(label: &str) -> Option<SortBucket> {
     }
 
     None
+}
+
+fn buckets_from_filter(filter: &SortFilterDef) -> Vec<SortBucket> {
+    [
+        SortBucket::Popular,
+        SortBucket::Views,
+        SortBucket::Rating,
+        SortBucket::Bookmarks,
+        SortBucket::Updated,
+        SortBucket::Added,
+    ]
+    .into_iter()
+    .filter(|&bucket| {
+        filter
+            .options
+            .iter()
+            .filter(|label| match_sort_bucket(label) == Some(bucket))
+            .count()
+            == 1
+    })
+    .collect()
 }

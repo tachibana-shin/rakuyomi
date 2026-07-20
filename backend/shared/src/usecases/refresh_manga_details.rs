@@ -38,12 +38,14 @@ pub async fn refresh_manga_details(
         }
     };
 
-    db.upsert_cached_manga_details(id, &manga_details).await?;
+    if db.find_cached_manga_information(id).await?.is_some() {
+        db.upsert_cached_manga_details(id, &manga_details).await?;
 
-    if let Some(url) = &manga_details.cover_url {
-        chapter_storage
-            .cached_poster(token, id, || source.get_image_request(url.to_owned(), None))
-            .await?;
+        if let Some(url) = &manga_details.cover_url {
+            chapter_storage
+                .cached_poster(token, id, || source.get_image_request(url.to_owned(), None))
+                .await?;
+        }
     }
 
     Ok(manga_details.status)

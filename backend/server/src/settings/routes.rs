@@ -200,7 +200,11 @@ async fn start_oauth(
     let session =
         usecases::start_oauth_session(&server_url, body.service, chat_id, device_name).await?;
 
-    let bridge_url = format!("{}{}", server_url, session.bridge_path);
+    let bridge_url = format!(
+        "{}{}",
+        server_url.trim_end_matches('/'),
+        session.bridge_path
+    );
 
     Ok(Json(StartOAuthResponse {
         session_id: session.session_id,

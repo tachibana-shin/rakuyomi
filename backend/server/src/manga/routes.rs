@@ -344,10 +344,11 @@ async fn get_mangas(
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
         for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
+            if let Some(local_url) = chapter_storage
+                .poster_exists(&manga.information.id)
+                .and_then(|path| path_to_file_url(&path))
+            {
+                manga.information.cover_url = Some(local_url);
             }
         }
     }

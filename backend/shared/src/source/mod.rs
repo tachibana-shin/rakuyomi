@@ -671,14 +671,17 @@ impl BlockingSource {
     }
 
     pub fn supported_sort_buckets(&self) -> Vec<SortBucket> {
-        let Some(filter) = &self.sort_filter else {
-            return vec![];
-        };
-        filter
-            .options
-            .iter()
-            .filter_map(|label| match_sort_bucket(label))
-            .collect()
+        [
+            SortBucket::Popular,
+            SortBucket::Views,
+            SortBucket::Rating,
+            SortBucket::Bookmarks,
+            SortBucket::Updated,
+            SortBucket::Added,
+        ]
+        .into_iter()
+        .filter(|&bucket| self.resolve_sort_filter(bucket).is_some())
+        .collect()
     }
 
     pub fn search_mangas_sorted(
@@ -1604,7 +1607,7 @@ const NON_SORT_SIGNAL: &[&str] = &[
     "week",
     "month",
     "year",
-    "best", "match", "name", "old", "publish", "title",
+    "best", "match", "name", "old", "publish", "title", "review", "revis",
     "tang", // vi. "increasing" (excluded so "giảm"/decreasing wins — highest count first)
     "meno", // it. "less"
 ];
@@ -1632,7 +1635,7 @@ fn match_sort_bucket(label: &str) -> Option<SortBucket> {
     }
 
     if stripped.contains("book") // "bookmark"
-        || stripped.contains("sub") // "subscribe"
+        || stripped.contains("subs") // "subscribers"
         || stripped.contains("follow")
         || stripped.contains("track")
     {
@@ -1648,7 +1651,7 @@ fn match_sort_bucket(label: &str) -> Option<SortBucket> {
         return Some(SortBucket::Added);
     }
 
-    if stripped.contains("late") // "latest"
+    if stripped.contains("latest")
         || stripped.contains("last")
         || stripped.contains("rec") // "recent"
         || stripped.contains("update")
@@ -1660,15 +1663,16 @@ fn match_sort_bucket(label: &str) -> Option<SortBucket> {
         || stripped.contains("rank")
         || stripped.contains("read")
         || stripped.contains("trend")
-        || stripped.contains("letti") // it. "read"
-        || stripped.contains("tend")  // es./it. "trending"
-        || stripped.contains("alta")  // pt. "trending"
-        || stripped.contains("theo")  // vi. "follow"
+        || stripped.contains("letti")  // it. "read"
+        || stripped.contains("tenden") // es./it. "trending" (tendencia/tendenza)
+        || stripped.contains("alta")   // pt. "trending"
+        || stripped.contains("theo")   // vi. "follow" (ok)
     {
         return Some(SortBucket::Popular);
     }
 
-    if stripped.contains("rat") // "rate/rating"
+    if stripped.contains("rate")
+        || stripped.contains("rating")
         || stripped.contains("all")
         || stripped.contains("score")
         || stripped.contains("cao") // vi. "high"

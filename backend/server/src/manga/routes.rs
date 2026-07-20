@@ -322,7 +322,7 @@ async fn get_mangas(
     });
 
     let page = page.unwrap_or(1).max(1);
-    let sort_bucket = sort.and_then(|s| s.parse::<shared::source::SortBucket>().ok());
+    let sort_bucket = sort.and_then(|s| shared::source::SortBucket::try_from(s.as_str()).ok());
 
     let (mut mangas, errors, has_next_page) =
         cancel_after(&token.0, Duration::from_secs(59), |token| {

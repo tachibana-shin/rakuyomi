@@ -651,15 +651,15 @@ impl BlockingSource {
 
     fn read_sort_filter_from_archive<R: Read + std::io::Seek>(
         archive: &mut ZipArchive<R>,
-    ) -> Option<SortFilterDef> {
+    ) -> Option<SortFilterDefinition> {
         let file = archive.by_name("Payload/filters.json").ok()?;
-        let filters: Vec<SortFilterDef> = serde_json::from_reader(file)
+        let filters: Vec<SortFilterDefinition> = serde_json::from_reader(file)
             .map_err(|err| eprintln!("read file filters.json failed {}", err))
             .ok()?;
         filters.into_iter().find(|f| f.filter_type == "sort")
     }
 
-    fn read_sort_filter_from_disk(path: &Path) -> Option<SortFilterDef> {
+    fn read_sort_filter_from_disk(path: &Path) -> Option<SortFilterDefinition> {
         let file = fs::File::open(path)
             .map_err(|err| eprintln!("open source file failed {}", err))
             .ok()?;
@@ -1594,23 +1594,24 @@ pub enum SortBucket {
     Added,
 }
 
-impl std::str::FromStr for SortBucket {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, ()> {
-        match s {
+impl TryFrom<&str> for SortBucket {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> anyhow::Result<Self> {
+        match value {
             "popular" => Ok(SortBucket::Popular),
             "views" => Ok(SortBucket::Views),
             "rating" => Ok(SortBucket::Rating),
             "bookmarks" => Ok(SortBucket::Bookmarks),
             "updated" => Ok(SortBucket::Updated),
             "added" => Ok(SortBucket::Added),
-            _ => Err(()),
+            other => Err(anyhow::anyhow!("unsupported sort bucket: {other}")),
         }
     }
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct SortFilterDef {
+pub struct SortFilterDefinition {
     #[serde(rename = "type")]
     pub filter_type: String,
     pub id: String,
@@ -1698,7 +1699,7 @@ fn match_sort_bucket(label: &str) -> Option<SortBucket> {
     None
 }
 
-fn buckets_from_filter(filter: &SortFilterDef) -> Vec<SortBucket> {
+fn buckets_from_filter(filter: &SortFilterDefinition) -> Vec<SortBucket> {
     [
         SortBucket::Popular,
         SortBucket::Views,

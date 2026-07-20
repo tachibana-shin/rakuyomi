@@ -1143,7 +1143,7 @@ function LibraryView:openSearchMangasDialog()
   if sources_response.type == 'SUCCESS' then
     for _, source in ipairs(sources_response.body) do
       if not hasValue(excluded, source.id) then
-        for _, bucket in ipairs(source.supported_sort_buckets) do
+for _, bucket in ipairs(source.supported_sort_buckets or {}) do
           supported[bucket] = true
         end
       end

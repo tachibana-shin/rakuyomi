@@ -552,7 +552,11 @@ impl BlockingSource {
         let sort_filter = archive
             .by_name("Payload/filters.json")
             .ok()
-            .and_then(|file| serde_json::from_reader::<_, Vec<SortFilterDef>>(file).ok())
+            .and_then(|file| {
+                serde_json::from_reader::<_, Vec<SortFilterDef>>(file)
+                    .map_err(|err| eprintln!("read file filters.json failed {}", err))
+                    .ok()
+            })
             .and_then(|filters| filters.into_iter().find(|f| f.filter_type == "sort"));
 
         Ok(Self {

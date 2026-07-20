@@ -551,9 +551,13 @@ impl BlockingSource {
             );
         }
 
-        let sort_buckets_cache = Self::read_sort_filter_from_archive(&mut archive)
-            .map(|filter| buckets_from_filter(&filter))
-            .unwrap_or_default();
+        let sort_buckets_cache = if aidoku_sdk_next {
+            Self::read_sort_filter_from_archive(&mut archive)
+                .map(|filter| buckets_from_filter(&filter))
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
 
         Ok(Self {
             id,

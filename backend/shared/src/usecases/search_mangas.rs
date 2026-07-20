@@ -119,39 +119,45 @@ pub async fn search_mangas(
                             }
                         };
 
-                    // Write through to the database
-                    let _ = db
-                        .upsert_cached_manga_information(&manga_informations)
-                        .await;
-
-                    if settings.search_view_mode != SearchViewMode::Base {
-                        // Download posters concurrently so cover/grid view can render them
-                        let poster_items: Vec<(MangaId, url::Url)> = manga_informations
-                            .iter()
-                            .filter_map(|info| {
-                                info.cover_url
-                                    .as_ref()
-                                    .map(|url| (info.id.clone(), url.clone()))
-                            })
-                            .collect();
-                        stream::iter(poster_items)
-                            .map(|(id, url)| {
-                                let chapter_storage = chapter_storage.clone();
-                                let source = source.clone();
-                                let token = token.clone();
-                                async move {
-                                    let _ = timeout(
-                                        Duration::from_secs(POSTER_DOWNLOAD_TIMEOUT_SECS),
-                                        chapter_storage.cached_poster(&token, &id, || {
-                                            source.get_image_request(url.clone(), None)
-                                        }),
-                                    )
-                                    .await;
-                                }
-                            })
-                            .buffered(CONCURRENT_POSTER_DOWNLOADS)
-                            .collect::<Vec<_>>()
+                    // Bucket browsing (Popular/Views/Rating/Bookmarks) doesn't persist anything
+                    // by itself — the manga's info gets backfilled once it's actually added to
+                    // the library, so plain browsing never leaves a database row or a cover file
+                    // behind.
+                    if sort_bucket.is_none() {
+                        // Write through to the database
+                        let _ = db
+                            .upsert_cached_manga_information(&manga_informations)
                             .await;
+
+                        if settings.search_view_mode != SearchViewMode::Base {
+                            // Download posters concurrently so cover/grid view can render them
+                            let poster_items: Vec<(MangaId, url::Url)> = manga_informations
+                                .iter()
+                                .filter_map(|info| {
+                                    info.cover_url
+                                        .as_ref()
+                                        .map(|url| (info.id.clone(), url.clone()))
+                                })
+                                .collect();
+                            stream::iter(poster_items)
+                                .map(|(id, url)| {
+                                    let chapter_storage = chapter_storage.clone();
+                                    let source = source.clone();
+                                    let token = token.clone();
+                                    async move {
+                                        let _ = timeout(
+                                            Duration::from_secs(POSTER_DOWNLOAD_TIMEOUT_SECS),
+                                            chapter_storage.cached_poster(&token, &id, || {
+                                                source.get_image_request(url.clone(), None)
+                                            }),
+                                        )
+                                        .await;
+                                    }
+                                })
+                                .buffered(CONCURRENT_POSTER_DOWNLOADS)
+                                .collect::<Vec<_>>()
+                                .await;
+                        }
                     }
 
                     // Fetch unread chapters count for each manga

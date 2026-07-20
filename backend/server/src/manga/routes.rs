@@ -404,13 +404,16 @@ async fn add_manga_to_library(
         settings,
         ..
     }): StateExtractor<State>,
+    SourceExtractor(source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
 
-    let settings = settings.lock().await;
+    let token = tokio_util::sync::CancellationToken::new();
 
-    usecases::add_manga_to_library(&database, manga_id).await?;
+    usecases::add_manga_to_library(&token, &database, &source, manga_id, 30).await?;
+
+    let settings = settings.lock().await;
 
     if settings.enabled_cron_check_mangas_update {
         let db = database.clone();

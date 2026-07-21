@@ -48,7 +48,8 @@ ffi.cdef [[
 
 local function get_ram_via_ffi()
   local info = ffi.new("struct sysinfo")
-  if ffi.C.sysinfo(info) == 0 then
+  local ok, result = pcall(function() return ffi.C.sysinfo(info) end)  --not available on macOS
+  if ok and result == 0 then
     local mem_unit = info.mem_unit > 0 and info.mem_unit or 1
     local total_bytes = tonumber(info.totalram) * mem_unit
     local free_bytes = tonumber(info.freeram) * mem_unit

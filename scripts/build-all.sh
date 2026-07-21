@@ -8,6 +8,7 @@ export CROSS_CONTAINER_ENGINE=podman
 declare -A TARGETS=(
   ["desktop"]="x86_64-unknown-linux-musl"
   ["aarch64"]="aarch64-unknown-linux-musl"
+  ["macos"]="aarch64-apple-darwin"
   ["kindle"]="arm-unknown-linux-musleabi"
   ["kindlehf"]="arm-unknown-linux-musleabihf"
   ["kindlea9"]="arm-unknown-linux-musleabi"
@@ -20,7 +21,7 @@ build_one() {
 
   cd backend
   echo "=== Building $name ($target) ==="
-  
+
   local base_flags=""
 
   if [[ "$name" == "kindlea9" ]]; then

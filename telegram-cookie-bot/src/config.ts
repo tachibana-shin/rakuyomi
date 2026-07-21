@@ -49,7 +49,7 @@ export function getOAuthConfigs(): Record<OAuthService, OAuthProviderConfig> {
       token_url: "https://myanimelist.net/v1/oauth2/token",
       client_id: Deno.env.get("MAL_CLIENT_ID") ?? "",
       client_secret: Deno.env.get("MAL_CLIENT_SECRET") ?? "",
-      pkce_required: true,
+      pkce_required: false,
     },
     shikimori: {
       authorize_url: "https://shikimori.one/oauth/authorize",

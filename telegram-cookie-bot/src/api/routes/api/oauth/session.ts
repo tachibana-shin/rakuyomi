@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi"
 import { createOAuthSession, getOAuthSession } from "../../../../oauth_kv.ts"
 import { generateCodeVerifier, generateCodeChallenge } from "../../../../logic/pkce.ts"
 import { oauthServiceSchema } from "../../../../schemas.ts"
+import { getOAuthConfigs } from "../../../../config.ts"
 
 const CreateSessionBody = z.object({
   service: oauthServiceSchema.openapi({
@@ -53,7 +54,7 @@ app.openapi(route, async (c) => {
   }
 
   const pkceVerifier = generateCodeVerifier()
-  const pkceChallenge = await generateCodeChallenge(pkceVerifier)
+  const pkceChallenge = getOAuthConfigs()[service].pkce_required === false ? pkceVerifier : await generateCodeChallenge(pkceVerifier)
 
   await createOAuthSession(sessionId, service, {
     chat_id,

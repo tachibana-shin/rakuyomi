@@ -287,7 +287,7 @@ function TrackingSettings:init()
         build_validate_button(self, svc.id),
       })
     else
-      table.insert(TrackingSettings.tracking_value_definitions, {
+      table.insert(self.tracking_value_definitions, {
         'validate_' .. svc.id,
         build_validate_button_plain(svc.id),
       })

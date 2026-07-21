@@ -1,3 +1,10 @@
+## [1.39.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.39.1...v1.39.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* use lowercase serialization for TrackingService and decouple instance tracking definitions in UI ([e0db2fb](https://github.com/tachibana-shin/rakuyomi/commit/e0db2fbb96d753565f65e733a67f31188a391aaf))
+
 ## [1.39.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.39.0...v1.39.1) (2026-07-20)
 
 

@@ -43,7 +43,11 @@ panic = "abort"
 EOF
 
   # Build all required crates
-  RUSTFLAGS="$base_flags" cross build --release --target "$target"
+  if [[ "$name" == "macos" ]]; then
+    RUSTFLAGS="$base_flags" cargo build --release --target "$target"
+  else
+    RUSTFLAGS="$base_flags" cross build --release --target "$target"
+  fi
   cd ..
 
   # Package osh output
@@ -77,4 +81,3 @@ else
     build_one "$name"
   done
 fi
-

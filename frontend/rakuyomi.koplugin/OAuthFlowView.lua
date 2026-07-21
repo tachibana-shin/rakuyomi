@@ -75,10 +75,11 @@ function OAuthFlowView:init()
   local widgets = VerticalGroup:new { align = "left" }
 
   -- Instruction text
-  table.insert(widgets, TextWidget:new {
+  table.insert(widgets, TextBoxWidget:new {
     text = _("Scan this QR code on your phone to sign in."),
     face = Font:getFace("cfont", 24),
     width = self.dimen.w - 2 * padding,
+    alignment = "left",
   })
   table.insert(widgets, VerticalSpan:new { width = Size.padding.large })
 

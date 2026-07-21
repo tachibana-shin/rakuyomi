@@ -1,3 +1,10 @@
+## [1.39.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.39.2...v1.39.3) (2026-07-21)
+
+
+### Bug Fixes
+
+* use local tracking_value_definitions instead of global table in TrackingSettings ([b67a994](https://github.com/tachibana-shin/rakuyomi/commit/b67a994003a05aa516405ea9b5067044cf6c3c0d))
+
 ## [1.39.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.39.1...v1.39.2) (2026-07-21)
 
 

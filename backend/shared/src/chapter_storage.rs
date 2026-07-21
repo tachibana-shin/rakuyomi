@@ -174,6 +174,7 @@ impl ChapterStorage {
     #[cfg(not(target_os = "linux"))]
     pub fn disable_ram(&mut self) {
         self.ram_enabled = false;
+        self.tmpfs_mount_error = None;
     }
 
     /// Returns `true` when writing to tmpfs instead of persistent storage.

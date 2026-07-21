@@ -131,7 +131,7 @@ pub struct MangaState {
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Hash, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "lowercase")]
 pub enum TrackingService {
     Anilist,
     MyAnimeList,

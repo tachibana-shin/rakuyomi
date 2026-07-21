@@ -17,6 +17,7 @@ local _ = require("gettext+")
 local Font = require("ui/font")
 local TextWidget = require("ui/widget/textwidget")
 local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
+local shallow_clone = require("utils/shallowClone")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -256,41 +257,44 @@ TrackingSettings.tracking_value_definitions = {
   },
 }
 
-for _, svc in ipairs(service_configs) do
-  table.insert(TrackingSettings.tracking_value_definitions, {
-    nil,
-    {
-      type = 'divider',
-      title = TrackingServices.getLabel(svc.id),
-      service = svc.oauth and svc.id or nil,
-    }
-  })
+function TrackingSettings:init()
+  self.tracking_value_definitions = shallow_clone(TrackingSettings.tracking_value_definitions)
 
-  for _, field in ipairs(svc.fields) do
-    table.insert(TrackingSettings.tracking_value_definitions, {
-      svc.id .. '.' .. field.key,
+  for _, svc in ipairs(service_configs) do
+    table.insert(self.tracking_value_definitions, {
+      nil,
       {
-        type = 'string',
-        title = TrackingServices.getLabel(svc.id) .. ' ' .. field.key:gsub('_', ' '),
-        placeholder = field.placeholder,
+        type = 'divider',
+        title = TrackingServices.getLabel(svc.id),
+        service = svc.oauth and svc.id or nil,
       }
     })
+
+    for _, field in ipairs(svc.fields) do
+      table.insert(self.tracking_value_definitions, {
+        svc.id .. '.' .. field.key,
+        {
+          type = 'string',
+          title = TrackingServices.getLabel(svc.id) .. ' ' .. field.key:gsub('_', ' '),
+          placeholder = field.placeholder,
+        }
+      })
+    end
+
+    if svc.oauth then
+      table.insert(self.tracking_value_definitions, {
+        'validate_' .. svc.id,
+        build_validate_button(self, svc.id),
+      })
+    else
+      table.insert(TrackingSettings.tracking_value_definitions, {
+        'validate_' .. svc.id,
+        build_validate_button_plain(svc.id),
+      })
+    end
   end
 
-  if svc.oauth then
-    table.insert(TrackingSettings.tracking_value_definitions, {
-      'validate_' .. svc.id,
-      build_validate_button(TrackingServices, svc.id),
-    })
-  else
-    table.insert(TrackingSettings.tracking_value_definitions, {
-      'validate_' .. svc.id,
-      build_validate_button_plain(svc.id),
-    })
-  end
-end
 
-function TrackingSettings:init()
   self.username_widgets = {}
 
   self.dimen = Geom:new {
@@ -318,7 +322,7 @@ function TrackingSettings:init()
     align = "left",
   }
 
-  for _, tuple in ipairs(TrackingSettings.tracking_value_definitions) do
+  for _, tuple in ipairs(self.tracking_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
     if definition.type == 'divider' then

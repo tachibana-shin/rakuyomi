@@ -71,7 +71,7 @@ impl ChapterStorage {
     /// tmpfs is mounted at `<parent_of_downloads>/tmpfs/`.
     /// If already mounted, remounts with the new size.
     /// Returns an error (e.g. `EPERM` — need root) on failure.
-    #[cfg(not(target_os = "android"))]
+    #[cfg(target_os = "linux")]
     pub fn enable_ram(&mut self, size_mb: usize) -> Result<()> {
         use log::{info, warn};
         use nix::errno::Errno;
@@ -145,9 +145,15 @@ impl ChapterStorage {
         Err(anyhow::anyhow!("Not implemented for Android"))
     }
 
+    #[cfg(all(not(target_os = "linux"), not(target_os = "android")))]
+    pub fn enable_ram(&mut self, _size_mb: usize) -> Result<()> {
+        self.ram_enabled = false;
+        Err(anyhow::anyhow!("RAM-backed storage is only supported on Linux"))
+    }
+
     /// Switch back to persistent disk storage.
     /// Unmounts the tmpfs if it was mounted.
-    #[cfg(not(target_os = "android"))]
+    #[cfg(target_os = "linux")]
     pub fn disable_ram(&mut self) {
         use log::{info, warn};
         use nix::mount::umount;
@@ -165,8 +171,11 @@ impl ChapterStorage {
         self.tmpfs_mount_error = None;
     }
 
-    #[cfg(target_os = "android")]
-    pub fn disable_ram(&mut self) {}
+    #[cfg(not(target_os = "linux"))]
+    pub fn disable_ram(&mut self) {
+        self.ram_enabled = false;
+        self.tmpfs_mount_error = None;
+    }
 
     /// Returns `true` when writing to tmpfs instead of persistent storage.
     pub fn is_ram_enabled(&self) -> bool {

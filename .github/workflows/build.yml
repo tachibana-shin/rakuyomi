@@ -66,6 +66,7 @@ jobs:
     - name: Install Rust 1.95.0
       uses: actions-rs/toolchain@v1
       with:
+        toolchain: 1.95.0
         profile: minimal
         components: rustfmt, clippy
         override: true
@@ -87,8 +88,8 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Get next version
-      id: get-next-version
       run: npx semantic-release --dry-run
+      id: get-next-version
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Build plugin

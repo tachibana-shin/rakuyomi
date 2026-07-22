@@ -47,6 +47,7 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
                 &None,
                 1,
                 60,
+                None,
             )
             .await
             .unwrap();

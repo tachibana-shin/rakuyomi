@@ -290,6 +290,7 @@ struct GetMangasQuery {
     exclude: Option<String>,
     q: String,
     page: Option<i32>,
+    sort: Option<String>,
 }
 
 async fn get_mangas(
@@ -306,6 +307,7 @@ async fn get_mangas(
         exclude,
         q,
         page,
+        sort,
     }): Query<GetMangasQuery>,
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
     let chapter_storage = chapter_storage.lock().await;
@@ -320,6 +322,7 @@ async fn get_mangas(
     });
 
     let page = page.unwrap_or(1).max(1);
+    let sort_bucket = sort.and_then(|s| shared::source::SortBucket::try_from(s.as_str()).ok());
 
     let (mut mangas, errors, has_next_page) =
         cancel_after(&token.0, Duration::from_secs(59), |token| {
@@ -333,6 +336,7 @@ async fn get_mangas(
                 &exclude,
                 page,
                 30,
+                sort_bucket,
             )
         })
         .await
@@ -340,10 +344,11 @@ async fn get_mangas(
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
         for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
+            if let Some(local_url) = chapter_storage
+                .poster_exists(&manga.information.id)
+                .and_then(|path| path_to_file_url(&path))
+            {
+                manga.information.cover_url = Some(local_url);
             }
         }
     }
@@ -400,13 +405,16 @@ async fn add_manga_to_library(
         settings,
         ..
     }): StateExtractor<State>,
+    SourceExtractor(source): SourceExtractor,
     Path(params): Path<MangaChaptersPathParams>,
 ) -> Result<Json<()>, AppError> {
     let manga_id = MangaId::from(params);
 
-    let settings = settings.lock().await;
+    let token = tokio_util::sync::CancellationToken::new();
 
-    usecases::add_manga_to_library(&database, manga_id).await?;
+    usecases::add_manga_to_library(&token, &database, &source, manga_id, 30).await?;
+
+    let settings = settings.lock().await;
 
     if settings.enabled_cron_check_mangas_update {
         let db = database.clone();

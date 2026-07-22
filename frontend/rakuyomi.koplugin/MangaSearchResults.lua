@@ -204,11 +204,11 @@ end
 --- @param exclude string[]
 --- @param onReturnCallback any
 --- @return boolean
-function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback)
+function MangaSearchResults:searchAndShow(search_text, exclude, sort_bucket, onReturnCallback)
   local cancel_id = Backend.createCancelId()
   local response, cancelled = LoadingDialog:showAndRun(
     _("Searching for") .. " \"" .. search_text .. "\"",
-    function() return Backend.searchMangas(cancel_id, search_text, exclude) end,
+    function() return Backend.searchMangas(cancel_id, search_text, exclude, nil, sort_bucket) end,
     function()
       Backend.cancel(cancel_id)
       local cancelledMessage = InfoMessage:new {
@@ -235,6 +235,7 @@ function MangaSearchResults:searchAndShow(search_text, exclude, onReturnCallback
     results = results,
     search_text = search_text,
     exclude = exclude,
+    sort_bucket = sort_bucket,
     result_page = 1,
     has_next_page = has_next_page,
     on_return_callback = onReturnCallback,
@@ -260,7 +261,7 @@ end
 function MangaSearchResults:loadNextPage()
   Trapper:wrap(function()
     local search_text = self.search_text
-    if not search_text or search_text == "" then
+    if (not search_text or search_text == "") and not self.sort_bucket then
       return
     end
 
@@ -268,7 +269,7 @@ function MangaSearchResults:loadNextPage()
     local next_page = self.result_page + 1
     local response, cancelled = LoadingDialog:showAndRun(
       _("Searching for") .. " \"" .. search_text .. "\"",
-      function() return Backend.searchMangas(cancel_id, search_text, self.exclude, next_page) end,
+      function() return Backend.searchMangas(cancel_id, search_text, self.exclude, next_page, self.sort_bucket) end,
       function()
         Backend.cancel(cancel_id)
 

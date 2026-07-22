@@ -218,6 +218,7 @@ end
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
 --- @field version number The version of the source.
+--- @field supported_sort_buckets string[] Sort buckets this source's `sort` filter maps to.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga
@@ -442,7 +443,7 @@ end
 --- @param exclude string[]|nil
 --- @param page number|nil
 --- @return SuccessfulResponse<[Manga[], SearchError[], boolean]>|ErrorResponse
-function Backend.searchMangas(cancel_id, search_text, exclude, page)
+function Backend.searchMangas(cancel_id, search_text, exclude, page, sort_bucket)
   return Backend.requestJson({
     path = "/mangas",
     query_params = {
@@ -450,6 +451,7 @@ function Backend.searchMangas(cancel_id, search_text, exclude, page)
       exclude = exclude and table.concat(exclude, ",") or nil,
       cancel_id = cancel_id,
       page = page,
+      sort = sort_bucket,
     }
   })
 end

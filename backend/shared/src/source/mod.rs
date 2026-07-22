@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs,
     io::Read,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 use tokio_util::bytes::Bytes;
@@ -13,6 +13,7 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 use wasmi::*;
 use zip::ZipArchive;
+use unicode_normalization::UnicodeNormalization;
 
 use crate::{
     settings::SourceSettingValue,
@@ -190,6 +191,19 @@ impl Source {
     );
 
     wrap_blocking_source_fn!(
+        search_mangas_sorted,
+        Result<(Vec<Manga>, bool)>,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        sort_bucket: Option<SortBucket>
+    );
+
+    pub fn supported_sort_buckets(&self) -> Vec<SortBucket> {
+        self.0.lock().unwrap().supported_sort_buckets()
+    }
+    
+    wrap_blocking_source_fn!(
         get_manga_details,
         Result<Manga>,
         cancellation_token: CancellationToken,
@@ -348,7 +362,10 @@ pub struct BlockingSource {
     pub setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
+    pub path: PathBuf,
+    pub sort_buckets_cache: Vec<SortBucket>,
 }
+
 #[cfg(feature = "all")]
 struct BlockingSource {
     id: String,
@@ -358,6 +375,8 @@ struct BlockingSource {
     setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
+    pub path: PathBuf,
+    pub sort_buckets_cache: Vec<SortBucket>,
 }
 
 impl BlockingSource {
@@ -532,6 +551,14 @@ impl BlockingSource {
             );
         }
 
+        let sort_buckets_cache = if aidoku_sdk_next {
+            Self::read_sort_filter_from_archive(&mut archive)
+                .map(|filter| buckets_from_filter(&filter))
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+
         Ok(Self {
             id,
             store,
@@ -540,6 +567,8 @@ impl BlockingSource {
             next_sdk: aidoku_sdk_next,
             setting_definitions,
             features,
+            path: path.to_path_buf(),
+            sort_buckets_cache,
         })
     }
 
@@ -624,7 +653,90 @@ impl BlockingSource {
         .map(|mangas| (mangas, false))
     }
 
+    fn read_sort_filter_from_archive<R: Read + std::io::Seek>(
+        archive: &mut ZipArchive<R>,
+    ) -> Option<SortFilterDefinition> {
+        let file = archive.by_name("Payload/filters.json").ok()?;
+        let filters: Vec<SortFilterDefinition> = serde_json::from_reader(file)
+            .map_err(|err| eprintln!("read file filters.json failed {}", err))
+            .ok()?;
+        filters.into_iter().find(|f| f.filter_type == "sort")
+    }
+
+    fn read_sort_filter_from_disk(path: &Path) -> Option<SortFilterDefinition> {
+        let file = fs::File::open(path)
+            .map_err(|err| eprintln!("open source file failed {}", err))
+            .ok()?;
+        let mut archive = ZipArchive::new(file)
+            .map_err(|err| eprintln!("open source archive failed {}", err))
+            .ok()?;
+        Self::read_sort_filter_from_archive(&mut archive)
+    }
+
+    pub fn resolve_sort_filter(&self, bucket: SortBucket) -> Option<FilterValue> {
+        if !self.sort_buckets_cache.contains(&bucket) {
+            return None;
+        }
+
+        let filter = Self::read_sort_filter_from_disk(&self.path)?;
+
+        let matches: Vec<usize> = filter
+            .options
+            .iter()
+            .enumerate()
+            .filter(|(_, label)| match_sort_bucket(label) == Some(bucket))
+            .map(|(i, _)| i)
+            .collect();
+
+        if matches.len() != 1 {
+            return None;
+        }
+
+        Some(FilterValue::Sort {
+            id: filter.id.clone(),
+            index: matches[0] as i32,
+            ascending: false,
+        })
+    }
+
+    pub fn supported_sort_buckets(&self) -> Vec<SortBucket> {
+        self.sort_buckets_cache.clone()
+    }
+
+    pub fn search_mangas_sorted(
+        &mut self,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        sort_bucket: Option<SortBucket>,
+    ) -> Result<(Vec<Manga>, bool)> {
+        if let Some(bucket) = sort_bucket {
+            let filter = match self.resolve_sort_filter(bucket) {
+                Some(f) => f,
+                None => return Ok((vec![], false)),
+            };
+
+            if !self.next_sdk {
+                return Ok((vec![], false));
+            }
+
+            return self
+                .get_search_manga_list_next(cancellation_token, query, page, vec![filter])
+                .map(|list| {
+                    let mangas = list
+                        .entries
+                        .into_iter()
+                        .map(|v| Manga::from(v, self.id.clone()))
+                        .collect::<Vec<_>>();
+                    (mangas, list.has_next_page)
+                });
+        }
+
+        self.search_mangas(cancellation_token, query, page)
+    }
+
     fn search_mangas_by_filters_inner(&mut self, filters: Vec<Filter>) -> Result<Vec<Manga>> {
+
         let wasm_function = self
             .instance
             .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
@@ -1474,4 +1586,140 @@ impl BlockingSource {
 
         result
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SortBucket {
+    Popular,
+    Views,
+    Rating,
+    Bookmarks,
+    Updated,
+    Added,
+}
+
+impl TryFrom<&str> for SortBucket {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> anyhow::Result<Self> {
+        match value {
+            "popular" => Ok(SortBucket::Popular),
+            "views" => Ok(SortBucket::Views),
+            "rating" => Ok(SortBucket::Rating),
+            "bookmarks" => Ok(SortBucket::Bookmarks),
+            "updated" => Ok(SortBucket::Updated),
+            "added" => Ok(SortBucket::Added),
+            other => Err(anyhow::anyhow!("unsupported sort bucket: {other}")),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SortFilterDefinition {
+    #[serde(rename = "type")]
+    pub filter_type: String,
+    pub id: String,
+    pub options: Vec<String>,
+}
+
+const NON_SORT_SIGNAL: &[&str] = &[
+    "day", "daily",
+    "week",
+    "month",
+    "year",
+    "best", "match", "name", "old", "publish", "title", "review", "revis",
+    "tang", // vi. "increasing" (excluded so "giảm"/decreasing wins — highest count first)
+    "meno", // it. "less"
+];
+
+fn strip_accents(s: &str) -> String {
+    s.nfkd().filter(char::is_ascii).collect()
+}
+
+fn match_sort_bucket(label: &str) -> Option<SortBucket> {
+    if label.chars().any(|c| c.is_ascii_digit()) {
+        return None;
+    }
+
+    let stripped = strip_accents(label).to_lowercase();
+
+    if NON_SORT_SIGNAL.iter().any(|t| stripped.contains(t)) {
+        return None;
+    }
+
+    if stripped.contains("view")
+        || stripped.contains("xem") // vi. "view"
+        || stripped.contains("vis") // pt./es. "views"
+    {
+        return Some(SortBucket::Views);
+    }
+
+    if stripped.contains("book") // "bookmark"
+        || stripped.contains("subs") // "subscribers"
+        || stripped.contains("follow")
+        || stripped.contains("track")
+    {
+        return Some(SortBucket::Bookmarks);
+    }
+
+    if stripped.contains("new")
+        || stripped.contains("add")
+        || stripped.contains("create")
+        || stripped.contains("novo")  // pt. "new"
+        || stripped.contains("nuevo") // es. "new"
+    {
+        return Some(SortBucket::Added);
+    }
+
+    if stripped.contains("latest")
+        || stripped.contains("last")
+        || stripped.contains("rec") // "recent"
+        || stripped.contains("update")
+    {
+        return Some(SortBucket::Updated);
+    }
+
+    if stripped.contains("popula") // "popular"
+        || stripped.contains("rank")
+        || stripped.contains("read")
+        || stripped.contains("trend")
+        || stripped.contains("letti")  // it. "read"
+        || stripped.contains("tenden") // es./it. "trending" (tendencia/tendenza)
+        || stripped.contains("alta")   // pt. "trending"
+        || stripped.contains("theo")   // vi. "follow" (ok)
+    {
+        return Some(SortBucket::Popular);
+    }
+
+    if stripped.contains("rate")
+        || stripped.contains("rating")
+        || stripped.contains("all")
+        || stripped.contains("score")
+        || stripped.contains("cao") // vi. "high"
+    {
+        return Some(SortBucket::Rating);
+    }
+
+    None
+}
+
+fn buckets_from_filter(filter: &SortFilterDefinition) -> Vec<SortBucket> {
+    [
+        SortBucket::Popular,
+        SortBucket::Views,
+        SortBucket::Rating,
+        SortBucket::Bookmarks,
+        SortBucket::Updated,
+        SortBucket::Added,
+    ]
+    .into_iter()
+    .filter(|&bucket| {
+        filter
+            .options
+            .iter()
+            .filter(|label| match_sort_bucket(label) == Some(bucket))
+            .count()
+            == 1
+    })
+    .collect()
 }

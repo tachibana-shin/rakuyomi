@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["aarch64", "desktop", "kindle", "kindlehf", "kindlea9", "android", "macos"]
+        target: ["aarch64", "desktop", "kindle", "kindlehf", "kindlea9", "android"]
         os: [ubuntu-latest]
         include:
           - target: "macos"

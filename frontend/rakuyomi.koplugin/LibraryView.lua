@@ -1128,7 +1128,7 @@ function LibraryView:openPlaylistDialog()
       if need_close then
         self:onClose(true)
       end
-    end, { hideTopClose = true })
+    end, { hideTopClose = self.hide_top_close })
   end)
 end
 

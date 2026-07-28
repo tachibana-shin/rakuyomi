@@ -37,6 +37,7 @@ pub struct DownloadError {
     pub attempts: usize,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn ensure_chapter_is_in_storage(
     token: &CancellationToken,
     chapter_storage: &ChapterStorage,
@@ -100,10 +101,12 @@ pub async fn ensure_chapter_is_in_storage(
     let temporary_file = NamedTempFile::new_in(parent).map_err(|e| Error::Other(e.into()))?;
 
     // in mode write to RAM before download to free memory
-    if use_ram && current_chapter_id.is_some() {
-        let _ = chapter_storage
-            .evict_tmpfs_older_than_current(current_chapter_id.unwrap(), is_novel)
-            .await;
+    if use_ram {
+        if let Some(current_chapter_id) = current_chapter_id {
+            let _ = chapter_storage
+                .evict_tmpfs_older_than_current(current_chapter_id, is_novel)
+                .await;
+        }
     }
     let errors = if is_novel {
         // is novel
@@ -178,6 +181,7 @@ fn zip_comment(chapter_id: &ChapterId) -> String {
     .to_string()
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn download_chapter_pages_as_cbz<W>(
     cancel_token: &CancellationToken,
     output: W,
@@ -433,6 +437,7 @@ where
     Ok(errors)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn download_chapter_novel_as_epub<W>(
     _: W,
     token: &CancellationToken,

@@ -65,7 +65,7 @@ pub fn init_logging() {
         let _ = log::set_boxed_logger(Box::new(StderrLogger));
     }
 
-    let _ = log::set_max_level(max_level);
+    log::set_max_level(max_level);
 }
 
 fn parse_log_level(rust_log: &str) -> LevelFilter {

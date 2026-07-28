@@ -12,7 +12,7 @@ pub async fn list_available_sources(source_lists: Vec<Url>) -> Result<Vec<Source
 
             let client = crate::tls::client_builder()
                 .build()
-                .with_context(|| format!("failed to create HTTP client"))?;
+                .with_context(|| "failed to create HTTP client".to_string())?;
             let response = client
                 .get(source_list.clone())
                 .send()

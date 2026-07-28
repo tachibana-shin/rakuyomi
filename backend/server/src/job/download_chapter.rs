@@ -42,6 +42,7 @@ pub struct DownloadChapterJob {
 }
 
 impl DownloadChapterJob {
+    #[allow(clippy::too_many_arguments)]
     pub fn spawn_new(
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,
         db: Arc<Database>,
@@ -94,6 +95,7 @@ impl DownloadChapterJob {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn do_job(
         cancellation_token: CancellationToken,
         source_manager: Arc<tokio::sync::Mutex<SourceManager>>,

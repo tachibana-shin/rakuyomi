@@ -224,13 +224,7 @@ fn read_int(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i64> {
         .get_std_value(descriptor)
         .context("failed to get value in read_int")?;
     let result = match value.as_ref() {
-        Value::Bool(b) => {
-            if *b {
-                1i64
-            } else {
-                0i64
-            }
-        }
+        Value::Bool(b) if *b => 1i64,
         Value::Int(i) => *i,
         Value::Float(f) => f.trunc() as i64,
         Value::String(s) => s.parse().unwrap_or(0),
@@ -267,20 +261,8 @@ fn read_bool(caller: Caller<'_, WasmStore>, descriptor_i32: i32) -> Result<i32> 
         .get_std_value(descriptor)
         .context("failed to get value in read_bool")?;
     let result = match value.as_ref() {
-        Value::Bool(b) => {
-            if *b {
-                1i32
-            } else {
-                0i32
-            }
-        }
-        Value::Int(i) => {
-            if *i != 0 {
-                1i32
-            } else {
-                0i32
-            }
-        }
+        Value::Bool(b) if *b => 1i32,
+        Value::Int(i) if *i != 0 => 1i32,
         _ => 0,
     };
     Ok(result)

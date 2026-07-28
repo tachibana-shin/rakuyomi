@@ -22,6 +22,7 @@ pub struct SearchError {
     pub reason: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn search_mangas(
     source_collection: &impl SourceCollection,
     db: &Database,

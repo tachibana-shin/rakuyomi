@@ -58,7 +58,7 @@ async fn generate_code(
 ) -> Result<Json<GenerateCodeResponse>, AppError> {
     let pairing_code = cookie_store::generate_pairing_code(&req.server_url)
         .await
-        .map_err(|e| AppError::from(e))?;
+        .map_err(AppError::from)?;
     Ok(Json(GenerateCodeResponse { pairing_code }))
 }
 
@@ -85,7 +85,7 @@ async fn poll_pairing(
 ) -> Result<Json<PollPairingResponse>, AppError> {
     let status = cookie_store::poll_pairing_status(&req.server_url, &req.pairing_code)
         .await
-        .map_err(|e| AppError::from(e))?;
+        .map_err(AppError::from)?;
 
     if status.paired {
         let mut settings = settings.lock().await;
@@ -132,7 +132,7 @@ async fn sync_all(
     let data =
         cookie_store::sync_all_cookies(&server_url, chat_id, &device_name, api_token.as_deref())
             .await
-            .map_err(|e| AppError::from(e))?;
+            .map_err(AppError::from)?;
 
     let domains: Vec<String> = data.iter().map(|d| d.domain.clone()).collect();
     cookie_store::apply_synced_cookies(&data);

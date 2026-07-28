@@ -15,6 +15,7 @@ use crate::{
     source::Source,
 };
 
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_manga_chapter(
     token: &CancellationToken,
     database: &Database,

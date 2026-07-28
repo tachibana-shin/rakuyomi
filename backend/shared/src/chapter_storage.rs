@@ -148,7 +148,9 @@ impl ChapterStorage {
     #[cfg(all(not(target_os = "linux"), not(target_os = "android")))]
     pub fn enable_ram(&mut self, _size_mb: usize) -> Result<()> {
         self.ram_enabled = false;
-        Err(anyhow::anyhow!("RAM-backed storage is only supported on Linux"))
+        Err(anyhow::anyhow!(
+            "RAM-backed storage is only supported on Linux"
+        ))
     }
 
     /// Switch back to persistent disk storage.

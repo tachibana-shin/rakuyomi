@@ -71,7 +71,7 @@ impl Tracker for SuwayomiTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
         let request = request.json(&GraphqlRequest {
             query: graphql_query.to_string(),
@@ -163,7 +163,7 @@ impl Tracker for SuwayomiTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
         let request = request.json(&GraphqlRequest {
             query: graphql_query.to_string(),
@@ -236,7 +236,7 @@ impl Tracker for SuwayomiTracker {
                 if let Some((user, pass)) = api_key.split_once(':') {
                     request = request.basic_auth(user, Some(pass));
                 } else {
-                    request = request.basic_auth(&api_key, None::<&str>);
+                    request = request.basic_auth(api_key, None::<&str>);
                 }
                 let request = request.json(&GraphqlRequest {
                     query: graphql_mutation.to_string(),
@@ -303,7 +303,7 @@ impl SuwayomiTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
         let request = request.json(&GraphqlRequest {
             query: graphql_query.to_string(),

@@ -40,8 +40,7 @@ impl CookieStoreData {
         if stored == request {
             return true;
         }
-        if stored.starts_with('.') {
-            let parent = &stored[1..];
+        if let Some(parent) = stored.strip_prefix('.') {
             // Domain cookie: match parent itself or any subdomain
             if request == parent {
                 return true;
@@ -73,11 +72,9 @@ impl CookieStoreData {
         let mut best: Option<&str> = None;
         let mut best_len: usize = 0;
         for (stored_domain, ua) in &self.user_agents {
-            if Self::domain_matches(stored_domain, clean) {
-                if stored_domain.len() > best_len {
-                    best = Some(ua.as_str());
-                    best_len = stored_domain.len();
-                }
+            if Self::domain_matches(stored_domain, clean) && stored_domain.len() > best_len {
+                best = Some(ua.as_str());
+                best_len = stored_domain.len();
             }
         }
         best

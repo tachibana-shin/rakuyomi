@@ -55,13 +55,13 @@ pub fn unscrable_image(image_data: Vec<u8>, blocks: Vec<Block>) -> Result<Vec<u8
         let width = block.width;
         let height = block.height;
 
-        if sx.checked_add(width).map_or(true, |end| end > img_width)
-            || sy.checked_add(height).map_or(true, |end| end > img_height)
+        if sx.checked_add(width).is_none_or(|end| end > img_width)
+            || sy.checked_add(height).is_none_or(|end| end > img_height)
         {
             return Err("Source block out of bounds".to_string());
         }
-        if dx.checked_add(width).map_or(true, |end| end > img_width)
-            || dy.checked_add(height).map_or(true, |end| end > img_height)
+        if dx.checked_add(width).is_none_or(|end| end > img_width)
+            || dy.checked_add(height).is_none_or(|end| end > img_height)
         {
             return Err("Destination block out of bounds".to_string());
         }

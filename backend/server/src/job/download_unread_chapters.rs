@@ -40,6 +40,7 @@ pub struct DownloadUnreadChaptersJob {
 }
 
 impl DownloadUnreadChaptersJob {
+    #[allow(clippy::too_many_arguments)]
     pub fn spawn_new(
         source: Source,
         database: Arc<Database>,

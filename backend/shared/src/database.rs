@@ -2215,7 +2215,6 @@ impl Database {
         rows.into_iter()
             .map(TrackingBinding::try_from)
             .collect::<std::result::Result<Vec<_>, _>>()
-            .map_err(Into::into)
     }
 
     pub async fn upsert_tracking_binding(

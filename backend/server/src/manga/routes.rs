@@ -22,7 +22,7 @@ use crate::state::State;
 use crate::AppError;
 
 fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
-    match url::Url::from_file_path(&path) {
+    match url::Url::from_file_path(path) {
         Ok(url) => Some(url),
         Err(_) => match path.canonicalize() {
             Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
@@ -238,7 +238,7 @@ async fn sync_database(
     let mut settings = settings.lock().await;
 
     let state = usecases::sync_database(
-        &*database,
+        &database,
         &mut settings,
         accept_migrate_local,
         accept_replace_remote,
@@ -266,8 +266,8 @@ async fn check_mangas_update(
     let source_manager = source_manager.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::check_mangas_update(&token.0, &database, &chapter_storage, &*source_manager)
-        .await;
+    let _ =
+        usecases::check_mangas_update(&token.0, &database, &chapter_storage, &source_manager).await;
 
     Ok(Json(()))
 }
@@ -924,7 +924,7 @@ async fn set_manga_viewer(
     let manga_id = MangaId::from(params);
 
     if let Some(viewer) = body.viewer {
-        if viewer < 0 || viewer > 4 {
+        if !(0..=4).contains(&viewer) {
             return Err(AppError::Other(anyhow::anyhow!(
                 "Invalid viewer value: {}. Must be between 0 and 4.",
                 viewer

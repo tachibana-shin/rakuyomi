@@ -26,7 +26,7 @@ pub async fn install_source(
 
             let client = crate::tls::client_builder()
                 .build()
-                .with_context(|| format!("failed to create HTTP client"))?;
+                .with_context(|| "failed to create HTTP client".to_string())?;
             let response = client
                 .get(source_list.clone())
                 .send()

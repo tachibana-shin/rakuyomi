@@ -231,35 +231,34 @@ pub async fn get_tracking_user(
 
 pub async fn ensure_access_token(settings: &mut Settings, service: TrackingService) -> Result<()> {
     match service {
-        TrackingService::MyAnimeList => {
+        TrackingService::MyAnimeList
             if settings.myanimelist.access_token.is_none()
-                && settings.myanimelist.refresh_token.is_some()
-            {
-                let (access, refresh) = MalTracker.refresh_access_token(settings).await?;
-                settings.myanimelist.access_token = Some(access);
-                if let Some(r) = refresh {
-                    settings.myanimelist.refresh_token = Some(r);
-                }
+                && settings.myanimelist.refresh_token.is_some() =>
+        {
+            let (access, refresh) = MalTracker.refresh_access_token(settings).await?;
+            settings.myanimelist.access_token = Some(access);
+            if let Some(r) = refresh {
+                settings.myanimelist.refresh_token = Some(r);
             }
         }
-        TrackingService::Shikimori => {
+        TrackingService::Shikimori
             if settings.shikimori.access_token.is_none()
-                && settings.shikimori.refresh_token.is_some()
-            {
-                let (access, refresh) = ShikimoriTracker.refresh_access_token(settings).await?;
-                settings.shikimori.access_token = Some(access);
-                if let Some(r) = refresh {
-                    settings.shikimori.refresh_token = Some(r);
-                }
+                && settings.shikimori.refresh_token.is_some() =>
+        {
+            let (access, refresh) = ShikimoriTracker.refresh_access_token(settings).await?;
+            settings.shikimori.access_token = Some(access);
+            if let Some(r) = refresh {
+                settings.shikimori.refresh_token = Some(r);
             }
         }
-        TrackingService::Bangumi => {
-            if settings.bangumi.access_token.is_none() && settings.bangumi.refresh_token.is_some() {
-                let (access, refresh) = BangumiTracker.refresh_access_token(settings).await?;
-                settings.bangumi.access_token = Some(access);
-                if let Some(r) = refresh {
-                    settings.bangumi.refresh_token = Some(r);
-                }
+        TrackingService::Bangumi
+            if settings.bangumi.access_token.is_none()
+                && settings.bangumi.refresh_token.is_some() =>
+        {
+            let (access, refresh) = BangumiTracker.refresh_access_token(settings).await?;
+            settings.bangumi.access_token = Some(access);
+            if let Some(r) = refresh {
+                settings.bangumi.refresh_token = Some(r);
             }
         }
         _ => {}

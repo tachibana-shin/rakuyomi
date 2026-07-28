@@ -63,7 +63,7 @@ impl RefreshLibraryChaptersJob {
             let (mangas, source_manager) = {
                 let sm = source_manager.lock().await;
                 let mangas = match get_manga_library(
-                    &*database,
+                    &database,
                     &*sm,
                     &shared::settings::LibrarySortingMode::TitleAsc,
                 )
@@ -109,7 +109,7 @@ impl RefreshLibraryChaptersJob {
 
                 if let Err(e) = usecases::refresh_manga_chapters(
                     &cancellation_token,
-                    &*database,
+                    &database,
                     source,
                     &manga_id,
                     60,

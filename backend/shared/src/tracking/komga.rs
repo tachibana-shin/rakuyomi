@@ -41,7 +41,7 @@ impl Tracker for KomgaTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
         let request = request
             .query(&[("search", query)])
@@ -91,7 +91,7 @@ impl Tracker for KomgaTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
 
         let response = request.send().await?;
@@ -152,7 +152,7 @@ impl Tracker for KomgaTracker {
             if let Some((user, pass)) = api_key.split_once(':') {
                 request = request.basic_auth(user, Some(pass));
             } else {
-                request = request.basic_auth(&api_key, None::<&str>);
+                request = request.basic_auth(api_key, None::<&str>);
             }
             let request = request.json(&serde_json::json!({
                 "readStatus": status_str,
@@ -182,7 +182,7 @@ impl KomgaTracker {
         if let Some((user, pass)) = api_key.split_once(':') {
             request = request.basic_auth(user, Some(pass));
         } else {
-            request = request.basic_auth(&api_key, None::<&str>);
+            request = request.basic_auth(api_key, None::<&str>);
         }
 
         let response: SeriesDetail =

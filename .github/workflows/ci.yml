@@ -1,4 +1,4 @@
-name: Test
+name: CI
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
   workflow_call:
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +33,14 @@ jobs:
           profile: minimal
           components: rustfmt, clippy
           override: true
+
+      - name: Cargo fmt
+        working-directory: ./backend
+        run: cargo fmt --check
+
+      - name: Cargo clippy
+        working-directory: ./backend
+        run: cargo clippy
 
       - name: Run tests
         working-directory: ./backend

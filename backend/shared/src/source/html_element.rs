@@ -411,7 +411,7 @@ mod tests {
         )
         .unwrap();
 
-        let mut store = crate::source::wasm_store::WasmStore::default(source_settings).unwrap();
+        let mut store = crate::source::wasm_store::WasmStore::default(source_settings);
         let document = Document::from(html);
         let root_id = document.root().id;
         let html_idx = store.set_html(document);

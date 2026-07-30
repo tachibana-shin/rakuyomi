@@ -1,0 +1,15 @@
+[package]
+name = "jpeg_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+zune-jpeg = "0.5.15"
+zune-core = "0.5.1"
+turbojpeg = "1.5.1"
+libjpeg-turbo-rs = "0.8.0"
+
+[[bench]]
+name = "bench"
+harness = false

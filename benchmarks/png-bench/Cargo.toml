@@ -1,0 +1,19 @@
+[package]
+name = "png_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+zune-png = "0.5.2"
+zune-core = "0.5.1"
+png = "0.18.1"
+lodepng = "3.12.2"
+png_pong = "0.12.0"
+zenpng = "0.1.4"
+enough = "0.4.4"
+bytemuck = "1.22"
+
+[[bench]]
+name = "png_bench"
+harness = false

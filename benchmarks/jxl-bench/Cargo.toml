@@ -1,0 +1,13 @@
+[package]
+name = "jxl_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = "0.5"
+jxl-oxide = "0.12"
+jpegxl-rs = "0.15"
+
+[[bench]]
+name = "bench"
+harness = false

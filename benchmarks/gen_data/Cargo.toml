@@ -1,0 +1,12 @@
+[package]
+name = "gen_data"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mozjpeg = { version = "0.10.13", default-features = false }
+lodepng = "3.12.2"
+webpx = "0.4.0"
+ravif = "0.13.0"
+avif-serialize = "0.8.9"
+rgb = "0.8"

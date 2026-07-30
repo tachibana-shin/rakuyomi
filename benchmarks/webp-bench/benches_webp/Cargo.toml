@@ -1,0 +1,12 @@
+[package]
+name = "webp_crate_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+webp = "0.3.1"
+
+[[bench]]
+name = "webp_crate"
+harness = false

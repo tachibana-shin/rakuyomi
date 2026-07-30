@@ -1,0 +1,13 @@
+[package]
+name = "avif_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = "0.5"
+image = { version = "0.25.10", default-features = false, features = ["avif", "avif-native"] }
+libavif = "0.14"
+
+[[bench]]
+name = "bench"
+harness = false

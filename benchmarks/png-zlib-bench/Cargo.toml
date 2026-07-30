@@ -1,0 +1,16 @@
+[package]
+name = "png_zlib_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+png = { version = "0.18.1", features = ["zlib-rs"] }
+spng = "0.2.0-alpha.3"
+flate2 = { version = "1.1", default-features = false, features = ["zlib-rs"] }
+zune-inflate = "0.2.54"
+zune-core = "0.5.1"
+
+[[bench]]
+name = "zlib_bench"
+harness = false

@@ -21,3 +21,4 @@ dev.db
 node_modules
 
 /BUILD_INFO.json
+target

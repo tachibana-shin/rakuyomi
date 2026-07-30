@@ -1,0 +1,12 @@
+[package]
+name = "moz_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = "0.5"
+mozjpeg = { version = "0.10.13", default-features = false }
+
+[[bench]]
+name = "moz"
+harness = false

@@ -1,0 +1,13 @@
+[package]
+name = "bmp_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = "0.5"
+bmp = "0.5"
+image = { version = "0.25.10", default-features = false, features = ["bmp"] }
+
+[[bench]]
+name = "bench"
+harness = false

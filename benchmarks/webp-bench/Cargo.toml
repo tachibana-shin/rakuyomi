@@ -1,0 +1,15 @@
+[package]
+name = "webp_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+zenwebp = "0.4.4"
+image-webp = "0.2.4"
+webp-rust = "0.2.1"
+webpx = "0.4.0"
+
+[[bench]]
+name = "bench"
+harness = false

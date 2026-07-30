@@ -1,0 +1,12 @@
+[package]
+name = "webp_rs_bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.5", features = [] }
+webp-rs = "26.7.0"
+
+[[bench]]
+name = "webp_rs"
+harness = false

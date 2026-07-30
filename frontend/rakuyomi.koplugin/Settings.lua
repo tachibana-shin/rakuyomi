@@ -706,8 +706,15 @@ end
 function Settings:updateSetting(key, value)
   -- fallback control ram_storage_enabled, ram_storage_size_mb
   if key == 'ram_storage_enabled' or key == 'ram_storage_size_mb' then
-    local enabled = key == 'ram_storage_enabled' and value or self.settings.ram_storage_enabled
-    local ram_storage_size_mb = key == 'ram_storage_size_mb' and value or self.settings.ram_storage_size_mb
+    local enabled
+    local ram_storage_size_mb
+    if key == 'ram_storage_enabled' then
+      enabled = value
+      ram_storage_size_mb = self.settings.ram_storage_size_mb
+    else
+      enabled = self.settings.ram_storage_enabled
+      ram_storage_size_mb = value
+    end
 
     local response = Backend.mountFS({
       enabled = enabled,

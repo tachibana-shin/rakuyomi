@@ -198,6 +198,8 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     let cookie_sync_chat_id = wasm_store.settings.cookie_sync_chat_id;
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let cookie_sync_api_token = wasm_store.settings.cookie_sync_api_token.clone();
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    let client = wasm_store.http_client().clone();
     let request_builder = get_building_request(wasm_store, request_descriptor_i32)?;
 
     // HACK Before everything, we want to fail fast if no internet connection is available.
@@ -212,11 +214,6 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
         anyhow::bail!("no internet connection available");
     }
 
-    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
-    let client = crate::tls::client_builder()
-        .timeout(std::time::Duration::from_secs(60))
-        .build()
-        .context("failed to build HTTP client")?;
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let mut request =
         reqwest::Request::try_from(&*request_builder).context("failed to build request")?;
@@ -301,10 +298,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                 // println!("[cookie] sync success, applying {} domains", data.len());
                 crate::cookie_store::apply_synced_cookies(&data);
                 // Rebuild and retry the request with fresh cookies
-                let retry_client = crate::tls::client_builder()
-                    .timeout(std::time::Duration::from_secs(60))
-                    .build()
-                    .context("failed to build retry HTTP client")?;
+                let retry_client = client.clone();
                 let mut retry_request = reqwest::Request::try_from(&*request_builder)
                     .context("failed to build retry request")?;
                 let retry_url = retry_request.url().to_string();

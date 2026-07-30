@@ -172,6 +172,8 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
 
     let store = caller.data_mut();
     let cancellation_token = store.context.cancellation_token.clone();
+    #[cfg(all(not(feature = "ffi"), feature = "all"))]
+    let client = store.http_client().clone();
 
     let has_internet_connection =
         executor::block_on(cancellation_token.run_until_cancelled(has_internet_connection()))
@@ -187,11 +189,6 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         store.rate_limit_acquire();
 
         let request_builder = get_building_request(store, request_descriptor_i32)?;
-        #[cfg(all(not(feature = "ffi"), feature = "all"))]
-        let client = crate::tls::client_builder()
-            .timeout(std::time::Duration::from_secs(60))
-            .build()
-            .context("failed to build HTTP client")?;
         #[cfg(all(not(feature = "ffi"), feature = "all"))]
         let request =
             reqwest::Request::try_from(&*request_builder).context("failed to build request")?;

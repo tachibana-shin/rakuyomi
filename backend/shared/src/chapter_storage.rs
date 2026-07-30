@@ -393,12 +393,17 @@ impl ChapterStorage {
             } => result,
         }?;
 
-        tokio::fs::write(&file, &self.convert_image_data_to_jpeg(&bytes)?).await?;
+        let jpeg_data =
+            tokio::task::spawn_blocking(move || Self::convert_image_data_to_jpeg(&bytes))
+                .await
+                .context("spawn_blocking panicked in JPEG conversion")??;
+
+        tokio::fs::write(&file, jpeg_data).await?;
 
         Ok(file)
     }
 
-    fn convert_image_data_to_jpeg(&self, data: &[u8]) -> Result<Vec<u8>> {
+    fn convert_image_data_to_jpeg(data: &[u8]) -> Result<Vec<u8>> {
         let (width, height, rgb_pixels) = {
             if let Some(data) = decode_image_fast(data) {
                 let image = data?;
@@ -757,7 +762,7 @@ mod tests {
     fn image_is_transcoded_to_jpeg() {
         let storage = make_storage();
         let input = make_rgb_jpeg(200, 300);
-        let output = storage.convert_image_data_to_jpeg(&input).unwrap();
+        let output = ChapterStorage::convert_image_data_to_jpeg(&input).unwrap();
         let (w, h) = output_dimensions(&output);
         assert_eq!((w, h), (200, 300));
     }

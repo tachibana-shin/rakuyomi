@@ -99,7 +99,12 @@ macro_rules! wrap_blocking_source_fn {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
             let blocking_source = self.0.clone();
 
-            ::tokio::task::spawn_blocking(move || blocking_source.lock().unwrap().$fn_name($($param),*)).await?
+            ::tokio::task::spawn_blocking(move || {
+                let mut guard = blocking_source
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
+                guard.$fn_name($($param),*)
+            }).await?
         }
     };
 }
@@ -114,21 +119,32 @@ macro_rules! call_cleanup {
         as $result_ty:ty,
         parse = $parse_fn:expr
     ) => {{
-        let result_descriptor = {$func.call(&mut $blocking.store, ($($args),*))
-            .expect("wasm call failed")};
+        let call_result = $func.call(&mut $blocking.store, ($($args),*));
 
-        let parsed: Result<$result_ty> = {
-            let store: &mut Store<WasmStore> = &mut $blocking.store;
-            $parse_fn(result_descriptor, store, $blocking.instance)
-        };
+        match call_result {
+            Ok(result_descriptor) => {
+                let parsed: Result<$result_ty> = {
+                    let store: &mut Store<WasmStore> = &mut $blocking.store;
+                    $parse_fn(result_descriptor, store, $blocking.instance)
+                };
 
-        {
-            let store_mut = $blocking.store.data_mut();
-            $(store_mut.take_std_value($descriptor as usize);)*
-            let _ = $blocking.free_result(result_descriptor);
+                {
+                    let store_mut = $blocking.store.data_mut();
+                    $(store_mut.take_std_value($descriptor as usize);)*
+                    $blocking.free_result(result_descriptor);
+                }
+
+                parsed
+            }
+            Err(e) => {
+                {
+                    let store_mut = $blocking.store.data_mut();
+                    $(store_mut.take_std_value($descriptor as usize);)*
+                }
+
+                Err(anyhow::anyhow!("wasm call failed: {}", e))
+            }
         }
-
-        parsed
     }};
 }
 
@@ -156,11 +172,19 @@ impl Source {
 
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
-        self.0.lock().unwrap().manifest.clone()
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .manifest
+            .clone()
     }
 
     pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
-        self.0.lock().unwrap().setting_definitions.clone()
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .setting_definitions
+            .clone()
     }
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
@@ -1018,14 +1042,17 @@ impl BlockingSource {
 
         Ok(())
     }
-    pub fn free_result(&mut self, pointer: i32) -> Result<()> {
-        let wasm_function = self
+    pub fn free_result(&mut self, pointer: i32) {
+        let Ok(wasm_function) = self
             .instance
-            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")?;
+            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")
+        else {
+            return;
+        };
 
-        wasm_function.call(&mut self.store, pointer)?;
-
-        Ok(())
+        if let Err(e) = wasm_function.call(&mut self.store, pointer) {
+            log::warn!("failed to free WASM memory at pointer {pointer}: {e}");
+        }
     }
 
     pub fn get_search_manga_list_next(
@@ -1215,7 +1242,7 @@ impl BlockingSource {
 
             let memory = self.get_memory()?;
             let req_id = read_next::<i32>(&memory, &self.store, request_state_ptr)?;
-            let _ = self.free_result(request_state_ptr);
+            self.free_result(request_state_ptr);
 
             let store = self.store.data_mut();
 

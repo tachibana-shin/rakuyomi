@@ -57,8 +57,8 @@ impl std::fmt::Debug for Html {
         write!(f, "Html()")
     }
 }
-// FIXME THIS IS BORKED AS FUCK
-unsafe impl Send for Html {}
+// Safety: `Document` is already `Send` (uses `RefCell`/`Cell` which are `Send`).
+// It is NOT `Sync`, but access is always behind `Arc<Mutex<...>>`.
 unsafe impl Sync for Html {}
 
 #[derive(Debug, Clone, From, TryUnwrap)]
@@ -186,12 +186,18 @@ pub struct ImageResponse {
 #[derive(From, Debug)]
 pub struct JsContext(pub(crate) boa_engine::Context);
 
-// FIXME THIS IS BORKED AS FUCK
+// Safety: `boa_engine::Context` is not `Send` (uses `Rc` internally).
+// However, `JsContext` is stored in `WasmStore` behind `Arc<Mutex<...>>`,
+// and is never cloned or moved across threads while aliased.
+// The `Rc` is only accessed through `&mut` after locking the mutex,
+// so no concurrent reference counting occurs.
 unsafe impl Send for JsContext {}
-unsafe impl Sync for JsContext {}
 
 #[derive(From)]
 pub struct Canvas(pub(crate) DrawTarget);
+// Safety: `DrawTarget` is not `Send` (contains `NonNull` in `Rasterizer`).
+// However, `Canvas` is stored in `WasmStore` behind `Arc<Mutex<...>>`,
+// and is never accessed concurrently across threads.
 unsafe impl Send for Canvas {}
 unsafe impl Sync for Canvas {}
 
@@ -280,6 +286,9 @@ pub struct WasmStore {
     std_references: HashMap<usize, Vec<usize>>,
     std_strs_encode: HashSet<usize>,
 
+    #[cfg(all(not(feature = "ffi"), feature = "all"))]
+    http_client: reqwest::Client,
+
     requests: HashMap<usize, RequestState>,
     // net rate limit
     rate_limit: Option<RateLimit>,
@@ -318,6 +327,14 @@ impl std::fmt::Debug for WasmStore {
     }
 }
 impl WasmStore {
+    #[cfg(all(not(feature = "ffi"), feature = "all"))]
+    fn build_http_client() -> reqwest::Client {
+        crate::tls::client_builder()
+            .timeout(std::time::Duration::from_secs(60))
+            .build()
+            .expect("failed to build HTTP client")
+    }
+
     pub fn default(source_settings: SourceSettings) -> Self {
         Self {
             id: String::new(),
@@ -331,6 +348,8 @@ impl WasmStore {
             std_descriptors: HashMap::new(),
             std_references: HashMap::new(),
             std_strs_encode: HashSet::new(),
+            #[cfg(all(not(feature = "ffi"), feature = "all"))]
+            http_client: Self::build_http_client(),
             requests: HashMap::new(),
             rate_limit: None,
 
@@ -420,6 +439,12 @@ impl WasmStore {
     }
 
     pub fn store_std_value(&mut self, data: ValueRef, _from: Option<usize>) -> usize {
+        if let Ok(elements) = data.try_unwrap_html_elements_ref() {
+            for element in elements {
+                self.link_reference_html(element);
+            }
+        }
+
         let pointer = self.increase_and_get_std_desciptor_pointer();
         self.std_descriptors.insert(pointer, data);
 
@@ -500,9 +525,10 @@ impl WasmStore {
                     return;
                 }
 
-                // トークン無し → 次回リセット時間まで正確に待機
+                // トークン無し → 次回リセット時間まで待機
                 let next_reset = inner.last_reset + inner.period;
-                sleep(next_reset.saturating_duration_since(now));
+                let wait = next_reset.saturating_duration_since(now);
+                sleep(wait.max(Duration::from_millis(1)));
             }
         }
     }
@@ -618,6 +644,11 @@ impl WasmStore {
     pub fn get_js_context(&mut self, pointer: usize) -> Option<&mut JsContext> {
         self.jscontexts.get_mut(&pointer)
     }
+    #[cfg(all(not(feature = "ffi"), feature = "all"))]
+    pub(crate) fn http_client(&self) -> &reqwest::Client {
+        &self.http_client
+    }
+
     pub fn set_html(&mut self, html: Document) -> usize {
         let idx = self.increase_and_get_std_desciptor_pointer();
 

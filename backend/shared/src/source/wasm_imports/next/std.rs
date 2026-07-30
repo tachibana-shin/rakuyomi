@@ -162,7 +162,8 @@ fn read_buffer(
             };
 
             if size <= buffer.len() {
-                write_bytes(&memory, &mut caller, &buffer, offset).expect("REASON");
+                write_bytes(&memory, &mut caller, &buffer, offset)
+                    .context("failed to write bytes to WASM memory")?;
             };
         }
         Err(error) => {

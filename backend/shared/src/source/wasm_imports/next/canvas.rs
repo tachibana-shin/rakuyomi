@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use aidoku::canvas::{Angle, FontWeight, PathOp};
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use font_kit::properties::{Properties, Weight};
 use futures::executor;
 use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
@@ -497,7 +497,7 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
 
         encoder
             .write_image(&rgba_pixels, width, height, ColorType::Rgba8.into())
-            .expect("PNG encode failed");
+            .context("PNG encode failed")?;
 
         png_data
     };

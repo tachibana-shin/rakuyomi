@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -41,7 +41,10 @@ pub async fn sync_database(
     ensure_webdav_dir(&client, &dav_base, &user, &password).await?;
     println!("WebDAV directory ensured in {:?}", t.elapsed());
     // --- 現在のローカル DB の SHA256 を計算する ---
-    let local_sha = sha256_file(&db.filename)?;
+    let db_filename = db.filename.clone();
+    let local_sha = tokio::task::spawn_blocking(move || sha256_file(&db_filename))
+        .await
+        .context("spawn_blocking panicked in sha256 computation")??;
 
     // --- DAV から database.sha256 を読む ---
 
@@ -92,7 +95,7 @@ pub async fn sync_database(
 
     t = std::time::Instant::now();
     // --- ローカルの DB の方が新しい → アップロード ---
-    let local_data = fs::read(&db.filename)?;
+    let local_data = tokio::fs::read(&db.filename).await?;
     dav_write(
         &client,
         &dav_base,

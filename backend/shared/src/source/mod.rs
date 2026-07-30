@@ -172,11 +172,19 @@ impl Source {
 
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
-        self.0.lock().unwrap().manifest.clone()
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .manifest
+            .clone()
     }
 
     pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
-        self.0.lock().unwrap().setting_definitions.clone()
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .setting_definitions
+            .clone()
     }
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {

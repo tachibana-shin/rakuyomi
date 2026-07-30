@@ -262,7 +262,7 @@ impl Page {
             chapter_id,
             index,
             image_url: match &page.content {
-                aidoku::PageContent::Url(ref url, _) => Some(url::Url::parse(url).unwrap()),
+                aidoku::PageContent::Url(ref url, _) => url::Url::parse(url).ok(),
                 _ => None,
             },
             base64: None,

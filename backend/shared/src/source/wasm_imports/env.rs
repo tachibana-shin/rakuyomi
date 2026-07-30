@@ -52,7 +52,18 @@ fn abort(
     // For some stupid reason, unlike _all_ of the Aidoku WASM function exports, this
     // specifically receives the offsets of the beginning of the stream, and the length comes
     // before the offset (?)
-    let memory = get_memory(&mut caller).unwrap();
+    let memory = match get_memory(&mut caller) {
+        Some(m) => m,
+        None => {
+            error!("{}: env.abort: cannot get WASM memory", caller.data().id);
+            return Err(wasmi::Error::host(AbortError {
+                message: String::new(),
+                file_name: String::new(),
+                line: 0,
+                column: 0,
+            }));
+        }
+    };
     let msg_length = read_bytes(&memory, &caller, (msg_offset - 4) as usize, 1)
         .and_then(|bytes| bytes.first().cloned())
         .unwrap_or(0) as usize;

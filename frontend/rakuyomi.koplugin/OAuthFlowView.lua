@@ -218,16 +218,24 @@ function OAuthFlowView:doPoll()
     end
 
     local body = resp.body
+    if type(body) ~= "table" or not body.status then
+      self:updateStatus(_("Invalid response. Please try again."))
+      return
+    end
 
     if body.status == "pending" then
       self:updateStatus(_("Waiting for sign-in. Scan the QR code, then tap Check."))
     elseif body.status == "completed" then
       self:stopPoll()
-      self:updateStatus(_("Sign-in successful!"))
-      self:saveTokens(body)
-      UIManager:scheduleIn(1.5, function()
-        self:onClose()
-      end)
+      local success = self:saveTokens(body)
+      if success then
+        self:updateStatus(_("Sign-in successful!"))
+        UIManager:scheduleIn(1.5, function()
+          self:onClose()
+        end)
+      else
+        self:updateStatus(_("Failed to save tokens. Please try again."))
+      end
     elseif body.status == "error" then
       self:updateStatus(_("Error: ") .. (body.message or "unknown"))
     end
@@ -243,9 +251,10 @@ end
 
 function OAuthFlowView:saveTokens(body)
   local settings = Backend.getSettings()
-  if settings.type == "ERROR" then return end
+  if settings.type == "ERROR" then return false end
 
   local s = settings.body
+  if not s then return false end
 
   if self.service == "anilist" and body.tokens then
     s.anilist = s.anilist or {}
@@ -277,9 +286,12 @@ function OAuthFlowView:saveTokens(body)
     if body.tokens.refresh_token then
       s.mangabaka.refresh_token = body.tokens.refresh_token
     end
+  else
+    return false
   end
 
   Backend.setSettings(s)
+  return true
 end
 
 --- Start the OAuth flow for a given service.
@@ -300,6 +312,13 @@ function OAuthFlowView:startFlow(service, on_return_callback)
   if resp.type == "ERROR" then
     UIManager:show(InfoMessage:new {
       text = _("Failed to start sign-in: ") .. (resp.message or "unknown error"),
+    })
+    return
+  end
+
+  if not resp.body or not resp.body.session_id then
+    UIManager:show(InfoMessage:new {
+      text = _("Invalid response from server. Please try again."),
     })
     return
   end

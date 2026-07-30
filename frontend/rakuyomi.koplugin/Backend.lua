@@ -106,7 +106,9 @@ function Backend.requestJson(request)
   if not (response.status and response.status >= 200 and response.status <= 299) then
     logger.err("Request failed with status code", response.status, "and body", parsed_body)
     local error_message = parsed_body.message
-    assert(error_message ~= nil, "Request failed without error message")
+    if error_message == nil then
+      error_message = parsed_body.error or "Request failed (status: " .. response.status .. ")"
+    end
 
     return { type = 'ERROR', status = response.status, message = error_message }
   end

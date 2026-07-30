@@ -486,7 +486,7 @@ impl BlockingSource {
             manifest.info.id.clone(),
             source_settings,
             manager.settings.clone(),
-        );
+        )?;
         let mut store = Store::new(&engine, wasm_store);
 
         let module = Module::new(&engine, &wasm_bytes)
@@ -1042,6 +1042,12 @@ impl BlockingSource {
 
         Ok(())
     }
+    /// Attempts to free WASM memory at the given pointer via the `free_memory` export.
+    ///
+    /// This is a best-effort cleanup operation. Both lookup failures (if the WASM module
+    /// does not export a `free_memory` function) and deallocation failures (if the call
+    /// to `free_memory` fails) are suppressed and only logged. Callers must not assume
+    /// the WASM memory was successfully freed.
     pub fn free_result(&mut self, pointer: i32) {
         let Ok(wasm_function) = self
             .instance

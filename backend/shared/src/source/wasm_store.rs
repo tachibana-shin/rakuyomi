@@ -328,15 +328,14 @@ impl std::fmt::Debug for WasmStore {
 }
 impl WasmStore {
     #[cfg(all(not(feature = "ffi"), feature = "all"))]
-    fn build_http_client() -> reqwest::Client {
+    fn build_http_client() -> Result<reqwest::Client, reqwest::Error> {
         crate::tls::client_builder()
             .timeout(std::time::Duration::from_secs(60))
             .build()
-            .expect("failed to build HTTP client")
     }
 
-    pub fn default(source_settings: SourceSettings) -> Self {
-        Self {
+    pub fn default(source_settings: SourceSettings) -> anyhow::Result<Self> {
+        Ok(Self {
             id: String::new(),
             context: OperationContext::default(),
 
@@ -349,7 +348,7 @@ impl WasmStore {
             std_references: HashMap::new(),
             std_strs_encode: HashSet::new(),
             #[cfg(all(not(feature = "ffi"), feature = "all"))]
-            http_client: Self::build_http_client(),
+            http_client: Self::build_http_client()?,
             requests: HashMap::new(),
             rate_limit: None,
 
@@ -367,17 +366,17 @@ impl WasmStore {
 
             #[cfg(not(feature = "all"))]
             webviews: HashMap::new(),
-        }
+        })
     }
 }
 
 impl WasmStore {
-    pub fn new(id: String, source_settings: SourceSettings, settings: Settings) -> Self {
-        Self {
+    pub fn new(id: String, source_settings: SourceSettings, settings: Settings) -> anyhow::Result<Self> {
+        Ok(Self {
             id,
             settings,
-            ..WasmStore::default(source_settings)
-        }
+            ..WasmStore::default(source_settings)?
+        })
     }
 
     pub fn get_std_value(&self, descriptor: usize) -> Option<ValueRef> {

@@ -40,16 +40,24 @@ impl Tracker for MalTracker {
             num_volumes: Option<i64>,
         }
 
-        let client_id = require_client_id(settings)?;
         let client = build_client();
-        let request = client
-            .get(format!("{MAL_API_URL}/manga"))
-            .header("X-MAL-CLIENT-ID", client_id)
-            .query(&[
-                ("q", query),
-                ("limit", "5"),
-                ("fields", "id,title,num_chapters,num_volumes"),
-            ]);
+        let mut request = client.get(format!("{MAL_API_URL}/manga"));
+        if let Some(token) = settings
+            .myanimelist
+            .access_token
+            .as_deref()
+            .filter(|v| !v.trim().is_empty())
+        {
+            request = request.header(AUTHORIZATION, format!("Bearer {token}"));
+        } else {
+            let client_id = require_client_id(settings)?;
+            request = request.header("X-MAL-CLIENT-ID", client_id);
+        }
+        let request = request.query(&[
+            ("q", query),
+            ("limit", "5"),
+            ("fields", "id,title,num_chapters,num_volumes"),
+        ]);
         let response: SearchResponse =
             get_json(request, "failed to decode MyAnimeList search results").await?;
 
@@ -89,12 +97,10 @@ impl Tracker for MalTracker {
             updated_at: Option<String>,
         }
 
-        let client_id = require_client_id(settings)?;
         let access_token = require_access_token(settings)?;
         let client = build_client();
         let request = client
             .get(format!("{MAL_API_URL}/manga/{media_id}"))
-            .header("X-MAL-CLIENT-ID", client_id)
             .header(AUTHORIZATION, format!("Bearer {access_token}"))
             .query(&[("fields", "my_list_status")]);
         let response: MangaResponse =
@@ -122,7 +128,6 @@ impl Tracker for MalTracker {
         media_id: i64,
         snapshot: &TrackingProgressSnapshot,
     ) -> Result<TrackingProgressSnapshot> {
-        let client_id = require_client_id(settings)?;
         let access_token = require_access_token(settings)?;
         let status = snapshot
             .status
@@ -140,7 +145,6 @@ impl Tracker for MalTracker {
         let client = build_client();
         client
             .put(format!("{MAL_API_URL}/manga/{media_id}/my_list_status"))
-            .header("X-MAL-CLIENT-ID", client_id)
             .header(AUTHORIZATION, format!("Bearer {access_token}"))
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .form(&form)
@@ -157,10 +161,6 @@ impl Tracker for MalTracker {
             name: Option<String>,
         }
 
-        let client_id = match require_client_id(settings) {
-            Ok(t) => t,
-            Err(_) => return Ok(None),
-        };
         let access_token = match require_access_token(settings) {
             Ok(t) => t,
             Err(_) => return Ok(None),
@@ -168,7 +168,6 @@ impl Tracker for MalTracker {
         let client = build_client();
         let request = client
             .get(format!("{MAL_API_URL}/users/@me"))
-            .header("X-MAL-CLIENT-ID", client_id)
             .header(AUTHORIZATION, format!("Bearer {access_token}"));
         let response: UserResponse =
             get_json(request, "failed to decode MyAnimeList user info").await?;

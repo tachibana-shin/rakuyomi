@@ -218,6 +218,10 @@ function OAuthFlowView:doPoll()
     end
 
     local body = resp.body
+    if not body then
+      self:updateStatus(_("Invalid response. Please try again."))
+      return
+    end
 
     if body.status == "pending" then
       self:updateStatus(_("Waiting for sign-in. Scan the QR code, then tap Check."))
@@ -246,6 +250,7 @@ function OAuthFlowView:saveTokens(body)
   if settings.type == "ERROR" then return end
 
   local s = settings.body
+  if not s then return end
 
   if self.service == "anilist" and body.tokens then
     s.anilist = s.anilist or {}
@@ -300,6 +305,13 @@ function OAuthFlowView:startFlow(service, on_return_callback)
   if resp.type == "ERROR" then
     UIManager:show(InfoMessage:new {
       text = _("Failed to start sign-in: ") .. (resp.message or "unknown error"),
+    })
+    return
+  end
+
+  if not resp.body or not resp.body.session_id then
+    UIManager:show(InfoMessage:new {
+      text = _("Invalid response from server. Please try again."),
     })
     return
   end

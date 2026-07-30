@@ -327,7 +327,10 @@ impl ChapterStorage {
         };
 
         // Perform the deletion
-        tokio::fs::remove_file(file_path).await?;
+        tokio::fs::remove_file(&file_path).await?;
+
+        // Remove the .sdr directory that KOReader creates alongside files
+        let _ = tokio::fs::remove_dir_all(sdr_path(&file_path)).await;
 
         // Update cache only after successful removal
         if let Some(size) = file_size {
@@ -642,8 +645,11 @@ impl ChapterStorage {
         );
 
         let cloned_path = chapter_to_evict.clone();
-        let _ = match tokio::fs::remove_file(chapter_to_evict).await {
-            Ok(_) => Ok(()),
+        let _ = match tokio::fs::remove_file(&chapter_to_evict).await {
+            Ok(_) => {
+                let _ = tokio::fs::remove_dir_all(sdr_path(&chapter_to_evict)).await;
+                Ok(())
+            }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()), // Already deleted
             Err(e) => Err(anyhow!(
                 "Failed to delete file {}: {}",
@@ -720,6 +726,14 @@ impl ChapterStorage {
             self.downloads_folder_path.join(output_filename)
         }
     }
+}
+
+fn sdr_path(file_path: &std::path::Path) -> std::path::PathBuf {
+    let parent = file_path
+        .parent()
+        .unwrap_or_else(|| std::path::Path::new(""));
+    let stem = file_path.file_stem().unwrap_or_default();
+    parent.join(format!("{}.sdr", stem.to_string_lossy()))
 }
 
 #[cfg(test)]

@@ -131,7 +131,7 @@ macro_rules! call_cleanup {
                 {
                     let store_mut = $blocking.store.data_mut();
                     $(store_mut.take_std_value($descriptor as usize);)*
-                    let _ = $blocking.free_result(result_descriptor);
+                    $blocking.free_result(result_descriptor);
                 }
 
                 parsed
@@ -1034,14 +1034,17 @@ impl BlockingSource {
 
         Ok(())
     }
-    pub fn free_result(&mut self, pointer: i32) -> Result<()> {
-        let wasm_function = self
+    pub fn free_result(&mut self, pointer: i32) {
+        let Ok(wasm_function) = self
             .instance
-            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")?;
+            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")
+        else {
+            return;
+        };
 
-        wasm_function.call(&mut self.store, pointer)?;
-
-        Ok(())
+        if let Err(e) = wasm_function.call(&mut self.store, pointer) {
+            log::warn!("failed to free WASM memory at pointer {pointer}: {e}");
+        }
     }
 
     pub fn get_search_manga_list_next(
@@ -1231,7 +1234,7 @@ impl BlockingSource {
 
             let memory = self.get_memory()?;
             let req_id = read_next::<i32>(&memory, &self.store, request_state_ptr)?;
-            let _ = self.free_result(request_state_ptr);
+            self.free_result(request_state_ptr);
 
             let store = self.store.data_mut();
 

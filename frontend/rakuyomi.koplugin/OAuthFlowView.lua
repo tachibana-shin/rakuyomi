@@ -316,7 +316,7 @@ function OAuthFlowView:startFlow(service, on_return_callback)
     return
   end
 
-  if type(resp.body) ~= "table" or type(resp.body.session_id) ~= "string" or resp.body.session_id == "" then
+  if not resp.body or not resp.body.session_id then
     UIManager:show(InfoMessage:new {
       text = _("Invalid response from server. Please try again."),
     })

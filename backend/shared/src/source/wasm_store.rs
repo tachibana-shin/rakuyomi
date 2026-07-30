@@ -57,8 +57,8 @@ impl std::fmt::Debug for Html {
         write!(f, "Html()")
     }
 }
-// FIXME THIS IS BORKED AS FUCK
-unsafe impl Send for Html {}
+// Safety: `Document` is already `Send` (uses `RefCell`/`Cell` which are `Send`).
+// It is NOT `Sync`, but access is always behind `Arc<Mutex<...>>`.
 unsafe impl Sync for Html {}
 
 #[derive(Debug, Clone, From, TryUnwrap)]
@@ -186,12 +186,18 @@ pub struct ImageResponse {
 #[derive(From, Debug)]
 pub struct JsContext(pub(crate) boa_engine::Context);
 
-// FIXME THIS IS BORKED AS FUCK
+// Safety: `boa_engine::Context` is not `Send` (uses `Rc` internally).
+// However, `JsContext` is stored in `WasmStore` behind `Arc<Mutex<...>>`,
+// and is never cloned or moved across threads while aliased.
+// The `Rc` is only accessed through `&mut` after locking the mutex,
+// so no concurrent reference counting occurs.
 unsafe impl Send for JsContext {}
-unsafe impl Sync for JsContext {}
 
 #[derive(From)]
 pub struct Canvas(pub(crate) DrawTarget);
+// Safety: `DrawTarget` is not `Send` (contains `NonNull` in `Rasterizer`).
+// However, `Canvas` is stored in `WasmStore` behind `Arc<Mutex<...>>`,
+// and is never accessed concurrently across threads.
 unsafe impl Send for Canvas {}
 unsafe impl Sync for Canvas {}
 

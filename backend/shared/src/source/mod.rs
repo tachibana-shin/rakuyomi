@@ -99,7 +99,12 @@ macro_rules! wrap_blocking_source_fn {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
             let blocking_source = self.0.clone();
 
-            ::tokio::task::spawn_blocking(move || blocking_source.lock().unwrap().$fn_name($($param),*)).await?
+            ::tokio::task::spawn_blocking(move || {
+                let mut guard = blocking_source
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
+                guard.$fn_name($($param),*)
+            }).await?
         }
     };
 }
@@ -114,21 +119,32 @@ macro_rules! call_cleanup {
         as $result_ty:ty,
         parse = $parse_fn:expr
     ) => {{
-        let result_descriptor = {$func.call(&mut $blocking.store, ($($args),*))
-            .expect("wasm call failed")};
+        let call_result = $func.call(&mut $blocking.store, ($($args),*));
 
-        let parsed: Result<$result_ty> = {
-            let store: &mut Store<WasmStore> = &mut $blocking.store;
-            $parse_fn(result_descriptor, store, $blocking.instance)
-        };
+        match call_result {
+            Ok(result_descriptor) => {
+                let parsed: Result<$result_ty> = {
+                    let store: &mut Store<WasmStore> = &mut $blocking.store;
+                    $parse_fn(result_descriptor, store, $blocking.instance)
+                };
 
-        {
-            let store_mut = $blocking.store.data_mut();
-            $(store_mut.take_std_value($descriptor as usize);)*
-            let _ = $blocking.free_result(result_descriptor);
+                {
+                    let store_mut = $blocking.store.data_mut();
+                    $(store_mut.take_std_value($descriptor as usize);)*
+                    let _ = $blocking.free_result(result_descriptor);
+                }
+
+                parsed
+            }
+            Err(e) => {
+                {
+                    let store_mut = $blocking.store.data_mut();
+                    $(store_mut.take_std_value($descriptor as usize);)*
+                }
+
+                Err(anyhow::anyhow!("wasm call failed: {}", e))
+            }
         }
-
-        parsed
     }};
 }
 

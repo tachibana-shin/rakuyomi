@@ -14,6 +14,10 @@ use tokio::net::TcpStream;
 use tokio_util::sync::CancellationToken;
 use url::Url;
 
+use ab_glyph::{FontArc, PxScale};
+use image::{DynamicImage, ImageBuffer, Rgba};
+use imageproc::drawing::draw_text_mut;
+
 use crate::source::{model::Page, Source};
 
 pub async fn has_internet_connection() -> bool {
@@ -126,10 +130,6 @@ pub fn generate_error_image(
     width: u32,
     height: u32,
 ) -> anyhow::Result<Vec<u8>> {
-    use ab_glyph::{FontArc, PxScale};
-    use image::{ImageBuffer, Rgba};
-    use imageproc::drawing::draw_text_mut;
-
     let mut img = ImageBuffer::from_pixel(width, height, Rgba([255, 255, 255, 255]));
 
     let font_data = include_bytes!("../fonts/DejaVuSansMono.ttf") as &[u8];
@@ -175,24 +175,9 @@ pub fn generate_error_image(
         img.put_pixel(width - 1, y, Rgba([0, 0, 0, 255]));
     }
 
-    let mut buf = Vec::new();
-    {
-        use image::codecs::jpeg::JpegEncoder;
-        use image::ColorType;
-        use image::DynamicImage;
-        use image::ImageEncoder;
-
-        let img = DynamicImage::ImageRgba8(img).to_rgb8();
-
-        // JPEG エンコーダ（Seek 不要）
-        let encoder = JpegEncoder::new_with_quality(&mut buf, 100);
-
-        // RGB24 としてエンコード
-        encoder
-            .write_image(&img, width, height, ColorType::Rgb8.into())
-            .context("JPEG encode failed")?;
-    }
-
+    let rgb = DynamicImage::ImageRgba8(img).to_rgb8().into_raw();
+    let buf =
+        crate::source::decode_image::jpeg::encode_jpeg(&rgb, width as usize, height as usize, 100)?;
     Ok(buf)
 }
 
@@ -223,38 +208,44 @@ pub async fn prepare_cover(
     cover_url: Option<Url>,
     client: &reqwest::Client,
     source: &Source,
+    quality: u8,
 ) -> anyhow::Result<Option<Vec<u8>>> {
+    use image::ImageReader;
+    use std::io::Cursor;
+
     if let Some(url) = cover_url {
         let req = source.get_image_request(url, None).await?;
         let resp = client.execute(req).await?.error_for_status()?;
         let bytes = resp.bytes().await?;
         let bytes_vec = bytes.to_vec();
 
-        // Ensure we return JPEG bytes. If already JPEG, return as-is.
-        Ok(match image::guess_format(&bytes_vec) {
-            Ok(image::ImageFormat::Jpeg) => Some(bytes_vec),
-            _ => {
-                // Try to decode and re-encode as JPEG (quality 90).
-                if let Ok(img) = image::load_from_memory(&bytes_vec) {
-                    let mut buf = Vec::new();
-                    if img
-                        .write_to(
-                            &mut std::io::Cursor::new(&mut buf),
-                            image::ImageFormat::Jpeg,
-                        )
-                        .is_ok()
-                    {
-                        Some(buf)
-                    } else {
-                        // fallback to original bytes on failure
-                        Some(bytes_vec)
-                    }
-                } else {
-                    // fallback: return original bytes
-                    Some(bytes_vec)
-                }
+        if crate::source::decode_image::is_jpeg(&bytes_vec) {
+            return Ok(Some(bytes_vec));
+        }
+
+        let (width, height, rgb_pixels) = {
+            if let Some(data) = crate::source::decode_image::decode_image_to_rgb(&bytes_vec) {
+                let (rgb_pixels, width, height) = data?;
+                (width as u32, height as u32, rgb_pixels)
+            } else {
+                let cursor = Cursor::new(&bytes_vec);
+                let rgb_img = ImageReader::new(cursor)
+                    .with_guessed_format()
+                    .ok()
+                    .and_then(|r| r.decode().ok())
+                    .map(|img| img.to_rgb8())
+                    .context("decode failed")?;
+                (rgb_img.width(), rgb_img.height(), rgb_img.to_vec())
             }
-        })
+        };
+
+        let buf = crate::source::decode_image::jpeg::encode_jpeg(
+            &rgb_pixels,
+            width as usize,
+            height as usize,
+            quality,
+        )?;
+        Ok(Some(buf))
     } else {
         Ok(None)
     }

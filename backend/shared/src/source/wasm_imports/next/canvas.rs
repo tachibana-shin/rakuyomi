@@ -4,7 +4,7 @@ use aidoku::canvas::{Angle, FontWeight, PathOp};
 use anyhow::{bail, Result};
 use font_kit::properties::{Properties, Weight};
 use futures::executor;
-use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
+use png::{ColorType, Compression, Encoder, FilterType};
 use raqote::{DrawOptions, LineCap, LineJoin, Point, Source, Transform, Vector};
 use wasm_shared::get_memory;
 use wasmi::{Caller, Linker};
@@ -493,11 +493,17 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
         }
 
         let mut png_data: Vec<u8> = Vec::<u8>::new();
-        let encoder = PngEncoder::new(&mut png_data);
-
-        encoder
-            .write_image(&rgba_pixels, width, height, ColorType::Rgba8.into())
-            .expect("PNG encode failed");
+        {
+            let mut encoder = Encoder::new(&mut png_data, width, height);
+            encoder.set_color(ColorType::Rgba);
+            encoder.set_depth(png::BitDepth::Eight);
+            encoder.set_compression(Compression::Fast);
+            encoder.set_filter(FilterType::NoFilter);
+            let mut writer = encoder.write_header().expect("PNG write header failed");
+            writer
+                .write_image_data(&rgba_pixels)
+                .expect("PNG encode failed");
+        }
 
         png_data
     };

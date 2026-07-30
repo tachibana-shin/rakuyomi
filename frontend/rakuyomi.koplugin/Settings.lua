@@ -247,11 +247,15 @@ Settings.setting_value_definitions = {
     }
   },
   {
-    'optimize_image',
+    'jpeg_quality',
     {
-      type = 'boolean',
-      title = _("Optimize page images (experimental)"),
-      default = false,
+      type = 'integer',
+      title = _("JPEG quality"),
+      help_text = _("Higher = better image quality but larger files and slower processing. Lower = smaller files and faster downloads. Range 50-95."),
+      min_value = 50,
+      max_value = 95,
+      unit = '%',
+      default = 80,
     }
   },
   {

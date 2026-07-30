@@ -4,7 +4,7 @@ use shared::{
     chapter_storage::ChapterStorage, database::Database, settings::Settings,
     source_manager::SourceManager,
 };
-use tokio::sync::{Mutex, Semaphore};
+use tokio::sync::{watch, Mutex, Semaphore};
 use tokio_util::sync::CancellationToken;
 
 use axum::extract::FromRef;
@@ -14,22 +14,25 @@ use crate::job::State as JobState;
 /// A shared log of startup warnings/errors to be displayed to the user via Lua.
 #[derive(Clone)]
 pub struct StartupLog {
-    inner: Arc<Mutex<Vec<String>>>,
+    inner: Arc<watch::Sender<Vec<String>>>,
 }
 
 impl StartupLog {
     pub fn new() -> Self {
+        let (tx, _) = watch::channel(Vec::new());
         Self {
-            inner: Arc::new(Mutex::new(Vec::new())),
+            inner: Arc::new(tx),
         }
     }
 
     pub async fn push(&self, msg: String) {
-        self.inner.lock().await.push(msg);
+        self.inner.send_modify(|v| v.push(msg));
     }
 
     pub async fn drain(&self) -> Vec<String> {
-        std::mem::take(&mut *self.inner.lock().await)
+        let mut taken = Vec::new();
+        self.inner.send_modify(|v| std::mem::swap(v, &mut taken));
+        taken
     }
 }
 

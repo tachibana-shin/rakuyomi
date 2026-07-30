@@ -43,7 +43,6 @@ pub struct UpdateableSettings {
     enabled_cron_check_mangas_update: bool,
     source_skip_cron: Option<String>,
     preload_chapters: usize,
-    optimize_image: bool,
     library_view_mode: LibraryViewMode,
     search_view_mode: SearchViewMode,
     ram_storage_enabled: bool,
@@ -97,7 +96,6 @@ impl UpdateableSettings {
         settings.enabled_cron_check_mangas_update = self.enabled_cron_check_mangas_update;
         settings.source_skip_cron = self.source_skip_cron;
         settings.preload_chapters = self.preload_chapters;
-        settings.optimize_image = self.optimize_image;
         settings.library_view_mode = self.library_view_mode;
         settings.search_view_mode = self.search_view_mode;
         settings.cookie_sync_server_url = self.cookie_sync_server_url;
@@ -141,7 +139,6 @@ impl From<&Settings> for UpdateableSettings {
             enabled_cron_check_mangas_update: value.enabled_cron_check_mangas_update,
             source_skip_cron: value.source_skip_cron.clone(),
             preload_chapters: value.preload_chapters,
-            optimize_image: value.optimize_image,
             library_view_mode: value.library_view_mode,
             search_view_mode: value.search_view_mode,
             ram_storage_enabled: value.ram_storage_enabled,

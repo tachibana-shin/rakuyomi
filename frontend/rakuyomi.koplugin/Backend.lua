@@ -865,7 +865,7 @@ end
 --- @field mangabaka TrackingServiceSettings
 --- @field komga TrackingServiceSettings
 --- @field suwayomi TrackingServiceSettings
---- @field optimize_image boolean
+--- @field jpeg_quality integer
 --- @field ram_storage_enabled boolean
 --- @field ram_storage_size_mb number
 --- @field cookie_sync_server_url string|nil

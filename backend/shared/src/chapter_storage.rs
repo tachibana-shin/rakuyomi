@@ -18,7 +18,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
 use crate::model::{ChapterId, MangaId};
-use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
+use crate::source::decode_image::decode_image_to_rgb;
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
@@ -400,11 +400,9 @@ impl ChapterStorage {
 
     fn convert_image_data_to_jpeg(&self, data: &[u8]) -> Result<Vec<u8>> {
         let (width, height, rgb_pixels) = {
-            if let Some(data) = decode_image_fast(data) {
-                let image = data?;
-
-                let rgb_pixels = decode_argb_to_rgb(image.width, image.height, &image.data)?;
-                (image.width as u32, image.height as u32, rgb_pixels)
+            if let Some(data) = decode_image_to_rgb(data) {
+                let (rgb_pixels, width, height) = data?;
+                (width as u32, height as u32, rgb_pixels)
             }
             // fallback with image
             else {
@@ -416,21 +414,20 @@ impl ChapterStorage {
                     .map(|img| img.to_rgb8())
                     .context("decode failed")?;
 
-                let width = rgb_img.width();
-                let height = rgb_img.height();
-
-                (width, height, rgb_img.to_vec())
+                (rgb_img.width(), rgb_img.height(), rgb_img.to_vec())
             }
         };
 
-        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
-        comp.set_size(width as usize, height as usize);
-        comp.set_fastest_defaults();
-
-        let mut comp = comp.start_compress(Vec::new())?;
-        comp.write_scanlines(&rgb_pixels)?;
-
-        Ok(comp.finish()?)
+        let img = turbojpeg::Image {
+            pixels: rgb_pixels.as_slice(),
+            width: width as usize,
+            pitch: width as usize * 3,
+            height: height as usize,
+            format: turbojpeg::PixelFormat::RGB,
+        };
+        turbojpeg::compress(img, 80, turbojpeg::Subsamp::Sub2x2)
+            .context("failed to compress RGB JPEG")
+            .map(|b| b.to_vec())
     }
 
     pub fn get_stored_chapter_and_errors(
@@ -725,6 +722,7 @@ impl ChapterStorage {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::source::decode_image::jpeg;
     use size::Size;
     use tempfile::tempdir;
 
@@ -735,12 +733,7 @@ mod tests {
 
     fn make_rgb_jpeg(width: u32, height: u32) -> Vec<u8> {
         let pixels: Vec<u8> = vec![128u8; (width * height * 3) as usize];
-        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
-        comp.set_size(width as usize, height as usize);
-        comp.set_fastest_defaults();
-        let mut comp = comp.start_compress(Vec::new()).unwrap();
-        comp.write_scanlines(&pixels).unwrap();
-        comp.finish().unwrap()
+        jpeg::encode_jpeg(&pixels, width as usize, height as usize, 80).unwrap()
     }
 
     fn output_dimensions(jpeg: &[u8]) -> (u32, u32) {

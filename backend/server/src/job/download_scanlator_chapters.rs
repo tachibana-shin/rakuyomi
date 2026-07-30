@@ -44,7 +44,7 @@ impl DownloadScanlatorChaptersJob {
         scanlator_filter: ScanlatorFilter,
         langs: Vec<String>,
         concurrent_requests_pages: usize,
-        optimize_image: bool,
+        quality: u8,
         chapter_title_format: ChapterTitleFormat,
     ) -> Self {
         let cancellation_token = CancellationToken::new();
@@ -75,7 +75,7 @@ impl DownloadScanlatorChaptersJob {
                     filter,
                     &lang_refs,
                     concurrent_requests_pages,
-                    optimize_image,
+                    quality,
                     chapter_title_format,
                 );
 

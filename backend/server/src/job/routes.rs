@@ -95,7 +95,7 @@ async fn create_download_chapter_job(
         chapter_storage,
         body.into(),
         settings.concurrent_requests_pages.unwrap_or(4),
-        settings.optimize_image,
+        settings.jpeg_quality,
         download_semaphore,
         settings.ram_storage_enabled,
         current_chapter_id,
@@ -161,7 +161,7 @@ async fn create_download_unread_chapters_job(
         filter,
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
-        settings.optimize_image,
+        settings.jpeg_quality,
         settings.chapter_title_format,
     );
 
@@ -225,7 +225,7 @@ async fn create_download_scanlator_chapters_job(
         scanlator_filter,
         langs,
         settings.concurrent_requests_pages.unwrap_or(4),
-        settings.optimize_image,
+        settings.jpeg_quality,
         settings.chapter_title_format,
     );
 

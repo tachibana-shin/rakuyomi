@@ -69,7 +69,7 @@ sha2 = "0.11.0"
 base64 = "0.22"
 epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }
 quick-xml = { version = "0.41.0", features = ["serialize"] }
-image = "0.25.10"
+image = { version = "0.25.10", default-features = false, features = ["avif-native"] }
 percent-encoding = "2.3.2"
 once_cell = "1.21.4"
 postcard = "1.1.3"
@@ -83,11 +83,12 @@ markdown = "1.0.0"
 unicode-normalization = "0.1.25"
 ordered-float = "5.3.0"
 dom_query = { version = "0.28.0", features = ["atomic"] }
-zune-png = "0.5.2"
-zune-jpeg = "0.5.15"
-zune-core = "0.5.1"
-mozjpeg = { version = "0.10.13", default-features = false }
+png = "0.17"
 nix = { version = "0.31.3", default-features = false, features = ["mount", "fs"] }
+webpx = "0.4"
+jpegxl-rs = "0.15"
+wide = "0.7"
+turbojpeg = "1.5.1"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }
@@ -99,4 +100,8 @@ harness = false
 
 [[bench]]
 name = "search_mangas_benchmark"
+harness = false
+
+[[bench]]
+name = "jpeg_lib_benchmark"
 harness = false

@@ -179,9 +179,6 @@ pub struct Settings {
     pub preload_chapters: usize,
 
     #[serde(default)]
-    pub optimize_image: bool,
-
-    #[serde(default)]
     pub library_view_mode: LibraryViewMode,
 
     #[serde(default)]
@@ -234,6 +231,16 @@ pub struct Settings {
     /// marked as read. Disabled by default.
     #[serde(default)]
     pub delete_downloaded_after_read: bool,
+
+    /// JPEG encoding quality for processed images (50–95).
+    /// Higher = better quality but larger files and slower encode.
+    /// Defaults to 80.
+    #[serde(default = "default_jpeg_quality")]
+    pub jpeg_quality: u8,
+}
+
+fn default_jpeg_quality() -> u8 {
+    80
 }
 
 fn default_ram_storage_size_mb() -> usize {
@@ -460,7 +467,6 @@ mod tests {
         assert_eq!(settings.library_sorting_mode, LibrarySortingMode::Ascending);
         assert!(!settings.enabled_cron_check_mangas_update);
         assert_eq!(settings.preload_chapters, 0);
-        assert!(!settings.optimize_image);
         assert_eq!(settings.library_view_mode, LibraryViewMode::Cover);
         assert_eq!(settings.search_view_mode, SearchViewMode::Base);
         assert!(!settings.ram_storage_enabled);

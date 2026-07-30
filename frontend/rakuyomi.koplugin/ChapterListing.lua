@@ -596,7 +596,7 @@ function ChapterListing:onContextMenuChoice(item)
           if chapter.downloaded then
             self:revokeChapter(chapter)
           else
-            self:downloadChapter(chapter, nil, function(_)
+            self:downloadChapter(chapter, nil, function(__)
               UIManager:show(InfoMessage:new { text = _("Chapter downloaded") })
             end)
           end

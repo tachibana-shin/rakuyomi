@@ -680,7 +680,7 @@ async fn download_manga_chapter(
     Json(cancel_id): Json<Option<usize>>,
 ) -> Result<Json<(String, Vec<shared::chapter_downloader::DownloadError>)>, AppError> {
     let token = create_token(cancel_token_store, cancel_id).await;
-    let (db, cs, use_ram, concurrent_requests_pages, optimize_image, chapter_title_format) = {
+    let (db, cs, use_ram, concurrent_requests_pages, quality, chapter_title_format) = {
         let cs = chapter_storage.lock().await;
         let settings = settings.lock().await;
         (
@@ -688,7 +688,7 @@ async fn download_manga_chapter(
             cs.clone(),
             !query.offline.unwrap_or_default() && settings.ram_storage_enabled,
             settings.concurrent_requests_pages.unwrap_or(4),
-            settings.optimize_image,
+            settings.jpeg_quality,
             settings.chapter_title_format,
         )
     };
@@ -701,7 +701,7 @@ async fn download_manga_chapter(
         &cs,
         &chapter_id,
         concurrent_requests_pages,
-        optimize_image,
+        quality,
         None,
         use_ram,
         chapter_title_format,

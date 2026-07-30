@@ -25,7 +25,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
     filter: Filter,
     langs: &'a [&'a str],
     concurrent_requests_pages: usize,
-    optimize_image: bool,
+    quality: u8,
     chapter_title_format: ChapterTitleFormat,
 ) -> impl Stream<Item = ProgressReport> + 'a {
     stream! {
@@ -73,7 +73,7 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                     &manga,
                     &information,
                     concurrent_requests_pages,
-                    optimize_image,
+                    quality,
                     None,
                     false, // batch download never use RAM
                     None,

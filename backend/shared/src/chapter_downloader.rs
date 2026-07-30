@@ -11,6 +11,7 @@ use tempfile::NamedTempFile;
 use tokio_util::sync::CancellationToken;
 
 use anyhow::{anyhow, Context};
+use log::info;
 use tokio::sync::mpsc;
 use zip::{CompressionMethod, ZipWriter};
 
@@ -45,7 +46,7 @@ pub async fn ensure_chapter_is_in_storage(
     manga: &MangaInformation,
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
-    optimize_image: bool,
+    quality: u8,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
     use_ram: bool,
     current_chapter_id: Option<&ChapterId>,
@@ -120,6 +121,7 @@ pub async fn ensure_chapter_is_in_storage(
             pages,
             chapter,
             concurrent_requests_pages,
+            quality,
             on_progress.clone(),
         )
         .await
@@ -135,7 +137,6 @@ pub async fn ensure_chapter_is_in_storage(
             source,
             pages,
             concurrent_requests_pages,
-            optimize_image,
             on_progress.clone(),
             &chapter.id,
         )
@@ -189,13 +190,13 @@ pub async fn download_chapter_pages_as_cbz<W>(
     source: &Source,
     pages: Vec<Page>,
     concurrent_requests_pages: usize,
-    optimize_image: bool,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
     chapter_id: &ChapterId,
 ) -> anyhow::Result<Vec<DownloadError>, anyhow::Error>
 where
     W: Write + Seek,
 {
+    let timer = std::time::Instant::now();
     let total = pages.len() as f32;
     let mut processed = 0f32;
 
@@ -235,7 +236,8 @@ where
                         let page_url = page.image_url.clone();
 
                         match async {
-                            let image_url = page.image_url.ok_or(anyhow!("page has no image URL"))?;
+                            let image_url =
+                                page.image_url.ok_or(anyhow!("page has no image URL"))?;
                             let extension = Path::new(image_url.path())
                                 .extension()
                                 .and_then(|ext| ext.to_str())
@@ -293,71 +295,34 @@ where
                                     let headers = response.headers().clone();
 
                                     let response_bytes = response.bytes().await?;
-
-                                    let response_bytes = if source.1.process_page_image {
-                                        source
-                                            .process_page_image(
-                                                cancel_token.clone(),
-                                                (req_url, req_headers),
-                                                (status, headers),
-                                                response_bytes,
-                                                page.ctx.clone(),
-                                            )
-                                            .await
-                                            .map_err(|err| {
-                                                eprintln!("Error = {err}");
-                                                err
-                                            })?
-                                    } else if optimize_image {
-                                        tokio::task::spawn_blocking(move || -> anyhow::Result<Vec<u8>> {
-                                            let data = response_bytes.to_vec();
-                                            if let Some(image) =
-                                                crate::source::decode_image::decode_image_fast(&data)
-                                            {
-                                                if let Ok(image) = image.map_err(|err| {
-                                                    eprintln!("failed to load image with faster {err}")
-                                                }) {
-                                                    match crate::source::decode_image::decode_argb_to_rgb(
-                                                        image.width, image.height, &image.data,
-                                                    ) {
-                                                        Ok(rgb_pixels) => {
-                                                            let mut comp = mozjpeg::Compress::new(
-                                                                mozjpeg::ColorSpace::JCS_RGB,
-                                                            );
-                                                            comp.set_size(
-                                                                image.width as usize,
-                                                                image.height as usize,
-                                                            );
-                                                            comp.set_fastest_defaults();
-
-                                                            let mut comp = comp.start_compress(Vec::new())?;
-                                                            comp.write_scanlines(&rgb_pixels)?;
-
-                                                            Ok(comp.finish()?)
-                                                        }
-                                                        Err(e) => {
-                                                            eprintln!("failed to convert ARGB to RGB: {e}");
-                                                            Ok(data)
-                                                        }
-                                                    }
-                                                } else {
-                                                    Ok(data)
-                                                }
-                                            } else {
-                                                Ok(data)
-                                            }
-                                        })
-                                        .await??
-                                    } else {
-                                        response_bytes.to_vec()
+                                    let image_bytes = {
+                                        if source.1.process_page_image {
+                                            source
+                                                .process_page_image(
+                                                    cancel_token.clone(),
+                                                    (req_url, req_headers),
+                                                    (status, headers),
+                                                    response_bytes,
+                                                    page.ctx.clone(),
+                                                )
+                                                .await
+                                                .map_err(|err| {
+                                                    eprintln!("Error = {err}");
+                                                    err
+                                                })?
+                                        } else {
+                                            response_bytes.to_vec()
+                                        }
                                     };
 
-                                    let final_image = if let Some(blocks_json) = page.base64.as_ref() {
+                                    let final_image = if let Some(blocks_json) =
+                                        page.base64.as_ref()
+                                    {
                                         let blocks: Vec<Block> = serde_json::from_str(blocks_json)
                                             .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
 
                                         tokio::task::spawn_blocking(move || {
-                                            match unscrable_image(response_bytes.to_vec(), blocks) {
+                                            match unscrable_image(image_bytes, blocks) {
                                                 Ok(result) => Ok(result),
                                                 Err(e) => {
                                                     eprintln!("unscrable_image failed: {}", e);
@@ -367,7 +332,7 @@ where
                                         })
                                         .await??
                                     } else {
-                                        response_bytes.to_vec()
+                                        image_bytes
                                     };
 
                                     (final_image, None)
@@ -434,6 +399,7 @@ where
     }
 
     let _ = writer.set_comment(zip_comment(chapter_id));
+    info!("CBZ processing finished in {:?}", timer.elapsed());
     Ok(errors)
 }
 
@@ -446,6 +412,7 @@ pub async fn download_chapter_novel_as_epub<W>(
     pages: Vec<Page>,
     chapter: &ChapterInformation,
     concurrent_requests_pages: usize,
+    quality: u8,
     on_progress: Option<Arc<dyn Fn(f32, f32) + Send + Sync>>,
 ) -> anyhow::Result<()>
 where
@@ -472,7 +439,7 @@ where
         }
     });
 
-    let cover_img = prepare_cover(cover_url, &client, source)
+    let cover_img = prepare_cover(cover_url, &client, source, quality)
         .await
         .map_err(|e| {
             eprintln!(

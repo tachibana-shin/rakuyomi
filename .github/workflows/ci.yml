@@ -26,6 +26,9 @@ jobs:
             backend/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('backend/Cargo.lock') }}
 
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Install Rust 1.95.0
         uses: actions-rs/toolchain@v1
         with:

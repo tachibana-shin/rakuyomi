@@ -4,6 +4,10 @@ set -e
 # Use Podman as container backend
 export CROSS_CONTAINER_ENGINE=podman
 
+# Generate the LNReader JS runtime bundle on the host (cross containers have
+# no bun, and the generated file is mounted into them by cross).
+bash ./scripts/build-js-assets.sh
+
 # --- Mapping build names to actual Rust targets ---
 declare -A TARGETS=(
   ["desktop"]="x86_64-unknown-linux-musl"

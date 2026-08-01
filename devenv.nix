@@ -12,7 +12,7 @@ let
       sha256 = "sha256-5LJvGy6jZLsN3IhgWktLKvH8seAvee0cAH4Rs+1Wmuk=";
     };
 
-    cargoHash = "sha256-19cm5wVs6z+XuBcIwqWOgoLY6lP6G1jUM68mmRNGf5U=";
+    cargoHash = "sha256-S4gmmKP/ckU1Epi7/9NoEAK11WDZiyjxM7mbWRXa1Ao=";
 
     buildInputs = with pkgs; [
       openssl
@@ -59,13 +59,12 @@ in {
     mdbook
     mdbook-admonish
     pkgs-unstable.poetry
-    python313Full
+    python313
     python313Packages.tkinter
     sqlx-cli
     sshpass
     pkg-config
     freetype
-    freetype-sys
     fontconfig
   ] ++ lib.optionals (!stdenv.isDarwin) [
     mold-wrapped

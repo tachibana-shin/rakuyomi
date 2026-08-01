@@ -1,12 +1,18 @@
+# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
 inputs:
-  nixpkgs:
-    url: github:cachix/devenv-nixpkgs/rolling
   fenix:
     url: github:nix-community/fenix
     inputs:
       nixpkgs:
         follows: nixpkgs
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
   nixpkgs-unstable:
     url: github:nixos/nixpkgs/nixpkgs-unstable
-permittedInsecurePackages:
+  rust-overlay:
+    url: github:oxalica/rust-overlay
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+permitted_insecure_packages:
 - openssl-1.1.1w

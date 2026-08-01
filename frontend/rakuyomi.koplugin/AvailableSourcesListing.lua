@@ -2,6 +2,9 @@ local UIManager = require("ui/uimanager")
 local Screen = require("device").screen
 local Trapper = require("ui/trapper")
 local Icons = require("Icons")
+local Button = require("ui/widget/button")
+local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
 
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
@@ -9,6 +12,11 @@ local LoadingDialog = require("LoadingDialog")
 local Menu = require("widgets/Menu")
 local _ = require("gettext+")
 local Testing = require("testing")
+local CheckboxDialog = require("CheckboxDialog")
+
+local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
+local Font = require("ui/font")
+local SMALL_FONT_FACE = Font:getFace("smallffont")
 
 --- Compares two source versions. Versions may be numbers (Aidoku) or
 --- strings (LNReader). When both sides are numeric the comparison is
@@ -53,6 +61,12 @@ local AvailableSourcesListing = Menu:extend {
 
   available_sources = nil,
   installed_sources = nil,
+  -- the application settings, used to persist the language filter
+  settings = nil,
+  -- selectable languages, built from `available_sources`
+  langs = {},
+  -- languages selected by the user; empty means no language filter
+  langs_selected = {},
   -- callback to be called when pressing the back button
   on_return_callback = nil,
 }
@@ -70,6 +84,9 @@ function AvailableSourcesListing:init()
   self.paths = { 0 }
   self.on_return_callback = nil
 
+  self:extractAvailableLangs()
+  self:patchTitleBar()
+
   -- self:updateItems()
 end
 
@@ -83,9 +100,10 @@ end
 --- Updates the menu item contents with the sources information.
 --- @private
 function AvailableSourcesListing:updateItems()
-  if #self.available_sources > 0 then
-    self.item_table = self:generateItemTableFromInstalledAndAvailableSources(self.installed_sources, self
-      .available_sources)
+  local available_sources = self:filterAvailableSources()
+  if #available_sources > 0 then
+    self.item_table = self:generateItemTableFromInstalledAndAvailableSources(self.installed_sources,
+      available_sources)
     self.multilines_show_more_text = false
     self.items_per_page = nil
     self.single_line = true
@@ -97,6 +115,119 @@ function AvailableSourcesListing:updateItems()
   end
 
   Menu.updateItems(self)
+end
+
+--- Builds the list of selectable languages from all available sources.
+--- @private
+function AvailableSourcesListing:extractAvailableLangs()
+  local langs_set = {}
+  local langs_list = {}
+  for _, source_information in ipairs(self.available_sources) do
+    for _, lang in ipairs(source_information.languages) do
+      if not langs_set[lang] then
+        langs_set[lang] = true
+        table.insert(langs_list, lang)
+      end
+    end
+  end
+
+  table.sort(langs_list)
+
+  self.langs = {}
+  for _, lang in ipairs(langs_list) do
+    table.insert(self.langs, { id = lang, name = lang })
+  end
+end
+
+--- Filters the available sources by the selected languages. When no
+--- language is selected, all sources are shown; sources without any
+--- language information are always shown.
+--- @private
+--- @return SourceInformation[]
+function AvailableSourcesListing:filterAvailableSources()
+  if #self.langs_selected == 0 then
+    return self.available_sources
+  end
+
+  local langs_set = {}
+  for _, lang in ipairs(self.langs_selected) do
+    langs_set[lang] = true
+  end
+
+  local filtered = {}
+  for _, source_information in ipairs(self.available_sources) do
+    local matches = #source_information.languages == 0
+    for _, lang in ipairs(source_information.languages) do
+      if langs_set[lang] then
+        matches = true
+        break
+      end
+    end
+    if matches then
+      table.insert(filtered, source_information)
+    end
+  end
+
+  return filtered
+end
+
+--- Opens the language selection dialog and applies the filter. The
+--- selection is persisted in the application settings via the existing
+--- `languages` field.
+--- @private
+function AvailableSourcesListing:showSelectLanguage()
+  local dialog = CheckboxDialog:new {
+    title = _("Languages"),
+    current = self.langs_selected,
+    options = self.langs,
+    update_callback = function(value)
+      self.langs_selected = value
+      self.settings.languages = value
+      Backend.setSettings(self.settings)
+      self:updateItems()
+      self:patchTitleBar()
+      UIManager:setDirty(self.show_parent, "ui", self.dimen)
+    end,
+  }
+
+  UIManager:show(dialog)
+end
+
+--- Adds the language filter button to the title bar.
+--- @private
+function AvailableSourcesListing:patchTitleBar()
+  if #self.langs == 0 then
+    return
+  end
+
+  local left_icon_size_ratio = self.title_bar.left_icon_size_ratio
+  local left_icon_size = Screen:scaleBySize(DGENERIC_ICON_SIZE * left_icon_size_ratio)
+
+  local count = #self.langs_selected
+  local lang_button = VerticalGroup:new {
+    Button:new {
+      text = Icons.LANG .. (count > 0 and " " .. count or ""),
+      face = SMALL_FONT_FACE,
+      bordersize = 0,
+      enabled = true,
+      text_font_size = left_icon_size,
+      text_font_bold = false,
+      callback = function()
+        self:showSelectLanguage()
+      end,
+    },
+    VerticalSpan:new {
+      width = left_icon_size / 2,
+    },
+  }
+
+  -- Insert the language button on the left side of the title bar. When the
+  -- menu has no left icon, the close button lives at [2], so we must insert
+  -- instead of replacing it.
+  self.title_bar.left_button = lang_button
+  if self.title_bar[2] ~= nil then
+    table.insert(self.title_bar, 2, lang_button)
+  end
 end
 
 ---@private
@@ -242,9 +373,19 @@ function AvailableSourcesListing:fetchAndShow(onReturnCallback)
 
   local available_sources = available_sources_response.body
 
+  local settings_response = Backend.getSettings()
+  if settings_response.type == 'ERROR' then
+    ErrorDialog:show(settings_response.message)
+
+    return
+  end
+  local settings = settings_response.body
+
   local ui = AvailableSourcesListing:new {
     installed_sources = installed_sources,
     available_sources = available_sources,
+    settings = settings,
+    langs_selected = settings.languages or {},
     on_return_callback = onReturnCallback,
     covers_fullscreen = true, -- hint for UIManager:_repaint()
   }

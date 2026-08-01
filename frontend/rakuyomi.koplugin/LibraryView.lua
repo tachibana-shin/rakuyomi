@@ -8,6 +8,7 @@ local _ = require("gettext+")
 local Icons = require("Icons")
 local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
+local SourceListsListing = require("SourceListsListing")
 local IconButton = require("ui/widget/iconbutton")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
@@ -908,6 +909,14 @@ function LibraryView:openMenu()
           UIManager:close(dialog)
 
           self:openInstalledSourcesListing()
+        end
+      },
+      {
+        text = Icons.FA_LIST .. " " .. _("Source lists"),
+        callback = function()
+          UIManager:close(dialog)
+
+          SourceListsListing:fetchAndShow()
         end
       },
     },

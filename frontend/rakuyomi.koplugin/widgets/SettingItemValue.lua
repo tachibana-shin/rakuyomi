@@ -31,7 +31,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
 --- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate_error?: string, validate?: fun(value: string): boolean }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
---- @class LabelValueDefinition: { type: 'label', title: string, text: string }
+--- @class LabelValueDefinition: { type: 'label', title: string, text: string, callback?: (fun():nil)|nil }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 --- @class ButtonDefinition: { type: 'button', title: string, key: string|nil, callback: (fun():nil)|nil, confirm_title: string|nil, confirm_message: string|nil }
 
@@ -237,7 +237,11 @@ end
 
 --- @private
 function SettingItemValue:onTap()
-  if self.value_definition.type == "enum" then
+  if self.value_definition.type == "label" then
+    if self.value_definition.callback then
+      self.value_definition.callback()
+    end
+  elseif self.value_definition.type == "enum" then
     local radio_buttons = {}
     for _, option in ipairs(self.value_definition.options) do
       table.insert(radio_buttons, {

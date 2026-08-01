@@ -337,7 +337,6 @@ impl Source {
 pub struct SourceInfo {
     pub id: String,
     pub lang: Option<String>,
-    #[cfg(not(feature = "all"))]
     pub languages: Option<Vec<String>>,
     #[cfg(not(feature = "all"))]
     #[serde(rename = "contentRating")]

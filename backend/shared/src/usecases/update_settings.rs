@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 use size::{consts, Size};
 
 use crate::settings::{
-    ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode, LibraryViewMode, SearchViewMode,
-    Settings, StorageSizeLimit, TrackingServiceSettings,
+    deserialize_source_lists, ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode,
+    LibraryViewMode, SearchViewMode, Settings, SourceList, StorageSizeLimit,
+    TrackingServiceSettings,
 };
 
 pub fn update_settings(
@@ -57,6 +58,15 @@ pub struct UpdateableSettings {
     chapter_title_format: ChapterTitleFormat,
     delete_downloaded_on_remove: bool,
     delete_downloaded_after_read: bool,
+    /// The languages selected in the available sources listing, used to
+    /// filter which sources are shown. Reuses the settings field that is
+    /// also exposed to sources as the `languages` global.
+    #[serde(default)]
+    languages: Vec<String>,
+    /// The source lists configured by the user, in the same format as
+    /// `Settings.source_lists` (also accepts the legacy plain-string format).
+    #[serde(default, deserialize_with = "deserialize_source_lists")]
+    source_lists: Vec<SourceList>,
 }
 
 fn clean_opt(s: Option<String>) -> Option<String> {
@@ -115,6 +125,8 @@ impl UpdateableSettings {
         settings.chapter_title_format = self.chapter_title_format;
         settings.delete_downloaded_on_remove = self.delete_downloaded_on_remove;
         settings.delete_downloaded_after_read = self.delete_downloaded_after_read;
+        settings.languages = self.languages;
+        settings.source_lists = self.source_lists;
     }
 }
 
@@ -154,6 +166,59 @@ impl From<&Settings> for UpdateableSettings {
             chapter_title_format: value.chapter_title_format,
             delete_downloaded_on_remove: value.delete_downloaded_on_remove,
             delete_downloaded_after_read: value.delete_downloaded_after_read,
+            languages: value.languages.clone(),
+            source_lists: value.source_lists.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use url::Url;
+
+    fn sample_settings() -> Settings {
+        let json = r#"{
+            "source_lists": [
+                {"url": "https://a.example.com/index.min.json", "type": "aidoku"},
+                {"url": "https://github.com/lnreader/lnreader-plugins", "type": "lnreader"}
+            ],
+            "languages": ["en"]
+        }"#;
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn test_updateable_settings_source_lists_roundtrip() {
+        let settings = sample_settings();
+        let updateable = UpdateableSettings::from(&settings);
+        let serialized = serde_json::to_string(&updateable).unwrap();
+        let deserialized: UpdateableSettings = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(deserialized.source_lists, settings.source_lists);
+        assert_eq!(deserialized.languages, settings.languages);
+    }
+
+    #[test]
+    fn test_updateable_settings_source_lists_default_empty() {
+        let updateable = UpdateableSettings::from(&Settings::default());
+        assert!(updateable.source_lists.is_empty());
+    }
+
+    #[test]
+    fn test_update_settings_applies_source_lists() {
+        let mut settings = Settings::default();
+        let mut source_lists = Vec::new();
+        source_lists.push(crate::settings::SourceList {
+            url: Url::parse("https://github.com/lnreader/lnreader-plugins").unwrap(),
+            source_type: crate::settings::SourceListType::LnReader,
+        });
+        let updateable = UpdateableSettings {
+            source_lists: source_lists.clone(),
+            ..UpdateableSettings::from(&settings)
+        };
+        updateable.apply_updates(&mut settings);
+
+        assert_eq!(settings.source_lists, source_lists);
     }
 }

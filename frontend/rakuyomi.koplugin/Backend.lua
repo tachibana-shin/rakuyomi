@@ -220,6 +220,7 @@ end
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
 --- @field version string|number The version of the source, as published by the source: a number for Aidoku sources, a string for LNReader sources.
+--- @field languages string[] The languages of the source: language codes for Aidoku sources, language names for LNReader sources. Empty when the source list publishes no language information.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga

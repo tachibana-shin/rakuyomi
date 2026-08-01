@@ -13,6 +13,7 @@ pub struct SourceInformation {
     id: String,
     name: String,
     version: serde_json::Value,
+    languages: Vec<String>,
     source_of_source: Option<String>,
 }
 
@@ -22,6 +23,7 @@ impl From<DomainSourceInformation> for SourceInformation {
             id: value.id.value().clone(),
             name: value.name,
             version: value.version,
+            languages: value.languages,
             source_of_source: value.source_of_source,
         }
     }

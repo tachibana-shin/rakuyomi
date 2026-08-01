@@ -50,7 +50,11 @@ async fn run_plugin_smoke(
     assert_eq!(manifest.info.id, plugin_id);
     assert_eq!(manifest.info.name, expected_name);
     assert!(
-        manifest.info.version.as_str().is_some_and(|v| v.contains('.')),
+        manifest
+            .info
+            .version
+            .as_str()
+            .is_some_and(|v| v.contains('.')),
         "LNReader version is a string"
     );
 

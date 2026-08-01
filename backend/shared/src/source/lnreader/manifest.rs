@@ -110,6 +110,7 @@ pub fn manifest_from_props(
         info: SourceInfo {
             id: props.id.clone(),
             lang: None,
+            languages: None,
             name: props.name.clone(),
             version: serde_json::Value::String(props.version.clone()),
             url: Some(props.site.clone()),

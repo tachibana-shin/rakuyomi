@@ -45,7 +45,7 @@ pub struct SourceList {
 /// (`[{"url": ..., "type": ...}]`) and the legacy plain-string format
 /// (`["https://..."]`). Legacy entries are always Aidoku indexes, which was
 /// the only supported format before the `type` field existed.
-fn deserialize_source_lists<'de, D>(deserializer: D) -> Result<Vec<SourceList>, D::Error>
+pub(crate) fn deserialize_source_lists<'de, D>(deserializer: D) -> Result<Vec<SourceList>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -174,7 +174,9 @@ pub struct Settings {
     )]
     pub source_lists: Vec<SourceList>,
 
-    /// If set, only chapters translated to those languages will be shown.
+    /// Languages selected in the available sources listing, used to filter
+    /// which sources are shown. Also exposed to sources as the `languages`
+    /// global setting.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub languages: Vec<String>,
 

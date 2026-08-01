@@ -111,7 +111,7 @@ pub fn manifest_from_props(
             id: props.id.clone(),
             lang: None,
             name: props.name.clone(),
-            version: props.version.clone(),
+            version: serde_json::Value::String(props.version.clone()),
             url: Some(props.site.clone()),
             urls: None,
             min_app_version: None,

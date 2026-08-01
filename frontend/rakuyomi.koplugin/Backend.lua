@@ -219,8 +219,7 @@ end
 --- @class SourceInformation
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
---- @field version string The version of the source.
---- @field version_name string|nil The human-readable version of the source, when `version` is a machine-readable code.
+--- @field version string|number The version of the source, as published by the source: a number for Aidoku sources, a string for LNReader sources.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga

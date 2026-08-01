@@ -1,4 +1,4 @@
-use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::source::{
@@ -94,58 +94,15 @@ impl ChapterId {
 pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
-    /// The version of the source. Kept as a string because sources may use
-    /// arbitrary version schemes; remote source lists that publish the
-    /// version as a number (e.g. Aidoku index files) are coerced to string.
-    #[serde(deserialize_with = "deserialize_version")]
-    pub version: String,
-    /// Optional human-readable version, when `version` itself is a
-    /// machine-readable code.
-    #[serde(default, rename = "versionName", alias = "version_name")]
-    pub version_name: Option<String>,
+    /// The version of the source, as published by the source itself:
+    /// a number for Aidoku sources (`"version": 1`) or a string for
+    /// LNReader sources (`"2.3.1"`). The type is preserved as-is so the
+    /// frontend can compare versions numerically when both are numbers.
+    pub version: serde_json::Value,
 
     // source of source
     #[serde(skip)]
     pub source_of_source: Option<String>,
-}
-
-/// Accepts a version written either as a string ("2.3.1") or as a number
-/// (e.g. the Aidoku index format, `"version": 1`).
-fn deserialize_version<'de, D>(deserializer: D) -> Result<String, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    struct VersionVisitor;
-
-    impl<'de> Visitor<'de> for VersionVisitor {
-        type Value = String;
-
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("a version number or string")
-        }
-
-        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_string<E>(self, value: String) -> Result<Self::Value, E> {
-            Ok(value)
-        }
-
-        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-    }
-
-    deserializer.deserialize_any(VersionVisitor)
 }
 
 #[derive(Clone, Debug)]
@@ -328,7 +285,6 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
-            version_name: None,
             source_of_source: value.source_of_source,
         }
     }
@@ -518,7 +474,7 @@ mod tests {
                 #[cfg(not(feature = "all"))]
                 content_rating: None,
                 name: "Test Source".to_string(),
-                version: "1".to_string(),
+                version: serde_json::json!("1"),
                 url: None,
                 urls: None,
                 min_app_version: None,
@@ -529,35 +485,38 @@ mod tests {
         let info = SourceInformation::from(manifest);
         assert_eq!(info.id.value(), "test_id");
         assert_eq!(info.name, "Test Source");
-        assert_eq!(info.version, "1");
+        assert_eq!(info.version, serde_json::json!("1"));
         assert_eq!(info.source_of_source, Some("test_sos".to_string()));
     }
 
     #[test]
-    fn test_source_information_deserializes_numeric_version() {
+    fn test_source_information_preserves_numeric_version() {
         let json = r#"{"id":"en.royalroad","name":"Royal Road","version":3}"#;
         let info: SourceInformation = serde_json::from_str(json).unwrap();
-        assert_eq!(info.version, "3");
-        assert_eq!(info.version_name, None);
+        assert_eq!(info.version, serde_json::json!(3));
     }
 
     #[test]
-    fn test_source_information_deserializes_string_version() {
+    fn test_source_information_preserves_string_version() {
         let json = r#"{"id":"en.royalroad","name":"Royal Road","version":"2.3.1"}"#;
         let info: SourceInformation = serde_json::from_str(json).unwrap();
-        assert_eq!(info.version, "2.3.1");
-        assert_eq!(info.version_name, None);
+        assert_eq!(info.version, serde_json::json!("2.3.1"));
     }
 
     #[test]
-    fn test_source_information_deserializes_version_name() {
-        let camel =
-            r#"{"id":"en.royalroad","name":"Royal Road","version":"2.3.1","versionName":"v2.3.1"}"#;
-        let info: SourceInformation = serde_json::from_str(camel).unwrap();
-        assert_eq!(info.version_name, Some("v2.3.1".to_string()));
-
-        let snake = r#"{"id":"en.royalroad","name":"Royal Road","version":"2.3.1","version_name":"v2.3.1"}"#;
-        let info: SourceInformation = serde_json::from_str(snake).unwrap();
-        assert_eq!(info.version_name, Some("v2.3.1".to_string()));
+    fn test_source_manifest_preserves_numeric_version() {
+        let json = r#"{
+            "info": {
+                "id": "en.aquamanga",
+                "name": "Aqua Manga",
+                "version": 1,
+                "url": "https://aquareader.net",
+                "contentRating": 1,
+                "languages": ["en"]
+            }
+        }"#;
+        let manifest: SourceManifest = serde_json::from_str(json).unwrap();
+        assert_eq!(manifest.info.id, "en.aquamanga");
+        assert_eq!(manifest.info.version, serde_json::json!(1));
     }
 }

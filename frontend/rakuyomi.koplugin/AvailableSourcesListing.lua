@@ -10,6 +10,37 @@ local Menu = require("widgets/Menu")
 local _ = require("gettext+")
 local Testing = require("testing")
 
+--- Compares two source versions. Versions may be numbers (Aidoku) or
+--- strings (LNReader). When both sides are numeric the comparison is
+--- numeric; otherwise the numeric parts are compared segment by segment,
+--- so that e.g. "2.10.0" sorts after "2.9.0".
+--- @param a string|number
+--- @param b string|number
+--- @return boolean true when `a` is older than `b`
+local function version_less(a, b)
+  local na, nb = tonumber(a), tonumber(b)
+  if na ~= nil and nb ~= nil then
+    return na < nb
+  end
+
+  local function parts(value)
+    local result = {}
+    for part in tostring(value):gmatch("%d+") do
+      result[#result + 1] = tonumber(part)
+    end
+    return result
+  end
+
+  local pa, pb = parts(a), parts(b)
+  for i = 1, math.max(#pa, #pb) do
+    local x, y = pa[i] or 0, pb[i] or 0
+    if x ~= y then
+      return x < y
+    end
+  end
+  return false
+end
+
 --- @class AvailableSourcesListing: { [any]: any }
 --- @field installed_sources SourceInformation[]
 --- @field available_sources SourceInformation[]
@@ -77,7 +108,7 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
 
   if installed_info then
     -- Installed
-    if installed_info.version < source_information.version then
+    if version_less(installed_info.version, source_information.version) then
       mandatory = Icons.FA_ARROW_UP .. " " .. _("Update available!")
       callback = function() self:installSource(source_information) end
     else
@@ -91,7 +122,7 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
 
   return {
     source_information = source_information,
-    text = source_information.name .. " (" .. _("version") .. " " .. (source_information.version_name or source_information.version) .. ")",
+    text = source_information.name .. " (" .. _("version") .. " " .. tostring(source_information.version) .. ")",
     mandatory = mandatory,
     post_text = source_information.source_of_source
         and string.sub(source_information.source_of_source, 1, 6) .. "..." or

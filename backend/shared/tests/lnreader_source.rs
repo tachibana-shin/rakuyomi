@@ -49,7 +49,10 @@ async fn run_plugin_smoke(
     let manifest = source.manifest();
     assert_eq!(manifest.info.id, plugin_id);
     assert_eq!(manifest.info.name, expected_name);
-    assert!(manifest.info.version.contains('.'), "version is a string");
+    assert!(
+        manifest.info.version.as_str().is_some_and(|v| v.contains('.')),
+        "LNReader version is a string"
+    );
 
     // search_mangas with an empty query acts as the popular list -- needs network
 

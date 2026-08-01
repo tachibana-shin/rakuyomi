@@ -68,7 +68,7 @@ pub mod wasm_store;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
 mod wasm_store;
 
-/**
+/*
  * params need mark encode
  * handle_notification
  * handle_deep_link
@@ -343,7 +343,7 @@ pub struct SourceInfo {
     #[serde(rename = "contentRating")]
     pub content_rating: Option<i32>,
     pub name: String,
-    pub version: String,
+    pub version: serde_json::Value,
     pub url: Option<String>,
     pub urls: Option<Vec<String>>,
     #[serde(rename = "minAppVersion")]

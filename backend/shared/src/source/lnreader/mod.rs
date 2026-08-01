@@ -438,10 +438,13 @@ impl LnReaderSource {
         } else {
             manga
         };
-        if needs_chapters {
-            let novel = self.invoke("novel", json!([manga.key]))?;
-            manga.chapters = Some(chapters(novel.get("chapters").unwrap_or(&Value::Null))?);
+        if !needs_chapters {
+            manga.chapters = None;
         }
+        // if needs_chapters {
+        //     let novel = self.invoke("novel", json!([manga.key]))?;
+        //     manga.chapters = Some(chapters(novel.get("chapters").unwrap_or(&Value::Null))?);
+        // }
         Ok(manga)
     }
 

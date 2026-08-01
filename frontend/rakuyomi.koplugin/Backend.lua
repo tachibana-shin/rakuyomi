@@ -107,7 +107,7 @@ function Backend.requestJson(request)
     logger.err("Request failed with status code", response.status, "and body", parsed_body)
     local error_message = parsed_body.message
     if error_message == nil then
-      error_message = parsed_body.error or "Request failed (status: " .. response.status .. ")"
+      error_message = (parsed_body.error or "Request failed (status: ") .. response.status .. ")"
     end
 
     return { type = 'ERROR', status = response.status, message = error_message }
@@ -241,6 +241,7 @@ end
 --- @field scanlator string? The scanlation group that worked on this chapter.
 --- @field chapter_num number? The chapter number.
 --- @field volume_num number? The volume that this chapter belongs to, if known.
+--- @field last_updated number? The timestamp (in seconds since epoch) of when this chapter was published by the source, if known.
 --- @field read boolean If this chapter was read to its end.
 --- @field last_read number? The timestamp (in seconds since epoch) of when this chapter was last read to its end.
 --- @field downloaded boolean If this chapter was already downloaded to the storage.

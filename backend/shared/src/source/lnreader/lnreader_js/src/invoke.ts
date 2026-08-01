@@ -152,6 +152,7 @@ function normNovel(v: unknown): Record<string, unknown> {
   const src = (v as Record<string, unknown> | null | undefined) || {};
   return {
     name: String(src.name == null ? "" : src.name),
+    path: String(src.path == null ? "" : src.path),
     cover: src.cover ? String(src.cover) : null,
     author: src.author ? String(src.author) : null,
     artist: src.artist ? String(src.artist) : null,

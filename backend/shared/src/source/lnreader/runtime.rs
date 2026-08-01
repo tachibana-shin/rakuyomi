@@ -179,6 +179,27 @@ impl LnReaderRuntime {
         *self.worker.lock().unwrap() = Some(WorkerHandle { tx, thread });
         Ok(())
     }
+
+    /// Fetches a page over HTTP with the plugin's user agent and the same
+    /// per-domain cookie/user-agent overrides as the plugin's own fetches,
+    /// returning the decoded text body. Used by the Rust side for cover
+    /// fallbacks (e.g. extracting `og:image` when a plugin returns no cover).
+    pub fn fetch_text(&self, url: &str) -> Result<String> {
+        let init = json!({
+            "headers": {
+                "User-Agent": self.user_agent,
+            }
+        });
+        let output = do_fetch(url.to_string(), &init.to_string())
+            .with_context(|| format!("failed to fetch {}", url))?;
+        let value: Value = serde_json::from_str(&output)?;
+        let body_b64 = value
+            .get("bodyB64")
+            .and_then(Value::as_str)
+            .context("fetch response is missing bodyB64")?;
+        let bytes = base64::engine::general_purpose::STANDARD.decode(body_b64)?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
 }
 
 fn worker_main(

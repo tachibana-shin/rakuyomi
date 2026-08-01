@@ -13,9 +13,15 @@ local function isBeforeChapter(a, b)
     return a.chapter_num < b.chapter_num
   end
 
-  -- This is _very_ flaky, but we assume that source order is _always_ from newer chapters -> older chapters.
-  -- Unfortunately we need to make some kind of assumptions here to handle edgecases (e.g. chapters without a chapter number)
-  return a.index > b.index
+  -- When both chapters carry a publish date, the newest chapter comes first.
+  if a.last_updated ~= nil and b.last_updated ~= nil and a.last_updated ~= b.last_updated then
+    return a.last_updated > b.last_updated
+  end
+
+  -- Last resort: keep the order the source returned. Source order is not
+  -- reliable across sources (some return newest first, some oldest first),
+  -- so we do not guess.
+  return a.index < b.index
 end
 
 

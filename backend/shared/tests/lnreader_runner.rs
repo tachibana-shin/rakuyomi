@@ -194,7 +194,7 @@ fn route(path: &str) -> (&'static str, &'static str, Vec<u8>) {
                 .to_vec(),
         ),
         p if p.starts_with("/novel/") => html(
-            r#"<html><body><h1>Alpha</h1><img class="cover" src="http://fixture/cover/alpha.jpg">
+            r#"<html><body><h1>Alpha</h1><img class="cover" src="/cover/alpha.jpg">
 <div class="summary">A test novel</div>
 <span class="author">Auth A</span><span class="artist">Art B</span>
 <span class="genres">Action, Romance</span><span class="status">Ongoing</span>
@@ -480,9 +480,10 @@ async fn runner_full_offline() {
         Some(vec!["Action", "Romance"])
     );
     assert_eq!(manga.status, PublishingStatus::Ongoing);
+    // the fixture cover is a relative path; it must be resolved against the site
     assert_eq!(
         manga.cover_url.map(|u| u.to_string()).as_deref(),
-        Some("http://fixture/cover/alpha.jpg")
+        Some(format!("{base}cover/alpha.jpg").as_str())
     );
 
     // chapter list: 5 from parseNovel + 2 from parsePage (page 2)

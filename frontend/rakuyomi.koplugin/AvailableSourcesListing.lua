@@ -91,7 +91,7 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
 
   return {
     source_information = source_information,
-    text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
+    text = source_information.name .. " (" .. _("version") .. " " .. (source_information.version_name or source_information.version) .. ")",
     mandatory = mandatory,
     post_text = source_information.source_of_source
         and string.sub(source_information.source_of_source, 1, 6) .. "..." or

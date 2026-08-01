@@ -4,7 +4,8 @@ pub mod cbz_metadata;
 pub mod chapter_downloader;
 pub mod chapter_storage;
 pub mod cookie_store;
-#[cfg(feature = "all")]
+/// The aidoku-rs types used across the source API.
+pub use aidoku;
 pub mod database;
 pub mod model;
 pub mod settings;

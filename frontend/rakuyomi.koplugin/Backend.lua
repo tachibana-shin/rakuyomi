@@ -219,7 +219,8 @@ end
 --- @class SourceInformation
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
---- @field version number The version of the source.
+--- @field version string The version of the source.
+--- @field version_name string|nil The human-readable version of the source, when `version` is a machine-readable code.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga
@@ -846,13 +847,17 @@ end
 --- @field url string|nil
 --- @field username string|nil
 
+--- @class SourceList
+--- @field url string The URL of the list.
+--- @field type ("aidoku"|"lnreader") The kind of index the URL points to. Defaults to "aidoku".
+
 --- @class Settings
 --- @field chapter_sorting_mode ChapterSortingMode
 --- @field preload_chapters number
 --- @field library_view_mode LibraryViewMode
 --- @field search_view_mode SearchViewMode
 --- @field chapter_title_format ChapterTitleFormat
---- @field source_lists string[]
+--- @field source_lists SourceList[]
 --- @field languages string[]
 --- @field storage_size_limit string
 --- @field storage_path string|nil

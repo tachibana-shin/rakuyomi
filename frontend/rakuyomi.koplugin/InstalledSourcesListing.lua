@@ -78,7 +78,7 @@ function InstalledSourcesListing:generateItemTableFromInstalledSources(installed
   for __,source_information in ipairs(installed_sources) do
     table.insert(item_table, {
       source_information = source_information,
-      text = source_information.name .. " (" .. _("version") .. " " .. source_information.version .. ")",
+      text = source_information.name .. " (" .. _("version") .. " " .. (source_information.version_name or source_information.version) .. ")",
       post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
           _("Unknown"),
     })

@@ -74,7 +74,11 @@ fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::
 /// Creates a reqwest ClientBuilder configured with the standard WebPKI root trust store
 /// and the currently configured global proxy.
 pub fn client_builder() -> reqwest::ClientBuilder {
-    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(base_tls_config()))
+    apply_proxy(
+        reqwest::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(base_tls_config()),
+    )
 }
 
 /// Creates a reqwest ClientBuilder that disables certificate validation.
@@ -90,7 +94,11 @@ pub fn client_builder_insecure() -> reqwest::ClientBuilder {
             .with_custom_certificate_verifier(VERIFIER.clone())
             .with_no_client_auth()
     });
-    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
+    apply_proxy(
+        reqwest::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(CONFIG.clone()),
+    )
 }
 
 /// Test whether a given proxy URL is reachable by making a lightweight HTTP request

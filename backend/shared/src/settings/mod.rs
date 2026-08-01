@@ -3,5 +3,6 @@ mod schema;
 
 pub use schema::{
     ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode, LibraryViewMode, SearchViewMode,
-    Settings, SourceSettingValue, StorageSizeLimit, TrackingServiceSettings,
+    Settings, SourceList, SourceListType, SourceSettingValue, StorageSizeLimit,
+    TrackingServiceSettings,
 };

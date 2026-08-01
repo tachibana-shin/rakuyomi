@@ -25,6 +25,7 @@ use crate::{
 };
 
 use self::{
+    lnreader::LnReaderSource,
     model::{Chapter, Filter, Manga, MangaPageResult, Page, SettingDefinition},
     source_settings::SourceSettings,
     wasm_imports::{
@@ -43,6 +44,7 @@ use self::{
 };
 
 pub(crate) mod decode_image;
+pub mod lnreader;
 
 #[cfg(not(feature = "all"))]
 pub mod html_element;
@@ -73,38 +75,47 @@ mod wasm_store;
  * handle_basic_login
  * handle_web_login
  * handle_key_migration
- *
  */
 
+/// The two kinds of sources RakuYomi can run: WASM (Aidoku) and LNReader
+/// (JavaScript) plugins. Both are kept behind an `Arc` so `Source` is cheap to
+/// clone; blocking work is always moved to a `spawn_blocking` thread.
 #[derive(Clone)]
-pub struct Source(
-    /// In order to avoid issues when calling functions that block inside the `Source` from an
-    /// async context, we wrap all data and functions that need to block inside `BlockingSource`
-    /// and call them using `spawn_blocking` from within the facades exposed by `Source`.
-    /// Particularly, all calls to `reqwest::blocking` methods from an async context causes the
-    /// program to panic (see https://github.com/seanmonstar/reqwest/issues/1017), and we do call
-    /// them inside the `net` module.
-    ///
-    /// This also provides interior mutability, but we probably could also do it inside the
-    /// `BlockingSource` itself, by placing things inside a mutex. It might be a cleaner design.
-    #[cfg(feature = "all")]
-    Arc<Mutex<BlockingSource>>,
-    #[cfg(not(feature = "all"))] pub Arc<Mutex<BlockingSource>>,
-    pub SourceFeatures,
-);
+pub enum SourceBackend {
+    /// A WASM source, mirroring the legacy tuple layout.
+    Aidoku(Arc<Mutex<BlockingSource>>),
+    /// An LNReader plugin running inside an embedded QuickJS runtime.
+    LnReader(Arc<LnReaderSource>),
+}
 
+#[derive(Clone)]
+pub struct Source {
+    pub backend: SourceBackend,
+    pub features: SourceFeatures,
+}
+
+/// Like [`wrap_blocking_source_fn!`], but dispatches between the WASM and
+/// LNReader backends.
 #[macro_export]
 macro_rules! wrap_blocking_source_fn {
     ($fn_name:ident, $return_type:ty, $($param:ident : $type:ty),*) => {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
-            let blocking_source = self.0.clone();
+            match &self.backend {
+                SourceBackend::Aidoku(blocking_source) => {
+                    let blocking_source = blocking_source.clone();
 
-            ::tokio::task::spawn_blocking(move || {
-                let mut guard = blocking_source
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner());
-                guard.$fn_name($($param),*)
-            }).await?
+                    ::tokio::task::spawn_blocking(move || {
+                        let mut guard = blocking_source
+                            .lock()
+                            .unwrap_or_else(|e| e.into_inner());
+                        guard.$fn_name($($param),*)
+                    }).await?
+                }
+                SourceBackend::LnReader(lnreader) => {
+                    let lnreader = lnreader.clone();
+                    ::tokio::task::spawn_blocking(move || lnreader.$fn_name($($param),*)).await?
+                }
+            }
         }
     };
 }
@@ -167,24 +178,43 @@ impl Source {
 
         let features = { blocking_source.features.clone() };
 
-        Ok(Self(Arc::new(Mutex::new(blocking_source)), features))
+        Ok(Self {
+            backend: SourceBackend::Aidoku(Arc::new(Mutex::new(blocking_source))),
+            features,
+        })
+    }
+
+    /// Loads an LNReader plugin (`*.lnreader.js`) from disk.
+    pub fn from_lnreader_file(path: &Path, manager: &SourceManager) -> Result<Self> {
+        let source = LnReaderSource::from_lnreader_file(path, manager)?;
+        let features = source.features.clone();
+        Ok(Self {
+            backend: SourceBackend::LnReader(Arc::new(source)),
+            features,
+        })
     }
 
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
-        self.0
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .manifest
-            .clone()
+        match &self.backend {
+            SourceBackend::Aidoku(blocking_source) => blocking_source
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .manifest
+                .clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.manifest.clone(),
+        }
     }
 
     pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
-        self.0
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .setting_definitions
-            .clone()
+        match &self.backend {
+            SourceBackend::Aidoku(blocking_source) => blocking_source
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .setting_definitions
+                .clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.setting_definitions.clone(),
+        }
     }
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
@@ -313,7 +343,7 @@ pub struct SourceInfo {
     #[serde(rename = "contentRating")]
     pub content_rating: Option<i32>,
     pub name: String,
-    pub version: usize,
+    pub version: String,
     pub url: Option<String>,
     pub urls: Option<Vec<String>>,
     #[serde(rename = "minAppVersion")]
@@ -374,7 +404,7 @@ pub struct BlockingSource {
     pub features: SourceFeatures,
 }
 #[cfg(feature = "all")]
-struct BlockingSource {
+pub struct BlockingSource {
     id: String,
     store: Store<WasmStore>,
     instance: Instance,

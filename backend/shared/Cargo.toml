@@ -29,7 +29,9 @@ serde_json = "1.0.150"
 html-escape = "0.2.14"
 reqwest = { version = "0.13.4", default-features = false, features = [
   "blocking",
+  "deflate",
   "form",
+  "gzip",
   "json",
   "query",
   "rustls-no-provider",
@@ -83,6 +85,7 @@ markdown = "1.0.0"
 unicode-normalization = "0.1.25"
 ordered-float = "5.3.0"
 dom_query = { version = "0.28.0", features = ["atomic"] }
+rquickjs = { version = "0.12.2", features = ["futures"] }
 zune-png = "0.5.2"
 zune-jpeg = "0.5.15"
 zune-core = "0.5.1"

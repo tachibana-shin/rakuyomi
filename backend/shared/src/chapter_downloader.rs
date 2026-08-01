@@ -294,7 +294,7 @@ where
 
                                     let response_bytes = response.bytes().await?;
 
-                                    let response_bytes = if source.1.process_page_image {
+                                    let response_bytes = if source.features.process_page_image {
                                         source
                                             .process_page_image(
                                                 cancel_token.clone(),

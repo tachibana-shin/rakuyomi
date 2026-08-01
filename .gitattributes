@@ -1,0 +1,3 @@
+# Third-party LNReader plugins vendored as test fixtures. They are not part
+# of this repository's code and must not count towards the language stats.
+backend/shared/tests/data/*.js linguist-vendored

@@ -69,6 +69,29 @@ impl SourceManager {
         Ok(())
     }
 
+    /// Installs an LNReader plugin: the raw JS is stored as `<id>.lnreader.js`.
+    pub fn install_lnreader_source(
+        &mut self,
+        id: &SourceId,
+        contents: impl AsRef<[u8]>,
+        source_of_source: String,
+    ) -> Result<()> {
+        let target_path = self.lnreader_source_path(id);
+        fs::write(&target_path, contents)?;
+
+        Source::write_meta_file(&target_path, source_of_source)?;
+
+        let source = Source::from_lnreader_file(&target_path, self)?;
+        self.sources_by_id.insert(id.clone(), source);
+        #[cfg(not(feature = "all"))]
+        self.file_sources.insert(
+            id.value().to_owned(),
+            target_path.to_string_lossy().to_string(),
+        );
+
+        Ok(())
+    }
+
     pub fn uninstall_source(&mut self, id: &SourceId) -> Result<()> {
         let source_path = self.source_path(id);
         fs::remove_file(&source_path)?;
@@ -77,6 +100,19 @@ impl SourceManager {
         #[cfg(not(feature = "all"))]
         self.file_sources.remove(id.value());
 
+        Ok(())
+    }
+
+    /// Removes both a WASM and an LNReader plugin file if present.
+    pub fn uninstall_any_source(&mut self, id: &SourceId) -> Result<()> {
+        for path in [self.source_path(id), self.lnreader_source_path(id)] {
+            if path.exists() {
+                fs::remove_file(&path)?;
+            }
+        }
+        self.sources_by_id.remove(id);
+        #[cfg(not(feature = "all"))]
+        self.file_sources.remove(id.value());
         Ok(())
     }
 
@@ -123,14 +159,25 @@ impl SourceManager {
         let mut sources_by_id = HashMap::new();
         for entry in files.flatten() {
             let path = entry.path();
-            if !path
+            let is_lnreader = path
                 .extension()
-                .is_some_and(|ext| ext.eq_ignore_ascii_case("aix"))
-            {
-                continue;
-            }
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("js"))
+                && path.file_name().is_some_and(|name| {
+                    name.to_string_lossy()
+                        .ends_with(crate::source::lnreader::LNREADER_FILE_SUFFIX)
+                });
 
-            let source = Source::from_aix_file(&path, self, manager)?;
+            let source = if is_lnreader {
+                Source::from_lnreader_file(&path, self)?
+            } else {
+                if !path
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("aix"))
+                {
+                    continue;
+                }
+                Source::from_aix_file(&path, self, manager)?
+            };
             #[cfg(not(feature = "all"))]
             self.file_sources.insert(
                 source.manifest().info.id.clone(),
@@ -145,6 +192,14 @@ impl SourceManager {
 
     pub fn source_path(&self, id: &SourceId) -> PathBuf {
         self.sources_folder.join(format!("{}.aix", id.value()))
+    }
+
+    pub fn lnreader_source_path(&self, id: &SourceId) -> PathBuf {
+        self.sources_folder.join(format!(
+            "{}{}",
+            id.value(),
+            crate::source::lnreader::LNREADER_FILE_SUFFIX
+        ))
     }
 }
 

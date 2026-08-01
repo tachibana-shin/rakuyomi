@@ -12,7 +12,8 @@ use shared::{
 pub struct SourceInformation {
     id: String,
     name: String,
-    version: usize,
+    version: String,
+    version_name: Option<String>,
     source_of_source: Option<String>,
 }
 
@@ -22,6 +23,7 @@ impl From<DomainSourceInformation> for SourceInformation {
             id: value.id.value().clone(),
             name: value.name,
             version: value.version,
+            version_name: value.version_name,
             source_of_source: value.source_of_source,
         }
     }

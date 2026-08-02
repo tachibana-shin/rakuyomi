@@ -58,6 +58,14 @@ mod sdk_lnreader;
 pub mod source_settings;
 #[cfg(feature = "all")]
 mod source_settings;
+/// Entry point for the `lnreader_packager` standalone binary's `package`
+/// step (Phase 3): reads a compiled `lnreader-plugins` `.js` file's own
+/// declared `id`/`name`/`site`/`lang`/`version`/`filters`/`pluginSettings` by
+/// executing it, rather than parsing its (often minified) source text — see
+/// `sdk_lnreader::metadata`'s doc comment. Same narrow-punch-through pattern
+/// as `lnreader_worker_main` above: `sdk_lnreader` stays private, only this
+/// one function is exposed.
+pub use sdk_lnreader::metadata::extract as lnreader_extract_plugin_metadata;
 /// Entry point for the `lnreader_worker` standalone binary (see that
 /// crate) — not called from anywhere inside this crate itself.
 /// `sdk_lnreader` stays a private module (`mod`, not `pub mod`); this one
@@ -305,7 +313,7 @@ impl Source {
     );
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(dead_code)]
 pub struct SourceInfo {
     pub id: String,
@@ -323,13 +331,13 @@ pub struct SourceInfo {
     pub min_app_version: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceConfig {
     #[serde(rename = "allowsBaseUrlSelect")]
     pub allows_base_url_select: Option<bool>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceManifest {
     pub info: SourceInfo,
     pub config: Option<SourceConfig>,

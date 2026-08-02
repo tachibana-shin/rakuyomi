@@ -21,6 +21,7 @@ mod convert;
 mod dayjs;
 mod htmlparser2;
 mod js_runtime;
+pub mod metadata;
 mod net;
 pub mod worker;
 

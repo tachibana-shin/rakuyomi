@@ -758,14 +758,14 @@ unsafe impl Trace for WritesHandle {
 }
 impl Finalize for WritesHandle {}
 
-fn eval(context: &mut Context, src: &str, label: &str) -> Result<JsValue> {
+pub(super) fn eval(context: &mut Context, src: &str, label: &str) -> Result<JsValue> {
     context
         .eval(JsSource::from_bytes(src.as_bytes()))
         .map_err(|e| anyhow::anyhow!("{label}: {}", describe_js_error(&e, context)))
 }
 
 /// Best-effort human-readable rendering of a thrown JS value/error.
-fn describe_js_error(error: &boa_engine::JsError, context: &mut Context) -> String {
+pub(super) fn describe_js_error(error: &boa_engine::JsError, context: &mut Context) -> String {
     error
         .to_opaque(context)
         .to_string(context)

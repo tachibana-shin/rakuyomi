@@ -11,7 +11,12 @@ Architecture: `Backend.lua` (Lua) → HTTP/JSON → `server` (axum, Rust) → SQ
 
 - `backend/` — Rust workspace
   - `server/` — HTTP server (binary + cdylib for Android JNI)
-  - `shared/` — core domain: manga models, DB (sqlx/SQLite), source manager (wasmi), downloader, settings
+  - `shared/` — core domain: manga models, DB (sqlx/SQLite), source manager (wasmi for
+    Aidoku WASM sources, `boa_engine` for LNReader/JS sources — see
+    `shared/src/source/sdk_lnreader/`), downloader, settings
+  - `lnreader_worker/` — persistent per-source subprocess running LNReader/JS plugin
+    sources (`boa_engine`), sibling to `uds_http_request`/`cbz_metadata_reader`; see
+    `docs/lnreader/README.md` for the investigation/decision history behind it
   - `uds_http_request/` — standalone UDS HTTP proxy binary
   - `cbz_metadata_reader/` — CBZ metadata extraction binary
   - `wasm_macros/` — proc-macro crate for WASM bindings

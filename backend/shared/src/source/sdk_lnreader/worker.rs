@@ -323,9 +323,7 @@ fn execute_get_manga_details(
     source_id: &str,
     manga_id: String,
 ) -> Result<WorkerResponse> {
-    let novel = parse_novel(runtime, &manga_id)?;
-    let context = runtime.context();
-    let manga = convert::manga_from_source_novel(&novel, source_id, &manga_id, context)?;
+    let (manga, _chapters) = parse_and_convert_novel(runtime, source_id, &manga_id)?;
     Ok(WorkerResponse {
         mangas: Some(vec![MangaDto::from(&manga)]),
         ..Default::default()
@@ -337,9 +335,7 @@ fn execute_get_chapter_list(
     source_id: &str,
     manga_id: String,
 ) -> Result<WorkerResponse> {
-    let novel = parse_novel(runtime, &manga_id)?;
-    let context = runtime.context();
-    let chapters = convert::chapters_from_source_novel(&novel, source_id, &manga_id, context)?;
+    let (_manga, chapters) = parse_and_convert_novel(runtime, source_id, &manga_id)?;
     Ok(WorkerResponse {
         chapters: Some(chapters.iter().map(ChapterDto::from).collect()),
         ..Default::default()
@@ -380,7 +376,39 @@ fn execute_get_image_request_init_headers(
     })
 }
 
-fn parse_novel(runtime: &mut js_runtime::JsRuntime, manga_id: &str) -> Result<JsValue> {
+/// Calls `parseNovel()` and converts the result to `Manga`/`Vec<Chapter>`
+/// immediately, rather than returning the raw `JsValue` — both because a
+/// `JsValue` can't safely be held across calls (see
+/// `JsRuntime::call_plugin_method`'s doc comment on why the plugin instance
+/// itself is re-fetched every call rather than cached, for the same
+/// use-after-free reason), and because `execute_get_manga_details`/
+/// `execute_get_chapter_list` need to share one converted result instead of
+/// each calling into JS independently.
+///
+/// `parseNovel()` is the one LNReader plugin method that returns both a
+/// novel's metadata and its chapter list, but the real UI calls
+/// `get_manga_details` and `get_chapter_list` back-to-back when a novel is
+/// opened — for a source whose `parseNovel()` fans out over the network per
+/// volume (e.g. LNori), that doubled the HTTP work for what's one logical
+/// "open a novel" action. `JsRuntime::take_cached_novel` lets the second of
+/// the two calls reuse the first's result instead of re-running the plugin;
+/// deliberately short-lived and single-use, not a general metadata cache —
+/// see `js_runtime::NOVEL_CACHE_TTL`'s doc comment.
+fn parse_and_convert_novel(
+    runtime: &mut js_runtime::JsRuntime,
+    source_id: &str,
+    manga_id: &str,
+) -> Result<(Manga, Vec<Chapter>)> {
+    if let Some(cached) = runtime.take_cached_novel(manga_id) {
+        return Ok(cached);
+    }
+
     let manga_id_js = JsValue::from(boa_engine::js_string!(manga_id));
-    runtime.call_plugin_method("parseNovel", &[manga_id_js])
+    let novel = runtime.call_plugin_method("parseNovel", &[manga_id_js])?;
+    let context = runtime.context();
+    let manga = convert::manga_from_source_novel(&novel, source_id, manga_id, context)?;
+    let chapters = convert::chapters_from_source_novel(&novel, source_id, manga_id, context)?;
+
+    runtime.cache_novel(manga_id.to_string(), manga.clone(), chapters.clone());
+    Ok((manga, chapters))
 }

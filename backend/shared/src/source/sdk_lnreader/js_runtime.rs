@@ -12,6 +12,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::time::{Duration, Instant};
 
 use anyhow::{bail, Context as _, Result};
 use boa_engine::{
@@ -25,8 +26,38 @@ use boa_engine::{
 use boa_gc::{empty_trace, Finalize, Trace};
 
 use crate::settings::SourceSettingValue;
+use crate::source::model::{Chapter, Manga};
 
 use super::{cheerio, dayjs, htmlparser2, net};
+
+/// How long a `parseNovel()` result stays available for reuse by a second,
+/// immediately-following call for the same novel — see
+/// [`JsRuntime::take_cached_novel`]/[`JsRuntime::cache_novel`]. Deliberately
+/// short: this exists only to collapse the `get_manga_details` +
+/// `get_chapter_list` pair the real UI issues back-to-back when a novel is
+/// opened (both call `parseNovel()` independently — it's the one plugin
+/// method that returns both metadata and the chapter list, see
+/// `worker.rs::parse_and_convert_novel`), not to serve as a general-purpose
+/// novel metadata cache. Revisiting the same novel later must still
+/// re-fetch normally — the TTL bounds staleness even if only one of the two
+/// calls ever happens, and [`JsRuntime::take_cached_novel`] additionally
+/// consumes (clears) the entry on a hit, so a *third* call never reuses it
+/// either.
+const NOVEL_CACHE_TTL: Duration = Duration::from_secs(10);
+
+/// A `parseNovel()` result stashed as plain Rust data, not a `JsValue` —
+/// holding a `JsValue`/`Gc<T>` across calls risks a use-after-free once
+/// boa's collector runs a cycle it isn't rooted for (see
+/// [`JsRuntime::call_plugin_method`]'s doc comment on why the plugin
+/// instance itself is re-fetched every call rather than cached for the same
+/// reason), so the value is converted to `Manga`/`Vec<Chapter>` immediately
+/// after the call and only that is cached.
+struct NovelCacheEntry {
+    manga_id: String,
+    manga: Manga,
+    chapters: Vec<Chapter>,
+    cached_at: Instant,
+}
 
 /// The chainable cheerio-like API (`$('sel').find().text()`), rebuilt in JS
 /// on top of the `__native_*` primitives in [`super::cheerio`]. Ported from
@@ -700,6 +731,10 @@ pub(super) struct JsRuntime {
     /// so the parent process applies these after the call succeeds, via
     /// [`JsRuntime::take_pending_writes`].
     pending_writes: PendingWrites,
+    /// Short-lived, single-entry `parseNovel()` result cache — see
+    /// [`NOVEL_CACHE_TTL`]/[`JsRuntime::take_cached_novel`]/
+    /// [`JsRuntime::cache_novel`]. At most one novel's result is ever held.
+    novel_cache: Option<NovelCacheEntry>,
 }
 unsafe impl Send for JsRuntime {}
 
@@ -903,6 +938,7 @@ pub(super) fn new(
         cheerio_store,
         settings,
         pending_writes,
+        novel_cache: None,
     })
 }
 
@@ -928,6 +964,36 @@ impl JsRuntime {
     /// once the whole operation has succeeded.
     pub(super) fn take_pending_writes(&mut self) -> Vec<(String, SourceSettingValue)> {
         std::mem::take(&mut *self.pending_writes.borrow_mut())
+    }
+
+    /// Returns a cached `parseNovel()` result for `manga_id`, if one was
+    /// stashed by [`JsRuntime::cache_novel`] within the last
+    /// [`NOVEL_CACHE_TTL`] — and consumes it either way this returns
+    /// `Some`, so a third call for the same novel re-fetches normally
+    /// rather than serving indefinitely stale data. See
+    /// [`NOVEL_CACHE_TTL`]'s doc comment for why this is deliberately
+    /// one-shot, not a general cache.
+    pub(super) fn take_cached_novel(&mut self, manga_id: &str) -> Option<(Manga, Vec<Chapter>)> {
+        let entry = self.novel_cache.as_ref()?;
+        if entry.manga_id != manga_id || entry.cached_at.elapsed() > NOVEL_CACHE_TTL {
+            return None;
+        }
+        let entry = self.novel_cache.take()?;
+        Some((entry.manga, entry.chapters))
+    }
+
+    /// Stashes a `parseNovel()` result for a short window, in case the
+    /// immediately-following call is the other half of the
+    /// `get_manga_details`/`get_chapter_list` pair for the same novel (see
+    /// [`NOVEL_CACHE_TTL`]). Overwrites any previous entry unconditionally
+    /// — at most one novel's result is ever held.
+    pub(super) fn cache_novel(&mut self, manga_id: String, manga: Manga, chapters: Vec<Chapter>) {
+        self.novel_cache = Some(NovelCacheEntry {
+            manga_id,
+            manga,
+            chapters,
+            cached_at: Instant::now(),
+        });
     }
 
     /// Reads `plugin.<name>` (e.g. `id`, `name`, `filters`) without calling

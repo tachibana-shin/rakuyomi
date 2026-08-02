@@ -469,6 +469,11 @@ async fn runner_full_offline() {
         .await
         .unwrap();
     assert_eq!(manga.title.as_deref(), Some("Alpha"));
+    assert_eq!(
+        manga.id.as_str(),
+        "book/alpha",
+        "details must round-trip the novel id through `path`"
+    );
     assert_eq!(manga.description.as_deref(), Some("A test novel"));
     assert_eq!(manga.author.as_deref(), Some("Auth A"));
     assert_eq!(manga.artist.as_deref(), Some("Art B"));

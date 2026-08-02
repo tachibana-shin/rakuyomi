@@ -869,6 +869,14 @@ function LibraryView:openMenu()
     },
     {
       {
+        text = "\u{e000}" .. " " .. _("Cleaner chapters"),
+        callback = function()
+          UIManager:close(dialog)
+
+          self:openCleanerDialog()
+        end
+      },
+      {
         text = Icons.FA_LIST .. " " .. _("Playlists"),
         callback = function()
           UIManager:close(dialog)
@@ -896,14 +904,6 @@ function LibraryView:openMenu()
     },
     {
       {
-        text = "\u{e000}" .. " " .. _("Cleaner chapters"),
-        callback = function()
-          UIManager:close(dialog)
-
-          self:openCleanerDialog()
-        end
-      },
-      {
         text = Icons.FA_PLUG .. " " .. _("Manage sources"),
         callback = function()
           UIManager:close(dialog)
@@ -916,7 +916,10 @@ function LibraryView:openMenu()
         callback = function()
           UIManager:close(dialog)
 
-          SourceListsListing:fetchAndShow()
+          local onReturnCallback = function()
+            self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+          end
+          SourceListsListing:fetchAndShow(onReturnCallback)
         end
       },
     },

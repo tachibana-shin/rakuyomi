@@ -176,6 +176,7 @@ end
 --- `languages` field.
 --- @private
 function AvailableSourcesListing:showSelectLanguage()
+  ---@diagnostic disable-next-line: redundant-parameter
   local dialog = CheckboxDialog:new {
     title = _("Languages"),
     current = self.langs_selected,

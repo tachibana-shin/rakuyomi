@@ -226,6 +226,27 @@ impl LnReaderSource {
         Url::parse(&out).ok()
     }
 
+    /// Resolves a manga cover URL. Absolute URLs are kept as-is; relative
+    /// paths (e.g. `/uploads/cover.jpg`) are resolved against the plugin's
+    /// site, mirroring how the app builds the cover URL.
+    fn resolve_manga_cover(&self, cover: Option<String>) -> Option<String> {
+        let cover = cover?;
+        if Url::parse(&cover).is_ok() {
+            return Some(cover);
+        }
+        let path = cover.trim_start_matches('/');
+        Url::parse(&format!("{}{}", self.props.site, path))
+            .ok()
+            .map(|u| u.to_string())
+    }
+
+    /// Converts a plugin manga, resolving its cover URL.
+    fn manga_from(&self, manga: aidoku::Manga) -> Manga {
+        let mut manga = manga;
+        manga.cover = self.resolve_manga_cover(manga.cover);
+        Manga::from(manga, self.id.clone())
+    }
+
     /// Implements `get_manga_list`: the popular novels list (page 1).
     pub fn get_manga_list(
         &self,
@@ -237,7 +258,7 @@ impl LnReaderSource {
         let value = self.invoke("popular", json!([1, settings, show_latest]))?;
         Ok(mangas_from_search(&value)?
             .into_iter()
-            .map(|manga| Manga::from(manga, self.id.clone()))
+            .map(|manga| self.manga_from(manga))
             .collect())
     }
 
@@ -259,7 +280,7 @@ impl LnReaderSource {
         };
         let mangas = mangas_from_search(&value)?
             .into_iter()
-            .map(|manga| Manga::from(manga, self.id.clone()))
+            .map(|manga| self.manga_from(manga))
             .collect();
         Ok((mangas, false))
     }
@@ -271,7 +292,7 @@ impl LnReaderSource {
         manga_id: String,
     ) -> Result<Manga> {
         let value = self.invoke("novel", json!([manga_id]))?;
-        Ok(Manga::from(manga_from_novel(&value)?, self.id.clone()))
+        Ok(self.manga_from(manga_from_novel(&value)?))
     }
 
     /// Implements `get_chapter_list`. Plugins with `parsePage` paginate their

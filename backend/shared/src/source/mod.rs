@@ -53,10 +53,18 @@ pub mod model;
 pub mod next_reader;
 #[cfg(feature = "all")]
 mod next_reader;
+mod sdk_lnreader;
 #[cfg(not(feature = "all"))]
 pub mod source_settings;
 #[cfg(feature = "all")]
 mod source_settings;
+/// Entry point for the `lnreader_worker` standalone binary (see that
+/// crate) — not called from anywhere inside this crate itself.
+/// `sdk_lnreader` stays a private module (`mod`, not `pub mod`); this one
+/// function is deliberately punched through to `pub` so an external binary
+/// crate can reach it without exposing the rest of `sdk_lnreader`'s
+/// internals.
+pub use sdk_lnreader::worker::run as lnreader_worker_main;
 #[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_imports;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
@@ -155,41 +163,36 @@ impl Source {
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
         #[cfg(feature = "all")]
-        let mut blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let mut blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
         #[cfg(feature = "all")]
-        if blocking_source.next_sdk {
+        if blocking_source.next_sdk() {
             blocking_source.start()?;
         }
 
         #[cfg(not(feature = "all"))]
-        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
-        let features = { blocking_source.features.clone() };
+        let features = blocking_source.features();
 
         Ok(Self(Arc::new(Mutex::new(blocking_source)), features))
     }
 
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
-        self.0
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .manifest
-            .clone()
+        self.0.lock().unwrap_or_else(|e| e.into_inner()).manifest()
     }
 
     pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
         self.0
             .lock()
             .unwrap_or_else(|e| e.into_inner())
-            .setting_definitions
-            .clone()
+            .setting_definitions()
     }
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
         fs::write(
-            BlockingSource::meta_source_path(path)?,
+            meta_source_path(path)?,
             serde_json::to_string(&SourceMeta {
                 source_of_source: Some(source_of_source),
                 is_next_sdk: None,
@@ -353,6 +356,29 @@ fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory
     }
 }
 
+/// Path to the `.{filename}.source` metadata file next to a `.aix` archive
+/// (tracks `source_of_source` for every mode, plus the Aidoku legacy/next
+/// ABI guess for WASM sources specifically). Used by both `Source` directly
+/// and `WasmBlockingSource::from_aix_file`'s own ABI-guess caching — kept as
+/// a free function rather than a method on either, since it's plain
+/// path arithmetic with no dependency on which mode a source ends up in.
+fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
+    let parent = path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("AIX file has no parent directory"))?;
+
+    let file_stem = path
+        .file_stem()
+        .ok_or_else(|| anyhow::anyhow!("AIX file has no filename stem"))?
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("Filename is not valid UTF-8"))?;
+
+    // Build ".{filename}.source"
+    let meta_name = format!(".{}.source", file_stem);
+
+    Ok(parent.join(meta_name))
+}
+
 /// from aidoku sdk
 /// A page of manga entries.
 #[derive(Default, Clone, Debug, PartialEq, Deserialize)]
@@ -363,8 +389,292 @@ pub struct NextMangaPageResult {
     pub has_next_page: bool,
 }
 
+/// A loaded source, in one of three execution modes: Aidoku WASM (legacy or
+/// "next" ABI, both handled by [`WasmBlockingSource`]) or an LNReader JS
+/// plugin ([`sdk_lnreader::LnReaderSource`]). This wraps
+/// [`BlockingSourceKind`] purely so every method can be a one-line dispatch
+/// (`match &mut self.kind { ... }`) — [`WasmBlockingSource`] itself is
+/// untouched from before this third mode existed (only renamed).
+struct BlockingSource {
+    kind: BlockingSourceKind,
+}
+
+enum BlockingSourceKind {
+    Wasm(WasmBlockingSource),
+    LnReader(sdk_lnreader::LnReaderSource),
+}
+
+impl BlockingSource {
+    /// Detects which of the two archive shapes `path` is (`Payload/main.js`
+    /// vs `Payload/main.wasm`) and constructs the matching variant.
+    /// `Payload/source.json`/`Payload/settings.json` are read independently
+    /// by each variant's own constructor (some duplication with
+    /// `WasmBlockingSource::from_aix_file`, deliberately — see
+    /// `sdk_lnreader::LnReaderSource::from_aix_file`'s doc comment for why
+    /// that's the right tradeoff here).
+    fn from_aix_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let has_lnreader_payload = {
+            let file = fs::File::open(path)
+                .with_context(|| format!("couldn't open {}", path.display()))?;
+            let mut archive = ZipArchive::new(file)
+                .with_context(|| format!("couldn't open source archive {}", path.display()))?;
+            let found = archive.by_name("Payload/main.js").is_ok();
+            found
+        };
+
+        let kind = if has_lnreader_payload {
+            BlockingSourceKind::LnReader(sdk_lnreader::LnReaderSource::from_aix_file(
+                path,
+                manager,
+                arc_manager,
+            )?)
+        } else {
+            BlockingSourceKind::Wasm(WasmBlockingSource::from_aix_file(
+                path,
+                manager,
+                arc_manager,
+                None,
+            )?)
+        };
+
+        Ok(Self { kind })
+    }
+
+    fn manifest(&self) -> SourceManifest {
+        match &self.kind {
+            BlockingSourceKind::Wasm(w) => w.manifest.clone(),
+            BlockingSourceKind::LnReader(l) => l.manifest(),
+        }
+    }
+
+    fn setting_definitions(&self) -> Vec<SettingDefinition> {
+        match &self.kind {
+            BlockingSourceKind::Wasm(w) => w.setting_definitions.clone(),
+            BlockingSourceKind::LnReader(l) => l.setting_definitions(),
+        }
+    }
+
+    fn features(&self) -> SourceFeatures {
+        match &self.kind {
+            BlockingSourceKind::Wasm(w) => w.features.clone(),
+            BlockingSourceKind::LnReader(l) => l.features(),
+        }
+    }
+
+    /// Only ever `true` for the `Wasm` variant (and only for its "next" ABI)
+    /// — `Source::from_aix_file` uses this to decide whether to call
+    /// `start()` right after construction.
+    fn next_sdk(&self) -> bool {
+        match &self.kind {
+            BlockingSourceKind::Wasm(w) => w.next_sdk,
+            BlockingSourceKind::LnReader(_) => false,
+        }
+    }
+
+    fn start(&mut self) -> Result<()> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.start(),
+            // Unreachable in practice (`next_sdk()` is always `false` here),
+            // but harmless either way.
+            BlockingSourceKind::LnReader(_) => Ok(()),
+        }
+    }
+
+    pub fn get_manga_list(
+        &mut self,
+        cancellation_token: CancellationToken,
+        listing: aidoku::Listing,
+    ) -> Result<Vec<Manga>> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_manga_list(cancellation_token, listing),
+            BlockingSourceKind::LnReader(l) => l.get_manga_list(cancellation_token, listing),
+        }
+    }
+
+    pub fn search_mangas(
+        &mut self,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+    ) -> Result<(Vec<Manga>, bool)> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.search_mangas(cancellation_token, query, page),
+            BlockingSourceKind::LnReader(l) => l.search_mangas(cancellation_token, query, page),
+        }
+    }
+
+    pub fn get_manga_details(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga_id: String,
+    ) -> Result<Manga> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_manga_details(cancellation_token, manga_id),
+            BlockingSourceKind::LnReader(l) => l.get_manga_details(cancellation_token, manga_id),
+        }
+    }
+
+    pub fn get_chapter_list(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga_id: String,
+    ) -> Result<Vec<Chapter>> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_chapter_list(cancellation_token, manga_id),
+            BlockingSourceKind::LnReader(l) => l.get_chapter_list(cancellation_token, manga_id),
+        }
+    }
+
+    pub fn get_page_list(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga_id: String,
+        chapter_id: String,
+        chapter_num: Option<f32>,
+    ) -> Result<Vec<Page>> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => {
+                w.get_page_list(cancellation_token, manga_id, chapter_id, chapter_num)
+            }
+            BlockingSourceKind::LnReader(l) => {
+                l.get_page_list(cancellation_token, manga_id, chapter_id, chapter_num)
+            }
+        }
+    }
+
+    pub fn get_image_request(
+        &mut self,
+        url: Url,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Request> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_image_request(url, ctx),
+            BlockingSourceKind::LnReader(l) => l.get_image_request(url, ctx),
+        }
+    }
+
+    pub fn process_page_image(
+        &mut self,
+        cancellation_token: CancellationToken,
+        request: (Url, HeaderMap),
+        response: (StatusCode, HeaderMap),
+        bytes: Bytes,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Vec<u8>> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => {
+                w.process_page_image(cancellation_token, request, response, bytes, ctx)
+            }
+            BlockingSourceKind::LnReader(l) => {
+                l.process_page_image(cancellation_token, request, response, bytes, ctx)
+            }
+        }
+    }
+
+    // The remaining 6 `_next`-suffixed methods only ever make sense for the
+    // Aidoku "next" ABI: the base 7 methods above already implement the
+    // polymorphic dispatch (WASM legacy/next/LNReader) that `Source` and the
+    // rest of the backend call into. Nothing outside this file calls these
+    // directly except `handle_notification_next` (a generic server route
+    // reachable for any installed source, see
+    // `server/src/manga/routes.rs::handle_source_notification`) — the
+    // `LnReader` arm there is a real no-op; the other 5 `LnReader` arms are
+    // dead code in practice, kept only so `Source`'s `wrap_blocking_source_fn!`
+    // macro (which doesn't know about execution modes) has something to call.
+
+    pub fn get_search_manga_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        query: String,
+        page: i32,
+        filters: Vec<aidoku::FilterValue>,
+    ) -> Result<NextMangaPageResult> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => {
+                w.get_search_manga_list_next(cancellation_token, query, page, filters)
+            }
+            BlockingSourceKind::LnReader(_) => {
+                bail!("get_search_manga_list_next is not supported for LNReader sources")
+            }
+        }
+    }
+
+    pub fn get_manga_update_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        needs_details: bool,
+        needs_chapters: bool,
+    ) -> Result<aidoku::Manga> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => {
+                w.get_manga_update_next(cancellation_token, manga, needs_details, needs_chapters)
+            }
+            BlockingSourceKind::LnReader(_) => {
+                bail!("get_manga_update_next is not supported for LNReader sources")
+            }
+        }
+    }
+
+    pub fn get_page_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        manga: aidoku::Manga,
+        chapter: aidoku::Chapter,
+    ) -> Result<Vec<aidoku::Page>> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_page_list_next(cancellation_token, manga, chapter),
+            BlockingSourceKind::LnReader(_) => {
+                bail!("get_page_list_next is not supported for LNReader sources")
+            }
+        }
+    }
+
+    pub fn get_image_request_next(
+        &mut self,
+        url: Url,
+        ctx: Option<aidoku::PageContext>,
+    ) -> Result<Request> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_image_request_next(url, ctx),
+            BlockingSourceKind::LnReader(_) => {
+                bail!("get_image_request_next is not supported for LNReader sources")
+            }
+        }
+    }
+
+    pub fn get_manga_list_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        listing: aidoku::Listing,
+        page: i32,
+    ) -> Result<NextMangaPageResult> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.get_manga_list_next(cancellation_token, listing, page),
+            BlockingSourceKind::LnReader(_) => {
+                bail!("get_manga_list_next is not supported for LNReader sources")
+            }
+        }
+    }
+
+    pub fn handle_notification_next(
+        &mut self,
+        cancellation_token: CancellationToken,
+        key: String,
+    ) -> Result<()> {
+        match &mut self.kind {
+            BlockingSourceKind::Wasm(w) => w.handle_notification_next(cancellation_token, key),
+            BlockingSourceKind::LnReader(l) => l.handle_notification_next(cancellation_token, key),
+        }
+    }
+}
+
 #[cfg(not(feature = "all"))]
-pub struct BlockingSource {
+pub struct WasmBlockingSource {
     pub id: String,
     pub store: Store<WasmStore>,
     pub instance: Instance,
@@ -374,7 +684,7 @@ pub struct BlockingSource {
     pub features: SourceFeatures,
 }
 #[cfg(feature = "all")]
-struct BlockingSource {
+struct WasmBlockingSource {
     id: String,
     store: Store<WasmStore>,
     instance: Instance,
@@ -384,7 +694,7 @@ struct BlockingSource {
     pub features: SourceFeatures,
 }
 
-impl BlockingSource {
+impl WasmBlockingSource {
     pub fn from_aix_file(
         path: &Path,
         manager: &SourceManager,
@@ -402,7 +712,7 @@ impl BlockingSource {
         let (manifest, aidoku_sdk_next_from_meta): (SourceManifest, Option<bool>) = {
             let mut manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
 
-            let meta_file = Self::meta_source_path(path)?;
+            let meta_file = meta_source_path(path)?;
 
             let mut is_next_sdk = None;
             if fs::exists(&meta_file).unwrap_or(false) {
@@ -545,7 +855,7 @@ impl BlockingSource {
         if aidoku_sdk_next_from_meta.is_none()
             || aidoku_sdk_next_from_meta.unwrap() != aidoku_sdk_next
         {
-            let meta_file = Self::meta_source_path(path)?;
+            let meta_file = meta_source_path(path)?;
 
             let _ = fs::write(
                 &meta_file,
@@ -565,23 +875,6 @@ impl BlockingSource {
             setting_definitions,
             features,
         })
-    }
-
-    pub fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
-        let parent = path
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("AIX file has no parent directory"))?;
-
-        let file_stem = path
-            .file_stem()
-            .ok_or_else(|| anyhow::anyhow!("AIX file has no filename stem"))?
-            .to_str()
-            .ok_or_else(|| anyhow::anyhow!("Filename is not valid UTF-8"))?;
-
-        // Build ".{filename}.source"
-        let meta_name = format!(".{}.source", file_stem);
-
-        Ok(parent.join(meta_name))
     }
 
     fn is_aidoku_sdk_next(min: &Option<String>) -> bool {
@@ -698,7 +991,7 @@ impl BlockingSource {
             return self
                 .get_manga_update_next(
                     cancellation_token,
-                    BlockingSource::create_aidoku_manga(manga_id),
+                    Self::create_aidoku_manga(manga_id),
                     true,
                     false,
                 )
@@ -795,7 +1088,7 @@ impl BlockingSource {
             return self
                 .get_manga_update_next(
                     cancellation_token,
-                    BlockingSource::create_aidoku_manga(manga_id.clone()),
+                    Self::create_aidoku_manga(manga_id.clone()),
                     false,
                     true,
                 )
@@ -888,8 +1181,8 @@ impl BlockingSource {
             return self
                 .get_page_list_next(
                     cancellation_token,
-                    BlockingSource::create_aidoku_manga(manga_id.clone()),
-                    BlockingSource::create_aidoku_chapter(chapter_id),
+                    Self::create_aidoku_manga(manga_id.clone()),
+                    Self::create_aidoku_chapter(chapter_id),
                 )
                 .map(|pages| {
                     pages

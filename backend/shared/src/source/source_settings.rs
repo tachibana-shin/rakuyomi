@@ -56,6 +56,17 @@ impl SourceSettings {
             .or_else(|| self.defaults.get(key).cloned())
     }
 
+    /// Merges defaults and stored overrides into a single read-only map
+    /// (stored values win). Used by `sdk_lnreader`'s worker subprocess,
+    /// which has no live access to `SourceManager` (it isn't the same
+    /// process) and so can't call `get`/`save` per key on demand — the
+    /// whole known map is handed to it upfront instead.
+    pub fn snapshot(&self) -> HashMap<String, SourceSettingValue> {
+        let mut merged = self.defaults.clone();
+        merged.extend(self.stored.borrow().clone());
+        merged
+    }
+
     pub fn set(&self, key: &str, value: SourceSettingValue) {
         self.stored.borrow_mut().insert(key.to_owned(), value);
     }

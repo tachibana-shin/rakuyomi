@@ -29,8 +29,12 @@ serde_json = "1.0.150"
 html-escape = "0.2.14"
 reqwest = { version = "0.13.4", default-features = false, features = [
   "blocking",
+  "brotli",
+  "deflate",
   "form",
+  "gzip",
   "json",
+  "multipart",
   "query",
   "rustls-no-provider",
   "stream",
@@ -77,6 +81,7 @@ aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default
 raqote = "0.8.5"
 font-kit = "0.14.3"
 boa_engine = "0.21.1"
+boa_gc = "0.21.1"
 imageproc = "0.27.0"
 ab_glyph = "0.2.32"
 markdown = "1.0.0"

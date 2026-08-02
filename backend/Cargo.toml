@@ -6,7 +6,8 @@ members = [
     "uds_http_request",
     "wasm_macros",
     "wasm_shared",
-    "cbz_metadata_reader"
+    "cbz_metadata_reader",
+    "lnreader_worker"
 ]
 
 [workspace.dependencies]

@@ -21,3 +21,14 @@ dev.db
 node_modules
 
 /BUILD_INFO.json
+
+# LNReader integration: French-language dev/planning docs for this fork's
+# own session work (faisabilite/handoff/postmortem reports, PoC reference
+# code) -- not meant for this fork's git history.
+docs/lnreader/
+
+# LNReader integration: real plugin sources vendored locally for one-off
+# manual validation against real sites during development (see
+# faisabilite-v2-adapter-rakuyomi.md §10.6) -- never committed, even with
+# MIT attribution, same as Aidoku never committing vendored test sources.
+backend/shared/src/source/sdk_lnreader/test_fixtures/

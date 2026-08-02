@@ -737,13 +737,6 @@ fn sdr_path(file_path: &std::path::Path) -> std::path::PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use size::Size;
-    use tempfile::tempdir;
-
-    fn make_storage() -> ChapterStorage {
-        let dir = tempdir().unwrap();
-        ChapterStorage::new(dir.keep(), Size::from_mebibytes(100.0), false).unwrap()
-    }
 
     fn make_rgb_jpeg(width: u32, height: u32) -> Vec<u8> {
         let pixels: Vec<u8> = vec![128u8; (width * height * 3) as usize];
@@ -767,7 +760,6 @@ mod tests {
 
     #[test]
     fn image_is_transcoded_to_jpeg() {
-        let storage = make_storage();
         let input = make_rgb_jpeg(200, 300);
         let output = ChapterStorage::convert_image_data_to_jpeg(&input).unwrap();
         let (w, h) = output_dimensions(&output);

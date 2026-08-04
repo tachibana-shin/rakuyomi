@@ -86,11 +86,29 @@ impl MangayomiSource {
         let code = fs::read_to_string(path)
             .with_context(|| format!("failed to read extension file {}", path.display()))?;
         let meta_path = path.with_extension("json");
-        let metadata: Value = serde_json::from_str(
+        let mut metadata: Value = serde_json::from_str(
             &fs::read_to_string(&meta_path)
                 .with_context(|| format!("failed to read extension metadata {meta_path:?}"))?,
         )
         .with_context(|| format!("failed to parse extension metadata {meta_path:?}"))?;
+        // Older installs may lack the `id` key (it used to be swallowed by
+        // `#[serde(flatten)]` in the install pipeline). Extensions are always
+        // stored as `<id>.mangayomi.dart`, so recover it from the file name:
+        // stem `<id>.mangayomi` -> strip the `.mangayomi` suffix.
+        if ExtensionMeta::from_value(&metadata).id.is_empty() {
+            let fallback_id = path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default()
+                .trim_end_matches(".mangayomi")
+                .to_string();
+            if fallback_id.is_empty() {
+                bail!("extension metadata is missing an id for {}", path.display());
+            }
+            if let Value::Object(map) = &mut metadata {
+                map.insert("id".to_string(), Value::String(fallback_id));
+            }
+        }
         let meta = ExtensionMeta::from_value(&metadata);
         if meta.id.is_empty() {
             bail!("extension metadata is missing an id");

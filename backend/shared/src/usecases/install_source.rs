@@ -90,7 +90,15 @@ pub async fn install_source(
                 .source_code_url
                 .context("MangaYomi source list item is missing a `sourceCodeUrl`")?;
             let code = client.get(code_url).send().await?.bytes().await?;
-            let metadata = serde_json::to_vec(&source_list_item.item)
+            // `#[serde(flatten)]` consumes the `id` key into its own field, so
+            // it is missing from `item`; put it back so the stored metadata
+            // (and `ExtensionMeta::from_value`) sees it.
+            let mut metadata_obj = source_list_item.item.clone();
+            metadata_obj.insert(
+                "id".to_string(),
+                serde_json::json!(source_list_item.id.value()),
+            );
+            let metadata = serde_json::to_vec(&metadata_obj)
                 .context("failed to serialise MangaYomi extension metadata")?;
             source_manager.install_mangayomi_source(
                 &source_id,
@@ -173,5 +181,28 @@ mod tests {
         assert_eq!(item.id.value(), "royalroad");
         assert_eq!(item.file, None);
         assert!(item.url.unwrap().ends_with("royalroad.js"));
+    }
+
+    #[test]
+    fn test_source_list_item_mangayomi_item_keeps_id() {
+        // `#[serde(flatten)]` pulls the `id` key out of `item`; rebuilding the
+        // metadata in the install path must put it back (the MangaYomi
+        // backend rejects metadata without an id).
+        let json = r#"{"id":524070078,"name":"Madara Fixture","lang":"en","version":"1.2.0","sourceCodeUrl":"https://example.com/madara.dart"}"#;
+        let item: SourceListItem = serde_json::from_str(json).unwrap();
+        assert_eq!(item.id.value(), "524070078");
+        assert_eq!(
+            item.source_code_url.as_deref(),
+            Some("https://example.com/madara.dart")
+        );
+        assert_eq!(item.item.get("id"), None, "flatten consumes the id key");
+
+        let mut metadata_obj = item.item.clone();
+        metadata_obj.insert("id".to_string(), serde_json::json!(item.id.value()));
+        let metadata = serde_json::to_string(&metadata_obj).unwrap();
+        assert!(
+            metadata.contains("\"id\":\"524070078\""),
+            "metadata: {metadata}"
+        );
     }
 }

@@ -116,6 +116,13 @@ impl SourceManager {
                 id.value()
             );
         }
+        // The index entry may have lost its `id` key while travelling through
+        // the install pipeline (e.g. `#[serde(flatten)]`); `from_mangayomi_file`
+        // rejects metadata without an id, so make sure it is present.
+        let mut metadata = metadata;
+        if metadata.get("id").is_none() {
+            metadata["id"] = serde_json::json!(id.value());
+        }
         let target_path = self.mangayomi_source_path(id);
         fs::write(&target_path, code)?;
         fs::write(target_path.with_extension("json"), metadata.to_string())?;

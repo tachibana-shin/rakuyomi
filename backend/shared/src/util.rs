@@ -16,6 +16,9 @@ use url::Url;
 
 use crate::source::{model::Page, Source};
 
+pub const DEFAULT_USER_AGENT: &str =
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36";
+
 pub async fn has_internet_connection() -> bool {
     try_connecting_to_cloudflare().await.is_ok()
 }

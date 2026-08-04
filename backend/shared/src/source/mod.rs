@@ -26,6 +26,7 @@ use crate::{
 
 use self::{
     lnreader::LnReaderSource,
+    mangayomi::MangayomiSource,
     model::{Chapter, Filter, Manga, MangaPageResult, Page, SettingDefinition},
     source_settings::SourceSettings,
     wasm_imports::{
@@ -45,6 +46,7 @@ use self::{
 
 pub(crate) mod decode_image;
 pub mod lnreader;
+pub mod mangayomi;
 
 #[cfg(not(feature = "all"))]
 pub mod html_element;
@@ -77,15 +79,18 @@ mod wasm_store;
  * handle_key_migration
  */
 
-/// The two kinds of sources RakuYomi can run: WASM (Aidoku) and LNReader
-/// (JavaScript) plugins. Both are kept behind an `Arc` so `Source` is cheap to
-/// clone; blocking work is always moved to a `spawn_blocking` thread.
+/// The kinds of sources RakuYomi can run: WASM (Aidoku), LNReader
+/// (JavaScript) and MangaYomi (Dart) plugins. All of them are kept behind an
+/// `Arc` so `Source` is cheap to clone; blocking work is always moved to a
+/// `spawn_blocking` thread.
 #[derive(Clone)]
 pub enum SourceBackend {
     /// A WASM source, mirroring the legacy tuple layout.
     Aidoku(Arc<Mutex<BlockingSource>>),
     /// An LNReader plugin running inside an embedded QuickJS runtime.
     LnReader(Arc<LnReaderSource>),
+    /// A MangaYomi extension running inside the embedded d4rt_rs interpreter.
+    Mangayomi(Arc<MangayomiSource>),
 }
 
 #[derive(Clone)]
@@ -114,6 +119,10 @@ macro_rules! wrap_blocking_source_fn {
                 SourceBackend::LnReader(lnreader) => {
                     let lnreader = lnreader.clone();
                     ::tokio::task::spawn_blocking(move || lnreader.$fn_name($($param),*)).await?
+                }
+                SourceBackend::Mangayomi(mangayomi) => {
+                    let mangayomi = mangayomi.clone();
+                    ::tokio::task::spawn_blocking(move || mangayomi.$fn_name($($param),*)).await?
                 }
             }
         }
@@ -194,6 +203,16 @@ impl Source {
         })
     }
 
+    /// Loads a MangaYomi extension (`*.mangayomi.dart`) from disk.
+    pub fn from_mangayomi_file(path: &Path, manager: &SourceManager) -> Result<Self> {
+        let source = MangayomiSource::from_mangayomi_file(path, manager)?;
+        let features = source.features.clone();
+        Ok(Self {
+            backend: SourceBackend::Mangayomi(Arc::new(source)),
+            features,
+        })
+    }
+
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
         match &self.backend {
@@ -203,6 +222,7 @@ impl Source {
                 .manifest
                 .clone(),
             SourceBackend::LnReader(lnreader) => lnreader.manifest.clone(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.clone(),
         }
     }
 
@@ -214,6 +234,7 @@ impl Source {
                 .setting_definitions
                 .clone(),
             SourceBackend::LnReader(lnreader) => lnreader.setting_definitions.clone(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.setting_definitions.clone(),
         }
     }
 

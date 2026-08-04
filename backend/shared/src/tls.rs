@@ -52,6 +52,28 @@ fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
     }
 }
 
+fn apply_proxy_blocking(
+    builder: reqwest::blocking::ClientBuilder,
+) -> reqwest::blocking::ClientBuilder {
+    let url = match PROXY_URL.read() {
+        Ok(guard) => guard.clone(),
+        Err(e) => {
+            warn!("PROXY_URL lock poisoned, skipping proxy configuration: {e}");
+            return builder;
+        }
+    };
+    match url.as_ref() {
+        Some(url) => match reqwest::Proxy::all(url) {
+            Ok(proxy) => builder.proxy(proxy),
+            Err(e) => {
+                warn!("invalid proxy URL: {e}");
+                builder
+            }
+        },
+        None => builder,
+    }
+}
+
 fn base_tls_config() -> rustls::ClientConfig {
     static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
         let mut root_store = rustls::RootCertStore::empty();
@@ -76,6 +98,16 @@ fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::
 pub fn client_builder() -> reqwest::ClientBuilder {
     apply_proxy(
         reqwest::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(base_tls_config()),
+    )
+}
+
+/// Creates a blocking reqwest ClientBuilder configured with the standard
+/// WebPKI root trust store and the currently configured global proxy.
+pub fn blocking_client_builder() -> reqwest::blocking::ClientBuilder {
+    apply_proxy_blocking(
+        reqwest::blocking::Client::builder()
             .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
             .use_preconfigured_tls(base_tls_config()),
     )

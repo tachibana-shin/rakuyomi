@@ -48,8 +48,7 @@ pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     Ok(())
 }
 
-pub const DEFAULT_USER_AGENT: &str =
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0";
+pub use crate::util::DEFAULT_USER_AGENT;
 
 #[derive(Debug, Default, FromPrimitive)]
 #[repr(u8)]

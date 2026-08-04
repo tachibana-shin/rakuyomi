@@ -169,11 +169,17 @@ pub fn page_from_chapter_html(index: usize, html: &str, chapter_id: String) -> P
 }
 
 /// Maps an LNReader novel status string onto an Aidoku [`MangaStatus`].
+///
+/// LNReader's `NovelStatus` enum has nine string values (`Unknown`, `Ongoing`,
+/// `Completed`, `Licensed`, `Publishing Finished`, `Cancelled`, `On Hiatus`,
+/// `STUB`, `Inactive`); Aidoku only has five variants, so `Publishing Finished`
+/// maps onto `Completed` and the values without an Aidoku equivalent
+/// (`Licensed`, `STUB`, `Inactive`) fall through to `Unknown`.
 pub fn manga_status(status: &str) -> MangaStatus {
     let status = status.to_lowercase();
     if status.contains("ongoing") || status.contains("releasing") {
         MangaStatus::Ongoing
-    } else if status.contains("complete") {
+    } else if status.contains("complete") || status.contains("publishing finished") {
         MangaStatus::Completed
     } else if status.contains("cancelled") || status.contains("canceled") {
         MangaStatus::Cancelled
@@ -181,5 +187,26 @@ pub fn manga_status(status: &str) -> MangaStatus {
         MangaStatus::Hiatus
     } else {
         MangaStatus::Unknown
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn manga_status_maps_all_novel_status_values() {
+        assert_eq!(manga_status("Ongoing"), MangaStatus::Ongoing);
+        assert_eq!(manga_status("Releasing"), MangaStatus::Ongoing);
+        assert_eq!(manga_status("Completed"), MangaStatus::Completed);
+        assert_eq!(manga_status("Publishing Finished"), MangaStatus::Completed);
+        assert_eq!(manga_status("Cancelled"), MangaStatus::Cancelled);
+        assert_eq!(manga_status("Canceled"), MangaStatus::Cancelled);
+        assert_eq!(manga_status("On Hiatus"), MangaStatus::Hiatus);
+        // LNReader values without an Aidoku equivalent.
+        assert_eq!(manga_status("Licensed"), MangaStatus::Unknown);
+        assert_eq!(manga_status("STUB"), MangaStatus::Unknown);
+        assert_eq!(manga_status("Inactive"), MangaStatus::Unknown);
+        assert_eq!(manga_status("bogus"), MangaStatus::Unknown);
     }
 }

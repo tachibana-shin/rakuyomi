@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::PathBuf, sync::Arc};
 use tokio::sync::Mutex;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 
 use crate::{
     model::SourceId,
@@ -92,6 +92,47 @@ impl SourceManager {
         Ok(())
     }
 
+    /// Installs a MangaYomi extension: the Dart code is stored as
+    /// `<id>.mangayomi.dart` with its `index.json` entry as a
+    /// `<id>.mangayomi.json` sidecar. Anime extensions (`itemType: 1`) are
+    /// rejected.
+    pub fn install_mangayomi_source(
+        &mut self,
+        id: &SourceId,
+        code: impl AsRef<[u8]>,
+        metadata: impl AsRef<[u8]>,
+        source_of_source: String,
+    ) -> Result<()> {
+        let metadata: serde_json::Value =
+            serde_json::from_slice(metadata.as_ref()).context("invalid extension metadata JSON")?;
+        if metadata
+            .get("itemType")
+            .and_then(serde_json::Value::as_u64)
+            .unwrap_or(0)
+            == 1
+        {
+            bail!(
+                "MangaYomi anime extension '{}' is not supported",
+                id.value()
+            );
+        }
+        let target_path = self.mangayomi_source_path(id);
+        fs::write(&target_path, code)?;
+        fs::write(target_path.with_extension("json"), metadata.to_string())?;
+
+        Source::write_meta_file(&target_path, source_of_source)?;
+
+        let source = Source::from_mangayomi_file(&target_path, self)?;
+        self.sources_by_id.insert(id.clone(), source);
+        #[cfg(not(feature = "all"))]
+        self.file_sources.insert(
+            id.value().to_owned(),
+            target_path.to_string_lossy().to_string(),
+        );
+
+        Ok(())
+    }
+
     pub fn uninstall_source(&mut self, id: &SourceId) -> Result<()> {
         let source_path = self.source_path(id);
         fs::remove_file(&source_path)?;
@@ -103,11 +144,19 @@ impl SourceManager {
         Ok(())
     }
 
-    /// Removes both a WASM and an LNReader plugin file if present.
+    /// Removes a WASM, an LNReader and a MangaYomi source file if present.
     pub fn uninstall_any_source(&mut self, id: &SourceId) -> Result<()> {
-        for path in [self.source_path(id), self.lnreader_source_path(id)] {
+        for path in [
+            self.source_path(id),
+            self.lnreader_source_path(id),
+            self.mangayomi_source_path(id),
+        ] {
             if path.exists() {
                 fs::remove_file(&path)?;
+            }
+            let meta_path = path.with_extension("json");
+            if meta_path.exists() {
+                fs::remove_file(&meta_path)?;
             }
         }
         self.sources_by_id.remove(id);
@@ -166,9 +215,18 @@ impl SourceManager {
                     name.to_string_lossy()
                         .ends_with(crate::source::lnreader::LNREADER_FILE_SUFFIX)
                 });
+            let is_mangayomi = path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("dart"))
+                && path.file_name().is_some_and(|name| {
+                    name.to_string_lossy()
+                        .ends_with(crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX)
+                });
 
             let source = if is_lnreader {
                 Source::from_lnreader_file(&path, self)?
+            } else if is_mangayomi {
+                Source::from_mangayomi_file(&path, self)?
             } else {
                 if !path
                     .extension()
@@ -199,6 +257,14 @@ impl SourceManager {
             "{}{}",
             id.value(),
             crate::source::lnreader::LNREADER_FILE_SUFFIX
+        ))
+    }
+
+    pub fn mangayomi_source_path(&self, id: &SourceId) -> PathBuf {
+        self.sources_folder.join(format!(
+            "{}{}",
+            id.value(),
+            crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX
         ))
     }
 }

@@ -19,6 +19,8 @@ pub enum SourceListType {
     Aidoku,
     /// An LNReader JavaScript plugin index (`plugins.min.json`).
     LnReader,
+    /// A MangaYomi Dart extension index (`index.json`).
+    Mangayomi,
 }
 
 impl SourceListType {

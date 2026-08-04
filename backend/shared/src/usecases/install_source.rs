@@ -81,6 +81,24 @@ pub async fn install_source(
             let plugin_content = client.get(url).send().await?.bytes().await?;
             source_manager.install_lnreader_source(&source_id, plugin_content, source_of_source)?;
         }
+        crate::settings::SourceListType::Mangayomi => {
+            // MangaYomi extension: the index entry itself carries the
+            // `sourceCodeUrl` of the `.dart` file; the whole entry is stored
+            // as the extension metadata. Anime extensions are rejected in
+            // `SourceManager::install_mangayomi_source`.
+            let code_url = source_list_item
+                .source_code_url
+                .context("MangaYomi source list item is missing a `sourceCodeUrl`")?;
+            let code = client.get(code_url).send().await?.bytes().await?;
+            let metadata = serde_json::to_vec(&source_list_item.item)
+                .context("failed to serialise MangaYomi extension metadata")?;
+            source_manager.install_mangayomi_source(
+                &source_id,
+                code,
+                metadata,
+                source_of_source,
+            )?;
+        }
         crate::settings::SourceListType::Aidoku => {
             let file = source_list_item
                 .file
@@ -106,12 +124,33 @@ pub async fn install_source(
 
 #[derive(Deserialize)]
 struct SourceListItem {
+    /// MangaYomi index entries use numeric ids; both are stringified.
+    #[serde(deserialize_with = "de_source_id")]
     id: SourceId,
     /// Aidoku index: file name of the `.aix`, relative to the source list URL.
     #[serde(alias = "downloadURL")]
     file: Option<String>,
     /// LNReader index: absolute URL of the compiled plugin `.js` file.
     url: Option<String>,
+    /// MangaYomi index: absolute URL of the extension `.dart` file.
+    #[serde(rename = "sourceCodeUrl")]
+    source_code_url: Option<String>,
+    /// The raw index entry, stored as the extension metadata.
+    #[serde(flatten)]
+    item: serde_json::Map<String, Value>,
+}
+
+fn de_source_id<'de, D>(deserializer: D) -> Result<SourceId, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+    let value = Value::deserialize(deserializer)?;
+    match value {
+        Value::String(s) => Ok(SourceId::new(s)),
+        Value::Number(n) => Ok(SourceId::new(n.to_string())),
+        _ => Err(D::Error::custom("source id must be a string or a number")),
+    }
 }
 
 #[cfg(test)]

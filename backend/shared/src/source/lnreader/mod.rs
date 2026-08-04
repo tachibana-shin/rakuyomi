@@ -28,6 +28,7 @@ use crate::{
         SourceFeatures, SourceManifest,
     },
     source_manager::SourceManager,
+    util::DEFAULT_USER_AGENT,
 };
 
 use self::{
@@ -37,11 +38,6 @@ use self::{
     manifest::{manifest_from_props, parse_props, setting_definitions, PluginProps},
     runtime::{LnReaderRuntime, DEFAULT_INVOKE_TIMEOUT},
 };
-
-/// Default user agent used for plugin requests. The LNReader app sends a
-/// device-specific UA; a modern desktop Chrome UA works for the vast majority
-/// of sites and can be overridden by the plugin itself.
-pub(crate) const DEFAULT_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36";
 
 /// The suffix of installed plugin files (`<id>.lnreader.js`).
 pub(crate) const LNREADER_FILE_SUFFIX: &str = ".lnreader.js";

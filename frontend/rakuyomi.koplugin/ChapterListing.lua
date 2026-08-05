@@ -702,9 +702,11 @@ function ChapterListing:markChaptersAs(chapters, value)
     local mark_response = LoadingDialog:showAndRun(
       (value and _("Marking") or _("Un-marking")) .. " " .. _("chapters..."),
       function()
-        for __, chapter in ipairs(chapters) do
+        for i, chapter in ipairs(chapters) do
           local result = Backend.markChapterAsRead(self.manga.source.id, self.manga.id, chapter.id, value)
           if result.type == 'ERROR' then
+            result.completed = i - 1
+
             return result
           end
         end
@@ -713,6 +715,13 @@ function ChapterListing:markChaptersAs(chapters, value)
     )
 
     if mark_response.type == 'ERROR' then
+      for i = 1, mark_response.completed or 0 do
+        chapters[i].read = value
+      end
+      if (mark_response.completed or 0) > 0 then
+        self:updateItems()
+      end
+
       ErrorDialog:show(mark_response.message)
 
       return

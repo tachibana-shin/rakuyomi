@@ -11,6 +11,11 @@ use crate::{
     tls,
 };
 
+/// Last-resort `plugins/vX.Y.Z` branch used when neither the GitHub branches
+/// API nor the branches HTML page can be reached. Keep in sync with the
+/// latest plugin index branch.
+const LNREADER_FALLBACK_BRANCH: &str = "plugins/v3.0.0";
+
 /// How long a resolved source list URL is remembered before the GitHub API is
 /// asked again for a newer version. This keeps us comfortably inside the
 /// unauthenticated GitHub API rate limit (60 requests/hour).
@@ -37,9 +42,10 @@ pub fn source_list_key(list: &SourceList) -> String {
 /// The official LNReader plugin index is published to a version-pinned branch
 /// (`plugins/vX.Y.Z`) with no stable "latest" URL, so `lnreader` lists are
 /// asked the GitHub API for the newest `plugins/v*` branch, returning the
-/// corresponding raw URL. Any failure (network error, rate limit, unexpected
-/// format) falls back to the original URL, which still points at a valid
-/// index.
+/// corresponding raw URL. If the API is unreachable (rate limit, network
+/// error) the repository's branches page is scraped instead, which has no API
+/// rate limit; if that fails too, a pinned fallback branch is used. Either
+/// way a working index URL is preferred over the original repository page.
 pub async fn resolve_source_list(list: &SourceList) -> Url {
     let url = &list.url;
     if list.source_type != SourceListType::LnReader {
@@ -57,14 +63,10 @@ pub async fn resolve_source_list(list: &SourceList) -> Url {
         }
     }
 
-    let resolved = match latest_lnreader_branch(&owner, &repo).await {
-        Some(branch) => format!(
-            "https://raw.githubusercontent.com/{owner}/{repo}/{branch}/.dist/plugins.min.json"
-        )
-        .parse()
-        .unwrap_or_else(|_| url.clone()),
-        None => url.clone(),
-    };
+    let branch = latest_lnreader_branch(&owner, &repo)
+        .await
+        .unwrap_or_else(|| LNREADER_FALLBACK_BRANCH.to_string());
+    let resolved = raw_source_list_url(&owner, &repo, &branch);
 
     RESOLVED_LISTS
         .lock()
@@ -72,6 +74,13 @@ pub async fn resolve_source_list(list: &SourceList) -> Url {
         .insert(key, (Instant::now(), resolved.clone()));
 
     resolved
+}
+
+/// Builds the raw URL of the LNReader plugin index for the given branch.
+fn raw_source_list_url(owner: &str, repo: &str, branch: &str) -> Url {
+    format!("https://raw.githubusercontent.com/{owner}/{repo}/{branch}/.dist/plugins.min.json")
+        .parse()
+        .expect("hardcoded raw GitHub URL is valid")
 }
 
 /// Extracts the `owner` and `repo` from a GitHub URL, either the repository
@@ -90,19 +99,57 @@ fn github_repo_segments(url: &Url) -> Option<(String, String)> {
 
 /// Fetches the list of branches of the given repository and returns the name
 /// of the newest `plugins/v*` branch, if any.
+///
+/// The GitHub branches REST API is tried first; when it is unavailable
+/// (unauthenticated requests are rate limited per IP at 60/hour), the
+/// repository's branches HTML page is scraped instead, which has no such
+/// limit.
 async fn latest_lnreader_branch(owner: &str, repo: &str) -> Option<String> {
-    let api_url = format!("https://api.github.com/repos/{owner}/{repo}/branches?per_page=100");
     let client = tls::client_builder().build().ok()?;
-    let response = client.get(&api_url).send().await.ok()?;
-    let value: serde_json::Value = response.json().await.ok()?;
-    let branches = value.as_array()?;
-    select_latest_branch(
-        &branches
-            .iter()
-            .filter_map(|branch| branch.get("name")?.as_str())
-            .collect::<Vec<_>>(),
-    )
-    .map(str::to_string)
+
+    let api_url = format!("https://api.github.com/repos/{owner}/{repo}/branches?per_page=100");
+    if let Ok(response) = client.get(&api_url).send().await {
+        if let Ok(value) = response.json::<serde_json::Value>().await {
+            if let Some(branches) = value.as_array() {
+                let names = branches
+                    .iter()
+                    .filter_map(|branch| branch.get("name")?.as_str())
+                    .collect::<Vec<_>>();
+                if let Some(branch) = select_latest_branch(&names) {
+                    return Some(branch.to_string());
+                }
+            }
+        }
+    }
+
+    let html_url = format!("https://github.com/{owner}/{repo}/branches");
+    let html = client.get(&html_url).send().await.ok()?.text().await.ok()?;
+    let names = find_branch_names_in_html(&html);
+    let refs = names.iter().map(String::as_str).collect::<Vec<_>>();
+    select_latest_branch(&refs).map(str::to_string)
+}
+
+/// Extracts `plugins/vX.Y.Z` branch names from the repository branches page
+/// HTML. The names appear both in plain text and in `href` attributes of the
+/// branch rows.
+fn find_branch_names_in_html(html: &str) -> Vec<String> {
+    let mut names = Vec::new();
+    let mut rest = html;
+    while let Some(idx) = rest.find("plugins/v") {
+        rest = &rest[idx + "plugins/v".len()..];
+        let mut version = String::new();
+        for c in rest.chars() {
+            if c.is_ascii_digit() || c == '.' {
+                version.push(c);
+            } else {
+                break;
+            }
+        }
+        if version.matches('.').count() == 2 && !version.ends_with('.') {
+            names.push(format!("plugins/v{version}"));
+        }
+    }
+    names
 }
 
 /// Selects the newest `plugins/vX.Y.Z` branch out of a list of branch names.
@@ -157,6 +204,21 @@ mod tests {
 
         let branches = ["master", "beta"];
         assert_eq!(select_latest_branch(&branches), None);
+    }
+
+    #[test]
+    fn test_find_branch_names_in_html() {
+        let html = concat!(
+            "<a href=\"/lnreader/lnreader-plugins/tree/plugins%2Fv2.0.0\">plugins/v2.0.0</a>",
+            "<a href=\"/lnreader/lnreader-plugins/tree/plugins%2Fv3.0.0\">plugins/v3.0.0</a>",
+            "<a href=\"/lnreader/lnreader-plugins/tree/master\">master</a>",
+            // Not a branch row: a version pinned in documentation text.
+            "see plugins/v9.9.9.9 for details"
+        );
+        assert_eq!(
+            find_branch_names_in_html(html),
+            vec!["plugins/v2.0.0".to_string(), "plugins/v3.0.0".to_string()]
+        );
     }
 
     #[test]

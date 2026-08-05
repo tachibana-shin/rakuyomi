@@ -36,6 +36,7 @@ local isBeforeChapter = require("utils/isBeforeChapter")
 local filterChaptersByLang = require("utils/filterChaptersByLang")
 local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
+local getChaptersBeforeChapter = require("utils/getChaptersBeforeChapter")
 
 local TrackingMenu = require("TrackingMenu")
 local findNextChapter = require("chapters/findNextChapter")
@@ -581,7 +582,38 @@ function ChapterListing:onContextMenuChoice(item)
         end,
         callback = function()
           UIManager:close(dialog_context_menu)
-          self:markChapterAs(chapter, not chapter.read)
+
+          if chapter.read then
+            self:markChapterAs(chapter, false)
+            return
+          end
+
+          local chapters_before = getChaptersBeforeChapter(self.chapters, chapter)
+          local has_unread_before = false
+          for __, c in ipairs(chapters_before) do
+            if not c.read then
+              has_unread_before = true
+              break
+            end
+          end
+
+          if not has_unread_before then
+            self:markChapterAs(chapter, true)
+            return
+          end
+
+          UIManager:show(ConfirmBox:new {
+            text = _("Do you also want to mark all previous chapters as read?"),
+            ok_text = _("Yes"),
+            cancel_text = _("No"),
+            ok_callback = function()
+              table.insert(chapters_before, chapter)
+              self:markChaptersAs(chapters_before, true)
+            end,
+            cancel_callback = function()
+              self:markChapterAs(chapter, true)
+            end,
+          })
         end
       }
     },
@@ -658,6 +690,37 @@ function ChapterListing:markChapterAs(chapter, value)
     end
 
     chapter.read = value
+    self:updateItems()
+  end)
+end
+
+--- @private
+--- @param chapters Chapter[]
+--- @param value boolean
+function ChapterListing:markChaptersAs(chapters, value)
+  Trapper:wrap(function()
+    local mark_response = LoadingDialog:showAndRun(
+      (value and _("Marking") or _("Un-marking")) .. " " .. _("chapters..."),
+      function()
+        for __, chapter in ipairs(chapters) do
+          local result = Backend.markChapterAsRead(self.manga.source.id, self.manga.id, chapter.id, value)
+          if result.type == 'ERROR' then
+            return result
+          end
+        end
+        return { type = 'SUCCESS' }
+      end
+    )
+
+    if mark_response.type == 'ERROR' then
+      ErrorDialog:show(mark_response.message)
+
+      return
+    end
+
+    for __, chapter in ipairs(chapters) do
+      chapter.read = value
+    end
     self:updateItems()
   end)
 end

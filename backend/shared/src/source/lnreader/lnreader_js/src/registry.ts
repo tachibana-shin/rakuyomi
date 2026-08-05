@@ -8,6 +8,25 @@ import * as htmlparser2 from "htmlparser2";
 import urlencode from "./urlencode";
 import { gcm } from "@noble/ciphers/aes.js";
 
+// parse5 is not bundled (see the `file:` overrides in package.json): cheerio
+// loads with htmlparser2 by default, which is what the LNReader plugins expect
+// anyway. Plugins that explicitly opt out of the default parser would hit the
+// stub's error, so only touch the default when the option is left unspecified.
+const cheerioLoad = cheerio.load.bind(cheerio);
+const cheerioPatched: typeof cheerio = {
+  ...cheerio,
+  load: (content, options, isDocument) =>
+    cheerioLoad(
+      content,
+      {
+        ...options,
+        _useHtmlParser2:
+          (options as { _useHtmlParser2?: boolean } | undefined)?._useHtmlParser2 ?? true,
+      } as typeof options,
+      isDocument,
+    ),
+};
+
 import { Buffer, SlowBuffer } from "./buffer";
 import { bytesToUtf8, utf8ToBytes } from "./b64";
 import { isUrlAbsolute } from "./webapi";
@@ -54,7 +73,7 @@ export function registerModules(): void {
     SlowBuffer,
     INSPECT_MAX_BYTES: 50,
   });
-  __register("cheerio", cheerio);
+  __register("cheerio", cheerioPatched);
   __register("dayjs", dayjs);
   __register("htmlparser2", htmlparser2);
   __register("urlencode", urlencode);

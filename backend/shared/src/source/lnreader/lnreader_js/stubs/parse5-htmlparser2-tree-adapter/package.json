@@ -1,0 +1,6 @@
+{
+  "name": "parse5-htmlparser2-tree-adapter",
+  "version": "7.1.0",
+  "type": "module",
+  "main": "index.js"
+}

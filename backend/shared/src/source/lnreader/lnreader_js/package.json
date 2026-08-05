@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "bun build ./src/libs.ts --outfile ../assets/libs.js --target=browser --format=iife --minify --define process.env.NODE_ENV='\"production\"'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "sh scripts/copy-stubs.sh"
   },
   "dependencies": {
     "@noble/ciphers": "^2.2.0",
@@ -20,6 +21,8 @@
   "overrides": {
     "htmlparser2": "12.0.0",
     "entities": "8.0.0",
-    "dom-serializer": "3.1.1"
+    "dom-serializer": "3.1.1",
+    "parse5": "file:stubs/parse5",
+    "parse5-htmlparser2-tree-adapter": "file:stubs/parse5-htmlparser2-tree-adapter"
   }
 }

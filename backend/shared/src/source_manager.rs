@@ -92,10 +92,11 @@ impl SourceManager {
         Ok(())
     }
 
-    /// Installs a MangaYomi extension: the Dart code is stored as
-    /// `<id>.mangayomi.dart` with its `index.json` entry as a
-    /// `<id>.mangayomi.json` sidecar. Anime extensions (`itemType: 1`) are
-    /// rejected.
+    /// Installs a MangaYomi extension: the code is stored as
+    /// `<id>.mangayomi.dart` or `<id>.mangayomi.js` (per the
+    /// `sourceCodeLanguage` field of the index entry: `0` Dart, `1`
+    /// JavaScript) with its `index.json` entry as a `<id>.mangayomi.json`
+    /// sidecar. Anime extensions (`itemType: 1`) are rejected.
     pub fn install_mangayomi_source(
         &mut self,
         id: &SourceId,
@@ -116,14 +117,27 @@ impl SourceManager {
                 id.value()
             );
         }
-        // The index entry may have lost its `id` key while travelling through
-        // the install pipeline (e.g. `#[serde(flatten)]`); `from_mangayomi_file`
-        // rejects metadata without an id, so make sure it is present.
-        let mut metadata = metadata;
-        if metadata.get("id").is_none() {
-            metadata["id"] = serde_json::json!(id.value());
-        }
-        let target_path = self.mangayomi_source_path(id);
+        // The stored metadata must carry its own `id`; `from_mangayomi_file`
+        // rejects metadata without one. The install pipelines that lose the
+        // key (e.g. `#[serde(flatten)]` in `install_source`) restore it before
+        // calling this.
+        let metadata: serde_json::Value = match metadata.get("id") {
+            Some(_) => metadata,
+            None => bail!(
+                "MangaYomi extension metadata for '{}' is missing its `id`",
+                id.value()
+            ),
+        };
+        let is_js = metadata
+            .get("sourceCodeLanguage")
+            .and_then(serde_json::Value::as_u64)
+            .unwrap_or(0)
+            == 1;
+        let target_path = if is_js {
+            self.mangayomi_js_source_path(id)
+        } else {
+            self.mangayomi_source_path(id)
+        };
         fs::write(&target_path, code)?;
         fs::write(target_path.with_extension("json"), metadata.to_string())?;
 
@@ -157,6 +171,7 @@ impl SourceManager {
             self.source_path(id),
             self.lnreader_source_path(id),
             self.mangayomi_source_path(id),
+            self.mangayomi_js_source_path(id),
         ] {
             if path.exists() {
                 fs::remove_file(&path)?;
@@ -222,13 +237,11 @@ impl SourceManager {
                     name.to_string_lossy()
                         .ends_with(crate::source::lnreader::LNREADER_FILE_SUFFIX)
                 });
-            let is_mangayomi = path
-                .extension()
-                .is_some_and(|ext| ext.eq_ignore_ascii_case("dart"))
-                && path.file_name().is_some_and(|name| {
-                    name.to_string_lossy()
-                        .ends_with(crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX)
-                });
+            let is_mangayomi = path.file_name().is_some_and(|name| {
+                let ext = name.to_string_lossy();
+                ext.ends_with(crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX)
+                    || ext.ends_with(crate::source::mangayomi::MANGA_YOMI_JS_FILE_SUFFIX)
+            });
 
             let source = if is_lnreader {
                 Source::from_lnreader_file(&path, self)?
@@ -272,6 +285,14 @@ impl SourceManager {
             "{}{}",
             id.value(),
             crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX
+        ))
+    }
+
+    pub fn mangayomi_js_source_path(&self, id: &SourceId) -> PathBuf {
+        self.sources_folder.join(format!(
+            "{}{}",
+            id.value(),
+            crate::source::mangayomi::MANGA_YOMI_JS_FILE_SUFFIX
         ))
     }
 }

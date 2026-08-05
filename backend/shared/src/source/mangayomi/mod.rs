@@ -1,11 +1,13 @@
 //! MangaYomi extension source backend.
 //!
-//! Loads a single `*.dart` extension (as published by mangayomi-extensions),
-//! runs it inside the embedded d4rt_rs Dart interpreter and exposes it
-//! through the same [`Source`] interface as WASM and LNReader sources.
+//! Loads a single `*.mangayomi.dart` / `*.mangayomi.js` extension (as
+//! published by mangayomi-extensions), runs it inside the embedded d4rt_rs
+//! Dart interpreter or QuickJS runtime and exposes it through the same
+//! [`Source`] interface as WASM and LNReader sources.
 
 pub mod bridge;
 pub mod html;
+pub mod js;
 pub mod model;
 pub mod runtime;
 
@@ -37,9 +39,48 @@ use self::{
     runtime::{MangayomiRuntime, DEFAULT_INVOKE_TIMEOUT},
 };
 
-/// The suffix of installed extension files (`<id>.mangayomi.dart`). The
+/// The suffix of installed Dart extension files (`<id>.mangayomi.dart`). The
 /// `index.json` entry is stored next to it as `<id>.mangayomi.json`.
 pub(crate) const MANGA_YOMI_FILE_SUFFIX: &str = ".mangayomi.dart";
+
+/// The suffix of installed JavaScript extension files (`<id>.mangayomi.js`),
+/// distinguished by the `sourceCodeLanguage` field of the index entry
+/// (`0` Dart, `1` JavaScript).
+pub(crate) const MANGA_YOMI_JS_FILE_SUFFIX: &str = ".mangayomi.js";
+
+/// A MangaYomi provider runtime: either the d4rt_rs Dart interpreter
+/// ([`MangayomiRuntime`]) or the QuickJS JavaScript runtime
+/// ([`js::MangayomiJsRuntime`]). Method calls are synchronous from the
+/// outside.
+pub trait MangayomiProvider: Send + Sync {
+    /// Calls a method of the provider instance with JSON args and returns
+    /// the JSON value produced by the runtime.
+    fn invoke(
+        &self,
+        method: &str,
+        args: Vec<serde_json::Value>,
+    ) -> anyhow::Result<serde_json::Value>;
+}
+
+impl MangayomiProvider for MangayomiRuntime {
+    fn invoke(
+        &self,
+        method: &str,
+        args: Vec<serde_json::Value>,
+    ) -> anyhow::Result<serde_json::Value> {
+        self.invoke(method, args)
+    }
+}
+
+impl MangayomiProvider for js::MangayomiJsRuntime {
+    fn invoke(
+        &self,
+        method: &str,
+        args: Vec<serde_json::Value>,
+    ) -> anyhow::Result<serde_json::Value> {
+        self.invoke(method, args)
+    }
+}
 
 /// A single MangaYomi extension exposed through the RakuYomi source API.
 ///
@@ -61,7 +102,7 @@ pub struct MangayomiSource {
     /// preference defaults), visible to the extension through
     /// `getPreferenceValue`.
     pub settings: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
-    runtime: MangayomiRuntime,
+    runtime: Arc<dyn MangayomiProvider>,
 }
 
 impl std::fmt::Debug for MangayomiSource {
@@ -79,9 +120,11 @@ impl std::fmt::Debug for MangayomiSource {
 }
 
 impl MangayomiSource {
-    /// Loads an extension from a `<id>.mangayomi.dart` file with its
-    /// `<id>.mangayomi.json` sidecar (the index.json entry) and prepares the
-    /// runtime.
+    /// Loads an extension from a `<id>.mangayomi.dart` or
+    /// `<id>.mangayomi.js` file with its `<id>.mangayomi.json` sidecar (the
+    /// index.json entry) and prepares the runtime. The language is taken
+    /// from the file suffix, falling back to the `sourceCodeLanguage`
+    /// metadata for misnamed installs.
     pub fn from_mangayomi_file(path: &Path, manager: &SourceManager) -> Result<Self> {
         let code = fs::read_to_string(path)
             .with_context(|| format!("failed to read extension file {}", path.display()))?;
@@ -93,8 +136,8 @@ impl MangayomiSource {
         .with_context(|| format!("failed to parse extension metadata {meta_path:?}"))?;
         // Older installs may lack the `id` key (it used to be swallowed by
         // `#[serde(flatten)]` in the install pipeline). Extensions are always
-        // stored as `<id>.mangayomi.dart`, so recover it from the file name:
-        // stem `<id>.mangayomi` -> strip the `.mangayomi` suffix.
+        // stored as `<id>.mangayomi.<lang>`, so recover it from the file
+        // name: stem `<id>.mangayomi` -> strip the `.mangayomi` suffix.
         if ExtensionMeta::from_value(&metadata).id.is_empty() {
             let fallback_id = path
                 .file_stem()
@@ -114,6 +157,15 @@ impl MangayomiSource {
             bail!("extension metadata is missing an id");
         }
 
+        // Dispatch by file suffix first (it is the ground truth for the
+        // stored code); the `sourceCodeLanguage` metadata covers misnamed
+        // installs (e.g. a JS extension stored with the Dart suffix).
+        let is_js = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(MANGA_YOMI_JS_FILE_SUFFIX))
+            || meta.source_code_language == 1;
+
         let stored_settings = manager
             .settings
             .source_settings
@@ -122,11 +174,25 @@ impl MangayomiSource {
             .unwrap_or_default();
 
         let prefs = Arc::new(Mutex::new(HashMap::new()));
-        let runtime = MangayomiRuntime::new(code, metadata, prefs.clone(), DEFAULT_INVOKE_TIMEOUT)?;
+        let runtime: Arc<dyn MangayomiProvider> = if is_js {
+            Arc::new(js::MangayomiJsRuntime::new(
+                code,
+                metadata,
+                prefs.clone(),
+                DEFAULT_INVOKE_TIMEOUT,
+            )?)
+        } else {
+            Arc::new(MangayomiRuntime::new(
+                code,
+                metadata,
+                prefs.clone(),
+                DEFAULT_INVOKE_TIMEOUT,
+            )?)
+        };
 
         // Extension-declared preferences become the source's settings
         // definitions; stored values are merged on top of their defaults.
-        let setting_definitions = setting_definitions(&runtime)?;
+        let setting_definitions = setting_definitions(&*runtime)?;
         let mut settings: HashMap<String, SourceSettingValue> = HashMap::new();
         for definition in &setting_definitions {
             collect_defaults(definition, &mut settings);
@@ -136,12 +202,18 @@ impl MangayomiSource {
         }
         *prefs.lock().unwrap() = settings.clone();
 
-        let base_url = runtime
-            .invoke("baseUrl", vec![])
-            .ok()
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-            .filter(|s| !s.is_empty())
-            .unwrap_or_else(|| meta.base_url.clone());
+        // JavaScript extensions expose the base URL through the `MSource`
+        // JSON only, so fall back to the metadata for them.
+        let base_url = if is_js {
+            meta.base_url.clone()
+        } else {
+            runtime
+                .invoke("baseUrl", vec![])
+                .ok()
+                .and_then(|v| v.as_str().map(|s| s.to_string()))
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| meta.base_url.clone())
+        };
         let supports_latest = runtime
             .invoke("supportsLatest", vec![])
             .ok()
@@ -522,9 +594,11 @@ impl MangayomiSource {
 
 /// Builds the setting definitions from the extension's
 /// `getSourcePreferences` result. Failures are tolerated: the extension may
-/// not declare any preferences.
-fn setting_definitions(runtime: &MangayomiRuntime) -> Result<Vec<SettingDefinition>> {
-    let value = runtime.invoke("getSourcePreferences", vec![])?;
+/// not declare any preferences (the base `MProvider` throws for it).
+fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDefinition>> {
+    let value = runtime
+        .invoke("getSourcePreferences", vec![])
+        .unwrap_or_default();
     let mut out = Vec::new();
     let Some(list) = value.as_array() else {
         return Ok(out);

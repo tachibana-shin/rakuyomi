@@ -10,7 +10,9 @@ fn main() {
     // trigger recompilation when a new migration is added
     println!("cargo:rerun-if-changed=migrations");
     println!("cargo:rerun-if-changed=shared/src/settings/schema.rs");
-    build_js_assets();
+    for project in JS_PROJECTS {
+        build_js_assets(project);
+    }
 
     let schema_dest_path = get_cargo_target_dir().unwrap().join("settings.schema.json");
 
@@ -23,28 +25,46 @@ fn main() {
     .unwrap();
 }
 
-const JS_DIR: &str = "src/source/lnreader/lnreader_js";
-const JS_INPUTS: [&str; 4] = [
-    "src/source/lnreader/lnreader_js/package.json",
-    "src/source/lnreader/lnreader_js/bun.lock",
-    "src/source/lnreader/lnreader_js/tsconfig.json",
-    "src/source/lnreader/lnreader_js/src",
+/// A TypeScript project that is built with bun into JS assets embedded via
+/// `include_str!`.
+struct JsProject {
+    /// Directory (relative to the shared crate root) containing package.json.
+    dir: &'static str,
+    /// Generated bundles (relative to the shared crate root).
+    outputs: &'static [&'static str],
+}
+
+// `src` is included as an input directory; individual files are appended in
+// `build_js_assets` so that added/removed sources are tracked.
+const JS_PROJECTS: &[JsProject] = &[
+    JsProject {
+        dir: "src/source/lnreader/lnreader_js",
+        outputs: &["src/source/lnreader/assets/libs.js"],
+    },
+    JsProject {
+        dir: "src/source/mangayomi/polyfill",
+        outputs: &["src/source/mangayomi/js_assets/polyfill.js"],
+    },
 ];
 
-// Regenerates `src/source/lnreader/assets/libs.js` from the TypeScript sources
-// in `src/source/lnreader/lnreader_js/` when any source or manifest file is
-// newer than the generated bundle. Requires bun; the committed bundle keeps
-// builds working without it.
-fn build_js_assets() {
+// Regenerates the JS bundles from the TypeScript sources when any source or
+// manifest file is newer than the generated output. Requires bun; the
+// committed bundles keep builds working without it.
+fn build_js_assets(project: &JsProject) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let js_dir = root.join(JS_DIR);
-    let out = root.join("src/source/lnreader/assets/libs.js");
-    let mut inputs: Vec<String> = JS_INPUTS.iter().map(|s| s.to_string()).collect();
+    let js_dir = root.join(project.dir);
+    let mut inputs: Vec<String> = vec![
+        format!("{}/package.json", project.dir),
+        format!("{}/bun.lock", project.dir),
+        format!("{}/tsconfig.json", project.dir),
+        format!("{}/src", project.dir),
+    ];
     if let Ok(entries) = fs::read_dir(js_dir.join("src")) {
         for entry in entries.flatten() {
             if entry.file_type().is_ok_and(|t| t.is_file()) {
                 inputs.push(format!(
-                    "src/source/lnreader/lnreader_js/src/{}",
+                    "{}/src/{}",
+                    project.dir,
                     entry.file_name().to_string_lossy()
                 ));
             }
@@ -53,8 +73,14 @@ fn build_js_assets() {
     for input in &inputs {
         println!("cargo:rerun-if-changed={input}");
     }
-    let out_mtime = fs::metadata(&out)
-        .and_then(|m| m.modified())
+    let out_mtime = project
+        .outputs
+        .iter()
+        .map(|out| fs::metadata(root.join(out)).and_then(|m| m.modified()))
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap_or_default()
+        .into_iter()
+        .min()
         .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
     let stale = inputs.iter().any(|p| {
         let m = match fs::metadata(root.join(p)).and_then(|m| m.modified()) {
@@ -73,8 +99,9 @@ fn build_js_assets() {
         .is_err()
     {
         panic!(
-            "libs.js is missing or out of date and bun is not installed; \
-             run `bash scripts/build-js-assets.sh` to regenerate it"
+            "{} JS bundle is missing or out of date and bun is not installed; \
+             run `bash scripts/build-js-assets.sh` to regenerate it",
+            project.dir
         );
     }
     let status = Command::new("bun")

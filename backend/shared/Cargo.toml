@@ -91,6 +91,11 @@ zune-jpeg = "0.5.15"
 zune-core = "0.5.1"
 mozjpeg = { version = "0.10.13", default-features = false }
 nix = { version = "0.31.3", default-features = false, features = ["mount", "fs"] }
+aes = "0.8"
+cbc = { version = "0.1", features = ["alloc", "block-padding"] }
+aes-gcm = "0.10"
+md-5 = "0.10"
+hex = "0.4"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }

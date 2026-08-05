@@ -12,9 +12,10 @@
 //! extensions hold on to element references across calls (e.g.
 //! `el.selectFirst("a")` on an element taken from an earlier `select`).
 //!
-//! `dom_query::NodeId` is opaque (its inner value is `pub(crate)`), so raw
-//! node ids are never serialized across the bridge; only our own handle
-//! indices are.
+//! `dom_query::NodeId` values are *per-tree indices* (every tree's root is
+//! `NodeId(0)`), so raw node ids are never serialized across the bridge and
+//! must never be looked up across documents; only the per-document handle
+//! indices are stable.
 
 use std::cell::RefCell;
 

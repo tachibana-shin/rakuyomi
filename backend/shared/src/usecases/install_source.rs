@@ -83,8 +83,9 @@ pub async fn install_source(
         }
         crate::settings::SourceListType::Mangayomi => {
             // MangaYomi extension: the index entry itself carries the
-            // `sourceCodeUrl` of the `.dart` file; the whole entry is stored
-            // as the extension metadata. Anime extensions are rejected in
+            // `sourceCodeUrl` of the `.dart`/`.js` file; the whole entry is
+            // stored as the extension metadata (its `sourceCodeLanguage`
+            // decides the stored suffix). Anime extensions are rejected in
             // `SourceManager::install_mangayomi_source`.
             let code_url = source_list_item
                 .source_code_url

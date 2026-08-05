@@ -774,7 +774,7 @@ mod tests {
 
     #[test]
     fn image_is_transcoded_to_jpeg() {
-        let storage = make_storage();
+        let _storage = make_storage();
         let input = make_rgb_jpeg(200, 300);
         let output = ChapterStorage::convert_image_data_to_jpeg(&input).unwrap();
         let (w, h) = output_dimensions(&output);

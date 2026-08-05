@@ -23,6 +23,10 @@ pub struct ExtensionMeta {
     /// Extension kind: `0` manga, `1` anime, `2` light novel. Anime
     /// extensions (`1`) are rejected during install.
     pub item_type: u8,
+    /// The language the extension is written in: `0` Dart (run by the
+    /// embedded d4rt_rs interpreter), `1` JavaScript (run by the embedded
+    /// QuickJS runtime).
+    pub source_code_language: u8,
 }
 
 impl ExtensionMeta {
@@ -47,6 +51,10 @@ impl ExtensionMeta {
                 _ => None,
             },
             item_type: match value.get("itemType") {
+                Some(Value::Number(n)) => n.as_u64().map(|n| n as u8).unwrap_or(0),
+                _ => 0,
+            },
+            source_code_language: match value.get("sourceCodeLanguage") {
                 Some(Value::Number(n)) => n.as_u64().map(|n| n as u8).unwrap_or(0),
                 _ => 0,
             },

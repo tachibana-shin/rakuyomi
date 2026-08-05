@@ -332,6 +332,11 @@ fn register_globals(
         "__rakuyomiStorageKeys",
         Function::new(ctx.clone(), host_storage_keys(storage)),
     )?;
+    // Native replacements for the pure-JS shims that libs.js used to bundle.
+    // Registered before `libs.js` so the bundler's own attachments would
+    // override them; the TS sources no longer define these at all.
+    globals.set("atob", Function::new(ctx.clone(), host_atob))?;
+    globals.set("btoa", Function::new(ctx.clone(), host_btoa))?;
 
     ctx.eval::<(), _>(LIBS_JS)
         .map_err(|e| anyhow!("failed to evaluate libs.js: {}", e))?;
@@ -503,6 +508,72 @@ fn host_encode_utf8(s: String) -> rquickjs::Result<String> {
     Ok(base64::engine::general_purpose::STANDARD.encode(s.as_bytes()))
 }
 
+// ---------------------------------------------------------------------------
+// Native `atob` / `btoa` globals
+//
+// These replace the pure-JS implementations that were bundled in libs.js, so
+// plugins no longer depend on a JS shim for the two most commonly used
+// native functions. The semantics match the previous shim byte-for-byte so
+// existing plugins keep working unchanged.
+// ---------------------------------------------------------------------------
+
+const B64_ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/// `btoa(s)`: latin1 -style base64 encode, truncating every UTF-16 code unit
+/// to a byte (the old shim's `b64Encode(strToBytes(s, "latin1"))`).
+fn lib_btoa(s: &str) -> String {
+    let bytes: Vec<u8> = s.encode_utf16().map(|u| (u & 255) as u8).collect();
+    base64::engine::general_purpose::STANDARD.encode(bytes)
+}
+
+/// `atob(s)`: lenient base64 decode into a latin1 string, replicating the old
+/// shim's `bytesToStr(b64Decode(s), "latin1")`: characters outside the base64
+/// alphabet are dropped, missing trailing characters read as `"A"` (value 0),
+/// and bytes for `=` positions are skipped.
+fn lib_atob(s: &str) -> String {
+    let cleaned: Vec<u8> = s
+        .bytes()
+        .filter(|b| b.is_ascii_alphanumeric() || matches!(b, b'+' | b'/' | b'='))
+        .collect();
+    let value = |ch: Option<u8>| -> i32 {
+        match ch {
+            None => 0, // `str[i+n] || "A"` in the JS shim
+            Some(b'=') => -1,
+            Some(c) => B64_ALPHABET
+                .iter()
+                .position(|&a| a == c)
+                .map_or(-1, |i| i as i32),
+        }
+    };
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < cleaned.len() {
+        let a = value(cleaned.get(i).copied());
+        let b = value(cleaned.get(i + 1).copied());
+        let c = value(cleaned.get(i + 2).copied());
+        let d = value(cleaned.get(i + 3).copied());
+        let n =
+            (a << 18) | (b << 12) | ((if c < 0 { 0 } else { c }) << 6) | if d < 0 { 0 } else { d };
+        out.push(((n >> 16) & 255) as u8);
+        if cleaned.get(i + 2).is_some_and(|c| *c != b'=') {
+            out.push(((n >> 8) & 255) as u8);
+        }
+        if cleaned.get(i + 3).is_some_and(|c| *c != b'=') {
+            out.push((n & 255) as u8);
+        }
+        i += 4;
+    }
+    out.into_iter().map(|byte| byte as char).collect()
+}
+
+fn host_atob(data: String) -> rquickjs::Result<String> {
+    Ok(lib_atob(&data))
+}
+
+fn host_btoa(data: String) -> rquickjs::Result<String> {
+    Ok(lib_btoa(&data))
+}
+
 fn host_log(level: String, message: String) {
     match level.as_str() {
         "error" => log::error!("[lnreader] {}", message),
@@ -605,5 +676,90 @@ fn decode_bytes(bytes: &[u8], encoding: &str) -> Result<String> {
             Ok(bytes.iter().map(|&b| b as char).collect())
         }
         other => bail!("unsupported encoding `{}`", other),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn atob_btoa_roundtrip() {
+        for s in [
+            "",
+            "M",
+            "Hello, World!",
+            "MangaYomi/LNReader plugin",
+            "a\u{0}b\u{FF}c",
+        ] {
+            assert_eq!(lib_atob(&lib_btoa(s)), s, "roundtrip of {s:?}");
+        }
+    }
+
+    #[test]
+    fn btoa_matches_standard_base64() {
+        assert_eq!(lib_btoa("Hello, World!"), "SGVsbG8sIFdvcmxkIQ==");
+        assert_eq!(lib_btoa("M"), "TQ==");
+        assert_eq!(lib_btoa(""), "");
+    }
+
+    #[test]
+    fn btoa_truncates_utf16_units_like_latin1() {
+        // "é" is U+00E9 -> 0xE9; "€" is U+20AC -> 0xAC (low byte), matching
+        // the shim's `charCodeAt & 255` per UTF-16 code unit.
+        assert_eq!(lib_btoa("é"), "6Q==");
+        assert_eq!(lib_atob("6Q=="), "é");
+        assert_eq!(lib_btoa("€"), "rA==");
+    }
+
+    #[test]
+    fn atob_is_lenient_like_the_js_shim() {
+        // Missing padding: the missing chars read as "A" (value 0), so
+        // "Zg" decodes to "f". Standard atob would reject this.
+        assert_eq!(lib_atob("Zg"), "f");
+        // Invalid characters are dropped before decoding.
+        assert_eq!(lib_atob("T Q =="), lib_atob("TQ=="));
+        // High bytes come back as latin1 characters, not failure.
+        assert_eq!(lib_atob("rA=="), "¬");
+    }
+
+    /// The native `atob`/`btoa` must be callable from JS inside a real
+    /// rquickjs context, i.e. the JS->Rust argument and Rust->JS return
+    /// marshaling of the registered host functions must be correct.
+    #[test]
+    fn atob_btoa_marshaled_through_quickjs() {
+        let context = Context::full(&Runtime::new().unwrap()).unwrap();
+        context.with(|ctx| {
+            let globals = ctx.globals();
+            globals
+                .set("atob", Function::new(ctx.clone(), host_atob))
+                .unwrap();
+            globals
+                .set("btoa", Function::new(ctx.clone(), host_btoa))
+                .unwrap();
+            let out: String = ctx
+                .eval(
+                    r#"
+                    JSON.stringify({
+                        types: [typeof atob, typeof btoa],
+                        enc: btoa("Hello, World!"),
+                        dec: atob("SGVsbG8sIFdvcmxkIQ=="),
+                        uniEnc: btoa("é"),
+                        uniDec: atob("6Q=="),
+                        lenient: atob("Zg"),
+                        empty: [btoa(""), atob("")]
+                    })
+                    "#,
+                )
+                .expect("js assertions must run");
+            let result: Value = serde_json::from_str(&out).unwrap();
+            assert_eq!(result["types"], json!(["function", "function"]));
+            assert_eq!(result["enc"], "SGVsbG8sIFdvcmxkIQ==");
+            assert_eq!(result["dec"], "Hello, World!");
+            assert_eq!(result["uniEnc"], "6Q==");
+            assert_eq!(result["uniDec"], "é");
+            assert_eq!(result["lenient"], "f");
+            assert_eq!(result["empty"], json!(["", ""]));
+        });
     }
 }

@@ -1,7 +1,7 @@
 // Minimal Node-style Buffer used by the bundled packages and some plugins.
 // Index access goes through a Proxy, mirroring the previous plain-JS shim.
 
-import { b64Decode, b64Encode, bytesToStr, strToBytes, toBytes } from "./b64";
+import { bytesToStr, strToBytes, toBytes } from "./b64";
 
 export interface BufferInstance {
   _bytes: Uint8Array;
@@ -108,12 +108,4 @@ Buffer.isBuffer = function (v: unknown): boolean {
 
 export function SlowBuffer(size: number): BufferInstance {
   return Buffer(size);
-}
-
-export function atob(str: string): string {
-  return bytesToStr(b64Decode(str), "latin1");
-}
-
-export function btoa(str: string): string {
-  return b64Encode(strToBytes(String(str), "latin1"));
 }

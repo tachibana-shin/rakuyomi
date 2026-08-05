@@ -7,7 +7,7 @@
 // to `globalThis` here explicitly.
 
 import { TextDecoder, TextEncoder } from "./b64";
-import { atob, btoa, Buffer, SlowBuffer } from "./buffer";
+import { Buffer, SlowBuffer } from "./buffer";
 import {
   AbortController,
   Blob,
@@ -34,8 +34,9 @@ g.TextEncoder = TextEncoder;
 g.TextDecoder = TextDecoder;
 g.Buffer = Buffer;
 g.SlowBuffer = SlowBuffer;
-g.atob = atob;
-g.btoa = btoa;
+// `atob`/`btoa` are not attached here: they are provided natively by the
+// Rust host (see runtime.rs) so the plugin runtime does not depend on a pure
+// JS shim for the two most common browser globals.
 g.Headers = Headers;
 g.FormData = FormData;
 g.Blob = Blob;

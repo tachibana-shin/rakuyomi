@@ -22,3 +22,7 @@ declare function __rakuyomiStorageSet(key: string, itemJson: string): void;
 declare function __rakuyomiStorageRemove(key: string): void;
 declare function __rakuyomiStorageClear(): void;
 declare function __rakuyomiStorageKeys(): string;
+
+// Native base64 helpers provided by the Rust host (runtime.rs); no JS shim.
+declare function atob(data: string): string;
+declare function btoa(data: string): string;

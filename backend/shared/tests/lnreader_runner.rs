@@ -320,6 +320,7 @@ exports.default = {
     if (storage.get('flag') === 'set') markers.push('flag-ok');
     if (isUrlAbsolute('http://x.com') && !isUrlAbsolute('/x')) markers.push('abs-ok');
     if (bytesToUtf8(utf8ToBytes('u')) === 'u') markers.push('utils-ok');
+    if (btoa('RakuYomi') === 'UmFrdVlvbWk=' && atob('UmFrdVlvbWk=') === 'RakuYomi') markers.push('b64-ok');
     if (NovelStatus.Ongoing === 'Ongoing') markers.push('status-ok');
     if (FilterTypes.Picker === 'Picker') markers.push('picker-ok');
     var protoError = '';
@@ -554,6 +555,7 @@ async fn runner_full_offline() {
         "flag-ok",
         "abs-ok",
         "utils-ok",
+        "b64-ok",
         "status-ok",
         "picker-ok",
         "proto-ok",

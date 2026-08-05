@@ -513,11 +513,10 @@ fn host_encode_utf8(s: String) -> rquickjs::Result<String> {
 //
 // These replace the pure-JS implementations that were bundled in libs.js, so
 // plugins no longer depend on a JS shim for the two most commonly used
-// native functions. The semantics match the previous shim byte-for-byte so
-// existing plugins keep working unchanged.
+// native functions. The semantics match the previous shim for well-formed
+// input (optional padding, whitespace and other non-alphabet characters
+// dropped), so existing plugins keep working unchanged.
 // ---------------------------------------------------------------------------
-
-const B64_ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /// `btoa(s)`: latin1 -style base64 encode, truncating every UTF-16 code unit
 /// to a byte (the old shim's `b64Encode(strToBytes(s, "latin1"))`).
@@ -526,44 +525,24 @@ fn lib_btoa(s: &str) -> String {
     base64::engine::general_purpose::STANDARD.encode(bytes)
 }
 
-/// `atob(s)`: lenient base64 decode into a latin1 string, replicating the old
-/// shim's `bytesToStr(b64Decode(s), "latin1")`: characters outside the base64
-/// alphabet are dropped, missing trailing characters read as `"A"` (value 0),
-/// and bytes for `=` positions are skipped.
+/// `atob(s)`: lenient base64 decode into a latin1 string, like the old
+/// shim's `bytesToStr(b64Decode(s), "latin1")`. The base64 crate has no
+/// forgiving mode (it rejects non-alphabet characters outright), so the
+/// characters outside the alphabet are dropped first, then the remainder is
+/// decoded with optional padding and trailing bits tolerated.
 fn lib_atob(s: &str) -> String {
-    let cleaned: Vec<u8> = s
-        .bytes()
-        .filter(|b| b.is_ascii_alphanumeric() || matches!(b, b'+' | b'/' | b'='))
+    let cleaned: String = s
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '/' | '='))
         .collect();
-    let value = |ch: Option<u8>| -> i32 {
-        match ch {
-            None => 0, // `str[i+n] || "A"` in the JS shim
-            Some(b'=') => -1,
-            Some(c) => B64_ALPHABET
-                .iter()
-                .position(|&a| a == c)
-                .map_or(-1, |i| i as i32),
-        }
-    };
-    let mut out = Vec::new();
-    let mut i = 0;
-    while i < cleaned.len() {
-        let a = value(cleaned.get(i).copied());
-        let b = value(cleaned.get(i + 1).copied());
-        let c = value(cleaned.get(i + 2).copied());
-        let d = value(cleaned.get(i + 3).copied());
-        let n =
-            (a << 18) | (b << 12) | ((if c < 0 { 0 } else { c }) << 6) | if d < 0 { 0 } else { d };
-        out.push(((n >> 16) & 255) as u8);
-        if cleaned.get(i + 2).is_some_and(|c| *c != b'=') {
-            out.push(((n >> 8) & 255) as u8);
-        }
-        if cleaned.get(i + 3).is_some_and(|c| *c != b'=') {
-            out.push((n & 255) as u8);
-        }
-        i += 4;
-    }
-    out.into_iter().map(|byte| byte as char).collect()
+    let engine = base64::engine::GeneralPurpose::new(
+        &base64::alphabet::STANDARD,
+        base64::engine::general_purpose::GeneralPurposeConfig::new()
+            .with_decode_allow_trailing_bits(true)
+            .with_decode_padding_mode(base64::engine::DecodePaddingMode::Indifferent),
+    );
+    let bytes = engine.decode(cleaned.as_bytes()).unwrap_or_default();
+    bytes.into_iter().map(|byte| byte as char).collect()
 }
 
 fn host_atob(data: String) -> rquickjs::Result<String> {

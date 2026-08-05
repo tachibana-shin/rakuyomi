@@ -306,10 +306,17 @@ fn call_expr(method: &str, args: &[JsonValue], source_json: &JsonValue) -> Strin
             serde_json::to_string(base_url).unwrap_or_else(|_| "\"\"".to_string())
         ),
         _ => {
-            let args_js: Vec<String> = args
+            let mut args_js: Vec<String> = args
                 .iter()
                 .map(|a| serde_json::to_string(a).unwrap_or_else(|_| "null".to_string()))
                 .collect();
+            // The app passes the true filter list (from `getFilterList`) to
+            // `search`, not an empty one; extensions that index
+            // `filters[0].state` unconditionally (e.g. Mangafire) crash on a
+            // plain `[]`.
+            if method == "search" && args_js.len() == 3 {
+                args_js[2] = "(function () { try { return extention.getFilterList(); } catch (e) { return []; } })()".to_string();
+            }
             format!("extention.{}({})", method, args_js.join(", "))
         }
     }
@@ -411,7 +418,7 @@ mod tests {
                 &[json!("one piece"), json!(1), json!([])],
                 &source
             ),
-            "extention.search(\"one piece\", 1, [])"
+            "extention.search(\"one piece\", 1, (function () { try { return extention.getFilterList(); } catch (e) { return []; } })())"
         );
     }
 

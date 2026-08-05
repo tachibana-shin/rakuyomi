@@ -12,8 +12,7 @@
     "@noble/ciphers": "^2.2.0",
     "cheerio": "^1.2.0",
     "dayjs": "^1.11.21",
-    "htmlparser2": "^12.0.0",
-    "urlencode": "^2.0.0"
+    "htmlparser2": "^12.0.0"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

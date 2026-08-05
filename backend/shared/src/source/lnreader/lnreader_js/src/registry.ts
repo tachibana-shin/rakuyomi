@@ -5,7 +5,7 @@
 import * as cheerio from "cheerio";
 import dayjs from "dayjs";
 import * as htmlparser2 from "htmlparser2";
-import urlencode from "urlencode";
+import urlencode from "./urlencode";
 import { gcm } from "@noble/ciphers/aes.js";
 
 import { Buffer, SlowBuffer } from "./buffer";

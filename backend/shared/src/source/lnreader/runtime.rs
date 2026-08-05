@@ -541,8 +541,12 @@ fn lib_atob(s: &str) -> String {
             .with_decode_allow_trailing_bits(true)
             .with_decode_padding_mode(base64::engine::DecodePaddingMode::Indifferent),
     );
-    let bytes = engine.decode(cleaned.as_bytes()).unwrap_or_default();
-    bytes.into_iter().map(|byte| byte as char).collect()
+    engine
+        .decode(cleaned.as_bytes())
+        .unwrap_or_default()
+        .into_iter()
+        .map(|byte| byte as char)
+        .collect()
 }
 
 fn host_atob(data: String) -> rquickjs::Result<String> {
@@ -739,6 +743,63 @@ mod tests {
             assert_eq!(result["uniDec"], "é");
             assert_eq!(result["lenient"], "f");
             assert_eq!(result["empty"], json!(["", ""]));
+        });
+    }
+
+    /// The `b64Encode`/`b64Decode` JS helpers (b64.ts) are thin wrappers over
+    /// the native `atob`/`btoa` host globals; their byte round-trip through a
+    /// real rquickjs context must be correct.
+    #[test]
+    fn b64_helpers_through_native_atob_btoa() {
+        let context = Context::full(&Runtime::new().unwrap()).unwrap();
+        context.with(|ctx| {
+            let globals = ctx.globals();
+            globals
+                .set("atob", Function::new(ctx.clone(), host_atob))
+                .unwrap();
+            globals
+                .set("btoa", Function::new(ctx.clone(), host_btoa))
+                .unwrap();
+            let out: String = ctx
+                .eval(
+                    r#"
+                    function b64Encode(bytes) {
+                      let out = "";
+                      for (let i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i]);
+                      return btoa(out);
+                    }
+                    function b64Decode(str) {
+                      const out = atob(String(str));
+                      const bytes = new Uint8Array(out.length);
+                      for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 255;
+                      return bytes;
+                    }
+                    function enc(arr) { return b64Encode(Uint8Array.from(arr)); }
+                    function dec(s) { return Array.from(b64Decode(s)); }
+                    JSON.stringify({
+                        hello: enc([72, 105]),
+                        empty: enc([]),
+                        one: enc([255]),
+                        dec: dec("SGk="),
+                        roundtrip: dec(enc([0, 1, 2, 254, 255])),
+                        lenient: dec("T Q =="),
+                        whitespace: dec("  UmFr dQ== "),
+                        unpadded: dec("Zg"),
+                        highBytes: dec(enc([128, 255, 0]))
+                    })
+                    "#,
+                )
+                .expect("js assertions must run");
+            let result: Value = serde_json::from_str(&out).unwrap();
+            assert_eq!(result["hello"], "SGk=");
+            assert_eq!(result["empty"], "");
+            assert_eq!(result["one"], "/w==");
+            assert_eq!(result["dec"], json!([72, 105]));
+            assert_eq!(result["roundtrip"], json!([0, 1, 2, 254, 255]));
+            assert_eq!(result["lenient"], json!([77]));
+            assert_eq!(result["whitespace"], json!([82, 97, 107, 117]));
+            assert_eq!(result["unpadded"], json!([102]));
+            assert_eq!(result["highBytes"], json!([128, 255, 0]));
         });
     }
 }

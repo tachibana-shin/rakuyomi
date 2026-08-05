@@ -1,50 +1,18 @@
-// Byte/base64/hex helpers and TextEncoder/TextDecoder. Encoding is delegated
-// to the Rust host functions so the plugin runtime stays dependency-free.
-
-const B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+// Byte/base64/hex helpers and TextEncoder/TextDecoder. Base64 is delegated
+// to the native `atob`/`btoa` host globals so the plugin runtime stays
+// dependency-free.
 
 export function b64Encode(bytes: Uint8Array): string {
   let out = "";
-  let i = 0;
-  for (; i + 2 < bytes.length; i += 3) {
-    const n = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-    out +=
-      B64_ALPHABET[(n >> 18) & 63] +
-      B64_ALPHABET[(n >> 12) & 63] +
-      B64_ALPHABET[(n >> 6) & 63] +
-      B64_ALPHABET[n & 63];
-  }
-  const rem = bytes.length - i;
-  if (rem === 1) {
-    const n1 = bytes[i] << 16;
-    out += B64_ALPHABET[(n1 >> 18) & 63] + B64_ALPHABET[(n1 >> 12) & 63] + "==";
-  } else if (rem === 2) {
-    const n2 = (bytes[i] << 16) | (bytes[i + 1] << 8);
-    out +=
-      B64_ALPHABET[(n2 >> 18) & 63] +
-      B64_ALPHABET[(n2 >> 12) & 63] +
-      B64_ALPHABET[(n2 >> 6) & 63] +
-      "=";
-  }
-  return out;
+  for (let i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i]);
+  return btoa(out);
 }
 
 export function b64Decode(str: string): Uint8Array {
-  str = String(str).replace(/[^A-Za-z0-9+/=]/g, "");
-  const len = str.length;
-  const bytes = new Uint8Array(Math.floor((len * 3) / 4));
-  let p = 0;
-  for (let i = 0; i < len; i += 4) {
-    const a = B64_ALPHABET.indexOf(str[i]);
-    const b = B64_ALPHABET.indexOf(str[i + 1] || "A");
-    const c = B64_ALPHABET.indexOf(str[i + 2] || "A");
-    const d = B64_ALPHABET.indexOf(str[i + 3] || "A");
-    const n = (a << 18) | (b << 12) | ((c === -1 ? 0 : c) << 6) | (d === -1 ? 0 : d);
-    bytes[p++] = (n >> 16) & 255;
-    if (str[i + 2] && str[i + 2] !== "=") bytes[p++] = (n >> 8) & 255;
-    if (str[i + 3] && str[i + 3] !== "=") bytes[p++] = n & 255;
-  }
-  return bytes.subarray(0, p);
+  const out = atob(String(str));
+  const bytes = new Uint8Array(out.length);
+  for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 255;
+  return bytes;
 }
 
 export function bytesToHex(bytes: Uint8Array): string {

@@ -16,7 +16,6 @@ declare function __rakuyomiLog(level: string, message: string): void;
 declare function __rakuyomiSleep(ms: number): void;
 declare function __rakuyomiUuid(): string;
 declare function __rakuyomiPluginId(): string;
-declare function __rakuyomiIsUrlAbsolute(url: string): boolean;
 declare function __rakuyomiStorageGet(key: string): string | null;
 declare function __rakuyomiStorageSet(key: string, itemJson: string): void;
 declare function __rakuyomiStorageRemove(key: string): void;

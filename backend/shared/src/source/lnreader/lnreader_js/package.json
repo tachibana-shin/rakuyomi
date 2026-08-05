@@ -16,5 +16,10 @@
   },
   "devDependencies": {
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "htmlparser2": "12.0.0",
+    "entities": "8.0.0",
+    "dom-serializer": "3.1.1"
   }
 }

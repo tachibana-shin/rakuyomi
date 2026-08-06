@@ -371,31 +371,42 @@ fn invoke_method(
         // All host functions are synchronous, so it always settles here.
         match promise.finish::<String>() {
             Ok(value) => Ok(value),
-            Err(e) => {
-                let value = ctx.catch();
-                let js_message = value
-                    .as_object()
-                    .and_then(|obj| Exception::from_object(obj.clone()))
-                    .and_then(|ex| ex.message())
-                    .unwrap_or_else(|| format!("{:#}", e));
-                bail!("extension method `{}` failed: {}", method, js_message);
-            }
+            Err(e) => bail!(
+                "extension method `{}` failed: {}",
+                method,
+                js_error_detail(ctx, e)
+            ),
         }
     } else {
         let script = format!("JSON.stringify({call})");
         match ctx.eval::<String, _>(script) {
             Ok(value) => Ok(value),
-            Err(e) => {
-                let value = ctx.catch();
-                let js_message = value
-                    .as_object()
-                    .and_then(|obj| Exception::from_object(obj.clone()))
-                    .and_then(|ex| ex.message())
-                    .unwrap_or_else(|| format!("{:#}", e));
-                bail!("extension method `{}` failed: {}", method, js_message);
-            }
+            Err(e) => bail!(
+                "extension method `{}` failed: {}",
+                method,
+                js_error_detail(ctx, e)
+            ),
         }
     }
+}
+
+/// Formats a caught QuickJS exception as `message\nstack` (stack omitted
+/// when empty), falling back to the raw rquickjs error.
+fn js_error_detail(ctx: &Ctx<'_>, e: rquickjs::Error) -> String {
+    let value = ctx.catch();
+    value
+        .as_object()
+        .and_then(|obj| Exception::from_object(obj.clone()))
+        .map(|ex| {
+            let message = ex.message().unwrap_or_default();
+            let stack = ex.stack().unwrap_or_default();
+            if stack.trim().is_empty() {
+                message
+            } else {
+                format!("{message}\n{stack}")
+            }
+        })
+        .unwrap_or_else(|| format!("{:#}", e))
 }
 
 #[cfg(test)]

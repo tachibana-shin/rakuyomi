@@ -252,12 +252,20 @@ fn invoke_method(ctx: &mut Context, method: &str, args_json: &str) -> Result<Str
         let filters = positional.pop().unwrap_or(Value::Null);
         positional.push(filter_list_value(filters));
     }
+    let dbg_err = |e: &d4rt_rs::InterpError| {
+        let detail = match e {
+            d4rt_rs::InterpError::Throw(v) => {
+                format!(": THROW={}", d4rt_rs::value::value_to_string(v))
+            }
+            other => format!(": OTHER={other:?}"),
+        };
+        anyhow!("extension method `{method}` failed{detail}")
+    };
     let result = ctx
         .invoke(method, positional, HashMap::new())
-        .map_err(|e| anyhow!("extension method `{method}` failed: {e}"))?;
+        .map_err(|e| dbg_err(&e))?;
     let result = if matches!(result, Value::Future(_)) {
-        ctx.pump_to_completion(result)
-            .map_err(|e| anyhow!("extension method `{method}` failed: {e}"))?
+        ctx.pump_to_completion(result).map_err(|e| dbg_err(&e))?
     } else {
         result
     };

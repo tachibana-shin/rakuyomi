@@ -275,12 +275,20 @@ fn invoke_method(ctx: &Ctx<'_>, method: &str, args: &str) -> Result<String> {
         Ok(value) => Ok(value),
         Err(e) => {
             let value = ctx.catch();
-            let js_message = value
+            let js_detail = value
                 .as_object()
                 .and_then(|obj| Exception::from_object(obj.clone()))
-                .and_then(|ex| ex.message())
+                .map(|ex| {
+                    let message = ex.message().unwrap_or_default();
+                    let stack = ex.stack().unwrap_or_default();
+                    if stack.trim().is_empty() {
+                        message
+                    } else {
+                        format!("{message}\n{stack}")
+                    }
+                })
                 .unwrap_or_else(|| format!("{:#}", e));
-            bail!("plugin method `{}` failed: {}", method, js_message);
+            bail!("plugin method `{}` failed: {}", method, js_detail);
         }
     }
 }

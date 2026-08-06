@@ -294,6 +294,35 @@ fn is_async_method(method: &str) -> bool {
 
 /// Builds the JS expression for `extention.<call>` the way the app does
 /// (`getHeaders(url)` for `headers`, the bare getter for `supportsLatest`).
+/// Normalised `getFilterList()` output for `search`, mirroring the app: the
+/// raw extension filter list is passed through, with `state` defaults the
+/// app's `*.fromJson` round-trip would have applied (select/tri-state -> 0,
+/// checkbox -> false, recursing into group children). Extensions may omit
+/// `state` where the app would supply it (e.g. Mangafire's "Length" filter).
+const SEARCH_FILTER_LIST_EXPR: &str = r#"(function () {
+  function d(f) {
+    if (!f || typeof f !== "object") return f;
+    var t = f.type_name || "";
+    if (f.state === undefined) {
+      if (t.indexOf("TriState") >= 0 || t.indexOf("Select") >= 0 || Array.isArray(f.values)) {
+        f.state = 0;
+      } else {
+        f.state = false;
+      }
+    }
+    if (Array.isArray(f.state)) {
+      for (var i = 0; i < f.state.length; i++) f.state[i] = d(f.state[i]);
+    }
+    return f;
+  }
+  try {
+    var fl = extention.getFilterList();
+    return Array.isArray(fl) ? fl.map(d) : fl;
+  } catch (e) {
+    return [];
+  }
+})()"#;
+
 fn call_expr(method: &str, args: &[JsonValue], source_json: &JsonValue) -> String {
     let base_url = source_json
         .get("baseUrl")
@@ -310,12 +339,12 @@ fn call_expr(method: &str, args: &[JsonValue], source_json: &JsonValue) -> Strin
                 .iter()
                 .map(|a| serde_json::to_string(a).unwrap_or_else(|_| "null".to_string()))
                 .collect();
-            // The app passes the true filter list (from `getFilterList`) to
-            // `search`, not an empty one; extensions that index
-            // `filters[0].state` unconditionally (e.g. Mangafire) crash on a
-            // plain `[]`.
+            // The app hands the extension its true filter list on search, not
+            // an empty one: extensions that index `filters[0].state`
+            // unconditionally (e.g. Mangafire) crash on a plain `[]`. See
+            // `SEARCH_FILTER_LIST_EXPR`.
             if method == "search" && args_js.len() == 3 {
-                args_js[2] = "(function () { try { return extention.getFilterList(); } catch (e) { return []; } })()".to_string();
+                args_js[2] = SEARCH_FILTER_LIST_EXPR.to_string();
             }
             format!("extention.{}({})", method, args_js.join(", "))
         }
@@ -418,7 +447,7 @@ mod tests {
                 &[json!("one piece"), json!(1), json!([])],
                 &source
             ),
-            "extention.search(\"one piece\", 1, (function () { try { return extention.getFilterList(); } catch (e) { return []; } })())"
+            format!("extention.search(\"one piece\", 1, {SEARCH_FILTER_LIST_EXPR})")
         );
     }
 

@@ -345,6 +345,89 @@ class DefaultExtension extends MProvider {
 "#;
 
 // ---------------------------------------------------------------------------
+// Mangafire-like fixture (mirrors the real Mangafire extension shape)
+// ---------------------------------------------------------------------------
+
+// Getter `getFilterList()` returns group filters with **no `state` on the
+// "Length" select**; `search` indexes `filters[0..4]` unconditionally and
+// reads `filters[3].values[filters[3].state].value`. The runtime must feed it
+// the normalised defaults the app's `*.fromJson` round-trip would apply.
+const MANGAFIRE_LIKE_EXTENSION: &str = r#"
+class DefaultExtension extends MProvider {
+    get baseUrl() {
+        return this.source.baseUrl;
+    }
+    async search(query, page, filters) {
+        var slug = "language=en&page=" + page;
+        var isFiltersAvailable = filters || filters.length > 0;
+        if (isFiltersAvailable) {
+            for (const filter of filters[0].state) {
+                if (filter.state == true) slug += "&type%5B%5D=" + filter.value;
+            }
+            for (const filter of filters[1].state) {
+                if (filter.state == 1) slug += "&genre%5B%5D=" + filter.value;
+            }
+            for (const filter of filters[2].state) {
+                if (filter.state == true) slug += "&status%5B%5D=" + filter.value;
+            }
+            slug += "&minchap=" + filters[3].values[filters[3].state].value;
+            slug += "&sort=" + filters[4].values[filters[4].state].value;
+        }
+        const res = await new Client({ useDartHttpClient: true }).get(
+            this.source.baseUrl + "/mf-search?" + slug
+        );
+        return { list: [], hasNextPage: false };
+    }
+    getFilterList() {
+        return [
+            {
+                type_name: "GroupFilter",
+                name: "Type",
+                state: [["Manga", "manga"], ["Manhwa", "manhwa"]].map(
+                    (x) => ({ type_name: "CheckBox", name: x[0], value: x[1] })
+                ),
+            },
+            {
+                type_name: "GroupFilter",
+                name: "Genre",
+                state: [["Action", "1"]].map(
+                    (x) => ({ type_name: "TriState", name: x[0], value: x[1] })
+                ),
+            },
+            {
+                type_name: "GroupFilter",
+                name: "Status",
+                state: [["Releasing", "releasing"]].map(
+                    (x) => ({ type_name: "CheckBox", name: x[0], value: x[1] })
+                ),
+            },
+            {
+                type_name: "SelectFilter",
+                type: "length",
+                name: "Length",
+                values: [
+                    [">= 1 chapters", "1"],
+                    [">= 3 chapters", "3"],
+                ].map((x) => ({ type_name: "SelectOption", name: x[0], value: x[1] })),
+            },
+            {
+                type_name: "SelectFilter",
+                type: "sort",
+                name: "Sort",
+                state: 3,
+                values: [
+                    ["Added", "recently_added"],
+                    ["Updated", "recently_updated"],
+                    ["Trending", "trending"],
+                    ["Most Relevance", "most_relevance"],
+                ].map((x) => ({ type_name: "SelectOption", name: x[0], value: x[1] })),
+            },
+        ];
+    }
+}
+"#;
+
+// ---------------------------------------------------------------------------
 // Test helpers
 // ---------------------------------------------------------------------------
 
@@ -670,4 +753,46 @@ class DefaultExtension extends MProvider {
     .expect("runtime starts");
     let value = runtime.invoke("getPopular", vec![serde_json::json!(1)]);
     assert!(value.is_err(), "blocked extension call must time out");
+}
+
+#[tokio::test]
+async fn js_runner_mangafire_like_search_filters() {
+    // Mangafire-style search indexes `filters[0..4]` and its "Length" select
+    // omits `state`; the runtime must pass the normalised filter list (state
+    // 0) instead of an empty array, and must not crash on the missing state.
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+    let port = base
+        .trim_start_matches("http://")
+        .rsplit(':')
+        .next()
+        .unwrap()
+        .to_string();
+
+    let dir = temp_sources_dir("mangafire");
+    let mut manager = manager(&dir);
+    let source_id = install(
+        &mut manager,
+        &MANGAFIRE_LIKE_EXTENSION.replace("127.0.0.1:PORT", &port),
+        &format!(
+            r#"{{"id": 638504049, "name": "Mangafire Like", "lang": "en", "baseUrl": "http://127.0.0.1:{port}", "version": "1.0.0", "sourceCodeLanguage": 1}}"#
+        ),
+    );
+    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = mangayomi(source);
+    source
+        .search_mangas(CancellationToken::new(), "one piece".to_string(), 1)
+        .expect("search must not crash on the filter list");
+    let query = server
+        .query_for("/mf-search")
+        .expect("extension must hit /mf-search");
+    assert!(
+        query.contains("minchap=1"),
+        "Length select without state must default to 0, got: {query}"
+    );
+    assert!(
+        query.contains("sort=most_relevance"),
+        "Sort select state must be preserved, got: {query}"
+    );
+    std::fs::remove_dir_all(&dir).ok();
 }

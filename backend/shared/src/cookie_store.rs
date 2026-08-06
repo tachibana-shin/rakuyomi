@@ -150,6 +150,7 @@ pub fn init_cookie_store() {
 }
 
 pub fn init_cookie_store_with_path(path: &Path) -> Result<()> {
+    #[cfg(target_os = "android")]
     if COOKIE_STORE.get().is_some() {
         let new_path = path.to_string_lossy().to_string();
         match COOKIE_STORE_PATH.get() {

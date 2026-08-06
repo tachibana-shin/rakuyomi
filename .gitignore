@@ -22,13 +22,28 @@ node_modules
 
 /BUILD_INFO.json
 
-# LNReader integration: French-language dev/planning docs for this fork's
-# own session work (faisabilite/handoff/postmortem reports, PoC reference
-# code) -- not meant for this fork's git history.
-docs/lnreader/
+# LNReader integration: the Phase 4 handoff note is still French-language,
+# session-scratch planning text (unlike the rest of docs/lnreader/, cleaned
+# up and committed) -- kept local until it's translated or rewritten.
+docs/lnreader/PHASE4_HANDOFF.md
+
+# LNReader integration: local server home directory used for real,
+# end-to-end manual testing against the live HTTP API (see
+# docs/lnreader/REFERENCE.md §6) -- installed sources/downloads/database
+# churn on every test run, not meant for git history; the settings.json
+# fixture itself is reproducible from REFERENCE.md if it's ever lost.
+docs/lnreader/test_home/
 
 # LNReader integration: real plugin sources vendored locally for one-off
 # manual validation against real sites during development (see
 # faisabilite-v2-adapter-rakuyomi.md §10.6) -- never committed, even with
 # MIT attribution, same as Aidoku never committing vendored test sources.
 backend/shared/src/source/sdk_lnreader/test_fixtures/
+
+# Claude Code's own runtime state for this repo (scheduled tasks, worktree/
+# checkpoint/mailbox bookkeeping, agent registry/memory) -- tooling-local,
+# regenerated per machine, never meant to be shared via git. Previously
+# only excluded per-clone via .git/info/exclude (not shared with a fresh
+# clone); formalized here so it can't be accidentally committed from any
+# checkout.
+.claude/

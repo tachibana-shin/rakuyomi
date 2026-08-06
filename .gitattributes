@@ -1,3 +1,5 @@
-# Third-party LNReader plugins vendored as test fixtures. They are not part
-# of this repository's code and must not count towards the language stats.
+# Third-party LNReader plugins and mangayomi JS extensions vendored as test
+# fixtures. They are not part of this repository's code and must not count
+# towards the language stats.
 backend/shared/tests/data/*.js linguist-vendored
+backend/shared/tests/data/mangayomi-js/*.js linguist-vendored

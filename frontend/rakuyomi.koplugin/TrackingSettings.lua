@@ -124,6 +124,7 @@ local service_configs = {
   },
   {
     id = "mangabaka",
+    has_username = true,
     fields = {
       { key = "api_key", placeholder = _("Paste MangaBaka API Key (mb-...)") },
     },
@@ -207,7 +208,7 @@ local function build_validate_button(self, service_id)
   }
 end
 
-local function build_validate_button_plain(service_id)
+local function build_validate_button_plain(self, service_id)
   return {
     type = 'button',
     title = _("Validate ") .. TrackingServices.getLabel(service_id),
@@ -225,7 +226,12 @@ local function build_validate_button_plain(service_id)
           return
         end
 
-        UIManager:show(InfoMessage:new { text = _("Credentials are valid.") })
+        local username = self:fetchAndShowUsername(service_id)
+        if username then
+          UIManager:show(InfoMessage:new { text = _("Credentials are valid.") .. " (" .. username .. ")" })
+        else
+          UIManager:show(InfoMessage:new { text = _("Credentials are valid.") })
+        end
       end)
     end
   }
@@ -264,7 +270,7 @@ function TrackingSettings:init()
       {
         type = 'divider',
         title = TrackingServices.getLabel(svc.id),
-        service = svc.oauth and svc.id or nil,
+        service = (svc.oauth or svc.has_username) and svc.id or nil,
       }
     })
 
@@ -287,7 +293,7 @@ function TrackingSettings:init()
     else
       table.insert(self.tracking_value_definitions, {
         'validate_' .. svc.id,
-        build_validate_button_plain(svc.id),
+        build_validate_button_plain(self, svc.id),
       })
     end
   end
@@ -532,11 +538,12 @@ end
 
 --- Show usernames from settings, and fetch from API for services with token but no username.
 function TrackingSettings:fetchAllUsernames()
-  local services = { "anilist", "myanimelist", "shikimori", "bangumi" }
+  local services = { "anilist", "myanimelist", "shikimori", "bangumi", "mangabaka" }
   for _, service in ipairs(services) do
     self:showUsername(service)
     local svc = self.settings[service] or {}
-    local has_token = svc.access_token ~= nil and svc.access_token ~= ""
+    local has_token = (svc.access_token ~= nil and svc.access_token ~= "")
+        or (svc.api_key ~= nil and svc.api_key ~= "")
     local has_username = svc.username ~= nil and svc.username ~= ""
     if has_token and not has_username then
       self:fetchAndShowUsername(service)

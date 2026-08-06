@@ -623,6 +623,28 @@ fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDef
                 key: key.to_string(),
                 default: pref.get("value").and_then(Value::as_bool).unwrap_or(false),
             });
+        } else if let Some(value) = item.get("value") {
+            // Flat preference form: the extension constructs the class
+            // directly (`EditTextPreference(key:..., value:...)`,
+            // `CheckBoxPreference(...)`), which the bridge stores as a flat
+            // map instead of a `SourcePreference`-style nested map.
+            if let Some(default) = value.as_str() {
+                out.push(SettingDefinition::Text {
+                    placeholder: None,
+                    key: key.to_string(),
+                    default: Some(default.to_string()),
+                });
+            } else if let Some(default) = value.as_bool() {
+                out.push(SettingDefinition::Switch {
+                    title: item
+                        .get("title")
+                        .and_then(Value::as_str)
+                        .unwrap_or(key)
+                        .to_string(),
+                    key: key.to_string(),
+                    default,
+                });
+            }
         } else if let Some(pref) = item.get("listPreference") {
             let entries: Vec<String> = pref
                 .get("entries")

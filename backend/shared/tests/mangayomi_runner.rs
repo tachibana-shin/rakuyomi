@@ -810,6 +810,77 @@ async fn runner_rejects_invalid_metadata() {
 }
 
 #[test]
+fn runner_flat_source_preference_gets_defaults() {
+    // Real extensions (e.g. the mangareader/madara multisrc) construct their
+    // preferences directly: `EditTextPreference(key: ..., value: ...)` is a
+    // flat map. The runtime must still collect the default so
+    // `getPreferenceValue`/`override_baseurl` resolve instead of returning
+    // null and producing a `null/?s=...` request.
+    const FLAT_PREF: &str = r#"
+import 'package:mangayomi/bridge_lib.dart';
+
+class FlatPref extends MProvider {
+  FlatPref({required this.source});
+  MSource source;
+  final Client client = Client();
+
+  @override
+  String get baseUrl => getPreferenceValue(source.id, "override_baseurl");
+
+  @override
+  List<dynamic> getSourcePreferences() {
+    return [
+      EditTextPreference(
+        key: "override_baseurl",
+        title: "Override BaseUrl",
+        value: "https://flat.example",
+        dialogTitle: "Override BaseUrl",
+        text: "https://flat.example",
+      ),
+    ];
+  }
+}
+
+FlatPref main(MSource source) => FlatPref(source: source);
+"#;
+
+    let dir = temp_sources_dir("flat-pref");
+    let mut manager = manager(&dir);
+    let source_id = install(
+        &mut manager,
+        FLAT_PREF,
+        r#"{"id": 638504049, "name": "Flat Pref", "lang": "en", "baseUrl": "http://meta.example", "version": "1.0.0", "sourceCodeUrl": "https://example.com/flat.dart"}"#,
+    );
+    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = mangayomi(source);
+
+    // The flat EditTextPreference must become a Text setting with the default
+    // collected into the shared settings map.
+    let defs = &source.setting_definitions;
+    assert_eq!(defs.len(), 1);
+    match &defs[0] {
+        SettingDefinition::Text { key, default, .. } => {
+            assert_eq!(key, "override_baseurl");
+            assert_eq!(default.as_deref(), Some("https://flat.example"));
+        }
+        other => panic!("expected Text, got {other:?}"),
+    }
+    let settings = source.settings.lock().unwrap();
+    assert!(matches!(
+        settings.get("override_baseurl"),
+        Some(SourceSettingValue::String(s)) if s == "https://flat.example"
+    ));
+    drop(settings);
+
+    // And `getPreferenceValue(source.id, "override_baseurl")` must now
+    // resolve to the default base URL, not null.
+    let base_url = source.invoke("baseUrl", serde_json::json!([])).unwrap();
+    assert_eq!(base_url.as_str(), Some("https://flat.example"));
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
 fn runner_worker_crashes_on_invalid_code() {
     // A worker whose `main()` fails dies quickly; the next invoke must
     // surface the failure instead of hanging or returning garbage.

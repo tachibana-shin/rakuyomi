@@ -13,8 +13,12 @@ use std::{
 };
 
 use shared::{
-    settings::Settings, source::lnreader::LnReaderSource, source::model::PublishingStatus,
-    source::SourceBackend, source_collection::SourceCollection, source_manager::SourceManager,
+    settings::Settings,
+    source::lnreader::LnReaderSource,
+    source::model::{PublishingStatus, SettingDefinition},
+    source::SourceBackend,
+    source_collection::SourceCollection,
+    source_manager::SourceManager,
 };
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -691,4 +695,172 @@ async fn runner_rejects_invalid_plugins() {
         .is_err());
 
     std::fs::remove_dir_all(&dir).ok();
+}
+
+#[tokio::test]
+async fn runner_setting_definitions_and_filters() {
+    // LNReader plugins expose their browse filters and plugin settings in
+    // the plugin props (`filters` / `pluginSettings`), not at runtime. The
+    // definitions must expose them as `SettingDefinition`s (with defaults)
+    // and the defaults must flow into the `options.filters` JSON handed to
+    // `popularNovels`.
+    const SETTINGS_PLUGIN: &str = r#"var { storage } = require('@libs/storage');
+var { fetchApi } = require('@libs/fetch');
+var SITE = 'http://127.0.0.1:PORT/';
+exports.default = {
+  id: 'settingsplugin',
+  name: 'Settings Plugin',
+  site: 'http://127.0.0.1:PORT/',
+  version: '1.0.0',
+  filters: {
+    status: { type: 'Picker', value: 0, options: [ { value: 'all', label: 'All' }, { value: 'ongoing', label: 'Ongoing' } ] },
+    genre: { type: 'Text', value: 'romance' },
+    mature: { type: 'Checkbox', value: ['no'], options: [ { value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' } ] },
+    tags: { type: 'CheckboxGroup', value: ['action'], options: [ { value: 'action', label: 'Action' }, { value: 'romance', label: 'Romance' } ] },
+  },
+  pluginSettings: {
+    view_mode: { type: 'Picker', value: 1, options: [ { value: 'list', label: 'List' }, { value: 'grid', label: 'Grid' } ] },
+    note: { type: 'Text', value: 'hello' },
+    group: {
+      type: 'Group',
+      items: {
+        lang: { type: 'Picker', value: 0, options: [ { value: 'en', label: 'English' }, { value: 'vn', label: 'Vietnamese' } ] },
+      },
+    },
+  },
+  popularNovels: async function (page, options) {
+    var q = 'page=' + page +
+      '&status=' + options.filters.status.value +
+      '&genre=' + encodeURIComponent(options.filters.genre.value) +
+      '&mature=' + options.filters.mature.value.join(',') +
+      '&tags=' + options.filters.tags.value.join(',') +
+      '&view=' + storage.get('view_mode');
+    await fetchApi(SITE + 'popular?' + q);
+    return [];
+  },
+  searchNovels: async function (query, page) { return []; },
+  parseNovel: async function (path) {
+    return { path: path, name: 'S', chapters: [] };
+  },
+  parseChapter: async function (path) { return 'chapter'; },
+};
+"#;
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+    let port = base
+        .trim_end_matches('/')
+        .rsplit(':')
+        .next()
+        .unwrap()
+        .to_string();
+    let plugin_code = SETTINGS_PLUGIN.replace("PORT", &port);
+
+    let dir = temp_sources_dir("settings");
+    let mut manager = manager(&dir);
+    let source_id = install(&mut manager, "settingsplugin", &plugin_code);
+    let source = manager.get_by_id(&source_id).unwrap();
+    let source = lnreader(source);
+
+    // The browse filters are not exposed as setting definitions; the plugin's
+    // own settings page (`pluginSettings`) is.
+    let defs = &source.setting_definitions;
+    assert_eq!(defs.len(), 3);
+    let get = |key: &str| {
+        defs.iter()
+            .find(|d| setting_key(d) == key)
+            .unwrap_or_else(|| panic!("missing setting `{key}`"))
+    };
+
+    match get("view_mode") {
+        SettingDefinition::Select {
+            values, default, ..
+        } => {
+            assert_eq!(values, &vec!["list".to_string(), "grid".to_string()]);
+            assert_eq!(default.as_deref(), Some("grid"));
+        }
+        other => panic!("expected Select for view_mode, got {other:?}"),
+    }
+    match get("note") {
+        SettingDefinition::Text { key, default, .. } => {
+            assert_eq!(key, "note");
+            assert_eq!(default.as_deref(), Some("hello"));
+        }
+        other => panic!("expected Text for note, got {other:?}"),
+    }
+    match get("group") {
+        SettingDefinition::Group { items, .. } => {
+            assert_eq!(items.len(), 1);
+            match &items[0] {
+                SettingDefinition::Select { key, default, .. } => {
+                    assert_eq!(key, "lang");
+                    assert_eq!(default.as_deref(), Some("en"));
+                }
+                other => panic!("expected Select for nested lang, got {other:?}"),
+            }
+        }
+        other => panic!("expected Group, got {other:?}"),
+    }
+
+    // Defaults are collected into the shared settings map, flattening groups.
+    let settings = source.settings_json();
+    assert_eq!(settings["view_mode"], serde_json::json!("grid"));
+    assert_eq!(settings["lang"], serde_json::json!("en"));
+    assert_eq!(settings["note"], serde_json::json!("hello"));
+    drop(settings);
+
+    // The plugin-level filters (with their defaults) are merged into
+    // `options.filters` by the libs.js bootstrap; the pluginSetting defaults
+    // are seed into `@libs/storage`.
+    source
+        .invoke(
+            "popular",
+            serde_json::json!([1, source.settings_json(), false]),
+        )
+        .unwrap();
+    let query = server.query_for("/popular").unwrap();
+    assert!(
+        query.contains("status=0"),
+        "Picker default index must flow into options.filters: {query}"
+    );
+    assert!(
+        query.contains("genre=romance"),
+        "Text default must flow into options.filters: {query}"
+    );
+    assert!(
+        query.contains("mature=no") && query.contains("tags=action"),
+        "Checkbox defaults must flow into options.filters: {query}"
+    );
+    assert!(
+        query.contains("view=grid"),
+        "pluginSettings default must be visible through storage: {query}"
+    );
+
+    // Filters are coercible: a Picker label selects the matching index and
+    // overrides the default, exactly like the app's filter UI.
+    source
+        .invoke(
+            "popular",
+            serde_json::json!([1, { "status": "Ongoing" }, false]),
+        )
+        .unwrap();
+    let query = server.query_for("/popular").unwrap();
+    assert!(
+        query.contains("status=1"),
+        "Picker label must be coerced to its index: {query}"
+    );
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+fn setting_key(def: &SettingDefinition) -> &str {
+    match def {
+        SettingDefinition::Text { key, .. }
+        | SettingDefinition::Switch { key, .. }
+        | SettingDefinition::Select { key, .. }
+        | SettingDefinition::MultiSelect { key, .. } => key,
+        SettingDefinition::Group {
+            title: Some(title), ..
+        } => title,
+        _ => "",
+    }
 }

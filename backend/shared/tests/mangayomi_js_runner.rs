@@ -19,7 +19,7 @@ use std::{
 use shared::{
     model::SourceId,
     settings::{Settings, SourceSettingValue},
-    source::{mangayomi::MangayomiSource, Source, SourceBackend},
+    source::{mangayomi::MangayomiSource, model::SettingDefinition, Source, SourceBackend},
     source_collection::SourceCollection,
     source_manager::SourceManager,
 };
@@ -753,6 +753,62 @@ class DefaultExtension extends MProvider {
     .expect("runtime starts");
     let value = runtime.invoke("getPopular", vec![serde_json::json!(1)]);
     assert!(value.is_err(), "blocked extension call must time out");
+}
+
+#[test]
+fn js_runner_flat_source_preference_gets_defaults() {
+    // Mirrors `runner_flat_source_preference_gets_defaults` for the Dart
+    // runtime: a JS extension may construct preferences as flat objects
+    // (`{ key, value, ... }`) instead of the `SourcePreference`-style
+    // nested maps. Defaults must be collected so `SharedPreferences`
+    // lookups resolve instead of falling back.
+    const FLAT_PREF: &str = r#"
+class DefaultExtension extends MProvider {
+    getBaseUrl() {
+        return new SharedPreferences().get("override_baseurl") || this.source.baseUrl;
+    }
+    getSourcePreferences() {
+        return [
+            {
+                key: "override_baseurl",
+                title: "Override BaseUrl",
+                value: "https://flat.example",
+                text: "https://flat.example",
+            },
+        ];
+    }
+}
+"#;
+    let dir = temp_sources_dir("flat-pref");
+    let mut manager = manager(&dir);
+    let source_id = install(
+        &mut manager,
+        FLAT_PREF,
+        r#"{"id": 638504049, "name": "Flat Pref JS", "lang": "en", "baseUrl": "http://meta.example", "version": "1.0.0", "sourceCodeUrl": "https://example.com/flat.js", "sourceCodeLanguage": 1}"#,
+    );
+    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = mangayomi(source);
+
+    let defs = &source.setting_definitions;
+    assert_eq!(defs.len(), 1);
+    match &defs[0] {
+        SettingDefinition::Text { key, default, .. } => {
+            assert_eq!(key, "override_baseurl");
+            assert_eq!(default.as_deref(), Some("https://flat.example"));
+        }
+        other => panic!("expected Text, got {other:?}"),
+    }
+    let settings = source.settings.lock().unwrap();
+    assert!(matches!(
+        settings.get("override_baseurl"),
+        Some(SourceSettingValue::String(s)) if s == "https://flat.example"
+    ));
+    drop(settings);
+
+    let base_url = source.invoke("getBaseUrl", serde_json::json!([])).unwrap();
+    assert_eq!(base_url.as_str(), Some("https://flat.example"));
+
+    std::fs::remove_dir_all(&dir).ok();
 }
 
 #[tokio::test]

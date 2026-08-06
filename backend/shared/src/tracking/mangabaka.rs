@@ -131,14 +131,8 @@ impl Tracker for MangaBakaTracker {
             chapter_progress: entry.progress_chapter,
             volume_progress: entry.progress_volume,
             updated_at: None,
-            started_at: entry
-                .start_date
-                .as_deref()
-                .and_then(super::parse_iso8601_timestamp),
-            completed_at: entry
-                .finish_date
-                .as_deref()
-                .and_then(super::parse_iso8601_timestamp),
+            started_at: entry.start_date.as_deref().and_then(parse_date),
+            completed_at: entry.finish_date.as_deref().and_then(parse_date),
         })
     }
 
@@ -247,6 +241,17 @@ where
     value
         .map(|s| s.parse::<i64>().map_err(de::Error::custom))
         .transpose()
+}
+
+/// Parses a MangaBaka date field, which may be a full RFC3339 timestamp or a
+/// bare `YYYY-MM-DD` date (as returned for `start_date`/`finish_date`).
+fn parse_date(value: &str) -> Option<i64> {
+    super::parse_iso8601_timestamp(value).or_else(|| {
+        chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d")
+            .ok()
+            .and_then(|date| date.and_hms_opt(0, 0, 0))
+            .map(|datetime| datetime.and_utc().timestamp())
+    })
 }
 
 /// Formats a unix timestamp as the bare `YYYY-MM-DD` date the API prefers on writes.

@@ -5,7 +5,6 @@ export const oauthServiceSchema = z.enum([
   "myanimelist",
   "shikimori",
   "bangumi",
-  "mangabaka",
 ]);
 
 export type OAuthService = z.infer<typeof oauthServiceSchema>;
@@ -20,7 +19,6 @@ export const OAUTH_SERVICE_NAMES: Record<OAuthService, string> = {
   myanimelist: "MyAnimeList",
   shikimori: "Shikimori",
   bangumi: "Bangumi",
-  mangabaka: "MangaBaka",
 };
 
 export const OAUTH_SERVICE_COLORS: Record<OAuthService, string> = {
@@ -28,7 +26,6 @@ export const OAUTH_SERVICE_COLORS: Record<OAuthService, string> = {
   myanimelist: "#2e51a2",
   shikimori: "#faa623",
   bangumi: "#fc2d5e",
-  mangabaka: "#8b5cf6",
 };
 
 export const OAUTH_CODE_SERVICES: OAuthService[] = [
@@ -36,5 +33,4 @@ export const OAUTH_CODE_SERVICES: OAuthService[] = [
   "myanimelist",
   "shikimori",
   "bangumi",
-  "mangabaka",
 ];

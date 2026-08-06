@@ -11,7 +11,6 @@ pub enum OAuthService {
     MyAnimeList,
     Shikimori,
     Bangumi,
-    Mangabaka,
 }
 
 impl std::fmt::Display for OAuthService {
@@ -21,7 +20,6 @@ impl std::fmt::Display for OAuthService {
             OAuthService::MyAnimeList => write!(f, "myanimelist"),
             OAuthService::Shikimori => write!(f, "shikimori"),
             OAuthService::Bangumi => write!(f, "bangumi"),
-            OAuthService::Mangabaka => write!(f, "mangabaka"),
         }
     }
 }

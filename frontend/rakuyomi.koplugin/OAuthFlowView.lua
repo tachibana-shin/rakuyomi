@@ -29,7 +29,6 @@ local SERVICE_NAMES = {
   myanimelist = "MyAnimeList",
   shikimori = "Shikimori",
   bangumi = "Bangumi",
-  mangabaka = "MangaBaka",
 }
 
 local OAuthFlowView = FocusManager:extend {
@@ -280,12 +279,6 @@ function OAuthFlowView:saveTokens(body)
     if body.tokens.refresh_token then
       s.bangumi.refresh_token = body.tokens.refresh_token
     end
-  elseif self.service == "mangabaka" and body.tokens then
-    s.mangabaka = s.mangabaka or {}
-    s.mangabaka.access_token = body.tokens.access_token
-    if body.tokens.refresh_token then
-      s.mangabaka.refresh_token = body.tokens.refresh_token
-    end
   else
     return false
   end
@@ -295,7 +288,7 @@ function OAuthFlowView:saveTokens(body)
 end
 
 --- Start the OAuth flow for a given service.
---- @param service string "anilist" | "myanimelist" | "shikimori" | "bangumi" | "mangabaka"
+--- @param service string "anilist" | "myanimelist" | "shikimori" | "bangumi"
 --- @param on_return_callback function|nil
 function OAuthFlowView:startFlow(service, on_return_callback)
   local loading = InfoMessage:new {

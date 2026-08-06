@@ -150,6 +150,10 @@ pub fn init_cookie_store() {
 }
 
 pub fn init_cookie_store_with_path(path: &Path) -> Result<()> {
+    if COOKIE_STORE.get().is_some() {
+        return Ok(());
+    }
+
     let store = CookieStoreData::load_from_file(path).unwrap_or_default();
     SYNC_HASH.get_or_init(|| RwLock::new(sync_hash_from_store(&store)));
     COOKIE_STORE

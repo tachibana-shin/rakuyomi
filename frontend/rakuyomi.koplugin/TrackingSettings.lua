@@ -124,10 +124,8 @@ local service_configs = {
   },
   {
     id = "mangabaka",
-    oauth = true,
     fields = {
-      { key = "refresh_token", placeholder = _("Paste MangaBaka refresh token") },
-      { key = "api_key",       placeholder = _("Paste MangaBaka API Key (mb-...)") },
+      { key = "api_key", placeholder = _("Paste MangaBaka API Key (mb-...)") },
     },
   },
   {
@@ -534,7 +532,7 @@ end
 
 --- Show usernames from settings, and fetch from API for services with token but no username.
 function TrackingSettings:fetchAllUsernames()
-  local services = { "anilist", "myanimelist", "shikimori", "bangumi", "mangabaka" }
+  local services = { "anilist", "myanimelist", "shikimori", "bangumi" }
   for _, service in ipairs(services) do
     self:showUsername(service)
     local svc = self.settings[service] or {}

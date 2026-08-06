@@ -1272,7 +1272,7 @@ function Backend.listCookies()
   })
 end
 
---- @alias OAuthServiceName 'anilist' | 'myanimelist' | 'shikimori' | 'bangumi' | 'mangabaka'
+--- @alias OAuthServiceName 'anilist' | 'myanimelist' | 'shikimori' | 'bangumi'
 
 --- @class StartOAuthSessionResponse
 --- @field session_id string

@@ -165,6 +165,14 @@ function SettingItemValue:createValueWidget()
       text = self.value_definition.title,
       callback = function()
         local function executeAction()
+          -- Plain callback-driven buttons (e.g. tracking "Validate" buttons) handle
+          -- their own request/loading/error flow; only fall back to the source
+          -- notification RPC (which needs `source_id`/`key`) when there's no callback.
+          if self.value_definition.callback then
+            self.value_definition.callback()
+            return
+          end
+
           Trapper:wrap(function()
             local response = LoadingDialog:showAndRun(
               _("Executing..."),

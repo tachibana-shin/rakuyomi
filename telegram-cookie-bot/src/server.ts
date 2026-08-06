@@ -17,7 +17,6 @@ import oauthAnilistCallback from "./routes/oauth/anilist/callback.ts";
 import oauthMalCallback from "./routes/oauth/myanimelist/callback.ts";
 import oauthShikimoriCallback from "./routes/oauth/shikimori/callback.ts";
 import oauthBangumiCallback from "./routes/oauth/bangumi/callback.ts";
-import oauthMangabakaCallback from "./routes/oauth/mangabaka/callback.ts";
 import oauthBridge from "./routes/oauth/[service]/[sessionId].tsx";
 import webappData from "./api/routes/api/webapp/data.ts";
 import webappCookies from "./api/routes/api/webapp/cookies.ts";
@@ -58,7 +57,6 @@ app.route("/", oauthAnilistCallback);
 app.route("/", oauthMalCallback);
 app.route("/", oauthShikimoriCallback);
 app.route("/", oauthBangumiCallback);
-app.route("/", oauthMangabakaCallback);
 app.route("/", oauthBridge);
 
 // OpenAPI documentation

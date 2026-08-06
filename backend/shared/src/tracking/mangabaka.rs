@@ -169,8 +169,8 @@ impl Tracker for MangaBakaTracker {
             state: snapshot.status.map(|s| format_status(s).to_owned()),
             progress_chapter: snapshot.chapter_progress,
             progress_volume: snapshot.volume_progress,
-            start_date: snapshot.started_at.map(format_date),
-            finish_date: snapshot.completed_at.map(format_date),
+            start_date: snapshot.started_at.and_then(format_date),
+            finish_date: snapshot.completed_at.and_then(format_date),
         };
 
         // PATCH to update existing, or POST to create
@@ -250,10 +250,8 @@ where
 }
 
 /// Formats a unix timestamp as the bare `YYYY-MM-DD` date the API prefers on writes.
-fn format_date(timestamp: i64) -> String {
-    chrono::DateTime::from_timestamp(timestamp, 0)
-        .map(|dt| dt.format("%Y-%m-%d").to_string())
-        .unwrap_or_default()
+fn format_date(timestamp: i64) -> Option<String> {
+    chrono::DateTime::from_timestamp(timestamp, 0).map(|dt| dt.format("%Y-%m-%d").to_string())
 }
 
 fn require_api_key(settings: &Settings) -> Result<&str> {

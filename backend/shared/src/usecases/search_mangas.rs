@@ -89,7 +89,7 @@ pub async fn search_mangas(
 
                             Ok(Err(e)) => {
                                 warn!(
-                                    "failed to search mangas from source {}: {}",
+                                    "failed to search mangas from source {}: {:#}",
                                     source.manifest().info.id,
                                     e
                                 );

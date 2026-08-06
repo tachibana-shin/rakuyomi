@@ -5,8 +5,20 @@ implementation, several follow-up investigations into a `boa_engine` crash, Phas
 packaging, Phase 3.5 cleanup and a same-phase follow-up). This index exists so a new
 session doesn't have to read everything to find its footing.
 
-**Not committed to git** (`docs/.gitignore` excludes this whole directory) — these are
-working notes for Claude Code sessions, not shipped documentation.
+**Working notes for Claude Code sessions, not shipped documentation** — but,
+unlike an earlier version of this line claimed, not actually excluded from
+git as a whole directory: `docs/.gitignore` only excludes the mdBook output
+(`book`), and `README.md`/`FEASIBILITY.md`/`FINDINGS.md`/`ENV_SETUP.md`/
+`REFERENCE.md` are tracked and committed like any other file (commit
+`161fe21`). Only two things in this directory are actually gitignored, both
+via specific rules in the root `.gitignore`, not a blanket directory
+exclusion: `PHASE4_HANDOFF.md` (the one real to-do list still open — kept
+local/private on purpose) and `test_home/` (generated runtime state, not
+documentation). A phase's own `PHASE<N>_HANDOFF.md` kickoff prompt is
+expected to exist only transiently, during that phase's session — once a
+phase is done and its content is absorbed into `REFERENCE.md`, delete the
+file rather than committing it (see §4 in `REFERENCE.md` for the cleanup
+history this already happened to twice).
 
 **Cleaned up in Phase 3.5, two passes** (`REFERENCE.md` §4 has the full detail):
 1. Removed handoffs whose instructions were already fully carried out and superseded —

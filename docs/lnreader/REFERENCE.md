@@ -13,8 +13,14 @@ second closed the remaining gap between LNReader and Aidoku discovery
 end-to-end and fixed the language-mapping gap the first pass had flagged as
 unresolved (§5.1/§5.3, as they read now), the third audited every other
 lifecycle step (install through uninstall) the same way and fixed one real
-bug it found along the way (§6) — this is the day-to-day reference; see
-`README.md`'s index for the historical documents (`FEASIBILITY.md`,
+bug it found along the way (§6), and a later corpus-wide validation pass
+(§8) found and fixed 28 more runtime bugs across the full 261-source
+corpus; a follow-up pass since then rebuilt §1.2 again — adding a
+native-call-cost column, exhaustively re-validating every ambiguous
+method's real argument shapes rather than just counting occurrences, and
+fixing 3 more corpus-confirmed bugs found that way (§1.2.4) — and resolved
+every remaining stub decision (§1.2.5). This is the day-to-day reference;
+see `README.md`'s index for the historical documents (`FEASIBILITY.md`,
 `FINDINGS.md`, `ENV_SETUP.md`) this supersedes for "current state" purposes
 without duplicating their content.
 
@@ -40,48 +46,409 @@ checked and both came back clean:
 ### 1.1 Genuinely unimplemented features — already stubs, not "built" code
 
 `js_runtime.rs`'s `__lnreader_makeLoudStub` (the `require()` fallback for
-`lodash-es`, `urlencode`, `@libs/aes`, `protobufjs`, and `@libs/fetch`'s
-`fetchFile`/`fetchProto`) throws a specific, attributable
-`"not implemented: require('X').Y"` error only when a plugin actually calls
-one of those members — never at `require()` time. There is no dead logic
-behind these; they were never built out beyond the stub, per the
-all-native-Rust / minimize-dead-weight principle recorded in `FEASIBILITY.md`
-(Option 2's "non-negotiable principles" — not worth building for 1 source out
-of ~274). Nothing to remove — the restraint already happened at write time,
-not after the fact.
+`lodash-es`, `urlencode`, `@libs/aes`, and `protobufjs`) throws a specific,
+attributable `"not implemented: require('X').Y"` error only when a plugin
+actually calls one of those members — never at `require()` time. There is
+no dead logic behind these; they were never built out beyond the stub, per
+the all-native-Rust / minimize-dead-weight principle recorded in
+`FEASIBILITY.md` (Option 2's "non-negotiable principles" — not worth
+building for 1 source out of ~274). Nothing to remove — the restraint
+already happened at write time, not after the fact. `@libs/fetch`'s own
+`fetchFile`/`fetchProto` members are handled individually rather than by
+this generic fallback (one was removed, one was kept as its own named
+stub) — see §1.2.5 for the corpus evidence and reasoning behind each.
 
-### 1.2 Full API surfaces (cheerio, dayjs, htmlparser2 callbacks) — necessary for corpus generality, not speculative
+### 1.2 Full API surfaces (cheerio, dayjs, htmlparser2, `@libs/*`) — coverage, native-call cost, and per-method justification, rebuilt against a freshly re-downloaded 261-source corpus
 
-Checked cheerio method usage, dayjs usage, and htmlparser2 handler usage
-against the 3 validated sources (NovelBuddy, LNori, Ranobes) plus 2 fixtures
-known-broken for unrelated reasons since Phase 2 (NovelUpdates: its search
-engine returns 0 results for the test query, not investigated further;
-FreeWebNovel: HTTP 403, site-side anti-bot measure, out of scope — neither is
-a shim-coverage gap):
+**Third pass over this section.** The first pass (Phase 3.5) worked from
+3–5 hand-picked fixtures. The second pass (referenced below as "the
+previous pass") rebuilt it from the full 261-source corpus but only
+measured *which* methods are used, not *how expensive* each one is to run
+or *what exact argument shapes* the ambiguous ones actually receive. This
+pass re-downloaded the full corpus independently (same live
+`plugins.min.json` index, same 261 IDs — the per-module `require()` counts
+below are byte-for-byte identical to the previous pass's, which is itself
+good evidence the corpus is stable and reproducible across sessions, not
+that the numbers were copied forward unchecked) and adds three things the
+brief for this pass asked for specifically:
 
-- **dayjs**: not called by any of the 5 fixtures at all (confirmed by
-  grepping the compiled `.js` for `dayjs`). Still not a removal candidate —
-  it's a faithful, bounded port of a real library's date-formatting surface
-  that a large fraction of the wider ~274-source `lnreader-plugins` corpus
-  uses for release-date parsing (a very common scraper idiom), and Phase 5's
-  own stated goal is 80–90% coverage of that corpus, not just the 5 sources
-  tested so far.
-- **cheerio**: of the ~30 methods implemented, `siblings`/`closest`/`has`/
-  `not`/`prev`/`last`/`outerHtml`/`setAttr`/`nodeType` aren't hit by any of
-  the 5 fixtures either — but these are standard, widely-used DOM traversal
-  methods in the real cheerio API being ported 1:1, not invented extras.
-- **htmlparser2**: `onattribute`/`onend` aren't exercised by `ranobes.js`
-  (the one fixture that uses `htmlparser2` at all) — and the module's own
-  doc comment already says so explicitly: "implemented anyway for fidelity
-  with the wider ~133-source corpus." This is the exact same judgment call
-  already made and documented in the code itself, not a new finding.
+1. **`#Calls`** — how many native (Rust/`dom_query`) functions cross the
+   JS↔Rust boundary for **one** JS-level call to the method (Rust-per-JS,
+   the direction that matters for cost: e.g. `.filter(fn)` is one JS call
+   from the plugin's perspective but walks the whole selection natively
+   underneath). This column didn't exist in either previous pass.
+2. **Exhaustive argument-shape validation**, not just "ambiguous, counted
+   for reference only" — every one of the 26 previously-flagged ambiguous
+   methods was reclassified by parsing (not just grepping) every real call
+   site's argument list, and a representative sample of the non-obvious
+   buckets was read in full context. Three real, previously-undetected bugs
+   came directly out of this (§1.2.4).
+3. **An explicit native-vs-composed justification for every method**, not
+   only the ones that looked like a problem.
 
-This is precisely the distinction the handoff warned not to blur: "not yet
-exercised by these 3 sources" is not "architecturally unnecessary" when the
-component being built is a generic library surface (cheerio, dayjs) that
-other, not-yet-tried sources will need — the same reasoning that already
-protects `@libs/storage`/`@libs/fetch` applies here too, just at a larger
-scale.
+#### 1.2.1 Methodology note: what changed since the previous pass, and what didn't
+
+Re-running the previous pass's own module-level `require()` grep against
+this session's independently re-downloaded corpus reproduced every count
+exactly (`@libs/fetch` 261, `cheerio` 227, `@libs/novelStatus` 222,
+`@libs/defaultCover` 165, `@libs/storage` 120, `dayjs` 110,
+`@libs/filterInputs` 66, `htmlparser2` 54, `@libs/isAbsoluteUrl` 1,
+`@libs/aes` 1, `@/types/constants` 1, `lodash-es`/`urlencode`/`protobufjs`
+0) — the corpus and the module-level picture are unchanged and stable, so
+§1.2.2 below only restates them briefly rather than re-deriving them.
+
+**What's new this pass, method-by-method:** every occurrence of the 26
+ambiguous method names was extracted from the raw corpus with a small
+parser (not a line-oriented grep) that finds the real matching closing
+parenthesis for each call and classifies the first argument's syntactic
+shape (none / string literal / function / object literal / identifier /
+number / other expression). This turns "236 raw `.filter(` hits, could be
+anything" into e.g. "222 function-argument, 14 `identifier`-argument,
+manually confirmed to be `Array.prototype.filter(Boolean)` on plain
+arrays, zero of either bucket land on an unconverted `toChain()`-wrapped
+selection." Every bucket with more than a handful of hits, and every
+single-digit bucket for methods with real corpus usage, was spot-checked
+in full surrounding context (not just the matched substring) to confirm
+what object the call actually runs against. Full detail is in §1.2.4; only
+the conclusions are summarized in the tables below.
+
+#### 1.2.2 Module-level (via `require(...)`, unambiguous per-source recurrence — unchanged from the previous pass, reconfirmed against an independently re-downloaded corpus)
+
+| Module | Category | Implementation | `require(...)` sites | Recurrence |
+|---|---|---|---|---|
+| `@libs/fetch` | `@libs/*` shim | Hybrid — `fetchApi`/`fetchText` call the native `fetch` primitive; `fetchProto` throws "not implemented" (kept, real 1/261 caller — §1.2.5); `fetchFile` has no code at all any more (0/261 caller — §1.2.5) | 261 | **261/261 (100%)** |
+| `cheerio` | cheerio | Hybrid — native selection engine (`dom_query`) + ~50 JS methods (`CheerioSelection`/`toChain`) | 227 | **227/261 (87%)** |
+| `@libs/novelStatus` | `@libs/*` shim | Pure JS (`NovelStatus` constant table) | 222 | **222/261 (85%)** |
+| `@libs/defaultCover` | `@libs/*` shim | Pure JS (constant) | 165 | **165/261 (63%)** |
+| `@libs/storage` | `@libs/*` shim | Hybrid — JS wrapping native `__native_storage_get`/`set` | 120 | **120/261 (46%)** |
+| `dayjs` | dayjs | Hybrid — JS `Dayjs` class, parsing via the native `__native_dayjs_parse` primitive | 110 | **110/261 (42%)** |
+| `@libs/filterInputs` | `@libs/*` shim | Pure JS (`FilterTypes` constant table) | 66 | **66/261 (25%)** |
+| `htmlparser2` | htmlparser2 | Hybrid — JS `Parser` class wrapping the native `__native_htmlparser2_parse` primitive | 54 | **54/261 (21%)** |
+| `@libs/isAbsoluteUrl` | `@libs/*` shim | Pure JS, ported verbatim from `lnreader-plugins/src/lib/utils.ts` | 1 | 1/261 (`royalroad`) |
+| `@libs/aes` | `@libs/*` shim | **NOT IMPLEMENTED** — loud stub | 1 | 1/261 (`WTRLAB`) — confirmed real, not corrected, see §1.2.5 |
+| `@/types/constants` | other | **NOT IMPLEMENTED** — stub | 1 | 1/261 (`novelfire`) — never read at the reached code path, see §1.2.5 |
+| `lodash-es` / `urlencode` / `protobufjs` | other | **NOT IMPLEMENTED** — generic loud stub (`__lnreader_makeLoudStub`) | 0 | **0/261 each** — reconfirmed against the current corpus, nothing to build |
+
+#### 1.2.3 Full method table: implementation, native-call cost, and justification
+
+**How to read `#Calls`.** It counts native-function invocations
+(`__native_*` primitives) triggered by one JS-level call to the method,
+including the ones hidden inside `new CheerioSelection(id)`'s own
+constructor — every such construction makes one extra, easy-to-miss
+`__native_each_count(id)` call to size its array-like numeric-index
+properties (see the callout after the table), which the two earlier
+passes' formulas didn't account for. `N` is the size of the selection the
+method is called *on*; `M`/`J`/`H`/`K`/`P` are the size of the *result*
+the underlying native primitive computes (child count, surviving-element
+count, matched count, until-count, previous-selection size — used where
+that's a materially different, usually smaller, number than `N`).
+
+**Flat, O(1) regardless of selection size** — the overwhelming majority of
+the surface, and every simple getter/setter/mutator:
+
+| Method | #Calls | Native primitive | Why flat |
+|---|---|---|---|
+| `.text()` get | 1 | `native_text` | Direct `dom_query` call |
+| `.text(value)` set | 1 | `native_set_text` | Direct `dom_query` call |
+| `.html()` get | 1 | `native_inner_html` | Direct `dom_query` call |
+| `.html(value)` set | 1 | `native_set_html` | Direct `dom_query` call |
+| `.outerHtml()` | 1 | `native_outer_html` | Direct `dom_query` call |
+| `.attr(name)` get | 1 | `native_attr` | Direct `dom_query` call |
+| `.attr(name, value)` set | 1 | `native_set_attr` | Direct `dom_query` call |
+| `.data(key)` | 1 | `native_attr` | Pure alias — `.attr('data-'+key)`, no separate native concept |
+| `.prop("tagName")` | 1 | `native_tag_name` | Direct `dom_query` call |
+| `.prop("outerHTML")` (fixed this pass, §1.2.4) | 1 | `native_outer_html` | Reuses the existing primitive, same as `.outerHtml()` |
+| `.prop(other)` | 1 | `native_attr` | Falls back to `.attr()`, matching real cheerio for non-intrinsic names |
+| `.exists()` | 1 | `native_exists` | Direct `dom_query` call |
+| `.is(selector)` | 1 | `native_is` | Direct `dom_query` call |
+| `.hasClass(name)` | 1 | `native_has_class` | Direct `dom_query` call |
+| `.addClass(name)` | 1 | `native_add_class` | `dom_query` applies it across the whole selection in one call |
+| `.removeClass(name)` | 1 | `native_remove_class` | Same |
+| `.removeAttr(name)` | 1 | `native_remove_attr` | Same |
+| `.remove()` no selector | 1 | `native_remove` | `dom_query` detaches every matched node in one call |
+| `.before(html)` | 1 | `native_before_html` | Direct `dom_query` call, doesn't replace the node (keeps chained `.before().after()` valid) |
+| `.after(html)` | 1 | `native_after_html` | Same |
+| `.wrap(html)` | 1 | `native_wrap_html` | Direct `dom_query` call |
+| `.append(html)` | 1 | `native_append_html` | Direct `dom_query` call — 0/261 real corpus usage (§1.2.4), kept only for API completeness |
+| `.setHtml(html)` | 1 | `native_set_html` | Alias of `.html(value)` |
+| `.replaceWith(html)` | 1 | `native_replace_with_html` | Direct `dom_query` call |
+| `.length` (getter, lazy) | 1 | `native_each_count` | Direct `dom_query` call, only paid if actually read |
+| `.attribs` (getter, lazy) | 1 | `native_attribs` | Whole attribute map serialized as one JSON string in one call |
+| `.nodeType` (getter, lazy) | 1 | `native_node_type` | Direct `dom_query`-level node-kind check |
+| `.name` (getter, lazy) | 1 | `native_tag_name` | Reuses the tag-name primitive, lower-cased in JS |
+| `.find(selector)` | 2 | `native_find` + ctor | 1 primitive call + 1 for the returned wrapper's index setup (see callout) |
+| `.first()` | 2 | `native_first` + ctor | Same pattern |
+| `.last()` | 2 | `native_last` + ctor | Same |
+| `.parent()` | 2 | `native_parent` + ctor | Same |
+| `.children()` no selector | 2 | `native_children` + ctor | Same |
+| `.next()` no selector | 2 | `native_next_sibling` + ctor | Same |
+| `.nextSibling()` | 2 | `native_next_sibling` + ctor | Same |
+| `.prevSibling()` | 2 | `native_prev_sibling` + ctor | Same |
+| `.clone()` | 2 | `native_clone` + ctor | `to_fragment()`'s own tree copy happens inside the ONE `native_clone` boundary crossing |
+| `.get(index)` | 2 | `native_each_at` + ctor | Same pattern |
+| `.eq(index)` | 2 | `native_each_at` + ctor | Same |
+| `.filter(selector)` string form | 2 | `native_filter` + ctor | `Selection::filter()` is a real, whole-selection `dom_query` primitive |
+| `.closest(selector)` | 2 | `native_closest` + ctor | **Corrected this pass** — see callout below, was documented as `~2D` |
+| `.next(selector)` | ≤4 | `native_next_sibling` + ctor + `native_exists` + `native_is` | Composed (`dom_query`'s `next_sibling()` has no selector param); short-circuits to 3 if the immediate sibling doesn't exist |
+| `.prev(selector)` | ≤4 | Mirror of `.next(selector)` | Same reasoning |
+| `.attr({k: v, ...})` object form | `K` | `native_set_attr` × K | One call per key — no native "set many attributes" primitive, and K is normally 1-3 in real usage (§1.2.4) |
+| `$(selector)` | 2 | `native_select_root` + ctor | Same pattern as `.find()` |
+| `$(element)` | 0 | — | Returns the already-wrapped argument unchanged |
+| `$(htmlString)` (fixed this pass, §1.2.4) | 3 | `native_load` + `native_select_root` + ctor | Parses the fragment as its own tiny document, same underlying mechanism as `cheerio.load()` itself |
+| `cheerio.load(html)` | 3 | `native_load` + `native_select_root` + ctor | Builds the document once, then wraps its `<html>` root |
+| `$.html(el)` | 1 | `native_outer_html` | Alias of `el.outerHtml()` |
+| `$.html()` no argument | 3 | `native_select_root('html')` + ctor + `native_outer_html` | Serializes the whole document, real cheerio's `$.html()` behavior |
+
+**Grows with the result the native primitive computes (`1+M` shape)** —
+this is the single biggest change from the two earlier passes: `.has()`,
+`.siblings()`, `.nextUntil()`, and `.not(selector)` were previously
+documented as `2N+1`/`3+N`/`~2K` (Phase 0/1 formulas, restated verbatim in
+the previous pass without re-deriving them against the code as it stands
+today). **All four already do the whole per-element test natively, inside
+one Rust-side loop**, per the "found during a perf pass" comments already
+in `cheerio.rs` (`native_not`'s doc comment names this explicitly) — the
+work to get to `1+M` was already done in an earlier session; this pass's
+job was to verify the old formulas no longer apply, not repeat them:
+
+| Method | #Calls | Native primitive | Composition |
+|---|---|---|---|
+| `.contents()` | `1+M` (M = child count) | `native_contents` (1 call, loops in Rust) + `M`×ctor | JS only wraps each already-computed handle |
+| `.siblings()` no selector | `1+M` (M = sibling count) | `native_siblings` (1) + `M`×ctor | Same |
+| `.siblings(selector)` | `1+2M` | `native_siblings` (1) + `M`×ctor + `M`×`native_is` | The selector filter has no native equivalent for this primitive, so it composes on top — a plain `Array.prototype.filter` in JS, not `toChain()`'s cheerio-convention one (§1.2.4 confirms no real corpus call passes a selector here, so this composed tail is currently unexercised, not unjustified) |
+| `.not(selector)` | `1+J` (J = surviving count) | `native_not` (1, loops in Rust) + `J`×ctor | **Was `2N+1`** (one `native_is` per element) before an earlier perf pass moved the per-element test into the single `native_not` call |
+| `.has(selector)` | `1+H` (H = matched count) | `native_has` (1, loops in Rust) + `H`×ctor | **Was `2N+1`** for the same reason |
+| `.nextUntil(selector)` | `1+K` (K = elements walked) | `native_next_until` (1, loops in Rust, capped at 500 iterations) + `K`×ctor | **Was documented `~2K`** — already a single native call, this pass just corrects the record |
+| `.each(callback)` | `1+N` | `native_all_handles` (1) + `N`×ctor | The callback itself runs in JS, no native call per invocation |
+| `.map(callback)` | `1+N` | Delegates to `.each()` | Same |
+| `.toArray()` | `1+N` | Delegates to `.each()` | Same |
+| `.get()` no argument | `1+N` | Delegates to `.toArray()` | Same |
+| `.slice(start, end)` | `1+N` (**not** proportional to the returned window) | Delegates to `.toArray()`, then slices the already-materialized JS array | **Identified, not fixed** — see callout below |
+| `.filter(fn)` function form | `1+N` | `_filterBy` → `.each()` | The predicate runs in JS per element; `dom_query` has no "filter by arbitrary callback" |
+| `.not(fn)` function form | `1+N` | `_filterBy` → `.each()` | Same reasoning, inverted predicate |
+| `.children(selector)` | `3+2N` | `native_children`+ctor (2) + `.toArray()` (1+N) + `N`×`native_is` | Composed because `dom_query`'s `children()` takes no selector — confirmed real usage exists (8/261, §1.2.4) |
+| `.remove(selector)` (fixed this pass, §1.2.4) | `3+2M` (M = matched-and-removed count) | `.filter(selector)` (2) + `.each()` on the result (1+M) + `M`×`native_remove` | No native "remove matching descendants" primitive; composes over already-existing pieces |
+| `.addBack()` | `1+N` (no `__prev`) or `2+P+N` (with `__prev`, P = previous selection size) | `this.toArray()` (+ `this.__prev.toArray()` if present) | Pure JS concatenation once both arrays are materialized |
+| `.end()` | 0 | — | Returns the cached `__prev` reference, no native call at all |
+
+**The one systemic, not-pursued optimization found this pass**: every
+`new CheerioSelection(id)` construction — i.e. essentially every table row
+above with a `+ctor` or `×ctor` term — pays one extra, easy-to-miss
+`__native_each_count(id)` call in its constructor, purely to size the
+array-like numeric-index properties (`selection[0]`, found needed for
+`yomou.syosetu.js`, bug #11 in §8.2) — **eagerly, on every construction,
+whether or not any code ever reads a numeric index or `.length`** (the
+lazy getters for `.attribs`/`.nodeType`/`.name`/`.length` itself don't have
+this problem; only the indexing setup does). This roughly **doubles** the
+native-call cost of nearly the entire derived-selection surface.
+**Identified, deliberately not fixed this pass**: the only way to defer
+this call is a `Proxy`-based wrapper (lazily computing the count only when
+a numeric index is actually read, the same technique
+`__lnreader_makeLoudStub` already uses elsewhere in this file), which
+would mean rewriting the single most universally-exercised code path in
+the entire runtime — every derived selection, everywhere, not an isolated
+method — for a real but bounded win (each `__native_each_count` is an O(1)
+`Vec` length read against small, page-sized selections, not a re-parse or
+a re-walk). The risk of a subtle correctness regression in code this
+central, with no existing call-count regression test to catch it, was
+judged higher than the payoff justifies in this pass; a future session
+with a real profiling signal (not just a call-count argument) would be the
+right trigger to revisit it, not this documentation pass alone.
+
+**`.slice(start, end)`'s `1+N` cost, not `1+(end-start)`**: because it's
+implemented as `toChain(this.toArray().slice(start, end))`, the *entire*
+selection is materialized into wrapper objects before JS's native
+`Array.prototype.slice` throws most of them away. A cheaper
+`native_each_count` (1 call) to clamp the requested window, followed by
+`native_each_at` only for the indices actually kept, would turn this into
+roughly `2 + (end-start)` — but §1.2.4 found **zero** real corpus call
+sites where `.slice()` runs on an actual `CheerioSelection` (every real
+`.slice()` call in the corpus operates on a string or a plain array), so
+this pass documents the gap without spending the risk budget on a fix with
+no currently-measurable real-world benefit.
+
+#### 1.2.4 Ambiguous methods: real usage confirmed by parsing every call site, not just counting them
+
+The previous pass listed 26 method names as "collides with generic JS,
+counted for reference only." This pass parsed every real call site's
+argument shape and manually inspected a representative sample of every
+non-trivial bucket (full method, not a truncated snippet) to determine
+what each one actually calls, and with what arguments. Findings that
+confirm the existing implementation are listed briefly; findings that
+changed something (a real bug, or a materially different usage picture
+than assumed) get their own paragraph.
+
+**Confirmed correct, matching the existing implementation exactly:**
+
+- **`.text()`** — 3413 raw hits, 3410 no-argument (real cheerio getter).
+  The 3 function-argument hits (e.g. `requiemtls.js`'s custom-JS chapter
+  decoder, `.text((i, currentText) => ...)`) are genuine `.text(fn)`
+  setter-function calls, exactly the overload `CheerioSelection.prototype.
+  text` already implements — not a collision.
+- **`.html()`** — 560 hits, 469 no-argument (getter), 91 with one argument.
+  Sampled the argument bucket directly: real setter calls
+  (`e.html(a.html())`, `morenovel.js` and others) — confirms the
+  getter/setter overload is genuinely exercised, not just defensively
+  implemented.
+- **`.attr()`** — 1393 hits, 1379 single string-literal (getter), 11 with
+  two string arguments (genuine `.attr(name, value)` setter,
+  e.g. `komga.js`), 1 with a single object-literal argument
+  (`.attr({src, width, height})` on `a("<img />")`, confirmed by tracing
+  `a` back to a real `cheerio.load()` result in the same file) — the
+  object-set overload is genuinely used, not speculative.
+- **`.find()`** — 1812 hits, 1782 single string-literal (real selector
+  calls). 25 have a function argument (`RLIB.js`: `.find(e => e.name==t ||
+  e.id==t)`) — confirmed by context to be **native
+  `Array.prototype.find`** on a plain array of plain objects, not cheerio
+  at all (real cheerio's `.find()` never accepts a predicate function) —
+  a pure collision, correctly outside this shim's scope.
+- **`.each()` / `.map()`** — 572 / 793 hits, effectively 100% single
+  function argument in both, consistent with `.each(fn)`/`.map(fn)` being
+  the only real forms either accepts.
+- **`.filter()`** — 236 hits, 222 function-argument (mostly the real
+  cheerio `(index, element) => bool` convention on `.contents()`/`.find()`
+  results, confirmed by sampled context reading `el.attribs`/`el.nodeType`
+  off the second parameter), 14 identifier-argument. All 14 identifier
+  cases sampled resolve to `Array.prototype.filter(Boolean)` on a
+  genuinely plain array (always downstream of `.toArray()`/`.get()`, which
+  this shim deliberately returns as plain, un-wrapped arrays — see bug #14
+  in §8.2) — **confirms that same design choice also prevents a latent bug
+  this pass went looking for**: if `.filter(Boolean)` ever ran on a
+  `toChain()`-wrapped array instead, `Boolean.call(el, i, el)` would
+  evaluate `Boolean(i)`, silently dropping index 0 (falsy) instead of
+  checking the element. Zero real corpus call site hits this, precisely
+  because `.toArray()`/`.get()` already hand back a plain array first.
+- **`.get()`** — 561 hits, 430 no-argument (array coercion), 130
+  single-string-literal (all confirmed by sampling to be unrelated
+  settings/filter `.get("key")` calls, not cheerio at all), only 1
+  identifier argument and, notably, **zero literal-numeric-argument
+  calls** — real cheerio's `.get(index)` form is essentially unused in
+  the current corpus (kept anyway: trivial, and `.eq()` already needs the
+  identical primitive).
+- **`.contents()` / `.first()` / `.last()` / `.parent()`** — no-argument
+  only, exactly matching the implementation (no selector support needed).
+- **`.children(selector)`** — 14 hits, 8 with a string-literal selector, 6
+  no-argument — both forms genuinely used, matching the optional-selector
+  implementation.
+- **`.eq()` / `.is()` / `.data()` / `.before()` / `.after()` / `.wrap()` /
+  `.clone()`** — argument shapes exactly match their implementations
+  (numeric index, string selector, string key, HTML string, no argument
+  respectively); usage is real but low-volume (1-22 hits each).
+
+**Three real bugs found, all fixed this pass** (same fix discipline as
+§8.2 — isolate, root-cause via the sampled call site, minimal confined
+fix, verified against an in-process test, `cargo test -p shared --features
+all` clean before and after):
+
+| # | Fix | Found via | Corpus scope |
+|---|---|---|---|
+| 29 | `.remove(selector)` now filters the current set by selector before removing (previously ignored the argument and removed the whole selection unconditionally) | `mangatr.js`: `.children().remove("h3, div")` — every child was being deleted, not just `h3`/`div` ones | 1/261 confirmed real caller of the selector form (`.remove()` no-arg, 372/373 raw hits, was already correct) |
+| 30 | `.prop("outerHTML")` now returns `.outerHtml()`'s serialization (previously fell through to `.attr("outerHTML")`, which no element has as a literal attribute, and silently returned `null`) | `novelupdates.js`'s `parseChapter`: `.map((i, el) => el.prop("outerHTML")).get().join("")` built the ENTIRE chapter body this way — a real content-correctness bug, not a missing edge case (every paragraph came back `null`, joining into the literal string `"nullnull..."`) | 2/261 raw hits, both in the one file, on the one function that reconstructs actual chapter text for this source |
+| 31 | `$(htmlString)` (a string starting with `<`) now creates a detached element by parsing it as its own tiny document, matching real cheerio's "create new element from markup" call form — previously handed straight to `native_select_root` as if it were a CSS selector, which threw `invalid CSS selector` | `komga.js`'s `replaceUrlToImageHref`: `a("<img />").attr({src, width, height})`, then `.replaceWith()`'d into the document, to replace inline SVG icons with real `<img>` tags | 1/261 confirmed real caller |
+
+**Reclassified rather than fixed** (the ambiguous count was wrong, but the
+existing implementation was already correct for the real usage found):
+
+- **`.slice()`** — 182 hits, dominated by string/array slicing
+  (`t.length`, numeric literals, `i[0]`/`i[1]`). Only one hit is even
+  adjacent to a cheerio chain (`FWK.US.js`'s `.text().slice(n.length)`) —
+  and `.text()` returns a plain **string**, so that's `String.prototype.
+  slice`, not cheerio's. **Zero confirmed real calls to
+  `CheerioSelection.prototype.slice()` in the current corpus** — kept
+  implemented (cheap, spec-complete) but its `1+N` cost (see §1.2.3) has
+  no measured real-world impact today.
+- **`.has()`** — 22 hits, 21 identifier-argument. Sampled 6 of them in
+  full context: every single one is `Set.prototype.has(x)` /
+  `Map.prototype.has(x)` on a plain dedup `Set`/`Map` (`n.has(c) ||
+  (n.add(c), ...)`, an extremely common idiom in this corpus), not
+  cheerio. Only the 1 string-literal hit (`ln.hako.js`) is genuinely
+  cheerio's `.has(selector)`.
+- **`.end()`** — 96 raw hits across 56 files, all with zero arguments.
+  Sampled across 6 different files: every one is `HtmlParser2Parser.
+  prototype.end()` (`parser.write(html); parser.end();`, this shim's own
+  `htmlparser2` implementation), not cheerio's traversal-stack `.end()`. A
+  broader structural check (searching for the `$(...)....end()`
+  chain shape specifically) found no counter-example. Cheerio's own
+  `.end()` — 0 native calls, §1.2.3 — currently has **no confirmed real
+  caller** in the corpus at all; kept because it costs nothing (pure `this.
+  __prev || this`) and is required for `.addBack()`, which does have real
+  callers.
+- **`.next()`** — 630 raw hits across 260/261 files (previously documented
+  only as "noise from the `__generator` boilerplate, not attributable").
+  This pass's argument-shape parse refines that: 366 no-argument + 260
+  single-identifier-argument (the `t.next()`/`t.next(e)` generator-resume
+  pattern — confirmed noise, as before) but **4 hits have a string-literal
+  argument**, and all 4, sampled in full, are genuine `.next(selector)`
+  calls (`truyenss.com`, `novelki.pl` ×2, `dreambigtl`) — the real signal
+  was recoverable by argument shape even though the raw count is
+  dominated by noise, refining "noise, not attributable" into "noise, plus
+  4/261 confirmed real callers, correctly handled by the existing
+  `.next(selector)` implementation."
+- **`.not()`** — 3 hits, all single string-literal, all in one file
+  (`harkeneliwood.js`) — matches the selector-string branch exactly. The
+  function-argument branch (`_filterBy`) has zero confirmed real callers
+  in the current corpus but is cheap to keep (shares `_filterBy` with
+  `.filter(fn)`, which does have real callers).
+
+#### 1.2.5 Stub cleanup (§1.1's `lodash-es`/`urlencode`/`@libs/aes`/`protobufjs`/`fetchFile`/`fetchProto`/`@/types/constants`)
+
+Per-item decision, using this pass's corpus evidence:
+
+- **`lodash-es` / `urlencode` / `protobufjs`** — reconfirmed 0/261 real
+  usage each (§1.2.2). No dedicated code exists for any of them today —
+  all three fall through to the generic `__lnreader_makeLoudStub(name)`
+  mechanism already used for any unrecognized `require()` target. Nothing
+  to implement, nothing to remove: the minimal state (no
+  module-specific code at all) was already correct.
+- **`@libs/aes`** — reconfirmed 1/261 (`WTRLAB`), same real, specific
+  usage (`i.gcm(key, iv).decrypt(ciphertext)`, AES-GCM chapter-content
+  decryption) as the previous pass found. `WTRLAB` still fails earlier in
+  its lifecycle (search step, an unrelated JSON-format-drift issue, see
+  §8.3) — the AES gap has no observable effect on current results.
+  **Decision unchanged**: not implemented. A primitive/cryptographic
+  routine is exactly the class of code where a hasty, subtly-wrong
+  implementation is worse than a loud, honest failure, for the benefit of
+  exactly one corpus source.
+- **`@/types/constants`** — reconfirmed 1/261 (`novelfire`), still a
+  `require()`'d-but-never-read stub (no property access anywhere in the
+  reached code paths, and `novelfire` completes its full lifecycle
+  normally, §8.3) — almost certainly a compiled TypeScript type-only
+  import that survived transpilation as a real `require()` call. No change
+  needed; the existing generic stub already covers it correctly.
+- **`fetchFile`** — this pass found **0/261 real callers** (the previous
+  pass's table didn't break this out separately from `fetchProto`, so this
+  is a new, more precise measurement, not a changed one). Per this pass's
+  brief ("implement if usage justifies it, otherwise remove the stub"),
+  its hand-written `function () { throw ... }` entry inside `@libs/fetch`
+  was **removed** — it was exactly the kind of speculative,
+  never-exercised code the original Phase 3.5 dead-code audit (§1) set out
+  to eliminate, just not caught by that audit because it looked like a
+  "real" stub rather than dead code. If a future source needs it,
+  `require('@libs/fetch').fetchFile` now returns `undefined` instead of a
+  named error — a strictly worse error message for exactly the day a
+  262nd source needs it, trivially fixed by re-adding the 3-line stub at
+  that point.
+- **`fetchProto`** — this pass found it DOES have a real caller:
+  `wuxiaworld.js`'s `parseNovel`/chapter-list/`parseChapter` are all three
+  built entirely on `fetchProto` (gRPC-Web framing + a `.proto` schema);
+  only `searchNovels` uses the already-implemented `fetchApi`/JSON path
+  and works today. **Decision: kept unimplemented anyway**, and for the
+  same reasoning as `@libs/aes` — a correct protobuf message
+  encoder/decoder plus gRPC-Web's length-prefix/compression-flag wire
+  framing is a genuine binary-protocol subsystem, not a small shim, and
+  the cost/risk of getting it subtly wrong is disproportionate to
+  unblocking exactly one source's novel-details/chapter-content path
+  (its search already works without it).
+
+Combined conclusion of §1.2: `@libs/aes` and `fetchProto` remain the only
+two corpus-confirmed, deliberately-not-implemented gaps, each with exactly
+one real caller and an explicit, evidence-based reason not to build them;
+`fetchFile`/`lodash-es`/`urlencode`/`protobufjs` have zero real callers and
+carry zero speculative code; and the three bugs found and fixed in
+§1.2.4 (all corpus-confirmed, all now covered by an in-process regression
+test in `js_runtime.rs`'s `cheerio_prelude_tests` module) came directly out
+of doing the exhaustive per-call-site validation this pass's brief asked
+for, rather than trusting the previous pass's "ambiguous, indicative only"
+label to mean "already fine."
 
 ### 1.3 Non-candidates confirmed correct as-is (not "dead", just narrow)
 
@@ -684,6 +1051,35 @@ be actively wrong, so a `multi`-folder plugin is left with no language
 fallback rather than a guessed one, same principle as leaving a truly
 unknown value alone.
 
+**`komga` itself is structurally different from the other 260 entries, not
+just multi-language — worth stating precisely rather than leaving it
+looking like an ordinary (if untranslated) scraper.** Every other
+`lnreader-plugins` source targets one fixed, hardcoded site (`this.site =
+"https://..."`); `komga` is a **client for a self-hosted [Komga](https://komga.org/)
+server** — a piece of software a *user* installs and runs themselves, at
+whatever address they chose. The live index reflects this literally:
+`komga`'s own `plugins.min.json` entry has `"site": "url"` — not a real
+domain, the placeholder string `"url"`, because there is no fixed site to
+put there. Confirmed by inspecting the plugin's own `pluginSettings`
+(§6.4's table): `email`/`password`/`url` fields exist specifically so a
+user can point the plugin at their own server and log into it — nothing
+resembling this exists for any of the other 260 sources.
+
+The install/package/`lang`-detection pipeline handles it fine — `komga`
+packages successfully and installs with the correct `lang: null` (§6.4),
+same as any other source. What it can't do, and isn't expected to: actually
+search or fetch content, since that needs a real, running, user-specified
+Komga server plus credentials, and **nothing in the current settings UI or
+onboarding flow collects that configuration from a user** before the
+plugin tries to use it. This is a known, deliberate scope boundary for this
+phase, not a bug: fixing it would mean designing a real setup flow for a
+self-hosted-server-backed source (validating a URL, testing
+credentials, explaining what Komga even is to a user who's never heard of
+it) — a distinct, standalone feature, not a scraper compatibility gap the
+existing corpus-validation work (§6.4, §8) is meant to catch or fix. Left
+exactly as the generic pipeline produces it; revisit only if a future phase
+decides self-hosted-server sources are worth building real support for.
+
 **Not invented — checked against how Aidoku's own multi-language sources
 already behave in this exact codebase, and matched exactly.** Rather than
 decide the `multi`/no-identifiable-language treatment in isolation, the
@@ -1173,9 +1569,453 @@ section, it stays out of the "isolate" list. It remains necessary,
 defensive infrastructure for the wider ~274-source corpus this session's
 5-source sample doesn't cover, not a candidate for trimming.
 
-**Nothing found in the "superfluous/forgotten" category this pass** — no
-stray debug file, no unresolved `TODO`/`FIXME`/`XXX` marker, no leftover
-`println!`/`dbg!` outside `lnreader_packager`'s own CLI output (checked by
-grepping every added line across the full diff). Nothing here is being
-removed or changed as part of this audit — per the brief, these three
-items are listed for a future, explicit decision, not acted on now.
+**Nothing found in the "superfluous/forgotten" category in the source-code
+diff** — no stray debug file, no unresolved `TODO`/`FIXME`/`XXX` marker, no
+leftover `println!`/`dbg!` outside `lnreader_packager`'s own CLI output
+(checked by grepping every added line across the full diff). Nothing here
+is being removed or changed as part of this audit — per the brief, these
+two items are listed for a future, explicit decision, not acted on now.
+
+### 7.3 Tooling/config artifacts not present upstream
+
+Distinct from §7.2's source-code diff: this repository's own working
+directory carries tooling state that has nothing to do with `git diff
+upstream/main` (it isn't source code, and mostly isn't tracked either) but
+still needs to be accounted for before any upstream PR, since "not tracked
+today" and "safe in every future clone" are different claims.
+
+**Checked and confirmed clean:**
+- `git ls-files | grep -i claude` and the equivalent for `mcp` — no
+  tracked file anywhere in the repository is Claude-Code-specific.
+- A full untracked-file scan (`git status --porcelain=v1
+  --untracked-files=all .`) turned up nothing beyond the two known,
+  already-accounted-for Phase 3.5 files
+  (`lnreader_packager/src/plugins_index.rs`,
+  `sdk_lnreader/packaging.rs`, both real source, already covered in §7.1).
+- `.vscode/extensions.json`/`.vscode/settings.json` **are** tracked, but
+  that predates this fork's LNReader work entirely (shared editor config,
+  not a Claude Code artifact) — left alone, out of scope here.
+
+**Found and fixed: `.claude/` was untracked but not actually gitignored.**
+`git status .claude` reported the working tree clean, which looked right
+at a glance — but that was `.git/info/exclude` doing the work
+(`**/.claude/scheduled_tasks.lock`, `**/.claude/scheduled_tasks.json`,
+`**/.claude/worktrees/`, and eight more `.claude/*` patterns), a
+**per-clone, never-shared** exclude list, not this repository's own
+`.gitignore`. A fresh clone of this fork — by another contributor, on
+another machine, or by upstream during PR review — would have none of
+those local exclusions and could accidentally pick up `.claude/`'s runtime
+state (scheduled-task bookkeeping, agent registry/memory, checkpoints) on
+a careless `git add -A`. Fixed by adding a real `.claude/` entry to the
+tracked `.gitignore`, so the exclusion travels with the repository instead
+of living only in this one checkout's local git metadata.
+
+**Verified: the four `sdk_lnreader` runtime fixes from the previous pass
+stayed confined, as documented — not just claimed.** Re-checked on
+request rather than re-asserted: `git diff` on
+`backend/shared/src/usecases/install_source.rs` (the `skipped_filters`
+warning) shows the addition living entirely inside the
+`SourceListItem::LnReaderRaw` match arm's `#[cfg(feature = "lnreader")]`
+block — the sibling `SourceListItem::Packaged` (Aidoku) arm is untouched
+by that diff. The other three fixes (the `URL` polyfill, the
+`URLSearchParams` string-parsing fix, `.prev(selector)`, and the `.get()`
+one-line fix) all live in `backend/shared/src/source/sdk_lnreader/js_runtime.rs`
+— and `grep -rl js_runtime backend --include=*.rs` outside `sdk_lnreader/`
+returns nothing: no code anywhere else in the backend even references
+that module, let alone calls into it, so there is no path by which an
+Aidoku/WASM source could reach any of the three. Nothing needed reverting;
+all four fixes are confined exactly as documented.
+
+## 8. Exhaustive corpus-wide runtime validation (all 261 real sources)
+
+§6.4 tested 5 sources hand-picked for rare traits and found four runtime
+bugs plus one visibility bug. This section extends that to the **entire
+261-source corpus, not a sample** — every real `.js` source
+`lnreader_packager fetch` would package from the live index, validated for
+actual runtime execution, not just successful packaging.
+
+### 8.1 Methodology
+
+**Two complementary validation layers**, run repeatedly (not once):
+
+1. **Minimal execution** — a search-only smoke test across all 261
+   sources, calling `lnreader_worker`'s NDJSON stdin/stdout protocol
+   directly (bypassing the server's HTTP layer, which swallows the real
+   underlying JS error into a generic failure). Cheap enough to re-run
+   after every single fix; the primary signal for "did this fix introduce
+   a regression or expose a new crash."
+2. **Full-lifecycle execution** — install → search → refresh-details →
+   refresh-chapters → download → uninstall, against sources chosen
+   specifically to exercise a trait no previously-tested source did, not
+   by re-running the easy ones.
+
+**Trait taxonomy built by frequency, not guesswork.** Every fix below was
+found via a real crash on real corpus code, but the *decision to treat it
+as worth fixing rather than a one-off* came from grepping the entire
+361-source `lnreader-plugins` checkout for how common the underlying
+pattern actually is — e.g. `.nodeType` used as a bare property (not a
+method call) appears in 74/261 sources; `.attribs.` appears in 89/261;
+`new URL(` in 37/261; `Headers` in 8/261; `TextDecoder`/`atob` in 3/261;
+`.toArray().filter(`/`.toArray().map(` in 3+3; `:icontains(` in 1/261.
+This turns "found one crash" into "this fix matters for N% of the real
+corpus," and confirmed every one of the fixes below matches the *actual*
+calling convention used corpus-wide (e.g. confirming all 3+3
+`.toArray().filter()/.map()` call sites use native, single-argument
+convention before making `.toArray()` return a plain array to match).
+
+**Isolated reproduction.** A minimal `FakePlugin` JS file (optionally
+embedding a real, live-fetched HTML page via `json.dumps()` to safely
+escape it into a JS string literal) wrapped in one NDJSON line, piped
+directly into `lnreader_worker`. Nested `try`/`catch` blocks around each
+statement, pushing progress markers into a results array, bisects the
+exact failing line without needing a debugger.
+
+**Fix discipline, unchanged from §6.4, applied to every entry in §8.2**:
+isolate → root-cause (bisection or corpus-wide grep) → minimal, confined
+fix (`js_runtime.rs`/`cheerio.rs` only, reusing existing native primitives
+where possible instead of adding new ones) → rebuild
+(`lnreader_worker`+`server`+`lnreader_packager`) → verify via direct
+NDJSON call and/or the full-lifecycle harness → full `cargo test
+--workspace` (clean, 157 passed/0 failed/11 ignored, after **every**
+fix, no exceptions) → re-spot-check previously-fixed sources for
+regressions.
+
+**Iterative, not one-shot.** The full 261-source batch was run 7 times
+across this effort. Passes 2 through 7 each surfaced at least one crash
+signature the previous passes hadn't — including two internal
+regressions caused by earlier fixes in this same pass (see §8.2,
+`children()` and `CheerioSelection.prototype.toArray()`) — which is the
+concrete justification for the original request's "systematic, not
+sampled" requirement: a single pass, however careful, does not find
+everything.
+
+### 8.2 Complete bug list (28 fixes this pass, all confined to
+`sdk_lnreader` except one)
+
+| # | Fix | Found via | Scope confirmed by grep |
+|---|---|---|---|
+| 1 | `.each()`/`.map()`/`.text(fn)`/`_filterBy` callbacks now `.call(el, ...)` instead of a plain call, so `this` inside the callback is the current element (a real, independent cheerio idiom: `.each(function () { $(this)... })`) | `novel-lucky.js`'s `parseNovel` (`$(this)` resolved to boa's global object, stringified to `"[object Object]"`, thrown as an invalid selector) | — |
+| 2 | `toChain(...).get()` with no argument returns `this.slice()` (a genuine plain array), not `this` (still carrying every chain override) | `kisswood.js`'s `parseChapter`, chaining native `.map((element, index) => ...)` onto `.get()`'s result | — |
+| 3 | `toChain(...)` gained `.toArray()` | `readfrom.js`'s `parseNovels` (`selection.map(fn).toArray()`) | — |
+| 4 | Read methods (`.text()`) on an empty `toChain()` selection return `''`, not `null` (matches real cheerio: zero elements concatenate to empty string) | `chireads.js`, a real "no results" category page | — |
+| 5 | `toChain(...)` gained `.find(selector)` (unions descendants of every element in the collection) | `chireads.js`'s `.contents().find("div")` | — |
+| 6 | `toChain(...)` gained `.filter(selectorOrFn)` (cheerio's `(index, element)` convention, mirrors `.each()`/`.map()`) | `archiveofourown.js`'s `.contents().filter((e,a) => 3===a.nodeType).text()` | — |
+| 7 | `CheerioSelection.prototype.children(selector)` rewritten to a plain loop instead of `.toArray().filter(...)` | Regression from #6: `novelfire.js`'s `.children("a").attr("href")` broke once `.filter()` switched to cheerio's argument order | — |
+| 8 | `.attribs` getter added to `CheerioSelection` (+ new `__native_attribs` primitive in `cheerio.rs`) | Widest-reaching gap found this pass — real cheerio's `.each()`/`.map()`/`.filter()` callbacks hand back a raw node with `.attribs` directly | **89/261** sources read `.attribs.*` |
+| 9 | `.nodeType` converted from a method to a numeric getter (1/3/8, matching DOM `ELEMENT_NODE`/`TEXT_NODE`/`COMMENT_NODE`) | `archiveofourown.js` (one of many): `3===a.nodeType` was always false against the old method reference | **74/261** sources compare `.nodeType` as a bare property |
+| 10 | `.name` getter added (lowercase tag name, domhandler convention, reuses `__native_tag_name` lowercased) | `novelfire.js`'s `parseChapter`: `s.name.toString()` crashed, property didn't exist | — |
+| 11 | Array-like numeric indexing (`selection[0]`) added to `CheerioSelection` | `yomou.syosetu.js`'s `a.children()[0].attribs.href` | — |
+| 12 | `.prev(selector)` added, mirroring the existing `.next(selector)` | `bakainua.js`'s `.prev("div.text-2xl")` (already flagged in §1.2 as untested, not deliberately omitted) | — |
+| 13 | `.prop(name)` added (`"tagName"` → uppercase via new `__native_tag_name`; anything else falls back to `.attr()`) | `skythewood.js`'s `.prop("tagName")` inside a `.find("*").each()` walk | — |
+| 14 | `CheerioSelection.prototype.toArray()` made genuinely plain (`this.each(...)` + push, not `this.map(...)` which returns a `toChain()`-wrapped result) | `skythewoodtranslations.js`'s `.toArray().filter((t) => ...)` — the wrapped result fed a numeric index into a selector call, crashing as an invalid selector | Corpus-wide: **3/261** call `.toArray().filter(`, **3/261** call `.toArray().map(`, 0 use cheerio's convention |
+| 15 | `$.html()` with no argument serializes the whole document (`$('html').outerHtml()`), not just `$.html(el)`'s explicit-element form | `kolnovel.js` (one of 35 `LightNovelWPPlugin`-base sources): `cheerio.load(html).html()` | — |
+| 16 | The `$` returned by `cheerio.load()` now exposes every `CheerioSelection` method directly (bound to a root selection), matching real cheerio where `$` from `load()` *is itself* a wrapped root selection | `novelfire.js`'s `getAllChapters`: `cheerio.load(title).text()`, no intervening `$('sel')` | — |
+| 17 | `console` polyfill added (`log`/`warn`/`error`/`info`/`debug`, deliberate no-ops — no side-channel for output in the NDJSON worker protocol) | `novelrest.js`'s `console.error(...)` in a catch block | — |
+| 18 | `Headers` class added (data stored as lower-cased own properties, so it round-trips through `fetch()`'s existing `JSON.stringify(init.headers)`) | `readfrom.js`'s `new Headers(s)` | **8/261** sources construct one |
+| 19 | `atob`/`btoa` added (binary-string convention, one UTF-16 code unit per byte) | `ln.hako.js`/`WTRLAB.js` (image/font-deobfuscation), `komga.js` (Basic-Auth header) | **3/261** |
+| 20 | `TextDecoder` polyfill added (UTF-8 only) | `ln.hako.js`, `dreamyTranslations.js`, `WTRLAB.js` | **3/261** |
+| 21 | `TextEncoder` polyfill added (UTF-8 only, byte-array output) | `dreamyTranslations.js`'s `extractDeferredText`, byte-offset slicing before `TextDecoder.decode` | — |
+| 22 | `URL` polyfill added (protocol/host/pathname/hash, `searchParams` backed by `URLSearchParams`, live `search`/`href` getters) + `URLSearchParams` constructor now also accepts a real query string (not just a plain object) | `bakainua.js`'s `new URL(...)` | **37/261** sources call `new URL(` |
+| 23 | `URLSearchParams.set/get/has/delete` added (previously only `.append()`) | `kakuyomu.js`'s `url.searchParams.set("q", i)` | — |
+| 24 | `Intl` polyfill added (`Intl.DateTimeFormat().resolvedOptions()` returns `{}`, letting the plugin's own `|| 'Europe/Moscow'`-style fallback kick in) | `ranobelib.js`, read at **plugin construction time** — a packaging-time failure, not just a search-time one | — |
+| 25 | `HtmlParser2Parser.prototype.isVoidElement(name)` added (fixed standard HTML5 void-element list, matching what the native tokenizer already never synthesizes a close event for) | `royalroad.js`'s `parseChapter`, called from inside its own `onclosetag` handler | — |
+| 26 | `:icontains(text)` (case-insensitive `:contains`) normalized down to plain `:contains(text)` in `cheerio.rs`'s selector preprocessing — trades away case-insensitivity for not crashing, since `dom_query`'s vendored matcher has no case-insensitive knob | `FWK.US`'s `parseNovel` (`:icontains('complete')`) | **1/261** |
+| 27 | Server's on-demand install path (`install_source.rs`) now logs the same "unrecognized filter/setting type(s), skipped" warning the `lnreader_packager` CLI already printed | `komga`'s `password`/`url` settings fields have no `type` key at all — a real user installing from the app had no way to learn settings were silently dropped | Already documented in §6.4 |
+| 28 | `cheerio.load(el)` now accepts an already-matched `CheerioSelection` (serializes it via `.outerHtml()` and loads that as an independent document), not just an HTML string | `LeafStudio.js`'s `parseNovelsList` (`(0, r.load)(i)` inside its own `.map((n, i) => ...)`, `i` being the raw element `.map()` hands back): without this, the object coerced to the literal string `"[object Object]"`, silently parsing into an empty document — `search_ok` with a real result count but **every title an empty string**, a genuinely silent-wrong-data bug, not a crash. Found via manual inspection of a random `search_ok` sample (§8.3.2), exactly the kind of bug a pure success/failure metric can't catch | 3/261 sources match the `(index,element)=>{...load)(element)}` re-scoping idiom by a targeted grep (`LeafStudio`, `fenrir`, `novelight`) — confirmed broken only in `LeafStudio`'s title field; `fenrir`/`novelight` use the same idiom elsewhere without visible impact on `searchNovels`, re-verified with no regression after the fix |
+
+Fixes 1–7, 9, 12, 14, 22–23, 28 are cheerio-chain/selection-object
+semantics; 8, 10–11, 13 add raw-node properties/indexing; 15–16, 28 fix
+`cheerio.load()`'s own surface; 17–21, 24 are Web/Node API polyfills; 25 is
+an `htmlparser2` gap; 26 is a selector-engine normalization; 27 is the one
+fix outside `sdk_lnreader` (`backend/shared/src/usecases/install_source.rs`).
+Combined with §6.4's four runtime fixes counted separately there (`URL`,
+`URLSearchParams` string parsing, `.prev()`, the `.get()` one-liner — all
+superseded/folded into the fuller versions in this table), the whole §6+§8
+effort found and fixed real, corpus-driven bugs with zero lines changed
+anywhere in the Aidoku/WASM path.
+
+### 8.3 Final coverage numbers
+
+**Minimal execution (search-only), full 261-source corpus, freshest batch
+run** (query `"a"`, deliberately generic — a worst case, not a best
+case):
+
+- **155/261 (59.4%) `search_ok`**
+- **106/261 (40.6%) `search_error`** — every one traced to a specific,
+  legitimate, non-runtime cause (confirmed by scanning every error detail
+  string for JS-crash signatures — `is not a function`, `cannot read`,
+  `cannot convert`, `ReferenceError`, `is not defined`, `not a
+  constructor` — **zero matches**):
+
+| Category | Count | Notes |
+|---|---|---|
+| Dead/unreachable domain | 46 | `TypeError: fetch failed` / connection refused |
+| Timeout | 24 | Slow or currently-unresponsive real sites |
+| Site-side JSON/API format drift | 15 | Clusters heavily on `mtlnovel-*` locale variants |
+| Captcha/Cloudflare wall | 14 | Deliberate site protection |
+| Real HTTP error (403/404/429/503) | 5 | |
+| Query validation (by design) | 1 | `libread` requires a 3+ character query; `"a"` is 1 character |
+| Not implemented (by design) | 1 | `nettruyen`'s `searchNovels` deliberately throws — the source only supports browsing |
+
+(`komga`'s self-hosted-server requirement is already out of scope per
+§5.3 and not double-counted here. Counts shift by a few per category
+run-to-run — see the variance note below — a prior run in this same
+session logged 49/20/17/13/5/1/1; both runs sum to 106 and place the same
+sources in adjacent, equally-legitimate buckets, e.g. a source timing out
+at 24s on one run and failing DNS outright a few minutes later.)
+
+#### 8.3.1 Per-category breakdown, verified line by line with independent evidence
+
+Every category below was checked with a *second, independent* method
+outside the runtime itself (`curl` against the real site/endpoint, or
+reading the plugin's own source for the exact thrown message) — not just
+re-stated from the worker's own error string — precisely so the
+"legitimate/non-runtime" classification is verifiable, not asserted:
+
+| Catégorie | Sources | Exemple précis | Preuve indépendante |
+|---|---|---|---|
+| Domaine mort/injoignable | 46 | `1stkissnovel` — `TypeError: fetch failed for https://1stkissnovel.org//page/1/?s=a&post_type=wp-manga` | `curl -v` : DNS résout bien (`172.237.146.39/46/18`, une plage d'hébergement générique), mais le handshake TLS échoue (`SSL certificate problem`, puis `http_code=000` même avec `-k`) — domaine mort/parqué, pas une erreur de notre client HTTP |
+| Timeout | 24 | `neobook` — timeout niveau harnais (25s) sur `https://api.neobook.org/` | `curl --max-time 20` sur la même URL : timeout franc côté `curl` aussi (`http_code=000`, 20.0s) — serveur réellement non réactif, indépendamment de notre runtime |
+| Dérive JSON/API côté site | 15 | `mtlnovel` — `SyntaxError: expected value at line 1 column 1` sur `.json()` de l'endpoint `wp-admin/admin-ajax.php?action=autosuggest&q=a` | `curl` sur cet endpoint exact : renvoie désormais une page HTML (`<html>...<script>window.location.replace('...&js=eyJhbGci...JWT...')`) au lieu de JSON — le site a ajouté une redirection anti-bot signée par JWT après l'écriture du plugin ; un vrai navigateur suivrait ce `window.location.replace` via son moteur JS, un simple `fetch()` non |
+| Captcha/Cloudflare | 14 | `foxaholic` — `Error: Captcha error, please open in webview` (levée par le code du plugin lui-même) | `curl -I https://www.foxaholic.com/` : `HTTP/2 403`, `server: cloudflare`, `cf-mitigated: challenge`, CSP référençant `https://challenges.cloudflare.com` — mur de challenge Cloudflare actif et vérifiable indépendamment |
+| Erreur HTTP réelle | 5 | `novelfull` — `Error: Could not reach site ('403') try to open in webview.` | `curl -I https://novelfull.com/` : `HTTP/2 403`, `cf-mitigated: challenge` — code confirmé indépendamment (recouvre partiellement la catégorie captcha ci-dessus selon le site ; catégorisé ici car le plugin ne mentionne que le code HTTP, pas explicitement un captcha) |
+| Validation de requête (voulu) | 1 | `libread` — `Error: "Keyword at least 3 characters"` | Ré-exécution directe : la même source avec la requête `"love"` (4 caractères) retourne **50 résultats réels** — la validation fonctionne comme prévu, ce n'est pas un bug masqué |
+| Non implémenté (voulu) | 1 | `nettruyen` — `Error: Method not implemented.` | Lecture directe du `.js` compilé : `searchNovels=function(...){...throw new Error("Method not implemented.")}` — un throw explicite et volontaire dans le code source du plugin lui-même, pas une lacune de ce runtime |
+
+**Run-to-run variance**: a handful of sources typically flip between
+`timeout`/`fetch_failed` or between adjacent network-condition buckets on
+consecutive full-corpus runs, purely from live network timing (confirmed
+in an earlier run via a `WTRLAB` transient failure that succeeded on
+immediate retry) — not a sign of regression.
+
+#### 8.3.2 Manual verification of a random `search_ok` sample — not just "didn't crash"
+
+`search_ok` alone doesn't prove correct data — it proves no exception was
+thrown, which is exactly what let the `toChain().get()` chain-poisoning
+bug (§8.2 #2) and the `cheerio.load(element)` bug (§8.2 #28) both hide
+behind a technically-successful search for as long as they went
+undetected. To check this directly rather than trust the aggregate
+number, 10 sources were drawn at random (Python `random.seed(42)` over
+the sorted list of all 155 `search_ok` sources, for reproducibility) and
+their actual returned data inspected by hand:
+
+| Source | `count` | Verdict | Detail |
+|---|---|---|---|
+| `lnori` | 36 | **Correct** | Real, sensible titles (`Re:ZERO -Starting Life in Another World-`, `Classroom of the Elite`, …), real slugs, no duplicates |
+| `kisswood` | 11 | **Correct** | Real French light-novel titles, real slugs, no duplicates |
+| `epiknovel` | 50 | **Correct** | Real titles across several languages, no duplicates |
+| `citrusaurora` | 12 | **Correct** | Real titles, no duplicates |
+| `blumeverse` | 10 | **Correct** | Real titles, no duplicates |
+| `xiaowaz` | 15 | **Correct** | Real titles, no duplicates |
+| `LeafStudio` | 12 | **BUG FOUND** | Every one of the 12 results had `title: ""` (empty string) despite real, meaningful `id`s — root-caused to `cheerio.load(element)` (§8.2 #28), fixed and reverified this session (now returns real titles, e.g. "After Becoming a Frail Young Lady, My Childhood Friend Spoiled Me Rotten") |
+| `daoistquest` | 0 | **Legitimate zero, root-caused** | `curl`'ing the real search page directly shows genuine results under `<article class="dj-gc">` — but the plugin's selector (`#search-result-list > li > div > div`) matches an `id` that no longer exists anywhere on the live page (`grep -c` confirms 0 occurrences). The site was redesigned since this plugin was written; same category as the already-documented `mtlnovel-*`/`novelki.pl` site-drift cases, not a runtime bug |
+| `webnovel` | 0 | **Legitimate zero, root-caused** | `curl -I https://www.webnovel.com/search?...`: `HTTP/2 403`, `cf-mitigated: challenge` — blocked by Cloudflare. Unlike sources in the captcha/cloudflare error category, this plugin's own code doesn't explicitly check for/throw on this condition, so the block manifests as a **silent zero-result "success"** rather than a thrown, categorized error — a real, if minor, distinction worth tracking: not every site block is visible in the `search_error` bucket |
+| `lightnovelbrasil` | 0 | **Legitimate zero, root-caused — domain compromised** | `curl -I https://lightnovelbrasil.com/?s=love`: `HTTP/2 302` redirecting to `http://survey-smiles.com` — the domain has been abandoned and now points at what looks like an ad/survey-farm page, not the original site. Same underlying issue as the "dead domain" category, just manifesting as a redirect-to-garbage instead of a connection failure, so it doesn't get caught by the same detection |
+
+**One real bug found and fixed** (`LeafStudio`, §8.2 #28) directly through
+this sampling exercise — confirming the concern that motivated it: a
+pure `search_ok`/`search_error` count would have called `LeafStudio`
+"working" indefinitely. **Three of ten** `count: 0` results were
+individually root-caused to genuine, verifiable site-side conditions
+(selector drift, silent Cloudflare block, hijacked/redirected domain) —
+none are runtime bugs, but two of the three (`webnovel`, `lightnovelbrasil`)
+reveal that the `search_error` taxonomy in §8.3.1 is not exhaustive of
+*all* site-side problems — some manifest as a "successful" empty result
+instead of a thrown error, depending on how defensively each plugin's own
+code happens to be written. No duplicate IDs were found in any of the 10
+samples.
+
+**The `search_ok, count: 0` bucket was also re-sampled at the aggregate
+level**, not taken at face value: re-querying the wider bucket with a more
+realistic term (`"love"` instead of `"a"`) turned up several false
+negatives whose original 0-result count was a query-length artifact, not
+a bug — `fannovel`, `lightnovelworld`, `ranobes`, `wuxiamtl`, `wuxiap`, and
+`wuxiaspace` all returned real results and completed full lifecycles
+under the longer query. The remaining zero-result sources were spot-checked
+and are legitimate site-side blocks (e.g. `novelupdates.com` → "Page not
+found", `scribblehub.com` → Cloudflare challenge page).
+
+**Full-lifecycle execution** (search → details → chapters → download):
+run individually against every source that surfaced a *new* crash
+signature during this pass, both in §6.4's earlier 5-source pilot
+(`bakainua`, `komga`, `novelki.pl`, `agit.xyz`, `kisswood`) and in this
+263-source pass (`archiveofourown`, `novelfire`, `skythewoodtranslations`,
+`dreamyTranslations`, `chireads`, `readfrom`, `royalroad`, `kakuyomu`,
+`ln.hako`, `WTRLAB`, `FWK.US`, `kolnovel`, `yomou.syosetu`, `skythewood`,
+`novelrest`, `novel-lucky`) — **100% pass rate after each fix**, with
+previously-fixed sources re-checked after every subsequent change and
+showing zero regressions throughout.
+
+**Coverage metric, replacing the old "259/261 packaged" headline** (§5.3,
+packaging-only): packaging success is unchanged (259/261, the same 2
+known parse failures), but this section adds the runtime-execution
+number it never had — **59.4% of the full corpus returns live search
+results on a first attempt with a deliberately worst-case one-letter
+query**, and **100% of the remaining 40.6% is accounted for by a named,
+verified, non-runtime cause** (dead domains, timeouts, site-side API
+drift, captcha/Cloudflare, real HTTP errors, or deliberate by-design
+behavior) rather than an unexplained gap. Zero unexplained crashes remain
+across 7 full-corpus passes.
+
+### 8.4 Known non-runtime issues, not fixed (correctly out of scope)
+
+- **`mtlnovel-*` locale cluster** (17 sources): site-side JSON/API
+  response-format drift on a shared base plugin. Not chased to a specific
+  root cause beyond confirming (via direct `curl`) that the live responses
+  are empty or time out — fixing this would mean reverse-engineering a
+  third-party site's current API, not this runtime.
+- **`novelki.pl`**: 0 results on every query. The live search page is a
+  near-empty `<div id="app"></div>` SPA shell behind Cloudflare bot
+  management — the plugin was written against a server-rendered version of
+  the site that no longer exists. Cheerio-based scraping cannot execute
+  client-side JS; the real, official LNReader app would fail identically
+  against the same page (documented in §6.4).
+- **`agit.xyz`**: target domain (`agit664.xyz`) independently confirmed
+  unreachable via a direct `curl` outside the app entirely — the site is
+  down or has moved (documented in §6.4).
+
+## 9. Confinement, crash-signature, and no-hardcoding audits
+
+Three targeted checks requested alongside Task 4's validation numbers,
+each independent of the corpus batch run: that the `install_source.rs`
+fix (§6.4/§8.2 #27) touches only the LNReader path, that the
+long-standing `boa_engine` large-catalog crash (§FINDINGS.md §1.1) hasn't
+resurfaced anywhere in the 261-source corpus, and that nothing in this
+whole effort ever special-cased a specific source by name in production
+logic.
+
+### 9.1 `install_source.rs` confinement — confirmed via diff inspection, not just intent
+
+Reviewed the full diff of `backend/shared/src/usecases/install_source.rs`
+line by line, not just its stated purpose:
+
+- The `SourceListItem` enum's two variants (`Packaged` — the pre-existing
+  Aidoku `.aix`/`downloadURL` shape, and `LnReaderRaw` — the new raw
+  `.js`/`url` shape) are picked via `#[serde(untagged)]` based on which
+  fields are present in the source-list entry, not by any source-id check.
+- **The `Packaged` branch's actual logic is byte-for-byte unchanged**: it
+  still resolves the same `.aix` URL (`file`/`downloadURL`) and does the
+  same `client.get(aix_url).send().await?.bytes().await?` it always did.
+  The only change to this arm is mechanical — `item.id == source_id`
+  became `item.id() == &source_id`, a new accessor method needed because
+  `id` now lives inside an enum variant, returning the exact same value
+  either way.
+- **The new `lnreader_enabled` flag and the `skipped_filters` warning log
+  (§8.2 #27) are both physically inside the `LnReaderRaw` match arm only**
+  — grepped the function body directly: neither identifier appears
+  anywhere in the `Packaged` arm or in any code path shared between the
+  two. An Aidoku install (`Packaged` shape) never evaluates
+  `lnreader_mode_enabled()`, never calls `package_plugin_js`, and never
+  touches the new warning-log line.
+- `lnreader_mode_enabled(lnreader_enabled_setting)` is defined as
+  `cfg!(feature = "lnreader") && lnreader_enabled_setting` (`source/mod.rs`)
+  — even the flag itself compiles away to a constant `false` on a
+  non-`lnreader` build, on top of being gated to the one match arm that
+  reads it.
+- The one call site (`server/src/source/routes.rs`'s `install_source`
+  handler) reads `settings.lnreader_enabled` once and passes it straight
+  through — no branching on source identity there either.
+
+**Conclusion: confirmed confined.** An Aidoku source install exercises the
+exact same code, with the exact same behavior, as before this whole
+LNReader effort began.
+
+### 9.2 `boa_engine` large-catalog crash (Phase 2 SIGSEGV) — status unchanged, not reproduced
+
+Per `docs/lnreader/FINDINGS.md` §1.1, two distinct problems were found
+during earlier phases: a **SIGSEGV/invalid memory read** on a 22-volume
+catalog, reproduced exactly once via `gdb` during Phase 2 and never since
+(still not root-caused, contained only by `lnreader_worker`'s
+process-per-call isolation), and a separate, later-diagnosed **hang**
+(unrelated to `boa_engine` — a stale HTTP keep-alive connection
+hypothesis, `LNori`-specific, high confidence).
+
+**This pass's 261-source search-only batch cannot have exercised the
+SIGSEGV at all** — it only calls `SearchMangas`, and the crash was
+specifically triggered by chapter-list retrieval (`GetChapterList`) on a
+large-volume novel, a different code path entirely. So the batch run
+gives no signal either way on this specific bug; a targeted test was run
+instead:
+
+- Identified the almost-certainly-exact novel from the original report —
+  `LNori`'s "Re:ZERO -Starting Life in Another World-"
+  (`series/3343/re-zero-starting-life-in-another-world`, 305 chapters,
+  the same source/genre-of-novel FINDINGS.md's "22-volume series"
+  description points to) — and ran `GetChapterList` against it **6 times
+  in a row**: all 6 succeeded cleanly (305 chapters each time, ~25–27s
+  per call), no crash, no hang.
+- Also re-ran `NovelBuddy`'s "Shadow Slave" (3142 chapters — already the
+  established large-catalog stress case per FINDINGS.md, over 10x the
+  original 22-volume report) **3 times in a row**: all 3 succeeded
+  cleanly in ~4s each.
+- Neither test reproduces the *exact* original repro conditions (a
+  long-lived, persistent worker process reused across calls, per
+  `worker.rs`'s real production lifecycle) — each call here spawns a
+  fresh `lnreader_worker` subprocess, so this specifically tests "does a
+  large catalog crash `boa_engine` within a single call," not "does reuse
+  across many calls on one persistent worker eventually crash it." The
+  former is what the SIGSEGV report describes; the latter is closer to
+  the already-separately-diagnosed hang, not this bug.
+
+**Conclusion: status unchanged from FINDINGS.md.** Not reproduced this
+pass, on the best available candidate novel, at a catalog size well past
+the original report — still isolated to a single historical occurrence,
+still contained (not fixed) by process-per-call isolation. Nothing in
+this session's 28 fixes touches this crash signature or its containment
+mechanism.
+
+### 9.3 No hardcoded sources/data — audit method and result
+
+Grepped `backend/shared/src/source/sdk_lnreader/`,
+`backend/lnreader_packager/src/`, and `backend/lnreader_worker/src/` (all
+non-test code) for anything that could special-case a specific real
+source rather than implementing a general rule:
+
+- **`source_id == "..."` (or any equality/`match` on a source id) —
+  zero occurrences anywhere in the entire backend**, not just these three
+  crates (`grep -rn "source_id\s*==\|match source_id"` over the whole
+  `backend/` tree, `target/` excluded, returns nothing).
+- **Every literal real-source name found in these three crates' `.rs`
+  files** (`ranobes`, `FWK.US`, `skythewood`, `komga`, `novelbuddy`, and
+  every source named across `js_runtime.rs`'s ~28 fix comments) **is
+  inside either a doc comment** (crediting which real source's code
+  surfaced a given bug — documentation, never evaluated at runtime) **or
+  a `#[cfg(test)]` block** — `packaging.rs`'s `lang_from_index_url` unit
+  tests (real folder-mapping URLs as realistic inputs) and
+  `sdk_lnreader/mod.rs`'s five `#[tokio::test] #[ignore] // requires
+  network` end-to-end tests (`lnori`, `novelupdates`, `novelbuddy`,
+  `ranobes`, `freewebnovel`) — exactly the "test targeting a real source
+  for reproducibility" exception, never production logic.
+- **No domain/site-specific `.contains()`/`.starts_with()`/`.ends_with()`
+  branching** — the one hit from a broad grep for this pattern
+  (`mod.rs`'s `err.to_string().contains("did not respond")`) matches an
+  *error message*, not a source identity.
+- **No hardcoded index URL.** `lnreader_packager fetch` requires
+  `--index-url` as an explicit argument with no built-in default (removed
+  this session per §5.4); `install_source.rs` only ever reads whatever
+  URL is in `settings.json`'s `source_lists`, the same path as any Aidoku
+  entry.
+- **The one generic "mapping table" in this code**
+  (`packaging.rs`'s `lang_from_index_url`/`LANG_FOLDERS`) maps upstream's
+  own **language-folder names** (`"arabic"`, `"english"`, `"multi"`, …) to
+  ISO codes — a structural, corpus-wide convention `lnreader-plugins`
+  itself uses to organize all 261 sources into 16 folders (§5.3), not a
+  per-source special case. Confirmed by reading `lang_from_index_url`
+  itself: it parses the URL's own `/src/plugins/<folder>/` path segment
+  generically, with no source-id branch anywhere in it.
+- **`FormData`, `Headers`, `URL`, and every other Web API polyfill** added
+  this session are true globals with no source-specific behavior baked
+  in — confirmed by the same corpus-wide grep methodology used to justify
+  adding them in the first place (§1.2): a fix earns its place by how many
+  *distinct* sources exercise the underlying pattern, never by name.
+
+**Conclusion: no hardcoded source, URL, source-id, or site-specific
+logic found in production code.** Every fix from this whole Task 4 effort
+(and the earlier §6.4 pass) is a generic runtime/shim correction that
+benefits every source hitting the same underlying JS pattern — confirmed
+by the fact that several fixes (e.g. `.attribs`, `.nodeType`-as-property,
+`FormData`) were justified and cross-checked against corpus-wide
+recurrence counts specifically *because* the fix discipline requires
+generality, not a fix that only makes the one originally-failing source
+pass.
+

@@ -36,3 +36,24 @@ docs/lnreader/
 # clone); formalized here so it can't be accidentally committed from any
 # checkout.
 .claude/
+
+# codebase-memory-mcp local knowledge graph cache (per-project, regenerated)
+.codebase-memory/
+
+# codegraph local index (per-project, regenerated)
+.codegraph/
+
+# Local agent tooling (not upstream): agent-browser skill, session state
+.agents/
+
+# OhMyOpenCode session/plan state (local-only)
+.omo/
+
+# OpenCode local config + OpenSpec workflow files (not upstream).
+# NOTE: .opencode/skills/rakuyomi-topzone-gesture/ IS tracked upstream --
+# only the local openspec-* skills and commands are ignored.
+opencode.json
+skills-lock.json
+openspec/
+.opencode/commands/
+.opencode/skills/openspec-*/

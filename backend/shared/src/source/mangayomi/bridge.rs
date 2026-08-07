@@ -1723,7 +1723,7 @@ fn substring_after(text: &str, pat: &str) -> String {
 fn substring_before(text: &str, pat: &str) -> String {
     match text.split_once(pat) {
         Some((before, _)) => before.to_string(),
-        None => String::new(),
+        None => text.to_string(),
     }
 }
 
@@ -1737,7 +1737,7 @@ fn substring_after_last(text: &str, pat: &str) -> String {
 fn substring_before_last(text: &str, pat: &str) -> String {
     match text.rsplit_once(pat) {
         Some((before, _)) => before.to_string(),
-        None => String::new(),
+        None => text.to_string(),
     }
 }
 
@@ -1819,5 +1819,35 @@ fn setting_to_value(value: SourceSettingValue) -> Value {
             v.into_iter().map(Value::str).collect(),
         ))),
         _ => Value::Null,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn substring_before_returns_whole_text_when_pattern_missing() {
+        assert_eq!(substring_before("abc", "?"), "abc");
+        assert_eq!(substring_before("abc?def", "?"), "abc");
+        assert_eq!(substring_before("abc", ""), "");
+    }
+
+    #[test]
+    fn substring_before_last_returns_whole_text_when_pattern_missing() {
+        assert_eq!(substring_before_last("abc", "?"), "abc");
+        assert_eq!(substring_before_last("a?b?c", "?"), "a?b");
+    }
+
+    #[test]
+    fn substring_after_returns_empty_when_pattern_missing() {
+        assert_eq!(substring_after("abc", "?"), "");
+        assert_eq!(substring_after("abc?def", "?"), "def");
+    }
+
+    #[test]
+    fn substring_after_last_returns_empty_when_pattern_missing() {
+        assert_eq!(substring_after_last("abc", "?"), "");
+        assert_eq!(substring_after_last("a?b?c", "?"), "c");
     }
 }

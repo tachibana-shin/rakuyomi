@@ -199,6 +199,22 @@ fn route(
     };
     match (method, path) {
         ("POST", "/echo") => ("200 OK", "application/json", body.to_vec()),
+        ("GET", "/") => html(
+            r#"<html><body>
+<div class="c-tabs-item__content">
+<div class="post-title"><a href="http://127.0.0.1:PORT/manga/one">One Piece</a></div>
+<img data-src="https://cdn.example.com/one.jpg">
+</div>
+</body></html>"#,
+        ),
+        ("POST", "/wp-admin/admin-ajax.php") => html(
+            r#"<html><body>
+<div class="listing-chapters_wrap"><ul class="main version-chap">
+<li class="wp-manga-chapter"><a href="http://127.0.0.1:PORT/manga/one/ch/1">Chapter 1</a></li>
+<li class="wp-manga-chapter"><a href="http://127.0.0.1:PORT/manga/one/ch/2">Chapter 2</a></li>
+</ul></div>
+</body></html>"#,
+        ),
         _ => match path {
             "/page/1" => html(
                 r#"<!DOCTYPE html><html><body>
@@ -839,6 +855,90 @@ async fn runner_rejects_invalid_metadata() {
             "MangaYomi".to_string(),
         )
         .is_err());
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[tokio::test]
+async fn runner_madara_search_with_not_has_selector() {
+    // Madara-style sources (e.g. MangaSushi) select search results with
+    // `div.c-tabs-item__content` and filter badges via
+    // `a:not(:has(span.manga-title-badges))`.
+    const MADARA_SEARCH_EXTENSION: &str = r#"
+import 'package:mangayomi/bridge_lib.dart';
+
+class MadaraSearch extends MProvider {
+  MadaraSearch({required this.source});
+  MSource source;
+  final Client client = Client();
+
+  String get baseUrl => source.baseUrl;
+
+  String? extractImageUrl(MElement? imageElement) {
+    if (imageElement == null) return "";
+    return imageElement.attr("data-src");
+  }
+
+  MPages mangaFromElements(List<MElement> elements) {
+    List<MManga> mangaList = [];
+    for (final el in elements) {
+      final postTitle = el.selectFirst(
+        "div.post-title a:not(:has(span.manga-title-badges))",
+      );
+      final image = extractImageUrl(el.selectFirst("img"));
+      MManga manga = MManga();
+      manga.name = postTitle.text;
+      manga.imageUrl = substringBefore(image, " ");
+      manga.link = postTitle.getHref;
+      mangaList.add(manga);
+    }
+    return MPages(mangaList, true);
+  }
+
+  @override
+  Future<MPages> search(String query, int page, FilterList filterList) async {
+    String url = "${baseUrl}/?s=$query&post_type=wp-manga";
+    final res = (await client.get(Uri.parse(url))).body;
+    final document = parseHtml(res);
+    return mangaFromElements(document.select("div.c-tabs-item__content"));
+  }
+}
+
+MadaraSearch main(MSource source) => MadaraSearch(source: source);
+"#;
+
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+    let port = base
+        .trim_start_matches("http://")
+        .rsplit(':')
+        .next()
+        .unwrap();
+    let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
+
+    let dir = temp_sources_dir("madara-search");
+    let mut manager = manager(&dir);
+    let source_id = install(
+        &mut manager,
+        MADARA_SEARCH_EXTENSION,
+        &html(
+            r#"{"id": 638504049, "name": "Madara Search", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.0.0", "sourceCodeUrl": "https://example.com/madara.dart"}"#,
+        ),
+    );
+
+    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = mangayomi(source);
+
+    let (mangas, has_next) = source
+        .search_mangas(CancellationToken::new(), "one".to_string(), 1)
+        .unwrap();
+    assert!(has_next);
+    assert_eq!(mangas.len(), 1, "search must find the c-tabs-item__content");
+    assert_eq!(mangas[0].title.as_deref(), Some("One Piece"));
+    assert_eq!(
+        mangas[0].url.as_ref().map(|u| u.as_str()),
+        Some(format!("{base}/manga/one").as_str())
+    );
 
     std::fs::remove_dir_all(&dir).ok();
 }

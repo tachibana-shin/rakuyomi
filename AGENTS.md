@@ -108,6 +108,50 @@ untracked file deleted via `rm -f` with no backup at all — see
   mattered because the lost content had never been committed in any prior
   session).
 
+## LNReader Constraints
+
+Binding project constraints for the LNReader/JS source execution mode
+(`shared/src/source/sdk_lnreader/`). Full rationale and detail:
+`docs/lnreader/FEASIBILITY.md`'s "Constraints" section — this is the
+condensed version for quick reference.
+
+- **All-native-Rust**: never bundle/interpret a real JS library (`dayjs`,
+  `htmlparser2`, `lodash-es`, cheerio) inside `boa_engine` — polyfill only
+  their JS-visible shape, do the real work in native Rust.
+- **No hardcoded sources**: `source_lists` (`Vec<Url>`) is the only
+  legitimate discovery mechanism; no vendored test fixture with real
+  source URLs/names in committed code.
+- **No new Lua widget/screen, ever.**
+- **Feature bar = Rakuyomi's own existing manga functionality**, not the
+  theoretical ceiling of either SDK.
+- **Minimize changes to existing Rakuyomi/Aidoku code**; isolate new work
+  in separate modules; never break the existing Aidoku/WASM mode.
+- **LNReader discovery must look identical to Aidoku's** to the user: one
+  URL in `source_lists`, no manual CLI step.
+- **Target device is a low-end e-reader** (single/dual-core SoC) — a real
+  hardware constraint on every design decision.
+- **Native calls per JS-level call**: `N+1`/`1+N` acceptable by default;
+  heavier shapes (`2N+1`, `2N+3`, ...) are not acceptable by default —
+  look for something cheaper. Ambiguous case → produce a cost table and
+  decide together, not a rigid rule applied without data.
+- **Pre-implementing ahead of confirmed need is justified** when a native
+  equivalent is already available, the cost is low, and the domain
+  relevance (light-novel scraping) is plausible — even with no current
+  corpus evidence for that exact method.
+- **Follow Aidoku's own established patterns** rather than inventing new
+  ones, absent a real, documented, empirical reason otherwise.
+- **`lnreader` Cargo feature**: on by default, fully removable.
+  **`lnreader_enabled` config toggle**: currently defaults to `true`, a
+  deliberate reversal of the original spec — do not "fix" this back
+  without an explicit decision to end LNReader's active testing period.
+- **All of `docs/lnreader/` stays out of git tracking** (local-only working
+  notes).
+- **Validation**: prefer the full real corpus over a sample when feasible;
+  confirm a method's real argument shapes from actual call sites, not just
+  occurrence counts; validate end-to-end against the real pipeline (real
+  `lnreader_worker` subprocess, a real live install), not only in-process
+  tests.
+
 ## Update translation texts
 
 ```sh

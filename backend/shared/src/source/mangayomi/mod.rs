@@ -391,15 +391,9 @@ impl MangayomiSource {
     ) -> Result<Vec<crate::source::model::Chapter>> {
         let value = self.invoke("getDetail", json!([manga_id.clone()]))?;
         let chapters = value.get("chapters").unwrap_or(&Value::Null);
-        let out = model::chapters_from_value(&self.id, &manga_id, &self.base_url, chapters);
-        Ok(out
-            .into_iter()
-            .enumerate()
-            .map(|(index, mut chapter)| {
-                chapter.source_order = index;
-                chapter
-            })
-            .collect())
+        let mut out = model::chapters_from_value(&self.id, &manga_id, &self.base_url, chapters);
+        crate::source::model::normalize_chapter_order(&mut out);
+        Ok(out)
     }
 
     /// Implements `get_page_list`:

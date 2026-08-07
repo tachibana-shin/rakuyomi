@@ -1,5 +1,8 @@
+use std::sync::LazyLock;
+
 use chrono::{DateTime, TimeZone};
 use num_enum::FromPrimitive;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -245,6 +248,101 @@ impl Chapter {
     }
 }
 
+/// Matches a `Ch.`-prefixed chapter number, which is authoritative (e.g.
+/// Webtoons' `Ch. 47` suffix or MangaDex `Ch.2`).
+static CHAPTER_NUM_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)\b(?:chapter|chap|ch)\s*\.?\s*(\d+(?:\.\d+)?)"#)
+        .expect("invalid chapter number regex")
+});
+
+/// Matches an `Episode`/`Ep.`-prefixed chapter number, used as a fallback when
+/// no `Ch.` number is present.
+static EPISODE_NUM_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)\b(?:episode|ep)\s*\.?\s*(\d+(?:\.\d+)?)"#)
+        .expect("invalid episode number regex")
+});
+
+/// Matches a volume number in a chapter title, e.g. `Vol.1 Ch.3` returns 1.
+static VOLUME_NUM_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)\b(?:volume|vol)\s*\.?\s*(\d+(?:\.\d+)?)"#)
+        .expect("invalid volume number regex")
+});
+
+/// Extracts a chapter number from a chapter title. Tries chapter forms
+/// (`Ch.2`, `Chapter 3`, `Ch1`) first, then episode forms (`Ep. 4`,
+/// `Episode 47`). Returns `None` when the title carries no parseable number
+/// (e.g. "Oneshot").
+pub fn parse_chapter_num_from_title(title: &str) -> Option<f32> {
+    let num = |captures: &regex::Captures| {
+        captures
+            .iter()
+            .skip(1)
+            .flatten()
+            .map(|m| m.as_str())
+            .find_map(|s| s.parse::<f32>().ok())
+            .filter(|n| n.is_finite())
+    };
+    if let Some(captures) = CHAPTER_NUM_REGEX.captures(title) {
+        if let Some(num) = num(&captures) {
+            return Some(num);
+        }
+    }
+    EPISODE_NUM_REGEX
+        .captures(title)
+        .and_then(|captures| num(&captures))
+}
+
+/// Extracts a volume number from a chapter title (`Vol.2` -> `Some(2)`).
+pub fn parse_volume_num_from_title(title: &str) -> Option<f32> {
+    VOLUME_NUM_REGEX
+        .captures(title)
+        .and_then(|c| c.get(1))
+        .and_then(|v| v.as_str().parse::<f32>().ok())
+        .filter(|n| n.is_finite())
+}
+
+/// Normalises a chapter list so that the oldest chapter comes first
+/// (index 0 = chapter 1). When every chapter number can be parsed the list is
+/// stable-sorted ascending by volume then chapter (which also handles sources
+/// whose titles name chapters `Vol.2 Ch.1`); otherwise — e.g. oneshots or
+/// bonus chapters — the list is only reversed, assuming the extension returns
+/// chapters newest-first. `source_order` is reassigned to match the final
+/// order.
+pub fn normalize_chapter_order(chapters: &mut [Chapter]) {
+    for chapter in chapters.iter_mut() {
+        if chapter.chapter_num.is_none() {
+            if let Some(title) = chapter.title.as_deref() {
+                chapter.chapter_num = parse_chapter_num_from_title(title);
+            }
+        }
+        if chapter.volume_num.is_none() {
+            if let Some(title) = chapter.title.as_deref() {
+                chapter.volume_num = parse_volume_num_from_title(title);
+            }
+        }
+    }
+
+    if chapters.iter().all(|c| c.chapter_num.is_some()) {
+        chapters.sort_by(|a, b| {
+            a.volume_num
+                .unwrap_or_default()
+                .partial_cmp(&b.volume_num.unwrap_or_default())
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then(
+                    a.chapter_num
+                        .partial_cmp(&b.chapter_num)
+                        .unwrap_or(std::cmp::Ordering::Equal),
+                )
+        });
+    } else {
+        chapters.reverse();
+    }
+
+    for (index, chapter) in chapters.iter_mut().enumerate() {
+        chapter.source_order = index;
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Page {
     pub source_id: String,
@@ -319,5 +417,123 @@ impl Filter {
         match &self {
             Filter::Title(_) => "Title".into(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn chapter(title: Option<&str>, chapter_num: Option<f32>) -> Chapter {
+        Chapter {
+            source_id: "s".into(),
+            id: "id".into(),
+            manga_id: "m".into(),
+            title: title.map(ToString::to_string),
+            scanlator: None,
+            url: None,
+            lang: None,
+            chapter_num,
+            volume_num: None,
+            date_uploaded: None,
+            source_order: 0,
+            thumbnail: None,
+            locked: None,
+        }
+    }
+
+    #[test]
+    fn parse_chapter_num_variants() {
+        assert_eq!(parse_chapter_num_from_title("Ch1"), Some(1.0));
+        assert_eq!(parse_chapter_num_from_title("Ch 1"), Some(1.0));
+        assert_eq!(parse_chapter_num_from_title("Ch. 12"), Some(12.0));
+        assert_eq!(parse_chapter_num_from_title("Chapter 1.5"), Some(1.5));
+        assert_eq!(parse_chapter_num_from_title("Ep 4"), Some(4.0));
+        assert_eq!(parse_chapter_num_from_title("Episode 47"), Some(47.0));
+        assert_eq!(
+            parse_chapter_num_from_title("Vol.2 Ch.3"),
+            Some(3.0),
+            "chapter number wins over volume"
+        );
+        assert_eq!(
+            parse_chapter_num_from_title("Episode 1 The Beginning Ch. 47"),
+            Some(47.0),
+            "explicit Ch. wins over Episode"
+        );
+        assert_eq!(parse_chapter_num_from_title("Oneshot"), None);
+        assert_eq!(parse_chapter_num_from_title("Vol.1"), None);
+    }
+
+    #[test]
+    fn parse_volume_num() {
+        assert_eq!(parse_volume_num_from_title("Vol.2 Ch.3"), Some(2.0));
+        assert_eq!(
+            parse_volume_num_from_title("Volume 7 Chapter 10"),
+            Some(7.0)
+        );
+        assert_eq!(parse_volume_num_from_title("Ch.3"), None);
+    }
+
+    #[test]
+    fn normalize_reverses_newest_first_list() {
+        let mut chapters = vec![
+            chapter(Some("Episode 3"), None),
+            chapter(Some("Episode 2"), None),
+            chapter(Some("Episode 1"), None),
+        ];
+        normalize_chapter_order(&mut chapters);
+        let nums: Vec<f32> = chapters.iter().map(|c| c.chapter_num.unwrap()).collect();
+        assert_eq!(nums, vec![1.0, 2.0, 3.0]);
+        for (index, c) in chapters.iter().enumerate() {
+            assert_eq!(c.source_order, index);
+        }
+    }
+
+    #[test]
+    fn normalize_sorts_by_volume_then_chapter() {
+        let mut chapters = vec![
+            chapter(Some("Vol.2 Ch.1"), None),
+            chapter(Some("Vol.1 Ch.10"), None),
+            chapter(Some("Vol.1 Ch.2"), None),
+        ];
+        normalize_chapter_order(&mut chapters);
+        let keys: Vec<(f32, f32)> = chapters
+            .iter()
+            .map(|c| (c.volume_num.unwrap(), c.chapter_num.unwrap()))
+            .collect();
+        assert_eq!(keys, vec![(1.0, 2.0), (1.0, 10.0), (2.0, 1.0)]);
+    }
+
+    #[test]
+    fn normalize_keeps_source_order_when_unparseable() {
+        let mut chapters = vec![
+            chapter(Some("Oneshot"), None),
+            chapter(Some("Bonus Story"), None),
+        ];
+        normalize_chapter_order(&mut chapters);
+        let titles: Vec<&str> = chapters
+            .iter()
+            .map(|c| c.title.as_deref().unwrap())
+            .collect();
+        assert_eq!(
+            titles,
+            vec!["Bonus Story", "Oneshot"],
+            "only reversed, not sorted"
+        );
+    }
+
+    #[test]
+    fn normalize_keeps_existing_chapter_num() {
+        let mut chapters = vec![
+            chapter(Some("Custom title"), Some(5.0)),
+            chapter(Some("Custom title"), Some(3.0)),
+        ];
+        normalize_chapter_order(&mut chapters);
+        let nums: Vec<f32> = chapters.iter().map(|c| c.chapter_num.unwrap()).collect();
+        assert_eq!(
+            nums,
+            vec![3.0, 5.0],
+            "existing numbers win over title parsing"
+        );
     }
 }

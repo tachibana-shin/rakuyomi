@@ -1156,10 +1156,11 @@ class XpathMadara extends MProvider {
     List<MChapter> chapters = [];
     final document = parseHtml(res);
     final docTitles = document.xpath('//*[@class="chapter-list"]/li/a/@href');
+    final docNames = document.xpath('//*[@class="chapter-list"]/li/a/text()');
     for (var i = 0; i < docTitles.length; i++) {
       var chapter = MChapter();
       chapter.url = docTitles[i];
-      chapter.name = document.selectFirst("a").xpathFirst("text()");
+      chapter.name = docNames[i];
       chapters.add(chapter);
     }
     manga.chapters = chapters;

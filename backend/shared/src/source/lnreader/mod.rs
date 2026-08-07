@@ -322,16 +322,14 @@ impl LnReaderSource {
             chapter.url = url.map(|u| u.to_string());
         }
 
-        Ok(out
+        let mut out = out
             .into_iter()
-            .enumerate()
-            .map(|(index, chapter)| {
-                let mut chapter =
-                    crate::source::model::Chapter::from(chapter, self.id.clone(), manga_id.clone());
-                chapter.source_order = index;
-                chapter
+            .map(|chapter| {
+                crate::source::model::Chapter::from(chapter, self.id.clone(), manga_id.clone())
             })
-            .collect())
+            .collect::<Vec<_>>();
+        crate::source::model::normalize_chapter_order(&mut out);
+        Ok(out)
     }
 
     /// Implements `get_page_list`: the chapter HTML becomes a single text page.

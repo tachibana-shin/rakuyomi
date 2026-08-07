@@ -1,13 +1,13 @@
 //! MangaYomi index metadata parsing and conversion of extension results to
 //! the RakuYomi source models.
 
+use chrono::TimeZone;
 use serde_json::Value;
 use url::Url;
 
 use crate::source::model::{
     Chapter, Manga, MangaContentRating, MangaViewer, Page, PublishingStatus,
 };
-
 /// The fields of an `index.json` entry (mangayomi-extensions) the source
 /// needs beyond the raw metadata, which is passed to the runtime to build
 /// the `MSource` instance.
@@ -155,16 +155,15 @@ pub fn chapters_from_value(
         return Vec::new();
     };
     list.iter()
-        .enumerate()
-        .map(|(index, chapter)| {
+        .map(|chapter| {
             let raw_url = str_field(chapter, "url");
             let url = resolve_url(base_url, &raw_url);
             Chapter {
                 source_id: source_id.to_string(),
                 // Raw chapter URL as the id, mirroring the MangaYomi app: the
-                // downloader hands `chapter.id` straight to `getPageList`,
-                // which extensions may join with their `apiUrl` (e.g. MangaDex
-                // uses bare ids, madara sources absolute URLs).
+                // downloader hands `chapter.id` straight to `get_page_list`,
+                // which extensions may join with their `api_url` (e.g. MangaDex
+                // uses bare ids, madara sources absolute urls).
                 id: raw_url,
                 manga_id: manga_id.to_string(),
                 title: Some(str_field(chapter, "name")).filter(|s| !s.is_empty()),
@@ -173,8 +172,19 @@ pub fn chapters_from_value(
                 lang: None,
                 chapter_num: None,
                 volume_num: None,
-                date_uploaded: None,
-                source_order: index,
+                // MangaYomi extensions publish the upload timestamp as the
+                // `dateUpload` field (milliseconds since the epoch, e.g.
+                // `"1734595200000"`).
+                date_uploaded: str_field(chapter, "dateUpload")
+                    .parse::<i64>()
+                    .ok()
+                    .and_then(|ms| {
+                        chrono::Utc
+                            .timestamp_millis_opt(ms)
+                            .single()
+                            .map(|dt| dt.with_timezone(&chrono_tz::UTC))
+                    }),
+                source_order: 0,
                 thumbnail: resolve_url(base_url, &str_field(chapter, "thumbnailUrl")),
                 locked: Some(false),
             }

@@ -1201,6 +1201,49 @@ fn native_add(store: &SharedStore, args: &[JsValue], context: &mut Context) -> J
     Ok(JsValue::from(id as f64))
 }
 
+/// `__native_add_selection(sel_id, other_sel_id) -> sel_id`. Direct mapping
+/// onto `Selection::add_selection()` -- unlike `native_add` above, this
+/// merges two ALREADY-MATCHED selections (real cheerio's `.add(otherCheerio)`
+/// overload) natively, deduplicating in the same Rust-side call instead of
+/// the JS prelude's previous `this.toArray().concat(other.toArray())`, which
+/// neither deduplicated nor avoided materializing every element on both
+/// sides — see `docs/lnreader/REFERENCE.md` §1.2.11 for the call-count
+/// rationale and the found-but-not-yet-exercised correctness gap this also
+/// fixes. `add_selection` panics if either selection is empty or if the two
+/// come from different trees (an `.add()` spanning two separate
+/// `cheerio.load()` results) — both checked here first and turned into a
+/// normal, catchable JS error instead, since this exact overload has 0/261
+/// real corpus callers today and a same-document `.add()` is the only usage
+/// this was ever meant to support natively.
+fn native_add_selection(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let other_id = arg_usize(args, 1, context)?;
+    let mut s = store.borrow_mut();
+
+    let sel_empty = s.sel(sel_id).map_err(js_error)?.is_empty();
+    let other_empty = s.sel(other_id).map_err(js_error)?.is_empty();
+    if !sel_empty && !other_empty {
+        let sel_tree = s.sel(sel_id).map_err(js_error)?.nodes()[0].tree as *const _;
+        let other_tree = s.sel(other_id).map_err(js_error)?.nodes()[0].tree as *const _;
+        if sel_tree != other_tree {
+            return Err(js_error(
+                "cannot .add() a selection from a different loaded document",
+            ));
+        }
+    }
+
+    let merged = s
+        .sel(sel_id)
+        .map_err(js_error)?
+        .add_selection(s.sel(other_id).map_err(js_error)?);
+    let id = s.push_sel(merged);
+    Ok(JsValue::from(id as f64))
+}
+
 /// `__native_parents(sel_id, selector_or_null) -> JsArray` of handles,
 /// farthest ancestor first (real cheerio's own documented order). Walks via
 /// repeated `NodeRef::parent()` (same technique as `native_closest`) rather
@@ -1596,6 +1639,13 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
         native_select_and_outer_html,
     );
     register_native(context, "__native_add", 2, store.clone(), native_add);
+    register_native(
+        context,
+        "__native_add_selection",
+        2,
+        store.clone(),
+        native_add_selection,
+    );
     register_native(context, "__native_parents", 2, store.clone(), native_parents);
     register_native(
         context,

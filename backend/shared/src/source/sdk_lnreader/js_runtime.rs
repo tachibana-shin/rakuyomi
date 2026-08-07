@@ -532,17 +532,26 @@ CheerioSelection.prototype.nextUntil = function (selector) {
     return toChain(out);
 };
 // .add(selectorOrSelection) -- real cheerio's own document-root-scoped
-// union. The selector-string form is native (__native_add, a direct
-// dom_query Selection::add() mapping -- see its own doc comment for the one
-// dom_query-specific edge case: adding from an empty starting selection
-// finds nothing, unlike real cheerio). The CheerioSelection-argument form
-// (uniting two already-matched selections) has no equivalent native
-// primitive, so it's a plain JS array concat, the same technique
-// .addBack() already uses for the same "combine two already-materialized
-// selections" shape.
+// union. Both overloads are native: the selector-string form (__native_add,
+// a direct dom_query Selection::add() mapping -- see its own doc comment for
+// the one dom_query-specific edge case: adding from an empty starting
+// selection finds nothing, unlike real cheerio) and, as of this pass, the
+// CheerioSelection-argument form too (__native_add_selection, a direct
+// dom_query Selection::add_selection() mapping -- see its own doc comment).
+// The latter used to be a plain JS array concat (this.toArray().concat(...))
+// -- correct for the common same-document case, but O(N) JS-side handle
+// materialization on both sides for no reason, and it never deduplicated an
+// overlapping union the way real cheerio/add_selection do. Falls back to the
+// old concat only for the one case __native_add_selection deliberately
+// rejects (two selections from different loaded documents), which has 0/261
+// real corpus usage either way.
 CheerioSelection.prototype.add = function (selectorOrSelection) {
     if (selectorOrSelection instanceof CheerioSelection) {
-        return toChain(this.toArray().concat(selectorOrSelection.toArray()));
+        try {
+            return new CheerioSelection(__native_add_selection(this.__id, selectorOrSelection.__id));
+        } catch (e) {
+            return toChain(this.toArray().concat(selectorOrSelection.toArray()));
+        }
     }
     return new CheerioSelection(__native_add(this.__id, selectorOrSelection));
 };
@@ -2257,6 +2266,47 @@ mod cheerio_prelude_tests {
             img.attr({src: 'http://example.com/a.png', width: '10', height: '20'});
             img.is('img') && img.attr('src') === 'http://example.com/a.png'
                 && img.attr('width') === '10'
+            "#
+        ));
+    }
+
+    #[test]
+    fn add_with_selection_argument_unions_natively_and_deduplicates() {
+        // §1.2.11: .add(otherCheerioSelection) used to be a plain
+        // this.toArray().concat(other.toArray()) -- correct for disjoint
+        // selections, but never deduplicated an overlapping union the way
+        // real cheerio (and __native_add_selection, its replacement) do.
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><p class="a">a</p><p class="b">b</p></div>');
+            var union = $('.a').add($('.a, .b'));
+            union.length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn add_with_selection_argument_still_unions_disjoint_selections() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><p class="a">a</p><span class="b">b</span></div>');
+            var union = $('.a').add($('.b'));
+            union.length === 2 && union.eq(0).hasClass('a') && union.eq(1).hasClass('b')
+            "#
+        ));
+    }
+
+    #[test]
+    fn add_with_selection_from_different_document_falls_back_without_throwing() {
+        // The one case __native_add_selection deliberately rejects (0/261
+        // real corpus usage) -- must still behave like real cheerio's union,
+        // not surface the native rejection to plugin code.
+        assert!(eval_bool(
+            r#"
+            var a = cheerio_load('<p class="a">a</p>')('.a');
+            var b = cheerio_load('<p class="b">b</p>')('.b');
+            var union = a.add(b);
+            union.length === 2
             "#
         ));
     }

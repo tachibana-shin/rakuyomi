@@ -548,7 +548,11 @@ async fn refresh_manga_chapters(
 
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await;
+    if let Err(e) =
+        usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await
+    {
+        warn!("refresh_manga_chapters failed: {e:#}");
+    }
 
     Ok(Json(()))
 }

@@ -665,6 +665,23 @@ fn native_append_html(
     Ok(JsValue::undefined())
 }
 
+/// `__native_prepend_html(sel_id, html) -> undefined`. Direct mapping onto
+/// `Selection::prepend_html()`, the exact mirror of `native_append_html`
+/// above — added per `docs/lnreader/REFERENCE.md` §1.2.11's native-call
+/// pre-implementation rule (native equivalent already present, trivial
+/// cost, same DOM-construction relevance already accepted for `.append()`).
+fn native_prepend_html(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let html = arg_string(args, 1, context)?;
+    let mut s = store.borrow_mut();
+    s.sel_mut(sel_id).map_err(js_error)?.prepend_html(html);
+    Ok(JsValue::undefined())
+}
+
 /// `__native_set_html(sel_id, html) -> undefined`
 fn native_set_html(
     store: &SharedStore,
@@ -1244,6 +1261,46 @@ fn native_add_selection(
     Ok(JsValue::from(id as f64))
 }
 
+/// `__native_append_to(target_sel_id, source_sel_id) -> undefined`. Direct
+/// mapping onto `Selection::append_selection()`: moves `source`'s matched
+/// elements to become the last children of each of `target`'s matched
+/// elements — the reverse framing of the already-implemented
+/// `.append(html)`, added per `docs/lnreader/REFERENCE.md` §1.2.11's
+/// native-call pre-implementation rule. Unlike `native_add_selection`
+/// above, `append_selection`'s own implementation (`merge_selection_with_fn`)
+/// copies node data into the target tree rather than asserting the two
+/// selections share one tree, so there is no cross-document panic risk here
+/// to guard against.
+fn native_append_to(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let target_id = arg_usize(args, 0, context)?;
+    let source_id = arg_usize(args, 1, context)?;
+    let s = store.borrow();
+    s.sel(target_id)
+        .map_err(js_error)?
+        .append_selection(s.sel(source_id).map_err(js_error)?);
+    Ok(JsValue::undefined())
+}
+
+/// `__native_prepend_to(target_sel_id, source_sel_id) -> undefined`. Mirror
+/// of `native_append_to` via `Selection::prepend_selection()`.
+fn native_prepend_to(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let target_id = arg_usize(args, 0, context)?;
+    let source_id = arg_usize(args, 1, context)?;
+    let s = store.borrow();
+    s.sel(target_id)
+        .map_err(js_error)?
+        .prepend_selection(s.sel(source_id).map_err(js_error)?);
+    Ok(JsValue::undefined())
+}
+
 /// `__native_parents(sel_id, selector_or_null) -> JsArray` of handles,
 /// farthest ancestor first (real cheerio's own documented order). Walks via
 /// repeated `NodeRef::parent()` (same technique as `native_closest`) rather
@@ -1533,6 +1590,13 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
     );
     register_native(
         context,
+        "__native_prepend_html",
+        2,
+        store.clone(),
+        native_prepend_html,
+    );
+    register_native(
+        context,
         "__native_set_html",
         2,
         store.clone(),
@@ -1645,6 +1709,20 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
         2,
         store.clone(),
         native_add_selection,
+    );
+    register_native(
+        context,
+        "__native_append_to",
+        2,
+        store.clone(),
+        native_append_to,
+    );
+    register_native(
+        context,
+        "__native_prepend_to",
+        2,
+        store.clone(),
+        native_prepend_to,
     );
     register_native(context, "__native_parents", 2, store.clone(), native_parents);
     register_native(

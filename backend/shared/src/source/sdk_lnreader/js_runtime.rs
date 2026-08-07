@@ -612,6 +612,38 @@ CheerioSelection.prototype.append = function (html) {
     __native_append_html(this.__id, html);
     return this;
 };
+// .prepend(html) -- mirror of .append(html), added per
+// docs/lnreader/REFERENCE.md §1.2.11's native-call pre-implementation rule
+// (native equivalent already present, trivial cost, same DOM-construction
+// relevance already accepted for .append()).
+CheerioSelection.prototype.prepend = function (html) {
+    __native_prepend_html(this.__id, html);
+    return this;
+};
+// .appendTo(target)/.prependTo(target) -- the reverse framing of
+// .append()/.prepend(): moves THIS selection's elements into `target`
+// instead of moving new HTML into `this`. Only the CheerioSelection-target
+// form is supported (matching the exact native primitives available,
+// Selection::append_selection()/prepend_selection() -- see
+// docs/lnreader/REFERENCE.md §1.2.10/§1.2.11); a selector-string target
+// isn't wired up, consistent with this shim's existing pattern of shipping
+// a narrower-than-real-cheerio surface where the missing half has no
+// plausible scraping relevance (§1.2.8.1's URL.parse()/TextEncoder.encodeInto()
+// are the same kind of deliberate gap).
+CheerioSelection.prototype.appendTo = function (target) {
+    if (!(target instanceof CheerioSelection)) {
+        throw new Error('.appendTo() only supports a CheerioSelection target');
+    }
+    __native_append_to(target.__id, this.__id);
+    return this;
+};
+CheerioSelection.prototype.prependTo = function (target) {
+    if (!(target instanceof CheerioSelection)) {
+        throw new Error('.prependTo() only supports a CheerioSelection target');
+    }
+    __native_prepend_to(target.__id, this.__id);
+    return this;
+};
 CheerioSelection.prototype.setHtml = function (html) {
     // Explicit alias of .html(x) (now getter/setter-overloaded above) --
     // kept because some plugin code prefers an explicit mutation name.
@@ -2307,6 +2339,52 @@ mod cheerio_prelude_tests {
             var b = cheerio_load('<p class="b">b</p>')('.b');
             var union = a.add(b);
             union.length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn prepend_inserts_html_before_existing_children() {
+        // §1.2.11: .prepend(html), the mirror of the pre-existing .append(html).
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><p>old</p></div>');
+            $('#w').prepend('<h3>new</h3>');
+            $('#w').children().first().is('h3') && $('#w').children().length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn append_to_moves_source_elements_into_target() {
+        // §1.2.11: .appendTo(target), the reverse framing of .append(html).
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<ul id="list"><li>a</li></ul><p id="src">b</p>');
+            $('#src').appendTo($('#list'));
+            $('#list').children().length === 2 && $('#list').children().last().text() === 'b'
+            "#
+        ));
+    }
+
+    #[test]
+    fn prepend_to_moves_source_elements_before_targets_children() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<ul id="list"><li>a</li></ul><p id="src">b</p>');
+            $('#src').prependTo($('#list'));
+            $('#list').children().length === 2 && $('#list').children().first().text() === 'b'
+            "#
+        ));
+    }
+
+    #[test]
+    fn append_to_returns_this_for_chaining() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<ul id="list"></ul><p id="src">b</p>');
+            var result = $('#src').appendTo($('#list'));
+            result.is('#src')
             "#
         ));
     }

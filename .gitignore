@@ -22,17 +22,12 @@ node_modules
 
 /BUILD_INFO.json
 
-# LNReader integration: the Phase 4 handoff note is still French-language,
-# session-scratch planning text (unlike the rest of docs/lnreader/, cleaned
-# up and committed) -- kept local until it's translated or rewritten.
-docs/lnreader/PHASE4_HANDOFF.md
-
-# LNReader integration: local server home directory used for real,
-# end-to-end manual testing against the live HTTP API (see
-# docs/lnreader/REFERENCE.md §6) -- installed sources/downloads/database
-# churn on every test run, not meant for git history; the settings.json
-# fixture itself is reproducible from REFERENCE.md if it's ever lost.
-docs/lnreader/test_home/
+# LNReader integration: Claude Code working notes (feasibility research,
+# phase handoffs, investigation findings) -- session-scratch, not shipped
+# documentation, kept local only. This also covers docs/lnreader/test_home/
+# (a local server home directory used for real, end-to-end manual testing
+# against the live HTTP API), whose churn was previously excluded on its own.
+docs/lnreader/
 
 # LNReader integration: real plugin sources vendored locally for one-off
 # manual validation against real sites during development (see

@@ -854,11 +854,28 @@ fn register_document_class(
     );
     doc.methods.insert(
         "xpath".into(),
-        helpers::method(|_v, _t, _p, _n| Ok(Value::List(Rc::new(RefCell::new(Vec::new()))))),
+        helpers::method(|_v, target, positional, _named| {
+            let expr = arg_str(&positional, 0)?;
+            let st = state();
+            let st = st.borrow();
+            let doc_id = need(map_int(&target, "doc"), "document id")? as usize;
+            let root = need(st.dom.html_root(doc_id), "document root element")?;
+            Ok(value_list(xpath_values(root, &expr, false)))
+        }),
     );
     doc.methods.insert(
         "xpathFirst".into(),
-        helpers::method(|_v, _t, _p, _n| Ok(Value::Null)),
+        helpers::method(|_v, target, positional, _named| {
+            let expr = arg_str(&positional, 0)?;
+            let st = state();
+            let st = st.borrow();
+            let doc_id = need(map_int(&target, "doc"), "document id")? as usize;
+            let root = need(st.dom.html_root(doc_id), "document root element")?;
+            Ok(match xpath_first_value(root, &expr) {
+                Some(v) => Value::str(v),
+                None => Value::Null,
+            })
+        }),
     );
 
     let doc = Arc::new(doc);
@@ -1073,11 +1090,26 @@ fn register_element_class(
     );
     el.methods.insert(
         "xpath".into(),
-        helpers::method(|_v, _t, _p, _n| Ok(Value::Null)),
+        helpers::method(|_v, target, positional, _named| {
+            let expr = arg_str(&positional, 0)?;
+            let st = state();
+            let st = st.borrow();
+            let (_, _, node) = need(st.dom.node_of(&target), "element")?;
+            Ok(value_list(xpath_values(node, &expr, false)))
+        }),
     );
     el.methods.insert(
         "xpathFirst".into(),
-        helpers::method(|_v, _t, _p, _n| Ok(Value::Null)),
+        helpers::method(|_v, target, positional, _named| {
+            let expr = arg_str(&positional, 0)?;
+            let st = state();
+            let st = st.borrow();
+            let (_, _, node) = need(st.dom.node_of(&target), "element")?;
+            Ok(match xpath_first_value(node, &expr) {
+                Some(v) => Value::str(v),
+                None => Value::Null,
+            })
+        }),
     );
     el.methods.insert(
         "hasAttr".into(),
@@ -1134,6 +1166,53 @@ fn arg_str(positional: &[Value], i: usize) -> Result<String, InterpError> {
         },
         _ => Err(InterpError::runtime(format!("expected string arg at {i}"))),
     }
+}
+
+/// Runs an XPath query against `root` and returns the extracted output
+/// values, mirroring `MBridge.xpath` (`single_node = true`) and the
+/// `xpath` extensions on `MDocument`/`MElement` (`single_node = false`):
+/// several matched nodes yield all extracted values trimmed, one matched
+/// node yields its first non-empty value only in the top-level variant, and
+/// any parse/evaluation error yields nothing.
+fn xpath_values(root: dom_query::NodeRef<'_>, expr: &str, single_node: bool) -> Vec<String> {
+    match super::xpath::query(root, expr) {
+        Ok(result) => {
+            let nodes_len = result.nodes.len();
+            if nodes_len > 1 {
+                let mut out = Vec::new();
+                for attr in result.attrs {
+                    match attr {
+                        Some(v) => out.push(v.trim().to_string()),
+                        None => return Vec::new(),
+                    }
+                }
+                out
+            } else if single_node && nodes_len == 1 {
+                match result.first_attr() {
+                    Some(v) if !v.trim().is_empty() => vec![v.trim().to_string()],
+                    _ => Vec::new(),
+                }
+            } else {
+                Vec::new()
+            }
+        }
+        Err(_) => Vec::new(),
+    }
+}
+
+/// The first extracted output value of an XPath query, mirroring the
+/// `xpathFirst` extensions on `MDocument`/`MElement` (`query.attr`).
+fn xpath_first_value(root: dom_query::NodeRef<'_>, expr: &str) -> Option<String> {
+    match super::xpath::query(root, expr) {
+        Ok(result) => result.first_attr().map(str::to_string),
+        Err(_) => None,
+    }
+}
+
+fn value_list(values: Vec<String>) -> Value {
+    Value::List(Rc::new(RefCell::new(
+        values.into_iter().map(Value::str).collect(),
+    )))
 }
 
 fn client_request(
@@ -1299,6 +1378,27 @@ fn register_top_level_functions(ctx: &mut d4rt_rs::Context, state: &StateRef) {
                     }
                 }
                 status_enum_value("unknown", 3)
+            }),
+            callable_runtime_type: d4rt_rs::rt::FunctionRuntimeType::untyped(),
+        })),
+    );
+
+    let st = state.clone();
+    ctx.set(
+        "xpath",
+        Value::NativeFn(Rc::new(d4rt_rs::callable::NativeFunction {
+            name: Some("xpath".to_string()),
+            min_arity: 2,
+            max_arity: None,
+            is_async: false,
+            is_generator: false,
+            closure: Box::new(move |_v, positional, _named| {
+                let html = arg_str(&positional, 0)?;
+                let expr = arg_str(&positional, 1)?;
+                let mut st = st.borrow_mut();
+                let doc_id = st.dom.parse(&html);
+                let root = need(st.dom.html_root(doc_id), "document root element")?;
+                Ok(value_list(xpath_values(root, &expr, true)))
             }),
             callable_runtime_type: d4rt_rs::rt::FunctionRuntimeType::untyped(),
         })),

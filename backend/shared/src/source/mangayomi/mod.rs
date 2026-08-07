@@ -10,6 +10,7 @@ pub mod html;
 pub mod js;
 pub mod model;
 pub mod runtime;
+pub mod xpath;
 
 use std::{
     collections::HashMap,

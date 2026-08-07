@@ -263,6 +263,32 @@ fn route(
 <div class="chapter-content"><p>Meanwhile, in the Arctic.</p></div>
 </body></html>"#,
             ),
+            "/xpath/directory/1.htm" => html(
+                r#"<html><body>
+<div class="manga-list-1-list">
+<li><a title="Xpath One" href="http://127.0.0.1:PORT/xpath/manga/one"><img class="manga-list-1-cover" src="https://cdn.example.com/x1.jpg"></a></li>
+<li><a title="Xpath Two" href="http://127.0.0.1:PORT/xpath/manga/two"><img class="manga-list-1-cover" src="https://cdn.example.com/x2.jpg"></a></li>
+<li><a title="Xpath Three" href="http://127.0.0.1:PORT/xpath/manga/three"><img class="manga-list-1-cover" src="https://cdn.example.com/x3.jpg"></a></li>
+</div>
+</body></html>"#,
+            ),
+            "/xpath/manga/one" => html(
+                r#"<html><body>
+<div class="detail-name"><h1>Xpath One</h1></div>
+<div class="fullcontent">Pirate adventure story.</div>
+<div class="detail-info-right-say"><a>Author Name</a></div>
+<div class="detail-info-right-tag-list"><a>Action</a><a>Adventure</a></div>
+<ul class="chapter-list">
+<li><a href="http://127.0.0.1:PORT/xpath/manga/one/ch/1">Chapter 1</a></li>
+<li><a href="http://127.0.0.1:PORT/xpath/manga/one/ch/2">Chapter 2</a></li>
+</ul>
+</body></html>"#,
+            ),
+            "/xpath/manga/one/ch/1" => html(
+                r#"<html><body>
+<div id="readerarea"><p><img src="https://cdn.example.com/p1.jpg"></p><p><img src="https://cdn.example.com/p2.jpg"></p></div>
+</body></html>"#,
+            ),
             _ => ("404 Not Found", "text/plain", b"not found".to_vec()),
         },
     }
@@ -381,7 +407,12 @@ class Madara extends MProvider {
 
   @override
   Future<List<String>> getPageList(String url) async {
-    final res = (await client.get(Uri.parse(url))).body;
+    // Resolve relative chapter URLs (as mangayomi extensions do) into the
+    // absolute URL the HTTP client needs.
+    final target = url.startsWith("http")
+        ? url
+        : "${baseUrl}${url.startsWith('/') ? '' : '/'}$url";
+    final res = (await client.get(Uri.parse(target))).body;
     final document = parseHtml(res);
     return document.select("div.page-break img").map((e) => e.getSrc).toList();
   }
@@ -442,7 +473,10 @@ class RoyalRoad extends MProvider {
 
   @override
   Future<String> getHtmlContent(String name, String url) async {
-    final res = (await client.get(Uri.parse(url))).body;
+    final target = url.startsWith("http")
+        ? url
+        : "${baseUrl}${url.startsWith('/') ? '' : '/'}$url";
+    final res = (await client.get(Uri.parse(target))).body;
     final document = parseHtml(res);
     return document.selectFirst("div.chapter-content").text;
   }
@@ -535,10 +569,10 @@ async fn runner_full_offline() {
         serde_json::Value::String("1.2.0".into())
     );
     assert_eq!(manifest.info.url.as_deref(), Some(base.as_str()));
-    assert_eq!(
-        manifest.source_of_source.as_deref(),
-        Some("https://example.com/madara.dart")
-    );
+    // `source_of_source` comes from the sidecar meta file written at
+    // install time (the source list key), taking precedence over the
+    // `sourceCodeUrl` found in the metadata JSON.
+    assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
     let source = mangayomi(source);
     assert!(source.supports_latest);
@@ -703,7 +737,7 @@ async fn runner_full_offline() {
         .unwrap();
     assert_eq!(chapters.len(), 2);
     assert_eq!(chapters[0].title.as_deref(), Some("Chapter 1"));
-    assert_eq!(chapters[0].id, format!("{base}/manga/one/ch/1"));
+    assert_eq!(chapters[0].id, "/manga/one/ch/1");
     assert_eq!(
         chapters[0].url.clone().map(|u| u.to_string()).unwrap(),
         format!("{base}/manga/one/ch/1")
@@ -966,6 +1000,193 @@ fn runner_rejects_anime_extension() {
     assert!(
         err.to_string().contains("anime"),
         "error should mention anime: {err}"
+    );
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// An extension in the style of the MangaHere source: all scraping goes
+// through the top-level `xpath()` helper, `xpath(...).first`, the
+// `parseHtml(...).xpath(...)`/`xpathFirst(...)` methods and element-level
+// `xpathFirst`.
+const XPATH_FIXTURE_EXTENSION: &str = r#"
+import 'package:mangayomi/bridge_lib.dart';
+
+class XpathMadara extends MProvider {
+  XpathMadara({required this.source});
+  MSource source;
+  final Client client = Client();
+
+  String get baseUrl => source.baseUrl;
+  bool get supportsLatest => true;
+
+  @override
+  Future<MPages> getPopular(int page) async {
+    final res = (await client.get(Uri.parse("${source.baseUrl}/xpath/directory/$page.htm"))).body;
+    final names = xpath(res, '//*[ contains(@class, "manga-list-1-list")]/li/a/@title');
+    final images = xpath(res, '//*[ contains(@class, "manga-list-1-list")]/li/a/img[@class="manga-list-1-cover"]/@src');
+    final urls = xpath(res, '//*[ contains(@class, "manga-list-1-list")]/li/a/@href');
+    List<MManga> mangaList = [];
+    for (var i = 0; i < names.length; i++) {
+      MManga manga = MManga();
+      manga.name = names[i];
+      manga.imageUrl = images[i];
+      manga.link = urls[i];
+      mangaList.add(manga);
+    }
+    return MPages(mangaList, true);
+  }
+
+  @override
+  Future<MPages> getLatestUpdates(int page) async {
+    return getPopular(page);
+  }
+
+  @override
+  Future<MManga> getDetail(String url) async {
+    final res = (await client.get(Uri.parse(url))).body;
+    MManga manga = MManga();
+    manga.name = xpath(res, '//*[@class="detail-name"]/text()').first;
+    manga.description = xpath(res, '//*[@class="fullcontent"]/text()').first;
+    manga.author = xpath(res, '//*[@class="detail-info-right-say"]/a/text()').first;
+    manga.genre = xpath(res, '//*[@class="detail-info-right-tag-list"]/a/text()');
+    manga.status = parseStatus('ongoing', [
+      {"OnGoing": 0, "Complete": 1},
+    ]);
+    List<MChapter> chapters = [];
+    final document = parseHtml(res);
+    final docTitles = document.xpath('//*[@class="chapter-list"]/li/a/@href');
+    for (var i = 0; i < docTitles.length; i++) {
+      var chapter = MChapter();
+      chapter.url = docTitles[i];
+      chapter.name = document.selectFirst("a").xpathFirst("text()");
+      chapters.add(chapter);
+    }
+    manga.chapters = chapters;
+    return manga;
+  }
+
+  @override
+  Future<MPages> search(String query, int page, FilterList filterList) async {
+    return getPopular(page);
+  }
+
+  @override
+  Future<List<String>> getPageList(String url) async {
+    final res = (await client.get(Uri.parse(url))).body;
+    return xpath(res, '//*[@id="readerarea"]/p/img/@src');
+  }
+
+  @override
+  List<dynamic> getFilterList() {
+    return [];
+  }
+
+  @override
+  List<dynamic> getSourcePreferences() {
+    return [];
+  }
+}
+
+XpathMadara main(MSource source) => XpathMadara(source: source);
+"#;
+
+#[tokio::test]
+async fn runner_xpath_extension() {
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+
+    let port = base
+        .trim_start_matches("http://")
+        .rsplit(':')
+        .next()
+        .unwrap();
+    let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
+
+    let dir = temp_sources_dir("xpath");
+    let mut manager = manager(&dir);
+    let source_id = install(
+        &mut manager,
+        &XPATH_FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
+        &html(
+            r#"{"id": 434984458, "name": "Xpath Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.0.0", "sourceCodeUrl": "https://example.com/xpath.dart"}"#,
+        ),
+    );
+
+    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = mangayomi(source);
+
+    // Popular list: three `<a>` entries scraped through the top-level
+    // `xpath()` helper (the same queries the MangaHere source uses).
+    let mangas = source
+        .get_manga_list(
+            CancellationToken::new(),
+            shared::aidoku::Listing {
+                id: "popular".to_string(),
+                name: "popular".to_string(),
+                kind: Default::default(),
+            },
+        )
+        .unwrap();
+    assert_eq!(mangas.len(), 3);
+    assert_eq!(mangas[0].title.as_deref(), Some("Xpath One"));
+    assert_eq!(
+        mangas[0].cover_url.as_ref().map(|u| u.to_string()),
+        Some("https://cdn.example.com/x1.jpg".to_string())
+    );
+    assert_eq!(mangas[1].title.as_deref(), Some("Xpath Two"));
+    assert_eq!(mangas[2].title.as_deref(), Some("Xpath Three"));
+    assert_eq!(
+        mangas[0].id,
+        format!("{base}/xpath/manga/one"),
+        "the href extracted by xpath becomes the manga id"
+    );
+
+    // Details: `.first` on a single-node `text()` result, `xpathFirst` on
+    // an element and document-level `xpath` for chapter URLs.
+    let manga = source
+        .get_manga_details(CancellationToken::new(), format!("{base}/xpath/manga/one"))
+        .unwrap();
+    assert_eq!(manga.title.as_deref(), Some("Xpath One"));
+    assert_eq!(
+        manga.description.as_deref(),
+        Some("Pirate adventure story.")
+    );
+    assert_eq!(manga.author.as_deref(), Some("Author Name"));
+    assert_eq!(
+        manga.tags.as_deref(),
+        Some(&["Action".to_string(), "Adventure".to_string()][..])
+    );
+    assert_eq!(
+        manga.status,
+        PublishingStatus::Ongoing,
+        "parseStatus maps 'ongoing' to Ongoing"
+    );
+
+    let chapters = source
+        .get_chapter_list(CancellationToken::new(), format!("{base}/xpath/manga/one"))
+        .unwrap();
+    assert_eq!(chapters.len(), 2);
+    assert_eq!(chapters[0].id, format!("{base}/xpath/manga/one/ch/1"));
+    assert_eq!(chapters[1].id, format!("{base}/xpath/manga/one/ch/2"));
+
+    // Chapter pages: a multi-node `@src` result becomes the page list.
+    let pages = source
+        .get_page_list(
+            CancellationToken::new(),
+            format!("{base}/xpath/manga/one"),
+            chapters[0].id.clone(),
+            None,
+        )
+        .unwrap();
+    assert_eq!(pages.len(), 2);
+    assert_eq!(
+        pages[0].image_url.as_ref().map(|u| u.to_string()),
+        Some("https://cdn.example.com/p1.jpg".to_string())
+    );
+    assert_eq!(
+        pages[1].image_url.as_ref().map(|u| u.to_string()),
+        Some("https://cdn.example.com/p2.jpg".to_string())
     );
 
     std::fs::remove_dir_all(&dir).ok();

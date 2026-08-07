@@ -82,6 +82,13 @@ impl MangaYomiDom {
         Some(0)
     }
 
+    /// The `<html>` element node of `doc_id`, mirroring the `documentElement`
+    /// MangaYomi uses as the context node for document-level XPath queries.
+    pub fn html_root(&self, doc_id: usize) -> Option<NodeRef<'_>> {
+        let document = self.documents.get(doc_id)?;
+        Some(document.html_root())
+    }
+
     /// Selects elements matching `selector` inside `node` (including `node`
     /// itself, mirroring MangaYomi's `MDocument.select`).
     pub fn select(&self, node: NodeRef<'_>, selector: &str) -> Vec<NodeId> {

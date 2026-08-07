@@ -625,18 +625,16 @@ fn describe_exit_status(status: &std::process::ExitStatus) -> String {
     format!("{status:?}")
 }
 
-/// End-to-end tests against real, vendored LNReader plugins
-/// (`test_fixtures/`, see their header comments for provenance). These hit
-/// real sites over the network, so they're `#[ignore]`d by default — run
-/// explicitly with:
-/// `cargo test -p shared --features all -- --ignored sdk_lnreader`.
-///
-/// These go through the real `run_worker`/`worker_binary_path` path, same as
-/// production — `cargo test` builds the `lnreader_worker` bin target into
-/// the same `target/<profile>/` tree as everything else, and
-/// `worker_binary_path` already checks both the test binary's own directory
-/// (`target/debug/deps/`) and its parent (`target/debug/`, where bin targets
-/// actually land) to find it. Nothing test-specific needed here.
+/// End-to-end tests against the real worker subprocess pipeline
+/// (`run_worker`/`worker_binary_path`, same path as production —
+/// `cargo test` builds the `lnreader_worker` bin target into the same
+/// `target/<profile>/` tree as everything else, and `worker_binary_path`
+/// already checks both the test binary's own directory (`target/debug/deps/`)
+/// and its parent (`target/debug/`, where bin targets actually land) to find
+/// it). Every plugin JS here is hand-written and synthetic (same spirit as
+/// `tls.rs`'s `https://example.com` plumbing-only network tests and this
+/// module's own `HANG_PLUGIN_JS` below) — no vendored real source and no
+/// actual network I/O, so none of these need `#[ignore]`.
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -724,12 +722,79 @@ mod tests {
             .expect("failed to load test LNReader source")
     }
 
-    /// Exercises `search_mangas` -> `get_chapter_list` -> `get_page_list`
-    /// against a real site, asserting non-empty/sane results at each step —
-    /// the acceptance bar from the session plan's step 2.5. Uses
-    /// `search_mangas` (not `get_manga_list`) because that's the only
-    /// discovery path the real app actually calls (`Backend.searchMangas`);
-    /// `get_manga_list` exists solely to satisfy the `Source` trait shape.
+    /// A hand-written synthetic plugin (same spirit as `HANG_PLUGIN_JS`
+    /// below and `tls.rs`'s plumbing-only network tests) exercising the full
+    /// `search_mangas` -> `get_chapter_list` -> `get_page_list` path without
+    /// any real site or network I/O: every HTML string is inline, built and
+    /// queried via the native cheerio shim entirely inside the worker.
+    /// Doubles as a regression fixture for three cheerio bugs found and
+    /// fixed in `js_runtime.rs`'s `CHEERIO_PRELUDE`, each exercised through
+    /// the real worker subprocess (not just the in-process test harness in
+    /// `js_runtime.rs`'s own unit tests):
+    /// - `searchNovels` uses `.remove(selector)` (filters the current set by
+    ///   selector before removing, not a plain unconditional remove).
+    /// - `parseNovel` uses `$(htmlString)` — detached-element creation from
+    ///   an HTML string, not a selector query against the loaded document.
+    /// - `parseChapter` uses `.prop("outerHTML")`.
+    const CHEERIO_FIXTURE_PLUGIN_JS: &str = r##"
+        Object.defineProperty(exports, "__esModule", { value: true });
+        var cheerio = require("cheerio");
+
+        function CheerioFixturePlugin() {
+            this.id = "cheerio-fixture-test";
+            this.name = "Cheerio Fixture Test";
+            this.site = "https://example.com";
+        }
+
+        CheerioFixturePlugin.prototype.popularNovels = function () {
+            return Promise.resolve([]);
+        };
+
+        CheerioFixturePlugin.prototype.searchNovels = function () {
+            var $ = cheerio.load(
+                '<div class="list">' +
+                    '<span class="ad">skip me</span>' +
+                    '<span class="item">Alpha</span>' +
+                    '<span class="item">Beta</span>' +
+                "</div>"
+            );
+            $(".list").children().remove(".ad");
+            var titles = $(".item")
+                .map(function (i, el) {
+                    return $(el).text();
+                })
+                .get();
+            return Promise.resolve(
+                titles.map(function (t) {
+                    return { name: t, path: "/novel/" + t.toLowerCase() };
+                })
+            );
+        };
+
+        CheerioFixturePlugin.prototype.parseNovel = function () {
+            var frag = cheerio.load("<div></div>")(
+                '<p class="synopsis">Hello <b>world</b></p>'
+            );
+            return Promise.resolve({
+                path: "x",
+                summary: frag.text(),
+                chapters: [{ path: "c1", name: "Chapter 1", chapterNumber: 1 }],
+            });
+        };
+
+        CheerioFixturePlugin.prototype.parseChapter = function () {
+            var $ = cheerio.load('<article><p id="p1">Some <em>text</em></p></article>');
+            return Promise.resolve($("#p1").prop("outerHTML"));
+        };
+
+        exports.default = new CheerioFixturePlugin();
+    "##;
+
+    /// Exercises `search_mangas` -> `get_chapter_list` -> `get_page_list`,
+    /// asserting non-empty/sane results at each step. Uses `search_mangas`
+    /// (not `get_manga_list`) because that's the only discovery path the
+    /// real app actually calls (`Backend.searchMangas`); `get_manga_list`
+    /// exists solely to satisfy the `Source` trait shape.
     async fn assert_source_works_end_to_end(fixture_id: &str, main_js: &str) {
         let source = load_test_source(fixture_id, main_js);
         let token = CancellationToken::new();
@@ -780,42 +845,8 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore] // requires network
-    async fn lnori_end_to_end() {
-        assert_source_works_end_to_end("lnori", include_str!("test_fixtures/lnori.js")).await;
-    }
-
-    #[tokio::test]
-    #[ignore] // requires network
-    async fn novelupdates_end_to_end() {
-        assert_source_works_end_to_end(
-            "novelupdates",
-            include_str!("test_fixtures/novelupdates.js"),
-        )
-        .await;
-    }
-
-    #[tokio::test]
-    #[ignore] // requires network
-    async fn novelbuddy_end_to_end() {
-        assert_source_works_end_to_end("novelbuddy", include_str!("test_fixtures/novelbuddy.js"))
-            .await;
-    }
-
-    #[tokio::test]
-    #[ignore] // requires network
-    async fn ranobes_end_to_end() {
-        assert_source_works_end_to_end("ranobes", include_str!("test_fixtures/ranobes.js")).await;
-    }
-
-    #[tokio::test]
-    #[ignore] // requires network
-    async fn freewebnovel_end_to_end() {
-        assert_source_works_end_to_end(
-            "freewebnovel",
-            include_str!("test_fixtures/freewebnovel.js"),
-        )
-        .await;
+    async fn cheerio_fixture_plugin_end_to_end() {
+        assert_source_works_end_to_end("cheerio-fixture-test", CHEERIO_FIXTURE_PLUGIN_JS).await;
     }
 
     /// A hand-written synthetic plugin (not a vendored real source, same

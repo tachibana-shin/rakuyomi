@@ -29,12 +29,6 @@ node_modules
 # against the live HTTP API), whose churn was previously excluded on its own.
 docs/lnreader/
 
-# LNReader integration: real plugin sources vendored locally for one-off
-# manual validation against real sites during development (see
-# faisabilite-v2-adapter-rakuyomi.md §10.6) -- never committed, even with
-# MIT attribution, same as Aidoku never committing vendored test sources.
-backend/shared/src/source/sdk_lnreader/test_fixtures/
-
 # Claude Code's own runtime state for this repo (scheduled tasks, worktree/
 # checkpoint/mailbox bookkeeping, agent registry/memory) -- tooling-local,
 # regenerated per machine, never meant to be shared via git. Previously

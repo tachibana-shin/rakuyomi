@@ -101,10 +101,22 @@ pub fn fetch_manga_chapters_in_batch<'a>(
 
 async fn apply_chapter_filter(
     db: &Database,
-    all_chapters: Vec<ChapterInformation>,
+    mut all_chapters: Vec<ChapterInformation>,
     filter: Filter,
     langs: &[&str],
 ) -> Result<Vec<ChapterInformation>> {
+    // Do not rely on the DB order: databases created before the order
+    // normalization may still store chapters newest-first. Sort by chapter
+    // number so the filter logic below is correct regardless. Chapters
+    // without a parseable number fall back to 0 and keep their DB order as a
+    // tiebreaker (slice::sort_by is stable).
+    all_chapters.sort_by(|a, b| {
+        a.chapter_number
+            .unwrap_or_default()
+            .partial_cmp(&b.chapter_number.unwrap_or_default())
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
     let mut last_read_chapter = None;
     let target_scanlator = match &filter {
         Filter::ScanlatorChapters { scanlator, .. } => Some(scanlator.clone()),
@@ -121,8 +133,9 @@ async fn apply_chapter_filter(
         HashMap::new()
     };
 
-    // Starting from the newest chapter (in source order), find out the first one marked as read.
-    for chapter in all_chapters.iter() {
+    // Starting from the newest chapter (the one with the highest chapter
+    // number), find out the first one marked as read.
+    for chapter in all_chapters.iter().rev() {
         // Filter: language
         if use_lang_filter {
             let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
@@ -150,10 +163,10 @@ async fn apply_chapter_filter(
         }
     }
 
-    // In reverse source order (oldest-to-newest), find out which unread chapters to download.
+    // In oldest-to-newest order (by chapter number), find out which unread
+    // chapters to download.
     let unread_chapters = all_chapters
         .into_iter()
-        .rev()
         .filter(move |chapter| {
             if use_lang_filter {
                 let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");

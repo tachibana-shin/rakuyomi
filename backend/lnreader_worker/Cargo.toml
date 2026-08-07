@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 shared = { path = "../shared" }
-tokio = { version = "1.52.3", features = ["rt"] }
+tokio = { version = "1.52.3", features = ["rt-multi-thread"] }

@@ -108,15 +108,16 @@ pub fn manga_from_value(source_id: &str, base_url: &str, value: &Value) -> Manga
         .and_then(Value::as_i64)
         .map(status_from_index)
         .unwrap_or_default();
-    // Extensions pass the URL straight to `Client.get(Uri.parse(url))`, so
-    // the id must be an absolute URL (the MangaYomi app uses it the same way).
-    let id = url.as_ref().map(|u| u.to_string()).unwrap_or_else(|| {
-        if link.is_empty() {
-            str_field(value, "url")
-        } else {
-            link
-        }
-    });
+    // The id mirrors what the MangaYomi app stores: the extension's raw
+    // `link`, passed back verbatim to `getDetail`/`getChapterList`. Some
+    // extensions (e.g. MangaDex) return relative paths that they join with
+    // their own `apiUrl`, so the id must not be absolutised. The resolved
+    // URL is kept separately for display purposes.
+    let id = if link.is_empty() {
+        str_field(value, "url")
+    } else {
+        link
+    };
     Manga {
         source_id: source_id.to_string(),
         id,
@@ -160,12 +161,11 @@ pub fn chapters_from_value(
             let url = resolve_url(base_url, &raw_url);
             Chapter {
                 source_id: source_id.to_string(),
-                // Absolute URL: the downloader hands `chapter.id` straight to
-                // `getPageList`, which the extension fetches with `Uri.parse`.
-                id: url
-                    .as_ref()
-                    .map(|u| u.to_string())
-                    .unwrap_or_else(|| raw_url),
+                // Raw chapter URL as the id, mirroring the MangaYomi app: the
+                // downloader hands `chapter.id` straight to `getPageList`,
+                // which extensions may join with their `apiUrl` (e.g. MangaDex
+                // uses bare ids, madara sources absolute URLs).
+                id: raw_url,
                 manga_id: manga_id.to_string(),
                 title: Some(str_field(chapter, "name")).filter(|s| !s.is_empty()),
                 scanlator: Some(str_field(chapter, "scanlator")).filter(|s| !s.is_empty()),
@@ -297,7 +297,7 @@ mod tests {
                 "status": 0
             }),
         );
-        assert_eq!(manga.id, "https://example.com/manga/one");
+        assert_eq!(manga.id, "/manga/one");
         assert_eq!(manga.title.as_deref(), Some("One Piece"));
         assert_eq!(
             manga.cover_url.map(|u| u.to_string()),
@@ -319,7 +319,7 @@ mod tests {
             &json!([{"name": "Chapter 1", "url": "/manga/one/ch/1"}]),
         );
         assert_eq!(chapters.len(), 1);
-        assert_eq!(chapters[0].id, "https://example.com/manga/one/ch/1");
+        assert_eq!(chapters[0].id, "/manga/one/ch/1");
         assert_eq!(chapters[0].source_order, 0);
 
         let pages = pages_from_value(

@@ -29,7 +29,7 @@ use crate::{
     settings::SourceSettingValue,
     source::{
         model::{Manga, Page, SettingDefinition},
-        SourceFeatures, SourceInfo, SourceManifest,
+        BlockingSource, SourceFeatures, SourceInfo, SourceManifest, SourceMeta,
     },
     source_manager::SourceManager,
     util::DEFAULT_USER_AGENT,
@@ -157,6 +157,26 @@ impl MangayomiSource {
         if meta.id.is_empty() {
             bail!("extension metadata is missing an id");
         }
+        // The source list key (e.g. `m2k3a/mangayomi-extensions`) is stored
+        // in the sidecar meta file at install time; `/available-sources`
+        // reports the same value as `source_of_source`, so it is what the
+        // frontend matches installed sources against. Fall back to the
+        // extension's `sourceCodeUrl` (often absent from the stored
+        // metadata) when no meta file exists.
+        let source_of_source = {
+            let meta_file = BlockingSource::meta_source_path(path)?;
+            let mut source_of_source = meta.source_code_url.clone();
+            if meta_file.exists() {
+                let meta: SourceMeta = serde_json::from_str(
+                    &fs::read_to_string(&meta_file)
+                        .with_context(|| format!("failed to read meta file {:?}", meta_file))?,
+                )?;
+                if let Some(from) = meta.source_of_source {
+                    source_of_source = Some(from);
+                }
+            }
+            source_of_source
+        };
 
         // Dispatch by file suffix first (it is the ground truth for the
         // stored code); the `sourceCodeLanguage` metadata covers misnamed
@@ -235,7 +255,7 @@ impl MangayomiSource {
                 min_app_version: None,
             },
             config: None,
-            source_of_source: meta.source_code_url.clone(),
+            source_of_source,
         };
 
         Ok(Self {

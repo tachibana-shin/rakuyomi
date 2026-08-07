@@ -320,7 +320,10 @@ class DefaultExtension extends MProvider {
         return manga;
     }
     async getPageList(url) {
-        const html = await this._get(url);
+        const target = url.startsWith("http")
+            ? url
+            : this.source.baseUrl + (url.startsWith("/") ? "" : "/") + url;
+        const html = await this._get(target);
         const document = new Document(html);
         return document.select("div.page-break img").map(function (e) {
             return e.attr("src");
@@ -493,10 +496,10 @@ async fn js_runner_full_offline() {
         serde_json::Value::String("1.2.0".into())
     );
     assert_eq!(manifest.info.url.as_deref(), Some(base.as_str()));
-    assert_eq!(
-        manifest.source_of_source.as_deref(),
-        Some("https://example.com/madara.js")
-    );
+    // `source_of_source` comes from the sidecar meta file written at
+    // install time (the source list key), taking precedence over the
+    // `sourceCodeUrl` found in the metadata JSON.
+    assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
     let source = mangayomi(source);
     assert!(source.supports_latest, "sync getter supportsLatest");
@@ -602,7 +605,7 @@ async fn js_runner_full_offline() {
         .unwrap();
     assert_eq!(chapters.len(), 2);
     assert_eq!(chapters[0].title.as_deref(), Some("Chapter 1"));
-    assert_eq!(chapters[0].id, format!("{base}/manga/one/ch/1"));
+    assert_eq!(chapters[0].id, "/manga/one/ch/1");
     assert_eq!(chapters[0].source_order, 0);
     assert_eq!(chapters[1].title.as_deref(), Some("Chapter 2"));
     assert_eq!(chapters[1].source_order, 1);

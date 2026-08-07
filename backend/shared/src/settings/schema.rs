@@ -234,6 +234,19 @@ pub struct Settings {
     /// marked as read. Disabled by default.
     #[serde(default)]
     pub delete_downloaded_after_read: bool,
+
+    /// Whether the LNReader/JS source execution mode is active (still
+    /// requires the `lnreader` Cargo feature to be compiled in — see
+    /// `docs/lnreader/REFERENCE.md` §2).
+    ///
+    /// **Deliberately defaults to `true`, reversing the original Phase 3.5
+    /// decision ("off by default").** This is a temporary override for the
+    /// active real-world testing phase LNReader is in right now, not an
+    /// oversight — do not "fix" this back to `false` without an explicit
+    /// decision to end that phase (see `docs/lnreader/REFERENCE.md` §2.2 for
+    /// the full rationale and the date this was changed).
+    #[serde(default = "default_true")]
+    pub lnreader_enabled: bool,
 }
 
 fn default_ram_storage_size_mb() -> usize {
@@ -466,12 +479,21 @@ mod tests {
         assert!(!settings.ram_storage_enabled);
         assert_eq!(settings.ram_storage_size_mb, 0);
         assert_eq!(settings.chapter_title_format, ChapterTitleFormat::Title);
+        // Default derive gives `false` here (bool's own Default) — the real,
+        // intended default (`true`, see the field's own doc comment) only
+        // applies via `#[serde(default = "default_true")]`, exercised by
+        // `test_settings_deserialize_uses_serde_defaults` below, not by this
+        // struct-level derive. Same divergence as `storage_size_limit` above.
+        assert!(!settings.lnreader_enabled);
     }
 
     #[test]
     fn test_settings_deserialize_uses_serde_defaults() {
         let json = r#"{}"#;
         let settings: Settings = serde_json::from_str(json).unwrap();
+        // serde(default = "default_true") — the actual runtime default
+        // (Settings::from_file over a settings.json missing this key).
+        assert!(settings.lnreader_enabled);
         // serde(default = ...) uses default_storage_size_limit()
         assert_eq!(settings.storage_size_limit, default_storage_size_limit());
         assert_eq!(settings.ram_storage_size_mb, 32);

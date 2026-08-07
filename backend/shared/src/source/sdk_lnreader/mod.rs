@@ -689,15 +689,27 @@ mod tests {
 
         zip.finish().expect("failed to finalize test .aix file");
 
+        // `Settings::default()` (the derived struct default, used by Rust
+        // code — not `serde(default = "default_true")`, which only kicks in
+        // when deserializing JSON with the key missing) gives
+        // `lnreader_enabled: false`. Loading an LNReader `.aix` through the
+        // real `Source::from_aix_file` path below checks that flag, so it
+        // must be set explicitly here or every test through this helper
+        // fails with "LNReader support is disabled" regardless of the
+        // plugin JS itself.
+        let test_settings = || Settings {
+            lnreader_enabled: true,
+            ..Settings::default()
+        };
         let manager = SourceManager::new(
             tmp_dir.path().to_path_buf(),
             HashMap::new(),
-            Settings::default(),
+            test_settings(),
         );
         let arc_manager = Arc::new(tokio::sync::Mutex::new(SourceManager::new(
             tmp_dir.path().to_path_buf(),
             HashMap::new(),
-            Settings::default(),
+            test_settings(),
         )));
 
         (tmp_dir, aix_path, manager, arc_manager)

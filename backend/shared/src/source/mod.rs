@@ -53,6 +53,7 @@ pub mod model;
 pub mod next_reader;
 #[cfg(feature = "all")]
 mod next_reader;
+#[cfg(feature = "lnreader")]
 mod sdk_lnreader;
 #[cfg(not(feature = "all"))]
 pub mod source_settings;
@@ -65,6 +66,7 @@ mod source_settings;
 /// `sdk_lnreader::metadata`'s doc comment. Same narrow-punch-through pattern
 /// as `lnreader_worker_main` above: `sdk_lnreader` stays private, only this
 /// one function is exposed.
+#[cfg(feature = "lnreader")]
 pub use sdk_lnreader::metadata::extract as lnreader_extract_plugin_metadata;
 /// Entry point for the `lnreader_worker` standalone binary (see that
 /// crate) — not called from anywhere inside this crate itself.
@@ -72,7 +74,18 @@ pub use sdk_lnreader::metadata::extract as lnreader_extract_plugin_metadata;
 /// function is deliberately punched through to `pub` so an external binary
 /// crate can reach it without exposing the rest of `sdk_lnreader`'s
 /// internals.
+#[cfg(feature = "lnreader")]
 pub use sdk_lnreader::worker::run as lnreader_worker_main;
+/// Whether the LNReader/JS source execution mode is actually usable right
+/// now — both gates open: compiled in (`lnreader` Cargo feature) and
+/// enabled at runtime (`Settings::lnreader_enabled`). Centralizes the
+/// `cfg!(feature = "lnreader") && ...` check that used to be duplicated
+/// ad hoc at each call site (`SourceManager::load_all_sources`,
+/// `usecases::list_available_sources`, `usecases::install_source`) — see
+/// `docs/lnreader/REFERENCE.md` §2.
+pub fn lnreader_mode_enabled(lnreader_enabled_setting: bool) -> bool {
+    cfg!(feature = "lnreader") && lnreader_enabled_setting
+}
 #[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_imports;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
@@ -409,7 +422,42 @@ struct BlockingSource {
 
 enum BlockingSourceKind {
     Wasm(WasmBlockingSource),
+    #[cfg(feature = "lnreader")]
     LnReader(sdk_lnreader::LnReaderSource),
+}
+
+/// Cheaply checks whether an `.aix`-shaped archive is an LNReader/JS source
+/// (`Payload/main.js`) rather than an Aidoku/WASM one (`Payload/main.wasm`),
+/// without fully loading it. Unconditional (not gated by the `lnreader`
+/// feature) since it's plain zip inspection, no `sdk_lnreader` involved —
+/// used by `SourceManager::load_all_sources` to skip an already-installed
+/// LNReader source gracefully when LNReader support is off (config toggle or
+/// Cargo feature), instead of letting one such archive's hard error abort
+/// loading every other installed source alongside it.
+pub fn is_lnreader_archive(path: &Path) -> Result<bool> {
+    let file = fs::File::open(path).with_context(|| format!("couldn't open {}", path.display()))?;
+    let mut archive = ZipArchive::new(file)
+        .with_context(|| format!("couldn't open source archive {}", path.display()))?;
+    let found = archive.by_name("Payload/main.js").is_ok();
+    Ok(found)
+}
+
+/// Whether `SourceManager::load_all_sources` should skip `path` instead of
+/// loading it: true only for an LNReader-shaped archive while LNReader
+/// support is off. Logs its own warning before returning `true`, so the
+/// call site is a plain `if`, not a log-then-check pair.
+pub fn should_skip_disabled_lnreader_source(path: &Path, lnreader_enabled_setting: bool) -> bool {
+    if lnreader_mode_enabled(lnreader_enabled_setting) {
+        return false;
+    }
+    let Ok(true) = is_lnreader_archive(path) else {
+        return false;
+    };
+    log::warn!(
+        "skipping installed LNReader source at {} because LNReader support is off",
+        path.display()
+    );
+    true
 }
 
 impl BlockingSource {
@@ -420,41 +468,56 @@ impl BlockingSource {
     /// `WasmBlockingSource::from_aix_file`, deliberately — see
     /// `sdk_lnreader::LnReaderSource::from_aix_file`'s doc comment for why
     /// that's the right tradeoff here).
+    ///
+    /// LNReader support has two independent gates: the `lnreader` Cargo
+    /// feature (whether the mode is compiled in at all, default on) and
+    /// `manager.settings.lnreader_enabled` (a runtime config toggle, default
+    /// off — see `docs/lnreader/REFERENCE.md`). An LNReader-shaped archive
+    /// hitting either gate closed fails loudly and specifically here, rather
+    /// than falling through to the WASM loader and failing there with an
+    /// unrelated "no main.wasm" error.
     fn from_aix_file(
         path: &Path,
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
-        let has_lnreader_payload = {
-            let file = fs::File::open(path)
-                .with_context(|| format!("couldn't open {}", path.display()))?;
-            let mut archive = ZipArchive::new(file)
-                .with_context(|| format!("couldn't open source archive {}", path.display()))?;
-            let found = archive.by_name("Payload/main.js").is_ok();
-            found
-        };
+        if is_lnreader_archive(path)? {
+            #[cfg(feature = "lnreader")]
+            {
+                if !manager.settings.lnreader_enabled {
+                    bail!(
+                        "{} is an LNReader/JS source, but LNReader support is disabled \
+                         (set `lnreader_enabled: true` in the server settings and restart to enable it)",
+                        path.display()
+                    );
+                }
+                return Ok(Self {
+                    kind: BlockingSourceKind::LnReader(
+                        sdk_lnreader::LnReaderSource::from_aix_file(path, manager, arc_manager)?,
+                    ),
+                });
+            }
+            #[cfg(not(feature = "lnreader"))]
+            bail!(
+                "{} is an LNReader/JS source, but this build of Rakuyomi was compiled without LNReader support",
+                path.display()
+            );
+        }
 
-        let kind = if has_lnreader_payload {
-            BlockingSourceKind::LnReader(sdk_lnreader::LnReaderSource::from_aix_file(
-                path,
-                manager,
-                arc_manager,
-            )?)
-        } else {
-            BlockingSourceKind::Wasm(WasmBlockingSource::from_aix_file(
+        Ok(Self {
+            kind: BlockingSourceKind::Wasm(WasmBlockingSource::from_aix_file(
                 path,
                 manager,
                 arc_manager,
                 None,
-            )?)
-        };
-
-        Ok(Self { kind })
+            )?),
+        })
     }
 
     fn manifest(&self) -> SourceManifest {
         match &self.kind {
             BlockingSourceKind::Wasm(w) => w.manifest.clone(),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.manifest(),
         }
     }
@@ -462,6 +525,7 @@ impl BlockingSource {
     fn setting_definitions(&self) -> Vec<SettingDefinition> {
         match &self.kind {
             BlockingSourceKind::Wasm(w) => w.setting_definitions.clone(),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.setting_definitions(),
         }
     }
@@ -469,6 +533,7 @@ impl BlockingSource {
     fn features(&self) -> SourceFeatures {
         match &self.kind {
             BlockingSourceKind::Wasm(w) => w.features.clone(),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.features(),
         }
     }
@@ -479,6 +544,7 @@ impl BlockingSource {
     fn next_sdk(&self) -> bool {
         match &self.kind {
             BlockingSourceKind::Wasm(w) => w.next_sdk,
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => false,
         }
     }
@@ -488,6 +554,7 @@ impl BlockingSource {
             BlockingSourceKind::Wasm(w) => w.start(),
             // Unreachable in practice (`next_sdk()` is always `false` here),
             // but harmless either way.
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => Ok(()),
         }
     }
@@ -499,6 +566,7 @@ impl BlockingSource {
     ) -> Result<Vec<Manga>> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_manga_list(cancellation_token, listing),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.get_manga_list(cancellation_token, listing),
         }
     }
@@ -511,6 +579,7 @@ impl BlockingSource {
     ) -> Result<(Vec<Manga>, bool)> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.search_mangas(cancellation_token, query, page),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.search_mangas(cancellation_token, query, page),
         }
     }
@@ -522,6 +591,7 @@ impl BlockingSource {
     ) -> Result<Manga> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_manga_details(cancellation_token, manga_id),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.get_manga_details(cancellation_token, manga_id),
         }
     }
@@ -533,6 +603,7 @@ impl BlockingSource {
     ) -> Result<Vec<Chapter>> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_chapter_list(cancellation_token, manga_id),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.get_chapter_list(cancellation_token, manga_id),
         }
     }
@@ -548,6 +619,7 @@ impl BlockingSource {
             BlockingSourceKind::Wasm(w) => {
                 w.get_page_list(cancellation_token, manga_id, chapter_id, chapter_num)
             }
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => {
                 l.get_page_list(cancellation_token, manga_id, chapter_id, chapter_num)
             }
@@ -561,6 +633,7 @@ impl BlockingSource {
     ) -> Result<Request> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_image_request(url, ctx),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.get_image_request(url, ctx),
         }
     }
@@ -577,6 +650,7 @@ impl BlockingSource {
             BlockingSourceKind::Wasm(w) => {
                 w.process_page_image(cancellation_token, request, response, bytes, ctx)
             }
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => {
                 l.process_page_image(cancellation_token, request, response, bytes, ctx)
             }
@@ -605,6 +679,7 @@ impl BlockingSource {
             BlockingSourceKind::Wasm(w) => {
                 w.get_search_manga_list_next(cancellation_token, query, page, filters)
             }
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => {
                 bail!("get_search_manga_list_next is not supported for LNReader sources")
             }
@@ -622,6 +697,7 @@ impl BlockingSource {
             BlockingSourceKind::Wasm(w) => {
                 w.get_manga_update_next(cancellation_token, manga, needs_details, needs_chapters)
             }
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => {
                 bail!("get_manga_update_next is not supported for LNReader sources")
             }
@@ -636,6 +712,7 @@ impl BlockingSource {
     ) -> Result<Vec<aidoku::Page>> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_page_list_next(cancellation_token, manga, chapter),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => {
                 bail!("get_page_list_next is not supported for LNReader sources")
             }
@@ -649,6 +726,7 @@ impl BlockingSource {
     ) -> Result<Request> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_image_request_next(url, ctx),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => {
                 bail!("get_image_request_next is not supported for LNReader sources")
             }
@@ -663,6 +741,7 @@ impl BlockingSource {
     ) -> Result<NextMangaPageResult> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.get_manga_list_next(cancellation_token, listing, page),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(_) => {
                 bail!("get_manga_list_next is not supported for LNReader sources")
             }
@@ -676,6 +755,7 @@ impl BlockingSource {
     ) -> Result<()> {
         match &mut self.kind {
             BlockingSourceKind::Wasm(w) => w.handle_notification_next(cancellation_token, key),
+            #[cfg(feature = "lnreader")]
             BlockingSourceKind::LnReader(l) => l.handle_notification_next(cancellation_token, key),
         }
     }

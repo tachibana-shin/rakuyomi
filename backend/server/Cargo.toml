@@ -15,16 +15,20 @@ name = "server"
 path = "src/main.rs"
 
 [features]
-default = ["use_nix"]
+default = ["use_nix", "lnreader"]
 ffi = ["dep:serde_bytes", "dep:reqwest", "dep:jni", "shared/ffi"]
 api_18 = ["dep:libc"]
 use_nix = ["dep:nix"]
+# See `shared`'s own `lnreader` feature doc comment. Forwarded rather than
+# left to `shared`'s default so this crate can be built without it
+# (`cargo build -p server --no-default-features --features use_nix`).
+lnreader = ["shared/lnreader"]
 
 [dependencies]
 anyhow = "1.0.103"
 axum-macros = "0.5.1"
 clap = { version = "4.6.1", features = ["derive"] }
-shared = { path = "../shared" }
+shared = { path = "../shared", default-features = false, features = ["all"] }
 futures = "0.3.32"
 log = { version = "0.4.33", features = ["std"] }
 serde = { version = "1.0.228", features = ["derive"] }

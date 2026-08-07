@@ -12,9 +12,16 @@ serde_json = "1.0.150"
 url = { version = "2.5.8", features = ["serde"] }
 
 [features]
-default = ["all"]
+default = ["all", "lnreader"]
 all = ["sqlx"]
 ffi = []
+# LNReader/JS source execution mode -- see docs/lnreader/REFERENCE.md §2.1.
+# Default-on during LNReader's active real-world testing period (deliberate,
+# see the same doc's §2.2 for the runtime-toggle half of this two-gate
+# design). `boa_gc` is only needed by this mode's cheerio/JS-runtime store
+# (see sdk_lnreader/cheerio.rs's `Store`), hence gating it as an optional
+# dependency here rather than always compiling it in.
+lnreader = ["dep:boa_gc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
@@ -81,7 +88,7 @@ aidoku = { git = "https://github.com/Aidoku/aidoku-rs", branch = "main", default
 raqote = "0.8.5"
 font-kit = "0.14.3"
 boa_engine = "0.21.1"
-boa_gc = "0.21.1"
+boa_gc = { version = "0.21.1", optional = true }
 imageproc = "0.27.0"
 ab_glyph = "0.2.32"
 markdown = "1.0.0"

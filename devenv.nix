@@ -93,7 +93,7 @@ in {
   languages.rust = {
     enable = true;
     channel = "stable";
-    version = "1.95.0";
+    version = "1.97.1";
   };
 
   # Enable cachix

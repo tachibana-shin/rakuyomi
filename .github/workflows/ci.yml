@@ -29,10 +29,10 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install Rust 1.95.0
+      - name: Install Rust 1.97.1
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: 1.95.0
+          toolchain: 1.97.1
           profile: minimal
           components: rustfmt, clippy
           override: true

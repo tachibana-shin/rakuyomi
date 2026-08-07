@@ -29,7 +29,7 @@ Architecture: `Backend.lua` (Lua) → HTTP/JSON → `server` (axum, Rust) → SQ
 
 ## Rust Conventions
 
-- Edition 2021, toolchain 1.95.0
+- Edition 2021, toolchain 1.97.1
 - snake_case functions/vars, CamelCase types
 - `anyhow::Result` in binaries, `thiserror` for library error enums
 - axum with `FromRef` state pattern

@@ -132,7 +132,26 @@ impl LnReaderSource {
         let manifest_file = archive
             .by_name("Payload/source.json")
             .context("while loading source.json")?;
-        let manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
+        let mut manifest: SourceManifest = serde_json::from_reader(manifest_file)?;
+
+        // `source_of_source` is deliberately `#[serde(skip)]` on
+        // `SourceManifest` (it's not part of the archive's own
+        // `Payload/source.json`) and instead lives in the `.{stem}.source`
+        // sidecar file `SourceManager::install_source` writes via
+        // `Source::write_meta_file` right after unpacking — same file, same
+        // format, same read-back as `WasmBlockingSource::from_aix_file`
+        // (see `super::meta_source_path`/`SourceMeta`). Reproduced here
+        // verbatim (minus the ABI-guess caching, which has no LNReader
+        // equivalent) so `/installed-sources` reports the same
+        // "installed from" value for both source kinds instead of always
+        // `null` for LNReader ones.
+        if let Ok(meta_file) = super::meta_source_path(path) {
+            if let Ok(contents) = fs::read_to_string(&meta_file) {
+                if let Ok(meta) = serde_json::from_str::<super::SourceMeta>(&contents) {
+                    manifest.source_of_source = meta.source_of_source;
+                }
+            }
+        }
 
         let url_settings = {
             let manifest = manifest.clone();

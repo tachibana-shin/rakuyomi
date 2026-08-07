@@ -40,8 +40,11 @@ pub fn routes() -> Router<State> {
 async fn list_available_sources(
     StateExtractor(State { settings, .. }): StateExtractor<State>,
 ) -> Result<Json<Vec<SourceInformation>>, AppError> {
-    let source_lists = settings.lock().await.source_lists.clone();
-    let available_sources = usecases::list_available_sources(source_lists)
+    let (source_lists, lnreader_enabled) = {
+        let settings = settings.lock().await;
+        (settings.source_lists.clone(), settings.lnreader_enabled)
+    };
+    let available_sources = usecases::list_available_sources(source_lists, lnreader_enabled)
         .await?
         .into_iter()
         .map(SourceInformation::from)
@@ -64,12 +67,17 @@ async fn install_source(
     Path(InstallSourceParams { source_id }): Path<InstallSourceParams>,
     Json(source_of_source): Json<String>,
 ) -> Result<Json<()>, AppError> {
+    let (source_lists, lnreader_enabled) = {
+        let settings = settings.lock().await;
+        (settings.source_lists.clone(), settings.lnreader_enabled)
+    };
     usecases::install_source(
         &mut *source_manager.lock().await,
         &source_manager,
-        &settings.lock().await.source_lists,
+        &source_lists,
         SourceId::new(source_id),
         source_of_source,
+        lnreader_enabled,
     )
     .await?;
 

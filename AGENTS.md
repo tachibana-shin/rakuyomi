@@ -78,6 +78,36 @@ Data directory: `$KOREARCHIVE_DIR/rakuyomi/` (Unix) or `/storage/emulated/0/kore
 - KDoc/Javadoc for all Rust public APIs, EmmyLua for Lua
 - Keep Rust backend + Lua frontend loosely coupled via JSON API
 
+## Git Safety Rules
+
+Adopted after a real incident (destructive `git checkout HEAD --` during a
+commit-split attempt discarded uncommitted work in 6 files, plus a 7th
+untracked file deleted via `rm -f` with no backup at all — see
+`docs/lnreader/INCIDENT_GIT_CHECKOUT_DATA_LOSS.md` for the full postmortem).
+
+- **Never run a destructive git operation** (`checkout HEAD --`,
+  `reset --hard`, `clean -f`, a history-rewriting `rebase`) **on a file
+  with uncommitted work without a backup verified for that specific file
+  immediately beforehand** — an explicit copy, or a `git stash push`
+  confirmed non-empty. Verify per file, right before that file's
+  destructive command — not once, in bulk, at the start of a multi-file
+  operation, on the assumption it covers everything that follows.
+- **Prefer non-destructive alternatives** when reconstructing an
+  intermediate state for a commit split: `git add -p` (interactive
+  partial staging), or a separate `git worktree` on a temporary branch.
+  Never rewrite the main working tree with a command that discards
+  uncommitted content just to get to an intermediate state.
+- **If a destructive operation goes wrong anyway:** stop immediately, do
+  not attempt a silent fix, report exactly and completely what happened,
+  and wait for explicit confirmation before attempting any recovery or
+  reconstruction. This is expected behavior, not a judgment call to make
+  in the moment.
+- **Don't let uncommitted work accumulate across sessions.** Commit
+  regularly, even in small increments — it's what turns a git mistake
+  into a non-event instead of a real loss (the incident above only
+  mattered because the lost content had never been committed in any prior
+  session).
+
 ## Update translation texts
 
 ```sh

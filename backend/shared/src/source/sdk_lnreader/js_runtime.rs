@@ -71,21 +71,62 @@ const CHEERIO_PRELUDE: &str = r#"
 // hand-rolled .each()/.map() methods, while keeping it usable as a normal
 // array (length, indexing, for...of, etc.).
 function toChain(arr) {
+    // `.call(el, ...)`, not a plain `callback(...)`, on both of these --
+    // real cheerio's `.each()`/`.map()` bind `this` to the current element
+    // INSIDE the callback, a real, common, and independent idiom from the
+    // `(index, element)` arguments (`.each(function () { var $el = $(this);
+    // ... })`, no declared parameters at all). A plain call left `this`
+    // as boa's global object inside such a callback; `$(this)` then wrapped
+    // THAT (not the element) via `native_select_root`'s selector path,
+    // `arg_string` stringified it to the literal text "[object Object]" (JS's
+    // own default `Object.prototype.toString` conversion), and searching for
+    // that as a CSS selector threw "invalid CSS selector". Found via
+    // `novel-lucky.js`'s `parseNovel`, one of the shared `MadaraPlugin`-base
+    // sources.
     arr.each = function (callback) {
-        for (var i = 0; i < this.length; i++) callback(i, this[i]);
+        for (var i = 0; i < this.length; i++) callback.call(this[i], i, this[i]);
         return this;
     };
     arr.map = function (callback) {
         var out = [];
-        for (var i = 0; i < this.length; i++) out.push(callback(i, this[i]));
+        for (var i = 0; i < this.length; i++) out.push(callback.call(this[i], i, this[i]));
         return toChain(out);
     };
-    // .get(index?) -- without an argument, returns the array itself (mirrors
-    // real cheerio converting a collection to a plain JS array); with an
-    // index, returns that single element.
+    // .get(index?) -- without an argument, returns a genuinely plain JS
+    // array (mirrors real cheerio converting a collection to a plain
+    // array). Must be a fresh `.slice()`, not `this` -- returning `this`
+    // left every `.each`/`.map`/`.get`/etc. override from `toChain` still
+    // attached, so plugin code chaining a *native*-convention
+    // `.map((element, index) => ...)`/`.filter()` onto the result of
+    // `.get()` (a very common real pattern: cheerio-convention `.map()`
+    // inside the chain, then plain-array methods after `.get()` exits it --
+    // found via `kisswood.js`'s `parseChapter`) silently got this module's
+    // `(index, element)` cheerio convention instead of the real,
+    // spec-correct `(element, index)` one, with no type error at the call
+    // site itself (JS doesn't check parameter names) -- only later, as
+    // "TypeError: not a callable function" when the swapped-in "element"
+    // (actually the index, a number) didn't have whatever string/element
+    // method the plugin called on it. `.slice()` is real, native
+    // `Array.prototype.slice` (still present -- `toChain` only ever *adds*
+    // properties, never removes native ones), so the copy it returns was
+    // never itself passed through `toChain` and carries none of the
+    // overrides.
     arr.get = function (index) {
-        if (index === undefined) return this;
+        if (index === undefined) return this.slice();
         return this[index];
+    };
+    // `.toArray()` -- found missing (`TypeError: not a callable function`)
+    // via `readfrom.js`'s `parseNovels`, which does the extremely common
+    // real cheerio idiom `selection.map(fn).toArray()`: `.map()` above
+    // returns a `toChain()`-wrapped plain array (not a `CheerioSelection`,
+    // which already has its own `.toArray` from the native side), and until
+    // now `toChain()` never added one -- any plugin calling `.toArray()`
+    // directly after `.map()`/`.filter()`/`.slice()`/etc. hit this, a
+    // pattern confirmed common across the corpus (`grep -c
+    // '\.map(...).*\.toArray()'`). Same semantics as `.get()` with no
+    // argument: a genuine plain-array copy, real cheerio's own behavior.
+    arr.toArray = function () {
+        return this.slice();
     };
     // Real-world plugin code calls READ and MUTATION methods directly on the
     // result of a filter/navigation, not just element-by-element via each().
@@ -101,12 +142,40 @@ function toChain(arr) {
                 if (name === 'first' || name === 'last') return toChain([]);
                 if (name === 'exists') return false;
                 if (name === 'is' || name === 'hasClass') return false;
+                // `.text()` on an empty selection is '' in real cheerio (it
+                // concatenates the text of every matched element -- zero
+                // elements concatenate to ''), NEVER null, unlike
+                // `.attr()`/`.html()`/`.data()` which have no sensible
+                // non-null empty value (there's no element to read from).
+                // Found via `chireads.js`: a real, live "no results this
+                // page" category page whose placeholder `<li>` has no `<div>`
+                // at all, so `.contents().find("div").first().text()` hits
+                // exactly this empty-collection path -- the extremely common
+                // real cheerio idiom `.text().trim()` then called `.trim()`
+                // on the wrongly-returned `null`, throwing "cannot convert
+                // 'null' or 'undefined' to object".
+                if (name === 'text') return '';
                 return null;
             }
             var first = this[0];
             return first[name].apply(first, arguments);
         };
     });
+    // .eq(index) -- found missing while adding regression tests for
+    // .parents()/.nextAll()/.prevAll() this pass: any toChain()-wrapped
+    // array (.siblings()/.contents()/.parents()/.nextAll()/.prevAll()/...)
+    // had no .eq() at all, silently falling through to nothing and crashing
+    // "not a callable function" on the very next call -- the same failure
+    // shape as every other toChain() gap already documented above, just not
+    // yet hit by a real corpus source. Mirrors CheerioSelection.prototype.eq
+    // (out-of-range, including negative, returns an empty chain -- not real
+    // cheerio's own negative-index-from-the-end behavior, kept consistent
+    // with the native .eq()'s existing same limitation rather than fixing
+    // one without the other).
+    arr.eq = function (index) {
+        if (index < 0 || index >= this.length) return toChain([]);
+        return toChain([this[index]]);
+    };
     var mutateMethods = ['remove', 'addClass', 'removeClass', 'removeAttr'];
     mutateMethods.forEach(function (name) {
         arr[name] = function () {
@@ -115,6 +184,50 @@ function toChain(arr) {
             return this;
         };
     });
+    // .find(selector) -- a TRAVERSAL method, unlike the read/mutate ones
+    // above: real cheerio searches descendants of EVERY element in the
+    // collection and unions the results, not just the first. Found missing
+    // (`TypeError: Array.prototype.find: predicate is not callable`) via
+    // `chireads.js`'s `r(t).contents().find("div")`: `.contents()` returns a
+    // `toChain()`-wrapped plain array of `CheerioSelection`s (not a native
+    // `CheerioSelection` itself, which already has its own selector-aware
+    // `.find` from the native side), and with no override here the call fell
+    // through to native `Array.prototype.find`, which treats its argument as
+    // a predicate FUNCTION -- the selector string "div" isn't one.
+    arr.find = function (selector) {
+        var out = [];
+        for (var i = 0; i < this.length; i++) {
+            var found = this[i].find(selector);
+            for (var j = 0; j < found.length; j++) out.push(found[j]);
+        }
+        return toChain(out);
+    };
+    // .filter(selectorOrFn) -- without this override, calling .filter() on a
+    // toChain()-wrapped array (e.g. the result of .contents()/.siblings())
+    // fell through to NATIVE Array.prototype.filter: wrong argument order
+    // ((element, index) instead of cheerio's (index, element)), no
+    // `this`-binding, AND its result is a fresh plain array carrying none of
+    // toChain()'s methods (native .filter() doesn't call back into
+    // toChain()). Found via `archiveofourown.js`'s parseChapter, whose
+    // `l.contents().filter((e, a) => 3 === a.nodeType).text()` crashed with
+    // "TypeError: not a callable function" on that final `.text()` -- not
+    // because .text() itself was missing, but because the object it was
+    // called on was a bare array that never went through toChain() in the
+    // first place. Mirrors CheerioSelection.prototype.filter's two call
+    // forms (selector string vs. predicate function).
+    arr.filter = function (selectorOrFn) {
+        var out = [];
+        if (typeof selectorOrFn === 'function') {
+            for (var i = 0; i < this.length; i++) {
+                if (selectorOrFn.call(this[i], i, this[i])) out.push(this[i]);
+            }
+        } else {
+            for (var j = 0; j < this.length; j++) {
+                if (this[j].is(selectorOrFn)) out.push(this[j]);
+            }
+        }
+        return toChain(out);
+    };
     return arr;
 }
 
@@ -123,6 +236,80 @@ function CheerioSelection(id) {
     Object.defineProperty(this, 'length', {
         get: function () { return __native_each_count(this.__id); },
     });
+    // `.attribs` -- real cheerio's `.each()`/`.map()`/`.filter()` callbacks
+    // hand back a raw DOM node (has `.attribs`, `.name`, `.type`...), and
+    // plugin code very commonly reads `.attribs.class`/`.href`/`.title`
+    // straight off that node instead of re-wrapping it with `$(el)` first.
+    // `CheerioSelection` isn't that raw node -- it's this module's own
+    // wrapper -- so found missing (`TypeError: cannot convert 'null' or
+    // 'undefined' to object` on `el.attribs.title`) via 89/261 real corpus
+    // sources doing exactly this. A lazy getter (not a field snapshotted at
+    // construction) for the same reason `URL`'s `.search`/`.href` above
+    // are getters: cheap enough per-access, and avoids a native round trip
+    // for selections that never read it.
+    Object.defineProperty(this, 'attribs', {
+        get: function () { return JSON.parse(__native_attribs(this.__id)); },
+    });
+    // `.nodeType` -- a NUMBER property (1 = element, 3 = text, 8 = comment,
+    // matching real DOM's ELEMENT_NODE/TEXT_NODE/COMMENT_NODE constants),
+    // not a method. Found needed (as a bare property, never called) via 74
+    // real corpus sources sharing the same `.contents().filter((i, el) =>
+    // 3 === el.nodeType)` idiom (a shared base-plugin helper for splitting
+    // an element's own loose text from its child tags -- `archiveofourown.js`
+    // is one of the 74) -- comparing a NUMBER against this module's old
+    // `.nodeType()` METHOD (a function reference) was always false,
+    // silently discarding the exact text the plugin was trying to extract.
+    // A getter, like `.attribs` above, not a snapshotted field: cheap enough
+    // per access and consistent with the rest of this constructor.
+    Object.defineProperty(this, 'nodeType', {
+        get: function () {
+            var t = __native_node_type(this.__id);
+            if (t === 'tag') return 1;
+            if (t === 'text') return 3;
+            if (t === 'comment') return 8;
+            return 0;
+        },
+    });
+    // `.name` -- the LOWERCASE tag name, real domhandler/cheerio's raw-node
+    // property (`undefined` on non-element nodes: text, comments...),
+    // distinct from `.prop("tagName")` above (UPPERCASE, browser-DOM
+    // convention) -- both real, both used by different plugins, so both
+    // need to coexist rather than picking one. Reuses
+    // `__native_tag_name`'s existing uppercase result (`.prop("tagName")`'s
+    // primitive) rather than adding a second native call for what's just a
+    // casing difference. Found via `novelfire.js`'s `parseChapter`, which
+    // walks a `.find(":not(p, h1, ...)")` result checking
+    // `s.name.toString().substring(0, 1) === "nf"` to strip the site's own
+    // injected anti-scraping tags -- `.name` was `undefined` on every
+    // element (property didn't exist at all), crashing
+    // `undefined.toString()` with "cannot convert 'null' or 'undefined' to
+    // object".
+    Object.defineProperty(this, 'name', {
+        get: function () {
+            var upper = __native_tag_name(this.__id);
+            return upper ? upper.toLowerCase() : undefined;
+        },
+    });
+    // Array-like numeric indexing (`selection[0]`) -- real cheerio
+    // collections are array-likes, and plugin code commonly reaches into
+    // one directly (`.find(sel)[0]`, `.children()[0]`) to get the raw
+    // element rather than going through `.eq()`/`.get()`. Found via
+    // `yomou.syosetu.js`'s `a.children()[0].attribs.href` (`a.children()`
+    // returned a `CheerioSelection` with no "0" property, so the whole
+    // expression read `undefined.attribs`). Defined eagerly here (not a
+    // Proxy -- this runtime has no need for one elsewhere, and one-off
+    // native calls per index at construction time is cheap enough at this
+    // corpus's real element-collection sizes) so indexing behaves exactly
+    // like `.eq(i)`: a fresh single-element `CheerioSelection`, which
+    // already carries its own `.attribs`/`.text()`/etc.
+    var indexCount = __native_each_count(id);
+    var _wrapAt = function (self, i) {
+        Object.defineProperty(self, i, {
+            get: function () { return new CheerioSelection(__native_each_at(this.__id, i)); },
+            enumerable: true,
+        });
+    };
+    for (var __i = 0; __i < indexCount; __i++) _wrapAt(this, __i);
 }
 CheerioSelection.prototype.find = function (selector) {
     var result = new CheerioSelection(__native_find(this.__id, selector));
@@ -138,7 +325,7 @@ CheerioSelection.prototype.text = function (newTextOrFn) {
     }
     if (typeof newTextOrFn === 'function') {
         this.each(function (i, el) {
-            var newText = newTextOrFn(i, el.text());
+            var newText = newTextOrFn.call(el, i, el.text());
             __native_set_text(el.__id, newText);
         });
         return this;
@@ -183,23 +370,30 @@ CheerioSelection.prototype.last = function () {
 CheerioSelection.prototype.parent = function () {
     return new CheerioSelection(__native_parent(this.__id));
 };
-// .children(selector?) -- dom_query's children() takes no selector, so the
-// filter happens on the JS side, same pattern as .siblings(selector).
+// .children(selector?) -- dom_query's children() takes no selector.
+// __native_children_filtered does the per-child selector test in the SAME
+// Rust-side loop that walks the children (one native call total, only
+// matches ever get a handle) -- same shape as .has()/.not()/.siblings(sel)
+// below, replacing an earlier composed version that built a
+// CheerioSelection for EVERY child before filtering any of them out
+// (native_children + ctor + .toArray() + N x .is()).
 CheerioSelection.prototype.children = function (selector) {
-    var base = new CheerioSelection(__native_children(this.__id));
-    if (!selector) return base;
-    return toChain(base.toArray().filter(function (el) { return el.is(selector); }));
+    if (!selector) return new CheerioSelection(__native_children(this.__id));
+    var handles = __native_children_filtered(this.__id, selector);
+    var out = [];
+    for (var i = 0; i < handles.length; i++) {
+        out.push(new CheerioSelection(handles[i]));
+    }
+    return toChain(out);
 };
-// .next(selector?) -- dom_query's next_sibling() takes no selector -- filter
-// on the JS side, same pattern as children(selector). If the immediate next
-// sibling doesn't match the selector, this returns an empty selection rather
-// than searching further (matches real cheerio: .next(sel) doesn't "skip"
-// multiple siblings).
+// .next(selector?) -- real cheerio tests ONLY the immediate next sibling,
+// never searching further if it doesn't match. __native_next_sibling_filtered
+// does the sibling-fetch + existence check + selector test in one native
+// call, replacing the earlier native_next_sibling + ctor + .exists() + .is()
+// chain (up to 4 calls for 1).
 CheerioSelection.prototype.next = function (selector) {
-    var n = new CheerioSelection(__native_next_sibling(this.__id));
-    if (!selector) return n;
-    if (n.exists() && n.is(selector)) return n;
-    return toChain([]);
+    if (!selector) return new CheerioSelection(__native_next_sibling(this.__id));
+    return new CheerioSelection(__native_next_sibling_filtered(this.__id, selector));
 };
 CheerioSelection.prototype.nextSibling = function () {
     return new CheerioSelection(__native_next_sibling(this.__id));
@@ -207,7 +401,31 @@ CheerioSelection.prototype.nextSibling = function () {
 CheerioSelection.prototype.prevSibling = function () {
     return new CheerioSelection(__native_prev_sibling(this.__id));
 };
-CheerioSelection.prototype.remove = function () {
+// .prev(selector?) -- mirrors .next(selector) above (same reasoning, same
+// "doesn't skip multiple siblings if the immediate one doesn't match"
+// semantics, same single-native-call optimization), just the other
+// direction. Found genuinely missing (not a deliberate narrowing) via
+// `bakainua.js`'s `.prev("div.text-2xl")` call in its own `parseNovel`.
+CheerioSelection.prototype.prev = function (selector) {
+    if (!selector) return new CheerioSelection(__native_prev_sibling(this.__id));
+    return new CheerioSelection(__native_prev_sibling_filtered(this.__id, selector));
+};
+// .remove(selector?) -- real cheerio filters the CURRENT set by selector
+// before removing (elements that don't match stay in the DOM), not just an
+// unconditional removal of the whole selection. Found needed via
+// `mangatr.js`'s `.children().remove("h3, div")`: without this, every child
+// was removed regardless of tag, not just the `h3`/`div` ones the plugin
+// asked for. `dom_query` has no combined "remove matching descendants"
+// primitive as ONE method, but `Selection::filter()` and `Selection::remove()`
+// can run back-to-back inside a single native function without ever handing
+// an intermediate handle back to JS -- __native_remove_filtered does exactly
+// that, replacing an earlier composed `.filter(selector).each(el =>
+// __native_remove(el.__id))` (3+2M calls) with 1.
+CheerioSelection.prototype.remove = function (selector) {
+    if (selector) {
+        __native_remove_filtered(this.__id, selector);
+        return this;
+    }
     __native_remove(this.__id);
     return this;
 };
@@ -229,11 +447,25 @@ CheerioSelection.prototype.removeAttr = function (name) {
 CheerioSelection.prototype.exists = function () {
     return __native_exists(this.__id);
 };
-// .nodeType() -- "text" | "tag" | "comment" | "other". Needed to
-// distinguish .contents() items, same idea as `element.type` in real
-// LNReader plugin code.
-CheerioSelection.prototype.nodeType = function () {
-    return __native_node_type(this.__id);
+// .prop(name) -- real cheerio/browser DOM intrinsic properties, distinct
+// from .attr() (markup attributes). Only "tagName" is implemented (the
+// overwhelmingly common real-world use, e.g. `el.prop("tagName") === "IMG"`
+// to branch on element kind inside a `.find("*").each()` walk) -- anything
+// else falls back to .attr(name), a reasonable approximation for the rest of
+// real cheerio's .prop() surface (checked/selected/href/src/... all read as
+// plain attributes in the actual HTML this runtime parses).
+CheerioSelection.prototype.prop = function (name) {
+    if (name === 'tagName') return __native_tag_name(this.__id);
+    // "outerHTML" is an intrinsic property (full serialization), not a
+    // markup attribute -- falling through to .attr("outerHTML") looked for a
+    // literal attribute of that name (never present) and silently returned
+    // null. Found via `novelupdates.js`'s `parseChapter`, which builds the
+    // whole chapter body via `.map((i, el) => el.prop("outerHTML")).get()
+    // .join("")` -- a real, corpus-confirmed content-correctness bug (every
+    // paragraph came back `null`, joining into the literal string
+    // "nullnullnull..."), not just a missing feature.
+    if (name === 'outerHTML') return __native_outer_html(this.__id);
+    return this.attr(name);
 };
 // .contents() -- every child of the first matched element, raw text INCLUDED
 // (unlike .children(), which only keeps tags).
@@ -253,14 +485,15 @@ CheerioSelection.prototype.is = function (selector) {
 CheerioSelection.prototype.data = function (key) {
     return this.attr('data-' + key);
 };
+// __native_siblings does the optional selector test in the SAME Rust-side
+// loop that walks the siblings (one native call total either way) -- only
+// matches ever get a CheerioSelection handle, instead of an earlier version
+// that built one for every sibling before filtering any of them out.
 CheerioSelection.prototype.siblings = function (selector) {
-    var handles = __native_siblings(this.__id);
+    var handles = __native_siblings(this.__id, selector || null);
     var kids = [];
     for (var i = 0; i < handles.length; i++) {
         kids.push(new CheerioSelection(handles[i]));
-    }
-    if (selector) {
-        kids = kids.filter(function (el) { return el.is(selector); });
     }
     return toChain(kids);
 };
@@ -298,6 +531,74 @@ CheerioSelection.prototype.nextUntil = function (selector) {
     }
     return toChain(out);
 };
+// .add(selectorOrSelection) -- real cheerio's own document-root-scoped
+// union. The selector-string form is native (__native_add, a direct
+// dom_query Selection::add() mapping -- see its own doc comment for the one
+// dom_query-specific edge case: adding from an empty starting selection
+// finds nothing, unlike real cheerio). The CheerioSelection-argument form
+// (uniting two already-matched selections) has no equivalent native
+// primitive, so it's a plain JS array concat, the same technique
+// .addBack() already uses for the same "combine two already-materialized
+// selections" shape.
+CheerioSelection.prototype.add = function (selectorOrSelection) {
+    if (selectorOrSelection instanceof CheerioSelection) {
+        return toChain(this.toArray().concat(selectorOrSelection.toArray()));
+    }
+    return new CheerioSelection(__native_add(this.__id, selectorOrSelection));
+};
+// .empty() -- removes all children, keeps the element itself. No dedicated
+// native primitive needed: real cheerio's .empty() is exactly
+// .html('') under a different name, and __native_set_html already exists.
+CheerioSelection.prototype.empty = function () {
+    return this.html('');
+};
+// .toString() -- real cheerio's Cheerio instances serialize (via implicit
+// coercion in a template literal/string concatenation, or an explicit call)
+// to their outer HTML. Without this, JS's default Object.prototype.toString
+// silently produces the literal string "[object Object]" instead -- the
+// same silent-wrong-data shape already found twice this session
+// (toChain().get()'s cheerio-convention-argument mixup, .prop("outerHTML")'s
+// null-join bug), not a crash, so worth having even though explicit calls to
+// it are rare. Reuses .outerHtml()'s own native primitive directly.
+CheerioSelection.prototype.toString = function () {
+    return __native_outer_html(this.__id);
+};
+// .parents(selector?) -- ALL ancestors, farthest-first (real cheerio's own
+// documented order: `parents()`'s source walks bottom-up then reverses
+// before returning -- verified against cheeriojs/cheerio's actual source,
+// not assumed). Distinct from the narrower, already-implemented
+// .closest(selector) (nearest matching ancestor only, one result).
+CheerioSelection.prototype.parents = function (selector) {
+    var handles = __native_parents(this.__id, selector || null);
+    var out = [];
+    for (var i = 0; i < handles.length; i++) {
+        out.push(new CheerioSelection(handles[i]));
+    }
+    return toChain(out);
+};
+// .nextAll(selector?) / .prevAll(selector?) -- every remaining sibling in
+// one direction (not just the immediate one, unlike .next(selector)/
+// .prev(selector)), in natural walk order (nearest sibling first for BOTH
+// directions -- verified against real cheerio's source: neither reverses,
+// only .parents() above does). A selector, if given, filters the whole
+// walked set rather than stopping the walk early (that's .nextUntil()'s
+// job, a different method with different semantics).
+CheerioSelection.prototype.nextAll = function (selector) {
+    var handles = __native_next_all(this.__id, selector || null);
+    var out = [];
+    for (var i = 0; i < handles.length; i++) {
+        out.push(new CheerioSelection(handles[i]));
+    }
+    return toChain(out);
+};
+CheerioSelection.prototype.prevAll = function (selector) {
+    var handles = __native_prev_all(this.__id, selector || null);
+    var out = [];
+    for (var i = 0; i < handles.length; i++) {
+        out.push(new CheerioSelection(handles[i]));
+    }
+    return toChain(out);
+};
 CheerioSelection.prototype.append = function (html) {
     __native_append_html(this.__id, html);
     return this;
@@ -314,7 +615,11 @@ CheerioSelection.prototype.replaceWith = function (html) {
 CheerioSelection.prototype.each = function (callback) {
     var handles = __native_all_handles(this.__id);
     for (var i = 0; i < handles.length; i++) {
-        callback(i, new CheerioSelection(handles[i]));
+        // `.call(el, ...)`, not a plain call -- see `toChain`'s `.each`
+        // above for why (real cheerio binds `this` to the element too, an
+        // idiom independent of the `(index, element)` arguments).
+        var el = new CheerioSelection(handles[i]);
+        callback.call(el, i, el);
     }
     return this;
 };
@@ -336,11 +641,36 @@ CheerioSelection.prototype.eq = function (index) {
 // .get() -- needed for the real .map(fn).get() idiom.
 CheerioSelection.prototype.map = function (callback) {
     var out = [];
-    this.each(function (i, el) { out.push(callback(i, el)); });
+    this.each(function (i, el) { out.push(callback.call(el, i, el)); });
     return toChain(out);
 };
+// .toArray() -- a genuinely PLAIN array, deliberately NOT toChain()-wrapped
+// (unlike .map()/.filter()/etc. above), matching real cheerio: once you
+// call .toArray(), you're holding a plain JS Array and any further
+// .filter()/.map()/.each() on it uses NATIVE (element, index, array)
+// argument order, not cheerio's (index, element) one -- exactly the
+// contract toChain()'s OWN `arr.toArray`/`arr.get` already documented and
+// relied on `.slice()` (untouched native method) to provide. This
+// implementation used to go through `.map()`, which returns `toChain(out)`
+// -- WRAPPED -- silently giving `.toArray()`'s result cheerio-convention
+// `.filter()`/`.map()` overrides real cheerio never puts there. Harmless
+// on its own (before toChain() gained its own `.filter()`, calling
+// `.filter()` on the mismatched result still fell through to the correct
+// native semantics by accident), but became a real bug the moment
+// toChain() started overriding `.filter()` for OTHER reasons (see
+// `arr.filter` above): `skythewoodtranslations.js`'s `getDoneProjects`
+// does `s(...).toArray().filter((t) => s(t).attr("href"))` -- a
+// single-parameter, native-convention callback -- and started receiving
+// the numeric INDEX in `t` instead of the element, then feeding that
+// number to `s(t)` as a selector, which crashed as
+// "invalid CSS selector [0]: ... EmptySelector". Confirmed via
+// corpus-wide grep that every real `.toArray().filter(...)`/
+// `.toArray().map(...)` call site (3 + 3 corpus sources) uses this same
+// single-param, element-first convention -- none expect cheerio's.
 CheerioSelection.prototype.toArray = function () {
-    return this.map(function (_i, el) { return el; });
+    var out = [];
+    this.each(function (_i, el) { out.push(el); });
+    return out;
 };
 CheerioSelection.prototype.slice = function (start, end) {
     return toChain(this.toArray().slice(start, end));
@@ -350,7 +680,7 @@ CheerioSelection.prototype.slice = function (start, end) {
 function _filterBy(selection, predicate) {
     var out = [];
     selection.each(function (i, el) {
-        if (predicate(i, el)) out.push(el);
+        if (predicate.call(el, i, el)) out.push(el);
     });
     return toChain(out);
 }
@@ -401,7 +731,40 @@ CheerioSelection.prototype.end = function () {
 };
 
 function cheerio_load(html) {
-    var docId = __native_load(html);
+    // Real cheerio's `load()` also accepts an already-matched element/node
+    // (not just an HTML string) as a way to re-scope a fresh `$` to just
+    // that element's subtree -- e.g. `.map((i, el) => cheerio.load(el)(...))`
+    // inside an outer `.map()`/`.each()`, using the raw element `.map()`
+    // itself hands back rather than `.find()`-ing again from the outer
+    // selection. Found via `LeafStudio.js`'s `parseNovelsList`
+    // (`(0, r.load)(i)`, `i` being `.map()`'s own element argument): without
+    // this, `html` here is a `CheerioSelection` object, and
+    // `__native_load` (which expects a real HTML string) coerces it via
+    // JS's default `ToString`, producing the literal text "[object Object]"
+    // -- valid but useless HTML, silently parsed into an empty-of-real-content
+    // document. Every subsequent `$('selector')` inside then matches
+    // nothing, and read methods on that empty match (`.text()`) return `''`
+    // per this module's own empty-selection convention (see `toChain`) --
+    // not a crash, a *silently wrong, always-empty result*, exactly the kind
+    // of bug `search_ok` alone can't catch. `.outerHtml()` serializes just
+    // that element's subtree back to a string and reloads it as an
+    // independent document -- doesn't preserve real cheerio's "same
+    // underlying node" mutation-sharing semantics (out of scope for this
+    // store's per-document ID model), but makes the overwhelmingly common
+    // real-world case -- read-only scoped querying within a matched element
+    // -- work correctly.
+    if (html instanceof CheerioSelection) {
+        html = html.outerHtml();
+    }
+    // __native_load_and_select_root folds "parse this HTML, then
+    // immediately select 'html' from it" into one native call -- that exact
+    // pair always happens back-to-back here (unlike `$(selector)` below,
+    // which reuses `docId` across arbitrarily many LATER, independent
+    // selector calls, so it still needs the two natives kept separate). 2
+    // calls total for `root` below instead of the previous native_load +
+    // native_select_root + ctor's `native_each_count` (3).
+    var loaded = __native_load_and_select_root(html, 'html');
+    var docId = loaded[0];
     // `$(el)` -- re-wrapping an already-loaded element (typically the
     // second argument of an `.each((i, el) => ...)` callback) is a real,
     // common cheerio idiom, distinct from `$('selector')`. Found missing
@@ -411,14 +774,73 @@ function cheerio_load(html) {
         if (selectorOrElement instanceof CheerioSelection) {
             return selectorOrElement;
         }
+        // $(htmlString) -- real cheerio's other well-known call form besides
+        // a CSS selector: a string starting with "<" creates a new,
+        // DETACHED element/fragment instead of searching the loaded
+        // document. Without this, such a string was handed to
+        // `__native_select_root` as if it were a selector -- "<img />" isn't
+        // valid CSS selector syntax, so this threw "invalid CSS selector"
+        // rather than building the element. Found via `komga.js`'s
+        // `replaceUrlToImageHref` (`a("<img />").attr({src, width,
+        // height})`, then `.replaceWith()` into the document) -- a real
+        // crash on a real source, not a hypothetical gap. Parsed the same
+        // way `cheerio.load()` itself parses (a real html5ever document,
+        // not `to_fragment()`'s orphan-`<body>` case `.clone()` has to
+        // special-case) so `'body > *'`, not `'html > *'`, is the right
+        // selector here. This throwaway document's `doc_id` is never used
+        // again (unlike `docId` above), so the combined native call's own
+        // id half is simply discarded (`frag[1]` only).
+        if (typeof selectorOrElement === 'string' && /^\s*</.test(selectorOrElement)) {
+            var frag = __native_load_and_select_root(selectorOrElement, 'body > *');
+            return new CheerioSelection(frag[1]);
+        }
         return new CheerioSelection(__native_select_root(docId, selectorOrElement));
     };
     // $.html(el) -- static form found in real plugin code, distinct from
     // $(el).html(). In real cheerio, $.html(el) serializes the passed
-    // element (equivalent to el.outerHtml() here).
+    // element (equivalent to el.outerHtml() here). With NO argument (found
+    // via `kolnovel.js`, one of 35 corpus sources built on the shared
+    // `LightNovelWPPlugin` base class, whose `parseNovels` does
+    // `cheerio.load(html).html()` to get the whole document back as a
+    // string for manual regexing) real cheerio serializes the whole
+    // document -- `$(selectorOrElement)` above can't be reused for that
+    // (calling it with `undefined` selects nothing, not root: `arg_string`
+    // stringifies a missing arg to the literal text "undefined", which
+    // matches zero real elements), so this selects "html" directly, which
+    // `dom_query`/html5ever always produces even for fragment input (a
+    // `<article>`-only string still parses into a full
+    // `<html><head></head><body>...` tree).
+    // __native_select_and_outer_html does the select + serialize in ONE
+    // native call: the CheerioSelection this used to build via
+    // `$('html').outerHtml()` was thrown away immediately after, so its
+    // constructor's `native_each_count` call bought nothing -- 1 call
+    // instead of 3.
     $.html = function (el) {
+        if (el === undefined) return __native_select_and_outer_html(docId, 'html');
         return el.outerHtml();
     };
+    // Real cheerio's `$` returned by `load()` isn't just a selector
+    // factory -- it IS ITSELF a Cheerio-wrapped selection of the loaded
+    // document's root, so calling a selection method DIRECTLY on `$`
+    // (`$.text()`, `$.find(sel)`, `$.each(fn)`, no intervening `$('sel')`)
+    // is valid, real cheerio usage, equivalent to calling it on `$('html')`.
+    // Found via `novelfire.js`'s `getAllChapters`, which does
+    // `(0, cheerio.load)(title).text()` to strip markup out of a chapter
+    // title fragment -- `.text` (and everything else) didn't exist on our
+    // bare `$` FUNCTION at all, crashing with "TypeError: not a callable
+    // function". Binds every `CheerioSelection.prototype` method to a
+    // `root` selection so both call forms work; deliberately AFTER the
+    // `$.html` assignment above so that pre-existing static override (a
+    // different real need, `kolnovel.js`) isn't clobbered by this blanket
+    // copy -- `root.html` would otherwise overwrite it with a form that
+    // doesn't accept `$.html(el)`'s explicit-element argument.
+    var root = new CheerioSelection(loaded[1]);
+    for (var rootMethod in CheerioSelection.prototype) {
+        if (rootMethod === 'html') continue;
+        if (typeof root[rootMethod] === 'function') {
+            $[rootMethod] = root[rootMethod].bind(root);
+        }
+    }
     return $;
 }
 "#;
@@ -429,6 +851,38 @@ function cheerio_load(html) {
 /// from `lnreader-plugins`' `src/lib/fetch.ts` (MIT), built on top of the
 /// native `fetch` below instead of a real browser one.
 const RUNTIME_PRELUDE: &str = r#"
+// `console` polyfill, covering the complete standard surface (MDN) -- found
+// missing entirely (`ReferenceError: console is not defined`) via
+// `novelrest.js`'s `console.error(...)` in a catch block. This runtime has
+// no side-channel for console output (the NDJSON worker protocol's stdout
+// is the response itself), so these are deliberate no-ops rather than
+// forwarding anywhere -- just enough that calling any of them doesn't
+// crash the plugin.
+var console = {
+    log: function () {},
+    warn: function () {},
+    error: function () {},
+    info: function () {},
+    debug: function () {},
+    trace: function () {},
+    dir: function () {},
+    dirxml: function () {},
+    table: function () {},
+    group: function () {},
+    groupCollapsed: function () {},
+    groupEnd: function () {},
+    assert: function () {},
+    count: function () {},
+    countReset: function () {},
+    time: function () {},
+    timeEnd: function () {},
+    timeLog: function () {},
+    clear: function () {},
+    exception: function () {},
+    profile: function () {},
+    profileEnd: function () {},
+    timeStamp: function () {},
+};
 function Response(raw) {
     this.ok = raw.__ok;
     this.status = raw.__status;
@@ -449,16 +903,344 @@ Response.prototype.arrayBuffer = function () {
     throw new Error('not implemented: Response.arrayBuffer()');
 };
 
+// `Headers` -- found missing (`ReferenceError: Headers is not defined`) via
+// `readfrom.js`, one of 8 real corpus sources constructing one (`this.headers
+// = new Headers(s)`, then handed to `fetchApi` as `init.headers`). Data is
+// stored as plain, lower-cased, own-enumerable properties directly on `this`
+// (not in a private map) so it round-trips through `fetch()`'s existing
+// `JSON.stringify(init.headers || {})` line exactly like a plain object
+// already does -- the real `Headers` class's `.get()`/`.set()`/`.append()`/
+// `.has()`/`.forEach()` API is layered on top of that same plain storage,
+// not a separate implementation, so either calling convention (treat it like
+// a plain object, or use the real Headers methods) sees the same data.
+function Headers(init) {
+    if (init) {
+        for (var key in init) {
+            if (Object.prototype.hasOwnProperty.call(init, key)) {
+                this[String(key).toLowerCase()] = init[key];
+            }
+        }
+    }
+}
+Headers.prototype.get = function (name) {
+    var v = this[String(name).toLowerCase()];
+    return v === undefined ? null : v;
+};
+Headers.prototype.set = function (name, value) {
+    this[String(name).toLowerCase()] = String(value);
+};
+Headers.prototype.append = function (name, value) {
+    var key = String(name).toLowerCase();
+    this[key] = this[key] !== undefined ? this[key] + ', ' + String(value) : String(value);
+};
+Headers.prototype.has = function (name) {
+    return Object.prototype.hasOwnProperty.call(this, String(name).toLowerCase());
+};
+Headers.prototype['delete'] = function (name) {
+    delete this[String(name).toLowerCase()];
+};
+Headers.prototype.forEach = function (callback) {
+    for (var key in this) {
+        if (Object.prototype.hasOwnProperty.call(this, key)) callback(this[key], key, this);
+    }
+};
+// .entries/.keys/.values -- closes out the real Headers surface (MDN,
+// §1.2.8.1) except `.getSetCookie()`, deliberately not added: this runtime
+// never processes a `Set-Cookie` response header anywhere (no cookie jar,
+// no session concept), so it would have no data source to read from,
+// unlike every other gap on this list which had a real, if narrow, use.
+Headers.prototype.entries = function () {
+    var self = this;
+    var keys = [];
+    for (var k in this) {
+        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
+    }
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= keys.length) return { done: true, value: undefined };
+            var k = keys[i++];
+            return { done: false, value: [k, self[k]] };
+        },
+    };
+};
+Headers.prototype.keys = function () {
+    var keys = [];
+    for (var k in this) {
+        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
+    }
+    var i = 0;
+    return { next: function () {
+        if (i >= keys.length) return { done: true, value: undefined };
+        return { done: false, value: keys[i++] };
+    } };
+};
+Headers.prototype.values = function () {
+    var self = this;
+    var keys = [];
+    for (var k in this) {
+        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
+    }
+    var i = 0;
+    return { next: function () {
+        if (i >= keys.length) return { done: true, value: undefined };
+        return { done: false, value: self[keys[i++]] };
+    } };
+};
+Headers.prototype[Symbol.iterator] = function () {
+    return this.entries();
+};
+
+// `atob`/`btoa` -- found missing via 3 real corpus sources: `ln.hako.js`/
+// `WTRLAB.js` (`Uint8Array.from(atob(chunk), ...)`, a common
+// image/font-obfuscation-decoding idiom in this corpus) and `komga.js`
+// (`btoa(email + ":" + password)` for a Basic-Auth header). Plain-JS
+// implementations (no native base64 codec assumed available) operating on
+// "binary strings" the same way the real Web APIs do -- one JS UTF-16 code
+// unit per byte, 0-255, not real Unicode text -- matching how callers in
+// this corpus already use them.
+var __B64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+function btoa(input) {
+    var str = String(input);
+    var out = '';
+    for (var i = 0; i < str.length; i += 3) {
+        var b0 = str.charCodeAt(i) & 0xff;
+        var has1 = i + 1 < str.length;
+        var has2 = i + 2 < str.length;
+        var b1 = has1 ? str.charCodeAt(i + 1) & 0xff : 0;
+        var b2 = has2 ? str.charCodeAt(i + 2) & 0xff : 0;
+        out += __B64_CHARS.charAt(b0 >> 2);
+        out += __B64_CHARS.charAt(((b0 & 3) << 4) | (b1 >> 4));
+        out += has1 ? __B64_CHARS.charAt(((b1 & 15) << 2) | (b2 >> 6)) : '=';
+        out += has2 ? __B64_CHARS.charAt(b2 & 63) : '=';
+    }
+    return out;
+}
+function atob(input) {
+    var str = String(input).replace(/=+$/, '');
+    var out = '';
+    var buffer = 0;
+    var bits = 0;
+    for (var i = 0; i < str.length; i++) {
+        var idx = __B64_CHARS.indexOf(str.charAt(i));
+        if (idx === -1) continue;
+        buffer = (buffer << 6) | idx;
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            out += String.fromCharCode((buffer >> bits) & 0xff);
+        }
+    }
+    return out;
+}
+
+// Minimal `TextDecoder` polyfill (UTF-8 only) -- found missing entirely
+// (`ReferenceError: TextDecoder is not defined`) via `ln.hako.js`,
+// `dreamyTranslations.js`, and `WTRLAB.js` (3/261 corpus sources), all part
+// of the same content-deobfuscation family already noted for `atob`/`btoa`
+// above: each decodes an obfuscated chapter body into a byte array (via XOR
+// or reversal against the `atob`-decoded string), then needs
+// `new TextDecoder('utf-8').decode(bytes)` to turn that byte array back into
+// a real (potentially non-ASCII) string -- `String.fromCharCode` alone
+// can't do this because UTF-8 multi-byte sequences don't map 1:1 to UTF-16
+// code units. `encoding` is accepted but ignored (always decodes as UTF-8,
+// the only encoding any real corpus call site requests).
+function TextDecoder(encoding, options) {
+    this.encoding = encoding || 'utf-8';
+    // `.fatal`/`.ignoreBOM` -- the rest of the real constructor's read-only
+    // properties (MDN, §1.2.8.1): stored so a plugin reading them back gets
+    // its own requested values, even though `.decode()` itself doesn't act
+    // on `fatal` (never throws) or `ignoreBOM` (this decoder doesn't strip
+    // a BOM either way).
+    options = options || {};
+    this.fatal = !!options.fatal;
+    this.ignoreBOM = !!options.ignoreBOM;
+}
+TextDecoder.prototype.decode = function (bytes) {
+    var out = '';
+    var i = 0;
+    var len = bytes.length;
+    while (i < len) {
+        var b0 = bytes[i++];
+        if (b0 < 0x80) {
+            out += String.fromCharCode(b0);
+        } else if ((b0 & 0xe0) === 0xc0 && i < len) {
+            var b1 = bytes[i++];
+            out += String.fromCharCode(((b0 & 0x1f) << 6) | (b1 & 0x3f));
+        } else if ((b0 & 0xf0) === 0xe0 && i + 1 < len) {
+            var c1 = bytes[i++], c2 = bytes[i++];
+            out += String.fromCharCode(((b0 & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f));
+        } else if ((b0 & 0xf8) === 0xf0 && i + 2 < len) {
+            var d1 = bytes[i++], d2 = bytes[i++], d3 = bytes[i++];
+            var cp = ((b0 & 0x07) << 18) | ((d1 & 0x3f) << 12) | ((d2 & 0x3f) << 6) | (d3 & 0x3f);
+            cp -= 0x10000;
+            out += String.fromCharCode(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff));
+        } else {
+            out += String.fromCharCode(0xfffd);
+        }
+    }
+    return out;
+};
+
+// Minimal `TextEncoder` polyfill (UTF-8 only), the encode-side counterpart
+// of `TextDecoder` above -- found missing (`ReferenceError: TextEncoder is
+// not defined`) via `dreamyTranslations.js`, which does
+// `(new TextEncoder).encode(str).slice(0, n)` to byte-slice a UTF-16 JS
+// string at a UTF-8 byte offset before handing it to `TextDecoder`. Returns
+// a plain JS array of byte values (not a real `Uint8Array`) since that's
+// all `TextDecoder.decode` above and native array methods like `.slice()`
+// require.
+function TextEncoder() {
+    this.encoding = 'utf-8';
+}
+TextEncoder.prototype.encode = function (str) {
+    str = String(str == null ? '' : str);
+    var out = [];
+    for (var i = 0; i < str.length; i++) {
+        var cp = str.charCodeAt(i);
+        if (cp >= 0xd800 && cp <= 0xdbff && i + 1 < str.length) {
+            var low = str.charCodeAt(i + 1);
+            if (low >= 0xdc00 && low <= 0xdfff) {
+                cp = ((cp - 0xd800) << 10) + (low - 0xdc00) + 0x10000;
+                i++;
+            }
+        }
+        if (cp < 0x80) {
+            out.push(cp);
+        } else if (cp < 0x800) {
+            out.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
+        } else if (cp < 0x10000) {
+            out.push(0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
+        } else {
+            out.push(
+                0xf0 | (cp >> 18),
+                0x80 | ((cp >> 12) & 0x3f),
+                0x80 | ((cp >> 6) & 0x3f),
+                0x80 | (cp & 0x3f)
+            );
+        }
+    }
+    return out;
+};
+
 function FormData() {
     this.__entries = [];
 }
 FormData.prototype.append = function (key, value) {
     this.__entries.push([String(key), String(value)]);
 };
+// .get/.getAll/.has/.set/.delete -- the rest of the standard, bounded
+// FormData surface (§1.2/F this pass): `.append()` alone only covered
+// always-add call sites (building a multipart body to send, `fetch()`'s own
+// use of `FormData` above), not reading back or replacing a field already
+// added to one before sending it -- a real, plausible idiom once a plugin
+// builds a `FormData` object at all. Plain JS array operations over the
+// same `__entries` storage `.append()`/`fetch()` already use, mirroring the
+// equivalent `URLSearchParams` methods above -- no native primitive
+// involved, and no dom_query concept applies here at all (this is a
+// request-body shape, not DOM content).
+FormData.prototype.get = function (key) {
+    key = String(key);
+    for (var i = 0; i < this.__entries.length; i++) {
+        if (this.__entries[i][0] === key) return this.__entries[i][1];
+    }
+    return null;
+};
+FormData.prototype.getAll = function (key) {
+    key = String(key);
+    var out = [];
+    for (var i = 0; i < this.__entries.length; i++) {
+        if (this.__entries[i][0] === key) out.push(this.__entries[i][1]);
+    }
+    return out;
+};
+FormData.prototype.has = function (key) {
+    key = String(key);
+    for (var i = 0; i < this.__entries.length; i++) {
+        if (this.__entries[i][0] === key) return true;
+    }
+    return false;
+};
+FormData.prototype.set = function (key, value) {
+    key = String(key);
+    value = String(value);
+    var found = false;
+    this.__entries = this.__entries.filter(function (entry) {
+        if (entry[0] !== key) return true;
+        if (!found) {
+            found = true;
+            entry[1] = value;
+            return true;
+        }
+        return false;
+    });
+    if (!found) this.__entries.push([key, value]);
+};
+FormData.prototype['delete'] = function (key) {
+    key = String(key);
+    this.__entries = this.__entries.filter(function (entry) { return entry[0] !== key; });
+};
+// .entries/.keys/.values -- the rest of the real, bounded FormData surface
+// (MDN, §1.2.8.1). Real FormData has NO .forEach() (confirmed against MDN --
+// unlike Headers/URLSearchParams, which do), so none is added here either.
+FormData.prototype.entries = function () {
+    var entries = this.__entries;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= entries.length) return { done: true, value: undefined };
+            return { done: false, value: [entries[i][0], entries[i++][1]] };
+        },
+    };
+};
+FormData.prototype.keys = function () {
+    var entries = this.__entries;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= entries.length) return { done: true, value: undefined };
+            return { done: false, value: entries[i++][0] };
+        },
+    };
+};
+FormData.prototype.values = function () {
+    var entries = this.__entries;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= entries.length) return { done: true, value: undefined };
+            return { done: false, value: entries[i++][1] };
+        },
+    };
+};
+FormData.prototype[Symbol.iterator] = function () {
+    return this.entries();
+};
 
+// `init` can be a plain object of key/value pairs (the only form this
+// polyfill originally supported) or a real query string, `?`-prefixed or
+// not (the far more common real-world call shape, e.g.
+// `new URLSearchParams(location.search)` or, since `URL` below builds on
+// this same class, whatever `new URL(...).search` parses out) -- both are
+// part of the real `URLSearchParams` constructor's spec.
 function URLSearchParams(init) {
     this.__pairs = [];
-    if (init) {
+    if (typeof init === 'string') {
+        var query = init.charAt(0) === '?' ? init.slice(1) : init;
+        if (query) {
+            var parts = query.split('&');
+            for (var i = 0; i < parts.length; i++) {
+                if (!parts[i]) continue;
+                var eq = parts[i].indexOf('=');
+                var rawKey = eq === -1 ? parts[i] : parts[i].slice(0, eq);
+                var rawValue = eq === -1 ? '' : parts[i].slice(eq + 1);
+                this.__pairs.push([
+                    decodeURIComponent(rawKey.replace(/\+/g, ' ')),
+                    decodeURIComponent(rawValue.replace(/\+/g, ' ')),
+                ]);
+            }
+        }
+    } else if (init) {
         for (var key in init) {
             if (Object.prototype.hasOwnProperty.call(init, key)) {
                 this.__pairs.push([key, init[key]]);
@@ -469,12 +1251,236 @@ function URLSearchParams(init) {
 URLSearchParams.prototype.append = function (key, value) {
     this.__pairs.push([String(key), String(value)]);
 };
+// .set/.get/.has/.delete -- the rest of the real `URLSearchParams` surface,
+// found missing (`TypeError: not a callable function` calling the
+// nonexistent `.set`) via `kakuyomu.js`'s `url.searchParams.set("q", i)`.
+// `.append()` alone (added for `bakainua.js`, see the constructor comment
+// above) only covers always-add call sites; `.set()` is the far more common
+// "replace-or-add a single query param" idiom real plugin code uses when
+// building a search/pagination URL on top of `new URL(...)`.
+URLSearchParams.prototype.set = function (key, value) {
+    key = String(key);
+    value = String(value);
+    var found = false;
+    this.__pairs = this.__pairs.filter(function (pair) {
+        if (pair[0] !== key) return true;
+        if (!found) {
+            found = true;
+            pair[1] = value;
+            return true;
+        }
+        return false;
+    });
+    if (!found) this.__pairs.push([key, value]);
+};
+URLSearchParams.prototype.get = function (key) {
+    key = String(key);
+    for (var i = 0; i < this.__pairs.length; i++) {
+        if (this.__pairs[i][0] === key) return this.__pairs[i][1];
+    }
+    return null;
+};
+URLSearchParams.prototype.has = function (key) {
+    key = String(key);
+    for (var i = 0; i < this.__pairs.length; i++) {
+        if (this.__pairs[i][0] === key) return true;
+    }
+    return false;
+};
+URLSearchParams.prototype.delete = function (key) {
+    key = String(key);
+    this.__pairs = this.__pairs.filter(function (pair) { return pair[0] !== key; });
+};
 URLSearchParams.prototype.toString = function () {
     return this.__pairs
         .map(function (pair) {
             return encodeURIComponent(pair[0]) + '=' + encodeURIComponent(pair[1]);
         })
         .join('&');
+};
+// .getAll/.forEach/.entries -- the rest of the standard, bounded
+// URLSearchParams surface (§1.2/F this pass): unlike .get() (first match
+// only), .getAll() returns every value for a repeated key -- a real,
+// well-known query-string shape (`?tag=a&tag=b`). All three are plain JS
+// array operations over the same `__pairs` storage every other method here
+// already uses, no native primitive involved.
+URLSearchParams.prototype.getAll = function (key) {
+    key = String(key);
+    var out = [];
+    for (var i = 0; i < this.__pairs.length; i++) {
+        if (this.__pairs[i][0] === key) out.push(this.__pairs[i][1]);
+    }
+    return out;
+};
+URLSearchParams.prototype.forEach = function (callback) {
+    for (var i = 0; i < this.__pairs.length; i++) {
+        callback(this.__pairs[i][1], this.__pairs[i][0], this);
+    }
+};
+URLSearchParams.prototype.entries = function () {
+    var pairs = this.__pairs;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= pairs.length) return { done: true, value: undefined };
+            return { done: false, value: [pairs[i][0], pairs[i++][1]] };
+        },
+    };
+};
+// .keys/.values/.sort/.size -- closes out the real URLSearchParams surface
+// (MDN, §1.2.8.1). `[Symbol.iterator]` is deliberately aliased to
+// `.entries()` (real spec's own default iteration behavior) so
+// `for (var pair of params)` works the same as `for (var pair of
+// params.entries())`.
+URLSearchParams.prototype.keys = function () {
+    var pairs = this.__pairs;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= pairs.length) return { done: true, value: undefined };
+            return { done: false, value: pairs[i++][0] };
+        },
+    };
+};
+URLSearchParams.prototype.values = function () {
+    var pairs = this.__pairs;
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= pairs.length) return { done: true, value: undefined };
+            return { done: false, value: pairs[i++][1] };
+        },
+    };
+};
+URLSearchParams.prototype.sort = function () {
+    this.__pairs.sort(function (a, b) {
+        if (a[0] < b[0]) return -1;
+        if (a[0] > b[0]) return 1;
+        return 0;
+    });
+};
+Object.defineProperty(URLSearchParams.prototype, 'size', {
+    get: function () { return this.__pairs.length; },
+});
+URLSearchParams.prototype[Symbol.iterator] = function () {
+    return this.entries();
+};
+
+// Minimal `URL` polyfill -- found missing entirely (`ReferenceError: URL is
+// not defined`) via `bakainua.js`, one of ~37/261 real `lnreader-plugins`
+// sources (confirmed by grepping the live corpus) that call `new URL(...)`,
+// almost always to build on top of the `URLSearchParams` above (parse an
+// existing query string, `.searchParams.append(...)` a few params, then
+// `.toString()`/read `.href` to get the final URL back) -- exactly what's
+// implemented here, not the full WHATWG URL spec (no relative-URL edge
+// cases beyond a plain absolute-path or bare-relative segment, no
+// username/password/port-less-host edge cases). `search`/`href` are real
+// getters (not fields snapshotted at construction) because plugin code
+// mutates `.searchParams` *after* constructing the `URL` and expects
+// `.toString()` to reflect that -- same reasoning as `CheerioSelection`'s
+// `length` getter elsewhere in this file.
+function URL(input, base) {
+    var url = String(input);
+    if (base !== undefined && base !== null && !/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) {
+        var baseStr = String(base);
+        var origin = (baseStr.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\/]*/) || [baseStr])[0];
+        url = url.charAt(0) === '/' ? origin + url : baseStr.replace(/\/[^\/]*$/, '/') + url;
+    }
+    var match = /^([a-zA-Z][a-zA-Z0-9+.-]*:)\/\/([^\/?#]*)([^?#]*)(\?[^#]*)?(#.*)?$/.exec(url);
+    if (!match) {
+        throw new TypeError('Failed to construct \'URL\': Invalid URL: ' + url);
+    }
+    this.protocol = match[1];
+    // `match[2]` is the whole authority section (`user:pass@host:port`) --
+    // split off userinfo before assigning `.host`, which real URL (and
+    // `.origin` below) must NEVER include (§1.2.8.1 fix: an earlier version
+    // of this constructor assigned the raw authority straight to `.host`,
+    // which happened to round-trip through the old `.toString()` by
+    // accident, but was wrong the moment `.username`/`.password`/`.origin`
+    // needed a correctly-scoped `.host` to build on).
+    var authority = match[2];
+    var userinfo = '';
+    var hostport = authority;
+    var atIndex = authority.indexOf('@');
+    if (atIndex !== -1) {
+        userinfo = authority.slice(0, atIndex);
+        hostport = authority.slice(atIndex + 1);
+    }
+    var colonIndex = userinfo.indexOf(':');
+    this.username = colonIndex === -1 ? userinfo : userinfo.slice(0, colonIndex);
+    this.password = colonIndex === -1 ? '' : userinfo.slice(colonIndex + 1);
+    this.host = hostport;
+    this.hostname = this.host.replace(/:\d+$/, '');
+    var portMatch = /:(\d+)$/.exec(this.host);
+    this.port = portMatch ? portMatch[1] : '';
+    this.pathname = match[3] || '/';
+    this.hash = match[5] || '';
+    this.searchParams = new URLSearchParams(match[4] || '');
+    Object.defineProperty(this, 'search', {
+        get: function () {
+            var s = this.searchParams.toString();
+            return s ? '?' + s : '';
+        },
+    });
+    Object.defineProperty(this, 'href', {
+        get: function () { return this.toString(); },
+    });
+    // .origin -- protocol + host (correctly excluding userinfo, see the fix
+    // above), the other real-world-common URL field besides the ones
+    // already implemented. A real getter, like `search`/`href` above, so it
+    // stays correct if `protocol`/`host` are ever mutated directly after
+    // construction.
+    Object.defineProperty(this, 'origin', {
+        get: function () { return this.protocol + '//' + this.host; },
+    });
+}
+URL.prototype.toString = function () {
+    var userinfo = '';
+    if (this.username || this.password) {
+        userinfo = this.username + (this.password ? ':' + this.password : '') + '@';
+    }
+    return this.protocol + '//' + userinfo + this.host + this.pathname + this.search + this.hash;
+};
+// .toJSON() -- real URL's own alias for .href (MDN, §1.2.8.1), used
+// implicitly by JSON.stringify(urlInstance).
+URL.prototype.toJSON = function () {
+    return this.href;
+};
+// Static URL.canParse() -- real WHATWG URL's validity-check helper (MDN,
+// §1.2.8.1): attempts a real construction and reports success/failure
+// instead of throwing, the same "try the real operation, catch instead of
+// re-implementing the validation logic separately" approach as everywhere
+// else in this shim. `URL.parse()`/`.createObjectURL()`/`.revokeObjectURL()`
+// deliberately NOT added: `.parse()` is a thin, low-value wrapper over
+// `new URL()` + try/catch a plugin can already write itself, and the
+// Blob-URL statics have no concept to attach to in a runtime with no `Blob`
+// at all.
+URL.canParse = function (input, base) {
+    try {
+        // eslint-disable-next-line no-new
+        new URL(input, base);
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+// Minimal `Intl` polyfill -- found missing entirely (`ReferenceError: Intl is
+// not defined`) via `ranobelib.js`, which reads
+// `Intl.DateTimeFormat().resolvedOptions().timeZone` (with its own `||
+// 'Europe/Moscow'` fallback) to fill in a `client-time-zone` request header
+// at PLUGIN CONSTRUCTION TIME, not inside `searchNovels` -- meaning this
+// wasn't just a runtime search failure but a packaging-time one (the plugin
+// object never finished constructing, so metadata extraction itself failed).
+// A real `Intl.DateTimeFormat().resolvedOptions()` reports the *host's*
+// timezone, which has no meaningful equivalent in this sandboxed runtime;
+// returning an object with no `timeZone` key is enough to make the plugin's
+// own fallback (`|| 'Europe/Moscow'`) kick in correctly, and is honest about
+// not knowing a real timezone rather than guessing one.
+var Intl = {
+    DateTimeFormat: function () {
+        return { resolvedOptions: function () { return {}; } };
+    },
 };
 
 // The native side of `fetch` is a plain synchronous call under the hood (it
@@ -537,6 +1543,14 @@ function __libs_fetchText(url, init) {
 function HtmlParser2Parser(handlers) {
     this.__handlers = handlers || {};
     this.__chunks = [];
+    // .onparserinit -- real htmlparser2 fires this once, at construction,
+    // with the Parser instance itself (MDN-equivalent: fb55/htmlparser2's
+    // own Handler interface, §1.2.8.1). Pure JS, no native call involved --
+    // unlike every other handler here, this one fires before any parsing
+    // happens at all.
+    if (typeof this.__handlers.onparserinit === 'function') {
+        this.__handlers.onparserinit(this);
+    }
 }
 HtmlParser2Parser.prototype.write = function (chunk) {
     this.__chunks.push(chunk);
@@ -544,6 +1558,23 @@ HtmlParser2Parser.prototype.write = function (chunk) {
 HtmlParser2Parser.prototype.end = function (chunk) {
     if (chunk !== undefined) this.__chunks.push(chunk);
     __native_htmlparser2_parse(this.__chunks.join(''), this.__handlers);
+};
+// .isVoidElement(name) -- real htmlparser2's `Parser` exposes this so
+// `onclosetag` handlers can tell a self-closing HTML tag (never gets its own
+// closing event) from one that does. A fixed, standard HTML5 list (this
+// runtime's own `__native_htmlparser2_parse` already never SYNTHESIZES a
+// close event for these either, so this mirrors what the native tokenizer
+// actually does, not an independent guess). Found missing (`TypeError: not a
+// callable function`) via `royalroad.js`'s `parseChapter`, which calls
+// `parser.isVoidElement(tagName)` from inside its own `onclosetag` handler
+// while reconstructing chapter HTML tag-by-tag.
+var __VOID_ELEMENTS = {
+    area: true, base: true, br: true, col: true, embed: true, hr: true,
+    img: true, input: true, link: true, meta: true, param: true,
+    source: true, track: true, wbr: true,
+};
+HtmlParser2Parser.prototype.isVoidElement = function (name) {
+    return !!__VOID_ELEMENTS[String(name).toLowerCase()];
 };
 // Some plugin code parses in one shot without write()/end() -- an alias over
 // the same native call.
@@ -676,12 +1707,28 @@ var __lnreader_modules = {
         localStorage: { get: function () { return undefined; } },
         sessionStorage: { get: function () { return undefined; } },
     },
+    // `fetchFile` deliberately has no entry here (unlike `fetchProto`
+    // below): a full 261-source corpus grep found zero real call sites, so
+    // a hand-written "not implemented" stub for it would itself be exactly
+    // the kind of speculative, never-exercised code this module's own
+    // `__lnreader_makeLoudStub` mechanism exists to avoid writing by hand.
+    // If a future source ever calls it, member access on this object
+    // returns `undefined` and the resulting "not a function" is less
+    // friendly than a named stub's message, but that trade only matters the
+    // day a 262nd source actually needs it -- trivial to add back then.
     '@libs/fetch': {
         fetchApi: __libs_fetchApi,
         fetchText: __libs_fetchText,
-        fetchFile: function () {
-            throw new Error("not implemented: require('@libs/fetch').fetchFile");
-        },
+        // `fetchProto` (gRPC-Web + protobuf request/response framing) DOES
+        // have one confirmed real caller -- `wuxiaworld.js`'s `parseNovel`/
+        // chapter-list/`parseChapter`, all three built entirely on it
+        // (`searchNovels` uses `fetchApi`/JSON instead and works today).
+        // Kept unimplemented anyway: a correct protobuf message
+        // encoder/decoder plus gRPC-Web's length-prefix+compression-flag
+        // wire framing is a real binary-protocol subsystem, not a small
+        // shim -- same risk/value call already made for `@libs/aes`
+        // (primitive/protocol-level code, one confirmed caller, high cost
+        // of a subtly wrong implementation vs. the value of 1/261 sources).
         fetchProto: function () {
             throw new Error("not implemented: require('@libs/fetch').fetchProto");
         },
@@ -1120,5 +2167,514 @@ impl JsRuntime {
                 )
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod cheerio_prelude_tests {
+    use super::*;
+
+    /// In-process (no `lnreader_worker` subprocess) harness for the three
+    /// corpus-confirmed cheerio-prelude bugs fixed alongside `REFERENCE.md`
+    /// §1.2's rewrite: `.remove(selector)` (mangatr.js), `.prop("outerHTML")`
+    /// (novelupdates.js), and `$(htmlString)` detached-element creation
+    /// (komga.js). A minimal plugin object satisfies `new()`'s "did this
+    /// export something" check without needing a real `Source`/`.aix` file
+    /// or network access, unlike the subprocess-based end-to-end fixtures in
+    /// `mod.rs`.
+    fn eval_bool(js: &str) -> bool {
+        let mut runtime =
+            new(std::collections::HashMap::new(), "module.exports.default = {};")
+                .expect("runtime construction should not fail");
+        let context = runtime.context();
+        eval(context, js, "test snippet")
+            .unwrap_or_else(|e| panic!("test snippet failed: {e}"))
+            .as_boolean()
+            .expect("test snippet should evaluate to a boolean")
+    }
+
+    #[test]
+    fn remove_with_selector_only_removes_matching_children() {
+        // Real cheerio: `.remove(selector)` filters the CURRENT set by
+        // selector first -- only matching elements are removed, the rest
+        // stay. Before the fix, the selector argument was silently ignored
+        // and every child was removed.
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><h3>t</h3><div>a</div><p>keep</p></div>');
+            $('#w').children().remove('h3, div');
+            $('#w').children().length === 1 && $('#w').children().first().is('p')
+            "#
+        ));
+    }
+
+    #[test]
+    fn remove_without_selector_still_removes_everything() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><h3>t</h3><p>p</p></div>');
+            $('#w').children().remove();
+            $('#w').children().length === 0
+            "#
+        ));
+    }
+
+    #[test]
+    fn prop_outer_html_serializes_the_element() {
+        // novelupdates.js builds chapter content via
+        // `.map((i, el) => el.prop("outerHTML")).get().join("")` -- before
+        // the fix this returned null (attr("outerHTML") never matches a
+        // real attribute), joining into the literal string "null".
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<p class="x">hi</p>');
+            var html = $('p').prop('outerHTML');
+            html.indexOf('<p') === 0 && html.indexOf('hi') !== -1
+            "#
+        ));
+    }
+
+    #[test]
+    fn prop_tag_name_still_works_after_outer_html_special_case() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<img src="a.png">');
+            $('img').prop('tagName') === 'IMG'
+            "#
+        ));
+    }
+
+    #[test]
+    fn dollar_with_html_string_creates_detached_element() {
+        // komga.js: `a("<img />").attr({src, width, height})` then
+        // `.replaceWith()`'d into the loaded document -- before the fix,
+        // "<img />" was handed to the CSS selector engine as if it were a
+        // selector string and threw "invalid CSS selector".
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"></div>');
+            var img = $('<img />');
+            img.attr({src: 'http://example.com/a.png', width: '10', height: '20'});
+            img.is('img') && img.attr('src') === 'http://example.com/a.png'
+                && img.attr('width') === '10'
+            "#
+        ));
+    }
+
+    #[test]
+    fn dollar_with_plain_selector_is_unaffected() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><span class="a">x</span></div>');
+            $('.a').text() === 'x'
+            "#
+        ));
+    }
+
+    /// Regression coverage for §1.2.3's second optimization pass: `.children`/
+    /// `.remove`/`.next`/`.prev`/`.siblings`'s selector forms, and
+    /// `cheerio.load`/`$(htmlString)`/`$.html()`'s combined load+select
+    /// natives, were rewired onto new/changed native primitives
+    /// (`__native_children_filtered`/`__native_remove_filtered`/
+    /// `__native_{next,prev}_sibling_filtered`/`__native_siblings`'s new
+    /// second argument/`__native_load_and_select_root`/
+    /// `__native_select_and_outer_html`) purely to reduce native-call count
+    /// -- these confirm observable behavior didn't move at all.
+    #[test]
+    fn children_selector_only_returns_matching_children() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><h3>t</h3><div>a</div><p>keep</p></div>');
+            var kids = $('#w').children('p');
+            kids.length === 1 && kids.first().is('p') && kids.first().text() === 'keep'
+            "#
+        ));
+    }
+
+    #[test]
+    fn children_no_selector_still_returns_every_child() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><h3>t</h3><p>keep</p></div>');
+            $('#w').children().length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn next_selector_matches_only_the_immediate_sibling() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3 id="h">t</h3><span>x</span><p>p</p></div>');
+            // Immediate next sibling ("span") doesn't match "p" -- real
+            // cheerio doesn't skip ahead to find one that does.
+            $('#h').next('p').length === 0 && $('#h').next('span').length === 1
+            "#
+        ));
+    }
+
+    #[test]
+    fn prev_selector_matches_only_the_immediate_sibling() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3>t</h3><span>x</span><p id="p">p</p></div>');
+            $('#p').prev('h3').length === 0 && $('#p').prev('span').length === 1
+            "#
+        ));
+    }
+
+    #[test]
+    fn siblings_selector_filters_by_selector() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3 id="me">t</h3><span class="a">x</span><p class="a">p</p></div>');
+            var sibs = $('#me').siblings('.a');
+            sibs.length === 2 && sibs.first().is('span')
+            "#
+        ));
+    }
+
+    #[test]
+    fn siblings_no_selector_still_returns_every_sibling() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3 id="me">t</h3><span>x</span><p>p</p></div>');
+            $('#me').siblings().length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn cheerio_load_static_html_serializes_whole_document() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<p>hi</p>');
+            var whole = $.html();
+            whole.indexOf('<html') === 0 && whole.indexOf('<p>hi</p>') !== -1
+            "#
+        ));
+    }
+
+    #[test]
+    fn dollar_html_with_element_still_serializes_just_that_element() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><span id="s">x</span></div>');
+            $.html($('#s')) === '<span id="s">x</span>'
+            "#
+        ));
+    }
+
+    // Regression coverage for the newly-implemented cheerio methods (G this
+    // pass): .add()/.empty()/.parents()/.nextAll()/.prevAll()/.toString().
+
+    #[test]
+    fn add_selector_unions_from_document_root() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><p class="a">1</p><span class="b">2</span></div>');
+            var combined = $('.a').add('.b');
+            combined.length === 2 && combined.eq(0).is('.a') && combined.eq(1).is('.b')
+            "#
+        ));
+    }
+
+    #[test]
+    fn add_selection_unions_two_already_matched_selections() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><p class="a">1</p><span class="b">2</span></div>');
+            var combined = $('.a').add($('.b'));
+            combined.length === 2
+            "#
+        ));
+    }
+
+    #[test]
+    fn empty_removes_children_but_keeps_the_element() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="w"><p>gone</p></div>');
+            $('#w').empty();
+            $('#w').length === 1 && $('#w').html() === ''
+            "#
+        ));
+    }
+
+    #[test]
+    fn to_string_serializes_outer_html_like_prop_outer_html() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<p id="x">hi</p>');
+            var coerced = '' + $('#x');
+            coerced === $('#x').prop('outerHTML')
+            "#
+        ));
+    }
+
+    #[test]
+    fn parents_returns_farthest_ancestor_first() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div id="root"><section id="mid"><span id="me">x</span></section></div>');
+            var p = $('#me').parents();
+            // Farthest ancestor first: html > body > #root > #mid.
+            p.length === 4 && p.eq(2).is('#root') && p.eq(3).is('#mid')
+            "#
+        ));
+    }
+
+    #[test]
+    fn parents_selector_filters_the_whole_chain() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div class="x" id="root"><section id="mid"><span id="me">x</span></section></div>');
+            var p = $('#me').parents('.x');
+            p.length === 1 && p.eq(0).is('#root')
+            "#
+        ));
+    }
+
+    #[test]
+    fn next_all_returns_every_following_sibling_nearest_first() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3 id="me">t</h3><span>a</span><p>b</p><i>c</i></div>');
+            var n = $('#me').nextAll();
+            n.length === 3 && n.eq(0).is('span') && n.eq(1).is('p') && n.eq(2).is('i')
+            "#
+        ));
+    }
+
+    #[test]
+    fn prev_all_returns_every_preceding_sibling_nearest_first() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><span>a</span><p>b</p><i id="me">c</i></div>');
+            var p = $('#me').prevAll();
+            // Nearest first: the immediately-preceding <p>, then <span> -- NOT document order.
+            p.length === 2 && p.eq(0).is('p') && p.eq(1).is('span')
+            "#
+        ));
+    }
+
+    #[test]
+    fn next_all_selector_filters_without_stopping_the_walk() {
+        assert!(eval_bool(
+            r#"
+            var $ = cheerio_load('<div><h3 id="me">t</h3><span class="x">a</span><p>b</p><i class="x">c</i></div>');
+            var n = $('#me').nextAll('.x');
+            // Unlike nextUntil(), a non-matching <p> in between doesn't stop the walk.
+            n.length === 2 && n.eq(0).is('span') && n.eq(1).is('i')
+            "#
+        ));
+    }
+
+    // Regression coverage for the F additions: console/URL/FormData/
+    // URLSearchParams/htmlparser2 oncomment.
+
+    #[test]
+    fn console_full_surface_is_callable_without_crashing() {
+        assert!(eval_bool(
+            r#"
+            console.trace(); console.dir({}); console.table([]); console.group('x');
+            console.groupCollapsed('y'); console.groupEnd(); console.assert(true, 'ok');
+            console.count('c'); console.countReset('c'); console.time('t');
+            console.timeLog('t'); console.timeEnd('t'); console.dirxml({});
+            true
+            "#
+        ));
+    }
+
+    #[test]
+    fn url_origin_combines_protocol_and_host() {
+        assert!(eval_bool(
+            r#"
+            var u = new URL('https://example.com:8080/a/b?x=1');
+            u.origin === 'https://example.com:8080'
+            "#
+        ));
+    }
+
+    #[test]
+    fn form_data_set_get_has_delete_round_trip() {
+        assert!(eval_bool(
+            r#"
+            var fd = new FormData();
+            fd.append('a', '1');
+            fd.append('b', '2');
+            fd.set('a', '9');
+            var ok = fd.get('a') === '9' && fd.has('b') === true && fd.getAll('a').length === 1;
+            fd['delete']('b');
+            ok && fd.has('b') === false
+            "#
+        ));
+    }
+
+    #[test]
+    fn url_search_params_get_all_and_for_each() {
+        assert!(eval_bool(
+            r#"
+            var sp = new URLSearchParams('tag=a&tag=b&x=1');
+            var all = sp.getAll('tag');
+            var seen = [];
+            sp.forEach(function (value, key) { seen.push(key + '=' + value); });
+            all.length === 2 && all[0] === 'a' && all[1] === 'b' && seen.length === 3
+            "#
+        ));
+    }
+
+    #[test]
+    fn htmlparser2_dispatches_oncomment() {
+        assert!(eval_bool(
+            r#"
+            var Parser = require('htmlparser2').Parser;
+            var seen = [];
+            var parser = new Parser({
+                oncomment: function (text) { seen.push(text); },
+            });
+            parser.write('<div><!-- hello -->x</div>');
+            parser.end();
+            seen.length === 1 && seen[0] === ' hello '
+            "#
+        ));
+    }
+
+    // Regression coverage for F's spec-completeness pass: htmlparser2's
+    // remaining low-cost handlers, and the Web API gaps closed alongside
+    // the ones already tested above (console/URL.origin/FormData/
+    // URLSearchParams basics).
+
+    #[test]
+    fn htmlparser2_dispatches_onopentagname_oncommentend_onparserinit() {
+        assert!(eval_bool(
+            r#"
+            var Parser = require('htmlparser2').Parser;
+            var events = [];
+            var sawInit = false;
+            var parser = new Parser({
+                onparserinit: function (p) { sawInit = p instanceof Parser; },
+                onopentagname: function (name) { events.push('open:' + name); },
+                oncomment: function (text) { events.push('comment:' + text); },
+                oncommentend: function () { events.push('commentend'); },
+            });
+            parser.write('<p><!--hi--></p>');
+            parser.end();
+            sawInit && events.join(',') === 'open:p,comment:hi,commentend'
+            "#
+        ));
+    }
+
+    #[test]
+    fn url_username_password_port_are_parsed_and_excluded_from_host() {
+        assert!(eval_bool(
+            r#"
+            var u = new URL('https://alice:secret@example.com:8080/a');
+            u.username === 'alice' && u.password === 'secret' && u.port === '8080'
+                && u.host === 'example.com:8080' && u.origin === 'https://example.com:8080'
+                && u.toString() === 'https://alice:secret@example.com:8080/a'
+            "#
+        ));
+    }
+
+    #[test]
+    fn url_to_json_and_can_parse() {
+        assert!(eval_bool(
+            r#"
+            var u = new URL('https://example.com/a');
+            u.toJSON() === u.href && URL.canParse('https://example.com') === true
+                && URL.canParse('not a url') === false
+            "#
+        ));
+    }
+
+    #[test]
+    fn url_search_params_keys_values_size_sort_iterator() {
+        assert!(eval_bool(
+            r#"
+            var sp = new URLSearchParams('b=2&a=1');
+            var keys = [];
+            var it = sp.keys();
+            for (var r = it.next(); !r.done; r = it.next()) keys.push(r.value);
+            var values = [];
+            var it2 = sp.values();
+            for (var r2 = it2.next(); !r2.done; r2 = it2.next()) values.push(r2.value);
+            var fromIter = [];
+            for (var pair of sp) fromIter.push(pair[0]);
+            sp.sort();
+            var sortedFirst = sp.entries().next().value[0];
+            keys.join(',') === 'b,a' && values.join(',') === '2,1' && sp.size === 2
+                && fromIter.join(',') === 'b,a' && sortedFirst === 'a'
+            "#
+        ));
+    }
+
+    #[test]
+    fn headers_iteration_methods() {
+        assert!(eval_bool(
+            r#"
+            var h = new Headers({ 'X-A': '1', 'X-B': '2' });
+            var count = 0;
+            for (var pair of h) count++;
+            var keys = [];
+            var it = h.keys();
+            for (var r = it.next(); !r.done; r = it.next()) keys.push(r.value);
+            count === 2 && keys.indexOf('x-a') !== -1 && keys.indexOf('x-b') !== -1
+            "#
+        ));
+    }
+
+    #[test]
+    fn form_data_iteration_methods() {
+        assert!(eval_bool(
+            r#"
+            var fd = new FormData();
+            fd.append('a', '1');
+            fd.append('b', '2');
+            var keys = [];
+            var it = fd.keys();
+            for (var r = it.next(); !r.done; r = it.next()) keys.push(r.value);
+            var pairs = [];
+            for (var e = fd.entries(), r2 = e.next(); !r2.done; r2 = e.next()) pairs.push(r2.value.join('='));
+            keys.join(',') === 'a,b' && pairs.join(',') === 'a=1,b=2'
+            "#
+        ));
+    }
+
+    #[test]
+    fn form_data_is_directly_iterable() {
+        assert!(eval_bool(
+            r#"
+            var fd = new FormData();
+            fd.append('a', '1');
+            fd.append('b', '2');
+            var pairs = [];
+            for (var pair of fd) pairs.push(pair.join('='));
+            pairs.join(',') === 'a=1,b=2'
+            "#
+        ));
+    }
+
+    #[test]
+    fn text_decoder_encoder_expose_options_and_encoding() {
+        assert!(eval_bool(
+            r#"
+            var dec = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
+            var enc = new TextEncoder();
+            dec.fatal === true && dec.ignoreBOM === true && dec.encoding === 'utf-8'
+                && enc.encoding === 'utf-8'
+            "#
+        ));
+    }
+
+    #[test]
+    fn console_extended_surface_is_callable_without_crashing() {
+        assert!(eval_bool(
+            r#"
+            console.clear(); console.exception('x'); console.profile('p');
+            console.profileEnd('p'); console.timeStamp('t');
+            true
+            "#
+        ));
     }
 }

@@ -18,7 +18,7 @@ use boa_engine::{
     Context, JsArgs, JsError, JsNativeError, JsResult, JsValue,
 };
 use boa_gc::{Finalize, Gc, GcRefCell, Trace};
-use dom_query::{Document, Matcher, Selection};
+use dom_query::{Document, Matcher, NodeRef, Selection};
 
 pub(super) type SharedStore = Gc<GcRefCell<Store>>;
 
@@ -148,11 +148,29 @@ fn js_error(message: impl Into<String>) -> JsError {
     JsNativeError::typ().with_message(message.into()).into()
 }
 
-/// Normalizes `:contains(text)` into `:contains("text")` before handing it
-/// to the selector engine, which requires quotes — but unquoted
-/// `:contains(text)` is common in cheerio-based code (LNReader sources
-/// included).
+/// Normalizes `:contains(text)`/`:icontains(text)` into `:contains("text")`
+/// before handing it to the selector engine.
+///
+/// Two independent things happen here for `:contains`: the selector engine
+/// requires quotes, but unquoted `:contains(text)` is common in
+/// cheerio-based code (LNReader sources included) -- so unquoted text gets
+/// wrapped. `:icontains(text)` (real cheerio/`css-select`'s
+/// case-INsensitive `:contains` variant) is additionally rewritten down to
+/// plain `:contains(...)`, the only one of the two `dom_query`'s matcher
+/// actually implements (`matcher.rs` matches the pseudo-class name only
+/// against the literal string "contains", not "icontains" -- two genuinely
+/// different pseudo-class names, not a case-of-the-same-name difference).
+/// Found via `FWK.US`'s `parseNovel`
+/// (`#lcp_instance_0 +:icontains('complete')`), which previously threw
+/// `TypeError: invalid CSS selector ... UnsupportedPseudoClassOrElement`.
+/// This trades away case-insensitivity (a `:contains("Complete")` selector
+/// will no longer match literal "COMPLETE" text) in exchange for not
+/// crashing at all -- the pragmatic choice given only this one corpus
+/// source (1/261) uses `:icontains`, and true case-insensitive text
+/// matching isn't a knob `dom_query`'s vendored matcher exposes.
 fn normalize_contains(selector: &str) -> String {
+    let selector = selector.replace(":icontains(", ":contains(");
+    let selector = selector.as_str();
     const NEEDLE: &str = ":contains(";
     let mut out = String::with_capacity(selector.len() + 8);
     let bytes = selector.as_bytes();
@@ -344,6 +362,33 @@ fn native_attr(store: &SharedStore, args: &[JsValue], context: &mut Context) -> 
     }
 }
 
+/// `__native_attribs(sel_id) -> JSON string of {name: value}`. Backs the
+/// `.attribs` property real cheerio exposes directly on a raw DOM node
+/// (distinct from `.attr(name)`, one attribute at a time) -- found needed
+/// via `.attribs.class`/`.attribs.href`/`.attribs.title` (89/261 real corpus
+/// sources, by far the widest-reaching gap found this pass) because real
+/// cheerio's `.each()`/`.map()`/`.filter()` callbacks hand back the raw
+/// element as their second argument, and plugin code very commonly reads
+/// straight off it instead of re-wrapping with `$(el)` first. Returned as a
+/// JSON string and `JSON.parse`'d on the JS side, the same boundary
+/// convention `fetch()`'s headers already use in this module, rather than
+/// building a `JsObject` field-by-field from Rust.
+fn native_attribs(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let s = store.borrow();
+    let attrs = s.sel(sel_id).map_err(js_error)?.attrs();
+    let map: HashMap<String, String> = attrs
+        .into_iter()
+        .map(|a| (a.name.local.to_string(), a.value.to_string()))
+        .collect();
+    let json = serde_json::to_string(&map).unwrap_or_else(|_| "{}".to_string());
+    Ok(JsValue::from(js_string!(json.as_str())))
+}
+
 /// `__native_set_attr(sel_id, name, value) -> undefined`
 fn native_set_attr(
     store: &SharedStore,
@@ -382,6 +427,31 @@ fn native_node_type(
         None => "other",
     };
     Ok(JsValue::from(js_string!(ty)))
+}
+
+/// `__native_tag_name(sel_id) -> uppercase tag name, "" if not an element`.
+/// Backs `.prop("tagName")` -- real cheerio/browser DOM's `.prop("tagName")`
+/// returns the UPPERCASE tag name, distinct from `.attr()` (which has no
+/// concept of "tagName", an intrinsic property rather than a markup
+/// attribute). Found needed via `skythewood.js`'s `i.prop("tagName")` on an
+/// element from a `.find("*").each()` callback, used to pick out `<img>`
+/// nodes by name -- `.prop` didn't exist on `CheerioSelection` at all before
+/// this ("not a callable function" calling the missing method).
+fn native_tag_name(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let s = store.borrow();
+    let name = match s.sel(sel_id).map_err(js_error)?.nodes().first() {
+        Some(node) => node
+            .query(|n| n.as_element().map(|e| e.node_name().to_string()))
+            .flatten()
+            .unwrap_or_default(),
+        None => String::new(),
+    };
+    Ok(JsValue::from(js_string!(name.to_uppercase().as_str())))
 }
 
 /// `__native_contents(sel_id) -> JsArray` of handles (one 1-element
@@ -797,16 +867,35 @@ fn native_has(store: &SharedStore, args: &[JsValue], context: &mut Context) -> J
     Ok(JsValue::from(array))
 }
 
-/// `__native_siblings(sel_id) -> JsArray` of handles. Identity comparison
-/// (`NodeId` derives `PartialEq`) happens directly in Rust, one traversal
-/// for the whole set instead of a per-candidate boundary crossing.
+/// `__native_siblings(sel_id, selector_or_null) -> JsArray` of handles.
+/// Identity comparison (`NodeId` derives `PartialEq`) happens directly in
+/// Rust, one traversal for the whole set instead of a per-candidate boundary
+/// crossing. The optional selector is tested in the SAME Rust-side loop
+/// (`is_matcher`, no separate `Matcher::new` per candidate — the matcher is
+/// compiled once via `compile_matcher`) rather than composed on top in JS —
+/// same one-native-call shape as `native_has`/`native_not`. Previously the
+/// selector form built a `CheerioSelection` (and paid its constructor's
+/// `native_each_count`) for every raw sibling before filtering any of them
+/// out; not currently exercised by any real corpus source (§1.2.4/§1.2.3),
+/// but cheap to fold in using a technique already proven elsewhere in this
+/// file, so there was no reason to leave the old N-wasted-constructions
+/// shape in place once this file was already being re-reviewed.
 fn native_siblings(
     store: &SharedStore,
     args: &[JsValue],
     context: &mut Context,
 ) -> JsResult<JsValue> {
     let sel_id = arg_usize(args, 0, context)?;
+    let selector_arg = args.get_or_undefined(1);
     let mut s = store.borrow_mut();
+
+    let matcher = if selector_arg.is_undefined() || selector_arg.is_null() {
+        None
+    } else {
+        let raw_selector = selector_arg.to_string(context)?.to_std_string_escaped();
+        let selector = normalize_contains(&raw_selector);
+        Some(s.compile_matcher(&selector).map_err(js_error)?)
+    };
 
     let self_id = s
         .sel(sel_id)
@@ -820,7 +909,11 @@ fn native_siblings(
     for i in 0..children.length() {
         if let Some(node) = children.get(i).cloned() {
             if Some(node.id) != self_id {
-                let id = s.push_sel(Selection::from(node));
+                let one = Selection::from(node);
+                if matcher.is_some_and(|m| !one.is_matcher(m)) {
+                    continue;
+                }
+                let id = s.push_sel(one);
                 handles.push(JsValue::from(id as f64));
             }
         }
@@ -828,6 +921,176 @@ fn native_siblings(
     drop(s);
     let array = JsArray::from_iter(handles, context);
     Ok(JsValue::from(array))
+}
+
+/// `__native_children_filtered(sel_id, selector) -> JsArray` of handles.
+/// `dom_query`'s `children()` takes no selector, so the previous
+/// implementation composed `.children()` + `.toArray()` + a JS-side
+/// `.is(selector)` per child — 3+2N native calls (N = ALL children,
+/// including non-matches) for what real cheerio's `.children(selector)`
+/// needs. This does the same per-child test as `native_has`/`native_not`/
+/// `native_siblings` above: one native call, one Rust-side loop, only
+/// matching children ever get a `CheerioSelection` handle at all — 1+M (M =
+/// matched count, M <= N).
+fn native_children_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
+    let mut s = store.borrow_mut();
+    let matcher = s.compile_matcher(&selector).map_err(js_error)?;
+
+    let children = s.sel(sel_id).map_err(js_error)?.children();
+    let mut handles: Vec<JsValue> = Vec::new();
+    for i in 0..children.length() {
+        if let Some(node) = children.get(i).cloned() {
+            let one = Selection::from(node);
+            if one.is_matcher(matcher) {
+                let id = s.push_sel(one);
+                handles.push(JsValue::from(id as f64));
+            }
+        }
+    }
+    drop(s);
+    let array = JsArray::from_iter(handles, context);
+    Ok(JsValue::from(array))
+}
+
+/// `__native_remove_filtered(sel_id, selector) -> undefined`. Real cheerio's
+/// `.remove(selector)` filters the current set by selector, THEN removes
+/// only the matches. The previous implementation composed this on the JS
+/// side as `.filter(selector).each(el => __native_remove(el.__id))` — 3+2M
+/// native calls (M = matched-and-removed count) for what `dom_query`'s own
+/// `Selection::filter()` + `Selection::remove()` already do as two whole-
+/// selection Rust calls, callable back-to-back inside a SINGLE native
+/// function without ever handing intermediate handles back to JS. 1 native
+/// call total, regardless of M.
+fn native_remove_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let selector = arg_string(args, 1, context)?;
+    let mut s = store.borrow_mut();
+    s.compile_matcher(&selector).map_err(js_error)?;
+    let filtered = s.sel(sel_id).map_err(js_error)?.filter(&selector);
+    filtered.remove();
+    Ok(JsValue::undefined())
+}
+
+/// Shared body for `__native_next_sibling_filtered`/
+/// `__native_prev_sibling_filtered`: real cheerio's `.next(selector)`/
+/// `.prev(selector)` test ONLY the immediate sibling (never searching
+/// further if it doesn't match — see the JS prelude's own comment on this),
+/// so the whole thing — get the sibling, check it exists, test it against
+/// the selector — collapses into one native call instead of the previous
+/// `native_{next,prev}_sibling` + ctor + `.exists()` + `.is()` chain (up to
+/// 4 calls for 1).
+fn sibling_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+    direction: fn(&Selection<'static>) -> Selection<'static>,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
+    let mut s = store.borrow_mut();
+    let matcher = s.compile_matcher(&selector).map_err(js_error)?;
+
+    let sibling = direction(s.sel(sel_id).map_err(js_error)?);
+    let result = if sibling.exists() && sibling.is_matcher(matcher) {
+        sibling
+    } else {
+        Selection::default()
+    };
+    let id = s.push_sel(result);
+    Ok(JsValue::from(id as f64))
+}
+
+/// `__native_next_sibling_filtered(sel_id, selector) -> sel_id`
+fn native_next_sibling_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    sibling_filtered(store, args, context, Selection::next_sibling)
+}
+
+/// `__native_prev_sibling_filtered(sel_id, selector) -> sel_id`
+fn native_prev_sibling_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    sibling_filtered(store, args, context, Selection::prev_sibling)
+}
+
+/// `__native_load_and_select_root(html, selector) -> [doc_id, sel_id]`.
+/// `cheerio.load(html)` and `$(htmlString)` (the detached-fragment call
+/// form) both immediately follow `__native_load` with one
+/// `__native_select_root` call on the document they just created — a fixed,
+/// always-back-to-back pair, unlike `$(selector)` on an ALREADY-loaded
+/// document (which reuses a `doc_id` across arbitrarily many later calls,
+/// and still needs the two native functions kept separate for that case).
+/// Folding just the "load, then select" pair into one native call removes a
+/// JS<->Rust round trip that only ever carried the freshly-minted `doc_id`
+/// argument straight back into the very next call — 2 native calls instead
+/// of `native_load` + `native_select_root`'s `3` before ctor overhead.
+/// Returns both ids (not just the selection's) because `cheerio.load()`'s
+/// returned `$(selectorOrElement)` closure still needs `doc_id` as an
+/// upvalue for its OWN later, independent `__native_select_root` calls.
+fn native_load_and_select_root(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let html = arg_string(args, 0, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
+    let mut s = store.borrow_mut();
+
+    let doc = Document::from(html.as_str());
+    let doc_id = s.push_doc(doc);
+    let doc_ref = s.doc(doc_id).map_err(js_error)?;
+    let matcher = s.compile_matcher(&selector).map_err(js_error)?;
+    let sel = doc_ref.select_matcher(matcher);
+    let sel_id = s.push_sel(sel);
+    drop(s);
+
+    let array = JsArray::from_iter(
+        [JsValue::from(doc_id as f64), JsValue::from(sel_id as f64)],
+        context,
+    );
+    Ok(JsValue::from(array))
+}
+
+/// `__native_select_and_outer_html(doc_id, selector) -> string`. Backs
+/// `$.html()` with no argument — real cheerio serializes the whole document.
+/// The previous implementation built a full `CheerioSelection` (paying its
+/// constructor's `native_each_count` call) purely to immediately call
+/// `.outerHtml()` on it and throw the wrapper away — this does the select +
+/// serialize in one native call, 1 instead of 3 (`native_select_root` + ctor
+/// + `native_outer_html`), since nothing here is ever chained further.
+fn native_select_and_outer_html(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let doc_id = arg_usize(args, 0, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
+    let mut s = store.borrow_mut();
+
+    let doc = s.doc(doc_id).map_err(js_error)?;
+    let matcher = s.compile_matcher(&selector).map_err(js_error)?;
+    let sel = doc.select_matcher(matcher);
+    let html = sel.html();
+    Ok(JsValue::from(js_string!(html.as_ref())))
 }
 
 /// `__native_closest(sel_id, selector) -> sel_id`. Walks up ancestors via
@@ -903,6 +1166,141 @@ fn native_next_until(
     Ok(JsValue::from(array))
 }
 
+/// Reads an optional selector argument (`undefined`/`null` means "no
+/// filter"), already `:icontains`-normalized and compiled, shared by
+/// [`native_parents`]/[`native_next_all`]/[`native_prev_all`] below — same
+/// "filter in the same Rust-side loop that walks the candidates" shape
+/// already used by `native_children_filtered`/`native_siblings`.
+fn optional_matcher(
+    s: &mut Store,
+    args: &[JsValue],
+    index: usize,
+    context: &mut Context,
+) -> JsResult<Option<&'static Matcher>> {
+    let arg = args.get_or_undefined(index);
+    if arg.is_undefined() || arg.is_null() {
+        return Ok(None);
+    }
+    let raw_selector = arg.to_string(context)?.to_std_string_escaped();
+    let selector = normalize_contains(&raw_selector);
+    Ok(Some(s.compile_matcher(&selector).map_err(js_error)?))
+}
+
+/// `__native_add(sel_id, selector) -> sel_id`. Direct mapping onto
+/// `Selection::add()`, which already searches from the document root the
+/// same way real cheerio's `.add(selector)` does — see
+/// `docs/lnreader/REFERENCE.md` §1.2.10 for the `dom_query`-source citation
+/// and the one inherited edge case (adding from an empty selection).
+fn native_add(store: &SharedStore, args: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let selector = arg_string(args, 1, context)?;
+    let mut s = store.borrow_mut();
+    s.compile_matcher(&selector).map_err(js_error)?;
+    let added = s.sel(sel_id).map_err(js_error)?.add(&selector);
+    let id = s.push_sel(added);
+    Ok(JsValue::from(id as f64))
+}
+
+/// `__native_parents(sel_id, selector_or_null) -> JsArray` of handles,
+/// farthest ancestor first (real cheerio's own documented order). Walks via
+/// repeated `NodeRef::parent()` (same technique as `native_closest`) rather
+/// than `dom_query`'s own `ancestors()`, stopping at the last real element
+/// so the `Document`/`Fragment` root itself is never included — see
+/// `docs/lnreader/REFERENCE.md` §1.2.10 for the regression this guards
+/// against.
+fn native_parents(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let mut s = store.borrow_mut();
+    let matcher = optional_matcher(&mut s, args, 1, context)?;
+
+    let start = s.sel(sel_id).map_err(js_error)?.nodes().first().cloned();
+    let mut current = start.and_then(|n| n.parent());
+    let mut ancestors: Vec<NodeRef<'static>> = Vec::new();
+    for _ in 0..200 {
+        // Same guard limit as native_closest.
+        let Some(node) = current else { break };
+        if !node.is_element() {
+            break;
+        }
+        ancestors.push(node);
+        current = node.parent();
+    }
+    ancestors.reverse();
+
+    let mut handles: Vec<JsValue> = Vec::new();
+    for node in ancestors {
+        let one = Selection::from(node);
+        if matcher.is_some_and(|m| !one.is_matcher(m)) {
+            continue;
+        }
+        let id = s.push_sel(one);
+        handles.push(JsValue::from(id as f64));
+    }
+    drop(s);
+    let array = JsArray::from_iter(handles, context);
+    Ok(JsValue::from(array))
+}
+
+/// Shared body for `__native_next_all`/`__native_prev_all`: walks
+/// element-level siblings in one direction, collecting every one (a
+/// selector filters the walked set, unlike `.nextUntil()`'s early stop) —
+/// see `docs/lnreader/REFERENCE.md` §1.2.10 for the real-cheerio-source
+/// citation on ordering (nearest-first, not reversed).
+fn sibling_walk_filtered(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+    direction: fn(&NodeRef<'static>) -> Option<NodeRef<'static>>,
+) -> JsResult<JsValue> {
+    let sel_id = arg_usize(args, 0, context)?;
+    let mut s = store.borrow_mut();
+    let matcher = optional_matcher(&mut s, args, 1, context)?;
+
+    let start = s
+        .sel(sel_id)
+        .map_err(js_error)?
+        .nodes()
+        .first()
+        .and_then(direction);
+    let mut current = start;
+    let mut handles: Vec<JsValue> = Vec::new();
+    for _ in 0..500 {
+        // Same guard limit as native_next_until.
+        let Some(node) = current else { break };
+        let one = Selection::from(node);
+        if matcher.is_none_or(|m| one.is_matcher(m)) {
+            let id = s.push_sel(one);
+            handles.push(JsValue::from(id as f64));
+        }
+        current = direction(&node);
+    }
+    drop(s);
+    let array = JsArray::from_iter(handles, context);
+    Ok(JsValue::from(array))
+}
+
+/// `__native_next_all(sel_id, selector_or_null) -> JsArray`
+fn native_next_all(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    sibling_walk_filtered(store, args, context, NodeRef::next_element_sibling)
+}
+
+/// `__native_prev_all(sel_id, selector_or_null) -> JsArray`
+fn native_prev_all(
+    store: &SharedStore,
+    args: &[JsValue],
+    context: &mut Context,
+) -> JsResult<JsValue> {
+    sibling_walk_filtered(store, args, context, NodeRef::prev_element_sibling)
+}
+
 /// `__native_replace_with_html(sel_id, html) -> undefined`
 fn native_replace_with_html(
     store: &SharedStore,
@@ -972,6 +1370,13 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
     register_native(context, "__native_attr", 2, store.clone(), native_attr);
     register_native(
         context,
+        "__native_attribs",
+        1,
+        store.clone(),
+        native_attribs,
+    );
+    register_native(
+        context,
         "__native_set_attr",
         3,
         store.clone(),
@@ -984,6 +1389,13 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
         1,
         store.clone(),
         native_node_type,
+    );
+    register_native(
+        context,
+        "__native_tag_name",
+        1,
+        store.clone(),
+        native_tag_name,
     );
     register_native(
         context,
@@ -1140,6 +1552,64 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
         2,
         store.clone(),
         native_next_until,
+    );
+    register_native(
+        context,
+        "__native_children_filtered",
+        2,
+        store.clone(),
+        native_children_filtered,
+    );
+    register_native(
+        context,
+        "__native_remove_filtered",
+        2,
+        store.clone(),
+        native_remove_filtered,
+    );
+    register_native(
+        context,
+        "__native_next_sibling_filtered",
+        2,
+        store.clone(),
+        native_next_sibling_filtered,
+    );
+    register_native(
+        context,
+        "__native_prev_sibling_filtered",
+        2,
+        store.clone(),
+        native_prev_sibling_filtered,
+    );
+    register_native(
+        context,
+        "__native_load_and_select_root",
+        2,
+        store.clone(),
+        native_load_and_select_root,
+    );
+    register_native(
+        context,
+        "__native_select_and_outer_html",
+        2,
+        store.clone(),
+        native_select_and_outer_html,
+    );
+    register_native(context, "__native_add", 2, store.clone(), native_add);
+    register_native(context, "__native_parents", 2, store.clone(), native_parents);
+    register_native(
+        context,
+        "__native_next_all",
+        2,
+        store.clone(),
+        native_next_all,
+    );
+    register_native(
+        context,
+        "__native_prev_all",
+        2,
+        store.clone(),
+        native_prev_all,
     );
 
     store

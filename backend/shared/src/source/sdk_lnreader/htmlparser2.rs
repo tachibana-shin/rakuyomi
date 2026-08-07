@@ -10,8 +10,7 @@
 //! Confirmed against the real fixtures that need it (`ranobes.js`): plugin
 //! code does `new Parser({onopentag, ontext, onclosetag}); parser.write(html);
 //! parser.end();` — no streaming, one whole document handed to `.write()`
-//! before `.end()`. `onattribute`/`onend` aren't exercised by that fixture
-//! but are implemented anyway for fidelity with the wider ~133-source corpus.
+//! before `.end()`.
 
 use dom_query::{Document, NodeData, NodeRef};
 
@@ -27,9 +26,26 @@ fn js_error(message: impl Into<String>) -> JsError {
     JsNativeError::typ().with_message(message.into()).into()
 }
 
+/// One resolved callback out of the real htmlparser2 `Handler` interface
+/// (fb55/htmlparser2's `src/Parser.ts`). `onreset`/`onerror`/
+/// `oncdatastart`/`oncdataend` are deliberately not in this set — see
+/// [`native_htmlparser2_parse`]'s doc comment for why each one is an
+/// architectural mismatch for this shim rather than a missing feature.
+#[derive(Default)]
+struct Handlers {
+    onopentagname: Option<JsObject>,
+    onopentag: Option<JsObject>,
+    onattribute: Option<JsObject>,
+    ontext: Option<JsObject>,
+    onclosetag: Option<JsObject>,
+    oncomment: Option<JsObject>,
+    oncommentend: Option<JsObject>,
+    onprocessinginstruction: Option<JsObject>,
+}
+
 /// Reads `handlers[name]` and returns it as a callable [`JsObject`], or
 /// `None` if the property is missing/not a function — plugin code routinely
-/// only supplies a subset of the 5 handlers.
+/// only supplies a subset of the handlers.
 fn get_handler(
     handlers: &JsObject,
     name: &str,
@@ -50,31 +66,30 @@ fn call_handler(
     Ok(())
 }
 
-/// Walks `node` and its descendants in document order, dispatching
-/// `onopentag`/`onattribute`/`ontext`/`onclosetag` for elements and text
-/// nodes. Comments/doctype/processing-instruction nodes are skipped (real
-/// htmlparser2 has `oncomment`/etc. too, but no fixture needs them).
-fn walk(
-    node: NodeRef<'_>,
-    onopentag: &Option<JsObject>,
-    onattribute: &Option<JsObject>,
-    ontext: &Option<JsObject>,
-    onclosetag: &Option<JsObject>,
-    context: &mut Context,
-) -> JsResult<()> {
+/// Walks `node` and its descendants in document order, dispatching the
+/// resolved [`Handlers`] for elements, text, comment, and processing-
+/// instruction nodes. Doctype nodes are still skipped entirely (no
+/// `Handler` callback exists for them in real htmlparser2 either).
+fn walk(node: NodeRef<'_>, handlers: &Handlers, context: &mut Context) -> JsResult<()> {
     if node.is_element() {
         let name = node.node_name().unwrap_or_default().to_string();
+        call_handler(
+            &handlers.onopentagname,
+            &[JsValue::from(js_string!(name.as_str()))],
+            context,
+        )?;
+
         // Only fetch/build attribute data when a handler actually wants it
-        // -- most plugin `Parser` calls only supply a subset of the 5
+        // -- most plugin `Parser` calls only supply a subset of the
         // handlers, and building a JS object per element (`ObjectInitializer`)
         // for a handler nobody registered would be pure waste on documents
         // with thousands of elements.
-        if onattribute.is_some() || onopentag.is_some() {
+        if handlers.onattribute.is_some() || handlers.onopentag.is_some() {
             let attrs = node.attrs();
 
             for attr in &attrs {
                 call_handler(
-                    onattribute,
+                    &handlers.onattribute,
                     &[
                         JsValue::from(js_string!(attr.name.local.as_ref())),
                         JsValue::from(js_string!(attr.value.as_ref())),
@@ -83,7 +98,7 @@ fn walk(
                 )?;
             }
 
-            if onopentag.is_some() {
+            if handlers.onopentag.is_some() {
                 let mut attribs_builder = ObjectInitializer::new(context);
                 for attr in &attrs {
                     attribs_builder.property(
@@ -94,7 +109,7 @@ fn walk(
                 }
                 let attribs_object = attribs_builder.build();
                 call_handler(
-                    onopentag,
+                    &handlers.onopentag,
                     &[
                         JsValue::from(js_string!(name.as_str())),
                         JsValue::from(attribs_object),
@@ -107,12 +122,12 @@ fn walk(
         let mut child = node.first_child();
         while let Some(c) = child {
             let next = c.next_sibling();
-            walk(c, onopentag, onattribute, ontext, onclosetag, context)?;
+            walk(c, handlers, context)?;
             child = next;
         }
 
         call_handler(
-            onclosetag,
+            &handlers.onclosetag,
             &[JsValue::from(js_string!(name.as_str()))],
             context,
         )?;
@@ -124,17 +139,52 @@ fn walk(
             })
             .flatten()
             .unwrap_or_default();
-        call_handler(ontext, &[JsValue::from(js_string!(text.as_str()))], context)?;
+        call_handler(
+            &handlers.ontext,
+            &[JsValue::from(js_string!(text.as_str()))],
+            context,
+        )?;
+    } else if node.is_comment() {
+        let text = node
+            .query(|n| match &n.data {
+                NodeData::Comment { contents } => Some(contents.to_string()),
+                _ => None,
+            })
+            .flatten()
+            .unwrap_or_default();
+        call_handler(
+            &handlers.oncomment,
+            &[JsValue::from(js_string!(text.as_str()))],
+            context,
+        )?;
+        call_handler(&handlers.oncommentend, &[], context)?;
     } else {
-        // Document/Fragment/Comment/Doctype/ProcessingInstruction: not a tag
-        // or text run itself, but a Fragment/Document root can still have
-        // element/text children (that's the normal case for a whole parsed
-        // document) — recurse into children without emitting an event for
-        // the container node itself.
+        let pi = node.query(|n| match &n.data {
+            NodeData::ProcessingInstruction { target, contents } => {
+                Some((target.to_string(), contents.to_string()))
+            }
+            _ => None,
+        });
+        if let Some(Some((target, contents))) = pi {
+            call_handler(
+                &handlers.onprocessinginstruction,
+                &[
+                    JsValue::from(js_string!(target.as_str())),
+                    JsValue::from(js_string!(contents.as_str())),
+                ],
+                context,
+            )?;
+            return Ok(());
+        }
+        // Document/Fragment/Doctype: not a tag, text run, comment, or PI
+        // itself, but a Fragment/Document root can still have such
+        // children (that's the normal case for a whole parsed document) —
+        // recurse into children without emitting an event for the
+        // container node itself.
         let mut child = node.first_child();
         while let Some(c) = child {
             let next = c.next_sibling();
-            walk(c, onopentag, onattribute, ontext, onclosetag, context)?;
+            walk(c, handlers, context)?;
             child = next;
         }
     }
@@ -142,11 +192,30 @@ fn walk(
 }
 
 /// `__native_htmlparser2_parse(html, handlers) -> undefined`. Parses `html`
-/// once via `Document::fragment` (no synthetic `<html><head><body>`
-/// wrapping, matching real htmlparser2's raw-stream semantics — same choice
-/// already documented for `cheerio::native_clone`'s use of `to_fragment()`),
-/// walks the resulting tree, and calls `handlers.onopentag/onattribute/
-/// ontext/onclosetag` along the way, then `handlers.onend()` once done.
+/// once via `Document::fragment` (which does wrap the content in a
+/// synthetic `<html>` element, but no `<head>`/`<body>` layer beneath it —
+/// see the wrapper-skipping logic below), walks the resulting tree
+/// dispatching [`Handlers`], then calls `handlers.onend()` once done.
+///
+/// Three real htmlparser2 `Handler` callbacks are deliberately NOT
+/// implemented, each for an architectural reason rather than being an
+/// oversight (checked against `dom_query`'s own `NodeData`/`Document` API,
+/// not assumed):
+/// - `onerror` — real htmlparser2 reports tokenizer-level malformed-markup
+///   errors; `dom_query`'s underlying `html5ever` parser is tolerant by
+///   design (HTML5's own error-recovery rules mean malformed markup still
+///   parses successfully) and doesn't expose a per-node error channel
+///   through `dom_query`'s API for this to hook into.
+/// - `onparserinit`/`onreset` — real htmlparser2 fires these around
+///   incremental/streaming parse state changes. This shim's parse is
+///   always synchronous, one-shot, and either fully succeeds or throws a
+///   catchable JS exception — there is no "reset" state to report, and
+///   `onparserinit` would have nothing meaningful to pass besides the
+///   `Parser` instance itself before any real parsing has happened.
+/// - `oncdatastart`/`oncdataend` — `dom_query`'s `NodeData` enum has no
+///   CDATA variant at all; HTML5 parsing (unlike XML) treats CDATA-like
+///   syntax as a bogus comment, so there is no underlying node kind for
+///   these to ever fire from when parsing HTML input.
 fn native_htmlparser2_parse(
     _this: &JsValue,
     args: &[JsValue],
@@ -156,27 +225,56 @@ fn native_htmlparser2_parse(
         .get_or_undefined(0)
         .to_string(context)?
         .to_std_string_escaped();
-    let handlers = args
+    let handlers_obj = args
         .get_or_undefined(1)
         .as_object()
         .ok_or_else(|| js_error("htmlparser2 Parser: handlers must be an object"))?
         .clone();
 
-    let onopentag = get_handler(&handlers, "onopentag", context)?;
-    let onattribute = get_handler(&handlers, "onattribute", context)?;
-    let ontext = get_handler(&handlers, "ontext", context)?;
-    let onclosetag = get_handler(&handlers, "onclosetag", context)?;
-    let onend = get_handler(&handlers, "onend", context)?;
+    let handlers = Handlers {
+        onopentagname: get_handler(&handlers_obj, "onopentagname", context)?,
+        onopentag: get_handler(&handlers_obj, "onopentag", context)?,
+        onattribute: get_handler(&handlers_obj, "onattribute", context)?,
+        ontext: get_handler(&handlers_obj, "ontext", context)?,
+        onclosetag: get_handler(&handlers_obj, "onclosetag", context)?,
+        oncomment: get_handler(&handlers_obj, "oncomment", context)?,
+        oncommentend: get_handler(&handlers_obj, "oncommentend", context)?,
+        onprocessinginstruction: get_handler(&handlers_obj, "onprocessinginstruction", context)?,
+    };
+    let onend = get_handler(&handlers_obj, "onend", context)?;
 
     let doc = Document::fragment(html);
-    walk(
-        doc.root(),
-        &onopentag,
-        &onattribute,
-        &ontext,
-        &onclosetag,
-        context,
-    )?;
+    // `doc.root()` itself is a real, `is_element()`-true `<html>` node
+    // (confirmed empirically via this pass's own `onopentagname` regression
+    // test — `dom_query::Document::fragment()`'s root is NOT a bare
+    // Document/Fragment marker the way this function's earlier doc comment
+    // assumed). Walking it directly would wrongly dispatch an extra
+    // open/close-tag pair for a wrapper real htmlparser2 never emits at
+    // all for fragment input — so the top-level call walks root's
+    // CHILDREN, unconditionally treating the root as a pure container
+    // regardless of its own element-ness, same as the `walk()` function's
+    // existing Document/Fragment/Doctype branch already does one level
+    // down.
+    // `doc.root()` is a bare Fragment marker (not itself an element, so the
+    // existing `walk()` Document/Fragment branch already handles it
+    // correctly on its own) whose one and only child is a SYNTHETIC
+    // `<html>` wrapper `Document::fragment()` adds around the parsed
+    // content — confirmed empirically (this pass's own `onopentagname`
+    // regression test caught the alternative: walking `doc.root()`
+    // directly dispatched a spurious `onopentagname("html")`/
+    // `onclosetag("html")` pair real htmlparser2 never emits for fragment
+    // input). Unlike a full `Document::from()` parse, there is no further
+    // `<head>`/`<body>` layer underneath — the real content is the
+    // `<html>` wrapper's direct children. Skip exactly that one synthetic
+    // level, not `walk()`'s own Fragment-root handling (which stays
+    // correct and is reused as-is for every level below this one).
+    let html_wrapper = doc.root().first_child();
+    let mut child = html_wrapper.and_then(|html| html.first_child());
+    while let Some(c) = child {
+        let next = c.next_sibling();
+        walk(c, &handlers, context)?;
+        child = next;
+    }
     call_handler(&onend, &[], context)?;
 
     Ok(JsValue::undefined())

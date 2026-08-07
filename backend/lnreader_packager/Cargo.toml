@@ -12,3 +12,19 @@ shared = { path = "../shared" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+# `plugins_index.rs`'s own minimal blocking client -- this crate has no
+# Tokio runtime, so `shared::tls::client_builder()`'s async
+# `reqwest::ClientBuilder` isn't usable here (see
+# docs/lnreader/REFERENCE.md §5.4).
+reqwest = { version = "0.13.4", default-features = false, features = [
+  "blocking",
+  "json",
+  "rustls-no-provider",
+] }
+# `rustls-no-provider` above means reqwest won't auto-install a crypto
+# provider; without one, building the client panics at runtime (see
+# docs/lnreader/REFERENCE.md's file-loss incident section). `shared::tls`
+# sidesteps this by handing reqwest a preconfigured `ClientConfig`, which
+# isn't reachable from this crate's own minimal blocking client -- so this
+# installs the process-wide default directly instead.
+rustls = { version = "0.23", default-features = false, features = ["ring"] }

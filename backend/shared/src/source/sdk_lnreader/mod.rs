@@ -23,6 +23,7 @@ mod htmlparser2;
 mod js_runtime;
 pub mod metadata;
 mod net;
+pub mod packaging;
 pub mod worker;
 
 use std::collections::HashMap;

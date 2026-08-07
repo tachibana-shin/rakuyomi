@@ -68,6 +68,16 @@ mod source_settings;
 /// one function is exposed.
 #[cfg(feature = "lnreader")]
 pub use sdk_lnreader::metadata::extract as lnreader_extract_plugin_metadata;
+/// The packaging pipeline (metadata extraction, filter/settings mapping,
+/// `.aix` assembly, and the upstream `plugins.min.json` index shape) — see
+/// `docs/lnreader/REFERENCE.md` §5. Shared by `lnreader_packager` and by
+/// `usecases::install_source`'s on-demand LNReader install path, so both go
+/// through the same code. Unlike `metadata`/`worker` above, the whole
+/// module is punched through rather than one function at a time: both
+/// consumers need several of its items together (types plus the top-level
+/// `package_plugin_js` orchestration function).
+#[cfg(feature = "lnreader")]
+pub use sdk_lnreader::packaging;
 /// Entry point for the `lnreader_worker` standalone binary (see that
 /// crate) — not called from anywhere inside this crate itself.
 /// `sdk_lnreader` stays a private module (`mod`, not `pub mod`); this one

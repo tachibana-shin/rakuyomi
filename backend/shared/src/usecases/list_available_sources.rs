@@ -21,12 +21,12 @@ pub async fn list_available_sources(
                 .get(resolved_list.clone())
                 .send()
                 .await
-                .with_context(|| format!("failed to fetch source list at {}", &resolved_list))?;
+                .with_context(|| format!("failed to fetch source list at {}", resolved_list))?;
 
             let value: Value = response
                 .json()
                 .await
-                .with_context(|| format!("failed to parse source list at {}", &resolved_list))?;
+                .with_context(|| format!("failed to parse source list at {}", resolved_list))?;
 
             // Try both formats
             let mut sources = if value.is_array() {
@@ -38,7 +38,7 @@ pub async fn list_available_sources(
             } else {
                 anyhow::bail!(
                     "unexpected JSON format for source list at {}: {}",
-                    &resolved_list,
+                    resolved_list,
                     value
                 );
             };

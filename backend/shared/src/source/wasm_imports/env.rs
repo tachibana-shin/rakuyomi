@@ -84,7 +84,7 @@ fn abort(
 
     error!(
         "{}: env.abort called with {:?} (file: {:?}, {line}:{column})",
-        &wasm_store.id, &message, &file
+        wasm_store.id, message, file
     );
 
     let error = AbortError {

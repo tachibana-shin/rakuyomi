@@ -36,12 +36,12 @@ pub async fn install_source(
             .get(resolved_list.clone())
             .send()
             .await
-            .with_context(|| format!("failed to fetch source list at {}", &resolved_list))?;
+            .with_context(|| format!("failed to fetch source list at {}", resolved_list))?;
 
         let value: Value = response
             .json()
             .await
-            .with_context(|| format!("failed to parse source list at {}", &resolved_list))?;
+            .with_context(|| format!("failed to parse source list at {}", resolved_list))?;
 
         // Try both formats
         let source_list_items = if value.is_array() {
@@ -51,7 +51,7 @@ pub async fn install_source(
         } else {
             anyhow::bail!(
                 "unexpected JSON format for source list at {}: {}",
-                &resolved_list,
+                resolved_list,
                 value
             );
         };
@@ -115,7 +115,7 @@ pub async fn install_source(
             let aix_url = if file.starts_with("sources/") {
                 source_list.url.join(&file).unwrap()
             } else {
-                source_list.url.join(&format!("sources/{}", &file)).unwrap()
+                source_list.url.join(&format!("sources/{}", file)).unwrap()
             };
             let aix_content = client.get(aix_url).send().await?.bytes().await?;
 

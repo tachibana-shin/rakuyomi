@@ -197,7 +197,7 @@ fn send_all(mut caller: Caller<'_, WasmStore>, rd: i32, len: i32) -> FFIResult {
         let warn_cancellation = || {
             warn!(
                 "request to {:?} was cancelled mid-flight!",
-                &request_builder.url
+                request_builder.url
             );
         };
 

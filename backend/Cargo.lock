@@ -1064,6 +1064,8 @@ dependencies = [
 [[package]]
 name = "d4rt_rs"
 version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a484459055182356787285fda4903d94f28785c348a7f8a725f7bca40c849060"
 dependencies = [
  "chrono",
  "num-bigint 0.5.1",

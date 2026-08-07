@@ -151,36 +151,52 @@ class DefaultExtension extends MProvider {
 
     // chapters
     const chapters = [];
-    res = await new Client().get(
-      url.replace(this.getBaseUrl(), this.getMobileUrl()),
-      this.headers,
-    );
-    doc = new Document(res.body);
-    for (const el of doc.select("ul#_episodeList li[id*=episode] a")) {
-      const url = el.getHref.replace(this.getMobileUrl(), this.getBaseUrl());
-      let name = el.selectFirst(".sub_title > span.ellipsis")?.text;
-      const chapterElement = el.selectFirst("div.row > div.num");
-      if (chapterElement) {
-        const chapterText = chapterElement.text;
-        const hashIndex = chapterText.indexOf("#");
-        if (hashIndex > -1) {
-          name += " Ch. " + chapterText.substring(hashIndex + 1);
-        }
+    const seen = new Set();
+    const listUrl = url.includes("title_no=")
+      ? `${url}&page=1`
+      : `${url}?page=1`;
+    for (let page = 1; page <= 500; page++) {
+      res = await new Client().get(
+        listUrl.replace(/page=\d+/, `page=${page}`),
+      );
+      doc = new Document(res.body);
+      const pageElements = doc.select("ul#_listUl li[id*=episode] a");
+      if (!pageElements.length) {
+        break;
       }
-      const dateUpload = new Date(
-        this.formatDateString(
-          el.selectFirst(".sub_info .date")?.text,
-          this.source.lang,
-        ),
-      )
-        .getTime()
-        .toString();
+      let added = 0;
+      for (const el of pageElements) {
+        const url = el.getHref.replace(this.getMobileUrl(), this.getBaseUrl());
+        if (seen.has(url)) continue;
+        seen.add(url);
+        let name = el.selectFirst(
+          "span.subj span, span.sub_title > span.ellipsis",
+        )?.text;
+        const chapterElement = el.selectFirst("span.tx");
+        if (chapterElement) {
+          const chapterText = chapterElement.text;
+          const hashIndex = chapterText.indexOf("#");
+          if (hashIndex > -1) {
+            name += " Ch. " + chapterText.substring(hashIndex + 1);
+          }
+        }
+        const dateUpload = new Date(
+          this.formatDateString(
+            el.selectFirst("span.date, .sub_info .date")?.text,
+            this.source.lang,
+          ),
+        )
+          .getTime()
+          .toString();
 
-      chapters.push({
-        name,
-        url,
-        dateUpload,
-      });
+        chapters.push({
+          name,
+          url,
+          dateUpload,
+        });
+        added++;
+      }
+      if (!added) break;
     }
 
     return {
@@ -190,6 +206,7 @@ class DefaultExtension extends MProvider {
       description,
       author,
       status,
+      chapters,
       episodes: chapters,
     };
   }

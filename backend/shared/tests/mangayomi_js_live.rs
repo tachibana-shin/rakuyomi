@@ -91,17 +91,20 @@ fn popular(source: &MangayomiSource) -> usize {
     }
 }
 
-fn search(source: &MangayomiSource, query: &str) -> (usize, Vec<String>) {
+fn search(source: &MangayomiSource, query: &str) -> (usize, Vec<String>, Vec<String>) {
     match source.search_mangas(CancellationToken::new(), query.to_string(), 1) {
         Ok((list, _)) => (
             list.len(),
             list.iter()
                 .map(|m| m.title.clone().unwrap_or_default())
                 .collect(),
+            list.iter()
+                .map(|m| m.url.as_ref().map(|u| u.to_string()).unwrap_or_default())
+                .collect(),
         ),
         Err(e) => {
             eprintln!("search: {e:#}");
-            (0, vec![])
+            (0, vec![], vec![])
         }
     }
 }
@@ -120,7 +123,7 @@ fn weeb_central_works_live() {
         popular(source) > 0,
         "getPopular must return results from weebcentral.com"
     );
-    let (n, titles) = search(source, "one piece");
+    let (n, titles, _links) = search(source, "one piece");
     assert!(n > 0, "search must return results from weebcentral.com");
     assert!(
         titles
@@ -144,7 +147,7 @@ fn manhwaz_works_live() {
         popular(source) > 0,
         "getPopular must return results from manhwaz.com"
     );
-    let (n, titles) = search(source, "one piece");
+    let (n, titles, _links) = search(source, "one piece");
     assert!(n > 0, "search must return results from manhwaz.com");
     assert!(
         titles
@@ -168,8 +171,28 @@ fn webtoons_works_live() {
         popular(source) > 0,
         "getPopular must return results from webtoons.com"
     );
-    let (n, _) = search(source, "one piece");
+    let (n, titles, links) = search(source, "one piece");
     assert!(n > 0, "search must return results from webtoons.com");
+    let chapters = source
+        .get_chapter_list(CancellationToken::new(), links[0].clone())
+        .unwrap();
+    assert!(
+        !chapters.is_empty(),
+        "getDetail must return chapters for {titles:?}"
+    );
+    let pages = source
+        .get_page_list(
+            CancellationToken::new(),
+            links[0].clone(),
+            chapters[0].id.clone(),
+            None,
+        )
+        .unwrap();
+    assert!(
+        !pages.is_empty(),
+        "getPageList must return images for {}",
+        chapters[0].id
+    );
 }
 
 #[test]
@@ -182,7 +205,7 @@ fn mangadex_search_works_live() {
         "https://mangadex.org",
         "https://api.mangadex.org",
     );
-    let (n, titles) = search(source, "one piece");
+    let (n, titles, _links) = search(source, "one piece");
     assert!(n > 0, "search must return results from the mangadex API");
     assert!(
         titles

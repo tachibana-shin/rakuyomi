@@ -205,7 +205,7 @@ function MenuCustom:_recalculateDimen(no_recalculate_dimen)
       local portrait_rows = math.floor(portrait_available_height /
         ((self.inner_dimen.w / columns) * 4 / 3 + grid_text_height))
       if portrait_rows < 2 then portrait_rows = 2 end
-      rows = Math.floor(available_height / (portrait_available_height / portrait_rows))
+      rows = math.floor(available_height / (portrait_available_height / portrait_rows))
     end
     self.perpage = rows * columns
     perpage = self.perpage

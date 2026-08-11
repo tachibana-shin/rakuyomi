@@ -283,6 +283,20 @@ async fn poll_oauth_status(
                             settings.bangumi.refresh_token = Some(t);
                         }
                     }
+                    usecases::oauth_bridge::OAuthService::Mangabaka => {
+                        if let Some(t) = access {
+                            settings.mangabaka.access_token = Some(t);
+                        }
+                        if let Some(t) = refresh {
+                            settings.mangabaka.refresh_token = Some(t);
+                        }
+                        if let Some(id) = tokens.client_id.clone() {
+                            settings.mangabaka.client_id = Some(id);
+                        }
+                        if let Some(secret) = tokens.client_secret.clone() {
+                            settings.mangabaka.client_secret = Some(secret);
+                        }
+                    }
                 }
 
                 // Fetch username right away while we have the fresh token
@@ -298,6 +312,9 @@ async fn poll_oauth_status(
                     }
                     usecases::oauth_bridge::OAuthService::Bangumi => {
                         shared::model::TrackingService::Bangumi
+                    }
+                    usecases::oauth_bridge::OAuthService::Mangabaka => {
+                        shared::model::TrackingService::Mangabaka
                     }
                 };
                 match usecases::get_tracking_user_info(&mut settings, tracking_service).await {

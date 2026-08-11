@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use reqwest::header::CONTENT_TYPE;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use serde::{de, Deserialize, Deserializer, Serialize};
 use url::Url;
 
@@ -12,6 +12,8 @@ use super::{build_client, Tracker};
 
 const MANGABAKA_API_URL: &str = "https://api.mangabaka.org";
 const MANGABAKA_SITE_URL: &str = "https://mangabaka.org";
+// From https://mangabaka.org/.well-known/openid-configuration
+const MANGABAKA_TOKEN_URL: &str = "https://mangabaka.org/auth/oauth2/token";
 
 pub struct MangaBakaTracker;
 
@@ -106,11 +108,9 @@ impl Tracker for MangaBakaTracker {
             finish_date: Option<String>,
         }
 
-        let api_key = require_api_key(settings)?;
+        let auth = resolve_auth(settings)?;
         let client = build_client();
-        let response = client
-            .get(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}"))
-            .header("x-api-key", api_key)
+        let response = apply_auth(client.get(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}")), &auth)
             .send()
             .await?;
 
@@ -157,7 +157,7 @@ impl Tracker for MangaBakaTracker {
             finish_date: Option<String>,
         }
 
-        let api_key = require_api_key(settings)?;
+        let auth = resolve_auth(settings)?;
         let client = build_client();
         let body = LibraryBody {
             state: snapshot.status.map(|s| format_status(s).to_owned()),
@@ -168,25 +168,27 @@ impl Tracker for MangaBakaTracker {
         };
 
         // PATCH to update existing, or POST to create
-        let response = client
-            .patch(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}"))
-            .header("x-api-key", api_key)
-            .header(CONTENT_TYPE, "application/json")
-            .json(&body)
-            .send()
-            .await?;
+        let response = apply_auth(
+            client.patch(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}")),
+            &auth,
+        )
+        .header(CONTENT_TYPE, "application/json")
+        .json(&body)
+        .send()
+        .await?;
 
         // If 404, the entry doesn't exist yet — create it (the create endpoint
         // accepts the same fields as the update one).
         if response.status() == 404 {
-            client
-                .post(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}"))
-                .header("x-api-key", api_key)
-                .header(CONTENT_TYPE, "application/json")
-                .json(&body)
-                .send()
-                .await?
-                .error_for_status()?;
+            apply_auth(
+                client.post(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}")),
+                &auth,
+            )
+            .header(CONTENT_TYPE, "application/json")
+            .json(&body)
+            .send()
+            .await?
+            .error_for_status()?;
         } else {
             response.error_for_status()?;
         }
@@ -209,11 +211,9 @@ impl Tracker for MangaBakaTracker {
             nickname: Option<String>,
         }
 
-        let api_key = require_api_key(settings)?;
+        let auth = resolve_auth(settings)?;
         let client = build_client();
-        let profile: Profile = client
-            .get(format!("{MANGABAKA_API_URL}/v1/my/profile"))
-            .header("x-api-key", api_key)
+        let profile: Profile = apply_auth(client.get(format!("{MANGABAKA_API_URL}/v1/my/profile")), &auth)
             .send()
             .await?
             .error_for_status()?
@@ -228,6 +228,92 @@ impl Tracker for MangaBakaTracker {
                 .or(profile.nickname)
                 .unwrap_or(profile.id),
         ))
+    }
+}
+
+impl MangaBakaTracker {
+    /// Exchanges a refresh token for a new access token. MangaBaka's OAuth token
+    /// endpoint requires client authentication (no public/"none" auth method per
+    /// its `.well-known/openid-configuration`), so both client_id and
+    /// client_secret must be present — they're stored on sign-in alongside the
+    /// tokens (see `OAuthFlowView.lua`).
+    pub async fn refresh_access_token(
+        &self,
+        settings: &Settings,
+    ) -> Result<(String, Option<String>)> {
+        let client_id = settings
+            .mangabaka
+            .client_id
+            .as_deref()
+            .context("MangaBaka client ID is not configured")?;
+        let client_secret = settings
+            .mangabaka
+            .client_secret
+            .as_deref()
+            .context("MangaBaka client secret is not configured")?;
+        let refresh_token = settings
+            .mangabaka
+            .refresh_token
+            .as_deref()
+            .context("MangaBaka refresh token is not configured")?;
+
+        let client = build_client();
+        let response = client
+            .post(MANGABAKA_TOKEN_URL)
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .form(&[
+                ("grant_type", "refresh_token"),
+                ("client_id", client_id),
+                ("client_secret", client_secret),
+                ("refresh_token", refresh_token),
+            ])
+            .send()
+            .await?
+            .error_for_status()?;
+
+        #[derive(Deserialize)]
+        struct TokenResponse {
+            access_token: String,
+            refresh_token: Option<String>,
+        }
+
+        let tokens: TokenResponse = response.json().await?;
+        Ok((tokens.access_token, tokens.refresh_token))
+    }
+}
+
+enum Auth<'a> {
+    Bearer(&'a str),
+    ApiKey(&'a str),
+}
+
+/// Resolves MangaBaka credentials, preferring an OAuth access token (sent as
+/// `Authorization: Bearer`) over a Personal Access Token (sent as `x-api-key`),
+/// matching the two auth methods documented in MangaBaka's OpenAPI spec.
+fn resolve_auth(settings: &Settings) -> Result<Auth<'_>> {
+    if let Some(token) = settings
+        .mangabaka
+        .access_token
+        .as_deref()
+        .filter(|v| !v.trim().is_empty())
+    {
+        return Ok(Auth::Bearer(token));
+    }
+    if let Some(key) = settings
+        .mangabaka
+        .api_key
+        .as_deref()
+        .filter(|v| !v.trim().is_empty())
+    {
+        return Ok(Auth::ApiKey(key));
+    }
+    anyhow::bail!("MangaBaka credentials are not configured")
+}
+
+fn apply_auth(request: reqwest::RequestBuilder, auth: &Auth) -> reqwest::RequestBuilder {
+    match auth {
+        Auth::Bearer(token) => request.header(AUTHORIZATION, format!("Bearer {token}")),
+        Auth::ApiKey(key) => request.header("x-api-key", *key),
     }
 }
 
@@ -257,15 +343,6 @@ fn parse_date(value: &str) -> Option<i64> {
 /// Formats a unix timestamp as the bare `YYYY-MM-DD` date the API prefers on writes.
 fn format_date(timestamp: i64) -> Option<String> {
     chrono::DateTime::from_timestamp(timestamp, 0).map(|dt| dt.format("%Y-%m-%d").to_string())
-}
-
-fn require_api_key(settings: &Settings) -> Result<&str> {
-    settings
-        .mangabaka
-        .api_key
-        .as_deref()
-        .filter(|v| !v.trim().is_empty())
-        .context("MangaBaka API key is not configured")
 }
 
 fn parse_status(status: &str) -> Option<TrackingStatus> {

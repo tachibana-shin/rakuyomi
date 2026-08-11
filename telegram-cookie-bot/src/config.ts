@@ -63,6 +63,19 @@ export function getOAuthConfigs(): Record<OAuthService, OAuthProviderConfig> {
       client_id: Deno.env.get("BANGUMI_CLIENT_ID") ?? "",
       client_secret: Deno.env.get("BANGUMI_CLIENT_SECRET") ?? "",
     },
+    // Endpoints and scopes come from MangaBaka's OIDC discovery document
+    // (https://mangabaka.org/.well-known/openid-configuration). Unlike MAL,
+    // MangaBaka's token endpoint only supports client_secret_basic/post (no
+    // "none" auth method), so a client_secret is required even though PKCE
+    // (S256, mandatory) is also used.
+    mangabaka: {
+      authorize_url: "https://mangabaka.org/auth/oauth2/authorize",
+      token_url: "https://mangabaka.org/auth/oauth2/token",
+      client_id: Deno.env.get("MANGABAKA_CLIENT_ID") ?? "",
+      client_secret: Deno.env.get("MANGABAKA_CLIENT_SECRET") ?? "",
+      scope: "library.read library.write offline_access",
+      pkce_required: true,
+    },
   };
   return oauthConfigs!;
 }

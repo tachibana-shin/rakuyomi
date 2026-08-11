@@ -6,6 +6,7 @@ const OAuthTokensSchema = z.object({
   access_token: z.string().nullable().optional(),
   refresh_token: z.string().nullable().optional(),
   client_id: z.string().nullable().optional(),
+  client_secret: z.string().nullable().optional(),
 }).passthrough()
 
 const StatusPendingResponse = z.object({

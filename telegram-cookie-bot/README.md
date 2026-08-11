@@ -2,15 +2,16 @@
 
 Telegram bot + HTTP API for syncing browser cookies from Android (Kiwi Browser)
 to KOReader (RakuYomi) devices. Also provides an OAuth bridge for tracking
-service sign-in (AniList, MyAnimeList, Shikimori, Bangumi).
+service sign-in (AniList, MyAnimeList, Shikimori, Bangumi, MangaBaka).
 
 Self-hosted services (Kavita, Komga, Suwayomi) are configured directly in the
 KOReader plugin since they require local network access.
 
-MangaBaka is also configured directly in the KOReader plugin, using a
-Personal Access Token instead of going through the OAuth bridge. MangaBaka
-does support OAuth, but generating a PAT from your account settings is much
-simpler than registering an OAuth app for the bridge to use.
+MangaBaka can also be configured directly in the KOReader plugin using a
+Personal Access Token (`mb-...`) instead of going through the OAuth bridge —
+generating a PAT from your account settings is simpler than registering an
+OAuth app. Both methods work: the Rust backend prefers the OAuth access token
+when present and falls back to the PAT otherwise.
 
 ## Architecture
 
@@ -50,6 +51,7 @@ src/
     myanimelist.ts                       # MAL token exchange
     shikimori.ts                 # Shikimori token exchange
     bangumi.ts                   # Bangumi token exchange
+    mangabaka.ts                 # MangaBaka token exchange (PKCE S256 + secret)
   utils/
     oauth.tsx                    # Route helpers (error/success/validateSession)
     schema.ts                    # Cookie validation schemas
@@ -62,6 +64,7 @@ src/
       myanimelist/callback.ts            # MAL callback (state=sessionId)
       shikimori/callback.ts      # Shikimori callback (state=sessionId)
       bangumi/callback.ts        # Bangumi callback (state=sessionId)
+      mangabaka/callback.ts      # MangaBaka callback (state=sessionId)
   api/                           # JSON API routes only
     middleware/auth.ts
     routes/
@@ -99,6 +102,8 @@ src/
 | `SHIKIMORI_CLIENT_SECRET` | No     | Shikimori OAuth client secret                                |
 | `BANGUMI_CLIENT_ID`    | No       | Bangumi OAuth client ID ([create here](https://bgm.tv/dev/app/create)) |
 | `BANGUMI_CLIENT_SECRET`| No       | Bangumi OAuth client secret                                  |
+| `MANGABAKA_CLIENT_ID`  | No       | MangaBaka OAuth client ID (see [mangabaka.org/api](https://mangabaka.org/api)) |
+| `MANGABAKA_CLIENT_SECRET` | No    | MangaBaka OAuth client secret                                |
 
 4. Set the bot webhook (if using webhook mode):
    ```
@@ -115,6 +120,7 @@ Configure these as the allowed redirect URIs in each service's OAuth app setting
 | MAL        | `https://<your-deploy>/oauth/myanimelist/callback`           |
 | Shikimori  | `https://<your-deploy>/oauth/shikimori/callback`     |
 | Bangumi    | `https://<your-deploy>/oauth/bangumi/callback`       |
+| MangaBaka  | `https://<your-deploy>/oauth/mangabaka/callback`     |
 
 Session ID is passed via the `state` OAuth parameter (not in the URL path).
 
@@ -164,3 +170,4 @@ OpenAPI spec available at `GET /doc` when the server is running.
 | GET    | `/oauth/myanimelist/callback`                     | MAL OAuth callback                 |
 | GET    | `/oauth/shikimori/callback`               | Shikimori OAuth callback           |
 | GET    | `/oauth/bangumi/callback`                 | Bangumi OAuth callback             |
+| GET    | `/oauth/mangabaka/callback`               | MangaBaka OAuth callback           |

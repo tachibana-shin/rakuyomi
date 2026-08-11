@@ -124,8 +124,11 @@ local service_configs = {
   },
   {
     id = "mangabaka",
-    has_username = true,
+    oauth = true,
     fields = {
+      -- MangaBaka also accepts a Personal Access Token as a simpler
+      -- alternative to signing in via OAuth; the backend prefers the OAuth
+      -- access token when both are present.
       { key = "api_key", placeholder = _("Paste MangaBaka API Key (mb-...)") },
     },
   },
@@ -270,7 +273,7 @@ function TrackingSettings:init()
       {
         type = 'divider',
         title = TrackingServices.getLabel(svc.id),
-        service = (svc.oauth or svc.has_username) and svc.id or nil,
+        service = svc.oauth and svc.id or nil,
       }
     })
 

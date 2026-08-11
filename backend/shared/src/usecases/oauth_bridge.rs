@@ -11,6 +11,7 @@ pub enum OAuthService {
     MyAnimeList,
     Shikimori,
     Bangumi,
+    Mangabaka,
 }
 
 impl std::fmt::Display for OAuthService {
@@ -20,6 +21,7 @@ impl std::fmt::Display for OAuthService {
             OAuthService::MyAnimeList => write!(f, "myanimelist"),
             OAuthService::Shikimori => write!(f, "shikimori"),
             OAuthService::Bangumi => write!(f, "bangumi"),
+            OAuthService::Mangabaka => write!(f, "mangabaka"),
         }
     }
 }
@@ -68,6 +70,10 @@ pub struct OAuthTokens {
     pub access_token: Option<String>,
     pub refresh_token: Option<String>,
     pub client_id: Option<String>,
+    // MangaBaka's token endpoint requires client authentication (no public/"none"
+    // auth method), so the device needs the client_secret too in order to refresh
+    // its own access token later.
+    pub client_secret: Option<String>,
 }
 
 /// Create an OAuth session on the bridge server.

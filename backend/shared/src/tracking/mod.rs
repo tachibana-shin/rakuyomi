@@ -261,6 +261,16 @@ pub async fn ensure_access_token(settings: &mut Settings, service: TrackingServi
                 settings.bangumi.refresh_token = Some(r);
             }
         }
+        TrackingService::Mangabaka
+            if settings.mangabaka.access_token.is_none()
+                && settings.mangabaka.refresh_token.is_some() =>
+        {
+            let (access, refresh) = MangaBakaTracker.refresh_access_token(settings).await?;
+            settings.mangabaka.access_token = Some(access);
+            if let Some(r) = refresh {
+                settings.mangabaka.refresh_token = Some(r);
+            }
+        }
         _ => {}
     }
     Ok(())

@@ -95,9 +95,11 @@ pub fn settings_from_plugin(
     for source in [filters, plugin_settings] {
         if let Some(map) = source.as_object() {
             for (key, filter) in map {
-                match filter_to_setting(key, filter) {
-                    Some(def) => definitions.push(def),
-                    None => skipped.push(key.clone()),
+                let defs = filter_to_setting(key, filter);
+                if defs.is_empty() {
+                    skipped.push(key.clone());
+                } else {
+                    definitions.extend(defs);
                 }
             }
         }
@@ -106,9 +108,13 @@ pub fn settings_from_plugin(
     (definitions, skipped)
 }
 
-fn filter_to_setting(key: &str, filter: &Value) -> Option<SettingDefinition> {
-    let obj = filter.as_object()?;
-    let filter_type = obj.get("type")?.as_str()?;
+fn filter_to_setting(key: &str, filter: &Value) -> Vec<SettingDefinition> {
+    let Some(obj) = filter.as_object() else {
+        return Vec::new();
+    };
+    let Some(filter_type) = obj.get("type").and_then(Value::as_str) else {
+        return Vec::new();
+    };
     let label = obj
         .get("label")
         .and_then(Value::as_str)
@@ -116,32 +122,33 @@ fn filter_to_setting(key: &str, filter: &Value) -> Option<SettingDefinition> {
         .to_string();
 
     match filter_type {
-        "Switch" => Some(SettingDefinition::Switch {
+        "Switch" => vec![SettingDefinition::Switch {
             title: label,
             key: key.to_string(),
             default: obj.get("value").and_then(Value::as_bool).unwrap_or(false),
-        }),
-        "Text" => Some(SettingDefinition::Text {
+        }],
+        "Text" => vec![SettingDefinition::Text {
             placeholder: Some(label),
             key: key.to_string(),
             default: obj.get("value").and_then(Value::as_str).map(str::to_owned),
-        }),
+        }],
         "Picker" => {
-            let options = string_options(obj)?;
-            Some(SettingDefinition::Select {
+            let Some(options) = string_options(obj) else {
+                return Vec::new();
+            };
+            vec![SettingDefinition::Select {
                 title: label,
                 key: key.to_string(),
                 default: obj.get("value").and_then(Value::as_str).map(str::to_owned),
                 values: options.iter().map(|(value, _)| value.clone()).collect(),
                 titles: Some(options.iter().map(|(_, title)| title.clone()).collect()),
-            })
+            }]
         }
-        // `Checkbox`/`XCheckbox` (`CheckboxGroup`/`ExcludableCheckboxGroup`)
-        // both become `MultiSelect` — Rakuyomi has no widget for the
-        // "exclude" half of `ExcludableCheckboxGroup`; a deliberately lossy
-        // mapping, not a bug (see `docs/lnreader/REFERENCE.md` §3.3).
-        "Checkbox" | "XCheckbox" => {
-            let options = string_options(obj)?;
+        // `CheckboxGroup` becomes a single `MultiSelect` (include-only).
+        "Checkbox" => {
+            let Some(options) = string_options(obj) else {
+                return Vec::new();
+            };
             let default = obj
                 .get("value")
                 .and_then(Value::as_array)
@@ -153,15 +160,48 @@ fn filter_to_setting(key: &str, filter: &Value) -> Option<SettingDefinition> {
                         .collect()
                 })
                 .unwrap_or_default();
-            Some(SettingDefinition::MultiSelect {
+            vec![SettingDefinition::MultiSelect {
                 title: label,
                 key: key.to_string(),
                 values: options.iter().map(|(value, _)| value.clone()).collect(),
                 titles: Some(options.iter().map(|(_, title)| title.clone()).collect()),
                 default,
-            })
+            }]
         }
-        _ => None,
+        // `ExcludableCheckboxGroup` (`XCheckbox`): tri-state filter.
+        // Real encoding is `{include: [], exclude: []}`, not 0/1/2
+        // (corpus-verified: lightnovelworld, novelbuddy, scribblehub, ...).
+        // Produces two `MultiSelect` settings; the JS storage polyfill
+        // recombines them — see `RUNTIME_PRELUDE` in `js_runtime.rs`.
+        // Each half's default comes from its own side of `value`, so the
+        // recombination in `JsRuntime::apply_settings_filters` reproduces the
+        // plugin's declared initial include/exclude instead of replacing it
+        // with empty lists on the first (unmodified) run.
+        "XCheckbox" => {
+            let Some(options) = string_options(obj) else {
+                return Vec::new();
+            };
+            let values: Vec<String> = options.iter().map(|(value, _)| value.clone()).collect();
+            let titles: Option<Vec<String>> =
+                Some(options.iter().map(|(_, title)| title.clone()).collect());
+            vec![
+                SettingDefinition::MultiSelect {
+                    title: format!("{label} (include)"),
+                    key: format!("{key}__include"),
+                    values: values.clone(),
+                    titles: titles.clone(),
+                    default: xcheckbox_value_default(obj, "include"),
+                },
+                SettingDefinition::MultiSelect {
+                    title: format!("{label} (exclude)"),
+                    key: format!("{key}__exclude"),
+                    values,
+                    titles,
+                    default: xcheckbox_value_default(obj, "exclude"),
+                },
+            ]
+        }
+        _ => Vec::new(),
     }
 }
 
@@ -177,6 +217,31 @@ fn string_options(obj: &serde_json::Map<String, Value>) -> Option<Vec<(String, S
             })
             .collect(),
     )
+}
+
+/// Reads one half (`include` or `exclude`) of an `ExcludableCheckboxGroup`
+/// (`XCheckbox`) filter's real `value: { include: [...], exclude: [...] }`
+/// shape as the `MultiSelect` default for that half. The halves propagate
+/// independently and defensively: a missing `value` object, a missing side,
+/// or non-string entries all read as "empty" rather than inventing a default
+/// the plugin didn't declare. This is what keeps
+/// `JsRuntime::apply_settings_filters` from erasing the plugin's initial
+/// values — its recombination reads the settings snapshot, which always
+/// carries the `MultiSelect` defaults, so those defaults must match the
+/// plugin's declared `value` halves.
+fn xcheckbox_value_default(obj: &serde_json::Map<String, Value>, field: &str) -> Vec<String> {
+    obj.get("value")
+        .and_then(Value::as_object)
+        .and_then(|value| value.get(field))
+        .and_then(Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(Value::as_str)
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 pub struct SourceParams {
@@ -419,8 +484,8 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
         .text()
         .await?;
 
-    let packaged =
-        package_plugin_js(&main_js, Some(url)).with_context(|| format!("couldn't package LNReader plugin from {url}"))?;
+    let packaged = package_plugin_js(&main_js, Some(url))
+        .with_context(|| format!("couldn't package LNReader plugin from {url}"))?;
 
     if !packaged.skipped_filters.is_empty() {
         log::warn!(
@@ -435,6 +500,11 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
+    use crate::settings::SourceSettingValue;
+    use crate::source::source_settings::default_values_for_definition;
+
     use super::*;
 
     #[test]
@@ -474,5 +544,273 @@ mod tests {
         assert_eq!(encode_version_str(Some("1")), 1_000_000);
         assert_eq!(encode_version_str(None), 1);
         assert_eq!(encode_version_str(Some("not-a-version")), 1);
+    }
+
+    #[test]
+    fn xcheckbox_produces_two_multiselect_settings() {
+        let filter = serde_json::json!({
+            "label": "Genres",
+            "type": "XCheckbox",
+            "value": {"include": ["Action", "Romance"], "exclude": ["Comedy"]},
+            "options": [
+                {"label": "Action", "value": "Action"},
+                {"label": "Romance", "value": "Romance"},
+                {"label": "Comedy", "value": "Comedy"}
+            ]
+        });
+
+        let defs = filter_to_setting("genres", &filter);
+        assert_eq!(defs.len(), 2);
+
+        // Each half's default propagates from its own side of `value` — the
+        // settings snapshot then feeds those back through
+        // `JsRuntime::apply_settings_filters`, so the plugin's declared
+        // initial include/exclude survive an unmodified run.
+        match &defs[0] {
+            SettingDefinition::MultiSelect {
+                title,
+                key,
+                values,
+                titles,
+                default,
+            } => {
+                assert_eq!(title, "Genres (include)");
+                assert_eq!(key, "genres__include");
+                assert_eq!(values, &["Action", "Romance", "Comedy"]);
+                assert_eq!(titles.as_ref().unwrap(), &["Action", "Romance", "Comedy"]);
+                assert_eq!(default, &["Action", "Romance"]);
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+
+        match &defs[1] {
+            SettingDefinition::MultiSelect {
+                title,
+                key,
+                values,
+                titles,
+                default,
+            } => {
+                assert_eq!(title, "Genres (exclude)");
+                assert_eq!(key, "genres__exclude");
+                assert_eq!(values, &["Action", "Romance", "Comedy"]);
+                assert_eq!(titles.as_ref().unwrap(), &["Action", "Romance", "Comedy"]);
+                assert_eq!(default, &["Comedy"]);
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn checkbox_produces_single_multiselect_unchanged() {
+        let filter = serde_json::json!({
+            "label": "Status",
+            "type": "Checkbox",
+            "value": ["ongoing", "completed"],
+            "options": [
+                {"label": "Ongoing", "value": "ongoing"},
+                {"label": "Completed", "value": "completed"}
+            ]
+        });
+
+        let defs = filter_to_setting("status", &filter);
+        assert_eq!(defs.len(), 1);
+
+        match &defs[0] {
+            SettingDefinition::MultiSelect {
+                title,
+                key,
+                values,
+                default,
+                ..
+            } => {
+                assert_eq!(title, "Status");
+                assert_eq!(key, "status");
+                assert_eq!(values, &["ongoing", "completed"]);
+                assert_eq!(default, &["ongoing", "completed"]);
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn xcheckbox_with_real_world_options() {
+        // Real shape from lightnovelworld.js corpus
+        let filter = serde_json::json!({
+            "label": "Genres",
+            "value": {"include": [], "exclude": []},
+            "options": [
+                {"label": "Action", "value": "Action"},
+                {"label": "Adult", "value": "Adult"},
+                {"label": "Adventure", "value": "Adventure"},
+                {"label": "Comedy", "value": "Comedy"},
+                {"label": "Drama", "value": "Drama"},
+                {"label": "Fantasy", "value": "Fantasy"},
+                {"label": "Harem", "value": "Harem"},
+                {"label": "Romance", "value": "Romance"}
+            ],
+            "type": "XCheckbox"
+        });
+
+        let defs = filter_to_setting("genres", &filter);
+        assert_eq!(defs.len(), 2);
+
+        // Both should share the same options list
+        let include_values = match &defs[0] {
+            SettingDefinition::MultiSelect { values, .. } => values.clone(),
+            other => panic!("expected MultiSelect, got {other:?}"),
+        };
+        let exclude_values = match &defs[1] {
+            SettingDefinition::MultiSelect { values, .. } => values.clone(),
+            other => panic!("expected MultiSelect, got {other:?}"),
+        };
+        assert_eq!(include_values, exclude_values);
+        assert_eq!(include_values.len(), 8);
+    }
+
+    #[test]
+    fn xcheckbox_partial_defaults_propagate_independently() {
+        // Partial include/exclude: each half reads only its own side of
+        // `value`, and a missing side (or a missing `value` object) stays
+        // empty rather than being invented.
+        let include_only = serde_json::json!({
+            "label": "Genres",
+            "type": "XCheckbox",
+            "value": {"include": ["Action"]},
+            "options": [{"label": "Action", "value": "Action"}]
+        });
+        let defs = filter_to_setting("genres", &include_only);
+        assert_eq!(defs.len(), 2);
+        match &defs[0] {
+            SettingDefinition::MultiSelect { default, .. } => {
+                assert_eq!(default, &["Action"]);
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+        match &defs[1] {
+            SettingDefinition::MultiSelect { default, .. } => {
+                assert!(default.is_empty());
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+
+        let exclude_only = serde_json::json!({
+            "label": "Genres",
+            "type": "XCheckbox",
+            "value": {"exclude": ["Adult"]},
+            "options": [{"label": "Adult", "value": "Adult"}]
+        });
+        let defs = filter_to_setting("genres", &exclude_only);
+        match &defs[0] {
+            SettingDefinition::MultiSelect { default, .. } => {
+                assert!(default.is_empty());
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+        match &defs[1] {
+            SettingDefinition::MultiSelect { default, .. } => {
+                assert_eq!(default, &["Adult"]);
+            }
+            other => panic!("expected MultiSelect, got {other:?}"),
+        }
+
+        // No `value` at all (or a non-object value): both halves stay empty.
+        let no_value = serde_json::json!({
+            "label": "Genres",
+            "type": "XCheckbox",
+            "options": [{"label": "Action", "value": "Action"}]
+        });
+        let defs = filter_to_setting("genres", &no_value);
+        assert_eq!(defs.len(), 2);
+        for def in &defs {
+            match def {
+                SettingDefinition::MultiSelect { default, .. } => {
+                    assert!(default.is_empty());
+                }
+                other => panic!("expected MultiSelect, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn xcheckbox_unmodified_settings_recombine_to_plugin_defaults() {
+        // The two `MultiSelect` defaults are exactly what the settings
+        // snapshot hands `JsRuntime::apply_settings_filters` on a run where
+        // the user changed nothing — they must reproduce the plugin's
+        // declared `value.include`/`value.exclude` (so recombination is a
+        // no-op), not the empty lists that used to erase them.
+        let filters = serde_json::json!({
+            "genres": {
+                "label": "Genres",
+                "type": "XCheckbox",
+                "value": {"include": ["Action", "Fantasy"], "exclude": ["Adult"]},
+                "options": [
+                    {"label": "Action", "value": "Action"},
+                    {"label": "Adult", "value": "Adult"},
+                    {"label": "Fantasy", "value": "Fantasy"}
+                ]
+            }
+        });
+
+        let (defs, skipped) = settings_from_plugin(&filters, &serde_json::json!({}));
+        assert!(skipped.is_empty());
+        assert_eq!(defs.len(), 2);
+
+        let mut snapshot = HashMap::new();
+        for def in &defs {
+            snapshot.extend(default_values_for_definition(def));
+        }
+        assert_eq!(
+            snapshot.get("genres__include"),
+            Some(&SourceSettingValue::Vec(vec![
+                "Action".to_string(),
+                "Fantasy".to_string()
+            ]))
+        );
+        assert_eq!(
+            snapshot.get("genres__exclude"),
+            Some(&SourceSettingValue::Vec(vec!["Adult".to_string()]))
+        );
+    }
+
+    #[test]
+    fn settings_from_plugin_mixed_checkbox_and_xcheckbox() {
+        let filters = serde_json::json!({
+            "status": {
+                "label": "Status",
+                "type": "Checkbox",
+                "value": [],
+                "options": [
+                    {"label": "Ongoing", "value": "ongoing"},
+                    {"label": "Completed", "value": "completed"}
+                ]
+            },
+            "genres": {
+                "label": "Genres",
+                "type": "XCheckbox",
+                "value": {"include": [], "exclude": []},
+                "options": [
+                    {"label": "Action", "value": "Action"},
+                    {"label": "Romance", "value": "Romance"}
+                ]
+            }
+        });
+        let plugin_settings = serde_json::json!({});
+
+        let (defs, skipped) = settings_from_plugin(&filters, &plugin_settings);
+        assert!(skipped.is_empty());
+        // 1 for Checkbox + 2 for XCheckbox = 3
+        assert_eq!(defs.len(), 3);
+
+        let keys: Vec<&str> = defs
+            .iter()
+            .map(|d| match d {
+                SettingDefinition::MultiSelect { key, .. } => key.as_str(),
+                _ => panic!("unexpected type"),
+            })
+            .collect();
+        assert!(keys.contains(&"status"));
+        assert!(keys.contains(&"genres__include"));
+        assert!(keys.contains(&"genres__exclude"));
     }
 }

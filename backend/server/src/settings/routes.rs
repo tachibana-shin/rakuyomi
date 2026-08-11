@@ -11,6 +11,7 @@ use crate::AppError;
 
 pub fn routes() -> Router<State> {
     Router::new()
+        .route("/capabilities", get(get_capabilities))
         .route("/settings", get(get_settings))
         .route("/settings", put(update_settings))
         .route("/settings/mount-tmpfs", post(mount_tmpfs))
@@ -27,10 +28,29 @@ pub fn routes() -> Router<State> {
         )
 }
 
+#[derive(Serialize)]
+struct CapabilitiesResponse {
+    lnreader_supported: bool,
+}
+
+async fn get_capabilities() -> Json<CapabilitiesResponse> {
+    Json(CapabilitiesResponse {
+        lnreader_supported: cfg!(feature = "lnreader"),
+    })
+}
+
 async fn get_settings(
     StateExtractor(State { settings, .. }): StateExtractor<State>,
 ) -> Json<UpdateableSettings> {
-    Json(UpdateableSettings::from(&*settings.lock().await))
+    let settings = settings.lock().await;
+    // The body carries `lnreader_enabled` exactly as the SourceManager was
+    // (re)loaded against on the last PUT /settings — the response doubles as
+    // a confirmation that the served value is the reloaded one.
+    log::debug!(
+        "GET /settings: serving lnreader_enabled={} — the value the source collection was reloaded with",
+        settings.lnreader_enabled
+    );
+    Json(UpdateableSettings::from(&*settings))
 }
 
 async fn update_settings(
@@ -38,13 +58,20 @@ async fn update_settings(
         chapter_storage,
         settings,
         settings_path,
+        source_manager,
         ..
     }): StateExtractor<State>,
     Json(updateable_settings): Json<UpdateableSettings>,
 ) -> Result<Json<UpdateableSettings>, AppError> {
     let mut chapter_storage = chapter_storage.lock().await;
     let mut settings = settings.lock().await;
-    usecases::update_settings(&mut settings, &settings_path, updateable_settings)?;
+    usecases::update_settings(
+        &mut settings,
+        &settings_path,
+        updateable_settings,
+        &mut *source_manager.lock().await,
+        &source_manager,
+    )?;
 
     shared::tls::set_proxy_url(settings.proxy_url.clone());
 
@@ -59,6 +86,16 @@ async fn update_settings(
                 )
             })?;
     }
+
+    // Clear message about what this PUT did: the settings were persisted to
+    // disk and the source collection was reloaded against them (applying
+    // `lnreader_enabled` to the installed LNReader sources).
+    log::info!(
+        "PUT /settings: settings saved to {}; lnreader_enabled={} — source collection reloaded ({} source(s) loaded)",
+        settings_path.display(),
+        settings.lnreader_enabled,
+        source_manager.lock().await.sources_by_id.len(),
+    );
 
     Ok(Json(UpdateableSettings::from(&*settings)))
 }

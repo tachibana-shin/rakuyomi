@@ -593,6 +593,15 @@ function Settings:init()
   for __, tuple in ipairs(Settings.setting_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
+
+    if key == 'lnreader_enabled' and not (self.capabilities and self.capabilities.lnreader_supported) then
+      table.insert(vertical_group, TextWidget:new {
+        text = _("LNReader/JS sources disabled (feature not compiled)"),
+        face = Font:getFace("cfont", 18),
+      })
+      goto continue
+    end
+
     if definition.type == 'divider' then
       table.insert(vertical_group, TextWidget:new {
         text = definition.title,
@@ -640,6 +649,7 @@ function Settings:init()
         end
       })
     end
+    ::continue::
   end
 
   self.title_bar = TitleBar:new {
@@ -776,8 +786,15 @@ function Settings:fetchAndShow(on_return_callback)
     return
   end
 
+  local capabilities_response = Backend.getCapabilities()
+  if capabilities_response.type == 'ERROR' then
+    ErrorDialog:show(capabilities_response.message)
+    return
+  end
+
   local ui = Settings:new {
     settings = response.body,
+    capabilities = capabilities_response.body,
     on_return_callback = on_return_callback
   }
   ui.on_return_callback = on_return_callback

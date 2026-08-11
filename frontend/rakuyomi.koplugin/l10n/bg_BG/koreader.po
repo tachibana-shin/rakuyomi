@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Опитайте да добавите някои списъци с из
 msgid "Installing source..."
 msgstr "Източникът се инсталира..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Отменен!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Завършен!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Изчакване до анулиране..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Обработва се..."
 
@@ -70,11 +71,11 @@ msgstr "Обработва се..."
 msgid "An error occurred"
 msgstr "Възникна грешка"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Неизвестна грешка"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Грешка"
 
@@ -845,69 +846,68 @@ msgstr "RendOnly файл .cbz и .epub сканиране."
 msgid "Clean"
 msgstr "чисти"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Изтриване..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Почистено безплатно %s хранилище"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Не може да се опресни, докато сте офлайн"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Опресняване на манга..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Всички глави на мангата са актуализирани!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Някои актуализации на манга са неуспешни:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Опресняване на подробностите за манга..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Всички подробности за мангата се опресняват!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Опресняването на някои подробности за мангата е неуспешно:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Напредък"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Чистачка"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Намерете и изтрийте невалидни файлове, включително файлове от изтрити източници"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "нормално"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Главата е прочетена"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Намиране и изтриване на прочетени глави"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "ВАЖНО: Мета файлове (отметка, история) не се съхраняват!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "Мрежова грешка. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "Мрежова грешка. "
+msgstr "Невалиден отговор. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "Успешно влизане!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "Мрежова грешка. "
+msgstr "Неуспешно запазване на жетони. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "Неуспешно стартиране на влизане:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "Мрежова грешка. "
+msgstr "Невалиден отговор от сървъра. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "Режим на сортиране на библиотека"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Дата на добавяне (най-старата)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Дата на добавяне (най-ново)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Заглавие (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Заглавие (Я-А)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Непрочетени (най-малко)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Непрочетени (повечето)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Последно прочетено низходящо"
+msgstr "Последно прочетено (най-старо)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Последно прочитане: %1"
+msgstr "Последно прочетено (най-ново)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Източник (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Източник (Я-А)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "Увеличете, за да пасне на размера на изображението"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "източник?"
+msgstr "Източници"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Инсталирани източници"
+msgstr "Активирайте източниците на LNReader/JS"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "Ограничение за размера на хранилището"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Изтриване на изтеглянията при премахване от библиотеката"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Изтрийте изтеглянията след маркиране като прочетени"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Главата е изтеглена"
+msgstr "Общо изтеглено"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "Изберете"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Невалидна стойност"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Преброяване на непрочетените глави във възходящ ред"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Преброяване на непрочетените глави в низходящ ред"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Последно прочетено възходящо"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Редът е добавен възходящ (по подразбиране)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Редът е добавен в низходящ ред"
-
-#~ msgid "Source ascending"
-#~ msgstr "Източник възходящ"
-
-#~ msgid "Source descending"
-#~ msgstr "Източник низходящ"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Възходящо заглавие на манга"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Низходящо заглавие на манга"

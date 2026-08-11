@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Probeer enkele bronnenlijsten toe te voegen door naar onze README te kij
 msgid "Installing source..."
 msgstr "Bron installeren..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Geannuleerd!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Compleet!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Wachten tot annulering…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Verwerken..."
 
@@ -70,11 +71,11 @@ msgstr "Verwerken..."
 msgid "An error occurred"
 msgstr "Er is een fout opgetreden"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Onbekende fout"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Fout"
 
@@ -845,69 +846,68 @@ msgstr "RendOnly-bestand .cbz en .epub-scan."
 msgid "Clean"
 msgstr "Schoon"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Verwijderen..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Vrije %s opslagruimte opgeschoond"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Kan niet vernieuwen terwijl je offline bent"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Manga's vernieuwen..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Alle hoofdstukken manga bijgewerkt!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Sommige manga-updates mislukken:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Manga-details vernieuwen..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Alle mangadetails worden vernieuwd!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Het vernieuwen van sommige mangadetails mislukt:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Voortgang"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Schoner"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Zoek en verwijder ongeldige bestanden, inclusief bestanden uit verwijderde bronnen"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normaal"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Hoofdstuk gelezen klaar"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Vind en verwijder hoofdstukken die zijn gelezen"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "BELANGRIJK: Metabestanden (bladwijzer, geschiedenis) worden niet bewaard!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "Netwerkfout. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "Netwerkfout. "
+msgstr "Ongeldige reactie. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "Inloggen is gelukt!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "Netwerkfout. "
+msgstr "Kan tokens niet opslaan. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "Kan het inloggen niet starten:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "Netwerkfout. "
+msgstr "Ongeldig antwoord van de server. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "Sorteermodus van bibliotheek"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Datum toegevoegd (oudste)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Datum toegevoegd (nieuwste)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Titel (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Titel (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Ongelezen (minste)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Ongelezen (meeste)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Laatst gelezen aflopend"
+msgstr "Laatst gelezen (oudste)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Laatst gelezen: %1"
+msgstr "Laatst gelezen (nieuwste)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Bron (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Bron (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "Zoom in op afbeeldingsgrootte"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "bron?"
+msgstr "Bronnen"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Geïnstalleerde bronnen"
+msgstr "Schakel LNReader/JS-bronnen in"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "Limiet voor opslaggrootte"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Verwijder downloads bij verwijdering uit de bibliotheek"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Verwijder downloads nadat u ze als gelezen hebt gemarkeerd"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Hoofdstuk gedownload"
+msgstr "Totaal gedownload"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "Selecteer"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Ongeldige waarde"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Tel ongelezen hoofdstukken oplopend"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Tel ongelezen hoofdstukken aflopend"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Laatst gelezen oplopend"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Volgorde oplopend toegevoegd (standaard)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Volgorde aflopend toegevoegd"
-
-#~ msgid "Source ascending"
-#~ msgstr "Bron oplopend"
-
-#~ msgid "Source descending"
-#~ msgstr "Bron aflopend"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Titel manga oplopend"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Titel manga aflopend"

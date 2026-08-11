@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Yritä lisätä joitakin lähdeluetteloita katsomalla README!"
 msgid "Installing source..."
 msgstr "Asennetaan lähdettä..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Peruutettu!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Täydellinen!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Odotetaan peruutusta…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Käsitellään..."
 
@@ -70,11 +71,11 @@ msgstr "Käsitellään..."
 msgid "An error occurred"
 msgstr "Tapahtui virhe"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Tuntematon virhe"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Virhe"
 
@@ -845,69 +846,68 @@ msgstr "RendOnly-tiedostojen .cbz- ja .epub-skannaus."
 msgid "Clean"
 msgstr "Puhdas"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Poistetaan..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Puhdistettu ilmainen %s tallennustila"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Ei voi päivittää offline-tilassa"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Päivitä mangat..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Kaikki luvut manga päivitetty!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Jotkut mangapäivitykset epäonnistuvat:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Päivitä mangan tiedot..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Kaikki mangan yksityiskohdat päivittyvät!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Joidenkin mangan yksityiskohtien päivitys epäonnistuu:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Edistyminen"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Siivooja"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Etsi ja poista virheellisiä tiedostoja, mukaan lukien tiedostot poistetuista lähteistä"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normaali"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Luku luettu valmis"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Etsi ja poista luettuja lukuja"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "TÄRKEÄÄ: Metatiedostoja (kirjanmerkki, historia) ei säilytetä!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "Verkkovirhe. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "Verkkovirhe. "
+msgstr "Virheellinen vastaus. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "Kirjautuminen onnistui!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "Verkkovirhe. "
+msgstr "Tunnusten tallentaminen epäonnistui. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "Kirjautumisen aloittaminen epäonnistui:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "Verkkovirhe. "
+msgstr "Virheellinen vastaus palvelimelta. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "Kirjaston lajittelutila"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Lisäyspäivä (vanhin)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Lisäyspäivä (uusin)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Otsikko (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Otsikko (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Lukematon (vähiten)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Lukemattomat (useimmat)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Viimeksi luettu laskeva"
+msgstr "Viimeksi luettu (vanhin)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Viimeksi luettu: %1"
+msgstr "Viimeksi luettu (uusin)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Lähde (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Lähde (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "Zoomaa kuvan kokoon sopivaksi"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "lähde?"
+msgstr "Lähteet"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Asennetut lähteet"
+msgstr "Ota LNReader/JS-lähteet käyttöön"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "Tallennustilan kokorajoitus"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Poista lataukset, kun poistat ne kirjastosta"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Poista lataukset luetuksi merkitsemisen jälkeen"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Luku ladattu"
+msgstr "Ladattu yhteensä"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "Valitse"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Virheellinen arvo"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Laske lukemattomat luvut nousevasti"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Laske lukemattomat luvut laskevassa järjestyksessä"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Viimeksi luettu nouseva"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Järjestys lisätty nousevassa järjestyksessä (oletus)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Tilaus lisätty laskevassa järjestyksessä"
-
-#~ msgid "Source ascending"
-#~ msgstr "Lähde nouseva"
-
-#~ msgid "Source descending"
-#~ msgstr "Lähde laskeva"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Otsikko manga nouseva"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Otsikko manga laskeva"

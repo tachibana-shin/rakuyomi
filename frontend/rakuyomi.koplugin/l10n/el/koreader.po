@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Δοκιμάστε να προσθέσετε μερικές λίστες
 msgid "Installing source..."
 msgstr "Εγκατάσταση πηγής..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Ακυρώθηκε!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Πλήρης!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Αναμονή μέχρι την ακύρωση…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Επεξεργασία..."
 
@@ -70,23 +71,21 @@ msgstr "Επεξεργασία..."
 msgid "An error occurred"
 msgstr "Παρουσιάστηκε σφάλμα"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Άγνωστο σφάλμα"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Σφάλμα"
 
 #: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
-#, fuzzy
 msgid "Chapters"
-msgstr "Κεφάλαιο"
+msgstr "Κεφάλαια"
 
 #: ../ChapterListPopup.lua:354
-#, fuzzy
 msgid "Search chapters"
-msgstr "Πιο καθαρά κεφάλαια"
+msgstr "Αναζήτηση κεφαλαίων"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
 #: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
@@ -101,16 +100,15 @@ msgstr "Ματαίωση"
 
 #: ../ChapterListPopup.lua:361
 msgid "Apply"
-msgstr ""
+msgstr "Εφαρμόζω"
 
 #: ../ChapterListPopup.lua:384
-#, fuzzy
 msgid "Go to page"
-msgstr "Επόμενη σελίδα"
+msgstr "Μετάβαση στη σελίδα"
 
 #: ../ChapterListPopup.lua:391
 msgid "Go"
-msgstr ""
+msgstr "Πάω"
 
 #: ../ChapterListing.lua:59
 msgid "Chapter listing"
@@ -288,9 +286,8 @@ msgstr "Καθέκαστα"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
 #: ../TrackingSettings.lua:420
-#, fuzzy
 msgid "Tracking"
-msgstr "Βαθμολόγηση"
+msgstr "Παρακολούθηση"
 
 #: ../ChapterListing.lua:1152
 msgid "Resume"
@@ -402,47 +399,47 @@ msgstr "Πατήστε έξω από αυτό το μήνυμα για ακύρ�
 
 #: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
-msgstr ""
+msgstr "Cookie Sync"
 
 #: ../CookieSyncView.lua:164
 msgid "Unable to fetch cookie sync status."
-msgstr ""
+msgstr "Δεν είναι δυνατή η ανάκτηση της κατάστασης συγχρονισμού cookie."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr ""
+msgstr "Συσκευή συζευγμένη ως:"
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr ""
+msgstr "Αναγνωριστικό συνομιλίας:"
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr ""
+msgstr "Τομείς προσωρινής αποθήκευσης:"
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
-msgstr ""
+msgstr "Μη ζευγαρωμένο. "
 
 #: ../CookieSyncView.lua:214
 msgid "Sync Cookies Now"
-msgstr ""
+msgstr "Συγχρονίστε τα cookies τώρα"
 
 #: ../CookieSyncView.lua:225
 msgid "View Cached Cookies"
-msgstr ""
+msgstr "Προβολή Αποθηκευμένων Cookies"
 
 #: ../CookieSyncView.lua:236
 msgid "Unpair Device"
-msgstr ""
+msgstr "Κατάργηση σύζευξης συσκευής"
 
 #: ../CookieSyncView.lua:255
 msgid "Pair Device"
-msgstr ""
+msgstr "Σύζευξη συσκευής"
 
 #: ../CookieSyncView.lua:270
 msgid "Enter Telegram Bot Server URL"
-msgstr ""
+msgstr "Εισαγάγετε τη διεύθυνση URL του διακομιστή Bot Telegram"
 
 #: ../CookieSyncView.lua:271
 msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
@@ -450,47 +447,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:274
 msgid "https://your-bot.deno.dev"
-msgstr ""
+msgstr "https://your-bot.deno.dev"
 
 #: ../CookieSyncView.lua:284
 msgid "Generate Code"
-msgstr ""
+msgstr "Δημιουργία κώδικα"
 
 #: ../CookieSyncView.lua:305
 msgid "Generating pairing code..."
-msgstr ""
+msgstr "Δημιουργία κωδικού σύζευξης..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr ""
+msgstr "Αποτυχία δημιουργίας κωδικού σύζευξης:"
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr ""
+msgstr "Κωδικός ζεύξης:"
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
-msgstr ""
+msgstr "1. Ανοίξτε το Telegram στο τηλέφωνό σας Android"
 
 #: ../CookieSyncView.lua:327
 msgid "2. Send this command to the bot:"
-msgstr ""
+msgstr "2. Στείλτε αυτήν την εντολή στο bot:"
 
 #: ../CookieSyncView.lua:328
 msgid "DEVICE_NAME"
-msgstr ""
+msgstr "DEVICE_NAME"
 
 #: ../CookieSyncView.lua:329
 msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
-msgstr ""
+msgstr "(Αντικαταστήστε τη DEVICE_NAME με ένα όνομα για αυτήν τη συσκευή, π.χ. kindle_bedroom)"
 
 #: ../CookieSyncView.lua:330
 msgid "3. Come back here and tap 'Check Pairing'"
-msgstr ""
+msgstr "3. Επιστρέψτε εδώ και πατήστε \"Έλεγχος σύζευξης\""
 
 #: ../CookieSyncView.lua:334
 msgid "Check Pairing"
-msgstr ""
+msgstr "Ελέγξτε το Pairing"
 
 #: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
 #: ../OfflineAlertDialog.lua:54
@@ -499,15 +496,15 @@ msgstr "Κοντά"
 
 #: ../CookieSyncView.lua:344
 msgid "Checking pairing status..."
-msgstr ""
+msgstr "Έλεγχος κατάστασης σύζευξης..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr ""
+msgstr "Ο έλεγχος της σύζευξης απέτυχε:"
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr ""
+msgstr "Η συσκευή αντιστοιχίστηκε με επιτυχία ως:"
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -515,49 +512,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:371
 msgid "Check Again"
-msgstr ""
+msgstr "Ελέγξτε ξανά"
 
 #: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
-#, fuzzy
 msgid "Syncing cookies..."
-msgstr "Σάρωση αρχείων..."
+msgstr "Συγχρονισμός cookie..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr ""
+msgstr "Αποτυχία συγχρονισμού cookie:"
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr ""
+msgstr "τομέας(οι)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr ""
+msgstr "Συγχρονισμένα cookie για"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr ""
+msgstr "Κατάργηση ζεύξης αυτής της συσκευής; "
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"
-msgstr ""
+msgstr "Κατάργηση ζεύξης"
 
 #: ../CookieSyncView.lua:414
-#, fuzzy
 msgid "Failed to unpair: "
-msgstr "Αποτυχία προσθήκης στη βιβλιοθήκη"
+msgstr "Αποτυχία αποσύζευξης:"
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
-msgstr ""
+msgstr "Η συσκευή καταργήθηκε."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr ""
+msgstr "Απέτυχε η λίστα των cookie:"
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
-msgstr ""
+msgstr "Δεν έχουν αποθηκευτεί cookie."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -753,7 +748,7 @@ msgstr "Ο συγχρονισμός ολοκληρώθηκε!"
 
 #: ../LibraryView.lua:1032
 msgid "Sync Cookies"
-msgstr ""
+msgstr "Συγχρονισμός cookies"
 
 #: ../LibraryView.lua:1062
 msgid "System resources"
@@ -851,69 +846,68 @@ msgstr "RendOnly αρχείο .cbz και .epub scan."
 msgid "Clean"
 msgstr "Καθαρός"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Διαγραφή..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Καθαρίστηκε ο δωρεάν αποθηκευτικός χώρος %s"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Δεν είναι δυνατή η ανανέωση ενώ είστε εκτός σύνδεσης"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Ανανεώστε τα mangas..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Όλα τα κεφάλαια manga ενημερώθηκαν!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Ορισμένες ενημερώσεις manga αποτυγχάνουν:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Ανανεώστε λεπτομέρειες manga..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Όλες οι λεπτομέρειες manga ανανεώνονται!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Η ανανέωση ορισμένων λεπτομερειών manga αποτυγχάνει:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Πρόοδος"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Καθαριστής"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Βρείτε και διαγράψτε μη έγκυρα αρχεία, συμπεριλαμβανομένων αρχείων από διαγραμμένες πηγές"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Κανονικός"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Το κεφάλαιο που διαβάστηκε έγινε"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Βρείτε και διαγράψτε τα κεφάλαια που έχετε διαβάσει"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "ΣΗΜΑΝΤΙΚΟ: Τα αρχεία meta (σελιδοδείκτης, ιστορικό) δεν διατηρούνται!"
 
@@ -1008,27 +1002,27 @@ msgstr "Οχι"
 
 #: ../MangaReader.lua:332
 msgid "View Mode"
-msgstr ""
+msgstr "Λειτουργία προβολής"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
-msgstr ""
+msgstr "Αθέτηση"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
-msgstr ""
+msgstr "LTR"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
-msgstr ""
+msgstr "RTL"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
-msgstr ""
+msgstr "Πάπυρος"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
-msgstr ""
+msgstr "Κατακόρυφος"
 
 #: ../MangaReader.lua:337
 msgid ""
@@ -1038,19 +1032,19 @@ msgstr ""
 
 #: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
-msgstr ""
+msgstr "Μακριά από"
 
 #: ../MangaReader.lua:378
 msgid "Global Viewer Override"
-msgstr ""
+msgstr "Παράκαμψη καθολικής προβολής"
 
 #: ../MangaReader.lua:571
 msgid "Set default %1 to %2?"
-msgstr ""
+msgstr "Ορισμός προεπιλογής %1 σε %2;"
 
 #: ../MangaReader.lua:575
 msgid "Set as default"
-msgstr ""
+msgstr "Ορισμός ως προεπιλογή"
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1091,66 +1085,63 @@ msgstr "Διαγράφω"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr ""
+msgstr "Συνδεθείτε με"
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
-msgstr ""
+msgstr "Σαρώστε αυτόν τον κωδικό QR στο τηλέφωνό σας για να συνδεθείτε."
 
 #: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
-msgstr ""
+msgstr "Σφάλμα: Δεν υπάρχει διαθέσιμη διεύθυνση URL γέφυρας."
 
 #: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
-msgstr ""
+msgstr "Σαρώστε τον κωδικό QR και, στη συνέχεια, ελέγξτε την κατάσταση σύνδεσης."
 
 #: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
-msgstr ""
+msgstr "Ελέγξτε την κατάσταση σύνδεσης"
 
 #: ../OAuthFlowView.lua:210
-#, fuzzy
 msgid "Checking..."
-msgstr "Εκτέλεση..."
+msgstr "Ελεγχος..."
 
 #: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
-msgstr ""
+msgstr "Σφάλμα δικτύου. "
 
 #: ../OAuthFlowView.lua:222
 msgid "Invalid response. Please try again."
-msgstr ""
+msgstr "Μη έγκυρη απάντηση. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
-msgstr ""
+msgstr "Αναμονή για σύνδεση. "
 
 #: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
-msgstr ""
+msgstr "Επιτυχής σύνδεση!"
 
 #: ../OAuthFlowView.lua:237
 msgid "Failed to save tokens. Please try again."
-msgstr ""
+msgstr "Αποτυχία αποθήκευσης διακριτικών. "
 
 #: ../OAuthFlowView.lua:240
-#, fuzzy
 msgid "Error: "
-msgstr "Σφάλμα"
+msgstr "Σφάλμα:"
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
-msgstr ""
+msgstr "Δημιουργία περιόδου σύνδεσης..."
 
 #: ../OAuthFlowView.lua:314
-#, fuzzy
 msgid "Failed to start sign-in: "
-msgstr "Αποτυχία προσθήκης στη βιβλιοθήκη"
+msgstr "Αποτυχία έναρξης σύνδεσης:"
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
-msgstr ""
+msgstr "Μη έγκυρη απάντηση από τον διακομιστή. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1231,45 +1222,43 @@ msgstr "Λειτουργία ταξινόμησης βιβλιοθήκης"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Ημερομηνία προσθήκης (παλαιότερη)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Ημερομηνία προσθήκης (νεότερη)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Τίτλος (Α-Ω)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Τίτλος (Ζ-Α)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Μη αναγνωσμένο (λιγότερο)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Μη αναγνωσμένα (τα περισσότερα)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Τελευταία ανάγνωση φθίνουσα"
+msgstr "Τελευταία ανάγνωση (παλαιότερη)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Τελευταία ανάγνωση: %1"
+msgstr "Τελευταία ανάγνωση (νεότερο)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Πηγή (Α-Ω)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Πηγή (Ζ-Α)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1329,22 +1318,19 @@ msgstr "Κατά κεφάλαιο φθίνουσα"
 
 #: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
-msgstr ""
+msgstr "Τίτλος κεφαλαίου στα στατιστικά στοιχεία (ComicInfo)"
 
 #: ../Settings.lua:231
-#, fuzzy
 msgid "Chapter title only"
-msgstr "Το κεφάλαιο που διαβάστηκε έγινε"
+msgstr "Μόνο τίτλος κεφαλαίου"
 
 #: ../Settings.lua:232
-#, fuzzy
 msgid "Series + chapter title"
-msgstr "Σφάλμα ανανέωσης κεφαλαίου"
+msgstr "Τίτλος σειράς + κεφαλαίου"
 
 #: ../Settings.lua:233
-#, fuzzy
 msgid "Series + chapter number"
-msgstr "Σφάλμα ανανέωσης κεφαλαίου"
+msgstr "Σειρά + αριθμός κεφαλαίου"
 
 #: ../Settings.lua:242
 msgid "Preload chapters on reader open"
@@ -1360,65 +1346,63 @@ msgstr "Ταυτόχρονα αιτήματα σελίδας"
 
 #: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
-msgstr ""
+msgstr "Μην ενεργοποιείτε ποτέ το RTL, ακόμη και για ιαπωνικά manga"
 
 #: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
-msgstr ""
+msgstr "Αυτόματη ρύθμιση του θεατή σε λειτουργία manga"
 
 #: ../Settings.lua:290
 msgid "Global viewer override"
-msgstr ""
+msgstr "Παράκαμψη καθολικής προβολής"
 
 #: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
-msgstr ""
+msgstr "Εμφάνιση κουμπιού προηγούμενου κεφαλαίου στο πρόγραμμα ανάγνωσης γραμμής εργαλείων"
 
 #: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
-msgstr ""
+msgstr "Εμφάνιση κουμπιού επόμενου κεφαλαίου στον αναγνώστη της γραμμής εργαλείων"
 
 #: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
-msgstr ""
+msgstr "Εμφανίστε τη διευρυμένη κάτω γραμμή εργαλείων rakuyomi στον αναγνώστη"
 
 #: ../Settings.lua:328
 msgid "On bottom toolbar"
-msgstr ""
+msgstr "Στην κάτω γραμμή εργαλείων"
 
 #: ../Settings.lua:329
 msgid "On top toolbar"
-msgstr ""
+msgstr "Στην επάνω γραμμή εργαλείων"
 
 #: ../Settings.lua:337
 msgid "Recommended reader settings"
-msgstr ""
+msgstr "Προτεινόμενες ρυθμίσεις αναγνώστη"
 
 #: ../Settings.lua:343
 msgid "Turn off all margins"
-msgstr ""
+msgstr "Απενεργοποιήστε όλα τα περιθώρια"
 
 #: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
-msgstr ""
+msgstr "Αυτόματη περικοπή των υπερβολικών άκρων από φωτογραφίες (λίγο αργή)"
 
 #: ../Settings.lua:361
 msgid "Zoom to full screen"
-msgstr ""
+msgstr "Ζουμ σε πλήρη οθόνη"
 
 #: ../Settings.lua:370
 msgid "Zoom to fit image size"
-msgstr ""
+msgstr "Ζουμ για να ταιριάζει στο μέγεθος της εικόνας"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "πηγή;"
+msgstr "Πηγές"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Εγκατεστημένες πηγές"
+msgstr "Ενεργοποίηση πηγών LNReader/JS"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1430,16 +1414,15 @@ msgstr "Όριο μεγέθους αποθήκευσης"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Διαγράψτε τις λήψεις κατά την κατάργηση από τη βιβλιοθήκη"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Διαγράψτε τις λήψεις αφού επισημάνετε ως αναγνωσμένες"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Κατέβασε το κεφάλαιο"
+msgstr "Σύνολο λήψης"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1451,15 +1434,15 @@ msgstr "Μέγεθος αποθήκευσης RAM. "
 
 #: ../Settings.lua:467
 msgid "Network"
-msgstr ""
+msgstr "Δίκτυο"
 
 #: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
-msgstr ""
+msgstr "Μεσολάβηση HTTP, HTTPS ή SOCKS5"
 
 #: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr ""
+msgstr "Το URL του διακομιστή μεσολάβησης πρέπει να ξεκινά με http://, https:// ή socks5://"
 
 #: ../Settings.lua:481
 msgid "Sync & Updates"
@@ -1530,232 +1513,218 @@ msgid "Disable logging"
 msgstr "Απενεργοποίηση καταγραφής"
 
 #: ../Settings.lua:752
-#, fuzzy
 msgid "Failed to test proxy"
-msgstr "Αποτυχία προσθήκης στη βιβλιοθήκη"
+msgstr "Αποτυχία δοκιμής διακομιστή μεσολάβησης"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "Ρυθμίσεις πηγής"
 
 #: ../TrackingMenu.lua:45
-#, fuzzy
 msgid "Volumes"
-msgstr "Τόμος"
+msgstr "Τόμοι"
 
 #: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
-#, fuzzy
 msgid "Loading tracking..."
-msgstr "Φόρτωση κεφαλαίου..."
+msgstr "Φόρτωση παρακολούθησης..."
 
 #: ../TrackingMenu.lua:123
 msgid "Select Tracking Service"
-msgstr ""
+msgstr "Επιλέξτε Υπηρεσία παρακολούθησης"
 
 #: ../TrackingMenu.lua:152
 msgid "Link"
-msgstr ""
+msgstr "Σύνδεσμος"
 
 #: ../TrackingMenu.lua:152
 msgid "Relink"
-msgstr ""
+msgstr "Επανασύνδεση"
 
 #: ../TrackingMenu.lua:164
-#, fuzzy
 msgid "Pull progress"
-msgstr "Πρόοδος"
+msgstr "Τραβήξτε την πρόοδο"
 
 #: ../TrackingMenu.lua:171
-#, fuzzy
 msgid "Push progress"
-msgstr "Πρόοδος"
+msgstr "Πιέστε την πρόοδο"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
 #: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
-#, fuzzy
 msgid "Not set"
-msgstr "Δεν δημοσιεύτηκε"
+msgstr "Δεν έχει οριστεί"
 
 #: ../TrackingMenu.lua:182
 msgid "Start"
-msgstr ""
+msgstr "Αρχή"
 
 #: ../TrackingMenu.lua:189
 msgid "End"
-msgstr ""
+msgstr "Τέλος"
 
 #: ../TrackingMenu.lua:200
 msgid "Unlink"
-msgstr ""
+msgstr "Αποσύνδεση"
 
 #: ../TrackingMenu.lua:212
 msgid "Other services"
-msgstr ""
+msgstr "Άλλες υπηρεσίες"
 
 #: ../TrackingMenu.lua:232
-#, fuzzy
 msgid "Search tracker title"
-msgstr "Αναζήτηση αγαπημένων"
+msgstr "Αναζήτηση τίτλου παρακολούθησης"
 
 #: ../TrackingMenu.lua:235
 msgid "Search for a matching manga entry to link with this title."
-msgstr ""
+msgstr "Αναζητήστε μια αντίστοιχη καταχώριση manga για σύνδεση με αυτόν τον τίτλο."
 
 #: ../TrackingMenu.lua:254
-#, fuzzy
 msgid "Searching tracker..."
-msgstr "Ψάχνοντας για"
+msgstr "Αναζήτηση ιχνηλάτη..."
 
 #: ../TrackingMenu.lua:266
-#, fuzzy
 msgid "No tracking results found."
-msgstr "Δεν βρέθηκαν διαθέσιμες πηγές."
+msgstr "Δεν βρέθηκαν αποτελέσματα παρακολούθησης."
 
 #: ../TrackingMenu.lua:295
 msgid "Linking tracker entry..."
-msgstr ""
+msgstr "Σύνδεση καταχώρισης παρακολούθησης..."
 
 #: ../TrackingMenu.lua:307
-#, fuzzy
 msgid "Linked with"
-msgstr "ανάγνωση με"
+msgstr "Συνδέεται με"
 
 #: ../TrackingMenu.lua:329
 msgid "Pulling tracking progress..."
-msgstr ""
+msgstr "Τραβώντας παρακολούθηση προόδου..."
 
 #: ../TrackingMenu.lua:329
 msgid "Pushing tracking progress..."
-msgstr ""
+msgstr "Προώθηση παρακολούθησης προόδου..."
 
 #: ../TrackingMenu.lua:341
 msgid "No tracking binding found for this service."
-msgstr ""
+msgstr "Δεν βρέθηκε δέσμευση παρακολούθησης για αυτήν την υπηρεσία."
 
 #: ../TrackingMenu.lua:363
 msgid "End date"
-msgstr ""
+msgstr "Ημερομηνία λήξης"
 
 #: ../TrackingMenu.lua:363
-#, fuzzy
 msgid "Start date"
-msgstr "Τελευταία Ενημέρωση"
+msgstr "Ημερομηνία έναρξης"
 
 #: ../TrackingMenu.lua:370
 msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
-msgstr ""
+msgstr "Εισαγάγετε ημερομηνία σε μορφή ΗΗ/ΜΜ/ΕΕΕΕ ή αφήστε κενό για διαγραφή."
 
 #: ../TrackingMenu.lua:393
-#, fuzzy
 msgid "Saving date..."
-msgstr "Φόρτωση κεφαλαίου..."
+msgstr "Αποθήκευση ημερομηνίας..."
 
 #: ../TrackingMenu.lua:411
 msgid "cleared"
-msgstr ""
+msgstr "εκκαθαρίστηκε"
 
 #: ../TrackingMenu.lua:427
 msgid "Removing tracking binding..."
-msgstr ""
+msgstr "Κατάργηση δέσμευσης παρακολούθησης..."
 
 #: ../TrackingMenu.lua:439
 msgid "Unlinked"
-msgstr ""
+msgstr "Αποσύνδεση"
 
 #: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
-msgstr ""
+msgstr "Επικόλληση διακριτικού AniList"
 
 #: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
-msgstr ""
+msgstr "Επικόλληση αναγνωριστικού πελάτη MAL"
 
 #: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
-msgstr ""
+msgstr "Επικόλληση μυστικού πελάτη MAL"
 
 #: ../TrackingSettings.lua:106
-#, fuzzy
 msgid "Paste MAL refresh token"
-msgstr "Το κεφάλαιο ανανεώθηκε"
+msgstr "Επικόλληση διακριτικού ανανέωσης MAL"
 
 #: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
-msgstr ""
+msgstr "Επικολλήστε το αναγνωριστικό πελάτη Shikimori"
 
 #: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
-msgstr ""
+msgstr "Επικολλήστε το μυστικό πελάτη Shikimori"
 
 #: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
-msgstr ""
+msgstr "Επικολλήστε το διακριτικό ανανέωσης Shikimori"
 
 #: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
-msgstr ""
+msgstr "Επικολλήστε το διακριτικό ανανέωσης Bangumi"
 
 #: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
-msgstr ""
+msgstr "Επικολλήστε το διακριτικό ανανέωσης MangaBaka"
 
 #: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
-msgstr ""
+msgstr "Επικόλληση MangaBaka API Key (mb-...)"
 
 #: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
-msgstr ""
+msgstr "Επικόλληση κλειδιού API Kavita"
 
 #: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
-msgstr ""
+msgstr "Κλειδί API Komga ή όνομα χρήστη: κωδικός πρόσβασης"
 
 #: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
-msgstr ""
+msgstr "Suwayomi Basic Auth όνομα χρήστη:κωδικός πρόσβασης"
 
 #: ../TrackingSettings.lua:162
 msgid "Sign out"
-msgstr ""
+msgstr "Αποσυνδεθείτε"
 
 #: ../TrackingSettings.lua:164
 msgid "Sign in"
-msgstr ""
+msgstr "Συνδεθείτε"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr ""
+msgstr "Επικυρώνω"
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
-#, fuzzy
 msgid "Validating..."
-msgstr "Διαγραφή..."
+msgstr "Επικύρωση..."
 
 #: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
 #: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
-msgstr ""
+msgstr "Τα διαπιστευτήρια είναι έγκυρα."
 
 #: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
-msgstr ""
+msgstr "Αυτόματος συγχρονισμός προόδου ανάγνωσης"
 
 #: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
-msgstr ""
+msgstr "Διακομιστής OAuth Bridge"
 
 #: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
-msgstr ""
+msgstr "Διεύθυνση URL διακομιστή OAuth Bridge"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr ""
+msgstr "Συνδεθήκατε ως"
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
-msgstr ""
+msgstr "Κανένα σημάδι"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1952,35 +1921,4 @@ msgstr "Επιλέγω"
 
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
-msgstr ""
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Μετρήστε τα μη αναγνωσμένα κεφάλαια αύξουσα"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Μετρήστε τα μη αναγνωσμένα κεφάλαια φθίνοντας"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Τελευταία ανάγνωση αύξουσα"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Η παραγγελία προστέθηκε αύξουσα (Προεπιλογή)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Η σειρά προστέθηκε φθίνουσα"
-
-#~ msgid "Source ascending"
-#~ msgstr "Πηγή αύξουσα"
-
-#~ msgid "Source descending"
-#~ msgstr "Πηγή φθίνουσα"
-
-#, fuzzy
-#~ msgid "Testing proxy..."
-#~ msgstr "Επανεκκίνηση…"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Τίτλος manga αύξουσα"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Τίτλος manga φθίνουσα"
+msgstr "Μη έγκυρη τιμή"

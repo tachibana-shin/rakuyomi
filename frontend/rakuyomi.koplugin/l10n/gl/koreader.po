@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,19 +49,20 @@ msgstr "Proba a engadir algunhas listas de fontes consultando o noso README!"
 msgid "Installing source..."
 msgstr "Instalando fonte..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Cancelado!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Completa!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Agardando ata cancelar..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Procesando..."
 
@@ -69,23 +70,21 @@ msgstr "Procesando..."
 msgid "An error occurred"
 msgstr "Produciuse un erro"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Erro descoñecido"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Erro"
 
 #: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
-#, fuzzy
 msgid "Chapters"
-msgstr "Capítulo"
+msgstr "Capítulos"
 
 #: ../ChapterListPopup.lua:354
-#, fuzzy
 msgid "Search chapters"
-msgstr "Capítulos máis limpos"
+msgstr "Busca capítulos"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
 #: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
@@ -100,16 +99,15 @@ msgstr "Cancelar"
 
 #: ../ChapterListPopup.lua:361
 msgid "Apply"
-msgstr ""
+msgstr "Solicitar"
 
 #: ../ChapterListPopup.lua:384
-#, fuzzy
 msgid "Go to page"
-msgstr "Páxina seguinte"
+msgstr "Ir á páxina"
 
 #: ../ChapterListPopup.lua:391
 msgid "Go"
-msgstr ""
+msgstr "Vaia"
 
 #: ../ChapterListing.lua:59
 msgid "Chapter listing"
@@ -287,9 +285,8 @@ msgstr "Detalles"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
 #: ../TrackingSettings.lua:420
-#, fuzzy
 msgid "Tracking"
-msgstr "Marcado"
+msgstr "Seguimento"
 
 #: ../ChapterListing.lua:1152
 msgid "Resume"
@@ -401,47 +398,47 @@ msgstr "Toca fóra desta mensaxe para cancelar."
 
 #: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
-msgstr ""
+msgstr "Sincronización de cookies"
 
 #: ../CookieSyncView.lua:164
 msgid "Unable to fetch cookie sync status."
-msgstr ""
+msgstr "Non se puido recuperar o estado de sincronización das cookies."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr ""
+msgstr "Dispositivo vinculado como:"
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr ""
+msgstr "ID do chat:"
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr ""
+msgstr "Dominios en caché:"
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
-msgstr ""
+msgstr "Non emparellado. "
 
 #: ../CookieSyncView.lua:214
 msgid "Sync Cookies Now"
-msgstr ""
+msgstr "Sincronizar cookies agora"
 
 #: ../CookieSyncView.lua:225
 msgid "View Cached Cookies"
-msgstr ""
+msgstr "Ver cookies en caché"
 
 #: ../CookieSyncView.lua:236
 msgid "Unpair Device"
-msgstr ""
+msgstr "Desvincular o dispositivo"
 
 #: ../CookieSyncView.lua:255
 msgid "Pair Device"
-msgstr ""
+msgstr "Vincular o dispositivo"
 
 #: ../CookieSyncView.lua:270
 msgid "Enter Telegram Bot Server URL"
-msgstr ""
+msgstr "Introduza o URL do servidor Bot de Telegram"
 
 #: ../CookieSyncView.lua:271
 msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
@@ -449,47 +446,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:274
 msgid "https://your-bot.deno.dev"
-msgstr ""
+msgstr "https://your-bot.deno.dev"
 
 #: ../CookieSyncView.lua:284
 msgid "Generate Code"
-msgstr ""
+msgstr "Xerar código"
 
 #: ../CookieSyncView.lua:305
 msgid "Generating pairing code..."
-msgstr ""
+msgstr "Xerando código de sincronización..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr ""
+msgstr "Produciuse un erro ao xerar o código de vinculación:"
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr ""
+msgstr "Código de emparellamento:"
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
-msgstr ""
+msgstr "1. Abre Telegram no teu teléfono Android"
 
 #: ../CookieSyncView.lua:327
 msgid "2. Send this command to the bot:"
-msgstr ""
+msgstr "2. Envía este comando ao bot:"
 
 #: ../CookieSyncView.lua:328
 msgid "DEVICE_NAME"
-msgstr ""
+msgstr "DEVICE_NAME"
 
 #: ../CookieSyncView.lua:329
 msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
-msgstr ""
+msgstr "(Substitúe DEVICE_NAME por un nome para este dispositivo, por exemplo, kindle_bedroom)"
 
 #: ../CookieSyncView.lua:330
 msgid "3. Come back here and tap 'Check Pairing'"
-msgstr ""
+msgstr "3. Volve aquí e toca \"Comprobar emparellamento\""
 
 #: ../CookieSyncView.lua:334
 msgid "Check Pairing"
-msgstr ""
+msgstr "Comprobe a vinculación"
 
 #: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
 #: ../OfflineAlertDialog.lua:54
@@ -498,15 +495,15 @@ msgstr "Pechar"
 
 #: ../CookieSyncView.lua:344
 msgid "Checking pairing status..."
-msgstr ""
+msgstr "Comprobando o estado de sincronización..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr ""
+msgstr "Produciuse un erro ao comprobar a vinculación:"
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr ""
+msgstr "O dispositivo emparejouse correctamente como:"
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -514,49 +511,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:371
 msgid "Check Again"
-msgstr ""
+msgstr "Comproba de novo"
 
 #: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
-#, fuzzy
 msgid "Syncing cookies..."
-msgstr "Analizando ficheiros..."
+msgstr "Sincronizando cookies..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr ""
+msgstr "Produciuse un erro ao sincronizar as cookies:"
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr ""
+msgstr "dominio(s)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr ""
+msgstr "Cookies sincronizadas para"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr ""
+msgstr "Queres desvincular este dispositivo? "
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"
-msgstr ""
+msgstr "Desvincular"
 
 #: ../CookieSyncView.lua:414
-#, fuzzy
 msgid "Failed to unpair: "
-msgstr "Produciuse un erro ao engadir á biblioteca"
+msgstr "Produciuse un erro ao desvincular:"
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
-msgstr ""
+msgstr "Dispositivo desvinculado."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr ""
+msgstr "Produciuse un erro ao enumerar as cookies:"
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
-msgstr ""
+msgstr "Non se gardaron cookies na caché."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -752,7 +747,7 @@ msgstr "Sincronización completada!"
 
 #: ../LibraryView.lua:1032
 msgid "Sync Cookies"
-msgstr ""
+msgstr "Cookies de sincronización"
 
 #: ../LibraryView.lua:1062
 msgid "System resources"
@@ -850,69 +845,68 @@ msgstr "Exploración de ficheiros RendOnly .cbz e .epub."
 msgid "Clean"
 msgstr "Limpo"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Eliminando..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Limpou o almacenamento gratuíto de %s"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Non se pode actualizar mentres está sen conexión"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Actualizar mangas..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Todos os capítulos manga actualizados!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Algunhas actualizacións de manga fallan:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Actualizar detalles do manga..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Todos os detalles do manga actualízanse!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Algúns detalles do manga fallan na actualización:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Progreso"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Limpador"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Busca e elimina ficheiros non válidos, incluídos ficheiros de fontes eliminadas"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normal"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Capítulo lido feito"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Buscar e eliminar capítulos que foron lidos"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "IMPORTANTE: Non se conservan os meta ficheiros (marcadores, historial)."
 
@@ -1007,27 +1001,27 @@ msgstr "Non"
 
 #: ../MangaReader.lua:332
 msgid "View Mode"
-msgstr ""
+msgstr "Modo de visualización"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
-msgstr ""
+msgstr "Por defecto"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
-msgstr ""
+msgstr "LTR"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
-msgstr ""
+msgstr "RTL"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
-msgstr ""
+msgstr "Desprácese"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
-msgstr ""
+msgstr "Vertical"
 
 #: ../MangaReader.lua:337
 msgid ""
@@ -1037,19 +1031,19 @@ msgstr ""
 
 #: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
-msgstr ""
+msgstr "Desactivado"
 
 #: ../MangaReader.lua:378
 msgid "Global Viewer Override"
-msgstr ""
+msgstr "Anulación do visor global"
 
 #: ../MangaReader.lua:571
 msgid "Set default %1 to %2?"
-msgstr ""
+msgstr "Establecer % 1 por defecto en % 2?"
 
 #: ../MangaReader.lua:575
 msgid "Set as default"
-msgstr ""
+msgstr "Establecer como predeterminado"
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1090,66 +1084,63 @@ msgstr "Eliminar"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr ""
+msgstr "Inicia sesión con"
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
-msgstr ""
+msgstr "Escanea este código QR no teu teléfono para iniciar sesión."
 
 #: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
-msgstr ""
+msgstr "Erro: non hai ningún URL da ponte dispoñible."
 
 #: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
-msgstr ""
+msgstr "Escanee o código QR e, a continuación, comprobe o estado de inicio de sesión."
 
 #: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
-msgstr ""
+msgstr "Comproba o estado de inicio de sesión"
 
 #: ../OAuthFlowView.lua:210
-#, fuzzy
 msgid "Checking..."
-msgstr "Executando..."
+msgstr "Comprobando..."
 
 #: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
-msgstr ""
+msgstr "Erro de rede. "
 
 #: ../OAuthFlowView.lua:222
 msgid "Invalid response. Please try again."
-msgstr ""
+msgstr "Resposta non válida. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
-msgstr ""
+msgstr "Agardando o inicio de sesión. "
 
 #: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
-msgstr ""
+msgstr "Inicio de sesión exitoso!"
 
 #: ../OAuthFlowView.lua:237
 msgid "Failed to save tokens. Please try again."
-msgstr ""
+msgstr "Produciuse un erro ao gardar as fichas. "
 
 #: ../OAuthFlowView.lua:240
-#, fuzzy
 msgid "Error: "
-msgstr "Erro"
+msgstr "Erro:"
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
-msgstr ""
+msgstr "Creando sesión de inicio de sesión..."
 
 #: ../OAuthFlowView.lua:314
-#, fuzzy
 msgid "Failed to start sign-in: "
-msgstr "Produciuse un erro ao engadir á biblioteca"
+msgstr "Produciuse un erro ao iniciar o inicio de sesión:"
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
-msgstr ""
+msgstr "Resposta do servidor non válida. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1230,45 +1221,43 @@ msgstr "Modo de ordenación da biblioteca"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Data engadida (máis antiga)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Data engadida (a máis recente)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Título (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Título (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Non lidos (menos)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Non lido (a maioría)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Última lectura descendente"
+msgstr "Última lectura (máis antiga)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Última lectura: % 1"
+msgstr "Última lectura (o máis recente)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Fonte (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Fonte (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1328,22 +1317,19 @@ msgstr "Por capítulos descendentes"
 
 #: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
-msgstr ""
+msgstr "Título do capítulo en estatísticas (ComicInfo)"
 
 #: ../Settings.lua:231
-#, fuzzy
 msgid "Chapter title only"
-msgstr "Capítulo lido feito"
+msgstr "Só título do capítulo"
 
 #: ../Settings.lua:232
-#, fuzzy
 msgid "Series + chapter title"
-msgstr "Erro ao actualizar o capítulo"
+msgstr "Título de serie + capítulo"
 
 #: ../Settings.lua:233
-#, fuzzy
 msgid "Series + chapter number"
-msgstr "Erro ao actualizar o capítulo"
+msgstr "Número de serie + capítulo"
 
 #: ../Settings.lua:242
 msgid "Preload chapters on reader open"
@@ -1359,65 +1345,63 @@ msgstr "Solicitudes de páxinas simultáneas"
 
 #: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
-msgstr ""
+msgstr "Nunca actives RTL, nin sequera para o manga xaponés"
 
 #: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
-msgstr ""
+msgstr "Configura automaticamente o visor en modo manga"
 
 #: ../Settings.lua:290
 msgid "Global viewer override"
-msgstr ""
+msgstr "Anulación do visor global"
 
 #: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
-msgstr ""
+msgstr "Mostrar o capítulo anterior do botón no lector da barra de ferramentas"
 
 #: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
-msgstr ""
+msgstr "Mostrar o botón seguinte capítulo no lector da barra de ferramentas"
 
 #: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
-msgstr ""
+msgstr "Mostra a barra de ferramentas inferior rakuyomi expandida no lector"
 
 #: ../Settings.lua:328
 msgid "On bottom toolbar"
-msgstr ""
+msgstr "Na barra de ferramentas inferior"
 
 #: ../Settings.lua:329
 msgid "On top toolbar"
-msgstr ""
+msgstr "Na barra de ferramentas superior"
 
 #: ../Settings.lua:337
 msgid "Recommended reader settings"
-msgstr ""
+msgstr "Configuración de lector recomendada"
 
 #: ../Settings.lua:343
 msgid "Turn off all margins"
-msgstr ""
+msgstr "Desactiva todas as marxes"
 
 #: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
-msgstr ""
+msgstr "Recorta automaticamente o exceso de bordos das fotos (un pouco lento)"
 
 #: ../Settings.lua:361
 msgid "Zoom to full screen"
-msgstr ""
+msgstr "Zoom a pantalla completa"
 
 #: ../Settings.lua:370
 msgid "Zoom to fit image size"
-msgstr ""
+msgstr "Zoom para axustar o tamaño da imaxe"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "fonte?"
+msgstr "Fontes"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Fontes instaladas"
+msgstr "Activa as fontes LNReader/JS"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1429,16 +1413,15 @@ msgstr "Límite de tamaño de almacenamento"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Elimina as descargas ao eliminar da biblioteca"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Elimina as descargas despois de marcalas como lidas"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Capítulo descargado"
+msgstr "Total descargado"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1450,15 +1433,15 @@ msgstr "Tamaño de almacenamento da RAM. "
 
 #: ../Settings.lua:467
 msgid "Network"
-msgstr ""
+msgstr "Rede"
 
 #: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
-msgstr ""
+msgstr "Proxy HTTP, HTTPS ou SOCKS5"
 
 #: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr ""
+msgstr "O URL do proxy debe comezar por http://, https:// ou socks5://"
 
 #: ../Settings.lua:481
 msgid "Sync & Updates"
@@ -1529,232 +1512,218 @@ msgid "Disable logging"
 msgstr "Desactivar o rexistro"
 
 #: ../Settings.lua:752
-#, fuzzy
 msgid "Failed to test proxy"
-msgstr "Produciuse un erro ao engadir á biblioteca"
+msgstr "Produciuse un erro ao probar o proxy"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "Configuración da fonte"
 
 #: ../TrackingMenu.lua:45
-#, fuzzy
 msgid "Volumes"
-msgstr "Volume"
+msgstr "Volumes"
 
 #: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
-#, fuzzy
 msgid "Loading tracking..."
-msgstr "Cargando capítulo..."
+msgstr "Cargando seguimento..."
 
 #: ../TrackingMenu.lua:123
 msgid "Select Tracking Service"
-msgstr ""
+msgstr "Seleccione Servizo de seguimento"
 
 #: ../TrackingMenu.lua:152
 msgid "Link"
-msgstr ""
+msgstr "Ligazón"
 
 #: ../TrackingMenu.lua:152
 msgid "Relink"
-msgstr ""
+msgstr "Reenlazar"
 
 #: ../TrackingMenu.lua:164
-#, fuzzy
 msgid "Pull progress"
-msgstr "Progreso"
+msgstr "Tire o progreso"
 
 #: ../TrackingMenu.lua:171
-#, fuzzy
 msgid "Push progress"
-msgstr "Progreso"
+msgstr "Empuxe o progreso"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
 #: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
-#, fuzzy
 msgid "Not set"
-msgstr "Non publicado"
+msgstr "Non definido"
 
 #: ../TrackingMenu.lua:182
 msgid "Start"
-msgstr ""
+msgstr "Comeza"
 
 #: ../TrackingMenu.lua:189
 msgid "End"
-msgstr ""
+msgstr "Fin"
 
 #: ../TrackingMenu.lua:200
 msgid "Unlink"
-msgstr ""
+msgstr "Desvincular"
 
 #: ../TrackingMenu.lua:212
 msgid "Other services"
-msgstr ""
+msgstr "Outros servizos"
 
 #: ../TrackingMenu.lua:232
-#, fuzzy
 msgid "Search tracker title"
-msgstr "Busca favoritos"
+msgstr "Título do rastreador de busca"
 
 #: ../TrackingMenu.lua:235
 msgid "Search for a matching manga entry to link with this title."
-msgstr ""
+msgstr "Busca unha entrada de manga que coincida con este título."
 
 #: ../TrackingMenu.lua:254
-#, fuzzy
 msgid "Searching tracker..."
-msgstr "Buscando"
+msgstr "Buscando rastreador..."
 
 #: ../TrackingMenu.lua:266
-#, fuzzy
 msgid "No tracking results found."
-msgstr "Non se atoparon fontes dispoñibles."
+msgstr "Non se atoparon resultados de seguimento."
 
 #: ../TrackingMenu.lua:295
 msgid "Linking tracker entry..."
-msgstr ""
+msgstr "Vinculando a entrada do rastreador..."
 
 #: ../TrackingMenu.lua:307
-#, fuzzy
 msgid "Linked with"
-msgstr "lendo con"
+msgstr "Vinculado con"
 
 #: ../TrackingMenu.lua:329
 msgid "Pulling tracking progress..."
-msgstr ""
+msgstr "Tirando do progreso do seguimento..."
 
 #: ../TrackingMenu.lua:329
 msgid "Pushing tracking progress..."
-msgstr ""
+msgstr "Impulsando o progreso do seguimento..."
 
 #: ../TrackingMenu.lua:341
 msgid "No tracking binding found for this service."
-msgstr ""
+msgstr "Non se atopou ningunha vinculación de seguimento para este servizo."
 
 #: ../TrackingMenu.lua:363
 msgid "End date"
-msgstr ""
+msgstr "Data de finalización"
 
 #: ../TrackingMenu.lua:363
-#, fuzzy
 msgid "Start date"
-msgstr "Última actualización"
+msgstr "Data de inicio"
 
 #: ../TrackingMenu.lua:370
 msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
-msgstr ""
+msgstr "Introduce a data no formato DD/MM/AAAA ou déixao baleiro para borrar."
 
 #: ../TrackingMenu.lua:393
-#, fuzzy
 msgid "Saving date..."
-msgstr "Cargando capítulo..."
+msgstr "Gardando data..."
 
 #: ../TrackingMenu.lua:411
 msgid "cleared"
-msgstr ""
+msgstr "despexado"
 
 #: ../TrackingMenu.lua:427
 msgid "Removing tracking binding..."
-msgstr ""
+msgstr "Eliminando a ligazón de seguimento..."
 
 #: ../TrackingMenu.lua:439
 msgid "Unlinked"
-msgstr ""
+msgstr "Desvinculado"
 
 #: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
-msgstr ""
+msgstr "Pega o token AniList"
 
 #: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
-msgstr ""
+msgstr "Pega o ID de cliente MAL"
 
 #: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
-msgstr ""
+msgstr "Pega o segredo do cliente MAL"
 
 #: ../TrackingSettings.lua:106
-#, fuzzy
 msgid "Paste MAL refresh token"
-msgstr "Capítulo actualizado"
+msgstr "Pega o token de actualización MAL"
 
 #: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
-msgstr ""
+msgstr "Pega o ID de cliente de Shikimori"
 
 #: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
-msgstr ""
+msgstr "Pega o segredo do cliente Shikimori"
 
 #: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
-msgstr ""
+msgstr "Pega o token de actualización de Shikimori"
 
 #: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
-msgstr ""
+msgstr "Pega o token de actualización Bangumi"
 
 #: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
-msgstr ""
+msgstr "Pega o token de actualización de MangaBaka"
 
 #: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
-msgstr ""
+msgstr "Pegar a clave de API MangaBaka (mb-...)"
 
 #: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
-msgstr ""
+msgstr "Pega a chave da API de Kavita"
 
 #: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
-msgstr ""
+msgstr "Chave da API Komga ou nome de usuario:contrasinal"
 
 #: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
-msgstr ""
+msgstr "Suwayomi Basic Auth nome de usuario: contrasinal"
 
 #: ../TrackingSettings.lua:162
 msgid "Sign out"
-msgstr ""
+msgstr "Pechar sesión"
 
 #: ../TrackingSettings.lua:164
 msgid "Sign in"
-msgstr ""
+msgstr "Inicia sesión"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr ""
+msgstr "Validar"
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
-#, fuzzy
 msgid "Validating..."
-msgstr "Eliminando..."
+msgstr "Validando..."
 
 #: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
 #: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
-msgstr ""
+msgstr "As credenciais son válidas."
 
 #: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
-msgstr ""
+msgstr "Sincronización automática do progreso da lectura"
 
 #: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
-msgstr ""
+msgstr "Servidor OAuth Bridge"
 
 #: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
-msgstr ""
+msgstr "URL do servidor OAuth Bridge"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr ""
+msgstr "Inicia sesión como"
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
-msgstr ""
+msgstr "Sen sinal"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1951,35 +1920,4 @@ msgstr "Seleccione"
 
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
-msgstr ""
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Conta os capítulos non lidos de forma ascendente"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Conta os capítulos sen ler descendentes"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Última lectura ascendente"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Orde engadida ascendente (predeterminado)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Orde engadida descendente"
-
-#~ msgid "Source ascending"
-#~ msgstr "Fonte ascendente"
-
-#~ msgid "Source descending"
-#~ msgstr "Fonte descendente"
-
-#, fuzzy
-#~ msgid "Testing proxy..."
-#~ msgstr "Reiniciando..."
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Título manga ascendente"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Título manga descendente"
+msgstr "Valor non válido"

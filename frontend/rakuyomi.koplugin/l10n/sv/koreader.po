@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Försök att lägga till några källlistor genom att titta på vår REA
 msgid "Installing source..."
 msgstr "Installerar källa..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Avbruten!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Komplett!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Väntar tills det avbryts..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Bearbetar..."
 
@@ -70,23 +71,21 @@ msgstr "Bearbetar..."
 msgid "An error occurred"
 msgstr "Ett fel uppstod"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Fel"
 
 #: ../ChapterListPopup.lua:129 ../TrackingMenu.lua:42
-#, fuzzy
 msgid "Chapters"
 msgstr "Kapitel"
 
 #: ../ChapterListPopup.lua:354
-#, fuzzy
 msgid "Search chapters"
-msgstr "Renare kapitel"
+msgstr "Sök kapitel"
 
 #: ../ChapterListPopup.lua:359 ../ChapterListPopup.lua:389
 #: ../ChapterListing.lua:729 ../ChapterListing.lua:1262
@@ -101,16 +100,15 @@ msgstr "Avboka"
 
 #: ../ChapterListPopup.lua:361
 msgid "Apply"
-msgstr ""
+msgstr "Tillämpas"
 
 #: ../ChapterListPopup.lua:384
-#, fuzzy
 msgid "Go to page"
-msgstr "Nästa sida"
+msgstr "Gå till sidan"
 
 #: ../ChapterListPopup.lua:391
 msgid "Go"
-msgstr ""
+msgstr "Gå"
 
 #: ../ChapterListing.lua:59
 msgid "Chapter listing"
@@ -288,9 +286,8 @@ msgstr "Detaljer"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
 #: ../TrackingSettings.lua:420
-#, fuzzy
 msgid "Tracking"
-msgstr "Märkning"
+msgstr "Spårning"
 
 #: ../ChapterListing.lua:1152
 msgid "Resume"
@@ -402,47 +399,47 @@ msgstr "Tryck utanför detta meddelande för att avbryta."
 
 #: ../CookieSyncView.lua:58 ../LibraryView.lua:1025
 msgid "Cookie Sync"
-msgstr ""
+msgstr "Cookie Sync"
 
 #: ../CookieSyncView.lua:164
 msgid "Unable to fetch cookie sync status."
-msgstr ""
+msgstr "Det gick inte att hämta synkroniseringsstatus för cookies."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr ""
+msgstr "Enhet kopplad som:"
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr ""
+msgstr "Chatt-ID:"
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr ""
+msgstr "Cachade domäner:"
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
-msgstr ""
+msgstr "Inte parat. "
 
 #: ../CookieSyncView.lua:214
 msgid "Sync Cookies Now"
-msgstr ""
+msgstr "Synkronisera cookies nu"
 
 #: ../CookieSyncView.lua:225
 msgid "View Cached Cookies"
-msgstr ""
+msgstr "Visa cachade cookies"
 
 #: ../CookieSyncView.lua:236
 msgid "Unpair Device"
-msgstr ""
+msgstr "Koppla bort enheten"
 
 #: ../CookieSyncView.lua:255
 msgid "Pair Device"
-msgstr ""
+msgstr "Para enhet"
 
 #: ../CookieSyncView.lua:270
 msgid "Enter Telegram Bot Server URL"
-msgstr ""
+msgstr "Ange Telegram Bot Server URL"
 
 #: ../CookieSyncView.lua:271
 msgid "Enter the URL of your Telegram Bot server. You will get a pairing code to send to the bot."
@@ -450,47 +447,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:274
 msgid "https://your-bot.deno.dev"
-msgstr ""
+msgstr "https://din-bot.deno.dev"
 
 #: ../CookieSyncView.lua:284
 msgid "Generate Code"
-msgstr ""
+msgstr "Generera kod"
 
 #: ../CookieSyncView.lua:305
 msgid "Generating pairing code..."
-msgstr ""
+msgstr "Genererar ihopkopplingskod..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr ""
+msgstr "Det gick inte att generera parningskod:"
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr ""
+msgstr "Parningskod:"
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
-msgstr ""
+msgstr "1. Öppna Telegram på din Android-telefon"
 
 #: ../CookieSyncView.lua:327
 msgid "2. Send this command to the bot:"
-msgstr ""
+msgstr "2. Skicka detta kommando till boten:"
 
 #: ../CookieSyncView.lua:328
 msgid "DEVICE_NAME"
-msgstr ""
+msgstr "DEVICE_NAME"
 
 #: ../CookieSyncView.lua:329
 msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
-msgstr ""
+msgstr "(Byt ut DEVICE_NAME med ett namn för den här enheten, t.ex. kindle_bedroom)"
 
 #: ../CookieSyncView.lua:330
 msgid "3. Come back here and tap 'Check Pairing'"
-msgstr ""
+msgstr "3. Kom tillbaka hit och tryck på \"Kontrollera parning\""
 
 #: ../CookieSyncView.lua:334
 msgid "Check Pairing"
-msgstr ""
+msgstr "Kontrollera parning"
 
 #: ../CookieSyncView.lua:338 ../CookieSyncView.lua:375
 #: ../OfflineAlertDialog.lua:54
@@ -499,15 +496,15 @@ msgstr "Nära"
 
 #: ../CookieSyncView.lua:344
 msgid "Checking pairing status..."
-msgstr ""
+msgstr "Kontrollerar kopplingsstatus..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr ""
+msgstr "Det gick inte att kontrollera parning:"
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr ""
+msgstr "Enheten har parats som:"
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -515,49 +512,47 @@ msgstr ""
 
 #: ../CookieSyncView.lua:371
 msgid "Check Again"
-msgstr ""
+msgstr "Kontrollera igen"
 
 #: ../CookieSyncView.lua:382 ../LibraryView.lua:1040
-#, fuzzy
 msgid "Syncing cookies..."
-msgstr "Skannar filer..."
+msgstr "Synkroniserar cookies..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr ""
+msgstr "Det gick inte att synkronisera cookies:"
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr ""
+msgstr "domän(er)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr ""
+msgstr "Synkroniserade cookies för"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr ""
+msgstr "Ta bort parkopplingen av den här enheten? "
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"
-msgstr ""
+msgstr "Ta bort paret"
 
 #: ../CookieSyncView.lua:414
-#, fuzzy
 msgid "Failed to unpair: "
-msgstr "Det gick inte att lägga till i biblioteket"
+msgstr "Det gick inte att ta bort parkopplingen:"
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
-msgstr ""
+msgstr "Enheten har kopplats bort."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr ""
+msgstr "Det gick inte att lista cookies:"
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
-msgstr ""
+msgstr "Inga cookies cachelagrade."
 
 #: ../DownloadUnreadChaptersJobDialog.lua:6
 msgid "Downloading chapters, this will take a while…"
@@ -753,7 +748,7 @@ msgstr "Synkronisering slutförd!"
 
 #: ../LibraryView.lua:1032
 msgid "Sync Cookies"
-msgstr ""
+msgstr "Synkronisera cookies"
 
 #: ../LibraryView.lua:1062
 msgid "System resources"
@@ -851,69 +846,68 @@ msgstr "RendOnly fil .cbz och .epub skanning."
 msgid "Clean"
 msgstr "Rena"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Tar bort..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Rensat gratis %s lagringsutrymme"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Det går inte att uppdatera offline"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Uppdatera mangas..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Alla kapitel manga uppdaterad!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Vissa mangauppdateringar misslyckas:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Uppdatera mangadetaljer..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Alla mangadetaljer uppdateras!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Vissa uppdateringar av mangadetaljer misslyckas:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Framsteg"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Rengöringsmedel"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Hitta och ta bort ogiltiga filer inklusive filer från raderade källor"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normal"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Kapitel läst klart"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Hitta och ta bort kapitel som har lästs"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "VIKTIGT: Metafiler (bokmärke, historik) sparas inte!"
 
@@ -1008,27 +1002,27 @@ msgstr "Inga"
 
 #: ../MangaReader.lua:332
 msgid "View Mode"
-msgstr ""
+msgstr "Visningsläge"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
-msgstr ""
+msgstr "LTR"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
-msgstr ""
+msgstr "RTL"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
-msgstr ""
+msgstr "Rulla"
 
 #: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
-msgstr ""
+msgstr "Vertikal"
 
 #: ../MangaReader.lua:337
 msgid ""
@@ -1038,19 +1032,19 @@ msgstr ""
 
 #: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
-msgstr ""
+msgstr "Av"
 
 #: ../MangaReader.lua:378
 msgid "Global Viewer Override"
-msgstr ""
+msgstr "Global Viewer Override"
 
 #: ../MangaReader.lua:571
 msgid "Set default %1 to %2?"
-msgstr ""
+msgstr "Vill du ställa in %1 som standard till %2?"
 
 #: ../MangaReader.lua:575
 msgid "Set as default"
-msgstr ""
+msgstr "Ställ in som standard"
 
 #: ../MangaSearchResults.lua:30
 msgid "Search results..."
@@ -1091,66 +1085,63 @@ msgstr "Radera"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr ""
+msgstr "Logga in med"
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
-msgstr ""
+msgstr "Skanna den här QR-koden på din telefon för att logga in."
 
 #: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
-msgstr ""
+msgstr "Fel: Ingen bryggadress tillgänglig."
 
 #: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
-msgstr ""
+msgstr "Skanna QR-koden och kontrollera sedan inloggningsstatus."
 
 #: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
-msgstr ""
+msgstr "Kontrollera inloggningsstatus"
 
 #: ../OAuthFlowView.lua:210
-#, fuzzy
 msgid "Checking..."
-msgstr "Kör..."
+msgstr "Kontroll..."
 
 #: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
-msgstr ""
+msgstr "Nätverksfel. "
 
 #: ../OAuthFlowView.lua:222
 msgid "Invalid response. Please try again."
-msgstr ""
+msgstr "Ogiltigt svar. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
-msgstr ""
+msgstr "Väntar på inloggning. "
 
 #: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
-msgstr ""
+msgstr "Inloggningen lyckades!"
 
 #: ../OAuthFlowView.lua:237
 msgid "Failed to save tokens. Please try again."
-msgstr ""
+msgstr "Det gick inte att spara tokens. "
 
 #: ../OAuthFlowView.lua:240
-#, fuzzy
 msgid "Error: "
-msgstr "Fel"
+msgstr "Fel:"
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
-msgstr ""
+msgstr "Skapar inloggningssession..."
 
 #: ../OAuthFlowView.lua:314
-#, fuzzy
 msgid "Failed to start sign-in: "
-msgstr "Det gick inte att lägga till i biblioteket"
+msgstr "Det gick inte att starta inloggning:"
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
-msgstr ""
+msgstr "Ogiltigt svar från servern. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1231,45 +1222,43 @@ msgstr "Sorteringsläge för bibliotek"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Datum tillagd (äldst)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Datum tillagt (nyast)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Titel (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Titel (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Olästa (minst)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Oläst (de flesta)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Senast läst fallande"
+msgstr "Senast läst (äldst)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Senast läst: %1"
+msgstr "Senast läst (nyast)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Källa (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Källa (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1329,22 +1318,19 @@ msgstr "Efter kapitel fallande"
 
 #: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
-msgstr ""
+msgstr "Kapiteltitel i statistik (ComicInfo)"
 
 #: ../Settings.lua:231
-#, fuzzy
 msgid "Chapter title only"
-msgstr "Kapitel läst klart"
+msgstr "Endast kapitelrubrik"
 
 #: ../Settings.lua:232
-#, fuzzy
 msgid "Series + chapter title"
-msgstr "Uppdatera kapitelfel"
+msgstr "Serie + kapiteltitel"
 
 #: ../Settings.lua:233
-#, fuzzy
 msgid "Series + chapter number"
-msgstr "Uppdatera kapitelfel"
+msgstr "Serie + kapitelnummer"
 
 #: ../Settings.lua:242
 msgid "Preload chapters on reader open"
@@ -1360,65 +1346,63 @@ msgstr "Samtidiga sidförfrågningar"
 
 #: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
-msgstr ""
+msgstr "Slå aldrig på RTL, inte ens för japansk manga"
 
 #: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
-msgstr ""
+msgstr "Ställ automatiskt in tittaren på mangaläge"
 
 #: ../Settings.lua:290
 msgid "Global viewer override"
-msgstr ""
+msgstr "Global viewer åsidosätta"
 
 #: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
-msgstr ""
+msgstr "Visa knappen föregående kapitel i verktygsfältsläsaren"
 
 #: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
-msgstr ""
+msgstr "Visa knappen nästa kapitel i verktygsfältsläsaren"
 
 #: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
-msgstr ""
+msgstr "Visa den utökade rakuyomi nedre verktygsfältet i läsaren"
 
 #: ../Settings.lua:328
 msgid "On bottom toolbar"
-msgstr ""
+msgstr "På nedre verktygsfältet"
 
 #: ../Settings.lua:329
 msgid "On top toolbar"
-msgstr ""
+msgstr "På det övre verktygsfältet"
 
 #: ../Settings.lua:337
 msgid "Recommended reader settings"
-msgstr ""
+msgstr "Rekommenderade läsarinställningar"
 
 #: ../Settings.lua:343
 msgid "Turn off all margins"
-msgstr ""
+msgstr "Stäng av alla marginaler"
 
 #: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
-msgstr ""
+msgstr "Beskär automatiskt överflödiga kanter från foton (lite långsamt)"
 
 #: ../Settings.lua:361
 msgid "Zoom to full screen"
-msgstr ""
+msgstr "Zooma till helskärm"
 
 #: ../Settings.lua:370
 msgid "Zoom to fit image size"
-msgstr ""
+msgstr "Zooma för att passa bildstorleken"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "källa?"
+msgstr "Källor"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Installerade källor"
+msgstr "Aktivera LNReader/JS-källor"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1430,16 +1414,15 @@ msgstr "Storleksgräns för lagring"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Ta bort nedladdningar när du tar bort från biblioteket"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Ta bort nedladdningar efter att ha markerats som lästa"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Kapitel nedladdat"
+msgstr "Totalt nedladdade"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1451,15 +1434,15 @@ msgstr "Storlek på RAM-lagring. "
 
 #: ../Settings.lua:467
 msgid "Network"
-msgstr ""
+msgstr "Nätverk"
 
 #: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
-msgstr ""
+msgstr "HTTP, HTTPS eller SOCKS5 Proxy"
 
 #: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr ""
+msgstr "Proxy-URL måste börja med http://, https:// eller socks5://"
 
 #: ../Settings.lua:481
 msgid "Sync & Updates"
@@ -1530,232 +1513,218 @@ msgid "Disable logging"
 msgstr "Inaktivera loggning"
 
 #: ../Settings.lua:752
-#, fuzzy
 msgid "Failed to test proxy"
-msgstr "Det gick inte att lägga till i biblioteket"
+msgstr "Det gick inte att testa proxy"
 
 #: ../SourceSettings.lua:197
 msgid "Source settings"
 msgstr "Källinställningar"
 
 #: ../TrackingMenu.lua:45
-#, fuzzy
 msgid "Volumes"
-msgstr "Volym"
+msgstr "Volymer"
 
 #: ../TrackingMenu.lua:80 ../TrackingMenu.lua:133
-#, fuzzy
 msgid "Loading tracking..."
-msgstr "Laddar kapitel..."
+msgstr "Laddar spårning..."
 
 #: ../TrackingMenu.lua:123
 msgid "Select Tracking Service"
-msgstr ""
+msgstr "Välj Spårningstjänst"
 
 #: ../TrackingMenu.lua:152
 msgid "Link"
-msgstr ""
+msgstr "Länk"
 
 #: ../TrackingMenu.lua:152
 msgid "Relink"
-msgstr ""
+msgstr "Länka om"
 
 #: ../TrackingMenu.lua:164
-#, fuzzy
 msgid "Pull progress"
-msgstr "Framsteg"
+msgstr "Dra framsteg"
 
 #: ../TrackingMenu.lua:171
-#, fuzzy
 msgid "Push progress"
-msgstr "Framsteg"
+msgstr "Pressa framsteg"
 
 #: ../TrackingMenu.lua:182 ../TrackingMenu.lua:189
 #: ../widgets/SettingItemValue.lua:130 ../widgets/SettingItemValue.lua:141
-#, fuzzy
 msgid "Not set"
-msgstr "Ej publicerad"
+msgstr "Inte inställt"
 
 #: ../TrackingMenu.lua:182
 msgid "Start"
-msgstr ""
+msgstr "Start"
 
 #: ../TrackingMenu.lua:189
 msgid "End"
-msgstr ""
+msgstr "Avsluta"
 
 #: ../TrackingMenu.lua:200
 msgid "Unlink"
-msgstr ""
+msgstr "Ta bort länken"
 
 #: ../TrackingMenu.lua:212
 msgid "Other services"
-msgstr ""
+msgstr "Övriga tjänster"
 
 #: ../TrackingMenu.lua:232
-#, fuzzy
 msgid "Search tracker title"
-msgstr "Sök efter favoriter"
+msgstr "Sök spårartitel"
 
 #: ../TrackingMenu.lua:235
 msgid "Search for a matching manga entry to link with this title."
-msgstr ""
+msgstr "Sök efter en matchande mangapost för att länka till denna titel."
 
 #: ../TrackingMenu.lua:254
-#, fuzzy
 msgid "Searching tracker..."
-msgstr "Söker efter"
+msgstr "Söker spårare..."
 
 #: ../TrackingMenu.lua:266
-#, fuzzy
 msgid "No tracking results found."
-msgstr "Inga tillgängliga källor hittades."
+msgstr "Inga spårningsresultat hittades."
 
 #: ../TrackingMenu.lua:295
 msgid "Linking tracker entry..."
-msgstr ""
+msgstr "Länkar spårningspost..."
 
 #: ../TrackingMenu.lua:307
-#, fuzzy
 msgid "Linked with"
-msgstr "läsa med"
+msgstr "Länkat med"
 
 #: ../TrackingMenu.lua:329
 msgid "Pulling tracking progress..."
-msgstr ""
+msgstr "Hämtar spårningsframsteg..."
 
 #: ../TrackingMenu.lua:329
 msgid "Pushing tracking progress..."
-msgstr ""
+msgstr "Håller på att spåra framsteg..."
 
 #: ../TrackingMenu.lua:341
 msgid "No tracking binding found for this service."
-msgstr ""
+msgstr "Ingen spårningsbindning hittades för denna tjänst."
 
 #: ../TrackingMenu.lua:363
 msgid "End date"
-msgstr ""
+msgstr "Slutdatum"
 
 #: ../TrackingMenu.lua:363
-#, fuzzy
 msgid "Start date"
-msgstr "Senast uppdaterad"
+msgstr "Startdatum"
 
 #: ../TrackingMenu.lua:370
 msgid "Enter date in DD/MM/YYYY format, or leave empty to clear."
-msgstr ""
+msgstr "Ange datum i formatet DD/MM/ÅÅÅÅ, eller lämna tomt för att rensa."
 
 #: ../TrackingMenu.lua:393
-#, fuzzy
 msgid "Saving date..."
-msgstr "Laddar kapitel..."
+msgstr "Sparar datum..."
 
 #: ../TrackingMenu.lua:411
 msgid "cleared"
-msgstr ""
+msgstr "rensas"
 
 #: ../TrackingMenu.lua:427
 msgid "Removing tracking binding..."
-msgstr ""
+msgstr "Tar bort spårningsbindning..."
 
 #: ../TrackingMenu.lua:439
 msgid "Unlinked"
-msgstr ""
+msgstr "Olänkad"
 
 #: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
-msgstr ""
+msgstr "Klistra in AniList-token"
 
 #: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
-msgstr ""
+msgstr "Klistra in MAL-klient-ID"
 
 #: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
-msgstr ""
+msgstr "Klistra in MAL-klienthemlighet"
 
 #: ../TrackingSettings.lua:106
-#, fuzzy
 msgid "Paste MAL refresh token"
-msgstr "Kapitel uppdaterat"
+msgstr "Klistra in MAL-uppdateringstoken"
 
 #: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
-msgstr ""
+msgstr "Klistra in Shikimoris klient-ID"
 
 #: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
-msgstr ""
+msgstr "Klistra in Shikimoris klienthemlighet"
 
 #: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
-msgstr ""
+msgstr "Klistra in Shikimori refresh token"
 
 #: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
-msgstr ""
+msgstr "Klistra in Bangumi uppdateringstoken"
 
 #: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
-msgstr ""
+msgstr "Klistra in MangaBaka uppdateringstoken"
 
 #: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
-msgstr ""
+msgstr "Klistra in MangaBaka API Key (mb-...)"
 
 #: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
-msgstr ""
+msgstr "Klistra in Kavita API Key"
 
 #: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
-msgstr ""
+msgstr "Komga API-nyckel eller användarnamn:lösenord"
 
 #: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
-msgstr ""
+msgstr "Suwayomi Basic Auth användarnamn:lösenord"
 
 #: ../TrackingSettings.lua:162
 msgid "Sign out"
-msgstr ""
+msgstr "Logga ut"
 
 #: ../TrackingSettings.lua:164
 msgid "Sign in"
-msgstr ""
+msgstr "Logga in"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr ""
+msgstr "Bekräfta"
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
-#, fuzzy
 msgid "Validating..."
-msgstr "Tar bort..."
+msgstr "Validerar..."
 
 #: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
 #: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
-msgstr ""
+msgstr "Inloggningsuppgifter är giltiga."
 
 #: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
-msgstr ""
+msgstr "Läsförlopp för automatisk synkronisering"
 
 #: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
-msgstr ""
+msgstr "OAuth Bridge Server"
 
 #: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
-msgstr ""
+msgstr "OAuth Bridge Server URL"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr ""
+msgstr "Inloggad som"
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
-msgstr ""
+msgstr "Inget tecken"
 
 #: ../UpdateChecker.lua:23
 msgid "Cannot check for updates while offline"
@@ -1952,35 +1921,4 @@ msgstr "Välja"
 
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
-msgstr ""
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Räkna olästa kapitel stigande"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Räkna olästa kapitel fallande"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Senast lästa stigande"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Ordning tillagd stigande (standard)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Ordning tillagd fallande"
-
-#~ msgid "Source ascending"
-#~ msgstr "Källa stigande"
-
-#~ msgid "Source descending"
-#~ msgstr "Källa fallande"
-
-#, fuzzy
-#~ msgid "Testing proxy..."
-#~ msgstr "Startar om..."
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Titel manga stigande"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Titel manga fallande"
+msgstr "Ogiltigt värde"

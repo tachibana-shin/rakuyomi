@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Încercați să adăugați câteva liste de surse uitându-vă la README
 msgid "Installing source..."
 msgstr "Se instalează sursa..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Anulat!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Complet!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Se așteaptă până la anulare..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Prelucrare..."
 
@@ -70,11 +71,11 @@ msgstr "Prelucrare..."
 msgid "An error occurred"
 msgstr "A apărut o eroare"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Eroare necunoscută"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Eroare"
 
@@ -845,69 +846,68 @@ msgstr "Scanarea fișierelor RendOnly .cbz și .epub."
 msgid "Clean"
 msgstr "Curat"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Se șterge..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Spațiul de stocare %s gratuit a fost curățat"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Nu se poate reîmprospăta când este offline"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Reîmprospătează manga..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Toate capitolele manga actualizate!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Unele actualizări ale manga eșuează:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Actualizează detaliile manga..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Toate detaliile manga se reîmprospătează!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Unele detalii manga eșuează reîmprospătarea:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Progres"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Mai curat"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Găsiți și ștergeți fișiere nevalide, inclusiv fișiere din surse șterse"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normal"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Capitolul citit gata"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Găsiți și ștergeți capitolele care au fost citite"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "IMPORTANT: Meta fișierele (marcaj, istoric) nu se păstrează!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "Eroare de rețea. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "Eroare de rețea. "
+msgstr "Răspuns nevalid. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "Conectare reușită!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "Eroare de rețea. "
+msgstr "Nu s-au salvat jetoanele. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "Nu s-a putut începe conectarea:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "Eroare de rețea. "
+msgstr "Răspuns nevalid de la server. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "Modul de sortare a bibliotecii"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Data adaugarii (cea mai veche)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Data adaugarii (cea mai noua)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Titlu (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Titlu (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Necitit (cel mai puțin)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Necitite (majoritatea)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Ultima citire descendentă"
+msgstr "Ultima citire (cea mai veche)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Ultima citire: %1"
+msgstr "Ultima citire (cel mai nou)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Sursa (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Sursa (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "Măriți pentru a se potrivi cu dimensiunea imaginii"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "sursă?"
+msgstr "Surse"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Surse instalate"
+msgstr "Activați sursele LNReader/JS"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "Limită de dimensiune de stocare"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Ștergeți descărcările atunci când eliminați din bibliotecă"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Ștergeți descărcările după marcarea ca citite"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Capitolul descărcat"
+msgstr "Total descărcat"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "Selecta"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Valoare nevalidă"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Numărați ascendent capitolele necitite"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Numără capitolele necitite descendent"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Ultima citire crescător"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Comanda adăugată crescător (implicit)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Comanda adăugată descrescătoare"
-
-#~ msgid "Source ascending"
-#~ msgstr "Sursa crescătoare"
-
-#~ msgid "Source descending"
-#~ msgstr "Sursa descendentă"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Titlul manga ascendent"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Titlul manga descendent"

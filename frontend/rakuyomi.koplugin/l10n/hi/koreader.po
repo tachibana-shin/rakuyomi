@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,19 +49,20 @@ msgstr "हमारे README को देखकर कुछ स्रोत 
 msgid "Installing source..."
 msgstr "स्रोत स्थापित किया जा रहा है..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "रद्द!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "पूरा!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "रद्द होने तक प्रतीक्षा की जा रही है..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "प्रसंस्करण..."
 
@@ -69,11 +70,11 @@ msgstr "प्रसंस्करण..."
 msgid "An error occurred"
 msgstr "एक त्रुटि पाई गई"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "अज्ञात त्रुटि"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "गलती"
 
@@ -844,69 +845,68 @@ msgstr "रेंडओनली फ़ाइल .cbz और .epub स्कै�
 msgid "Clean"
 msgstr "साफ"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "हटाया जा रहा है..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "मुफ़्त %s संग्रहण साफ़ किया गया"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "ऑफ़लाइन रहते हुए ताज़ा नहीं किया जा सकता"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "मंगा ताज़ा करें..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "सभी अध्याय मंगा अद्यतन!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "कुछ मंगा अपडेट विफल:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "मंगा विवरण ताज़ा करें..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "सभी मंगा विवरण ताज़ा!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "कुछ मंगा विवरण ताज़ा करने में विफल:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "प्रगति"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "क्लीनर"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "हटाए गए स्रोतों से फ़ाइलों सहित अमान्य फ़ाइलें ढूंढें और हटाएं"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "सामान्य"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "अध्याय का वाचन हो गया"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "जो अध्याय पढ़े गए हैं उन्हें ढूंढें और हटाएं"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "महत्वपूर्ण: मेटा फ़ाइलें (बुकमार्क, इतिहास) नहीं रखें!"
 
@@ -1111,9 +1111,8 @@ msgid "Network error. Please try again."
 msgstr "नेटवर्क त्रुटि। "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "नेटवर्क त्रुटि। "
+msgstr "अमान्य प्रतिक्रिया. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1124,9 +1123,8 @@ msgid "Sign-in successful!"
 msgstr "साइन-इन सफल!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "नेटवर्क त्रुटि। "
+msgstr "टोकन सहेजने में विफल. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1141,9 +1139,8 @@ msgid "Failed to start sign-in: "
 msgstr "साइन-इन प्रारंभ करने में विफल:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "नेटवर्क त्रुटि। "
+msgstr "सर्वर से अमान्य प्रतिक्रिया. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1224,45 +1221,43 @@ msgstr "लाइब्रेरी सॉर्टिंग मोड"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "जोड़ी गई तिथि (सबसे पुरानी)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "जोड़ी गई तिथि (नवीनतम)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "शीर्षक (ए-जेड)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "शीर्षक (जेड-ए)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "अपठित (सबसे कम)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "अपठित (अधिकांश)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "अंतिम पाठ अवरोही है"
+msgstr "अंतिम बार पढ़ा गया (सबसे पुराना)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "अंतिम पढ़ा: %1"
+msgstr "अंतिम बार पढ़ा गया (नवीनतम)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "स्रोत (ए-जेड)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "स्रोत (जेड-ए)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1401,14 +1396,12 @@ msgid "Zoom to fit image size"
 msgstr "छवि के आकार को फिट करने के लिए ज़ूम करें"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "स्रोत?"
+msgstr "सूत्रों का कहना है"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "स्थापित स्रोत"
+msgstr "LNReader/JS स्रोत सक्षम करें"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1420,16 +1413,15 @@ msgstr "भंडारण आकार सीमा"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "लाइब्रेरी से हटाते समय डाउनलोड हटाएँ"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "डाउनलोड को पठित के रूप में चिह्नित करने के बाद हटा दें"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "अध्याय डाउनलोड किया गया"
+msgstr "कुल डाउनलोड किया गया"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1929,30 +1921,3 @@ msgstr "चुनना"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "अमान्य मान"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "अपठित अध्यायों को बढ़ते हुए गिनें"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "अपठित अध्यायों को घटते क्रम में गिनें"
-
-#~ msgid "Last read ascending"
-#~ msgstr "अंतिम पाठ आरोही है"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "क्रम आरोही रूप में जोड़ा गया (डिफ़ॉल्ट)"
-
-#~ msgid "Order added descending"
-#~ msgstr "क्रम अवरोही रूप से जोड़ा गया"
-
-#~ msgid "Source ascending"
-#~ msgstr "स्रोत आरोही"
-
-#~ msgid "Source descending"
-#~ msgstr "स्रोत अवरोही"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "शीर्षक मंगा आरोही"
-
-#~ msgid "Title manga descending"
-#~ msgstr "शीर्षक मंगा अवरोही"

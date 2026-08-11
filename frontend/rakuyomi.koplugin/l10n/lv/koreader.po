@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "Mēģiniet pievienot dažus avotu sarakstus, apskatot mūsu README!"
 msgid "Installing source..."
 msgstr "Notiek avota instalēšana..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "Atcelts!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "Pabeigts!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "Gaida līdz atcelšanai…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "Notiek apstrāde..."
 
@@ -70,11 +71,11 @@ msgstr "Notiek apstrāde..."
 msgid "An error occurred"
 msgstr "Radās kļūda"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "Nezināma kļūda"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "Kļūda"
 
@@ -845,69 +846,68 @@ msgstr "RendOnly failu .cbz un .epub skenēšana."
 msgid "Clean"
 msgstr "Tīrs"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "Notiek dzēšana..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Iztīrīta bezmaksas %s krātuve"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "Bezsaistē nevar atsvaidzināt"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "Atsvaidzināt mangas..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "Visas manga nodaļas ir atjauninātas!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "Daži manga atjauninājumi neizdodas:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "Atsvaidzināt mangas informāciju..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "Visas mangas detaļas tiek atsvaidzinātas!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "Dažas mangas detaļas atsvaidzināt neizdodas:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "Progress"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "Apkopēja"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Atrodiet un dzēsiet nederīgos failus, tostarp failus no dzēstiem avotiem"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "Normāls"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "Nodaļa izlasīta pabeigta"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "Atrodiet un izdzēsiet izlasītās nodaļas"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "SVARĪGI: Meta faili (grāmatzīme, vēsture) netiek saglabāti!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "Tīkla kļūda. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "Tīkla kļūda. "
+msgstr "Nederīga atbilde. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "Pierakstīšanās veiksmīga!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "Tīkla kļūda. "
+msgstr "Neizdevās saglabāt marķierus. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "Neizdevās sākt pierakstīšanos:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "Tīkla kļūda. "
+msgstr "Nederīga atbilde no servera. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "Bibliotēkas šķirošanas režīms"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "Pievienošanas datums (vecākais)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "Pievienošanas datums (jaunākais)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "Nosaukums (A–Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "Nosaukums (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "Nelasīti (mazāk)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "Nelasīti (lielākā daļa)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "Pēdējā lasīšana dilstošā secībā"
+msgstr "Pēdējo reizi lasīts (vecākais)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "Pēdējoreiz lasīts: %1"
+msgstr "Pēdējo reizi lasīts (jaunākais)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "Avots (A–Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "Avots (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "Tālummainiet, lai tas atbilstu attēla izmēram"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "avots?"
+msgstr "Avoti"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "Instalētie avoti"
+msgstr "Iespējot LNReader/JS avotus"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "Krātuves lieluma ierobežojums"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "Dzēsiet lejupielādes, kad tās tiek noņemtas no bibliotēkas"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "Dzēsiet lejupielādes pēc atzīmēšanas kā izlasītas"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "Nodaļa lejupielādēta"
+msgstr "Kopā lejupielādēts"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "Izvēlieties"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "Nederīga vērtība"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "Skaitīt nelasītās nodaļas augošā secībā"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "Skaitīt nelasītās nodaļas dilstošā secībā"
-
-#~ msgid "Last read ascending"
-#~ msgstr "Pēdējo reizi lasīts augošā secībā"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "Pasūtījums pievienots augošā secībā (noklusējums)"
-
-#~ msgid "Order added descending"
-#~ msgstr "Pasūtījums pievienots dilstošā secībā"
-
-#~ msgid "Source ascending"
-#~ msgstr "Avots augošs"
-
-#~ msgid "Source descending"
-#~ msgstr "Avots dilstošs"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "Mangas nosaukums augošā secībā"
-
-#~ msgid "Title manga descending"
-#~ msgstr "Mangas nosaukums dilstoša"

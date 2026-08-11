@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -50,19 +50,20 @@ msgstr "README를 보고 소스 목록을 추가해 보세요!"
 msgid "Installing source..."
 msgstr "소스 설치 중..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "취소!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "완벽한!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "취소될 때까지 기다리는 중…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "처리 중..."
 
@@ -70,11 +71,11 @@ msgstr "처리 중..."
 msgid "An error occurred"
 msgstr "오류가 발생했습니다"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "알 수 없는 오류"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "오류"
 
@@ -845,69 +846,68 @@ msgstr "RendOnly 파일 .cbz 및 .epub 스캔."
 msgid "Clean"
 msgstr "깨끗한"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "삭제 중..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "무료 %s 저장소를 정리했습니다."
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "오프라인 상태에서는 새로고침할 수 없습니다."
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "만화 새로 고침..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "모든 챕터 만화가 업데이트되었습니다!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "일부 만화 업데이트가 실패합니다."
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "만화 세부정보 새로 고침..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "모든 만화 세부 정보가 새로 고쳐집니다!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "일부 만화 세부 정보 새로 고침이 실패합니다."
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "진전"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "청소기"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "삭제된 소스의 파일을 포함하여 유효하지 않은 파일 찾기 및 삭제"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "정상"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "챕터 읽기 완료"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "읽은 장 찾기 및 삭제"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "중요: 메타 파일(북마크, 기록)은 보관되지 않습니다!"
 
@@ -1112,9 +1112,8 @@ msgid "Network error. Please try again."
 msgstr "네트워크 오류입니다. "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "네트워크 오류입니다. "
+msgstr "응답이 잘못되었습니다. "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1125,9 +1124,8 @@ msgid "Sign-in successful!"
 msgstr "로그인이 완료되었습니다."
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "네트워크 오류입니다. "
+msgstr "토큰을 저장하지 못했습니다. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1142,9 +1140,8 @@ msgid "Failed to start sign-in: "
 msgstr "로그인을 시작하지 못했습니다:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "네트워크 오류입니다. "
+msgstr "서버의 응답이 잘못되었습니다. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1225,45 +1222,43 @@ msgstr "라이브러리 정렬 모드"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "추가된 날짜(가장 오래된 날짜)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "추가된 날짜(최신 날짜)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "제목(A~Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "제목(Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "읽지 않음(최소)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "읽지 않음(대부분)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "마지막 읽기 내림차순"
+msgstr "마지막 읽기(가장 오래된 것)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "마지막 읽기: %1"
+msgstr "마지막으로 읽은 내용(최신 항목)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "소스(A~Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "소스(Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1402,14 +1397,12 @@ msgid "Zoom to fit image size"
 msgstr "이미지 크기에 맞게 확대/축소"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "원천?"
+msgstr "출처"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "설치된 소스"
+msgstr "LNReader/JS 소스 활성화"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1421,16 +1414,15 @@ msgstr "저장소 크기 제한"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "라이브러리에서 제거 시 다운로드 삭제"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "읽음으로 표시한 후 다운로드 삭제"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "챕터가 다운로드됨"
+msgstr "총 다운로드 수"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1930,30 +1922,3 @@ msgstr "선택하다"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "잘못된 값"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "읽지 않은 장을 오름차순으로 계산"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "읽지 않은 장 수를 내림차순으로 계산"
-
-#~ msgid "Last read ascending"
-#~ msgstr "마지막 읽기 오름차순"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "오름차순으로 추가됨(기본값)"
-
-#~ msgid "Order added descending"
-#~ msgstr "내림차순으로 추가됨"
-
-#~ msgid "Source ascending"
-#~ msgstr "소스 오름차순"
-
-#~ msgid "Source descending"
-#~ msgstr "소스 내림차순"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "제목 만화 오름차순"
-
-#~ msgid "Title manga descending"
-#~ msgstr "제목 만화 내림차순"

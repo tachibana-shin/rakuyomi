@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,19 +49,20 @@ msgstr "আমাদের README দেখে কিছু উৎস তাল�
 msgid "Installing source..."
 msgstr "উৎস ইনস্টল করা হচ্ছে..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "বাতিল!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "সম্পূর্ণ!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "বাতিল হওয়া পর্যন্ত অপেক্ষা করা হচ্ছে..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "প্রক্রিয়া করা হচ্ছে..."
 
@@ -69,11 +70,11 @@ msgstr "প্রক্রিয়া করা হচ্ছে..."
 msgid "An error occurred"
 msgstr "একটি ত্রুটি ঘটেছে"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "অজানা ত্রুটি"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "ত্রুটি"
 
@@ -844,69 +845,68 @@ msgstr "RendOnly ফাইল .cbz এবং .epub স্ক্যান।"
 msgid "Clean"
 msgstr "পরিষ্কার"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "মুছে ফেলা হচ্ছে..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "বিনামূল্যে %s সঞ্চয়স্থান পরিষ্কার করা হয়েছে৷"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "অফলাইনে থাকা অবস্থায় রিফ্রেশ করা যাবে না"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "মঙ্গা রিফ্রেশ করুন..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "সব অধ্যায় মাঙ্গা আপডেট!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "কিছু মাঙ্গা আপডেট ব্যর্থ হয়েছে:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "মাঙ্গার বিবরণ রিফ্রেশ করুন..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "সমস্ত মাঙ্গা বিবরণ রিফ্রেশ!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "কিছু মাঙ্গা বিবরণ রিফ্রেশ ব্যর্থ:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "অগ্রগতি"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "ক্লিনার"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "মুছে ফেলা উত্স থেকে ফাইলগুলি সহ অবৈধ ফাইলগুলি সন্ধান করুন এবং মুছুন৷"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "স্বাভাবিক"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "অধ্যায় পড়া শেষ"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "পড়া অধ্যায় খুঁজুন এবং মুছে ফেলুন"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "গুরুত্বপূর্ণ: মেটা ফাইল (বুকমার্ক, ইতিহাস) রাখবেন না!"
 
@@ -1111,9 +1111,8 @@ msgid "Network error. Please try again."
 msgstr "নেটওয়ার্ক ত্রুটি। "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "নেটওয়ার্ক ত্রুটি। "
+msgstr "অবৈধ প্রতিক্রিয়া "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1124,9 +1123,8 @@ msgid "Sign-in successful!"
 msgstr "সাইন-ইন সফল!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "নেটওয়ার্ক ত্রুটি। "
+msgstr "টোকেন সংরক্ষণ করতে ব্যর্থ হয়েছে. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1141,9 +1139,8 @@ msgid "Failed to start sign-in: "
 msgstr "সাইন-ইন শুরু করতে ব্যর্থ হয়েছে:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "নেটওয়ার্ক ত্রুটি। "
+msgstr "সার্ভার থেকে অবৈধ প্রতিক্রিয়া. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1224,45 +1221,43 @@ msgstr "লাইব্রেরি সাজানোর মোড"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "যোগ করার তারিখ (প্রাচীনতম)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "যোগ করার তারিখ (নতুন)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "শিরোনাম (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "শিরোনাম (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "অপঠিত (সবচেয়ে কম)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "অপঠিত (বেশিরভাগ)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "শেষ পঠিত অবরোহন"
+msgstr "শেষ পঠিত (প্রাচীনতম)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "শেষ পড়া: %1"
+msgstr "শেষ পঠিত (নতুন)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "উৎস (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "উৎস (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1401,14 +1396,12 @@ msgid "Zoom to fit image size"
 msgstr "চিত্রের আকার ফিট করতে জুম করুন"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "উৎস?"
+msgstr "সূত্র"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "ইনস্টল করা উৎস"
+msgstr "LNReader/JS উত্স সক্রিয় করুন"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1420,16 +1413,15 @@ msgstr "স্টোরেজ সাইজ সীমা"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "লাইব্রেরি থেকে সরানোর সময় ডাউনলোডগুলি মুছুন"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "পঠিত হিসাবে চিহ্নিত করার পরে ডাউনলোডগুলি মুছুন৷"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "অধ্যায় ডাউনলোড করা হয়েছে"
+msgstr "মোট ডাউনলোড হয়েছে"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1929,30 +1921,3 @@ msgstr "নির্বাচন করুন"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "অবৈধ মান"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "অপঠিত অধ্যায় ক্রমবর্ধমান গণনা করুন"
-
-#~ msgid "Last read ascending"
-#~ msgstr "শেষ পঠিত আরোহী"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "ক্রম আরোহী যোগ করা হয়েছে (ডিফল্ট)"
-
-#~ msgid "Order added descending"
-#~ msgstr "অর্ডার সাজানো যোগ করা হয়েছে"
-
-#~ msgid "Source ascending"
-#~ msgstr "উৎস আরোহী"
-
-#~ msgid "Source descending"
-#~ msgstr "উৎস অবরোহ"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "শিরোনাম মাঙ্গা আরোহী"
-
-#~ msgid "Title manga descending"
-#~ msgstr "শিরোনাম মাঙ্গা অবরোহী"

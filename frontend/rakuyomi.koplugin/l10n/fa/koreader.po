@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,19 +49,20 @@ msgstr "با نگاهی به README ما، فهرست‌های منبع را ا�
 msgid "Installing source..."
 msgstr "در حال نصب منبع..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "لغو شد!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "کامل!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "در انتظار لغو…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "در حال پردازش..."
 
@@ -69,11 +70,11 @@ msgstr "در حال پردازش..."
 msgid "An error occurred"
 msgstr "خطایی رخ داد"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "خطای ناشناخته"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "خطا"
 
@@ -844,69 +845,68 @@ msgstr "فایل RendOnly.cbz. و اسکن epub."
 msgid "Clean"
 msgstr "تمیز"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "در حال حذف..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "فضای ذخیره %s رایگان را پاک کرد"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "در حالت آفلاین نمی توان بازخوانی کرد"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "تازه کردن مانگا..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "همه فصل‌ها مانگا به‌روزرسانی شدند!"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "برخی از به‌روزرسانی‌های مانگا با شکست مواجه می‌شوند:"
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "بازخوانی جزئیات مانگا..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "تمام جزئیات مانگا تازه کردن!"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "برخی از جزئیات مانگا با شکست مواجه می شوند:"
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "پیشرفت"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "تمیز کننده"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "فایل های نامعتبر از جمله فایل های منابع حذف شده را پیدا و حذف کنید"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "عادی"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "فصل خوانده شد انجام شد"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "فصل های خوانده شده را پیدا و حذف کنید"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "مهم: فایل های متا (نشانک، تاریخچه) نگهداری نمی شوند!"
 
@@ -1111,9 +1111,8 @@ msgid "Network error. Please try again."
 msgstr "خطای شبکه "
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "خطای شبکه "
+msgstr "پاسخ نامعتبر "
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1124,9 +1123,8 @@ msgid "Sign-in successful!"
 msgstr "ورود به سیستم با موفقیت انجام شد!"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "خطای شبکه "
+msgstr "رمزها ذخیره نشد. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1141,9 +1139,8 @@ msgid "Failed to start sign-in: "
 msgstr "ورود به سیستم شروع نشد:"
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "خطای شبکه "
+msgstr "پاسخ نامعتبر از سرور "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1224,45 +1221,43 @@ msgstr "حالت مرتب سازی کتابخانه"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "تاریخ اضافه شدن (قدیمی ترین)"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "تاریخ اضافه شدن (جدیدترین)"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "عنوان (A-Z)"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "عنوان (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "خوانده نشده (کمترین)"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "خوانده نشده (بیشتر)"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "آخرین خواندن نزولی"
+msgstr "آخرین خوانده شده (قدیمی ترین)"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "آخرین خوانده شده: %1"
+msgstr "آخرین خوانده شده (جدیدترین)"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "منبع (A-Z)"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "منبع (Z-A)"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1401,14 +1396,12 @@ msgid "Zoom to fit image size"
 msgstr "بزرگنمایی متناسب با اندازه تصویر"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "منبع؟"
+msgstr "منابع"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "منابع نصب شده"
+msgstr "منابع LNReader/JS را فعال کنید"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1420,16 +1413,15 @@ msgstr "محدودیت اندازه ذخیره سازی"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "هنگام حذف از کتابخانه، دانلودها را حذف کنید"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "پس از علامت گذاری به عنوان خوانده شده، دانلودها را حذف کنید"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "فصل دانلود شد"
+msgstr "کل دانلود شد"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1929,30 +1921,3 @@ msgstr "انتخاب کنید"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "مقدار نامعتبر است"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "فصل های خوانده نشده را به صورت صعودی بشمارید"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "فصل های خوانده نشده را به صورت نزولی بشمارید"
-
-#~ msgid "Last read ascending"
-#~ msgstr "آخرین خواندن صعودی"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "سفارش به صورت صعودی اضافه شد (پیش‌فرض)"
-
-#~ msgid "Order added descending"
-#~ msgstr "ترتیب نزولی اضافه شد"
-
-#~ msgid "Source ascending"
-#~ msgstr "منبع صعودی"
-
-#~ msgid "Source descending"
-#~ msgstr "منبع نزولی"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "عنوان مانگا صعودی"
-
-#~ msgid "Title manga descending"
-#~ msgstr "مانگا عنوان نزولی"

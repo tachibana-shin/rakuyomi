@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:40-0400\n"
+"POT-Creation-Date: 2026-08-11 10:51-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,19 +49,20 @@ msgstr "嘗試通過查看我們的自述文件來添加一些源列表！"
 msgid "Installing source..."
 msgstr "正在安裝源..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
 msgid "Cancelled!"
 msgstr "取消！"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
 msgid "Complete!"
 msgstr "完全的！"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
 msgid "Waiting until cancelled…"
 msgstr "等到取消…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
+#: ../BasicJobDialog.lua:163
 msgid "Processing..."
 msgstr "加工..."
 
@@ -69,11 +70,11 @@ msgstr "加工..."
 msgid "An error occurred"
 msgstr "發生錯誤"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
 msgid "Unknown error"
 msgstr "未知錯誤"
 
-#: ../BasicJobDialog.lua:239
+#: ../BasicJobDialog.lua:248
 msgid "Error"
 msgstr "錯誤"
 
@@ -844,69 +845,68 @@ msgstr "RendOnly 文件 .cbz 和 .epub 掃描。"
 msgid "Clean"
 msgstr "乾淨的"
 
-#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
-#, fuzzy, lua-format
-msgid "Deleting... (%d/%d)"
+#: ../LibraryView.lua:1294
+msgid "Deleting..."
 msgstr "正在刪除..."
 
-#: ../LibraryView.lua:1316
+#: ../LibraryView.lua:1312
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "已清理免費 %s 存儲空間"
 
-#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
+#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
 msgid "Cannot refresh while offline"
 msgstr "離線時無法刷新"
 
-#: ../LibraryView.lua:1353
+#: ../LibraryView.lua:1349
 msgid "Refresh mangas..."
 msgstr "刷新漫畫..."
 
-#: ../LibraryView.lua:1354
+#: ../LibraryView.lua:1350
 msgid "All chapters manga updated!"
 msgstr "漫畫全部章節更新！"
 
-#: ../LibraryView.lua:1355
+#: ../LibraryView.lua:1351
 msgid "Some manga updates fail:"
 msgstr "一些漫畫更新失敗："
 
-#: ../LibraryView.lua:1374
+#: ../LibraryView.lua:1370
 msgid "Refresh manga details..."
 msgstr "刷新漫畫詳情..."
 
-#: ../LibraryView.lua:1375
+#: ../LibraryView.lua:1371
 msgid "All manga details refresh!"
 msgstr "所有漫畫細節刷新！"
 
-#: ../LibraryView.lua:1376
+#: ../LibraryView.lua:1372
 msgid "Some manga details refresh fail:"
 msgstr "部分漫畫詳情刷新失敗："
 
-#: ../LibraryView.lua:1392
+#: ../LibraryView.lua:1388
 msgid "Progress"
 msgstr "進步"
 
-#: ../LibraryView.lua:1410
+#: ../LibraryView.lua:1406
 msgid "Cleaner"
 msgstr "清潔工"
 
-#: ../LibraryView.lua:1411
+#: ../LibraryView.lua:1407
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "查找並刪除無效文件，包括來自已刪除源的文件"
 
-#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
+#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
 msgid "Normal"
 msgstr "普通的"
 
-#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
+#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
 msgid "Chapter read done"
 msgstr "章節已讀完"
 
-#: ../LibraryView.lua:1412
+#: ../LibraryView.lua:1408
 msgid "Find and delete chapters that have been read"
 msgstr "尋找並刪除已閱讀的章節"
 
-#: ../LibraryView.lua:1413
+#: ../LibraryView.lua:1409
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "重要提示：元文件（書籤、歷史記錄）不保留！"
 
@@ -1111,9 +1111,8 @@ msgid "Network error. Please try again."
 msgstr "網路錯誤。請再試一次。"
 
 #: ../OAuthFlowView.lua:222
-#, fuzzy
 msgid "Invalid response. Please try again."
-msgstr "網路錯誤。請再試一次。"
+msgstr "無效響應。請再試一次。"
 
 #: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
@@ -1124,9 +1123,8 @@ msgid "Sign-in successful!"
 msgstr "登入成功！"
 
 #: ../OAuthFlowView.lua:237
-#, fuzzy
 msgid "Failed to save tokens. Please try again."
-msgstr "網路錯誤。請再試一次。"
+msgstr "無法保存令牌。請再試一次。"
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
@@ -1141,9 +1139,8 @@ msgid "Failed to start sign-in: "
 msgstr "無法開始登入："
 
 #: ../OAuthFlowView.lua:321
-#, fuzzy
 msgid "Invalid response from server. Please try again."
-msgstr "網路錯誤。請再試一次。"
+msgstr "來自伺服器的無效回應。請再試一次。"
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1224,45 +1221,43 @@ msgstr "圖書館排序模式"
 
 #: ../Settings.lua:107
 msgid "Date added (oldest)"
-msgstr ""
+msgstr "新增日期（最舊）"
 
 #: ../Settings.lua:108
 msgid "Date added (newest)"
-msgstr ""
+msgstr "新增日期（最新）"
 
 #: ../Settings.lua:109
 msgid "Title (A-Z)"
-msgstr ""
+msgstr "標題（A-Z）"
 
 #: ../Settings.lua:110
 msgid "Title (Z-A)"
-msgstr ""
+msgstr "標題 (Z-A)"
 
 #: ../Settings.lua:111
 msgid "Unread (fewest)"
-msgstr ""
+msgstr "未讀（最少）"
 
 #: ../Settings.lua:112
 msgid "Unread (most)"
-msgstr ""
+msgstr "未讀（大部分）"
 
 #: ../Settings.lua:113
-#, fuzzy
 msgid "Last read (oldest)"
-msgstr "上次讀取降序"
+msgstr "上次閱讀（最舊）"
 
 #: ../Settings.lua:114
-#, fuzzy
 msgid "Last read (newest)"
-msgstr "上次閱讀：%1"
+msgstr "上次閱讀（最新）"
 
 #: ../Settings.lua:115
 msgid "Source (A-Z)"
-msgstr ""
+msgstr "來源（A-Z）"
 
 #: ../Settings.lua:116
 msgid "Source (Z-A)"
-msgstr ""
+msgstr "來源（Z-A）"
 
 #: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
@@ -1401,14 +1396,12 @@ msgid "Zoom to fit image size"
 msgstr "縮放以適合圖像尺寸"
 
 #: ../Settings.lua:377
-#, fuzzy
 msgid "Sources"
-msgstr "來源？"
+msgstr "來源"
 
 #: ../Settings.lua:383
-#, fuzzy
 msgid "Enable LNReader/JS sources"
-msgstr "已安裝的源"
+msgstr "啟用 LNReader/JS 來源"
 
 #: ../Settings.lua:394
 msgid "Chapter storage path"
@@ -1420,16 +1413,15 @@ msgstr "存儲大小限制"
 
 #: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
-msgstr ""
+msgstr "從庫中刪除時刪除下載"
 
 #: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
-msgstr ""
+msgstr "標記為已讀後刪除下載"
 
 #: ../Settings.lua:429
-#, fuzzy
 msgid "Total downloaded"
-msgstr "章節已下載"
+msgstr "下載總量"
 
 #: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
@@ -1929,30 +1921,3 @@ msgstr "選擇"
 #: ../widgets/SettingItemValue.lua:392
 msgid "Invalid value"
 msgstr "無效值"
-
-#~ msgid "Count unread chapters ascending"
-#~ msgstr "未讀章節升序計數"
-
-#~ msgid "Count unread chapters descending"
-#~ msgstr "按降序計數未讀章節"
-
-#~ msgid "Last read ascending"
-#~ msgstr "上次閱讀升序"
-
-#~ msgid "Order added ascending (Default)"
-#~ msgstr "新增升序順序（預設）"
-
-#~ msgid "Order added descending"
-#~ msgstr "新增順序降序"
-
-#~ msgid "Source ascending"
-#~ msgstr "來源升序"
-
-#~ msgid "Source descending"
-#~ msgstr "來源降序"
-
-#~ msgid "Title manga ascending"
-#~ msgstr "標題漫畫升序"
-
-#~ msgid "Title manga descending"
-#~ msgstr "標題漫畫降序"

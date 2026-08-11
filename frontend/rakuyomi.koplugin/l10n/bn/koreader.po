@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:51-0400\n"
+"POT-Creation-Date: 2026-08-11 15:01-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -685,7 +685,7 @@ msgstr "ক্লিনার অধ্যায়"
 msgid "Manage sources"
 msgstr "উত্স পরিচালনা করুন"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:656
 msgid "Settings"
 msgstr "সেটিংস"
 
@@ -1511,7 +1511,11 @@ msgstr "লগিং"
 msgid "Disable logging"
 msgstr "লগিং অক্ষম করুন"
 
-#: ../Settings.lua:752
+#: ../Settings.lua:599
+msgid "LNReader/JS sources disabled (feature not compiled)"
+msgstr "LNReader/JS উত্স নিষ্ক্রিয় (বৈশিষ্ট্য কম্পাইল করা হয়নি)"
+
+#: ../Settings.lua:762
 msgid "Failed to test proxy"
 msgstr "প্রক্সি পরীক্ষা করতে ব্যর্থ হয়েছে৷"
 

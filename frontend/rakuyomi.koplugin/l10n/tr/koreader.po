@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:51-0400\n"
+"POT-Creation-Date: 2026-08-11 15:01-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -686,7 +686,7 @@ msgstr "Temizleyici bölümler"
 msgid "Manage sources"
 msgstr "Kaynakları yönet"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:656
 msgid "Settings"
 msgstr "Ayarlar"
 
@@ -1512,7 +1512,11 @@ msgstr "Günlüğe kaydetme"
 msgid "Disable logging"
 msgstr "Günlüğe kaydetmeyi devre dışı bırak"
 
-#: ../Settings.lua:752
+#: ../Settings.lua:599
+msgid "LNReader/JS sources disabled (feature not compiled)"
+msgstr "LNReader/JS kaynakları devre dışı bırakıldı (özellik derlenmedi)"
+
+#: ../Settings.lua:762
 msgid "Failed to test proxy"
 msgstr "Proxy test edilemedi"
 

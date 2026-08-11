@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 10:51-0400\n"
+"POT-Creation-Date: 2026-08-11 15:01-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -685,7 +685,7 @@ msgstr "فصول نظيفة"
 msgid "Manage sources"
 msgstr "إدارة المصادر"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:656
 msgid "Settings"
 msgstr "إعدادات"
 
@@ -1511,7 +1511,11 @@ msgstr "التسجيل"
 msgid "Disable logging"
 msgstr "تعطيل التسجيل"
 
-#: ../Settings.lua:752
+#: ../Settings.lua:599
+msgid "LNReader/JS sources disabled (feature not compiled)"
+msgstr "تم تعطيل مصادر LNReader/JS (لم يتم تجميع الميزة)"
+
+#: ../Settings.lua:762
 msgid "Failed to test proxy"
 msgstr "فشل في اختبار الوكيل"
 

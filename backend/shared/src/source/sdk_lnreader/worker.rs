@@ -297,6 +297,17 @@ fn execute_search_mangas(
     query: String,
     page: i32,
 ) -> Result<WorkerResponse> {
+    // Apply this call's recombined `{key}__include`/`{key}__exclude`
+    // settings pairs onto `plugin.filters` immediately before the plugin's
+    // own `searchNovels` runs (see
+    // `js_runtime::JsRuntime::apply_settings_filters`). LNReader's app hands
+    // the filters object to `popularNovels`, which Rakuyomi never calls —
+    // `searchNovels` is the only search entry point here, and real sources
+    // read `this.filters.<key>.value` from it (see
+    // `docs/lnreader/REFERENCE.md` §11.3), so this is the one place the
+    // user's saved filter selections can reach a search.
+    runtime.apply_settings_filters()?;
+
     let query_js = JsValue::from(boa_engine::js_string!(query.as_str()));
     let page_js = JsValue::from(page as f64);
     let result = runtime.call_plugin_method("searchNovels", &[query_js, page_js])?;
@@ -411,4 +422,91 @@ fn parse_and_convert_novel(
 
     runtime.cache_novel(manga_id.to_string(), manga.clone(), chapters.clone());
     Ok((manga, chapters))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Synthetic plugin whose `searchNovels` reports the current
+    /// `plugin.filters.genres` include/exclude state through the returned
+    /// title — no network, no real source. Mirrors the corpus-observed
+    /// `ExcludableCheckboxGroup` value shape (`docs/lnreader/REFERENCE.md`
+    /// §11.2) and the real `searchNovels(searchTerm, page)` argument count
+    /// (§11.3).
+    const SEARCH_REPORTS_FILTERS_MAIN_JS: &str = r#"
+        var filters = {
+            genres: {
+                label: 'Genres',
+                value: { include: [], exclude: [] },
+                options: [],
+                type: 'ExcludableCheckboxGroup',
+            },
+        };
+        module.exports.default = {
+            filters: filters,
+            searchNovels: async function (query, page) {
+                var v = this.filters.genres.value;
+                return [{
+                    name: query + '|' + (v.include || []).join('+') + '|' + (v.exclude || []).join('+'),
+                    path: 'novel/' + query + '/',
+                }];
+            },
+        };
+    "#;
+
+    fn vec_settings(pairs: &[(&str, Vec<&str>)]) -> HashMap<String, SourceSettingValue> {
+        pairs
+            .iter()
+            .map(|(key, values)| {
+                (
+                    key.to_string(),
+                    SourceSettingValue::Vec(values.iter().map(|s| s.to_string()).collect()),
+                )
+            })
+            .collect()
+    }
+
+    /// The worker's `JsRuntime` is persistent across calls (see [`run`]'s doc
+    /// comment): only the settings snapshot is refreshed between calls, and
+    /// the recombined `{key}__include`/`{key}__exclude` pairs must reach
+    /// `searchNovels` on *every* call — including after a refresh.
+    #[test]
+    fn search_applies_recombined_filters_after_snapshot_refresh() {
+        let main_js = SEARCH_REPORTS_FILTERS_MAIN_JS.to_string();
+        let mut runtime = js_runtime::new(
+            vec_settings(&[("genres__include", vec!["Fantasy"])]),
+            &main_js,
+        )
+        .expect("runtime construction should not fail");
+
+        // First call on the freshly built runtime: the include pair is
+        // recombined and visible to `searchNovels`.
+        let first = execute_search_mangas(&mut runtime, "synthetic", "q".into(), 1)
+            .expect("search should not fail");
+        let first_title = first.mangas.expect("mangas present").remove(0).title;
+        assert_eq!(first_title.as_deref(), Some("q|Fantasy|"));
+
+        // The runtime persists; only the settings snapshot is refreshed. The
+        // next search must see the new filter values.
+        runtime.update_settings_snapshot(vec_settings(&[
+            ("genres__include", vec!["Sci-Fi", "Adventure"]),
+            ("genres__exclude", vec!["Horror"]),
+        ]));
+        let second = execute_search_mangas(&mut runtime, "synthetic", "q".into(), 1)
+            .expect("search should not fail");
+        let second_title = second.mangas.expect("mangas present").remove(0).title;
+        assert_eq!(second_title.as_deref(), Some("q|Sci-Fi+Adventure|Horror"));
+
+        // A refresh with the pair explicitly emptied resets the filter to its
+        // default state.
+        runtime.update_settings_snapshot(vec_settings(&[
+            ("genres__include", vec![]),
+            ("genres__exclude", vec![]),
+        ]));
+        let third = execute_search_mangas(&mut runtime, "synthetic", "q".into(), 1)
+            .expect("search should not fail");
+        let third_title = third.mangas.expect("mangas present").remove(0).title;
+        assert_eq!(third_title.as_deref(), Some("q||"));
+    }
 }

@@ -10,7 +10,7 @@
 //! runtime.
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
@@ -44,6 +44,15 @@ use super::{cheerio, dayjs, htmlparser2, net};
 /// consumes (clears) the entry on a hit, so a *third* call never reuses it
 /// either.
 const NOVEL_CACHE_TTL: Duration = Duration::from_secs(10);
+
+/// Settings-key suffixes `packaging.rs`'s `filter_to_setting` produces for an
+/// `XCheckbox` (`ExcludableCheckboxGroup`) filter — two `MultiSelect`s keyed
+/// `{key}__include`/`{key}__exclude`. [`JsRuntime::apply_settings_filters`]
+/// recombines each such pair back into the plugin's real value shape
+/// (`{ include: [...], exclude: [...] }`, corpus-verified — see
+/// `docs/lnreader/REFERENCE.md` §11.2) before a search runs.
+const FILTER_INCLUDE_SUFFIX: &str = "__include";
+const FILTER_EXCLUDE_SUFFIX: &str = "__exclude";
 
 /// A `parseNovel()` result stashed as plain Rust data, not a `JsValue` —
 /// holding a `JsValue`/`Gc<T>` across calls risks a use-after-free once
@@ -1733,7 +1742,7 @@ var __lnreader_modules = {
         storage: {
             get: function (key) {
                 var v = __native_storage_get(key);
-                return v === null ? undefined : v;
+                return v !== null ? v : undefined;
             },
             // Real writes now (unlike Aidoku's own `defaults.set`, still a
             // no-op today -- see `wasm_imports/defaults.rs`): collected
@@ -1781,6 +1790,31 @@ function require(name) {
         return __lnreader_modules[name];
     }
     return __lnreader_makeLoudStub(name);
+}
+
+// Recombines the `{key}__include`/`{key}__exclude` settings pairs (produced
+// by `packaging.rs`'s `filter_to_setting` for an `ExcludableCheckboxGroup`)
+// back onto the matching `plugin.filters` entries, in one batched native->JS
+// call -- see `JsRuntime::apply_settings_filters`. `json` maps a filter key
+// to `{ include: [...], exclude: [...] }`, the plugin's real value shape
+// (corpus-verified, `docs/lnreader/REFERENCE.md` §11.2). Only entries whose
+// current `value` already has that shape (`value.include`/`value.exclude`
+// arrays) are touched, so a same-named CheckboxGroup/Picker/Text filter is
+// never overwritten with the wrong value type; the base key is matched by
+// property name, which is how `plugin.filters` is really keyed (an object,
+// not an array -- `this.filters.genres.value.include` in real sources).
+function __lnreader_apply_filters(json) {
+    var pairs = JSON.parse(json);
+    var filters = __lnreader_plugin && __lnreader_plugin.filters;
+    if (!filters || typeof filters !== 'object') return;
+    for (var key in pairs) {
+        if (!Object.prototype.hasOwnProperty.call(pairs, key)) continue;
+        var entry = filters[key];
+        if (!entry || typeof entry !== 'object' || !entry.value || typeof entry.value !== 'object') continue;
+        if (!Array.isArray(entry.value.include) || !Array.isArray(entry.value.exclude)) continue;
+        entry.value.include = pairs[key].include;
+        entry.value.exclude = pairs[key].exclude;
+    }
 }
 "#;
 
@@ -1903,6 +1937,17 @@ fn json_to_setting_value(value: serde_json::Value) -> SourceSettingValue {
                 .collect(),
         ),
         serde_json::Value::Null | serde_json::Value::Object(_) => SourceSettingValue::Null,
+    }
+}
+
+/// Maps a settings-snapshot value to a string list for [`JsRuntime::apply_settings_filters`]'s
+/// recombined pairs: a `MultiSelect` is stored as `SourceSettingValue::Vec`,
+/// and any other stored type can't meaningfully populate an
+/// `include`/`exclude` array, so it reads as "empty".
+fn setting_string_vec(value: Option<&SourceSettingValue>) -> Vec<String> {
+    match value {
+        Some(SourceSettingValue::Vec(items)) => items.clone(),
+        _ => Vec::new(),
     }
 }
 
@@ -2045,6 +2090,90 @@ impl JsRuntime {
         snapshot: HashMap<String, SourceSettingValue>,
     ) {
         *self.settings.borrow_mut() = snapshot;
+    }
+
+    /// Recombines the `{key}__include`/`{key}__exclude` settings pairs that
+    /// `packaging.rs`'s `filter_to_setting` produces for an `XCheckbox`
+    /// (`ExcludableCheckboxGroup`) filter back into the plugin's real
+    /// `{ include, exclude }` value shape, and applies them to the matching
+    /// `plugin.filters` entries — in **one batched native→JS call** regardless
+    /// of how many such filters exist (the pairs are grouped and serialized
+    /// native-side first, so the cost is 1 native call, not an `N+1`/`2N`
+    /// call-per-filter shape). Called immediately before `searchNovels` (see
+    /// `worker.rs::execute_search_mangas`) — LNReader's own app hands the
+    /// filters object to `popularNovels`, but Rakuyomi drives `searchNovels`
+    /// directly with no `popularNovels` path, and real sources read
+    /// `this.filters.<key>.value` (see `docs/lnreader/REFERENCE.md` §11.3).
+    ///
+    /// Reads come from the current settings snapshot ([`JsRuntime::settings`]).
+    /// A direct key equal to the base name (e.g. a stored `genres` sitting
+    /// next to `genres__include`/`genres__exclude`) keeps priority: that pair
+    /// is skipped entirely, so recombination can never clobber the direct
+    /// value. Suffixed keys never leak into `@libs/storage` reads either —
+    /// those stay a pure direct lookup (see [`register_storage`]), so
+    /// existing storage semantics are untouched.
+    ///
+    /// No-op (zero JS calls) when the snapshot contains no suffixed pairs —
+    /// a source without any `ExcludableCheckboxGroup` filter pays nothing per
+    /// search.
+    pub(super) fn apply_settings_filters(&mut self) -> Result<()> {
+        let settings = self.settings.borrow();
+        let mut bases = BTreeSet::new();
+        for key in settings.keys() {
+            let base = key
+                .strip_suffix(FILTER_INCLUDE_SUFFIX)
+                .or_else(|| key.strip_suffix(FILTER_EXCLUDE_SUFFIX));
+            if let Some(base) = base {
+                // A direct key for the same base keeps priority over the pair.
+                if !settings.contains_key(base) {
+                    bases.insert(base.to_string());
+                }
+            }
+        }
+        if bases.is_empty() {
+            return Ok(());
+        }
+        let pairs = serde_json::Value::Object(
+            bases
+                .into_iter()
+                .map(|base| {
+                    let include =
+                        setting_string_vec(settings.get(&format!("{base}{FILTER_INCLUDE_SUFFIX}")));
+                    let exclude =
+                        setting_string_vec(settings.get(&format!("{base}{FILTER_EXCLUDE_SUFFIX}")));
+                    (
+                        base,
+                        serde_json::json!({ "include": include, "exclude": exclude }),
+                    )
+                })
+                .collect(),
+        );
+        let json = pairs.to_string();
+        drop(settings);
+
+        let context = &mut self.context;
+        let helper = context
+            .global_object()
+            .get(js_string!("__lnreader_apply_filters"), context)
+            .map_err(|e| {
+                anyhow::anyhow!(
+                    "failed to read __lnreader_apply_filters: {}",
+                    describe_js_error(&e, context)
+                )
+            })?;
+        let helper_obj = helper
+            .as_object()
+            .context("__lnreader_apply_filters is not callable")?;
+        let json_js = JsValue::from(js_string!(json.as_str()));
+        helper_obj
+            .call(&JsValue::undefined(), &[json_js], context)
+            .map_err(|e| {
+                anyhow::anyhow!(
+                    "__lnreader_apply_filters threw: {}",
+                    describe_js_error(&e, context)
+                )
+            })?;
+        Ok(())
     }
 
     /// Drains every `storage.set(key, value)` call made so far — the
@@ -2224,9 +2353,11 @@ mod cheerio_prelude_tests {
     /// or network access, unlike the subprocess-based end-to-end fixtures in
     /// `mod.rs`.
     fn eval_bool(js: &str) -> bool {
-        let mut runtime =
-            new(std::collections::HashMap::new(), "module.exports.default = {};")
-                .expect("runtime construction should not fail");
+        let mut runtime = new(
+            std::collections::HashMap::new(),
+            "module.exports.default = {};",
+        )
+        .expect("runtime construction should not fail");
         let context = runtime.context();
         eval(context, js, "test snippet")
             .unwrap_or_else(|e| panic!("test snippet failed: {e}"))
@@ -2804,5 +2935,223 @@ mod cheerio_prelude_tests {
             true
             "#
         ));
+    }
+
+    /// Evaluates a JS expression against a runtime whose storage snapshot
+    /// is pre-populated with the given entries.  Returns the JS boolean
+    /// result (same contract as [`eval_bool`]).
+    fn eval_bool_with_settings(settings: HashMap<String, SourceSettingValue>, js: &str) -> bool {
+        let mut runtime = new(settings, "module.exports.default = {};")
+            .expect("runtime construction should not fail");
+        let context = runtime.context();
+        eval(context, js, "test snippet")
+            .unwrap_or_else(|e| panic!("test snippet failed: {e}"))
+            .as_boolean()
+            .expect("test snippet should evaluate to a boolean")
+    }
+
+    #[test]
+    fn storage_get_returns_direct_value_when_present() {
+        let mut settings = HashMap::new();
+        settings.insert(
+            "status".into(),
+            SourceSettingValue::Vec(vec!["ongoing".into()]),
+        );
+        assert!(eval_bool_with_settings(
+            settings,
+            r#"
+            var v = require('@libs/storage').storage.get('status');
+            Array.isArray(v) && v.length === 1 && v[0] === 'ongoing'
+            "#
+        ));
+    }
+
+    #[test]
+    fn storage_get_returns_undefined_for_missing_key() {
+        assert!(eval_bool_with_settings(
+            HashMap::new(),
+            r#"
+            require('@libs/storage').storage.get('nonexistent') === undefined
+            "#
+        ));
+    }
+
+    /// Minimal synthetic plugin exposing the corpus-observed `filters` shape
+    /// (`docs/lnreader/REFERENCE.md` §11.2): an **object** keyed by filter
+    /// key (not an array), with `ExcludableCheckboxGroup` entries carrying
+    /// `value: { include: [], exclude: [] }` plus a same-named non-XCheckbox
+    /// entry to guard against shape confusion. No network, no real source.
+    const XCHECKBOX_PLUGIN_MAIN_JS: &str = r#"
+        var filters = {
+            genres: {
+                label: 'Genres',
+                value: { include: [], exclude: [] },
+                options: [],
+                type: 'ExcludableCheckboxGroup',
+            },
+            sort: { label: 'Sort', value: 'rank', options: [], type: 'Picker' },
+        };
+        module.exports.default = { filters: filters };
+    "#;
+
+    /// Builds a runtime for [`XCHECKBOX_PLUGIN_MAIN_JS`] with the given
+    /// settings snapshot, runs [`JsRuntime::apply_settings_filters`], and
+    /// evaluates `js` against it (boolean result, same contract as
+    /// [`eval_bool`]).
+    fn apply_filters_and_eval(settings: HashMap<String, SourceSettingValue>, js: &str) -> bool {
+        let mut runtime =
+            new(settings, XCHECKBOX_PLUGIN_MAIN_JS).expect("runtime construction should not fail");
+        runtime
+            .apply_settings_filters()
+            .expect("applying settings filters should not fail");
+        let context = runtime.context();
+        eval(context, js, "test snippet")
+            .unwrap_or_else(|e| panic!("test snippet failed: {e}"))
+            .as_boolean()
+            .expect("test snippet should evaluate to a boolean")
+    }
+
+    fn vec_settings(pairs: &[(&str, Vec<&str>)]) -> HashMap<String, SourceSettingValue> {
+        pairs
+            .iter()
+            .map(|(key, values)| {
+                (
+                    key.to_string(),
+                    SourceSettingValue::Vec(values.iter().map(|s| s.to_string()).collect()),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn apply_settings_filters_recombines_include_pair() {
+        let settings = vec_settings(&[("genres__include", vec!["Fantasy", "Adventure"])]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.length === 2 && v.include[0] === 'Fantasy' && v.include[1] === 'Adventure'
+                && v.exclude.length === 0
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_recombines_exclude_pair() {
+        let settings = vec_settings(&[("genres__exclude", vec!["Horror"])]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.length === 0 && v.exclude.length === 1 && v.exclude[0] === 'Horror'
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_recombines_both_pairs() {
+        let settings = vec_settings(&[
+            ("genres__include", vec!["Fantasy", "Sci-Fi"]),
+            ("genres__exclude", vec!["Horror", "Mature"]),
+        ]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.join(',') === 'Fantasy,Sci-Fi' && v.exclude.join(',') === 'Horror,Mature'
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_leaves_unset_pair_side_at_default() {
+        // Only the `__include` side exists in the snapshot: the `__exclude`
+        // side must keep the plugin's default rather than be invented.
+        let settings = vec_settings(&[("genres__include", vec!["Fantasy"])]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.length === 1 && v.include[0] === 'Fantasy' && v.exclude.length === 0
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_without_pairs_leaves_filters_untouched() {
+        // A source with no ExcludableCheckboxGroup (novelbuddy-like): the
+        // snapshot keys don't end in `__include`/`__exclude`, so nothing is
+        // applied and the plugin's defaults stay put.
+        let settings = vec_settings(&[("genre", vec!["Fantasy"])]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.length === 0 && v.exclude.length === 0
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_direct_storage_key_keeps_priority() {
+        // A direct `genres` key in the snapshot wins: the recombined
+        // `__include`/`__exclude` pair must not clobber the plugin's default
+        // filter value for that key.
+        let settings = vec_settings(&[
+            ("genres", vec!["legacy"]),
+            ("genres__include", vec!["Fantasy"]),
+            ("genres__exclude", vec!["Horror"]),
+        ]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var v = __lnreader_plugin.filters.genres.value;
+            v.include.length === 0 && v.exclude.length === 0
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_leaves_storage_lookup_unchanged() {
+        // Suffixed pairs feed `plugin.filters` only: `storage.get` stays a
+        // pure direct lookup -- the suffixed keys are readable by their own
+        // names, and the (absent) base key still returns undefined.
+        let settings = vec_settings(&[("genres__include", vec!["Fantasy"])]);
+        assert!(apply_filters_and_eval(
+            settings,
+            r#"
+            var s = require('@libs/storage').storage;
+            var pair = s.get('genres__include');
+            var base = s.get('genres');
+            Array.isArray(pair) && pair.length === 1 && pair[0] === 'Fantasy' && base === undefined
+            "#
+        ));
+    }
+
+    #[test]
+    fn apply_settings_filters_skips_non_xcheckbox_shaped_entries() {
+        // A same-named filter whose `value` isn't an `{include, exclude}`
+        // object (a `Picker` here) must not be overwritten with the wrong
+        // shape -- only the corresponding XCheckbox entries are touched.
+        let mut runtime = new(
+            vec_settings(&[("sort__include", vec!["x"])]),
+            XCHECKBOX_PLUGIN_MAIN_JS,
+        )
+        .expect("runtime construction should not fail");
+        runtime
+            .apply_settings_filters()
+            .expect("applying settings filters should not fail");
+        let context = runtime.context();
+        assert!(eval(
+            context,
+            r#"
+            var v = __lnreader_plugin.filters.sort.value;
+            typeof v === 'string' && v === 'rank'
+            "#,
+            "test snippet",
+        )
+        .unwrap_or_else(|e| panic!("test snippet failed: {e}"))
+        .as_boolean()
+        .expect("test snippet should evaluate to a boolean"));
     }
 }

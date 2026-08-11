@@ -160,3 +160,26 @@ impl From<&Settings> for UpdateableSettings {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `From<&Settings>` must expose `lnreader_enabled` and `apply_updates`
+    /// must persist it — regression for commit 2544b7e.
+    #[test]
+    fn lnreader_enabled_survives_from_and_apply_updates() {
+        for enabled in [false, true] {
+            let source = Settings {
+                lnreader_enabled: enabled,
+                ..Settings::default()
+            };
+            let updateable = UpdateableSettings::from(&source);
+            assert_eq!(updateable.lnreader_enabled, enabled);
+
+            let mut target = Settings::default();
+            updateable.apply_updates(&mut target);
+            assert_eq!(target.lnreader_enabled, enabled);
+        }
+    }
+}

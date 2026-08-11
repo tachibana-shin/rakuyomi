@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 06:54+0000\n"
+"POT-Creation-Date: 2026-08-11 10:40-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgstr "нұсқасы"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:442
 msgid "Unknown"
 msgstr "Белгісіз"
 
@@ -49,20 +49,19 @@ msgstr "Біздің README-ге қарап, кейбір дереккөз ті�
 msgid "Installing source..."
 msgstr "Дереккөз орнатылуда..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
 msgid "Cancelled!"
 msgstr "Бас тартылды!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
 msgid "Complete!"
 msgstr "Аяқталды!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
 msgid "Waiting until cancelled…"
 msgstr "Бас тартылғанша күтілуде…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
-#: ../BasicJobDialog.lua:163
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
 msgid "Processing..."
 msgstr "Өңдеуде..."
 
@@ -70,11 +69,11 @@ msgstr "Өңдеуде..."
 msgid "An error occurred"
 msgstr "Қате орын алды"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
 msgid "Unknown error"
 msgstr "Белгісіз қате"
 
-#: ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:239
 msgid "Error"
 msgstr "Қате"
 
@@ -287,7 +286,7 @@ msgid "Details"
 msgstr "Мәліметтер"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
-#: ../TrackingSettings.lua:416
+#: ../TrackingSettings.lua:420
 #, fuzzy
 msgid "Tracking"
 msgstr "Белгілеу"
@@ -603,7 +602,7 @@ msgstr "жоюды қалайсыз ба"
 msgid "source?"
 msgstr "көзі?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:85
+#: ../LibraryView.lua:76 ../Settings.lua:86
 msgid "Library"
 msgstr "Кітапхана"
 
@@ -691,7 +690,7 @@ msgstr "Таза тараулар"
 msgid "Manage sources"
 msgstr "Дереккөздерді басқару"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
 msgid "Settings"
 msgstr "Параметрлер"
 
@@ -775,7 +774,7 @@ msgstr "Қолданылуы"
 msgid "Memory"
 msgstr "Жад"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:376
+#: ../LibraryView.lua:1083 ../Settings.lua:388
 msgid "Storage"
 msgstr "Сақтау"
 
@@ -812,7 +811,7 @@ msgid "Type the manga name to search for"
 msgstr "Іздеу үшін манга атын теріңіз"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:195 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "Іздеу"
 
@@ -851,68 +850,69 @@ msgstr "RendOnly файлы .cbz және .epub сканері."
 msgid "Clean"
 msgstr "Таза"
 
-#: ../LibraryView.lua:1294
-msgid "Deleting..."
+#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
+#, fuzzy, lua-format
+msgid "Deleting... (%d/%d)"
 msgstr "Жоюда..."
 
-#: ../LibraryView.lua:1312
+#: ../LibraryView.lua:1316
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Бос %s жады тазартылды"
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
+#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
 msgid "Cannot refresh while offline"
 msgstr "Офлайн режимінде жаңарту мүмкін емес"
 
-#: ../LibraryView.lua:1349
+#: ../LibraryView.lua:1353
 msgid "Refresh mangas..."
 msgstr "Мангаларды жаңарту..."
 
-#: ../LibraryView.lua:1350
+#: ../LibraryView.lua:1354
 msgid "All chapters manga updated!"
 msgstr "Манганың барлық тараулары жаңартылды!"
 
-#: ../LibraryView.lua:1351
+#: ../LibraryView.lua:1355
 msgid "Some manga updates fail:"
 msgstr "Кейбір манга жаңартулары сәтсіз аяқталды:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1374
 msgid "Refresh manga details..."
 msgstr "Манга мәліметтерін жаңарту..."
 
-#: ../LibraryView.lua:1371
+#: ../LibraryView.lua:1375
 msgid "All manga details refresh!"
 msgstr "Барлық манга мәліметтері жаңартылды!"
 
-#: ../LibraryView.lua:1372
+#: ../LibraryView.lua:1376
 msgid "Some manga details refresh fail:"
 msgstr "Кейбір манга мәліметтерін жаңарту сәтсіз аяқталды:"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1392
 msgid "Progress"
 msgstr "Прогресс"
 
-#: ../LibraryView.lua:1406
+#: ../LibraryView.lua:1410
 msgid "Cleaner"
 msgstr "Тазартқыш"
 
-#: ../LibraryView.lua:1407
+#: ../LibraryView.lua:1411
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Жарамсыз файлдарды, соның ішінде жойылған көздерден файлдарды табу және жою"
 
-#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
+#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
 msgid "Normal"
 msgstr "Қалыпты"
 
-#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
+#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
 msgid "Chapter read done"
 msgstr "Бөлім оқылды"
 
-#: ../LibraryView.lua:1408
+#: ../LibraryView.lua:1412
 msgid "Find and delete chapters that have been read"
 msgstr "Оқылған тарауларды табыңыз және жойыңыз"
 
-#: ../LibraryView.lua:1409
+#: ../LibraryView.lua:1413
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "МАҢЫЗДЫ: Мета файлдар (бетбелгі, тарих) сақталмайды!"
 
@@ -1009,23 +1009,23 @@ msgstr "Жоқ"
 msgid "View Mode"
 msgstr ""
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
 msgstr ""
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
 msgstr ""
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
 msgstr ""
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
 msgstr ""
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
 msgstr ""
 
@@ -1035,7 +1035,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
+#: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
 msgstr ""
 
@@ -1096,48 +1096,60 @@ msgstr ""
 msgid "Scan this QR code on your phone to sign in."
 msgstr ""
 
-#: ../OAuthFlowView.lua:104
+#: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
 msgstr ""
 
-#: ../OAuthFlowView.lua:114
+#: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
 msgstr ""
 
-#: ../OAuthFlowView.lua:125
+#: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
 msgstr ""
 
-#: ../OAuthFlowView.lua:209
+#: ../OAuthFlowView.lua:210
 #, fuzzy
 msgid "Checking..."
 msgstr "Орындалуда..."
 
-#: ../OAuthFlowView.lua:215
+#: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
 msgstr ""
 
 #: ../OAuthFlowView.lua:222
+msgid "Invalid response. Please try again."
+msgstr ""
+
+#: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
 msgstr ""
 
-#: ../OAuthFlowView.lua:225
+#: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
 msgstr ""
 
-#: ../OAuthFlowView.lua:231
+#: ../OAuthFlowView.lua:237
+msgid "Failed to save tokens. Please try again."
+msgstr ""
+
+#: ../OAuthFlowView.lua:240
 #, fuzzy
 msgid "Error: "
 msgstr "Қате"
 
-#: ../OAuthFlowView.lua:289
+#: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
 msgstr ""
 
-#: ../OAuthFlowView.lua:301
+#: ../OAuthFlowView.lua:314
 #, fuzzy
 msgid "Failed to start sign-in: "
 msgstr "Кітапханаға қосу мүмкін болмады"
+
+#: ../OAuthFlowView.lua:321
+msgid "Invalid response from server. Please try again."
+msgstr ""
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1196,317 +1208,327 @@ msgstr "Жасау"
 msgid "No playlists yet."
 msgstr "Әзірге ойнату тізімдері жоқ."
 
-#: ../Settings.lua:91
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "Кітапхананы қарау режимі"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "Негіз"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "Қақпақ"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "Тор"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "Кітапхананы сұрыптау режимі"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:107
 msgid "Date added (oldest)"
 msgstr ""
 
-#: ../Settings.lua:107
+#: ../Settings.lua:108
 msgid "Date added (newest)"
 msgstr ""
 
-#: ../Settings.lua:108
+#: ../Settings.lua:109
 msgid "Title (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:109
+#: ../Settings.lua:110
 msgid "Title (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:110
+#: ../Settings.lua:111
 msgid "Unread (fewest)"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:112
 msgid "Unread (most)"
 msgstr ""
 
-#: ../Settings.lua:112
+#: ../Settings.lua:113
 #, fuzzy
 msgid "Last read (oldest)"
 msgstr "Соңғы оқылған кему"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:114
 #, fuzzy
 msgid "Last read (newest)"
 msgstr "Соңғы оқылған: % 1"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:115
 msgid "Source (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:115
+#: ../Settings.lua:116
 msgid "Source (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:123
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "Бір беттегі элементтер (0 = авто)"
 
-#: ../Settings.lua:134
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "Тор бағандары"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "Тор жолдары"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "Тақырыпты тор режимінде көрсету"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "Метадеректерді тор режимінде көрсету"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "Манга әрекетін түртіңіз"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "Тараулар тізімін ашыңыз"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "Оқуды жалғастыру"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "Түйіндемені оқуды растауды өткізіп жіберіңіз"
 
-#: ../Settings.lua:200
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "Іздеу көру режимі"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "Оқырман"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "Тарауларды сұрыптау режимі"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "Тараудың жоғарылауы бойынша"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "Төменгі тарау бойынша"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr ""
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 #, fuzzy
 msgid "Chapter title only"
 msgstr "Бөлім оқылды"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 #, fuzzy
 msgid "Series + chapter title"
 msgstr "Жаңарту тарау қатесі"
 
-#: ../Settings.lua:232
+#: ../Settings.lua:233
 #, fuzzy
 msgid "Series + chapter number"
 msgstr "Жаңарту тарау қатесі"
 
-#: ../Settings.lua:241
+#: ../Settings.lua:242
 msgid "Preload chapters on reader open"
 msgstr "Оқырманға ашық тарауларды алдын ала жүктеңіз"
 
-#: ../Settings.lua:252
+#: ../Settings.lua:253
 msgid "Optimize page images (experimental)"
 msgstr "Бет кескіндерін оңтайландыру (эксперименттік)"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:261
 msgid "Concurrent page requests"
 msgstr "Бір мезгілде бет сұраулары"
 
-#: ../Settings.lua:271
+#: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr ""
 
-#: ../Settings.lua:280
+#: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
 msgstr ""
 
-#: ../Settings.lua:289
+#: ../Settings.lua:290
 msgid "Global viewer override"
 msgstr ""
 
-#: ../Settings.lua:306
+#: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
 msgstr ""
 
-#: ../Settings.lua:315
+#: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
 msgstr ""
 
-#: ../Settings.lua:324
+#: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr ""
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On bottom toolbar"
 msgstr ""
 
-#: ../Settings.lua:328
+#: ../Settings.lua:329
 msgid "On top toolbar"
 msgstr ""
 
-#: ../Settings.lua:336
+#: ../Settings.lua:337
 msgid "Recommended reader settings"
 msgstr ""
 
-#: ../Settings.lua:342
+#: ../Settings.lua:343
 msgid "Turn off all margins"
 msgstr ""
 
-#: ../Settings.lua:351
+#: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr ""
 
-#: ../Settings.lua:360
+#: ../Settings.lua:361
 msgid "Zoom to full screen"
 msgstr ""
 
-#: ../Settings.lua:369
+#: ../Settings.lua:370
 msgid "Zoom to fit image size"
 msgstr ""
 
-#: ../Settings.lua:382
+#: ../Settings.lua:377
+#, fuzzy
+msgid "Sources"
+msgstr "көзі?"
+
+#: ../Settings.lua:383
+#, fuzzy
+msgid "Enable LNReader/JS sources"
+msgstr "Орнатылған көздер"
+
+#: ../Settings.lua:394
 msgid "Chapter storage path"
 msgstr "Тарауларды сақтау жолы"
 
-#: ../Settings.lua:391
+#: ../Settings.lua:403
 msgid "Storage size limit"
 msgstr "Жад көлемінің шегі"
 
-#: ../Settings.lua:401
+#: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
 msgstr ""
 
-#: ../Settings.lua:409
+#: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
 msgstr ""
 
-#: ../Settings.lua:417
+#: ../Settings.lua:429
 #, fuzzy
 msgid "Total downloaded"
 msgstr "Бөлім жүктелді"
 
-#: ../Settings.lua:438
+#: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "ЖЖҚ-ға тарауларды жазу (eMMC-ті қорғау)"
 
-#: ../Settings.lua:446
+#: ../Settings.lua:458
 msgid "RAM storage size. Your RAM is: "
 msgstr "ЖЖҚ сақтау көлемі. "
 
-#: ../Settings.lua:455
+#: ../Settings.lua:467
 msgid "Network"
 msgstr ""
 
-#: ../Settings.lua:461
+#: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr ""
 
-#: ../Settings.lua:464
+#: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr ""
 
-#: ../Settings.lua:469
+#: ../Settings.lua:481
 msgid "Sync & Updates"
 msgstr "Синхрондау және жаңартулар"
 
-#: ../Settings.lua:475
+#: ../Settings.lua:487
 msgid "WebDAV Sync"
 msgstr "WebDAV синхрондау"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:495
 msgid "Enabled cron check for manga updates"
 msgstr "Манга жаңартуларын cron тексеруі қосылды"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:503
 msgid "Source IDs skip check update"
 msgstr "Бастапқы идентификаторлар тексеру жаңартуын өткізіп жібереді"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:509
 msgid "System"
 msgstr "Жүйе"
 
-#: ../Settings.lua:503
+#: ../Settings.lua:515
 msgid "Allow requisition of the back button"
 msgstr "Артқа түймешігін сұрауға рұқсат беріңіз"
 
-#: ../Settings.lua:510
+#: ../Settings.lua:522
 msgid "Server"
 msgstr "Сервер"
 
-#: ../Settings.lua:516
+#: ../Settings.lua:528
 msgid "Auto-stop server when leaving library view"
 msgstr "Кітапхана көрінісінен шыққан кезде серверді автоматты түрде тоқтату"
 
-#: ../Settings.lua:518
+#: ../Settings.lua:530
 msgid "Disabled"
 msgstr "Өшірілген"
 
-#: ../Settings.lua:519
+#: ../Settings.lua:531
 msgid "Immediate"
 msgstr "Дереу"
 
-#: ../Settings.lua:520
+#: ../Settings.lua:532
 msgid "After 30 seconds"
 msgstr "30 секундтан кейін"
 
-#: ../Settings.lua:521
+#: ../Settings.lua:533
 msgid "After 1 minute"
 msgstr "1 минуттан кейін"
 
-#: ../Settings.lua:522
+#: ../Settings.lua:534
 msgid "After 5 minutes"
 msgstr "5 минуттан кейін"
 
-#: ../Settings.lua:523
+#: ../Settings.lua:535
 msgid "After 10 minutes"
 msgstr "10 минуттан кейін"
 
-#: ../Settings.lua:533
+#: ../Settings.lua:545
 msgid "Show chapter download progress"
 msgstr "Тарауды жүктеп алу барысын көрсету"
 
-#: ../Settings.lua:540
+#: ../Settings.lua:552
 msgid "Logging"
 msgstr "Тіркеу"
 
-#: ../Settings.lua:546
+#: ../Settings.lua:558
 msgid "Disable logging"
 msgstr "Тіркеуді өшіру"
 
-#: ../Settings.lua:733
+#: ../Settings.lua:752
 #, fuzzy
 msgid "Failed to test proxy"
 msgstr "Кітапханаға қосу мүмкін болмады"
@@ -1639,98 +1661,98 @@ msgstr ""
 msgid "Unlinked"
 msgstr ""
 
-#: ../TrackingSettings.lua:96
+#: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
 msgstr ""
 
-#: ../TrackingSettings.lua:103
+#: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
 msgstr ""
 
-#: ../TrackingSettings.lua:104
+#: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
 msgstr ""
 
-#: ../TrackingSettings.lua:105
+#: ../TrackingSettings.lua:106
 #, fuzzy
 msgid "Paste MAL refresh token"
 msgstr "Бөлім жаңартылды"
 
-#: ../TrackingSettings.lua:112
+#: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
 msgstr ""
 
-#: ../TrackingSettings.lua:113
+#: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
 msgstr ""
 
-#: ../TrackingSettings.lua:114
+#: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
 msgstr ""
 
-#: ../TrackingSettings.lua:121
+#: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
 msgstr ""
 
-#: ../TrackingSettings.lua:128
+#: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
 msgstr ""
 
-#: ../TrackingSettings.lua:129
+#: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
 msgstr ""
 
-#: ../TrackingSettings.lua:136
+#: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
 msgstr ""
 
-#: ../TrackingSettings.lua:143
+#: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
 msgstr ""
 
-#: ../TrackingSettings.lua:150
+#: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
 msgstr ""
 
-#: ../TrackingSettings.lua:161
+#: ../TrackingSettings.lua:162
 msgid "Sign out"
 msgstr ""
 
-#: ../TrackingSettings.lua:163
+#: ../TrackingSettings.lua:164
 msgid "Sign in"
 msgstr ""
 
-#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+#: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
 msgstr ""
 
-#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+#: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 #, fuzzy
 msgid "Validating..."
 msgstr "Жоюда..."
 
-#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
-#: ../TrackingSettings.lua:229
+#: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
+#: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
 msgstr ""
 
-#: ../TrackingSettings.lua:240
+#: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
 msgstr ""
 
-#: ../TrackingSettings.lua:246
+#: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
 msgstr ""
 
-#: ../TrackingSettings.lua:252
+#: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
 msgstr ""
 
-#: ../TrackingSettings.lua:499
+#: ../TrackingSettings.lua:503
 msgid "Signed in as "
 msgstr ""
 
-#: ../TrackingSettings.lua:501
+#: ../TrackingSettings.lua:505
 msgid "No sign"
 msgstr ""
 

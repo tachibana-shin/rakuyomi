@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 06:54+0000\n"
+"POT-Creation-Date: 2026-08-11 10:40-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,7 +34,7 @@ msgstr "versija"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:442
 msgid "Unknown"
 msgstr "Nezināms"
 
@@ -50,20 +50,19 @@ msgstr "Mēģiniet pievienot dažus avotu sarakstus, apskatot mūsu README!"
 msgid "Installing source..."
 msgstr "Notiek avota instalēšana..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
 msgid "Cancelled!"
 msgstr "Atcelts!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
 msgid "Complete!"
 msgstr "Pabeigts!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
 msgid "Waiting until cancelled…"
 msgstr "Gaida līdz atcelšanai…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
-#: ../BasicJobDialog.lua:163
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
 msgid "Processing..."
 msgstr "Notiek apstrāde..."
 
@@ -71,11 +70,11 @@ msgstr "Notiek apstrāde..."
 msgid "An error occurred"
 msgstr "Radās kļūda"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
 msgid "Unknown error"
 msgstr "Nezināma kļūda"
 
-#: ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:239
 msgid "Error"
 msgstr "Kļūda"
 
@@ -285,7 +284,7 @@ msgid "Details"
 msgstr "Sīkāka informācija"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
-#: ../TrackingSettings.lua:416
+#: ../TrackingSettings.lua:420
 msgid "Tracking"
 msgstr "Izsekošana"
 
@@ -598,7 +597,7 @@ msgstr "Vai vēlaties noņemt"
 msgid "source?"
 msgstr "avots?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:85
+#: ../LibraryView.lua:76 ../Settings.lua:86
 msgid "Library"
 msgstr "Bibliotēka"
 
@@ -686,7 +685,7 @@ msgstr "Tīrākas nodaļas"
 msgid "Manage sources"
 msgstr "Pārvaldiet avotus"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
 msgid "Settings"
 msgstr "Iestatījumi"
 
@@ -770,7 +769,7 @@ msgstr "Lietošana"
 msgid "Memory"
 msgstr "Atmiņa"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:376
+#: ../LibraryView.lua:1083 ../Settings.lua:388
 msgid "Storage"
 msgstr "Uzglabāšana"
 
@@ -807,7 +806,7 @@ msgid "Type the manga name to search for"
 msgstr "Ierakstiet mangas nosaukumu, lai meklētu"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:195 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "Meklēt"
 
@@ -846,68 +845,69 @@ msgstr "RendOnly failu .cbz un .epub skenēšana."
 msgid "Clean"
 msgstr "Tīrs"
 
-#: ../LibraryView.lua:1294
-msgid "Deleting..."
+#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
+#, fuzzy, lua-format
+msgid "Deleting... (%d/%d)"
 msgstr "Notiek dzēšana..."
 
-#: ../LibraryView.lua:1312
+#: ../LibraryView.lua:1316
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "Iztīrīta bezmaksas %s krātuve"
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
+#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
 msgid "Cannot refresh while offline"
 msgstr "Bezsaistē nevar atsvaidzināt"
 
-#: ../LibraryView.lua:1349
+#: ../LibraryView.lua:1353
 msgid "Refresh mangas..."
 msgstr "Atsvaidzināt mangas..."
 
-#: ../LibraryView.lua:1350
+#: ../LibraryView.lua:1354
 msgid "All chapters manga updated!"
 msgstr "Visas manga nodaļas ir atjauninātas!"
 
-#: ../LibraryView.lua:1351
+#: ../LibraryView.lua:1355
 msgid "Some manga updates fail:"
 msgstr "Daži manga atjauninājumi neizdodas:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1374
 msgid "Refresh manga details..."
 msgstr "Atsvaidzināt mangas informāciju..."
 
-#: ../LibraryView.lua:1371
+#: ../LibraryView.lua:1375
 msgid "All manga details refresh!"
 msgstr "Visas mangas detaļas tiek atsvaidzinātas!"
 
-#: ../LibraryView.lua:1372
+#: ../LibraryView.lua:1376
 msgid "Some manga details refresh fail:"
 msgstr "Dažas mangas detaļas atsvaidzināt neizdodas:"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1392
 msgid "Progress"
 msgstr "Progress"
 
-#: ../LibraryView.lua:1406
+#: ../LibraryView.lua:1410
 msgid "Cleaner"
 msgstr "Apkopēja"
 
-#: ../LibraryView.lua:1407
+#: ../LibraryView.lua:1411
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "Atrodiet un dzēsiet nederīgos failus, tostarp failus no dzēstiem avotiem"
 
-#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
+#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
 msgid "Normal"
 msgstr "Normāls"
 
-#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
+#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
 msgid "Chapter read done"
 msgstr "Nodaļa izlasīta pabeigta"
 
-#: ../LibraryView.lua:1408
+#: ../LibraryView.lua:1412
 msgid "Find and delete chapters that have been read"
 msgstr "Atrodiet un izdzēsiet izlasītās nodaļas"
 
-#: ../LibraryView.lua:1409
+#: ../LibraryView.lua:1413
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "SVARĪGI: Meta faili (grāmatzīme, vēsture) netiek saglabāti!"
 
@@ -1004,23 +1004,23 @@ msgstr "Nē"
 msgid "View Mode"
 msgstr "Skatīšanas režīms"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
 msgstr "Noklusējums"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
 msgstr "Ritiniet"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
 msgstr "Vertikāli"
 
@@ -1030,7 +1030,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
+#: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
 msgstr "Izslēgts"
 
@@ -1091,45 +1091,60 @@ msgstr "Pierakstīties ar"
 msgid "Scan this QR code on your phone to sign in."
 msgstr "Lai pierakstītos, skenējiet šo QR kodu savā tālrunī."
 
-#: ../OAuthFlowView.lua:104
+#: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
 msgstr "Kļūda: tilta URL nav pieejams."
 
-#: ../OAuthFlowView.lua:114
+#: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
 msgstr "Skenējiet QR kodu un pēc tam pārbaudiet pierakstīšanās statusu."
 
-#: ../OAuthFlowView.lua:125
+#: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
 msgstr "Pārbaudiet pierakstīšanās statusu"
 
-#: ../OAuthFlowView.lua:209
+#: ../OAuthFlowView.lua:210
 msgid "Checking..."
 msgstr "Notiek pārbaude..."
 
-#: ../OAuthFlowView.lua:215
+#: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
 msgstr "Tīkla kļūda. "
 
 #: ../OAuthFlowView.lua:222
+#, fuzzy
+msgid "Invalid response. Please try again."
+msgstr "Tīkla kļūda. "
+
+#: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
 msgstr "Gaida pierakstīšanos. "
 
-#: ../OAuthFlowView.lua:225
+#: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
 msgstr "Pierakstīšanās veiksmīga!"
 
-#: ../OAuthFlowView.lua:231
+#: ../OAuthFlowView.lua:237
+#, fuzzy
+msgid "Failed to save tokens. Please try again."
+msgstr "Tīkla kļūda. "
+
+#: ../OAuthFlowView.lua:240
 msgid "Error: "
 msgstr "Kļūda:"
 
-#: ../OAuthFlowView.lua:289
+#: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
 msgstr "Notiek pierakstīšanās sesijas izveide..."
 
-#: ../OAuthFlowView.lua:301
+#: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
 msgstr "Neizdevās sākt pierakstīšanos:"
+
+#: ../OAuthFlowView.lua:321
+#, fuzzy
+msgid "Invalid response from server. Please try again."
+msgstr "Tīkla kļūda. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1188,314 +1203,324 @@ msgstr "Izveidot"
 msgid "No playlists yet."
 msgstr "Vēl nav atskaņošanas sarakstu."
 
-#: ../Settings.lua:91
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "Bibliotēkas skata režīms"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "Bāze"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "Vāks"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "Režģis"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "Bibliotēkas šķirošanas režīms"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:107
 msgid "Date added (oldest)"
 msgstr ""
 
-#: ../Settings.lua:107
+#: ../Settings.lua:108
 msgid "Date added (newest)"
 msgstr ""
 
-#: ../Settings.lua:108
+#: ../Settings.lua:109
 msgid "Title (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:109
+#: ../Settings.lua:110
 msgid "Title (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:110
+#: ../Settings.lua:111
 msgid "Unread (fewest)"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:112
 msgid "Unread (most)"
 msgstr ""
 
-#: ../Settings.lua:112
+#: ../Settings.lua:113
 #, fuzzy
 msgid "Last read (oldest)"
 msgstr "Pēdējā lasīšana dilstošā secībā"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:114
 #, fuzzy
 msgid "Last read (newest)"
 msgstr "Pēdējoreiz lasīts: %1"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:115
 msgid "Source (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:115
+#: ../Settings.lua:116
 msgid "Source (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:123
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "Vienumu skaits lapā (0 = automātisks)"
 
-#: ../Settings.lua:134
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "Režģa kolonnas"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "Režģa rindas"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "Rādīt nosaukumu režģa režīmā"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "Rādīt metadatus režģa režīmā"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "Pieskarieties manga darbībai"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "Atvērt nodaļu sarakstu"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "Turpiniet lasīt"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "Izlaist lasīšanas atsākšanas apstiprinājumu"
 
-#: ../Settings.lua:200
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "Meklēšanas skata režīms"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "Lasītājs"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "Nodaļu šķirošanas režīms"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "Pēc nodaļas augošā secībā"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "Pēc nodaļas dilstošā secībā"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "Nodaļas nosaukums statistikā (ComicInfo)"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Chapter title only"
 msgstr "Tikai nodaļas nosaukums"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter title"
 msgstr "Sērija + nodaļas nosaukums"
 
-#: ../Settings.lua:232
+#: ../Settings.lua:233
 msgid "Series + chapter number"
 msgstr "Sērija + nodaļas numurs"
 
-#: ../Settings.lua:241
+#: ../Settings.lua:242
 msgid "Preload chapters on reader open"
 msgstr "Atvērtā lasītāja nodaļas iepriekšēja ielāde"
 
-#: ../Settings.lua:252
+#: ../Settings.lua:253
 msgid "Optimize page images (experimental)"
 msgstr "Optimizēt lapas attēlus (eksperimentāls)"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:261
 msgid "Concurrent page requests"
 msgstr "Vienlaicīgi lapu pieprasījumi"
 
-#: ../Settings.lua:271
+#: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "Nekad neieslēdziet RTL, pat japāņu mangai"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
 msgstr "Automātiski iestatiet skatītāju manga režīmā"
 
-#: ../Settings.lua:289
+#: ../Settings.lua:290
 msgid "Global viewer override"
 msgstr "Globālā skatītāja ignorēšana"
 
-#: ../Settings.lua:306
+#: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
 msgstr "Rādīt pogas iepriekšējo nodaļu rīkjoslas lasītājā"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
 msgstr "Rādīt pogu nākamo nodaļu rīkjoslas lasītājā"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "Parādiet lasītājā paplašināto rakuyomi apakšējo rīkjoslu"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On bottom toolbar"
 msgstr "Apakšējā rīkjoslā"
 
-#: ../Settings.lua:328
+#: ../Settings.lua:329
 msgid "On top toolbar"
 msgstr "Augšējā rīkjoslā"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:337
 msgid "Recommended reader settings"
 msgstr "Ieteicamie lasītāja iestatījumi"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:343
 msgid "Turn off all margins"
 msgstr "Izslēdziet visas piemales"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "Automātiski apgriezt fotoattēlu liekās malas (nedaudz lēni)"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:361
 msgid "Zoom to full screen"
 msgstr "Tuviniet pilnekrāna režīmā"
 
-#: ../Settings.lua:369
+#: ../Settings.lua:370
 msgid "Zoom to fit image size"
 msgstr "Tālummainiet, lai tas atbilstu attēla izmēram"
 
-#: ../Settings.lua:382
+#: ../Settings.lua:377
+#, fuzzy
+msgid "Sources"
+msgstr "avots?"
+
+#: ../Settings.lua:383
+#, fuzzy
+msgid "Enable LNReader/JS sources"
+msgstr "Instalētie avoti"
+
+#: ../Settings.lua:394
 msgid "Chapter storage path"
 msgstr "Nodaļas uzglabāšanas ceļš"
 
-#: ../Settings.lua:391
+#: ../Settings.lua:403
 msgid "Storage size limit"
 msgstr "Krātuves lieluma ierobežojums"
 
-#: ../Settings.lua:401
+#: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
 msgstr ""
 
-#: ../Settings.lua:409
+#: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
 msgstr ""
 
-#: ../Settings.lua:417
+#: ../Settings.lua:429
 #, fuzzy
 msgid "Total downloaded"
 msgstr "Nodaļa lejupielādēta"
 
-#: ../Settings.lua:438
+#: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "Rakstīt nodaļas RAM (aizsargāt eMMC)"
 
-#: ../Settings.lua:446
+#: ../Settings.lua:458
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM krātuves lielums. "
 
-#: ../Settings.lua:455
+#: ../Settings.lua:467
 msgid "Network"
 msgstr "Tīkls"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS vai SOCKS5 starpniekserveris"
 
-#: ../Settings.lua:464
+#: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "Starpniekservera URL jāsākas ar http://, https:// vai socks5://"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:481
 msgid "Sync & Updates"
 msgstr "Sinhronizācija un atjauninājumi"
 
-#: ../Settings.lua:475
+#: ../Settings.lua:487
 msgid "WebDAV Sync"
 msgstr "WebDAV sinhronizācija"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:495
 msgid "Enabled cron check for manga updates"
 msgstr "Iespējota manga atjauninājumu cron pārbaude"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:503
 msgid "Source IDs skip check update"
 msgstr "Avota ID izlaiž pārbaudes atjauninājumu"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:509
 msgid "System"
 msgstr "Sistēma"
 
-#: ../Settings.lua:503
+#: ../Settings.lua:515
 msgid "Allow requisition of the back button"
 msgstr "Atļaut pieprasīt atpakaļ pogu"
 
-#: ../Settings.lua:510
+#: ../Settings.lua:522
 msgid "Server"
 msgstr "Serveris"
 
-#: ../Settings.lua:516
+#: ../Settings.lua:528
 msgid "Auto-stop server when leaving library view"
 msgstr "Automātiski apturēt serveri, atstājot bibliotēkas skatu"
 
-#: ../Settings.lua:518
+#: ../Settings.lua:530
 msgid "Disabled"
 msgstr "Atspējots"
 
-#: ../Settings.lua:519
+#: ../Settings.lua:531
 msgid "Immediate"
 msgstr "Tūlītēja"
 
-#: ../Settings.lua:520
+#: ../Settings.lua:532
 msgid "After 30 seconds"
 msgstr "Pēc 30 sekundēm"
 
-#: ../Settings.lua:521
+#: ../Settings.lua:533
 msgid "After 1 minute"
 msgstr "Pēc 1 minūtes"
 
-#: ../Settings.lua:522
+#: ../Settings.lua:534
 msgid "After 5 minutes"
 msgstr "Pēc 5 minūtēm"
 
-#: ../Settings.lua:523
+#: ../Settings.lua:535
 msgid "After 10 minutes"
 msgstr "Pēc 10 minūtēm"
 
-#: ../Settings.lua:533
+#: ../Settings.lua:545
 msgid "Show chapter download progress"
 msgstr "Rādīt nodaļas lejupielādes gaitu"
 
-#: ../Settings.lua:540
+#: ../Settings.lua:552
 msgid "Logging"
 msgstr "Mežizstrāde"
 
-#: ../Settings.lua:546
+#: ../Settings.lua:558
 msgid "Disable logging"
 msgstr "Atspējot reģistrēšanu"
 
-#: ../Settings.lua:733
+#: ../Settings.lua:752
 msgid "Failed to test proxy"
 msgstr "Neizdevās pārbaudīt starpniekserveri"
 
@@ -1616,96 +1641,96 @@ msgstr "Notiek izsekošanas saistīšanas noņemšana..."
 msgid "Unlinked"
 msgstr "Atsaistīts"
 
-#: ../TrackingSettings.lua:96
+#: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
 msgstr "Ielīmējiet AniList pilnvaru"
 
-#: ../TrackingSettings.lua:103
+#: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
 msgstr "Ielīmējiet MAL klienta ID"
 
-#: ../TrackingSettings.lua:104
+#: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
 msgstr "Ielīmējiet MAL klienta noslēpumu"
 
-#: ../TrackingSettings.lua:105
+#: ../TrackingSettings.lua:106
 msgid "Paste MAL refresh token"
 msgstr "Ielīmējiet MAL atsvaidzināšanas pilnvaru"
 
-#: ../TrackingSettings.lua:112
+#: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
 msgstr "Ielīmējiet Shikimori klienta ID"
 
-#: ../TrackingSettings.lua:113
+#: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
 msgstr "Ielīmējiet Shikimori klienta noslēpumu"
 
-#: ../TrackingSettings.lua:114
+#: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
 msgstr "Ielīmējiet Shikimori atsvaidzināšanas pilnvaru"
 
-#: ../TrackingSettings.lua:121
+#: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
 msgstr "Ielīmējiet Bangumi atsvaidzināšanas pilnvaru"
 
-#: ../TrackingSettings.lua:128
+#: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
 msgstr "Ielīmējiet MangaBaka atsvaidzināšanas pilnvaru"
 
-#: ../TrackingSettings.lua:129
+#: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
 msgstr "Ielīmēt MangaBaka API atslēgu (mb-...)"
 
-#: ../TrackingSettings.lua:136
+#: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
 msgstr "Ielīmējiet Kavita API atslēgu"
 
-#: ../TrackingSettings.lua:143
+#: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
 msgstr "Komga API atslēga vai lietotājvārds:parole"
 
-#: ../TrackingSettings.lua:150
+#: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
 msgstr "Suwayomi Basic Auth lietotājvārds: parole"
 
-#: ../TrackingSettings.lua:161
+#: ../TrackingSettings.lua:162
 msgid "Sign out"
 msgstr "Izrakstīties"
 
-#: ../TrackingSettings.lua:163
+#: ../TrackingSettings.lua:164
 msgid "Sign in"
 msgstr "Pierakstīties"
 
-#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+#: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
 msgstr "Apstiprināt"
 
-#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+#: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
 msgstr "Notiek apstiprināšana..."
 
-#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
-#: ../TrackingSettings.lua:229
+#: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
+#: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
 msgstr "Akreditācijas dati ir derīgi."
 
-#: ../TrackingSettings.lua:240
+#: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
 msgstr "Automātiskās sinhronizācijas lasīšanas gaita"
 
-#: ../TrackingSettings.lua:246
+#: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
 msgstr "OAuth tilta serveris"
 
-#: ../TrackingSettings.lua:252
+#: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
 msgstr "OAuth Bridge servera URL"
 
-#: ../TrackingSettings.lua:499
+#: ../TrackingSettings.lua:503
 msgid "Signed in as "
 msgstr "Pierakstījies kā"
 
-#: ../TrackingSettings.lua:501
+#: ../TrackingSettings.lua:505
 msgid "No sign"
 msgstr "Nav zīmes"
 

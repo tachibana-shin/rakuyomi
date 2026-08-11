@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 06:54+0000\n"
+"POT-Creation-Date: 2026-08-11 10:40-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgstr "संस्करण"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:442
 msgid "Unknown"
 msgstr "अज्ञात"
 
@@ -49,20 +49,19 @@ msgstr "हमारे README को देखकर कुछ स्रोत 
 msgid "Installing source..."
 msgstr "स्रोत स्थापित किया जा रहा है..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
 msgid "Cancelled!"
 msgstr "रद्द!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
 msgid "Complete!"
 msgstr "पूरा!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
 msgid "Waiting until cancelled…"
 msgstr "रद्द होने तक प्रतीक्षा की जा रही है..."
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
-#: ../BasicJobDialog.lua:163
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
 msgid "Processing..."
 msgstr "प्रसंस्करण..."
 
@@ -70,11 +69,11 @@ msgstr "प्रसंस्करण..."
 msgid "An error occurred"
 msgstr "एक त्रुटि पाई गई"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
 msgid "Unknown error"
 msgstr "अज्ञात त्रुटि"
 
-#: ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:239
 msgid "Error"
 msgstr "गलती"
 
@@ -284,7 +283,7 @@ msgid "Details"
 msgstr "विवरण"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
-#: ../TrackingSettings.lua:416
+#: ../TrackingSettings.lua:420
 msgid "Tracking"
 msgstr "ट्रैकिंग"
 
@@ -597,7 +596,7 @@ msgstr "क्या आप हटाना चाहते हैं"
 msgid "source?"
 msgstr "स्रोत?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:85
+#: ../LibraryView.lua:76 ../Settings.lua:86
 msgid "Library"
 msgstr "पुस्तकालय"
 
@@ -685,7 +684,7 @@ msgstr "स्वच्छ अध्याय"
 msgid "Manage sources"
 msgstr "स्रोत प्रबंधित करें"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
 msgid "Settings"
 msgstr "सेटिंग्स"
 
@@ -769,7 +768,7 @@ msgstr "प्रयोग"
 msgid "Memory"
 msgstr "याद"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:376
+#: ../LibraryView.lua:1083 ../Settings.lua:388
 msgid "Storage"
 msgstr "भंडारण"
 
@@ -806,7 +805,7 @@ msgid "Type the manga name to search for"
 msgstr "खोजने के लिए मंगा नाम टाइप करें"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:195 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "खोज"
 
@@ -845,68 +844,69 @@ msgstr "रेंडओनली फ़ाइल .cbz और .epub स्कै�
 msgid "Clean"
 msgstr "साफ"
 
-#: ../LibraryView.lua:1294
-msgid "Deleting..."
+#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
+#, fuzzy, lua-format
+msgid "Deleting... (%d/%d)"
 msgstr "हटाया जा रहा है..."
 
-#: ../LibraryView.lua:1312
+#: ../LibraryView.lua:1316
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "मुफ़्त %s संग्रहण साफ़ किया गया"
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
+#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
 msgid "Cannot refresh while offline"
 msgstr "ऑफ़लाइन रहते हुए ताज़ा नहीं किया जा सकता"
 
-#: ../LibraryView.lua:1349
+#: ../LibraryView.lua:1353
 msgid "Refresh mangas..."
 msgstr "मंगा ताज़ा करें..."
 
-#: ../LibraryView.lua:1350
+#: ../LibraryView.lua:1354
 msgid "All chapters manga updated!"
 msgstr "सभी अध्याय मंगा अद्यतन!"
 
-#: ../LibraryView.lua:1351
+#: ../LibraryView.lua:1355
 msgid "Some manga updates fail:"
 msgstr "कुछ मंगा अपडेट विफल:"
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1374
 msgid "Refresh manga details..."
 msgstr "मंगा विवरण ताज़ा करें..."
 
-#: ../LibraryView.lua:1371
+#: ../LibraryView.lua:1375
 msgid "All manga details refresh!"
 msgstr "सभी मंगा विवरण ताज़ा!"
 
-#: ../LibraryView.lua:1372
+#: ../LibraryView.lua:1376
 msgid "Some manga details refresh fail:"
 msgstr "कुछ मंगा विवरण ताज़ा करने में विफल:"
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1392
 msgid "Progress"
 msgstr "प्रगति"
 
-#: ../LibraryView.lua:1406
+#: ../LibraryView.lua:1410
 msgid "Cleaner"
 msgstr "क्लीनर"
 
-#: ../LibraryView.lua:1407
+#: ../LibraryView.lua:1411
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "हटाए गए स्रोतों से फ़ाइलों सहित अमान्य फ़ाइलें ढूंढें और हटाएं"
 
-#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
+#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
 msgid "Normal"
 msgstr "सामान्य"
 
-#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
+#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
 msgid "Chapter read done"
 msgstr "अध्याय का वाचन हो गया"
 
-#: ../LibraryView.lua:1408
+#: ../LibraryView.lua:1412
 msgid "Find and delete chapters that have been read"
 msgstr "जो अध्याय पढ़े गए हैं उन्हें ढूंढें और हटाएं"
 
-#: ../LibraryView.lua:1409
+#: ../LibraryView.lua:1413
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "महत्वपूर्ण: मेटा फ़ाइलें (बुकमार्क, इतिहास) नहीं रखें!"
 
@@ -1003,23 +1003,23 @@ msgstr "नहीं"
 msgid "View Mode"
 msgstr "दृश्य मोड"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
 msgstr "गलती करना"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
 msgstr "एलटीआर"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
 msgstr "आरटीएल"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
 msgstr "स्क्रॉल"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
 msgstr "खड़ा"
 
@@ -1029,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
+#: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
 msgstr "बंद"
 
@@ -1090,45 +1090,60 @@ msgstr "के साथ साइन इन करें"
 msgid "Scan this QR code on your phone to sign in."
 msgstr "साइन इन करने के लिए अपने फ़ोन पर इस QR कोड को स्कैन करें।"
 
-#: ../OAuthFlowView.lua:104
+#: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
 msgstr "त्रुटि: कोई ब्रिज यूआरएल उपलब्ध नहीं है।"
 
-#: ../OAuthFlowView.lua:114
+#: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
 msgstr "क्यूआर कोड को स्कैन करें, फिर साइन-इन स्थिति जांचें।"
 
-#: ../OAuthFlowView.lua:125
+#: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
 msgstr "साइन-इन स्थिति जांचें"
 
-#: ../OAuthFlowView.lua:209
+#: ../OAuthFlowView.lua:210
 msgid "Checking..."
 msgstr "जाँच हो रही है..."
 
-#: ../OAuthFlowView.lua:215
+#: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
 msgstr "नेटवर्क त्रुटि। "
 
 #: ../OAuthFlowView.lua:222
+#, fuzzy
+msgid "Invalid response. Please try again."
+msgstr "नेटवर्क त्रुटि। "
+
+#: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
 msgstr "साइन-इन की प्रतीक्षा की जा रही है. "
 
-#: ../OAuthFlowView.lua:225
+#: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
 msgstr "साइन-इन सफल!"
 
-#: ../OAuthFlowView.lua:231
+#: ../OAuthFlowView.lua:237
+#, fuzzy
+msgid "Failed to save tokens. Please try again."
+msgstr "नेटवर्क त्रुटि। "
+
+#: ../OAuthFlowView.lua:240
 msgid "Error: "
 msgstr "गलती:"
 
-#: ../OAuthFlowView.lua:289
+#: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
 msgstr "साइन-इन सत्र बनाया जा रहा है..."
 
-#: ../OAuthFlowView.lua:301
+#: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
 msgstr "साइन-इन प्रारंभ करने में विफल:"
+
+#: ../OAuthFlowView.lua:321
+#, fuzzy
+msgid "Invalid response from server. Please try again."
+msgstr "नेटवर्क त्रुटि। "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1187,314 +1202,324 @@ msgstr "बनाएं"
 msgid "No playlists yet."
 msgstr "अभी तक कोई प्लेलिस्ट नहीं."
 
-#: ../Settings.lua:91
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "लाइब्रेरी व्यू मोड"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "आधार"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "ढकना"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "ग्रिड"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "लाइब्रेरी सॉर्टिंग मोड"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:107
 msgid "Date added (oldest)"
 msgstr ""
 
-#: ../Settings.lua:107
+#: ../Settings.lua:108
 msgid "Date added (newest)"
 msgstr ""
 
-#: ../Settings.lua:108
+#: ../Settings.lua:109
 msgid "Title (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:109
+#: ../Settings.lua:110
 msgid "Title (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:110
+#: ../Settings.lua:111
 msgid "Unread (fewest)"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:112
 msgid "Unread (most)"
 msgstr ""
 
-#: ../Settings.lua:112
+#: ../Settings.lua:113
 #, fuzzy
 msgid "Last read (oldest)"
 msgstr "अंतिम पाठ अवरोही है"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:114
 #, fuzzy
 msgid "Last read (newest)"
 msgstr "अंतिम पढ़ा: %1"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:115
 msgid "Source (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:115
+#: ../Settings.lua:116
 msgid "Source (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:123
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "प्रति पृष्ठ आइटम (0 = स्वचालित)"
 
-#: ../Settings.lua:134
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "ग्रिड कॉलम"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "ग्रिड पंक्तियाँ"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "शीर्षक को ग्रिड मोड में दिखाएँ"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "ग्रिड मोड में मेटाडेटा दिखाएं"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "मंगा एक्शन टैप करें"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "अध्याय सूची खोलें"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "जारी रखें पढ़ रहे हैं"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "बायोडाटा पढ़ने की पुष्टि छोड़ें"
 
-#: ../Settings.lua:200
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "खोज दृश्य मोड"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "पाठक"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "अध्याय छँटाई मोड"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "अध्याय चढ़ते हुए"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "अध्याय अवरोह द्वारा"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "सांख्यिकी में अध्याय का शीर्षक (कॉमिकइन्फो)"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Chapter title only"
 msgstr "केवल अध्याय का शीर्षक"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter title"
 msgstr "शृंखला + अध्याय शीर्षक"
 
-#: ../Settings.lua:232
+#: ../Settings.lua:233
 msgid "Series + chapter number"
 msgstr "शृंखला + अध्याय संख्या"
 
-#: ../Settings.lua:241
+#: ../Settings.lua:242
 msgid "Preload chapters on reader open"
 msgstr "रीडर पर प्रीलोड अध्याय खुले"
 
-#: ../Settings.lua:252
+#: ../Settings.lua:253
 msgid "Optimize page images (experimental)"
 msgstr "पृष्ठ छवियों को अनुकूलित करें (प्रयोगात्मक)"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:261
 msgid "Concurrent page requests"
 msgstr "समवर्ती पृष्ठ अनुरोध"
 
-#: ../Settings.lua:271
+#: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "आरटीएल को कभी भी चालू न करें, यहां तक ​​कि जापानी मंगा के लिए भी"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
 msgstr "व्यूअर को स्वचालित रूप से मंगा मोड पर सेट करें"
 
-#: ../Settings.lua:289
+#: ../Settings.lua:290
 msgid "Global viewer override"
 msgstr "वैश्विक दर्शक ओवरराइड"
 
-#: ../Settings.lua:306
+#: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
 msgstr "टूलबार रीडर में बटन पिछला अध्याय दिखाएँ"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
 msgstr "टूलबार रीडर में अगला अध्याय बटन दिखाएँ"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "रीडर में विस्तारित राकुयोमी बॉटम टूलबार प्रदर्शित करें"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On bottom toolbar"
 msgstr "निचले टूलबार पर"
 
-#: ../Settings.lua:328
+#: ../Settings.lua:329
 msgid "On top toolbar"
 msgstr "शीर्ष टूलबार पर"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:337
 msgid "Recommended reader settings"
 msgstr "अनुशंसित पाठक सेटिंग्स"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:343
 msgid "Turn off all margins"
 msgstr "सभी मार्जिन बंद करें"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "फ़ोटो से अतिरिक्त किनारों को स्वचालित रूप से काटें (थोड़ा धीमा)"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:361
 msgid "Zoom to full screen"
 msgstr "पूर्ण स्क्रीन पर ज़ूम करें"
 
-#: ../Settings.lua:369
+#: ../Settings.lua:370
 msgid "Zoom to fit image size"
 msgstr "छवि के आकार को फिट करने के लिए ज़ूम करें"
 
-#: ../Settings.lua:382
+#: ../Settings.lua:377
+#, fuzzy
+msgid "Sources"
+msgstr "स्रोत?"
+
+#: ../Settings.lua:383
+#, fuzzy
+msgid "Enable LNReader/JS sources"
+msgstr "स्थापित स्रोत"
+
+#: ../Settings.lua:394
 msgid "Chapter storage path"
 msgstr "अध्याय भंडारण पथ"
 
-#: ../Settings.lua:391
+#: ../Settings.lua:403
 msgid "Storage size limit"
 msgstr "भंडारण आकार सीमा"
 
-#: ../Settings.lua:401
+#: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
 msgstr ""
 
-#: ../Settings.lua:409
+#: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
 msgstr ""
 
-#: ../Settings.lua:417
+#: ../Settings.lua:429
 #, fuzzy
 msgid "Total downloaded"
 msgstr "अध्याय डाउनलोड किया गया"
 
-#: ../Settings.lua:438
+#: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM में अध्याय लिखें (eMMC को सुरक्षित रखें)"
 
-#: ../Settings.lua:446
+#: ../Settings.lua:458
 msgid "RAM storage size. Your RAM is: "
 msgstr "रैम भंडारण का आकार. "
 
-#: ../Settings.lua:455
+#: ../Settings.lua:467
 msgid "Network"
 msgstr "नेटवर्क"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS या SOCKS5 प्रॉक्सी"
 
-#: ../Settings.lua:464
+#: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "प्रॉक्सी यूआरएल http://, https://, या socks5:// से शुरू होना चाहिए"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:481
 msgid "Sync & Updates"
 msgstr "सिंक और अपडेट"
 
-#: ../Settings.lua:475
+#: ../Settings.lua:487
 msgid "WebDAV Sync"
 msgstr "वेबडीएवी सिंक"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:495
 msgid "Enabled cron check for manga updates"
 msgstr "मंगा अपडेट के लिए सक्षम क्रॉन चेक"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:503
 msgid "Source IDs skip check update"
 msgstr "स्रोत आईडी चेक अपडेट छोड़ें"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:509
 msgid "System"
 msgstr "प्रणाली"
 
-#: ../Settings.lua:503
+#: ../Settings.lua:515
 msgid "Allow requisition of the back button"
 msgstr "बैक बटन की मांग की अनुमति दें"
 
-#: ../Settings.lua:510
+#: ../Settings.lua:522
 msgid "Server"
 msgstr "सर्वर"
 
-#: ../Settings.lua:516
+#: ../Settings.lua:528
 msgid "Auto-stop server when leaving library view"
 msgstr "लाइब्रेरी दृश्य छोड़ते समय सर्वर स्वतः बंद हो जाता है"
 
-#: ../Settings.lua:518
+#: ../Settings.lua:530
 msgid "Disabled"
 msgstr "अक्षम"
 
-#: ../Settings.lua:519
+#: ../Settings.lua:531
 msgid "Immediate"
 msgstr "तुरंत"
 
-#: ../Settings.lua:520
+#: ../Settings.lua:532
 msgid "After 30 seconds"
 msgstr "30 सेकंड के बाद"
 
-#: ../Settings.lua:521
+#: ../Settings.lua:533
 msgid "After 1 minute"
 msgstr "1 मिनट बाद"
 
-#: ../Settings.lua:522
+#: ../Settings.lua:534
 msgid "After 5 minutes"
 msgstr "5 मिनिट बाद"
 
-#: ../Settings.lua:523
+#: ../Settings.lua:535
 msgid "After 10 minutes"
 msgstr "10 मिनट बाद"
 
-#: ../Settings.lua:533
+#: ../Settings.lua:545
 msgid "Show chapter download progress"
 msgstr "अध्याय डाउनलोड प्रगति दिखाएँ"
 
-#: ../Settings.lua:540
+#: ../Settings.lua:552
 msgid "Logging"
 msgstr "लॉगिंग"
 
-#: ../Settings.lua:546
+#: ../Settings.lua:558
 msgid "Disable logging"
 msgstr "लॉगिंग अक्षम करें"
 
-#: ../Settings.lua:733
+#: ../Settings.lua:752
 msgid "Failed to test proxy"
 msgstr "प्रॉक्सी का परीक्षण करने में विफल"
 
@@ -1615,96 +1640,96 @@ msgstr "ट्रैकिंग बाइंडिंग हटाई जा �
 msgid "Unlinked"
 msgstr "अनलिंक"
 
-#: ../TrackingSettings.lua:96
+#: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
 msgstr "एनीलिस्ट टोकन चिपकाएँ"
 
-#: ../TrackingSettings.lua:103
+#: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
 msgstr "MAL क्लाइंट आईडी चिपकाएँ"
 
-#: ../TrackingSettings.lua:104
+#: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
 msgstr "MAL क्लाइंट रहस्य चिपकाएँ"
 
-#: ../TrackingSettings.lua:105
+#: ../TrackingSettings.lua:106
 msgid "Paste MAL refresh token"
 msgstr "MAL ताज़ा टोकन चिपकाएँ"
 
-#: ../TrackingSettings.lua:112
+#: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
 msgstr "शिकिमोरी क्लाइंट आईडी चिपकाएँ"
 
-#: ../TrackingSettings.lua:113
+#: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
 msgstr "शिकिमोरी ग्राहक रहस्य चिपकाएँ"
 
-#: ../TrackingSettings.lua:114
+#: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
 msgstr "शिकिमोरी ताज़ा टोकन चिपकाएँ"
 
-#: ../TrackingSettings.lua:121
+#: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
 msgstr "बंगुमी रिफ्रेश टोकन चिपकाएँ"
 
-#: ../TrackingSettings.lua:128
+#: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
 msgstr "मंगाबाका ताज़ा टोकन चिपकाएँ"
 
-#: ../TrackingSettings.lua:129
+#: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
 msgstr "मंगाबाका एपीआई कुंजी चिपकाएँ (एमबी-...)"
 
-#: ../TrackingSettings.lua:136
+#: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
 msgstr "कविता एपीआई कुंजी चिपकाएँ"
 
-#: ../TrackingSettings.lua:143
+#: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
 msgstr "कोमगा एपीआई कुंजी या उपयोगकर्ता नाम: पासवर्ड"
 
-#: ../TrackingSettings.lua:150
+#: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
 msgstr "सुवायोमी बेसिक प्रामाणिक उपयोगकर्ता नाम: पासवर्ड"
 
-#: ../TrackingSettings.lua:161
+#: ../TrackingSettings.lua:162
 msgid "Sign out"
 msgstr "साइन आउट"
 
-#: ../TrackingSettings.lua:163
+#: ../TrackingSettings.lua:164
 msgid "Sign in"
 msgstr "दाखिल करना"
 
-#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+#: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
 msgstr "मान्य"
 
-#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+#: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
 msgstr "सत्यापन किया जा रहा है..."
 
-#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
-#: ../TrackingSettings.lua:229
+#: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
+#: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
 msgstr "क्रेडेंशियल मान्य हैं."
 
-#: ../TrackingSettings.lua:240
+#: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
 msgstr "ऑटो सिंक पढ़ने की प्रगति"
 
-#: ../TrackingSettings.lua:246
+#: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
 msgstr "OAuth ब्रिज सर्वर"
 
-#: ../TrackingSettings.lua:252
+#: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
 msgstr "OAuth ब्रिज सर्वर यूआरएल"
 
-#: ../TrackingSettings.lua:499
+#: ../TrackingSettings.lua:503
 msgid "Signed in as "
 msgstr "इस रूप में साइन इन किया"
 
-#: ../TrackingSettings.lua:501
+#: ../TrackingSettings.lua:505
 msgid "No sign"
 msgstr "कोई संकेत नहीं"
 

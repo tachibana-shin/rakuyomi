@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 06:54+0000\n"
+"POT-Creation-Date: 2026-08-11 10:40-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,7 +34,7 @@ msgstr "버전"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:442
 msgid "Unknown"
 msgstr "알려지지 않은"
 
@@ -50,20 +50,19 @@ msgstr "README를 보고 소스 목록을 추가해 보세요!"
 msgid "Installing source..."
 msgstr "소스 설치 중..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
 msgid "Cancelled!"
 msgstr "취소!"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
 msgid "Complete!"
 msgstr "완벽한!"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
 msgid "Waiting until cancelled…"
 msgstr "취소될 때까지 기다리는 중…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
-#: ../BasicJobDialog.lua:163
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
 msgid "Processing..."
 msgstr "처리 중..."
 
@@ -71,11 +70,11 @@ msgstr "처리 중..."
 msgid "An error occurred"
 msgstr "오류가 발생했습니다"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
 msgid "Unknown error"
 msgstr "알 수 없는 오류"
 
-#: ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:239
 msgid "Error"
 msgstr "오류"
 
@@ -285,7 +284,7 @@ msgid "Details"
 msgstr "세부"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
-#: ../TrackingSettings.lua:416
+#: ../TrackingSettings.lua:420
 msgid "Tracking"
 msgstr "추적"
 
@@ -598,7 +597,7 @@ msgstr "제거하시겠습니까?"
 msgid "source?"
 msgstr "원천?"
 
-#: ../LibraryView.lua:76 ../Settings.lua:85
+#: ../LibraryView.lua:76 ../Settings.lua:86
 msgid "Library"
 msgstr "도서관"
 
@@ -686,7 +685,7 @@ msgstr "클리너 챕터"
 msgid "Manage sources"
 msgstr "소스 관리"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
 msgid "Settings"
 msgstr "설정"
 
@@ -770,7 +769,7 @@ msgstr "용법"
 msgid "Memory"
 msgstr "메모리"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:376
+#: ../LibraryView.lua:1083 ../Settings.lua:388
 msgid "Storage"
 msgstr "저장"
 
@@ -807,7 +806,7 @@ msgid "Type the manga name to search for"
 msgstr "검색할 만화 이름을 입력하세요."
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:195 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "찾다"
 
@@ -846,68 +845,69 @@ msgstr "RendOnly 파일 .cbz 및 .epub 스캔."
 msgid "Clean"
 msgstr "깨끗한"
 
-#: ../LibraryView.lua:1294
-msgid "Deleting..."
+#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
+#, fuzzy, lua-format
+msgid "Deleting... (%d/%d)"
 msgstr "삭제 중..."
 
-#: ../LibraryView.lua:1312
+#: ../LibraryView.lua:1316
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "무료 %s 저장소를 정리했습니다."
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
+#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
 msgid "Cannot refresh while offline"
 msgstr "오프라인 상태에서는 새로고침할 수 없습니다."
 
-#: ../LibraryView.lua:1349
+#: ../LibraryView.lua:1353
 msgid "Refresh mangas..."
 msgstr "만화 새로 고침..."
 
-#: ../LibraryView.lua:1350
+#: ../LibraryView.lua:1354
 msgid "All chapters manga updated!"
 msgstr "모든 챕터 만화가 업데이트되었습니다!"
 
-#: ../LibraryView.lua:1351
+#: ../LibraryView.lua:1355
 msgid "Some manga updates fail:"
 msgstr "일부 만화 업데이트가 실패합니다."
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1374
 msgid "Refresh manga details..."
 msgstr "만화 세부정보 새로 고침..."
 
-#: ../LibraryView.lua:1371
+#: ../LibraryView.lua:1375
 msgid "All manga details refresh!"
 msgstr "모든 만화 세부 정보가 새로 고쳐집니다!"
 
-#: ../LibraryView.lua:1372
+#: ../LibraryView.lua:1376
 msgid "Some manga details refresh fail:"
 msgstr "일부 만화 세부 정보 새로 고침이 실패합니다."
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1392
 msgid "Progress"
 msgstr "진전"
 
-#: ../LibraryView.lua:1406
+#: ../LibraryView.lua:1410
 msgid "Cleaner"
 msgstr "청소기"
 
-#: ../LibraryView.lua:1407
+#: ../LibraryView.lua:1411
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "삭제된 소스의 파일을 포함하여 유효하지 않은 파일 찾기 및 삭제"
 
-#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
+#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
 msgid "Normal"
 msgstr "정상"
 
-#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
+#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
 msgid "Chapter read done"
 msgstr "챕터 읽기 완료"
 
-#: ../LibraryView.lua:1408
+#: ../LibraryView.lua:1412
 msgid "Find and delete chapters that have been read"
 msgstr "읽은 장 찾기 및 삭제"
 
-#: ../LibraryView.lua:1409
+#: ../LibraryView.lua:1413
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "중요: 메타 파일(북마크, 기록)은 보관되지 않습니다!"
 
@@ -1004,23 +1004,23 @@ msgstr "아니요"
 msgid "View Mode"
 msgstr "보기 모드"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
 msgstr "기본"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
 msgstr "스크롤"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
 msgstr "수직의"
 
@@ -1030,7 +1030,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
+#: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
 msgstr "끄다"
 
@@ -1091,45 +1091,60 @@ msgstr "다음으로 로그인"
 msgid "Scan this QR code on your phone to sign in."
 msgstr "로그인하려면 휴대폰에서 이 QR 코드를 스캔하세요."
 
-#: ../OAuthFlowView.lua:104
+#: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
 msgstr "오류: 사용 가능한 브리지 URL이 없습니다."
 
-#: ../OAuthFlowView.lua:114
+#: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
 msgstr "QR 코드를 스캔한 후 로그인 상태를 확인하세요."
 
-#: ../OAuthFlowView.lua:125
+#: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
 msgstr "로그인 상태 확인"
 
-#: ../OAuthFlowView.lua:209
+#: ../OAuthFlowView.lua:210
 msgid "Checking..."
 msgstr "확인 중..."
 
-#: ../OAuthFlowView.lua:215
+#: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
 msgstr "네트워크 오류입니다. "
 
 #: ../OAuthFlowView.lua:222
+#, fuzzy
+msgid "Invalid response. Please try again."
+msgstr "네트워크 오류입니다. "
+
+#: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
 msgstr "로그인을 기다리고 있습니다. "
 
-#: ../OAuthFlowView.lua:225
+#: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
 msgstr "로그인이 완료되었습니다."
 
-#: ../OAuthFlowView.lua:231
+#: ../OAuthFlowView.lua:237
+#, fuzzy
+msgid "Failed to save tokens. Please try again."
+msgstr "네트워크 오류입니다. "
+
+#: ../OAuthFlowView.lua:240
 msgid "Error: "
 msgstr "오류:"
 
-#: ../OAuthFlowView.lua:289
+#: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
 msgstr "로그인 세션 생성 중..."
 
-#: ../OAuthFlowView.lua:301
+#: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
 msgstr "로그인을 시작하지 못했습니다:"
+
+#: ../OAuthFlowView.lua:321
+#, fuzzy
+msgid "Invalid response from server. Please try again."
+msgstr "네트워크 오류입니다. "
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1188,314 +1203,324 @@ msgstr "만들다"
 msgid "No playlists yet."
 msgstr "아직 재생목록이 없습니다."
 
-#: ../Settings.lua:91
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "라이브러리 보기 모드"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "베이스"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "씌우다"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "그리드"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "라이브러리 정렬 모드"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:107
 msgid "Date added (oldest)"
 msgstr ""
 
-#: ../Settings.lua:107
+#: ../Settings.lua:108
 msgid "Date added (newest)"
 msgstr ""
 
-#: ../Settings.lua:108
+#: ../Settings.lua:109
 msgid "Title (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:109
+#: ../Settings.lua:110
 msgid "Title (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:110
+#: ../Settings.lua:111
 msgid "Unread (fewest)"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:112
 msgid "Unread (most)"
 msgstr ""
 
-#: ../Settings.lua:112
+#: ../Settings.lua:113
 #, fuzzy
 msgid "Last read (oldest)"
 msgstr "마지막 읽기 내림차순"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:114
 #, fuzzy
 msgid "Last read (newest)"
 msgstr "마지막 읽기: %1"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:115
 msgid "Source (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:115
+#: ../Settings.lua:116
 msgid "Source (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:123
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "페이지당 항목 수(0 = 자동)"
 
-#: ../Settings.lua:134
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "그리드 열"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "그리드 행"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "그리드 모드에서 제목 표시"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "그리드 모드에서 메타데이터 표시"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "탭 만화 액션"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "챕터 목록 열기"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "계속 읽기"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "이력서 읽기 확인 건너뛰기"
 
-#: ../Settings.lua:200
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "검색 보기 모드"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "리더"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "챕터 정렬 모드"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "장별 오름차순"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "장 내림차순"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "통계의 장 제목(ComicInfo)"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Chapter title only"
 msgstr "장 제목만"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter title"
 msgstr "시리즈 + 장 제목"
 
-#: ../Settings.lua:232
+#: ../Settings.lua:233
 msgid "Series + chapter number"
 msgstr "시리즈 + 장 번호"
 
-#: ../Settings.lua:241
+#: ../Settings.lua:242
 msgid "Preload chapters on reader open"
 msgstr "리더를 열 때 챕터를 미리 로드하세요."
 
-#: ../Settings.lua:252
+#: ../Settings.lua:253
 msgid "Optimize page images (experimental)"
 msgstr "페이지 이미지 최적화(실험적)"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:261
 msgid "Concurrent page requests"
 msgstr "동시 페이지 요청"
 
-#: ../Settings.lua:271
+#: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "일본 만화라도 RTL을 절대 켜지 마세요"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
 msgstr "뷰어를 만화 모드로 자동 설정"
 
-#: ../Settings.lua:289
+#: ../Settings.lua:290
 msgid "Global viewer override"
 msgstr "글로벌 뷰어 재정의"
 
-#: ../Settings.lua:306
+#: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
 msgstr "도구 모음 리더에 버튼 이전 장 표시"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
 msgstr "툴바 리더에 버튼 다음 장 표시"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "리더에 확장된 라쿠요미 하단 도구 모음 표시"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On bottom toolbar"
 msgstr "하단 툴바에"
 
-#: ../Settings.lua:328
+#: ../Settings.lua:329
 msgid "On top toolbar"
 msgstr "상단 툴바에"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:337
 msgid "Recommended reader settings"
 msgstr "권장 리더 설정"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:343
 msgid "Turn off all margins"
 msgstr "모든 여백 끄기"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "사진에서 초과 가장자리 자동 자르기(조금 느림)"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:361
 msgid "Zoom to full screen"
 msgstr "전체 화면으로 확대"
 
-#: ../Settings.lua:369
+#: ../Settings.lua:370
 msgid "Zoom to fit image size"
 msgstr "이미지 크기에 맞게 확대/축소"
 
-#: ../Settings.lua:382
+#: ../Settings.lua:377
+#, fuzzy
+msgid "Sources"
+msgstr "원천?"
+
+#: ../Settings.lua:383
+#, fuzzy
+msgid "Enable LNReader/JS sources"
+msgstr "설치된 소스"
+
+#: ../Settings.lua:394
 msgid "Chapter storage path"
 msgstr "챕터 저장 경로"
 
-#: ../Settings.lua:391
+#: ../Settings.lua:403
 msgid "Storage size limit"
 msgstr "저장소 크기 제한"
 
-#: ../Settings.lua:401
+#: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
 msgstr ""
 
-#: ../Settings.lua:409
+#: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
 msgstr ""
 
-#: ../Settings.lua:417
+#: ../Settings.lua:429
 #, fuzzy
 msgid "Total downloaded"
 msgstr "챕터가 다운로드됨"
 
-#: ../Settings.lua:438
+#: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "RAM에 챕터 쓰기(eMMC 보호)"
 
-#: ../Settings.lua:446
+#: ../Settings.lua:458
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM 저장 크기. "
 
-#: ../Settings.lua:455
+#: ../Settings.lua:467
 msgid "Network"
 msgstr "회로망"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP, HTTPS 또는 SOCKS5 프록시"
 
-#: ../Settings.lua:464
+#: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "프록시 URL은 http://, https:// 또는 socks5://로 시작해야 합니다."
 
-#: ../Settings.lua:469
+#: ../Settings.lua:481
 msgid "Sync & Updates"
 msgstr "동기화 및 업데이트"
 
-#: ../Settings.lua:475
+#: ../Settings.lua:487
 msgid "WebDAV Sync"
 msgstr "WebDAV 동기화"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:495
 msgid "Enabled cron check for manga updates"
 msgstr "만화 업데이트에 대한 크론 확인이 활성화되었습니다."
 
-#: ../Settings.lua:491
+#: ../Settings.lua:503
 msgid "Source IDs skip check update"
 msgstr "소스 ID가 확인 업데이트를 건너뜁니다."
 
-#: ../Settings.lua:497
+#: ../Settings.lua:509
 msgid "System"
 msgstr "체계"
 
-#: ../Settings.lua:503
+#: ../Settings.lua:515
 msgid "Allow requisition of the back button"
 msgstr "뒤로 버튼 요청 허용"
 
-#: ../Settings.lua:510
+#: ../Settings.lua:522
 msgid "Server"
 msgstr "섬기는 사람"
 
-#: ../Settings.lua:516
+#: ../Settings.lua:528
 msgid "Auto-stop server when leaving library view"
 msgstr "라이브러리 보기를 나갈 때 서버 자동 중지"
 
-#: ../Settings.lua:518
+#: ../Settings.lua:530
 msgid "Disabled"
 msgstr "장애가 있는"
 
-#: ../Settings.lua:519
+#: ../Settings.lua:531
 msgid "Immediate"
 msgstr "즉각적인"
 
-#: ../Settings.lua:520
+#: ../Settings.lua:532
 msgid "After 30 seconds"
 msgstr "30초 후"
 
-#: ../Settings.lua:521
+#: ../Settings.lua:533
 msgid "After 1 minute"
 msgstr "1분 후"
 
-#: ../Settings.lua:522
+#: ../Settings.lua:534
 msgid "After 5 minutes"
 msgstr "5분 후"
 
-#: ../Settings.lua:523
+#: ../Settings.lua:535
 msgid "After 10 minutes"
 msgstr "10분 후"
 
-#: ../Settings.lua:533
+#: ../Settings.lua:545
 msgid "Show chapter download progress"
 msgstr "챕터 다운로드 진행률 표시"
 
-#: ../Settings.lua:540
+#: ../Settings.lua:552
 msgid "Logging"
 msgstr "벌채 반출"
 
-#: ../Settings.lua:546
+#: ../Settings.lua:558
 msgid "Disable logging"
 msgstr "로깅 비활성화"
 
-#: ../Settings.lua:733
+#: ../Settings.lua:752
 msgid "Failed to test proxy"
 msgstr "프록시 테스트에 실패했습니다."
 
@@ -1616,96 +1641,96 @@ msgstr "추적 바인딩 삭제 중..."
 msgid "Unlinked"
 msgstr "연결 해제됨"
 
-#: ../TrackingSettings.lua:96
+#: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
 msgstr "AniList 토큰 붙여넣기"
 
-#: ../TrackingSettings.lua:103
+#: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
 msgstr "MAL 클라이언트 ID 붙여넣기"
 
-#: ../TrackingSettings.lua:104
+#: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
 msgstr "MAL 클라이언트 비밀번호 붙여넣기"
 
-#: ../TrackingSettings.lua:105
+#: ../TrackingSettings.lua:106
 msgid "Paste MAL refresh token"
 msgstr "MAL 새로 고침 토큰 붙여넣기"
 
-#: ../TrackingSettings.lua:112
+#: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
 msgstr "Shikimori 클라이언트 ID 붙여넣기"
 
-#: ../TrackingSettings.lua:113
+#: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
 msgstr "Shikimori 클라이언트 비밀 붙여넣기"
 
-#: ../TrackingSettings.lua:114
+#: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
 msgstr "시키모리 리프레시 토큰 붙여넣기"
 
-#: ../TrackingSettings.lua:121
+#: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
 msgstr "반구미 리프레시 토큰 붙여넣기"
 
-#: ../TrackingSettings.lua:128
+#: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
 msgstr "MangaBaka 새로고침 토큰 붙여넣기"
 
-#: ../TrackingSettings.lua:129
+#: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
 msgstr "MangaBaka API 키(mb-...) 붙여넣기"
 
-#: ../TrackingSettings.lua:136
+#: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
 msgstr "Kavita API 키 붙여넣기"
 
-#: ../TrackingSettings.lua:143
+#: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
 msgstr "Komga API 키 또는 사용자 이름:비밀번호"
 
-#: ../TrackingSettings.lua:150
+#: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
 msgstr "Suwayomi 기본 인증 사용자 이름:비밀번호"
 
-#: ../TrackingSettings.lua:161
+#: ../TrackingSettings.lua:162
 msgid "Sign out"
 msgstr "로그아웃"
 
-#: ../TrackingSettings.lua:163
+#: ../TrackingSettings.lua:164
 msgid "Sign in"
 msgstr "로그인"
 
-#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+#: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
 msgstr "검증"
 
-#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+#: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
 msgstr "검증 중..."
 
-#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
-#: ../TrackingSettings.lua:229
+#: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
+#: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
 msgstr "자격 증명이 유효합니다."
 
-#: ../TrackingSettings.lua:240
+#: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
 msgstr "자동 동기화 읽기 진행"
 
-#: ../TrackingSettings.lua:246
+#: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
 msgstr "OAuth 브리지 서버"
 
-#: ../TrackingSettings.lua:252
+#: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
 msgstr "OAuth 브리지 서버 URL"
 
-#: ../TrackingSettings.lua:499
+#: ../TrackingSettings.lua:503
 msgid "Signed in as "
 msgstr "다음 계정으로 로그인됨"
 
-#: ../TrackingSettings.lua:501
+#: ../TrackingSettings.lua:505
 msgid "No sign"
 msgstr "흔적 없음"
 

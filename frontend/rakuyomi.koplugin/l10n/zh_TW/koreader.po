@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rakuyomi.koreader \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 06:54+0000\n"
+"POT-Creation-Date: 2026-08-11 10:40-0400\n"
 "PO-Revision-Date: 2025-12-26 23:18+0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgstr "版本"
 
 #: ../AvailableSourcesListing.lua:98 ../ChapterListing.lua:302
 #: ../ChapterListing.lua:363 ../InstalledSourcesListing.lua:83
-#: ../MangaInfoWidget.lua:458 ../Settings.lua:430
+#: ../MangaInfoWidget.lua:458 ../Settings.lua:442
 msgid "Unknown"
 msgstr "未知"
 
@@ -49,20 +49,19 @@ msgstr "嘗試通過查看我們的自述文件來添加一些源列表！"
 msgid "Installing source..."
 msgstr "正在安裝源..."
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:244
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:235
 msgid "Cancelled!"
 msgstr "取消！"
 
-#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:240
+#: ../BasicJobDialog.lua:75 ../BasicJobDialog.lua:231
 msgid "Complete!"
 msgstr "完全的！"
 
-#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:188
+#: ../BasicJobDialog.lua:78 ../BasicJobDialog.lua:179
 msgid "Waiting until cancelled…"
 msgstr "等到取消…"
 
-#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:153
-#: ../BasicJobDialog.lua:163
+#: ../BasicJobDialog.lua:84 ../BasicJobDialog.lua:87 ../BasicJobDialog.lua:155
 msgid "Processing..."
 msgstr "加工..."
 
@@ -70,11 +69,11 @@ msgstr "加工..."
 msgid "An error occurred"
 msgstr "發生錯誤"
 
-#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:91 ../BasicJobDialog.lua:239
 msgid "Unknown error"
 msgstr "未知錯誤"
 
-#: ../BasicJobDialog.lua:248
+#: ../BasicJobDialog.lua:239
 msgid "Error"
 msgstr "錯誤"
 
@@ -284,7 +283,7 @@ msgid "Details"
 msgstr "細節"
 
 #: ../ChapterListing.lua:1120 ../LibraryView.lua:628 ../LibraryView.lua:924
-#: ../TrackingSettings.lua:416
+#: ../TrackingSettings.lua:420
 msgid "Tracking"
 msgstr "追蹤"
 
@@ -597,7 +596,7 @@ msgstr "您想刪除"
 msgid "source?"
 msgstr "來源？"
 
-#: ../LibraryView.lua:76 ../Settings.lua:85
+#: ../LibraryView.lua:76 ../Settings.lua:86
 msgid "Library"
 msgstr "圖書館"
 
@@ -685,7 +684,7 @@ msgstr "更乾淨的章節"
 msgid "Manage sources"
 msgstr "管理來源"
 
-#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:634
+#: ../LibraryView.lua:916 ../LibraryView.lua:1167 ../Settings.lua:646
 msgid "Settings"
 msgstr "設定"
 
@@ -769,7 +768,7 @@ msgstr "用法"
 msgid "Memory"
 msgstr "記憶"
 
-#: ../LibraryView.lua:1083 ../Settings.lua:376
+#: ../LibraryView.lua:1083 ../Settings.lua:388
 msgid "Storage"
 msgstr "貯存"
 
@@ -806,7 +805,7 @@ msgid "Type the manga name to search for"
 msgstr "輸入要搜索的漫畫名稱"
 
 #: ../LibraryView.lua:1145 ../LibraryView.lua:1154 ../LibraryView.lua:1199
-#: ../LibraryView.lua:1228 ../Settings.lua:194 ../TrackingMenu.lua:246
+#: ../LibraryView.lua:1228 ../Settings.lua:195 ../TrackingMenu.lua:246
 msgid "Search"
 msgstr "搜尋"
 
@@ -845,68 +844,69 @@ msgstr "RendOnly 文件 .cbz 和 .epub 掃描。"
 msgid "Clean"
 msgstr "乾淨的"
 
-#: ../LibraryView.lua:1294
-msgid "Deleting..."
+#: ../LibraryView.lua:1296 ../LibraryView.lua:1309
+#, fuzzy, lua-format
+msgid "Deleting... (%d/%d)"
 msgstr "正在刪除..."
 
-#: ../LibraryView.lua:1312
+#: ../LibraryView.lua:1316
 #, lua-format
 msgid "Cleaned free %s storage"
 msgstr "已清理免費 %s 存儲空間"
 
-#: ../LibraryView.lua:1327 ../LibraryView.lua:1339 ../LibraryView.lua:1360
+#: ../LibraryView.lua:1331 ../LibraryView.lua:1343 ../LibraryView.lua:1364
 msgid "Cannot refresh while offline"
 msgstr "離線時無法刷新"
 
-#: ../LibraryView.lua:1349
+#: ../LibraryView.lua:1353
 msgid "Refresh mangas..."
 msgstr "刷新漫畫..."
 
-#: ../LibraryView.lua:1350
+#: ../LibraryView.lua:1354
 msgid "All chapters manga updated!"
 msgstr "漫畫全部章節更新！"
 
-#: ../LibraryView.lua:1351
+#: ../LibraryView.lua:1355
 msgid "Some manga updates fail:"
 msgstr "一些漫畫更新失敗："
 
-#: ../LibraryView.lua:1370
+#: ../LibraryView.lua:1374
 msgid "Refresh manga details..."
 msgstr "刷新漫畫詳情..."
 
-#: ../LibraryView.lua:1371
+#: ../LibraryView.lua:1375
 msgid "All manga details refresh!"
 msgstr "所有漫畫細節刷新！"
 
-#: ../LibraryView.lua:1372
+#: ../LibraryView.lua:1376
 msgid "Some manga details refresh fail:"
 msgstr "部分漫畫詳情刷新失敗："
 
-#: ../LibraryView.lua:1388
+#: ../LibraryView.lua:1392
 msgid "Progress"
 msgstr "進步"
 
-#: ../LibraryView.lua:1406
+#: ../LibraryView.lua:1410
 msgid "Cleaner"
 msgstr "清潔工"
 
-#: ../LibraryView.lua:1407
+#: ../LibraryView.lua:1411
 msgid "Find and delete invalid files including files from deleted sources"
 msgstr "查找並刪除無效文件，包括來自已刪除源的文件"
 
-#: ../LibraryView.lua:1407 ../LibraryView.lua:1410
+#: ../LibraryView.lua:1411 ../LibraryView.lua:1414
 msgid "Normal"
 msgstr "普通的"
 
-#: ../LibraryView.lua:1408 ../LibraryView.lua:1416
+#: ../LibraryView.lua:1412 ../LibraryView.lua:1420
 msgid "Chapter read done"
 msgstr "章節已讀完"
 
-#: ../LibraryView.lua:1408
+#: ../LibraryView.lua:1412
 msgid "Find and delete chapters that have been read"
 msgstr "尋找並刪除已閱讀的章節"
 
-#: ../LibraryView.lua:1409
+#: ../LibraryView.lua:1413
 msgid "IMPORTANT: Meta files (bookmark, history) not keep!"
 msgstr "重要提示：元文件（書籤、歷史記錄）不保留！"
 
@@ -1003,23 +1003,23 @@ msgstr "不"
 msgid "View Mode"
 msgstr "查看模式"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:292
+#: ../MangaReader.lua:333 ../MangaReader.lua:358 ../Settings.lua:293
 msgid "Default"
 msgstr "預設"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:294
+#: ../MangaReader.lua:333 ../MangaReader.lua:360 ../Settings.lua:295
 msgid "LTR"
 msgstr "LTR"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:293
+#: ../MangaReader.lua:333 ../MangaReader.lua:359 ../Settings.lua:294
 msgid "RTL"
 msgstr "RTL"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:296
+#: ../MangaReader.lua:333 ../MangaReader.lua:362 ../Settings.lua:297
 msgid "Scroll"
 msgstr "捲動"
 
-#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:295
+#: ../MangaReader.lua:333 ../MangaReader.lua:361 ../Settings.lua:296
 msgid "Vertical"
 msgstr "垂直的"
 
@@ -1029,7 +1029,7 @@ msgid ""
 "Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (left-to-right for Western comics), Vertical (long-strip webtoons), and Scroll (continuous scroll)."
 msgstr ""
 
-#: ../MangaReader.lua:347 ../Settings.lua:291 ../Settings.lua:326
+#: ../MangaReader.lua:347 ../Settings.lua:292 ../Settings.lua:327
 msgid "Off"
 msgstr "離開"
 
@@ -1090,45 +1090,60 @@ msgstr "登入方式"
 msgid "Scan this QR code on your phone to sign in."
 msgstr "在手機上掃描此二維碼即可登入。"
 
-#: ../OAuthFlowView.lua:104
+#: ../OAuthFlowView.lua:105
 msgid "Error: No bridge URL available."
 msgstr "錯誤：沒有可用的橋接 URL。"
 
-#: ../OAuthFlowView.lua:114
+#: ../OAuthFlowView.lua:115
 msgid "Scan the QR code, then check sign-in status."
 msgstr "掃描二維碼，然後檢查登入狀態。"
 
-#: ../OAuthFlowView.lua:125
+#: ../OAuthFlowView.lua:126
 msgid "Check sign-in status"
 msgstr "檢查登入狀態"
 
-#: ../OAuthFlowView.lua:209
+#: ../OAuthFlowView.lua:210
 msgid "Checking..."
 msgstr "檢查..."
 
-#: ../OAuthFlowView.lua:215
+#: ../OAuthFlowView.lua:216
 msgid "Network error. Please try again."
 msgstr "網路錯誤。請再試一次。"
 
 #: ../OAuthFlowView.lua:222
+#, fuzzy
+msgid "Invalid response. Please try again."
+msgstr "網路錯誤。請再試一次。"
+
+#: ../OAuthFlowView.lua:227
 msgid "Waiting for sign-in. Scan the QR code, then tap Check."
 msgstr "等待登入。掃描二維碼，然後點選「檢查」。"
 
-#: ../OAuthFlowView.lua:225
+#: ../OAuthFlowView.lua:232
 msgid "Sign-in successful!"
 msgstr "登入成功！"
 
-#: ../OAuthFlowView.lua:231
+#: ../OAuthFlowView.lua:237
+#, fuzzy
+msgid "Failed to save tokens. Please try again."
+msgstr "網路錯誤。請再試一次。"
+
+#: ../OAuthFlowView.lua:240
 msgid "Error: "
 msgstr "錯誤："
 
-#: ../OAuthFlowView.lua:289
+#: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
 msgstr "正在建立登入會話..."
 
-#: ../OAuthFlowView.lua:301
+#: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
 msgstr "無法開始登入："
+
+#: ../OAuthFlowView.lua:321
+#, fuzzy
+msgid "Invalid response from server. Please try again."
+msgstr "網路錯誤。請再試一次。"
 
 #: ../OfflineAlertDialog.lua:44
 msgid "Some features may be limited"
@@ -1187,314 +1202,324 @@ msgstr "創造"
 msgid "No playlists yet."
 msgstr "還沒有播放清單。"
 
-#: ../Settings.lua:91
+#: ../Settings.lua:92
 msgid "Library view mode"
 msgstr "庫查看模式"
 
-#: ../Settings.lua:93 ../Settings.lua:202
+#: ../Settings.lua:94 ../Settings.lua:203
 msgid "Base"
 msgstr "根據"
 
-#: ../Settings.lua:94 ../Settings.lua:203
+#: ../Settings.lua:95 ../Settings.lua:204
 msgid "Cover"
 msgstr "覆蓋"
 
-#: ../Settings.lua:95 ../Settings.lua:204
+#: ../Settings.lua:96 ../Settings.lua:205
 msgid "Grid"
 msgstr "網格"
 
-#: ../Settings.lua:104
+#: ../Settings.lua:105
 msgid "Library sorting mode"
 msgstr "圖書館排序模式"
 
-#: ../Settings.lua:106
+#: ../Settings.lua:107
 msgid "Date added (oldest)"
 msgstr ""
 
-#: ../Settings.lua:107
+#: ../Settings.lua:108
 msgid "Date added (newest)"
 msgstr ""
 
-#: ../Settings.lua:108
+#: ../Settings.lua:109
 msgid "Title (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:109
+#: ../Settings.lua:110
 msgid "Title (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:110
+#: ../Settings.lua:111
 msgid "Unread (fewest)"
 msgstr ""
 
-#: ../Settings.lua:111
+#: ../Settings.lua:112
 msgid "Unread (most)"
 msgstr ""
 
-#: ../Settings.lua:112
+#: ../Settings.lua:113
 #, fuzzy
 msgid "Last read (oldest)"
 msgstr "上次讀取降序"
 
-#: ../Settings.lua:113
+#: ../Settings.lua:114
 #, fuzzy
 msgid "Last read (newest)"
 msgstr "上次閱讀：%1"
 
-#: ../Settings.lua:114
+#: ../Settings.lua:115
 msgid "Source (A-Z)"
 msgstr ""
 
-#: ../Settings.lua:115
+#: ../Settings.lua:116
 msgid "Source (Z-A)"
 msgstr ""
 
-#: ../Settings.lua:123
+#: ../Settings.lua:124
 msgid "Items per page (0 = auto)"
 msgstr "每頁項目數（0 = 自動）"
 
-#: ../Settings.lua:134
+#: ../Settings.lua:135
 msgid "Grid columns"
 msgstr "網格列"
 
-#: ../Settings.lua:145
+#: ../Settings.lua:146
 msgid "Grid rows"
 msgstr "網格行"
 
-#: ../Settings.lua:156
+#: ../Settings.lua:157
 msgid "Show title in grid mode"
 msgstr "以網格模式顯示標題"
 
-#: ../Settings.lua:165
+#: ../Settings.lua:166
 msgid "Show metadata in grid mode"
 msgstr "以網格模式顯示元數據"
 
-#: ../Settings.lua:174
+#: ../Settings.lua:175
 msgid "Tap manga action"
 msgstr "點擊漫畫動作"
 
-#: ../Settings.lua:176
+#: ../Settings.lua:177
 msgid "Open chapter list"
 msgstr "打開章節列表"
 
-#: ../Settings.lua:177
+#: ../Settings.lua:178
 msgid "Continue reading"
 msgstr "繼續閱讀"
 
-#: ../Settings.lua:187
+#: ../Settings.lua:188
 msgid "Skip resume reading confirmation"
 msgstr "跳過繼續閱讀確認"
 
-#: ../Settings.lua:200
+#: ../Settings.lua:201
 msgid "Search view mode"
 msgstr "搜尋視圖模式"
 
-#: ../Settings.lua:211
+#: ../Settings.lua:212
 msgid "Reader"
 msgstr "讀者"
 
-#: ../Settings.lua:217
+#: ../Settings.lua:218
 msgid "Chapter sorting mode"
 msgstr "章節排序模式"
 
-#: ../Settings.lua:219
+#: ../Settings.lua:220
 msgid "By chapter ascending"
 msgstr "按章節升序"
 
-#: ../Settings.lua:220
+#: ../Settings.lua:221
 msgid "By chapter descending"
 msgstr "按章節降序"
 
-#: ../Settings.lua:228
+#: ../Settings.lua:229
 msgid "Chapter title in statistics (ComicInfo)"
 msgstr "統計中的章節標題 (ComicInfo)"
 
-#: ../Settings.lua:230
+#: ../Settings.lua:231
 msgid "Chapter title only"
 msgstr "僅章節標題"
 
-#: ../Settings.lua:231
+#: ../Settings.lua:232
 msgid "Series + chapter title"
 msgstr "系列+章節標題"
 
-#: ../Settings.lua:232
+#: ../Settings.lua:233
 msgid "Series + chapter number"
 msgstr "系列+章節號"
 
-#: ../Settings.lua:241
+#: ../Settings.lua:242
 msgid "Preload chapters on reader open"
 msgstr "在讀者打開時預加載章節"
 
-#: ../Settings.lua:252
+#: ../Settings.lua:253
 msgid "Optimize page images (experimental)"
 msgstr "優化頁面圖像（實驗）"
 
-#: ../Settings.lua:260
+#: ../Settings.lua:261
 msgid "Concurrent page requests"
 msgstr "並發頁面請求"
 
-#: ../Settings.lua:271
+#: ../Settings.lua:272
 msgid "Never turn on RTL, even for Japanese manga"
 msgstr "切勿開啟 RTL，即使是日本漫畫"
 
-#: ../Settings.lua:280
+#: ../Settings.lua:281
 msgid "Automatically set the viewer to manga mode"
 msgstr "自動將檢視器設定為漫畫模式"
 
-#: ../Settings.lua:289
+#: ../Settings.lua:290
 msgid "Global viewer override"
 msgstr "全域檢視器覆蓋"
 
-#: ../Settings.lua:306
+#: ../Settings.lua:307
 msgid "Show button previous chapter in toolbar reader"
 msgstr "在工具列閱讀器中顯示按鈕上一章"
 
-#: ../Settings.lua:315
+#: ../Settings.lua:316
 msgid "Show button next chapter in toolbar reader"
 msgstr "在工具列閱讀器中顯示下一章按鈕"
 
-#: ../Settings.lua:324
+#: ../Settings.lua:325
 msgid "Display the expanded rakuyomi bottom toolbar in the reader"
 msgstr "在閱讀器中顯示展開的樂讀底部工具列"
 
-#: ../Settings.lua:327
+#: ../Settings.lua:328
 msgid "On bottom toolbar"
 msgstr "在底部工具列上"
 
-#: ../Settings.lua:328
+#: ../Settings.lua:329
 msgid "On top toolbar"
 msgstr "頂部工具列上"
 
-#: ../Settings.lua:336
+#: ../Settings.lua:337
 msgid "Recommended reader settings"
 msgstr "推薦的讀卡機設置"
 
-#: ../Settings.lua:342
+#: ../Settings.lua:343
 msgid "Turn off all margins"
 msgstr "關閉所有邊距"
 
-#: ../Settings.lua:351
+#: ../Settings.lua:352
 msgid "Automatically crop excess edges from photos (a little slow)"
 msgstr "自動裁切照片中多餘的邊緣（有點慢）"
 
-#: ../Settings.lua:360
+#: ../Settings.lua:361
 msgid "Zoom to full screen"
 msgstr "縮放至全螢幕"
 
-#: ../Settings.lua:369
+#: ../Settings.lua:370
 msgid "Zoom to fit image size"
 msgstr "縮放以適合圖像尺寸"
 
-#: ../Settings.lua:382
+#: ../Settings.lua:377
+#, fuzzy
+msgid "Sources"
+msgstr "來源？"
+
+#: ../Settings.lua:383
+#, fuzzy
+msgid "Enable LNReader/JS sources"
+msgstr "已安裝的源"
+
+#: ../Settings.lua:394
 msgid "Chapter storage path"
 msgstr "章節存儲路徑"
 
-#: ../Settings.lua:391
+#: ../Settings.lua:403
 msgid "Storage size limit"
 msgstr "存儲大小限制"
 
-#: ../Settings.lua:401
+#: ../Settings.lua:413
 msgid "Delete downloads when removing from library"
 msgstr ""
 
-#: ../Settings.lua:409
+#: ../Settings.lua:421
 msgid "Delete downloads after marking as read"
 msgstr ""
 
-#: ../Settings.lua:417
+#: ../Settings.lua:429
 #, fuzzy
 msgid "Total downloaded"
 msgstr "章節已下載"
 
-#: ../Settings.lua:438
+#: ../Settings.lua:450
 msgid "Write chapters to RAM (protect eMMC)"
 msgstr "將章節寫入RAM（保護eMMC）"
 
-#: ../Settings.lua:446
+#: ../Settings.lua:458
 msgid "RAM storage size. Your RAM is: "
 msgstr "RAM 儲存大小。您的記憶體是："
 
-#: ../Settings.lua:455
+#: ../Settings.lua:467
 msgid "Network"
 msgstr "網路"
 
-#: ../Settings.lua:461
+#: ../Settings.lua:473
 msgid "HTTP, HTTPS or SOCKS5 Proxy"
 msgstr "HTTP、HTTPS 或 SOCKS5 代理"
 
-#: ../Settings.lua:464
+#: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
 msgstr "代理 URL 必須以 http://、https:// 或 socks5:// 開頭"
 
-#: ../Settings.lua:469
+#: ../Settings.lua:481
 msgid "Sync & Updates"
 msgstr "同步和更新"
 
-#: ../Settings.lua:475
+#: ../Settings.lua:487
 msgid "WebDAV Sync"
 msgstr "網絡DAV同步"
 
-#: ../Settings.lua:483
+#: ../Settings.lua:495
 msgid "Enabled cron check for manga updates"
 msgstr "啟用 cron 檢查漫畫更新"
 
-#: ../Settings.lua:491
+#: ../Settings.lua:503
 msgid "Source IDs skip check update"
 msgstr "源 ID 跳過檢查更新"
 
-#: ../Settings.lua:497
+#: ../Settings.lua:509
 msgid "System"
 msgstr "系統"
 
-#: ../Settings.lua:503
+#: ../Settings.lua:515
 msgid "Allow requisition of the back button"
 msgstr "允許請求後退按鈕"
 
-#: ../Settings.lua:510
+#: ../Settings.lua:522
 msgid "Server"
 msgstr "伺服器"
 
-#: ../Settings.lua:516
+#: ../Settings.lua:528
 msgid "Auto-stop server when leaving library view"
 msgstr "離開庫視圖時自動停止伺服器"
 
-#: ../Settings.lua:518
+#: ../Settings.lua:530
 msgid "Disabled"
 msgstr "殘障人士"
 
-#: ../Settings.lua:519
+#: ../Settings.lua:531
 msgid "Immediate"
 msgstr "即時"
 
-#: ../Settings.lua:520
+#: ../Settings.lua:532
 msgid "After 30 seconds"
 msgstr "30秒後"
 
-#: ../Settings.lua:521
+#: ../Settings.lua:533
 msgid "After 1 minute"
 msgstr "1分鐘後"
 
-#: ../Settings.lua:522
+#: ../Settings.lua:534
 msgid "After 5 minutes"
 msgstr "5分鐘後"
 
-#: ../Settings.lua:523
+#: ../Settings.lua:535
 msgid "After 10 minutes"
 msgstr "10分鐘後"
 
-#: ../Settings.lua:533
+#: ../Settings.lua:545
 msgid "Show chapter download progress"
 msgstr "顯示章節下載進度"
 
-#: ../Settings.lua:540
+#: ../Settings.lua:552
 msgid "Logging"
 msgstr "記錄"
 
-#: ../Settings.lua:546
+#: ../Settings.lua:558
 msgid "Disable logging"
 msgstr "停用日誌記錄"
 
-#: ../Settings.lua:733
+#: ../Settings.lua:752
 msgid "Failed to test proxy"
 msgstr "測試代理失敗"
 
@@ -1615,96 +1640,96 @@ msgstr "正在刪除追蹤綁定..."
 msgid "Unlinked"
 msgstr "未連結"
 
-#: ../TrackingSettings.lua:96
+#: ../TrackingSettings.lua:97
 msgid "Paste AniList token"
 msgstr "貼上 AniList 令牌"
 
-#: ../TrackingSettings.lua:103
+#: ../TrackingSettings.lua:104
 msgid "Paste MAL client ID"
 msgstr "貼上 MAL 用戶端 ID"
 
-#: ../TrackingSettings.lua:104
+#: ../TrackingSettings.lua:105
 msgid "Paste MAL client secret"
 msgstr "貼上 MAL 用戶端金鑰"
 
-#: ../TrackingSettings.lua:105
+#: ../TrackingSettings.lua:106
 msgid "Paste MAL refresh token"
 msgstr "貼上 MAL 刷新令牌"
 
-#: ../TrackingSettings.lua:112
+#: ../TrackingSettings.lua:113
 msgid "Paste Shikimori client ID"
 msgstr "貼上式森客戶ID"
 
-#: ../TrackingSettings.lua:113
+#: ../TrackingSettings.lua:114
 msgid "Paste Shikimori client secret"
 msgstr "貼 Shikimori 用戶端機密"
 
-#: ../TrackingSettings.lua:114
+#: ../TrackingSettings.lua:115
 msgid "Paste Shikimori refresh token"
 msgstr "貼上森刷新令牌"
 
-#: ../TrackingSettings.lua:121
+#: ../TrackingSettings.lua:122
 msgid "Paste Bangumi refresh token"
 msgstr "貼上 Bangumi 刷新令牌"
 
-#: ../TrackingSettings.lua:128
+#: ../TrackingSettings.lua:129
 msgid "Paste MangaBaka refresh token"
 msgstr "貼上 MangaBaka 刷新令牌"
 
-#: ../TrackingSettings.lua:129
+#: ../TrackingSettings.lua:130
 msgid "Paste MangaBaka API Key (mb-...)"
 msgstr "貼上 MangaBaka API 金鑰 (mb-...)"
 
-#: ../TrackingSettings.lua:136
+#: ../TrackingSettings.lua:137
 msgid "Paste Kavita API Key"
 msgstr "貼上 Kavita API 金鑰"
 
-#: ../TrackingSettings.lua:143
+#: ../TrackingSettings.lua:144
 msgid "Komga API key or username:password"
 msgstr "Komga API 金鑰或使用者名稱:密碼"
 
-#: ../TrackingSettings.lua:150
+#: ../TrackingSettings.lua:151
 msgid "Suwayomi Basic Auth username:password"
 msgstr "Suwayomi 基本驗證 使用者名稱:密碼"
 
-#: ../TrackingSettings.lua:161
+#: ../TrackingSettings.lua:162
 msgid "Sign out"
 msgstr "登出"
 
-#: ../TrackingSettings.lua:163
+#: ../TrackingSettings.lua:164
 msgid "Sign in"
 msgstr "登入"
 
-#: ../TrackingSettings.lua:183 ../TrackingSettings.lua:214
+#: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
 msgstr "證實"
 
-#: ../TrackingSettings.lua:187 ../TrackingSettings.lua:218
+#: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
 msgstr "正在驗證..."
 
-#: ../TrackingSettings.lua:200 ../TrackingSettings.lua:202
-#: ../TrackingSettings.lua:229
+#: ../TrackingSettings.lua:201 ../TrackingSettings.lua:203
+#: ../TrackingSettings.lua:230
 msgid "Credentials are valid."
 msgstr "憑證有效。"
 
-#: ../TrackingSettings.lua:240
+#: ../TrackingSettings.lua:241
 msgid "Auto sync reading progress"
 msgstr "自動同步閱讀進度"
 
-#: ../TrackingSettings.lua:246
+#: ../TrackingSettings.lua:247
 msgid "OAuth Bridge Server"
 msgstr "OAuth 橋接伺服器"
 
-#: ../TrackingSettings.lua:252
+#: ../TrackingSettings.lua:253
 msgid "OAuth Bridge Server URL"
 msgstr "OAuth 橋接伺服器 URL"
 
-#: ../TrackingSettings.lua:499
+#: ../TrackingSettings.lua:503
 msgid "Signed in as "
 msgstr "登入身份"
 
-#: ../TrackingSettings.lua:501
+#: ../TrackingSettings.lua:505
 msgid "No sign"
 msgstr "沒有跡象"
 

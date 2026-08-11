@@ -374,6 +374,17 @@ Settings.setting_value_definitions = {
   },
   {
     nil,
+    { type = 'divider', title = _("Sources") }
+  },
+  {
+    'lnreader_enabled',
+    {
+      type = 'boolean',
+      title = _("Enable LNReader/JS sources"),
+    }
+  },
+  {
+    nil,
     { type = 'divider', title = _("Storage") }
   },
   {

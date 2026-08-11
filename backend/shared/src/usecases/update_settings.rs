@@ -1,4 +1,6 @@
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -8,16 +10,23 @@ use crate::settings::{
     ChapterSortingMode, ChapterTitleFormat, LibrarySortingMode, LibraryViewMode, SearchViewMode,
     Settings, StorageSizeLimit, TrackingServiceSettings,
 };
+use crate::source_manager::SourceManager;
 
 pub fn update_settings(
     settings: &mut Settings,
     settings_path: &Path,
     settings_to_update: UpdateableSettings,
+    source_manager: &mut SourceManager,
+    arc_source_manager: &Arc<Mutex<SourceManager>>,
 ) -> Result<()> {
     let mut updated_settings = settings.clone();
     settings_to_update.apply_updates(&mut updated_settings);
     updated_settings.save_to_file(settings_path)?;
 
+    // Hot-reload the source collection against the new settings (notably
+    // `lnreader_enabled`, which decides whether installed LNReader sources
+    // are loaded or skipped) — same pattern as `set_source_stored_settings`.
+    source_manager.update_settings(updated_settings.clone(), arc_source_manager)?;
     *settings = updated_settings;
 
     Ok(())
@@ -163,7 +172,33 @@ impl From<&Settings> for UpdateableSettings {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+    use std::io::Write;
+
+    use zip::write::SimpleFileOptions;
+
     use super::*;
+    use crate::model::SourceId;
+    use crate::source::Source;
+
+    /// A minimal LNReader-shaped `.aix` (same shape the toggle tests in
+    /// `source_manager.rs` use) — `main.js`'s content is never executed, only
+    /// shape-detected by `is_lnreader_archive`/`from_aix_file`.
+    fn build_lnreader_aix() -> Vec<u8> {
+        let mut buf = Vec::new();
+        {
+            let mut zip = zip::ZipWriter::new(std::io::Cursor::new(&mut buf));
+            let options = SimpleFileOptions::default();
+            zip.start_file("Payload/source.json", options).unwrap();
+            zip.write_all(br#"{"info":{"id":"toggle-test","name":"Toggle Test","version":1}}"#)
+                .unwrap();
+            zip.start_file("Payload/main.js", options).unwrap();
+            zip.write_all(b"exports.default = { id: 'toggle-test', name: 'Toggle Test', site: 'https://example.com' };")
+                .unwrap();
+            zip.finish().unwrap();
+        }
+        buf
+    }
 
     /// `From<&Settings>` must expose `lnreader_enabled` and `apply_updates`
     /// must persist it — regression for commit 2544b7e.
@@ -180,6 +215,77 @@ mod tests {
             let mut target = Settings::default();
             updateable.apply_updates(&mut target);
             assert_eq!(target.lnreader_enabled, enabled);
+        }
+    }
+
+    /// `update_settings` (what PUT /settings calls) must rebuild the
+    /// `SourceManager`'s source map from the updated settings: the installed
+    /// LNReader-shaped archive is skipped while `lnreader_enabled` is off and
+    /// loaded once it flips on (feature permitting).
+    #[cfg(any(feature = "all", feature = "lnreader"))]
+    #[test]
+    fn lnreader_enabled_toggle_reloads_sources() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let aix_path = tmp_dir.path().join("toggle-test.aix");
+        std::fs::write(&aix_path, build_lnreader_aix()).unwrap();
+        Source::write_meta_file(&aix_path, "test".to_string()).unwrap();
+
+        let settings_path = tmp_dir.path().join("settings.json");
+        let mut settings = Settings {
+            lnreader_enabled: false,
+            ..Settings::default()
+        };
+
+        let mut manager = SourceManager::new(
+            tmp_dir.path().to_path_buf(),
+            HashMap::new(),
+            settings.clone(),
+        );
+        let arc_manager = Arc::new(Mutex::new(SourceManager::new(
+            tmp_dir.path().to_path_buf(),
+            HashMap::new(),
+            settings.clone(),
+        )));
+
+        // Toggle OFF: persisted and the LNReader archive is skipped on reload.
+        update_settings(
+            &mut settings,
+            &settings_path,
+            UpdateableSettings::from(&Settings {
+                lnreader_enabled: false,
+                ..Settings::default()
+            }),
+            &mut manager,
+            &arc_manager,
+        )
+        .unwrap();
+        assert!(!settings.lnreader_enabled);
+        assert!(
+            manager.sources_by_id.is_empty(),
+            "with lnreader_enabled=false the LNReader archive must be skipped on reload"
+        );
+
+        // Toggle ON: the same archive MUST load on reload.
+        #[cfg(feature = "lnreader")]
+        {
+            update_settings(
+                &mut settings,
+                &settings_path,
+                UpdateableSettings::from(&Settings {
+                    lnreader_enabled: true,
+                    ..Settings::default()
+                }),
+                &mut manager,
+                &arc_manager,
+            )
+            .unwrap();
+            assert!(settings.lnreader_enabled);
+            assert!(
+                manager
+                    .sources_by_id
+                    .contains_key(&SourceId::new("toggle-test".to_string())),
+                "with lnreader_enabled=true the LNReader archive must load on reload"
+            );
         }
     }
 }

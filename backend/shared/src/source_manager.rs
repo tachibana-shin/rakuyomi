@@ -135,8 +135,7 @@ impl SourceManager {
             // `Err` here — since this loop's result feeds `?` up to the
             // caller, that one archive would abort loading *every* other
             // installed source (Aidoku ones included) alongside it.
-            if source::should_skip_disabled_lnreader_source(&path, self.settings.lnreader_enabled)
-            {
+            if source::should_skip_disabled_lnreader_source(&path, self.settings.lnreader_enabled) {
                 continue;
             }
 
@@ -171,11 +170,13 @@ impl SourceCollection for SourceManager {
 /// Exercises the `lnreader_enabled` config toggle (§3.5.7,
 /// `docs/lnreader/REFERENCE.md`) — independent of the `lnreader` Cargo
 /// feature, which is why [`build_lnreader_aix`] and
-/// [`disabled_toggle_rejects_install`]/[`disabled_toggle_is_skipped_on_load`]
-/// don't need `#[cfg(feature = "lnreader")]`: the toggle defaults to `false`
-/// regardless of the feature, so an LNReader-shaped archive must be rejected
-/// the same way whether the mode is merely disabled or not compiled in at
-/// all. Only the "it actually loads once enabled" test needs the feature.
+/// [`disabled_toggle_rejects_install`]/[`disabled_toggle_is_skipped_on_load`]/
+/// [`disabled_toggle_triggers_source_reload`] don't need
+/// `#[cfg(feature = "lnreader")]` for their toggle-off half: the toggle
+/// defaults to `false` regardless of the feature, so an LNReader-shaped
+/// archive must be skipped/rejected the same way whether the mode is merely
+/// disabled or not compiled in at all. Only the "it actually loads once
+/// enabled" halves need the feature.
 #[cfg(test)]
 mod lnreader_toggle_tests {
     use std::io::Write;
@@ -263,6 +264,74 @@ mod lnreader_toggle_tests {
             "load_all_sources should not fail just because a disabled LNReader source is present",
         );
         assert!(sources.is_empty());
+    }
+
+    /// The hot-reload half of the toggle — what the PUT /settings route's
+    /// `update_settings` call exercises: flipping the toggle must rebuild
+    /// `sources_by_id` from the folder, skipping the installed LNReader
+    /// archive while the toggle is off and loading it once it flips on.
+    #[cfg(any(feature = "all", feature = "lnreader"))]
+    #[test]
+    fn disabled_toggle_triggers_source_reload() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let aix_path = tmp_dir.path().join("toggle-test.aix");
+        fs::write(&aix_path, build_lnreader_aix()).unwrap();
+        Source::write_meta_file(&aix_path, "test".to_string()).unwrap();
+
+        let settings = Settings {
+            lnreader_enabled: false,
+            ..Settings::default()
+        };
+        let mut manager =
+            SourceManager::new(tmp_dir.path().to_path_buf(), HashMap::new(), settings);
+
+        // Toggle OFF: the LNReader-shaped archive must be classified as
+        // skippable and never end up in `sources_by_id` after a reload.
+        assert!(
+            source::should_skip_disabled_lnreader_source(&aix_path, false),
+            "should_skip_disabled_lnreader_source must flag the archive while the toggle is off"
+        );
+        let arc_manager = manager_pair(tmp_dir.path().to_path_buf(), Settings::default());
+        manager
+            .update_settings(
+                Settings {
+                    lnreader_enabled: false,
+                    ..Settings::default()
+                },
+                &arc_manager,
+            )
+            .unwrap();
+        assert!(
+            manager.sources_by_id.is_empty(),
+            "with lnreader_enabled=false the LNReader archive must be skipped on reload"
+        );
+
+        // Toggle ON: the very same `build_lnreader_aix()` archive MUST load.
+        #[cfg(feature = "lnreader")]
+        {
+            let arc_manager = manager_pair(
+                tmp_dir.path().to_path_buf(),
+                Settings {
+                    lnreader_enabled: true,
+                    ..Settings::default()
+                },
+            );
+            manager
+                .update_settings(
+                    Settings {
+                        lnreader_enabled: true,
+                        ..Settings::default()
+                    },
+                    &arc_manager,
+                )
+                .unwrap();
+            assert!(
+                manager
+                    .sources_by_id
+                    .contains_key(&SourceId::new("toggle-test".to_string())),
+                "with lnreader_enabled=true the LNReader archive must load on reload"
+            );
+        }
     }
 
     /// The other half: once both gates are open (feature compiled in, and

@@ -9,6 +9,7 @@ local GestureRange = require("ui/gesturerange")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local ImageWidget = require("ui/widget/imagewidget")
+local ScrollHtmlWidget = require("ui/widget/scrollhtmlwidget")
 local ScrollTextWidget = require("ui/widget/scrolltextwidget")
 local TextViewer = require("ui/widget/textviewer")
 local LeftContainer = require("ui/widget/container/leftcontainer")
@@ -32,6 +33,138 @@ local LoadingDialog = require("LoadingDialog")
 local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local calcLastReadText = require("utils/calcLastReadText")
+
+local ALLOWED_TAGS = {
+  p = true, br = true, hr = true,
+  b = true, strong = true, i = true, em = true, u = true,
+  h1 = true, h2 = true, h3 = true, h4 = true, h5 = true, h6 = true,
+  blockquote = true, ul = true, ol = true, li = true, a = true,
+}
+local VOID_TAGS = { br = true, hr = true }
+local REMOVE_CONTENT_TAGS = {
+  script = true, style = true, iframe = true, object = true,
+  embed = true, form = true,
+}
+local DROP_TAGS = { input = true, img = true }
+
+local DESCRIPTION_CSS = [[
+body { margin: 0; padding: 0; color: #000000; }
+a { color: inherit; text-decoration: underline; }
+]]
+
+local function escapeAttr(value)
+  return value:gsub("&", "&amp;"):gsub('"', "&quot;")
+end
+
+--- Sanitize a manga description so it can be rendered by ScrollHtmlWidget.
+--- Whitelist-only: removes script/style/iframe/object/embed/form/input/img,
+--- all attributes except a safe href, and HTML comments.
+--- @param text string
+--- @return string|nil, boolean
+local function sanitizeDescriptionHtml(text)
+  if not text or text == "" then
+    return nil, false
+  end
+
+  -- Fast path: nothing looks like markup.
+  if not text:find("<[^>]+>") then
+    return nil, false
+  end
+
+  local out = {}
+  local pos = 1
+  local len = #text
+  local skip_depth = 0
+  local skip_tag
+
+  while pos <= len do
+    local lt = text:find("<", pos)
+    if not lt then
+      table.insert(out, text:sub(pos))
+      break
+    end
+
+    table.insert(out, text:sub(pos, lt - 1))
+
+    if text:sub(lt, lt + 3) == "<!--" then
+      local close = text:find("%-%->", lt + 4)
+      if close then
+        pos = close + 3
+      else
+        pos = len + 1
+      end
+    else
+      local gt = text:find(">", lt)
+      if not gt then
+        table.insert(out, text:sub(lt))
+        break
+      end
+
+      local tag_content = text:sub(lt + 1, gt - 1)
+      pos = gt + 1
+
+      local is_closing = tag_content:sub(1, 1) == "/"
+      local raw_name = tag_content:match("^/?%s*([%a][%w]*)")
+      if raw_name then
+        local tag_name = raw_name:lower()
+        local self_closing = tag_content:sub(-1) == "/"
+
+        if skip_depth > 0 then
+          if tag_name == skip_tag then
+            if is_closing then
+              skip_depth = skip_depth - 1
+              if skip_depth == 0 then
+                skip_tag = nil
+              end
+            elseif not self_closing then
+              skip_depth = skip_depth + 1
+            end
+          end
+        elseif REMOVE_CONTENT_TAGS[tag_name] then
+          if not is_closing and not self_closing then
+            skip_tag = tag_name
+            skip_depth = 1
+          end
+        elseif DROP_TAGS[tag_name] then
+          -- silently drop this void/self-closing tag
+          local _ = tag_name
+        elseif ALLOWED_TAGS[tag_name] then
+          if is_closing then
+            if not VOID_TAGS[tag_name] then
+              table.insert(out, "</" .. tag_name .. ">")
+            end
+          else
+            if tag_name == "a" then
+              local href = tag_content:match('%s[Hh][Rr][Ee][Ff]%s*=%s*"([^"]*)"')
+                  or tag_content:match("%s[Hh][Rr][Ee][Ff]%s*=%s*'([^']*)'")
+                  or tag_content:match("%s[Hh][Rr][Ee][Ff]%s*=%s*([^%s>]+)")
+              local keep = false
+              if href then
+                local scheme = href:match("^([%a][%a%d%+%-.]*):")
+                scheme = scheme and scheme:lower() or ""
+                keep = scheme == "http" or scheme == "https" or scheme == "mailto"
+              end
+
+              if keep then
+                table.insert(out, '<a href="' .. escapeAttr(href) .. '">')
+              else
+                table.insert(out, "<a>")
+              end
+            else
+              table.insert(out, "<" .. tag_name .. ">")
+            end
+          end
+        end
+      end
+    end
+  end
+
+  local sanitized = table.concat(out)
+  if not sanitized:find("<[^>]+>") then
+    return nil, false
+  end
+  return sanitized, true
+end
 
 local function parse_iso8601(str)
   local year, month, day, hour, min, sec =
@@ -481,21 +614,48 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   end
 
   local text_padding = Size.padding.default
-  self.input_note = ScrollTextWidget:new {
-    text = manga.description or "N/A",
-    face = self.medium_font_face,
-    width = width - self.padding * 3,
-    height = math.floor(height),
-    dialog = TextViewer:new {
-      title = _("Description"),
-      text = manga.description
-    },
-    scroll = true,
-    bordersize = Size.border.default,
-    focused = false,
-    padding = text_padding,
-    parent = self,
-  }
+  local widget_width = width - self.padding * 3
+  local widget_height = math.floor(height)
+  local description = manga.description or "N/A"
+
+  local html_body, has_html = sanitizeDescriptionHtml(description)
+  local scroll_widget
+
+  if has_html then
+    local ok, widget = pcall(function()
+      return ScrollHtmlWidget:new {
+        html_body = html_body,
+        css = DESCRIPTION_CSS,
+        default_font_size = self.medium_font_face.size,
+        width = widget_width,
+        height = widget_height,
+        dialog = self,
+      }
+    end)
+    if ok then
+      scroll_widget = widget
+    end
+  end
+
+  if not scroll_widget then
+    scroll_widget = ScrollTextWidget:new {
+      text = description,
+      face = self.medium_font_face,
+      width = widget_width,
+      height = widget_height,
+      dialog = TextViewer:new {
+        title = _("Description"),
+        text = description,
+      },
+      scroll = true,
+      bordersize = Size.border.default,
+      focused = false,
+      padding = text_padding,
+      parent = self,
+    }
+  end
+
+  self.input_note = scroll_widget
   table.insert(self.layout, { self.input_note })
 
   return VerticalGroup:new {

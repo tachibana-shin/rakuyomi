@@ -124,7 +124,8 @@ pub(super) fn manga_from_source_novel(
     let cover_url = opt_string(novel, "cover", context)?.and_then(|u| url::Url::parse(&u).ok());
     let author = opt_string(novel, "author", context)?;
     let artist = opt_string(novel, "artist", context)?;
-    let description = opt_string(novel, "summary", context)?;
+    let description =
+        opt_string(novel, "summary", context)?.map(|summary| sanitize_summary(&summary));
     let tags = opt_string(novel, "genres", context)?
         .map(|genres| genres.split(',').map(|s| s.trim().to_string()).collect());
     let status = opt_string(novel, "status", context)?
@@ -143,6 +144,126 @@ pub(super) fn manga_from_source_novel(
         status,
         ..Default::default()
     })
+}
+
+/// Sanitizes an LNReader `SourceNovel::summary` into plain text suitable
+/// for `Manga::description`.
+///
+/// LNReader plugins scrape descriptions as raw HTML fragments: embedded
+/// `<style>`/`<script>` blocks, markup tags, HTML entities, and stray
+/// whitespace/newlines. Rakuyomi renders `Manga::description` as plain
+/// text, so the fragment is reduced to its prose:
+///
+/// 1. drop `<style>`/`<script>` blocks (tags *and* their content),
+/// 2. strip the remaining tags,
+/// 3. decode HTML entities,
+/// 4. collapse runs of whitespace into single spaces and trim.
+///
+/// LNReader-only by design: Aidoku descriptions flow through their own
+/// native HTML pipeline (`wasm_imports::html`) and are intentionally left
+/// untouched here.
+fn sanitize_summary(raw: &str) -> String {
+    let without_blocks = strip_embedded_blocks(raw);
+    let without_tags = strip_tags(&without_blocks);
+    let decoded = html_escape::decode_html_entities(&without_tags);
+    collapse_whitespace(&decoded)
+}
+
+/// Removes `<style>`/`<script>` blocks — opening tag, body, closing tag —
+/// matching tag names case-insensitively and allowing attributes on the
+/// opening tag. An unclosed block drops the remainder of the string.
+fn strip_embedded_blocks(raw: &str) -> String {
+    let lower = raw.to_ascii_lowercase();
+    let mut out = String::with_capacity(raw.len());
+    let mut from = 0;
+    loop {
+        let style = find_tag_start(&lower, "<style", from);
+        let script = find_tag_start(&lower, "<script", from);
+        let open = match (style, script) {
+            (Some(a), Some(b)) => a.min(b),
+            (Some(a), None) => a,
+            (None, Some(b)) => b,
+            (None, None) => {
+                out.push_str(&raw[from..]);
+                break;
+            }
+        };
+        out.push_str(&raw[from..open]);
+        let closing = if style == Some(open) {
+            "</style"
+        } else {
+            "</script"
+        };
+        match find_tag_start(&lower, closing, open) {
+            Some(close) => {
+                // Skip past the closing tag's `>` (drop the remainder if malformed).
+                from = match lower[close..].find('>') {
+                    Some(offset) => close + offset + 1,
+                    None => raw.len(),
+                };
+            }
+            None => break, // unterminated block: drop the rest
+        }
+    }
+    out
+}
+
+/// Case-insensitive position of a tag-open prefix (`<style`, `</style`,
+/// ...) at or after `from`, only when followed by a valid tag boundary
+/// (whitespace, `>`, `/`, or end of string) so `<stylesheet>` is not
+/// mistaken for `<style>`. `haystack` must be the ASCII-lowercased copy of
+/// the same string `raw` slices come from (byte lengths match 1:1).
+fn find_tag_start(haystack: &str, tag: &str, from: usize) -> Option<usize> {
+    let mut search_from = from;
+    while let Some(rel) = haystack[search_from..].find(tag) {
+        let pos = search_from + rel;
+        let boundary_ok = match haystack.as_bytes().get(pos + tag.len()) {
+            None => true,
+            Some(byte) => byte.is_ascii_whitespace() || *byte == b'>' || *byte == b'/',
+        };
+        if boundary_ok {
+            return Some(pos);
+        }
+        search_from = pos + tag.len();
+    }
+    None
+}
+
+/// Removes every remaining HTML tag (`<...>`, including attributes and
+/// self-closing/comment forms) from a fragment. A dangling `<` with no
+/// closing `>` is kept verbatim.
+fn strip_tags(raw: &str) -> String {
+    let mut out = String::with_capacity(raw.len());
+    let mut rest = raw;
+    while let Some(open) = rest.find('<') {
+        out.push_str(&rest[..open]);
+        let after_open = &rest[open..];
+        match after_open.find('>') {
+            Some(close) => rest = &after_open[close + 1..],
+            None => break,
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Collapses runs of whitespace (spaces, newlines, tabs, ...) into a
+/// single space, then trims the result.
+fn collapse_whitespace(raw: &str) -> String {
+    let mut out = String::with_capacity(raw.len());
+    let mut pending_space = false;
+    for ch in raw.chars() {
+        if ch.is_whitespace() {
+            pending_space = true;
+        } else {
+            if pending_space && !out.is_empty() {
+                out.push(' ');
+            }
+            pending_space = false;
+            out.push(ch);
+        }
+    }
+    out
 }
 
 /// Reads `SourceNovel.chapters` (`Plugin.ChapterItem[]`, see `docs.md`) into
@@ -342,5 +463,96 @@ mod chapters_from_source_novel_ordering_tests {
 
         let ids: Vec<&str> = chapters.iter().map(|c| c.id.as_str()).collect();
         assert_eq!(ids, vec!["c3", "c2", "c1"]);
+    }
+}
+
+#[cfg(test)]
+mod sanitize_summary_tests {
+    use super::*;
+
+    #[test]
+    fn strips_style_blocks_including_their_content() {
+        assert_eq!(
+            sanitize_summary("A <style>.hidden { display: none; }</style> summary"),
+            "A summary"
+        );
+    }
+
+    #[test]
+    fn strips_script_blocks_including_their_content() {
+        assert_eq!(
+            sanitize_summary("Intro<script>void 0</script> outro"),
+            "Intro outro"
+        );
+    }
+
+    #[test]
+    fn matches_style_and_script_case_insensitively() {
+        assert_eq!(
+            sanitize_summary("Before<STYLE>p{}</STYLE><Script>x</Script>After"),
+            "BeforeAfter"
+        );
+    }
+
+    #[test]
+    fn strips_tags_and_collapses_whitespace() {
+        assert_eq!(
+            sanitize_summary("<p>Hello</p>\n\t<p>World</p>"),
+            "Hello World"
+        );
+    }
+
+    #[test]
+    fn decodes_html_entities() {
+        assert_eq!(
+            sanitize_summary("Tom &amp; Jerry &mdash; &quot;quoted&quot; &lt;i&gt;"),
+            "Tom & Jerry — \"quoted\" <i>"
+        );
+    }
+
+    #[test]
+    fn passes_clean_prose_through_unchanged() {
+        let prose = "A perfectly clean description with normal spacing.";
+        assert_eq!(sanitize_summary(prose), prose);
+    }
+
+    #[test]
+    fn trims_leading_and_trailing_whitespace() {
+        assert_eq!(sanitize_summary("  \n\t padded \n "), "padded");
+    }
+
+    #[test]
+    fn integrates_into_manga_from_source_novel() {
+        let mut context = Context::default();
+        let novel = super::super::js_runtime::eval(
+            &mut context,
+            r#"({
+                name: 'Test Novel',
+                summary: '<style>p{color:red}</style><p>Synopsis &amp; more</p>\n<script>void 0</script>',
+            })"#,
+            "test novel",
+        )
+        .expect("test snippet should evaluate");
+
+        let manga = manga_from_source_novel(&novel, "test-source", "test-manga", &mut context)
+            .expect("manga_from_source_novel should succeed");
+
+        assert_eq!(manga.description.as_deref(), Some("Synopsis & more"));
+    }
+
+    #[test]
+    fn leaves_description_none_when_summary_is_missing() {
+        let mut context = Context::default();
+        let novel = super::super::js_runtime::eval(
+            &mut context,
+            r#"({ name: 'Test Novel' })"#,
+            "test novel",
+        )
+        .expect("test snippet should evaluate");
+
+        let manga = manga_from_source_novel(&novel, "test-source", "test-manga", &mut context)
+            .expect("manga_from_source_novel should succeed");
+
+        assert_eq!(manga.description, None);
     }
 }

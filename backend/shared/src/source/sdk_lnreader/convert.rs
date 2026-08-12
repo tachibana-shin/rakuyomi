@@ -151,13 +151,18 @@ pub(super) fn manga_from_source_novel(
 ///
 /// LNReader plugins scrape descriptions as raw HTML fragments: embedded
 /// `<style>`/`<script>` blocks, markup tags, HTML entities, and stray
-/// whitespace/newlines. Rakuyomi renders `Manga::description` as plain
-/// text, so the fragment is reduced to its prose:
+/// whitespace. Ranobes-style summaries additionally carry bare CSS rules
+/// (`.selector { ... }`) outside any `<style>` tag. Rakuyomi renders
+/// `Manga::description` as plain text, so the fragment is reduced to its
+/// prose — but paragraph structure is preserved, not flattened:
 ///
 /// 1. drop `<style>`/`<script>` blocks (tags *and* their content),
 /// 2. strip the remaining tags,
-/// 3. decode HTML entities,
-/// 4. collapse runs of whitespace into single spaces and trim.
+/// 3. drop bare CSS rules (`.selector { ... }`, single- or multi-line),
+/// 4. decode HTML entities,
+/// 5. collapse runs of *horizontal* whitespace inside a line to a single
+///    space and trim line edges, normalizing at most one blank line
+///    between paragraphs.
 ///
 /// LNReader-only by design: Aidoku descriptions flow through their own
 /// native HTML pipeline (`wasm_imports::html`) and are intentionally left
@@ -165,8 +170,9 @@ pub(super) fn manga_from_source_novel(
 fn sanitize_summary(raw: &str) -> String {
     let without_blocks = strip_embedded_blocks(raw);
     let without_tags = strip_tags(&without_blocks);
-    let decoded = html_escape::decode_html_entities(&without_tags);
-    collapse_whitespace(&decoded)
+    let without_css = strip_bare_css(&without_tags);
+    let decoded = html_escape::decode_html_entities(&without_css);
+    normalize_paragraphs(&decoded)
 }
 
 /// Removes `<style>`/`<script>` blocks — opening tag, body, closing tag —
@@ -247,21 +253,145 @@ fn strip_tags(raw: &str) -> String {
     out
 }
 
-/// Collapses runs of whitespace (spaces, newlines, tabs, ...) into a
-/// single space, then trims the result.
-fn collapse_whitespace(raw: &str) -> String {
+/// Removes bare CSS rules that Ranobes-style summaries carry outside any
+/// `<style>` tag: recognizable `.selector { ... }` / `#id { ... }` rules,
+/// possibly spanning multiple lines. A rule starts on a line whose first
+/// non-whitespace char is `.` or `#` and whose selector prefix is
+/// selector-legal up to a `{` on that same line; everything from there
+/// through the balancing `}` is dropped, using brace depth so nested
+/// blocks close correctly. An unterminated rule drops through to the end
+/// of the string. Lines that merely contain braces (ordinary prose) are
+/// left alone.
+fn strip_bare_css(raw: &str) -> String {
     let mut out = String::with_capacity(raw.len());
+    let mut lines = raw.split_inclusive('\n');
+    while let Some(line) = lines.next() {
+        if !css_rule_starts(line) {
+            out.push_str(line);
+            continue;
+        }
+        let mut depth = brace_delta(line);
+        while depth > 0 {
+            match lines.next() {
+                Some(next) => depth += brace_delta(next),
+                None => break,
+            }
+        }
+    }
+    out
+}
+
+/// True when `line` starts a bare CSS rule: after leading whitespace, a
+/// `.class` / `#id` selector whose first character is a valid identifier
+/// start and whose remaining selector characters are all selector-legal,
+/// terminated by a `{` on the same line.
+fn css_rule_starts(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    let mut chars = trimmed.chars();
+    match chars.next() {
+        Some('.') | Some('#') => {}
+        _ => return false,
+    }
+    // A bare identifier can't begin with a digit, so requiring a letter
+    // start also keeps prose like ".5 miles { ... }" out of the filter.
+    if !chars
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '-' || c == '_')
+    {
+        return false;
+    }
+    let Some(open) = trimmed.find('{') else {
+        return false;
+    };
+    trimmed[..open].chars().all(|c| {
+        c.is_ascii_alphanumeric()
+            || matches!(
+                c,
+                '-' | '_'
+                    | '.'
+                    | '#'
+                    | ':'
+                    | '['
+                    | ']'
+                    | '('
+                    | ')'
+                    | ','
+                    | '>'
+                    | '+'
+                    | '~'
+                    | '*'
+                    | '='
+                    | '"'
+                    | '\''
+                    | '&'
+                    | '%'
+                    | '!'
+                    | '/'
+                    | ' '
+            )
+    })
+}
+
+/// Net brace depth of a line (`{` opens, `}` closes) — used to find the
+/// end of a multi-line CSS rule.
+fn brace_delta(line: &str) -> i32 {
+    line.chars()
+        .fold(0, |depth, c| match c {
+            '{' => depth + 1,
+            '}' => depth - 1,
+            _ => depth,
+        })
+}
+
+/// Preserves paragraph structure while cleaning line-level whitespace.
+/// Runs of horizontal whitespace (spaces, tabs, `\r`, ...) inside a line
+/// collapse to a single space and each line's edges are trimmed; runs of
+/// blank lines between paragraphs are capped at one empty line, and
+/// leading/trailing blank lines are dropped. Newlines that separate
+/// paragraphs survive.
+fn normalize_paragraphs(raw: &str) -> String {
+    // Pass 1: collapse horizontal whitespace per line.
+    let mut lines: Vec<String> = Vec::new();
+    let mut current = String::new();
     let mut pending_space = false;
     for ch in raw.chars() {
-        if ch.is_whitespace() {
+        if ch == '\n' {
+            lines.push(std::mem::take(&mut current));
+            pending_space = false;
+        } else if ch.is_whitespace() {
             pending_space = true;
         } else {
-            if pending_space && !out.is_empty() {
-                out.push(' ');
+            if pending_space && !current.is_empty() {
+                current.push(' ');
             }
             pending_space = false;
-            out.push(ch);
+            current.push(ch);
         }
+    }
+    lines.push(current);
+
+    // Pass 2: join, capping blank-line runs at one empty line between
+    // paragraphs and dropping blank lines at the edges.
+    let mut out = String::with_capacity(raw.len());
+    let mut pending_blank = false; // a blank line seen since last content
+    let mut started = false;
+    for line in lines {
+        if line.is_empty() {
+            if started {
+                pending_blank = true;
+            }
+            continue;
+        }
+        if started {
+            if pending_blank {
+                out.push_str("\n\n");
+            } else {
+                out.push('\n');
+            }
+        }
+        pending_blank = false;
+        started = true;
+        out.push_str(&line);
     }
     out
 }
@@ -495,10 +625,58 @@ mod sanitize_summary_tests {
     }
 
     #[test]
-    fn strips_tags_and_collapses_whitespace() {
+    fn strips_tags_but_preserves_paragraph_breaks() {
         assert_eq!(
             sanitize_summary("<p>Hello</p>\n\t<p>World</p>"),
-            "Hello World"
+            "Hello\nWorld"
+        );
+    }
+
+    #[test]
+    fn strips_bare_css_rules_ranobes_style() {
+        let summary = "Blurb\n.chapter-content { color: #333; font-size: 14px; }\nMore blurb";
+        assert_eq!(sanitize_summary(summary), "Blurb\nMore blurb");
+    }
+
+    #[test]
+    fn strips_multiline_bare_css_rules() {
+        let summary = "Start\n.chapter-body {\n  font-family: serif;\n  line-height: 1.6;\n}\nEnd";
+        assert_eq!(sanitize_summary(summary), "Start\nEnd");
+    }
+
+    #[test]
+    fn strips_css_wrapped_in_tags_when_it_forms_its_own_line() {
+        assert_eq!(
+            sanitize_summary("<p>Intro</p>\n<p>.hidden { display: none }</p>\n<p>Outro</p>"),
+            "Intro\nOutro"
+        );
+    }
+
+    #[test]
+    fn leaves_prose_containing_braces_alone() {
+        let prose = "He wrote {a draft} and stopped.";
+        assert_eq!(sanitize_summary(prose), prose);
+    }
+
+    #[test]
+    fn preserves_paragraph_breaks_and_caps_blank_line_runs() {
+        assert_eq!(
+            sanitize_summary("<p>First</p>\n<p>Second</p>"),
+            "First\nSecond"
+        );
+        assert_eq!(
+            sanitize_summary("<p>First</p>\n\n\n\n<p>Second</p>"),
+            "First\n\nSecond"
+        );
+        assert_eq!(sanitize_summary("\n\nFirst\n\n\nSecond\n\n"), "First\n\nSecond");
+    }
+
+    #[test]
+    fn collapses_horizontal_whitespace_within_lines_only() {
+        let summary = "Line one\t   with  extra  spacing\n   indented line  ";
+        assert_eq!(
+            sanitize_summary(summary),
+            "Line one with extra spacing\nindented line"
         );
     }
 
@@ -538,6 +716,28 @@ mod sanitize_summary_tests {
             .expect("manga_from_source_novel should succeed");
 
         assert_eq!(manga.description.as_deref(), Some("Synopsis & more"));
+    }
+
+    #[test]
+    fn manga_integration_preserves_paragraphs_and_filters_css() {
+        let mut context = Context::default();
+        let novel = super::super::js_runtime::eval(
+            &mut context,
+            r#"({
+                name: 'Test Novel',
+                summary: '<p>First &amp; second para.</p>\n.chapter-meta { color: gray; }\n<p>Third para.</p>',
+            })"#,
+            "test novel",
+        )
+        .expect("test snippet should evaluate");
+
+        let manga = manga_from_source_novel(&novel, "test-source", "test-manga", &mut context)
+            .expect("manga_from_source_novel should succeed");
+
+        assert_eq!(
+            manga.description.as_deref(),
+            Some("First & second para.\nThird para.")
+        );
     }
 
     #[test]

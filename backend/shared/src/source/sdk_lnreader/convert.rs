@@ -146,20 +146,27 @@ pub(super) fn manga_from_source_novel(
     })
 }
 
-/// Sanitizes an LNReader `SourceNovel::summary` into plain text suitable
+/// Sanitizes an LNReader `SourceNovel::summary` into safe HTML suitable
 /// for `Manga::description`.
 ///
 /// LNReader plugins scrape descriptions as raw HTML fragments: embedded
-/// `<style>`/`<script>` blocks, markup tags, HTML entities, and stray
-/// whitespace. Ranobes-style summaries additionally carry bare CSS rules
-/// (`.selector { ... }`) outside any `<style>` tag. Rakuyomi renders
-/// `Manga::description` as plain text, so the fragment is reduced to its
-/// prose — but paragraph structure is preserved, not flattened:
+/// `<style>`/`<script>`/`<iframe>` blocks, markup tags, HTML entities,
+/// comments, stray whitespace, and — Ranobes-style — bare CSS rules
+/// (`.selector { ... }`) outside any `<style>` tag. The shared frontend
+/// renderer renders `Manga::description` as HTML, so the fragment is
+/// filtered to a safe formatting subset rather than flattened to prose:
 ///
-/// 1. drop `<style>`/`<script>` blocks (tags *and* their content),
-/// 2. strip the remaining tags,
-/// 3. drop bare CSS rules (`.selector { ... }`, single- or multi-line),
-/// 4. decode HTML entities,
+/// 1. drop HTML comments/declarations and embedded content blocks
+///    (`<script>`, `<style>`, `<iframe>`, ... — tags *and* their content),
+/// 2. drop bare CSS rules (`.selector { ... }`, single- or multi-line),
+/// 3. keep only the formatting tags `p`, `br`, `hr`, `b`, `strong`, `i`,
+///    `em`, `u`, `h1`-`h6`, `blockquote`, `ul`, `ol`, `li` (all attributes
+///    stripped) and `a` restricted to a safe `href`
+///    (`http`/`https`/`mailto` only); every other tag loses its markup
+///    while its text survives,
+/// 4. keep HTML entities and paragraph structure as-is — entities are NOT
+///    decoded, since the output is HTML (`&amp;` must stay encoded to
+///    render as `&`),
 /// 5. collapse runs of *horizontal* whitespace inside a line to a single
 ///    space and trim line edges, normalizing at most one blank line
 ///    between paragraphs.
@@ -168,39 +175,51 @@ pub(super) fn manga_from_source_novel(
 /// native HTML pipeline (`wasm_imports::html`) and are intentionally left
 /// untouched here.
 fn sanitize_summary(raw: &str) -> String {
-    let without_blocks = strip_embedded_blocks(raw);
-    let without_tags = strip_tags(&without_blocks);
-    let without_css = strip_bare_css(&without_tags);
-    let decoded = html_escape::decode_html_entities(&without_css);
-    normalize_paragraphs(&decoded)
+    let without_comments = strip_comments_and_declarations(raw);
+    let without_blocks = strip_embedded_blocks(&without_comments);
+    let without_css = strip_bare_css(&without_blocks);
+    let safe_markup = sanitize_markup(&without_css);
+    normalize_paragraphs(&safe_markup)
 }
 
-/// Removes `<style>`/`<script>` blocks — opening tag, body, closing tag —
-/// matching tag names case-insensitively and allowing attributes on the
-/// opening tag. An unclosed block drops the remainder of the string.
+/// Embedded content block tags whose *content* is dropped along with the
+/// markup, not just the tags: scripts and styles carry active code, iframes
+/// embed foreign documents, and the rest (`object`, `embed`, `svg`, `math`,
+/// `form`, ...) contributes no readable prose. Void elements (`<meta>`,
+/// `<link>`, `<base>`, `<img>`, ...) are intentionally absent — they have no
+/// content to drop and `sanitize_markup` strips their tags anyway.
+const EMBEDDED_BLOCK_TAGS: &[&str] = &[
+    "script", "style", "iframe", "noscript", "template", "object", "embed", "svg", "math", "form",
+    "textarea", "select", "option",
+];
+
+/// Removes embedded content blocks — opening tag, body, closing tag — for
+/// every `EMBEDDED_BLOCK_TAGS` entry, matching tag names
+/// case-insensitively and allowing attributes on the opening tag. An
+/// unclosed block drops the remainder of the string.
 fn strip_embedded_blocks(raw: &str) -> String {
     let lower = raw.to_ascii_lowercase();
     let mut out = String::with_capacity(raw.len());
     let mut from = 0;
     loop {
-        let style = find_tag_start(&lower, "<style", from);
-        let script = find_tag_start(&lower, "<script", from);
-        let open = match (style, script) {
-            (Some(a), Some(b)) => a.min(b),
-            (Some(a), None) => a,
-            (None, Some(b)) => b,
-            (None, None) => {
-                out.push_str(&raw[from..]);
-                break;
+        // Earliest opening of any embedded block tag at or after `from`.
+        let mut earliest: Option<(usize, usize)> = None; // (position, tag index)
+        for (idx, tag) in EMBEDDED_BLOCK_TAGS.iter().enumerate() {
+            let open = format!("<{tag}");
+            if let Some(pos) = find_tag_start(&lower, &open, from) {
+                match earliest {
+                    Some((ep, _)) if ep <= pos => {}
+                    _ => earliest = Some((pos, idx)),
+                }
             }
+        }
+        let Some((open, idx)) = earliest else {
+            out.push_str(&raw[from..]);
+            break;
         };
         out.push_str(&raw[from..open]);
-        let closing = if style == Some(open) {
-            "</style"
-        } else {
-            "</script"
-        };
-        match find_tag_start(&lower, closing, open) {
+        let closing = format!("</{}", EMBEDDED_BLOCK_TAGS[idx]);
+        match find_tag_start(&lower, &closing, open) {
             Some(close) => {
                 // Skip past the closing tag's `>` (drop the remainder if malformed).
                 from = match lower[close..].find('>') {
@@ -235,22 +254,308 @@ fn find_tag_start(haystack: &str, tag: &str, from: usize) -> Option<usize> {
     None
 }
 
-/// Removes every remaining HTML tag (`<...>`, including attributes and
-/// self-closing/comment forms) from a fragment. A dangling `<` with no
-/// closing `>` is kept verbatim.
-fn strip_tags(raw: &str) -> String {
+/// Removes HTML comments (`<!-- ... -->`), CDATA sections (`<![CDATA[
+/// ...]]>`), doctype declarations (`<!DOCTYPE ...>`) and processing
+/// instructions (`<?...?>`) — including their content. An unterminated
+/// comment/CDATA drops the remainder of the string. Any other `<` is kept
+/// verbatim.
+fn strip_comments_and_declarations(raw: &str) -> String {
     let mut out = String::with_capacity(raw.len());
     let mut rest = raw;
-    while let Some(open) = rest.find('<') {
-        out.push_str(&rest[..open]);
-        let after_open = &rest[open..];
-        match after_open.find('>') {
-            Some(close) => rest = &after_open[close + 1..],
-            None => break,
+    loop {
+        let Some(lt) = rest.find('<') else {
+            out.push_str(rest);
+            break;
+        };
+        let after = &rest[lt..];
+        let (terminator, len) = if after.starts_with("<!--") {
+            (Some("-->"), 3)
+        } else if after.starts_with("<![CDATA[") {
+            (Some("]]>"), 3)
+        } else if after.starts_with("<!") || after.starts_with("<?") {
+            (None, 1)
+        } else {
+            out.push_str(&rest[..lt + 1]);
+            rest = &after[1..];
+            continue;
+        };
+        out.push_str(&rest[..lt]);
+        match terminator {
+            Some(term) => match after.find(term) {
+                Some(end) => rest = &after[end + len..],
+                None => break, // unterminated: drop the rest
+            },
+            None => match after.find('>') {
+                Some(end) => rest = &after[end + 1..],
+                None => break,
+            },
         }
     }
-    out.push_str(rest);
     out
+}
+
+/// Formatting tags kept by `sanitize_markup` (attribute-free except for
+/// `a`, see `safe_href`).
+const ALLOWED_TAGS: &[&str] = &[
+    "p",
+    "br",
+    "hr",
+    "b",
+    "strong",
+    "i",
+    "em",
+    "u",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "blockquote",
+    "ul",
+    "ol",
+    "li",
+    "a",
+];
+
+/// Void elements among `ALLOWED_TAGS`: emitted in bare form and never
+/// tracked for closing tags.
+const VOID_TAGS: &[&str] = &["br", "hr"];
+
+/// Filters a fragment down to the safe formatting subset: every `ALLOWED_TAGS`
+/// tag is kept (with attributes filtered), while disallowed tags lose their
+/// markup but their text survives. Comments/declarations and bare CSS rules
+/// that survived the earlier passes are removed here too.
+fn sanitize_markup(raw: &str) -> String {
+    let mut out = String::with_capacity(raw.len());
+    let mut rest = raw;
+    // Names of opening tags whose markup was dropped; their matching closing
+    // tags are dropped as well so disallowed markup never leaves orphaned
+    // close tags behind.
+    let mut suppressed: Vec<String> = Vec::new();
+
+    loop {
+        let Some(lt) = rest.find('<') else {
+            out.push_str(&strip_bare_css(rest));
+            break;
+        };
+        let after = &rest[lt..];
+
+        // Comments/declarations: drop through the terminator.
+        if after.starts_with("<!--") {
+            out.push_str(&strip_bare_css(&rest[..lt]));
+            match after.find("-->") {
+                Some(end) => rest = &after[end + 3..],
+                None => break,
+            }
+            continue;
+        }
+        if after.starts_with("<![CDATA[") {
+            out.push_str(&strip_bare_css(&rest[..lt]));
+            match after.find("]]>") {
+                Some(end) => rest = &after[end + 3..],
+                None => break,
+            }
+            continue;
+        }
+        if after.starts_with("<!") || after.starts_with("<?") {
+            out.push_str(&strip_bare_css(&rest[..lt]));
+            match after.find('>') {
+                Some(end) => rest = &after[end + 1..],
+                None => break,
+            }
+            continue;
+        }
+
+        // Only treat `<` as a tag start when followed by a plausible tag
+        // character; "a < b" stays literal text.
+        let Some(&next_byte) = after.as_bytes().get(1) else {
+            out.push_str(&strip_bare_css(rest));
+            break;
+        };
+        let is_tag_start =
+            next_byte.is_ascii_alphabetic() || matches!(next_byte, b'/' | b'!' | b'?');
+        if !is_tag_start {
+            out.push_str(&strip_bare_css(&rest[..lt + 1]));
+            rest = &after[1..];
+            continue;
+        }
+
+        let Some(tag_end) = find_tag_end(after) else {
+            // Dangling `<` with no closing `>`: keep the rest verbatim.
+            out.push_str(&strip_bare_css(&rest[..lt]));
+            out.push_str(&strip_bare_css(after));
+            break;
+        };
+        out.push_str(&strip_bare_css(&rest[..lt]));
+        let tag = &after[..=tag_end];
+        let (name, closing, href) = parse_tag(tag);
+
+        if closing {
+            // Closing tag: drop it if it pairs a dropped opening tag, drop
+            // void closing tags, otherwise emit it for allowed tags.
+            if let Some(pos) = suppressed.iter().rposition(|n| n == &name) {
+                suppressed.remove(pos);
+            } else if ALLOWED_TAGS.contains(&name.as_str()) && !VOID_TAGS.contains(&name.as_str()) {
+                out.push_str("</");
+                out.push_str(&name);
+                out.push('>');
+            }
+        } else if VOID_TAGS.contains(&name.as_str()) {
+            out.push('<');
+            out.push_str(&name);
+            out.push('>');
+        } else if ALLOWED_TAGS.contains(&name.as_str()) {
+            if name == "a" {
+                match href.and_then(|value| safe_href(&value)) {
+                    Some(value) => {
+                        out.push_str("<a href=\"");
+                        out.push_str(&html_escape::encode_double_quoted_attribute(&value));
+                        out.push_str("\">");
+                    }
+                    None => suppressed.push(name),
+                }
+            } else {
+                out.push('<');
+                out.push_str(&name);
+                out.push('>');
+            }
+        } else {
+            suppressed.push(name);
+        }
+
+        rest = &after[tag_end + 1..];
+    }
+    out
+}
+
+/// Position of the `>` closing a tag that starts at the beginning of
+/// `after` (`<...`), skipping over quoted attribute values so `href="a>b"`
+/// is not cut short. `None` when the tag is unterminated.
+fn find_tag_end(after: &str) -> Option<usize> {
+    let bytes = after.as_bytes();
+    let mut in_quote: Option<u8> = None;
+    for (i, &byte) in bytes.iter().enumerate().skip(1) {
+        match in_quote {
+            Some(quote) => {
+                if byte == quote {
+                    in_quote = None;
+                }
+            }
+            None => match byte {
+                b'"' | b'\'' => in_quote = Some(byte),
+                b'>' => return Some(i),
+                _ => {}
+            },
+        }
+    }
+    None
+}
+
+/// Parses one tag (with surrounding `<`/`>`) into its lowercased name,
+/// whether it is a closing tag, and — for opening tags — the value of the
+/// first `href` attribute if any. Every other attribute is discarded: only
+/// `a`'s `href` can survive sanitization.
+fn parse_tag(tag: &str) -> (String, bool, Option<String>) {
+    let inner = tag
+        .strip_prefix('<')
+        .and_then(|s| s.strip_suffix('>'))
+        .unwrap_or("");
+    let bytes = inner.as_bytes();
+    let mut i = 0;
+    let mut closing = false;
+    if bytes.first() == Some(&b'/') {
+        closing = true;
+        i = 1;
+    }
+    while i < bytes.len() && (bytes[i] as char).is_ascii_whitespace() {
+        i += 1;
+    }
+    let name_start = i;
+    while i < bytes.len() && !(bytes[i] as char).is_ascii_whitespace() && bytes[i] != b'/' {
+        i += 1;
+    }
+    let name = String::from_utf8_lossy(&bytes[name_start..i]).to_ascii_lowercase();
+    if closing {
+        return (name, true, None);
+    }
+
+    let mut href: Option<String> = None;
+    while i < bytes.len() {
+        while i < bytes.len() && (bytes[i] as char).is_ascii_whitespace() {
+            i += 1;
+        }
+        if i >= bytes.len() || bytes[i] == b'/' {
+            break;
+        }
+        let attr_start = i;
+        while i < bytes.len() && !(bytes[i] as char).is_ascii_whitespace() && bytes[i] != b'=' {
+            i += 1;
+        }
+        let attr_name = String::from_utf8_lossy(&bytes[attr_start..i]).to_ascii_lowercase();
+        let mut j = i;
+        while j < bytes.len() && (bytes[j] as char).is_ascii_whitespace() {
+            j += 1;
+        }
+        if j < bytes.len() && bytes[j] == b'=' {
+            j += 1;
+            while j < bytes.len() && (bytes[j] as char).is_ascii_whitespace() {
+                j += 1;
+            }
+            let value = if j < bytes.len() && (bytes[j] == b'"' || bytes[j] == b'\'') {
+                let quote = bytes[j];
+                j += 1;
+                let value_start = j;
+                while j < bytes.len() && bytes[j] != quote {
+                    j += 1;
+                }
+                let value = String::from_utf8_lossy(&bytes[value_start..j]).into_owned();
+                if j < bytes.len() {
+                    j += 1;
+                }
+                value
+            } else {
+                let value_start = j;
+                while j < bytes.len()
+                    && !(bytes[j] as char).is_ascii_whitespace()
+                    && bytes[j] != b'>'
+                {
+                    j += 1;
+                }
+                String::from_utf8_lossy(&bytes[value_start..j]).into_owned()
+            };
+            if attr_name == "href" && href.is_none() {
+                href = Some(value);
+            }
+            i = j;
+        } else {
+            // Boolean attribute (no value).
+            i = j;
+        }
+    }
+    (name, false, href)
+}
+
+/// Accepts an `href` whose scheme is `http`, `https`, or `mailto`
+/// (case-insensitive); everything else (`javascript:`, `data:`, bare
+/// relative paths, ...) is rejected. The value is entity-decoded before
+/// validation so entity-obfuscated schemes (`jav&#x61;script:`) cannot slip
+/// through, and the *decoded* value is returned — the caller re-encodes it
+/// for emission, keeping the round-trip single-encoded. Values containing
+/// whitespace or control characters are rejected too, so scheme obfuscation
+/// (`java\nscript:`) cannot slip through.
+fn safe_href(value: &str) -> Option<String> {
+    let decoded = html_escape::decode_html_entities(value.trim());
+    if decoded.is_empty() || decoded.chars().any(|c| c.is_control() || c.is_whitespace()) {
+        return None;
+    }
+    let lower = decoded.to_ascii_lowercase();
+    if lower.starts_with("http://") || lower.starts_with("https://") || lower.starts_with("mailto:")
+    {
+        Some(decoded.into_owned())
+    } else {
+        None
+    }
 }
 
 /// Removes bare CSS rules that Ranobes-style summaries carry outside any
@@ -335,12 +640,11 @@ fn css_rule_starts(line: &str) -> bool {
 /// Net brace depth of a line (`{` opens, `}` closes) — used to find the
 /// end of a multi-line CSS rule.
 fn brace_delta(line: &str) -> i32 {
-    line.chars()
-        .fold(0, |depth, c| match c {
-            '{' => depth + 1,
-            '}' => depth - 1,
-            _ => depth,
-        })
+    line.chars().fold(0, |depth, c| match c {
+        '{' => depth + 1,
+        '}' => depth - 1,
+        _ => depth,
+    })
 }
 
 /// Preserves paragraph structure while cleaning line-level whitespace.
@@ -679,10 +983,20 @@ mod sanitize_summary_tests {
     }
 
     #[test]
-    fn strips_tags_but_preserves_paragraph_breaks() {
+    fn strips_iframe_blocks_including_their_content() {
+        assert_eq!(
+            sanitize_summary(
+                "<iframe src=\"https://evil.example\">fallback text</iframe><p>after</p>"
+            ),
+            "<p>after</p>"
+        );
+    }
+
+    #[test]
+    fn keeps_paragraph_tags_while_normalizing_the_gaps() {
         assert_eq!(
             sanitize_summary("<p>Hello</p>\n\t<p>World</p>"),
-            "Hello\nWorld"
+            "<p>Hello</p>\n<p>World</p>"
         );
     }
 
@@ -699,10 +1013,10 @@ mod sanitize_summary_tests {
     }
 
     #[test]
-    fn strips_css_wrapped_in_tags_when_it_forms_its_own_line() {
+    fn strips_css_inside_tags_but_keeps_the_paragraphs() {
         assert_eq!(
             sanitize_summary("<p>Intro</p>\n<p>.hidden { display: none }</p>\n<p>Outro</p>"),
-            "Intro\nOutro"
+            "<p>Intro</p>\n<p></p>\n<p>Outro</p>"
         );
     }
 
@@ -716,13 +1030,16 @@ mod sanitize_summary_tests {
     fn preserves_paragraph_breaks_and_caps_blank_line_runs() {
         assert_eq!(
             sanitize_summary("<p>First</p>\n<p>Second</p>"),
-            "First\nSecond"
+            "<p>First</p>\n<p>Second</p>"
         );
         assert_eq!(
             sanitize_summary("<p>First</p>\n\n\n\n<p>Second</p>"),
+            "<p>First</p>\n\n<p>Second</p>"
+        );
+        assert_eq!(
+            sanitize_summary("\n\nFirst\n\n\nSecond\n\n"),
             "First\n\nSecond"
         );
-        assert_eq!(sanitize_summary("\n\nFirst\n\n\nSecond\n\n"), "First\n\nSecond");
     }
 
     #[test]
@@ -735,10 +1052,95 @@ mod sanitize_summary_tests {
     }
 
     #[test]
-    fn decodes_html_entities() {
+    fn preserves_html_entities_so_they_render_correctly() {
+        // The output is HTML: entities must stay encoded (`&amp;` renders as
+        // `&`, and `&lt;i&gt;` must stay literal text, not become italic).
         assert_eq!(
             sanitize_summary("Tom &amp; Jerry &mdash; &quot;quoted&quot; &lt;i&gt;"),
-            "Tom & Jerry — \"quoted\" <i>"
+            "Tom &amp; Jerry &mdash; &quot;quoted&quot; &lt;i&gt;"
+        );
+    }
+
+    #[test]
+    fn keeps_bold_italic_and_underline_markup() {
+        let summary =
+            "<p><b>bold</b> <strong>strong</strong> <i>italic</i> <em>em</em> <u>under</u></p>";
+        assert_eq!(sanitize_summary(summary), summary);
+    }
+
+    #[test]
+    fn normalizes_tag_case() {
+        assert_eq!(
+            sanitize_summary("<B>bold</B> <STRONG>x</STRONG>"),
+            "<b>bold</b> <strong>x</strong>"
+        );
+    }
+
+    #[test]
+    fn keeps_headings_blockquote_and_horizontal_rules() {
+        let summary = "<h1>Title</h1>\n<h2>Sub</h2>\n<blockquote>Quote</blockquote>\na<br>b<hr>c";
+        assert_eq!(sanitize_summary(summary), summary);
+    }
+
+    #[test]
+    fn keeps_ordered_and_unordered_lists() {
+        let summary = "<ul><li>One</li><li>Two</li></ul>\n<ol><li>a</li></ol>";
+        assert_eq!(sanitize_summary(summary), summary);
+    }
+
+    #[test]
+    fn keeps_safe_links_and_strips_every_other_attribute() {
+        assert_eq!(
+            sanitize_summary(
+                "<a href=\"https://example.com/page?q=1&amp;r=2\" target=\"_blank\" style=\"color:red\" onclick=\"evil()\">Link</a>"
+            ),
+            "<a href=\"https://example.com/page?q=1&amp;r=2\">Link</a>"
+        );
+    }
+
+    #[test]
+    fn keeps_http_https_and_mailto_links() {
+        let summary = "<a href=\"http://a.example\">h</a> <a href=\"https://b.example\">s</a> <a href=\"mailto:x@y.example\">m</a>";
+        assert_eq!(sanitize_summary(summary), summary);
+    }
+
+    #[test]
+    fn strips_javascript_uri_links_but_keeps_their_text() {
+        assert_eq!(
+            sanitize_summary("<a href=\"javascript:alert(1)\">click</a>"),
+            "click"
+        );
+    }
+
+    #[test]
+    fn strips_entity_obfuscated_javascript_links() {
+        assert_eq!(
+            sanitize_summary("<a href=\"jav&#x61;script:alert(1)\">x</a>"),
+            "x"
+        );
+    }
+
+    #[test]
+    fn strips_inline_event_and_style_attributes() {
+        assert_eq!(
+            sanitize_summary("<p onclick=\"evil()\" style=\"color:red\">text</p>"),
+            "<p>text</p>"
+        );
+    }
+
+    #[test]
+    fn drops_unknown_tags_but_keeps_their_text() {
+        assert_eq!(
+            sanitize_summary("<div><span>kept</span></div> <font color=\"red\">text</font> <img src=\"x\" onerror=\"evil()\">"),
+            "kept text"
+        );
+    }
+
+    #[test]
+    fn strips_comments_and_doctype_declarations() {
+        assert_eq!(
+            sanitize_summary("before<!-- comment with > inside -->after <!DOCTYPE html><p>ok</p>"),
+            "beforeafter <p>ok</p>"
         );
     }
 
@@ -769,7 +1171,10 @@ mod sanitize_summary_tests {
         let manga = manga_from_source_novel(&novel, "test-source", "test-manga", &mut context)
             .expect("manga_from_source_novel should succeed");
 
-        assert_eq!(manga.description.as_deref(), Some("Synopsis & more"));
+        assert_eq!(
+            manga.description.as_deref(),
+            Some("<p>Synopsis &amp; more</p>")
+        );
     }
 
     #[test]
@@ -790,7 +1195,7 @@ mod sanitize_summary_tests {
 
         assert_eq!(
             manga.description.as_deref(),
-            Some("First & second para.\nThird para.")
+            Some("<p>First &amp; second para.</p>\n<p>Third para.</p>")
         );
     }
 

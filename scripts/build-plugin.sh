@@ -21,6 +21,7 @@ if [ "$TARGET" != "none" ]; then
     cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
     cp backend/target/$TARGET/release/server "$OUT/"
     cp backend/target/$TARGET/release/uds_http_request "$OUT/"
+    cp backend/target/$TARGET/release/lnreader_worker "$OUT/"
 fi
 
 VERSION="${SEMANTIC_RELEASE_VERSION:-1.0.0}"

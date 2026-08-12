@@ -148,6 +148,20 @@ pub(super) fn manga_from_source_novel(
 /// Reads `SourceNovel.chapters` (`Plugin.ChapterItem[]`, see `docs.md`) into
 /// `Chapter`s, one-to-one — not the `vi.hakovn` "one Aidoku chapter = one
 /// volume" pattern (report v2 §2).
+///
+/// Reversed before returning: Rakuyomi's chapter-navigation fallback
+/// (`isBeforeChapter.lua`/`findNextChapter.lua`, shared with Aidoku,
+/// unmodified) assumes a source's raw chapter order runs newest -> oldest
+/// whenever `chapter_num` is unavailable to compare by directly — the same
+/// assumption Aidoku sources are already expected to satisfy. Confirmed
+/// live against a real install (`novelbuddy`'s own database) that its
+/// `parseNovel()` chapters arrive oldest-first, the opposite of that
+/// assumption; reversing here makes LNReader conform to the same
+/// convention Aidoku already relies on, without touching the shared Lua
+/// logic itself. Not yet verified across the rest of the real LNReader
+/// corpus (some plugins, e.g. `royalroad`, set `chapterNumber` directly and
+/// never hit this fallback at all) — a deliberate, accepted simplification
+/// for this pass; revisit with broader real-corpus testing later.
 pub(super) fn chapters_from_source_novel(
     novel: &JsValue,
     source_id: &str,
@@ -163,6 +177,7 @@ pub(super) fn chapters_from_source_novel(
             item, source_id, manga_id, index, context,
         )?);
     }
+    chapters.reverse();
     Ok(chapters)
 }
 
@@ -237,6 +252,15 @@ pub(super) fn js_object_to_string_map(
 /// = 1 Page" strategy (report v2 §2) — `chapter_downloader.rs` treats a page
 /// with `.text` set as a novel chapter and assembles it into the EPUB
 /// automatically, no changes needed there.
+///
+/// `html` is always real, already-scraped markup from `parseChapter()` — the
+/// plugin's own DOM read of the chapter page — never markdown/plain prose.
+/// `chapter_downloader.rs`'s `into_html()` treats `.text` as markdown by
+/// default and only skips that conversion for text prefixed with a literal
+/// `<!-- html -->` marker (its own escape hatch for sources whose `.text` is
+/// real HTML); LNReader content needs that marker unconditionally, every
+/// time, or its own tags (`<p>`, `<div>`, ...) get fed into the markdown
+/// parser as literal text instead of being rendered.
 pub(super) fn page_from_chapter_html(
     html: String,
     source_id: &str,
@@ -249,7 +273,74 @@ pub(super) fn page_from_chapter_html(
         index: 0,
         image_url: None,
         base64: title,
-        text: Some(html),
+        text: Some(format!("<!-- html -->{html}")),
         ctx: None,
+    }
+}
+
+#[cfg(test)]
+mod page_from_chapter_html_tests {
+    use super::*;
+
+    #[test]
+    fn prepends_the_html_marker_so_downstream_skips_markdown_conversion() {
+        let page = page_from_chapter_html(
+            "<p>First paragraph.</p><p>Second paragraph.</p>".to_string(),
+            "novelbuddy",
+            "some-chapter-id",
+            Some("Chapter 1".to_string()),
+        );
+
+        let text = page.text.expect("page_from_chapter_html always sets .text");
+        assert!(text.starts_with("<!-- html -->"));
+        assert!(text.contains("<p>First paragraph.</p>"));
+        assert!(text.contains("<p>Second paragraph.</p>"));
+    }
+
+    #[test]
+    fn marker_makes_crate_util_into_html_treat_real_chapter_markup_as_html_passthrough() {
+        // Regression test for the bug this marker fixes: without it,
+        // `into_html` (chapter_downloader.rs's markdown/HTML dispatch) fed
+        // real scraped HTML into the markdown parser, which doesn't
+        // recognize compact, single-line HTML as an HTML block and left the
+        // tags visible as literal text with no paragraph breaks.
+        let page = page_from_chapter_html(
+            "<p>First paragraph.</p><p>Second paragraph.</p>".to_string(),
+            "novelbuddy",
+            "some-chapter-id",
+            None,
+        );
+
+        let rendered = crate::util::into_html(&page.text.unwrap());
+        assert_eq!(rendered, "<p>First paragraph.</p><p>Second paragraph.</p>");
+    }
+}
+
+#[cfg(test)]
+mod chapters_from_source_novel_ordering_tests {
+    use super::*;
+
+    #[test]
+    fn reverses_the_plugins_own_chapter_order() {
+        let mut context = Context::default();
+        let novel = super::super::js_runtime::eval(
+            &mut context,
+            r#"({
+                chapters: [
+                    { path: 'c1', name: 'Chapter 1' },
+                    { path: 'c2', name: 'Chapter 2' },
+                    { path: 'c3', name: 'Chapter 3' },
+                ],
+            })"#,
+            "test novel",
+        )
+        .expect("test snippet should evaluate");
+
+        let chapters =
+            chapters_from_source_novel(&novel, "test-source", "test-manga", &mut context)
+                .expect("chapters_from_source_novel should succeed");
+
+        let ids: Vec<&str> = chapters.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, vec!["c3", "c2", "c1"]);
     }
 }

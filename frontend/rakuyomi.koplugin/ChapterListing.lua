@@ -873,6 +873,7 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
 
     chapter.downloaded = true
     chapter.on_tmpfs = response.body[3]
+    self:updateItems()
 
     if #response.body[2] > 0 then
       logger.err("Download job errors: ", response.body[1])
@@ -962,8 +963,8 @@ end
 function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
   self:downloadChapter(chapter, download_job, function(manga_path)
     local onReturnCallback = function()
-      self:updateItems()
       self:prunePreloadJobs()
+      self:updateItems()
 
       UIManager:show(self)
     end
@@ -997,8 +998,8 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
         end
       end)
 
-      self:updateChapterList()
       self:prunePreloadJobs()
+      self:updateChapterList()
 
       local nextChapter = findNextChapter(self.chapters, chapter)
       local nextChapterDownloadJob = nextChapter and self.preload_jobs[nextChapter.id] or nil

@@ -47,11 +47,6 @@ let
   pkgs-unstable = import inputs.nixpkgs-unstable {
     system = pkgs.stdenv.system;
   };
-
-  # The Nix poetry wrapper does `unset PYTHONPATH`, so the devenv shell's
-  # PYTHONPATH (which exposes python313Packages.tkinter) is lost inside
-  # `poetry run`. Re-inject the tkinter site-packages explicitly.
-  tkinterSitePackages = "${pkgs.python313Packages.tkinter}/${pkgs.python313.sitePackages}";
 in {
   # https://devenv.sh/packages/
   packages = [koreader cargo-debugger] ++ (with pkgs; [ 
@@ -134,7 +129,7 @@ in {
       cd $DEVENV_ROOT/e2e-tests && \
       poetry env use $(which python) && \
       poetry install --no-root && \
-      poetry run env PYTHONPATH="${tkinterSitePackages}${PYTHONPATH:+:$PYTHONPATH}" pytest $@
+      poetry run pytest $@
     '';
   };
 

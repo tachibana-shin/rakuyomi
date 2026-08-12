@@ -174,6 +174,10 @@ async fn apply_chapter_filter(
     }
 
     // In reverse source order (oldest-to-newest), find out which unread chapters to download.
+    // Keep the `(index, chapter)` pair alive here: both the read-boundary check above and
+    // `Filter::NextUnreadChapters` below need the index -- for `chapter_group`, so chapters
+    // without a real `chapter_number` are deduplicated by position instead of all collapsing
+    // onto the same group and exhausting the batch quota in one entry.
     let unread_chapters = all_chapters
         .into_iter()
         .enumerate()
@@ -191,8 +195,7 @@ async fn apply_chapter_filter(
             last_read_position.is_some_and(|boundary| {
                 chapter_position(chapter, *index).is_at_or_before(&boundary)
             })
-        })
-        .map(|(_, chapter)| chapter);
+        });
 
     let filtered_chapters: Vec<_> = match filter {
         Filter::AllUnreadChapters => unread_chapters.map(|(_, chapter)| chapter).collect(),
@@ -442,6 +445,55 @@ mod tests {
                 .map(|c| c.id.value().as_str())
                 .collect::<Vec<_>>(),
             vec!["chapter-5", "chapter-4"]
+        );
+    }
+
+    #[tokio::test]
+    async fn next_unread_chapters_respects_amount_without_chapter_numbers() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+
+        // 6 chapters, newest first (index 0 = newest, matching the source-order
+        // assumption in `apply_chapter_filter`), none carrying a `chapter_number`
+        // -- the LNReader/JS-source shape.
+        let chapters: Vec<_> = (0..6).map(|i| chapter(&manga_id, i, None)).collect();
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        // Mark the two oldest chapters (indices 4 and 5 of the newest-first
+        // order) as read.
+        for chapter in &chapters[4..] {
+            db.upsert_chapter_state(
+                &chapter.id,
+                ChapterState {
+                    read: true,
+                    last_read: None,
+                },
+            )
+            .await
+            .unwrap();
+        }
+
+        let all_chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+
+        let filtered = apply_chapter_filter(&db, all_chapters, Filter::NextUnreadChapters(2), &[])
+            .await
+            .unwrap();
+
+        // Regression: the quota used to compare `chapter_number.unwrap_or_default()`
+        // (= 0.0) for every unnumbered chapter, so all four unread chapters
+        // collided on the same key and the whole batch was returned instead of
+        // exactly the two next unread ones.
+        assert_eq!(filtered.len(), 2);
+        assert_eq!(
+            filtered
+                .iter()
+                .map(|c| c.id.value().as_str())
+                .collect::<Vec<_>>(),
+            vec!["chapter-3", "chapter-2"]
         );
     }
 }

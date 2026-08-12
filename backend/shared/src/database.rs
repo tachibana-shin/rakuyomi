@@ -1495,11 +1495,19 @@ impl Database {
             builder.build().execute(&*self.pool.read().await).await?;
         }
 
-        // Must match the column count in the `INSERT INTO chapter_informations`
-        // list below exactly: a stale, too-low value here makes `CHUNK_SIZE`
-        // too large, so a single chunk's bound parameter count
-        // (chunk_len * INSERT_FIELD_COUNT) can exceed SQLite's `BIND_LIMIT`
-        // and the whole insert silently fails for manga with many chapters.
+        // list below exactly -- a stale, too-low value here (this constant
+        // was `8` while the real column count had grown to 12) makes
+        // `CHUNK_SIZE` too large, so a single chunk's actual bound parameter
+        // count (chunk_len * INSERT_FIELD_COUNT) can exceed SQLite's real
+        // `BIND_LIMIT`. Confirmed live: a manga with 3144 chapters
+        // (Shadow Slave, novelbuddy) silently failed this insert entirely
+        // (3144 * 12 = 37,728 params > 32,766) with the error swallowed by
+        // `refresh_manga_chapters`'s route handler -- "refresh" reported
+        // success while caching zero chapters. A manga under ~2,730
+        // chapters never hit the limit, which is why this went unnoticed
+        // for both Aidoku (chapter counts that high are rare for manga) and
+        // most LNReader novels (Shadow Slave was the exception, not the
+        // rule).
         const INSERT_FIELD_COUNT: usize = 12;
         const CHUNK_SIZE: usize = BIND_LIMIT / INSERT_FIELD_COUNT;
 
@@ -1532,6 +1540,14 @@ impl Database {
             });
 
             builder.push(
+                // `lang` added here deliberately: existing chapter rows
+                // (any manga refreshed before LNReader chapters started
+                // carrying a resolved `lang`, see
+                // `sdk_lnreader::LnReaderSource::get_chapter_list`) would
+                // otherwise never pick up the value on a later refresh --
+                // confirmed live, a plain re-refresh left `lang` at its
+                // stale `NULL` on already-cached chapters even after the
+                // fix that populates it on insert.
                 " ON CONFLICT DO UPDATE SET
                 manga_order = excluded.manga_order,
                 title = excluded.title,

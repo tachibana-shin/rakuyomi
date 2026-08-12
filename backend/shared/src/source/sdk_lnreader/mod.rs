@@ -294,11 +294,29 @@ impl LnReaderSource {
         manga_id: String,
     ) -> Result<Vec<Chapter>> {
         let response = self.run_worker(worker::Operation::GetChapterList { manga_id })?;
+        // LNReader `ChapterItem`s never declare a per-chapter language of
+        // their own (unlike Aidoku, where per-chapter language is a real,
+        // exercised concept for multi-scanlator sources) — stamp the
+        // *source's own* already-resolved language (declared by the plugin
+        // itself, or the packaging-time folder-derived fallback, see
+        // `packaging::lang_from_index_url`) onto every chapter instead.
+        // Without this, every LNReader chapter's `.lang` stayed `None`, and
+        // `fetch_manga_chapters_in_batch::apply_chapter_filter`'s language
+        // filter (checked against `Settings.languages`) silently excluded
+        // every one of them whenever the user's configured languages list
+        // was non-empty — the default. Confirmed live: "download unread
+        // chapters" reported success while downloading nothing, for every
+        // LNReader manga tried.
+        let lang = self.manifest.info.lang.clone();
         Ok(response
             .chapters
             .unwrap_or_default()
             .into_iter()
             .map(worker::ChapterDto::into_chapter)
+            .map(|mut chapter| {
+                chapter.lang = lang.clone();
+                chapter
+            })
             .collect())
     }
 

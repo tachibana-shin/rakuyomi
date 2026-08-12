@@ -118,6 +118,12 @@ async fn apply_chapter_filter(
     // meaningful number, so they're compared by source position instead. The
     // two spaces aren't comparable to each other, so any comparison spanning
     // a numbered and an unnumbered chapter falls back to source order too.
+    // This matters for every LNReader chapter (LNReader never provides a
+    // real chapter_number) and for the Aidoku sources that don't either --
+    // comparing a naive positional stand-in directly against real
+    // chapter_number values broke "download unread" for exactly that mix
+    // (see `ChapterPosition::is_at_or_before`'s doc comment for the
+    // confirmed-live failure case).
     let chapter_position = |chapter: &ChapterInformation, index: usize| ChapterPosition {
         index,
         number: chapter.chapter_number.map(ordered_float::OrderedFloat),
@@ -185,7 +191,8 @@ async fn apply_chapter_filter(
             last_read_position.is_some_and(|boundary| {
                 chapter_position(chapter, *index).is_at_or_before(&boundary)
             })
-        });
+        })
+        .map(|(_, chapter)| chapter);
 
     let filtered_chapters: Vec<_> = match filter {
         Filter::AllUnreadChapters => unread_chapters.map(|(_, chapter)| chapter).collect(),

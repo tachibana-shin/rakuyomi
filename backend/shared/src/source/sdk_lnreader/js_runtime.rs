@@ -933,6 +933,76 @@ var console = {
     profileEnd: function () {},
     timeStamp: function () {},
 };
+// Minimal `Date` shim -- the one prelude polyfill that replaces a built-in
+// rather than adding a missing one. Found needed via `ranobes.js`'s
+// `parsePage`: the site's raw chapter dates are space-separated
+// ("2021-06-27 02:06:47", straight off `window.__DATA__.chapters[].date`),
+// and the plugin normalizes them with `new Date(date).toISOString()` before
+// storing them in `releaseTime`. Boa 0.21's `Date` only accepts the spec's
+// `T` separator, so the space form constructed an Invalid Date and the very
+// next `.toISOString()` threw `RangeError: Invalid time value`, rejecting
+// the whole `parsePage` -- which failed pagination with a 500 (see
+// `worker.rs::parse_and_convert_novel`'s own `ranobes` note).
+//
+// Deliberately surgical, not a reimplementation of `Date`:
+//
+// 1. A single STRING argument matching exactly `YYYY-MM-DD HH:MM[:SS[.sss]]`
+//    (space separator) has that space normalized to `T` and is delegated to
+//    the native constructor. Everything else -- numbers, multiple arguments,
+//    ISO strings already using `T`, every other string shape, no arguments
+//    at all -- is delegated to the native `Date` untouched, keeping
+//    whatever Invalid-Date behavior the native has for inputs it can't
+//    parse.
+// 2. The statics `Date.now`/`Date.parse`/`Date.UTC` are preserved, each
+//    wrapped so it never depends on `this`.
+// 3. `Date.prototype` is aliased to the native `Date.prototype`, so
+//    `new Date(...) instanceof Date` stays true for shim-constructed AND
+//    native-constructed dates, every native prototype method
+//    (`.toISOString()`, `.getTime()`, ...) works unchanged, and the `dayjs`
+//    shim's own `input instanceof Date` check (see below) keeps
+//    recognizing dates that came out of the shim.
+//
+// `Date` is deliberately NOT re-declared with `var`: a top-level `var Date`
+// would shadow the native global with `undefined` during hoisting (per the
+// spec's CreateGlobalVarBinding), which would break the
+// `__lnreader_NativeDate = Date` capture below. A plain sloppy-mode
+// assignment overwrites the existing writable global property in place, so
+// the capture happens first and the shim's own constructor body can always
+// reach the native one.
+var __lnreader_NativeDate = Date;
+Date = function () {
+    var args = arguments;
+    if (args.length === 1 && typeof args[0] === 'string') {
+        var normalized = __lnreader_normalize_date(args[0]);
+        if (normalized !== null) args = [normalized];
+    }
+    // Forward exactly the arguments received: per spec, `new Date(y, m, d)`
+    // with a MISSING arg defaults to 1/0, while an explicitly-passed
+    // `undefined` converts to NaN (Invalid Date) -- padding the tail with
+    // `undefined` here would change behavior, so each arity gets its own
+    // call.
+    if (args.length === 0) return new __lnreader_NativeDate();
+    if (args.length === 1) return new __lnreader_NativeDate(args[0]);
+    if (args.length === 2) return new __lnreader_NativeDate(args[0], args[1]);
+    if (args.length === 3) return new __lnreader_NativeDate(args[0], args[1], args[2]);
+    if (args.length === 4) return new __lnreader_NativeDate(args[0], args[1], args[2], args[3]);
+    if (args.length === 5) {
+        return new __lnreader_NativeDate(args[0], args[1], args[2], args[3], args[4]);
+    }
+    if (args.length === 6) {
+        return new __lnreader_NativeDate(args[0], args[1], args[2], args[3], args[4], args[5]);
+    }
+    return new __lnreader_NativeDate(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+};
+Date.prototype = __lnreader_NativeDate.prototype;
+Date.now = function () { return __lnreader_NativeDate.now(); };
+Date.parse = function (s) { return __lnreader_NativeDate.parse(s); };
+Date.UTC = function () { return __lnreader_NativeDate.UTC.apply(__lnreader_NativeDate, arguments); };
+var __LNREADER_SPACE_DATE_RE = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)$/;
+function __lnreader_normalize_date(s) {
+    var m = __LNREADER_SPACE_DATE_RE.exec(s);
+    return m === null ? null : m[1] + 'T' + m[2];
+}
 function Response(raw) {
     this.ok = raw.__ok;
     this.status = raw.__status;
@@ -2933,6 +3003,95 @@ mod cheerio_prelude_tests {
             console.clear(); console.exception('x'); console.profile('p');
             console.profileEnd('p'); console.timeStamp('t');
             true
+            "#
+        ));
+    }
+
+    // Regression coverage for the `Date` shim (Ranobes space-separated
+    // dates, see the shim's comment in RUNTIME_PRELUDE).
+
+    #[test]
+    fn date_shim_accepts_space_separated_datetime_strings() {
+        // The exact Ranobes shape: `new Date("2021-06-27 02:06:47")` used to
+        // build an Invalid Date (boa only accepts `T`), so `.toISOString()`
+        // threw `RangeError: Invalid time value` and the whole `parsePage`
+        // rejected. The shim must yield a real, ISO-serializable Date.
+        assert!(eval_bool(
+            r#"
+            var iso = new Date('2021-06-27 02:06:47').toISOString();
+            iso.indexOf('T') !== -1 && iso.charAt(iso.length - 1) === 'Z'
+                && new Date('2021-06-27 02:06:47') instanceof Date
+            "#
+        ));
+    }
+
+    #[test]
+    fn date_shim_normalizes_minutes_only_and_fractional_second_shapes() {
+        // The optional `:SS` and `.sss` halves of `YYYY-MM-DD HH:MM[:SS[.sss]]`
+        // must normalize too, not just the full Ranobes form.
+        assert!(eval_bool(
+            r#"
+            var m = new Date('2021-06-27 02:06').toISOString();
+            var f = new Date('2021-06-27 02:06:47.123').toISOString();
+            m.indexOf('T') !== -1 && f.indexOf('T') !== -1
+            "#
+        ));
+    }
+
+    #[test]
+    fn date_shim_delegates_everything_else_to_the_native_date() {
+        // Numbers, ISO strings already using `T`, multi-argument
+        // constructors and unparseable strings all go straight to the native
+        // `Date` -- shimmed and unshimmed behavior must be identical for
+        // them (the last check: an unparseable string is still an Invalid
+        // Date, as the native produces).
+        assert!(eval_bool(
+            r#"
+            new Date(0).toISOString() === '1970-01-01T00:00:00.000Z'
+                && new Date('2021-06-27T02:06:47.000Z').toISOString() === '2021-06-27T02:06:47.000Z'
+                && new Date(2021, 5, 27).getFullYear() === 2021
+                && isNaN(new Date('not a date').getTime())
+            "#
+        ));
+    }
+
+    #[test]
+    fn date_shim_preserves_now_parse_and_utc_statics() {
+        assert!(eval_bool(
+            r#"
+            Date.now() > 0
+                && Date.parse('2021-06-27T02:06:47.000Z')
+                    === new Date('2021-06-27T02:06:47.000Z').getTime()
+                && Date.UTC(2021, 5, 27, 2, 6, 47)
+                    === new Date('2021-06-27T02:06:47.000Z').getTime()
+            "#
+        ));
+    }
+
+    #[test]
+    fn date_shim_instances_are_real_dates_with_native_prototypes() {
+        // Shim-constructed dates are native Date objects (prototype aliased),
+        // so Object.prototype.toString and every Date.prototype method work.
+        assert!(eval_bool(
+            r#"
+            var d = new Date('2021-06-27 02:06:47');
+            Object.prototype.toString.call(d) === '[object Date]'
+                && typeof d.getTime() === 'number' && !isNaN(d.getTime())
+            "#
+        ));
+    }
+
+    #[test]
+    fn date_shim_keeps_dayjs_instanceof_date_checks_working() {
+        // The `dayjs` shim branches on `input instanceof Date` (see
+        // RUNTIME_PRELUDE's `dayjs()`), and `Dayjs.toDate()` constructs a
+        // `new Date(ms)` -- both must keep working with dates built through
+        // the Date shim, now that the global `Date` is the shim.
+        assert!(eval_bool(
+            r#"
+            var d = new Date('2021-06-27 02:06:47');
+            var dj = dayjs(d);
+            dj.isValid() && dj.toDate() instanceof Date
             "#
         ));
     }

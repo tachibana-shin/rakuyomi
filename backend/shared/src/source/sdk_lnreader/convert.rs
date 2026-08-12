@@ -777,10 +777,24 @@ fn chapter_from_chapter_item(
 }
 
 /// `ChapterItem::releaseTime` is documented as `YYYY-MM-DD` but plugins vary
-/// in practice; only the documented format is parsed here (no dependency on
-/// the `dayjs` shim, which isn't wired up for native use yet — see the plan's
-/// "Suite" section).
+/// in practice. Two shapes are parsed here, in the order real sources emit
+/// them:
+///
+/// 1. a full RFC3339 timestamp (`2021-06-27T02:06:47.000Z`) — what a plugin
+///    produces when it converts a scraped date string through
+///    `Date#toISOString()` (Ranobes-style, via the `Date` shim in
+///    `js_runtime.rs`'s runtime prelude), and
+/// 2. the documented bare `YYYY-MM-DD` date (parsed as midnight UTC).
+///
+/// The raw space-separated shape (`2021-06-27 02:06:47`) deliberately does
+/// NOT parse here: that string only reaches a `releaseTime` after a plugin
+/// has run it through `Date`, at which point it is already RFC3339 (see the
+/// `Date` shim). No dependency on the `dayjs` shim, which isn't wired up for
+/// native use yet — see the plan's "Suite" section.
 fn parse_release_time(value: &str) -> Option<chrono::DateTime<chrono_tz::Tz>> {
+    if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(value) {
+        return Some(dt.with_timezone(&chrono_tz::UTC));
+    }
     chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d")
         .ok()
         .and_then(|date| date.and_hms_opt(0, 0, 0))
@@ -951,6 +965,64 @@ mod chapters_from_chapter_items_tests {
             source_novel_total_pages(&novel, &mut context).expect("total pages should read"),
             25
         );
+    }
+
+    /// `releaseTime` values in both supported shapes (full RFC3339
+    /// timestamp — the Ranobes `Date#toISOString()` pipeline — and the
+    /// documented bare `YYYY-MM-DD`) must land in `Chapter.date_uploaded`.
+    #[test]
+    fn parses_release_time_rfc3339_and_bare_date_values() {
+        let mut context = Context::default();
+        let items = super::super::js_runtime::eval(
+            &mut context,
+            r#"([
+                { path: 'c1', name: 'Chapter 1', releaseTime: '2021-06-27T02:06:47.000Z' },
+                { path: 'c2', name: 'Chapter 2', releaseTime: '2021-06-27' },
+            ])"#,
+            "test chapter items",
+        )
+        .expect("test snippet should evaluate");
+        let items = js_array_to_vec(&items, &mut context).expect("items should convert");
+
+        let chapters =
+            chapters_from_chapter_items(&items, "test-source", "test-manga", 0, &mut context)
+                .expect("chapters_from_chapter_items should succeed");
+
+        assert_eq!(
+            chapters[0].date_uploaded.map(|d| d.to_rfc3339()),
+            Some("2021-06-27T02:06:47+00:00".to_string())
+        );
+        assert_eq!(
+            chapters[1].date_uploaded.map(|d| d.to_rfc3339()),
+            Some("2021-06-27T00:00:00+00:00".to_string())
+        );
+    }
+}
+
+#[cfg(test)]
+mod parse_release_time_tests {
+    use super::*;
+
+    #[test]
+    fn parses_rfc3339_timestamps_and_bare_dates() {
+        assert_eq!(
+            parse_release_time("2021-06-27T02:06:47.000Z").map(|d| d.to_rfc3339()),
+            Some("2021-06-27T02:06:47+00:00".to_string())
+        );
+        assert_eq!(
+            parse_release_time("2021-06-27").map(|d| d.to_rfc3339()),
+            Some("2021-06-27T00:00:00+00:00".to_string())
+        );
+    }
+
+    #[test]
+    fn space_separated_datetimes_are_normalized_by_the_js_date_shim_not_here() {
+        // The space-separated shape (Ranobes raw `date`) is normalized to
+        // `T` by the `Date` shim in `js_runtime.rs` before a plugin's
+        // `new Date(...).toISOString()` runs; a plugin passing the RAW string
+        // straight into `releaseTime` (never through `Date`) still yields no
+        // timestamp here. This documents the boundary, not a missing format.
+        assert_eq!(parse_release_time("2021-06-27 02:06:47"), None);
     }
 }
 

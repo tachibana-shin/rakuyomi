@@ -584,6 +584,35 @@ mod tests {
         };
     "#;
 
+    /// Synthetic paginated plugin mirroring `ranobes.js`'s `parsePage` date
+    /// handling (see the `Date` shim in `js_runtime.rs`): the site's raw
+    /// chapter dates are space-separated (`window.__DATA__.chapters[].date`,
+    /// e.g. `"2021-06-27 02:06:47"`), and the plugin converts each one with
+    /// `new Date(date).toISOString()` before putting it into `releaseTime`.
+    /// Before the shim, boa rejected the space separator, `.toISOString()`
+    /// threw `RangeError: Invalid time value`, `parsePage` rejected, and
+    /// pagination failed with a 500.
+    const RANOBES_STYLE_PAGINATED_MAIN_JS: &str = r#"
+        module.exports.default = {
+            parseNovel: async function (mangaId) {
+                return {
+                    path: mangaId,
+                    totalPages: 2,
+                    chapters: [{ path: 'p1-c1', name: 'Chapter 1' }],
+                };
+            },
+            parsePage: async function (mangaId, page) {
+                if (page !== 2) throw new Error('unexpected page ' + page);
+                var iso = new Date('2021-06-27 02:06:47').toISOString();
+                return [{
+                    path: 'p2-c2',
+                    name: 'Chapter 2 (' + iso + ')',
+                    releaseTime: iso,
+                }];
+            },
+        };
+    "#;
+
     fn novel_runtime(main_js: &str) -> js_runtime::JsRuntime {
         js_runtime::new(HashMap::new(), main_js).expect("runtime construction should not fail")
     }
@@ -645,6 +674,53 @@ mod tests {
         assert!(
             runtime.take_cached_novel("manga-x").is_none(),
             "a failed pagination must not be cached"
+        );
+    }
+
+    /// Regression test for the Ranobes date bug: page 2's `parsePage` runs
+    /// `new Date('2021-06-27 02:06:47').toISOString()` (the space-separated
+    /// raw site date) and puts the result in `releaseTime`. Before the
+    /// `Date` shim, that threw `RangeError: Invalid time value` and failed
+    /// the whole pagination; now it must succeed, the page-2 chapter must be
+    /// present, and its `releaseTime` (now RFC3339) must have been parsed
+    /// into `date_uploaded` by `convert::parse_release_time`.
+    #[test]
+    fn parse_and_convert_novel_normalizes_space_separated_dates_ranobes_style() {
+        let mut runtime = novel_runtime(RANOBES_STYLE_PAGINATED_MAIN_JS);
+
+        let (_, chapters) = parse_and_convert_novel(&mut runtime, "synthetic", "manga-x")
+            .expect("ranobes-style pagination must not fail: the Date shim must accept the space-separated date");
+
+        // 1 (page 1) + 1 (page 2) = 2 chapters, both pages loaded.
+        assert_eq!(chapters.len(), 2, "page 2 must be loaded, not skipped");
+
+        let p2 = chapters
+            .iter()
+            .find(|c| c.id == "p2-c2")
+            .expect("page-2 chapter must be present in the paginated list");
+
+        // `new Date('2021-06-27 02:06:47').toISOString()` produced a real ISO
+        // timestamp (T separator, Z suffix) instead of throwing — the very
+        // behavior the shim restores. The exact instant is not asserted (boa
+        // parses the T-form as local time, so `.toISOString()`'s output
+        // depends on the host timezone).
+        let name = p2
+            .title
+            .as_deref()
+            .expect("page-2 chapter should have a name");
+        let iso = name
+            .strip_prefix("Chapter 2 (")
+            .and_then(|s| s.strip_suffix(')'))
+            .expect("page-2 chapter name should embed the toISOString() output");
+        assert!(
+            iso.contains('T') && iso.ends_with('Z'),
+            "expected the plugin's toISOString() output in the chapter name, got: {iso}"
+        );
+
+        // And convert.rs stored that RFC3339 string as a real timestamp.
+        assert!(
+            p2.date_uploaded.is_some(),
+            "page-2 releaseTime (RFC3339 ISO) must be parsed into date_uploaded"
         );
     }
 

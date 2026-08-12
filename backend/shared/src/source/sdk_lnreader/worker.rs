@@ -405,6 +405,21 @@ fn execute_get_image_request_init_headers(
 /// the two calls reuse the first's result instead of re-running the plugin;
 /// deliberately short-lived and single-use, not a general metadata cache —
 /// see `js_runtime::NOVEL_CACHE_TTL`'s doc comment.
+///
+/// Pagination: `parseNovel()`'s `SourceNovel` only carries page 1's chapters
+/// plus a `totalPages` count; the rest of the list is fetched with
+/// `parsePage(manga_id, page)` for every page in 2..=totalPages (the
+/// LNReader plugin contract — confirmed broken live on `ranobes`, whose
+/// `parseNovel()` reports page 1/25 but whose `parsePage` Rakuyomi never
+/// called, silently loading only the first page of chapters). Each page's
+/// raw `ChapterItem`s are converted immediately (raw `JsValue`s can't be
+/// held across the `call_plugin_method` calls), concatenated in page order,
+/// and the whole list is reversed exactly **once** at the end — not per
+/// page — so the global newest-first order is preserved (same ordering
+/// rationale that used to live on `convert::chapters_from_source_novel`, now
+/// documented on `convert::chapters_from_chapter_items`). A failing page
+/// propagates as an `Err` for the whole call, so a partial list is never
+/// returned or cached.
 fn parse_and_convert_novel(
     runtime: &mut js_runtime::JsRuntime,
     source_id: &str,
@@ -416,9 +431,54 @@ fn parse_and_convert_novel(
 
     let manga_id_js = JsValue::from(boa_engine::js_string!(manga_id));
     let novel = runtime.call_plugin_method("parseNovel", &[manga_id_js])?;
-    let context = runtime.context();
-    let manga = convert::manga_from_source_novel(&novel, source_id, manga_id, context)?;
-    let chapters = convert::chapters_from_source_novel(&novel, source_id, manga_id, context)?;
+    let manga = {
+        let context = runtime.context();
+        convert::manga_from_source_novel(&novel, source_id, manga_id, context)?
+    };
+
+    // Page 1's chapters ship inside `SourceNovel.chapters`; convert them
+    // immediately — the raw `JsValue` they came from must not outlive this
+    // call (see `JsRuntime::call_plugin_method`'s doc comment).
+    let mut chapters = {
+        let context = runtime.context();
+        let chapters_value = convert::get_prop(&novel, "chapters", context)?;
+        let items = convert::js_array_to_vec(&chapters_value, context)?;
+        convert::chapters_from_chapter_items(&items, source_id, manga_id, 0, context)?
+    };
+
+    // Pages 2..=totalPages come from `parsePage(manga_id, page)`. Each
+    // page's raw items are converted immediately and appended in order,
+    // keeping `source_order` continuous across pages; any page failure
+    // fails the whole call (no partial list is ever returned/cached).
+    let total_pages = {
+        let context = runtime.context();
+        convert::source_novel_total_pages(&novel, context)?
+    };
+    for page in 2..=total_pages {
+        let page_arg = JsValue::from(page as f64);
+        let page_items = {
+            let manga_id_js = JsValue::from(boa_engine::js_string!(manga_id));
+            let page_novel = runtime.call_plugin_method("parsePage", &[manga_id_js, page_arg])?;
+            let context = runtime.context();
+            convert::js_array_to_vec(&page_novel, context)?
+        };
+        let page_chapters = {
+            let context = runtime.context();
+            convert::chapters_from_chapter_items(
+                &page_items,
+                source_id,
+                manga_id,
+                chapters.len(),
+                context,
+            )?
+        };
+        chapters.extend(page_chapters);
+    }
+
+    // Single reversal of the fully concatenated list: preserving the global
+    // newest-first order across pages (reversing per page would interleave
+    // the pages' orders instead).
+    chapters.reverse();
 
     runtime.cache_novel(manga_id.to_string(), manga.clone(), chapters.clone());
     Ok((manga, chapters))
@@ -465,6 +525,127 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    /// Synthetic plugin whose `parseNovel` reports `totalPages: 3` (page 1
+    /// of 3, the exact shape that broke `ranobes` — see
+    /// `parse_and_convert_novel`'s doc comment) and whose `parsePage(mangaId,
+    /// page)` returns the remaining pages' chapters. No network, no real
+    /// source — mirrors the LNReader `SourceNovel.totalPages` +
+    /// `parsePage(novelId, page)` contract (§11.x of REFERENCE.md).
+    const PAGINATED_NOVEL_MAIN_JS: &str = r#"
+        module.exports.default = {
+            parseNovel: async function (mangaId) {
+                return {
+                    name: 'Paged Test Novel',
+                    path: mangaId,
+                    totalPages: 3,
+                    chapters: [
+                        { path: 'p1-c1', name: 'Chapter 1' },
+                        { path: 'p1-c2', name: 'Chapter 2' },
+                    ],
+                };
+            },
+            parsePage: async function (mangaId, page) {
+                if (page === 2) {
+                    return [
+                        { path: 'p2-c3', name: 'Chapter 3' },
+                        { path: 'p2-c4', name: 'Chapter 4' },
+                    ];
+                }
+                if (page === 3) {
+                    return [
+                        { path: 'p3-c5', name: 'Chapter 5' },
+                        { path: 'p3-c6', name: 'Chapter 6' },
+                    ];
+                }
+                throw new Error('unexpected page ' + page);
+            },
+        };
+    "#;
+
+    /// Same fixture, but `parsePage` rejects on page 3: the whole call must
+    /// fail rather than return/cache a partial list (pages 1+2 only).
+    const PAGINATED_NOVEL_FAILING_PAGE_MAIN_JS: &str = r#"
+        module.exports.default = {
+            parseNovel: async function (mangaId) {
+                return {
+                    path: mangaId,
+                    totalPages: 3,
+                    chapters: [{ path: 'p1-c1', name: 'Chapter 1' }],
+                };
+            },
+            parsePage: async function (mangaId, page) {
+                if (page === 2) {
+                    return [{ path: 'p2-c3', name: 'Chapter 3' }];
+                }
+                throw new Error('page 3 exploded');
+            },
+        };
+    "#;
+
+    fn novel_runtime(main_js: &str) -> js_runtime::JsRuntime {
+        js_runtime::new(HashMap::new(), main_js).expect("runtime construction should not fail")
+    }
+
+    /// Regression test for the `ranobes` bug: `parseNovel` returns page 1 of
+    /// N with `totalPages`, and `parsePage(manga_id, page)` supplies the rest
+    /// — but Rakuyomi never called it, so only the first page's chapters were
+    /// ever loaded. Exercises `parse_and_convert_novel` directly (same call
+    /// `execute_get_chapter_list`/`execute_get_manga_details` both route
+    /// through).
+    #[test]
+    fn parse_and_convert_novel_loads_all_pages_in_global_order() {
+        let mut runtime = novel_runtime(PAGINATED_NOVEL_MAIN_JS);
+
+        let (manga, chapters) = parse_and_convert_novel(&mut runtime, "synthetic", "manga-x")
+            .expect("paginated parseNovel should not fail");
+        assert_eq!(manga.title.as_deref(), Some("Paged Test Novel"));
+
+        // 2 (page 1) + 2 (page 2) + 2 (page 3) = 6 chapters, all loaded.
+        assert_eq!(chapters.len(), 6, "all three pages must be concatenated");
+
+        // Raw concatenation order is oldest-first (p1-c1..p3-c6, in page
+        // order); the whole list is reversed exactly once, so the final order
+        // is newest-first GLOBALLY (p3-c6 first), not per-page (which would
+        // interleave p2/p1 back into the middle).
+        let ids: Vec<&str> = chapters.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            vec!["p3-c6", "p3-c5", "p2-c4", "p2-c3", "p1-c2", "p1-c1"]
+        );
+
+        // `source_order` stays the continuous raw-list index (0-based over
+        // the concatenation, before the reversal) — page 2 must not restart
+        // at 0.
+        let orders: Vec<usize> = chapters.iter().map(|c| c.source_order).collect();
+        assert_eq!(orders, vec![5, 4, 3, 2, 1, 0]);
+
+        // The existing one-shot novel cache is preserved and now holds the
+        // FULL paginated list (previously it would have held page 1 only).
+        let cached = runtime
+            .take_cached_novel("manga-x")
+            .expect("cached novel should be present after parse_and_convert_novel");
+        assert_eq!(cached.1.len(), 6);
+    }
+
+    #[test]
+    fn parse_and_convert_novel_fails_entirely_when_a_page_errors() {
+        let mut runtime = novel_runtime(PAGINATED_NOVEL_FAILING_PAGE_MAIN_JS);
+
+        let err = parse_and_convert_novel(&mut runtime, "synthetic", "manga-x")
+            .expect_err("a failing parsePage must fail the whole call, not return a partial list");
+        assert!(
+            err.to_string().contains("parsePage"),
+            "expected the parsePage failure to surface, got: {err}"
+        );
+
+        // Nothing cached: the paired get_manga_details/get_chapter_list call
+        // must not reuse a partial result.
+        assert!(
+            runtime.take_cached_novel("manga-x").is_none(),
+            "a failed pagination must not be cached"
+        );
     }
 
     /// The worker's `JsRuntime` is persistent across calls (see [`run`]'s doc

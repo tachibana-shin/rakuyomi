@@ -396,40 +396,55 @@ fn normalize_paragraphs(raw: &str) -> String {
     out
 }
 
-/// Reads `SourceNovel.chapters` (`Plugin.ChapterItem[]`, see `docs.md`) into
+/// Converts raw `Plugin.ChapterItem[]` JsValues (see `docs.md`) into
 /// `Chapter`s, one-to-one — not the `vi.hakovn` "one Aidoku chapter = one
-/// volume" pattern (report v2 §2).
+/// volume" pattern (report v2 §2). `source_order_base` is the `source_order`
+/// of the first item, so a caller paginating via `parsePage` can convert
+/// each page with a running offset and keep `source_order` continuous across
+/// the whole concatenated list.
 ///
-/// Reversed before returning: Rakuyomi's chapter-navigation fallback
-/// (`isBeforeChapter.lua`/`findNextChapter.lua`, shared with Aidoku,
-/// unmodified) assumes a source's raw chapter order runs newest -> oldest
-/// whenever `chapter_num` is unavailable to compare by directly — the same
-/// assumption Aidoku sources are already expected to satisfy. Confirmed
-/// live against a real install (`novelbuddy`'s own database) that its
-/// `parseNovel()` chapters arrive oldest-first, the opposite of that
-/// assumption; reversing here makes LNReader conform to the same
-/// convention Aidoku already relies on, without touching the shared Lua
-/// logic itself. Not yet verified across the rest of the real LNReader
-/// corpus (some plugins, e.g. `royalroad`, set `chapterNumber` directly and
-/// never hit this fallback at all) — a deliberate, accepted simplification
-/// for this pass; revisit with broader real-corpus testing later.
-pub(super) fn chapters_from_source_novel(
-    novel: &JsValue,
+/// Deliberately does NOT reverse: the caller owns the final ordering. The
+/// single reversal happens exactly once, on the fully concatenated list
+/// (`worker.rs::parse_and_convert_novel`) — never per page — so the global
+/// newest-first order survives; see that function's doc comment for the
+/// rationale.
+pub(super) fn chapters_from_chapter_items(
+    items: &[JsValue],
     source_id: &str,
     manga_id: &str,
+    source_order_base: usize,
     context: &mut Context,
 ) -> Result<Vec<Chapter>> {
-    let chapters_value = get_prop(novel, "chapters", context)?;
-    let items = js_array_to_vec(&chapters_value, context)?;
-
     let mut chapters = Vec::with_capacity(items.len());
     for (index, item) in items.iter().enumerate() {
         chapters.push(chapter_from_chapter_item(
-            item, source_id, manga_id, index, context,
+            item,
+            source_id,
+            manga_id,
+            source_order_base + index,
+            context,
         )?);
     }
-    chapters.reverse();
     Ok(chapters)
+}
+
+/// Reads `SourceNovel.totalPages` — how many pages the plugin's chapter list
+/// spans. `parseNovel()` returns page 1's chapters inside
+/// `SourceNovel.chapters`; pages 2..=totalPages are fetched via
+/// `parsePage(novelId, page)` (see `worker.rs::parse_and_convert_novel`).
+/// A missing/absent `totalPages` (or one that doesn't read as a number)
+/// means a single-page list: `1`, so single-page sources keep the exact
+/// pre-pagination behavior with zero `parsePage` calls.
+pub(super) fn source_novel_total_pages(novel: &JsValue, context: &mut Context) -> Result<usize> {
+    let value = get_prop(novel, "totalPages", context)?;
+    if value.is_undefined() || value.is_null() {
+        return Ok(1);
+    }
+    let pages = value
+        .to_number(context)
+        .map_err(|e| anyhow::anyhow!("`totalPages` is not a number: {e}"))?
+        as usize;
+    Ok(pages.max(1))
 }
 
 fn chapter_from_chapter_item(
@@ -568,31 +583,70 @@ mod page_from_chapter_html_tests {
 }
 
 #[cfg(test)]
-mod chapters_from_source_novel_ordering_tests {
+mod chapters_from_chapter_items_tests {
     use super::*;
 
+    /// `chapters_from_chapter_items` must keep the raw list order and number
+    /// `source_order` continuously from the caller's base — the reversal
+    /// that used to live in `chapters_from_source_novel` is now done exactly
+    /// once over the *concatenated* paginated list in
+    /// `worker.rs::parse_and_convert_novel`, and this helper is the page-
+    /// order-preserving half of that (see its doc comment).
     #[test]
-    fn reverses_the_plugins_own_chapter_order() {
+    fn preserves_list_order_with_continuous_source_order() {
+        let mut context = Context::default();
+        let items = super::super::js_runtime::eval(
+            &mut context,
+            r#"([
+                { path: 'c1', name: 'Chapter 1' },
+                { path: 'c2', name: 'Chapter 2' },
+                { path: 'c3', name: 'Chapter 3' },
+            ])"#,
+            "test chapter items",
+        )
+        .expect("test snippet should evaluate");
+        let items = js_array_to_vec(&items, &mut context).expect("items should convert");
+
+        // Page 2 of a paginated list: source_order continues from page 1's
+        // count (here 3) instead of restarting at 0.
+        let chapters =
+            chapters_from_chapter_items(&items, "test-source", "test-manga", 3, &mut context)
+                .expect("chapters_from_chapter_items should succeed");
+
+        let ids: Vec<&str> = chapters.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, vec!["c1", "c2", "c3"]);
+
+        let orders: Vec<usize> = chapters.iter().map(|c| c.source_order).collect();
+        assert_eq!(orders, vec![3, 4, 5]);
+    }
+
+    #[test]
+    fn source_novel_total_pages_defaults_to_one_when_missing() {
+        let mut context = Context::default();
+        let novel =
+            super::super::js_runtime::eval(&mut context, r#"({ chapters: [] })"#, "test novel")
+                .expect("test snippet should evaluate");
+
+        assert_eq!(
+            source_novel_total_pages(&novel, &mut context).expect("total pages should read"),
+            1
+        );
+    }
+
+    #[test]
+    fn source_novel_total_pages_reads_the_declared_page_count() {
         let mut context = Context::default();
         let novel = super::super::js_runtime::eval(
             &mut context,
-            r#"({
-                chapters: [
-                    { path: 'c1', name: 'Chapter 1' },
-                    { path: 'c2', name: 'Chapter 2' },
-                    { path: 'c3', name: 'Chapter 3' },
-                ],
-            })"#,
+            r#"({ chapters: [], totalPages: 25 })"#,
             "test novel",
         )
         .expect("test snippet should evaluate");
 
-        let chapters =
-            chapters_from_source_novel(&novel, "test-source", "test-manga", &mut context)
-                .expect("chapters_from_source_novel should succeed");
-
-        let ids: Vec<&str> = chapters.iter().map(|c| c.id.as_str()).collect();
-        assert_eq!(ids, vec!["c3", "c2", "c1"]);
+        assert_eq!(
+            source_novel_total_pages(&novel, &mut context).expect("total pages should read"),
+            25
+        );
     }
 }
 

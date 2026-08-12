@@ -1288,22 +1288,29 @@ function LibraryView:startCleaner(modeInvalid)
       ),
       ok_text = _("Clean"),
       ok_callback = function()
-        local progress_message = InfoMessage:new {
-          text = _("Deleting..."),
+        -- No "ui/widget/progressbardialog" module exists in KOReader --
+        -- an InfoMessage with periodically-updated text, same as
+        -- BasicJobDialog's own fallback.
+        local progress_dialog = InfoMessage:new {
+          modal = false,
+          text = string.format(_("Deleting... (%d/%d)"), 0, #filenames),
           dismissable = false,
         }
-        UIManager:show(progress_message)
+        UIManager:show(progress_dialog)
 
-        for _, filename in ipairs(filenames) do
+        for i, filename in ipairs(filenames) do
           local response_f = Backend.removeFile(filename)
           if response_f.type == 'ERROR' then
-            UIManager:close(progress_message)
+            UIManager:close(progress_dialog)
             ErrorDialog:show(response_f.message)
             return
           end
+          if progress_dialog.setText then
+            progress_dialog:setText(string.format(_("Deleting... (%d/%d)"), i, #filenames))
+          end
         end
 
-        UIManager:close(progress_message)
+        UIManager:close(progress_dialog)
 
         UIManager:show(InfoMessage:new {
           text = string.format(_("Cleaned free %s storage"), total_size)

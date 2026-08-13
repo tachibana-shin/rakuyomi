@@ -29,10 +29,9 @@ app.get("/oauth/mangabaka/callback", async (c) => {
     await completeOAuthSession(sessionId, {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
-      // The device needs these to refresh its own access token later, since
-      // MangaBaka's token endpoint requires client authentication.
+      // The client_secret stays server-side only (never shipped to devices);
+      // client_id alone is enough to identify the app, matching MAL's pattern.
       client_id: cfg.client_id,
-      client_secret: cfg.client_secret,
     })
     if (check.session.chat_id) {
       await notifyTelegramBot(check.session.chat_id, "MangaBaka")

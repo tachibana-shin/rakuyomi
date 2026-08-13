@@ -6,12 +6,10 @@ export type { OAuthService }
 export interface OAuthTokens {
   access_token?: string
   refresh_token?: string
-  // MAL requires client_id for search even after auth
+  // MAL requires client_id for search even after auth; also sent for
+  // MangaBaka, whose client_secret is kept server-side only and never
+  // shipped to the device.
   client_id?: string
-  // MangaBaka's token endpoint requires a client_secret (no public/"none"
-  // auth method), so the device needs it too in order to refresh its own
-  // access token later.
-  client_secret?: string
 }
 
 export interface OAuthSession {

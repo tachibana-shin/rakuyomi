@@ -286,13 +286,8 @@ function OAuthFlowView:saveTokens(body)
     if body.tokens.refresh_token then
       s.mangabaka.refresh_token = body.tokens.refresh_token
     end
-    -- MangaBaka's token endpoint requires client authentication, so the
-    -- client_id/client_secret are needed locally to refresh later.
     if body.tokens.client_id then
       s.mangabaka.client_id = body.tokens.client_id
-    end
-    if body.tokens.client_secret then
-      s.mangabaka.client_secret = body.tokens.client_secret
     end
   else
     return false

@@ -293,9 +293,6 @@ async fn poll_oauth_status(
                         if let Some(id) = tokens.client_id.clone() {
                             settings.mangabaka.client_id = Some(id);
                         }
-                        if let Some(secret) = tokens.client_secret.clone() {
-                            settings.mangabaka.client_secret = Some(secret);
-                        }
                     }
                 }
 

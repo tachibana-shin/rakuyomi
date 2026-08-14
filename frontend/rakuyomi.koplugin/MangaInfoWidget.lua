@@ -127,6 +127,7 @@ local function sanitizeDescriptionHtml(text)
           end
         elseif DROP_TAGS[tag_name] then
           -- silently drop this void/self-closing tag
+          do end -- luacheck: ignore 541
         elseif ALLOWED_TAGS[tag_name] then
           if is_closing then
             if not VOID_TAGS[tag_name] then
@@ -248,7 +249,7 @@ local function newDescriptionViewer(description)
     return TextViewer.onTapClose(self, arg, ges_ev)
   end
 
-  function viewer:onSwipe(arg, ges_ev)
+  function viewer:onSwipe(_arg, ges_ev)
     if ges_ev.direction == "north" then
       self.scroll_text_w:scrollText(1)
     elseif ges_ev.direction == "south" then
@@ -755,7 +756,7 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   }
 end
 
-function MangaInfoWidget:onSwipe(arg, ges_ev)
+function MangaInfoWidget:onSwipe(_arg, ges_ev)
   if ges_ev.direction == "south" or ges_ev.direction == "east" then
     self:onClose()
     return true
@@ -774,7 +775,7 @@ function MangaInfoWidget:onSwipe(arg, ges_ev)
   end
 end
 
-function MangaInfoWidget:onMultiSwipe(_, ges_ev)
+function MangaInfoWidget:onMultiSwipe(_, _ges_ev)
   -- For consistency with other fullscreen widgets where swipe south can't be
   -- used to close and where we then allow any multiswipe to close, allow any
   -- multiswipe to close this widget too.

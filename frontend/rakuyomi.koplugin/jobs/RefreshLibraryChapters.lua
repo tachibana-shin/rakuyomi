@@ -24,7 +24,7 @@ end
 function RefreshLibraryChapters:start()
   local response = Backend.refreshLibraryChaptersJob()
   if response.type == 'ERROR' then
-    logger.error('could not create refresh library chapters job', response.message)
+    logger.err('could not create refresh library chapters job', response.message)
     return false
   else
     self.job_id = response.body

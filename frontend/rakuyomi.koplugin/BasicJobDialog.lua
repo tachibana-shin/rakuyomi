@@ -27,9 +27,8 @@ local BasicJobDialog = {
     success_message = nil,
     error_prefix = nil,
     format_progress = nil,
-    -- Current active widget (InfoMessage or ProgressbarDialog)
+    -- Current active widget (InfoMessage)
     widget = nil,
-    widget_type = nil, -- 'info' or 'progress'
     is_finished = false,
     errors = {},
 }
@@ -124,18 +123,14 @@ function BasicJobDialog:updateProgress()
     local state = self.job:poll()
 
     if state.type == 'PENDING' then
-        local data = state.body
-        local wants_progress = data and (data.total or data.progress_max)
-        local is_progress = self.widget_type == 'progress'
-
-        if not self.widget or (wants_progress and not is_progress) then
+        if not self.widget then
             if self.widget then
                 UIManager:close(self.widget)
             end
-            self:createWidget(data)
+            self:createWidget()
         end
 
-        self:updateWidget(data)
+        self:updateWidget(state.body)
 
         if not self.is_finished then
             UIManager:scheduleIn(1, self.updateProgress, self)
@@ -146,28 +141,15 @@ function BasicJobDialog:updateProgress()
     end
 end
 
-function BasicJobDialog:createWidget(data)
-    if data and (data.total or data.progress_max) then
-        local ProgressbarDialog = require("ui/widget/progressbardialog")
-        self.widget = ProgressbarDialog:new {
-            title = self.title or _("Processing..."),
-            progress_max = data.total or data.progress_max or 100,
-            on_cancel = function()
-                self:onCancellationRequested()
-            end
-        }
-        self.widget_type = 'progress'
-    else
-        self.widget = InfoMessage:new {
-            modal = false,
-            text = self.title or _("Processing..."),
-            dismissable = true,
-        }
-        overrideInfoMessageDismissHandler(self.widget, function()
-            self:onCancellationRequested()
-        end)
-        self.widget_type = 'info'
-    end
+function BasicJobDialog:createWidget()
+    self.widget = InfoMessage:new {
+        modal = false,
+        text = self.title or _("Processing..."),
+        dismissable = true,
+    }
+    overrideInfoMessageDismissHandler(self.widget, function()
+        self:onCancellationRequested()
+    end)
 
     UIManager:show(self.widget)
 end
@@ -187,13 +169,6 @@ function BasicJobDialog:updateWidget(data)
     if self.cancellation_requested then
         setWidgetText(self.widget, _("Waiting until cancelled…"))
         return
-    end
-
-    if data and data.current and self.widget.reportProgress then
-        self.widget:reportProgress(data.current)
-        if self.widget.redrawProgressbarIfNeeded then
-            self.widget:redrawProgressbarIfNeeded()
-        end
     end
 
     if data and data.errors then

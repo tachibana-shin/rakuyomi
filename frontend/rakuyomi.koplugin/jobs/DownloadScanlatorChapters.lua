@@ -52,7 +52,7 @@ function DownloadScanlatorChapters:start()
   )
 
   if response.type == 'ERROR' then
-    logger.error('could not create download scanlator chapters job', response.message)
+    logger.err('could not create download scanlator chapters job', response.message)
     return false
   end
 

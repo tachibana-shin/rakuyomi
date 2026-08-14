@@ -105,11 +105,11 @@ fn package_and_write(main_js: &str, index_url: Option<&str>, sources_dir: &Path)
     let packaged = shared::source::packaging::package_plugin_js(main_js, index_url)
         .context("couldn't package plugin")?;
 
-    if !packaged.skipped_filters.is_empty() {
+    if !packaged.skipped_plugin_settings.is_empty() {
         eprintln!(
-            "warning: {}: unrecognized filter/setting type(s), skipped: {}",
+            "warning: {}: unsupported pluginSetting type(s), skipped: {}",
             packaged.id,
-            packaged.skipped_filters.join(", ")
+            packaged.skipped_plugin_settings.join(", ")
         );
     }
 

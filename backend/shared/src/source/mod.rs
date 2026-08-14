@@ -348,6 +348,8 @@ pub struct SourceInfo {
     pub content_rating: Option<i32>,
     pub name: String,
     pub version: usize,
+    #[serde(default, rename = "displayVersion")]
+    pub display_version: Option<String>,
     pub url: Option<String>,
     pub urls: Option<Vec<String>>,
     #[serde(rename = "minAppVersion")]

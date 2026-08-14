@@ -26,6 +26,7 @@ fn lnreader_entry_to_source_information(item: Value) -> Result<SourceInformation
         id: SourceId::new(entry.id),
         name: entry.name,
         version: packaging::encode_version_str(entry.version.as_deref()),
+        display_version: entry.version.filter(|version| !version.trim().is_empty()),
         source_of_source: None,
     })
 }
@@ -167,6 +168,19 @@ mod tests {
         assert_eq!(info.id, crate::model::SourceId::new("arnovel".to_string()));
         assert_eq!(info.name, "ArNovel");
         assert_eq!(info.version, 2_002_000);
+        assert_eq!(info.display_version.as_deref(), Some("2.2.0"));
         assert!(info.source_of_source.is_none());
+    }
+
+    #[test]
+    fn aidoku_source_without_display_version_stays_compatible() {
+        let info: SourceInformation = serde_json::from_value(serde_json::json!({
+            "id": "en.example",
+            "name": "Example",
+            "version": 18
+        }))
+        .unwrap();
+        assert_eq!(info.version, 18);
+        assert!(info.display_version.is_none());
     }
 }

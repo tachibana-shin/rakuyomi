@@ -39,6 +39,8 @@ pub struct SourceInformation {
     id: String,
     name: String,
     version: usize,
+    #[serde(rename = "displayVersion")]
+    display_version: Option<String>,
     source_of_source: Option<String>,
 }
 
@@ -48,6 +50,7 @@ impl From<DomainSourceInformation> for SourceInformation {
             id: value.id.value().clone(),
             name: value.name,
             version: value.version,
+            display_version: value.display_version,
             source_of_source: value.source_of_source,
         }
     }

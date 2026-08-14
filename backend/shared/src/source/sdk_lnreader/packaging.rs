@@ -62,6 +62,13 @@ pub fn encode_version(version: &Value) -> usize {
     encode_version_str(as_str)
 }
 
+fn display_version(version: &Value) -> Option<String> {
+    version
+        .as_str()
+        .filter(|version| !version.is_empty())
+        .map(str::to_owned)
+}
+
 /// Same encoding as [`encode_version`], for callers that already have a
 /// plain version string (e.g. `plugins.min.json`'s own `version` field —
 /// see `UpstreamIndexEntry`) rather than a `serde_json::Value`.
@@ -81,26 +88,23 @@ pub fn encode_version_str(version: Option<&str>) -> usize {
     }
 }
 
-/// Merges `filters` and `pluginSettings` into one flat list — Rakuyomi has
-/// no separate "search filters" screen, so both just become source
-/// settings. Unrecognized filter `type`s are skipped (not guessed at) and
-/// reported back to the caller.
+/// Converts supported `pluginSettings` into source settings. Standard
+/// browse/popular `filters` are intentionally ignored because Rakuyomi uses
+/// `searchNovels` and does not apply those controls.
 pub fn settings_from_plugin(
-    filters: &Value,
+    _filters: &Value,
     plugin_settings: &Value,
 ) -> (Vec<SettingDefinition>, Vec<String>) {
     let mut definitions = Vec::new();
     let mut skipped = Vec::new();
 
-    for source in [filters, plugin_settings] {
-        if let Some(map) = source.as_object() {
-            for (key, filter) in map {
-                let defs = filter_to_setting(key, filter);
-                if defs.is_empty() {
-                    skipped.push(key.clone());
-                } else {
-                    definitions.extend(defs);
-                }
+    if let Some(map) = plugin_settings.as_object() {
+        for (key, setting) in map {
+            let defs = filter_to_setting(key, setting);
+            if defs.is_empty() {
+                skipped.push(key.clone());
+            } else {
+                definitions.extend(defs);
             }
         }
     }
@@ -256,6 +260,7 @@ pub struct SourceParams {
     /// metadata probe can tell generically.
     pub site: Option<String>,
     pub version: usize,
+    pub display_version: Option<String>,
 }
 
 /// Writes an `.aix`-shaped zip to `writer`: `Payload/source.json` (always),
@@ -278,6 +283,7 @@ pub fn write_aix<W: Write + Seek>(
             lang: params.lang.clone(),
             name: params.name.clone(),
             version: params.version,
+            display_version: params.display_version.clone(),
             url: params.site.clone(),
             urls: None,
             min_app_version: None,
@@ -351,32 +357,69 @@ pub struct UpstreamIndexEntry {
 /// carries a stray Unicode direction-mark character), not a stable key
 /// fit for exact-match lookup.
 ///
-/// `"multi"` (currently just `komga`, a genuinely multi-language plugin) is
-/// deliberately absent: no single ISO code applies, so a plugin under that
-/// folder is left with no language fallback rather than forcing a wrong
-/// one.
+/// `"multi"` remains explicit rather than being conflated with an unknown
+/// language, so callers may deliberately treat it differently.
 const LANG_FOLDERS: &[(&str, &str)] = &[
+    ("albanian", "sq"),
     ("arabic", "ar"),
+    ("azerbaijani", "az"),
+    ("bengali", "bn"),
+    ("bulgarian", "bg"),
+    ("burmese", "my"),
+    ("catalan", "ca"),
+    ("cebuano", "ceb"),
     ("chinese", "zh"),
+    ("croatian", "hr"),
+    ("czech", "cs"),
+    ("danish", "da"),
+    ("dutch", "nl"),
     ("english", "en"),
+    ("esperanto", "eo"),
+    ("estonian", "et"),
+    ("filipino", "fil"),
+    ("finnish", "fi"),
     ("french", "fr"),
+    ("georgian", "ka"),
+    ("german", "de"),
+    ("greek", "el"),
+    ("hebrew", "he"),
+    ("hindi", "hi"),
+    ("hungarian", "hu"),
     ("indonesian", "id"),
+    ("italian", "it"),
     ("japanese", "ja"),
+    ("javanese", "jv"),
+    ("kazakh", "kk"),
     ("korean", "ko"),
+    ("latin", "la"),
+    ("lithuanian", "lt"),
+    ("malay", "ms"),
+    ("mongolian", "mn"),
+    ("nepali", "ne"),
+    ("norwegian", "no"),
+    ("persian", "fa"),
     ("polish", "pl"),
     ("portuguese", "pt"),
+    ("romanian", "ro"),
     ("russian", "ru"),
+    ("serbian", "sr"),
+    ("slovak", "sk"),
+    ("slovenian", "sl"),
     ("spanish", "es"),
+    ("swedish", "sv"),
+    ("tamil", "ta"),
+    ("telugu", "te"),
     ("thai", "th"),
     ("turkish", "tr"),
     ("ukrainian", "uk"),
     ("vietnamese", "vi"),
+    ("multi", "multi"),
 ];
 
 /// Extracts the `<folder>` segment from a `.../src/plugins/<folder>/...`
 /// URL and maps it through [`LANG_FOLDERS`]. Returns `None` for a URL that
-/// doesn't match that shape at all, for the `multi` folder, or for a folder
-/// not in the table (a new language folder `lnreader-plugins` adds after
+/// doesn't match that shape at all, or for a folder not in the table (a new
+/// language folder `lnreader-plugins` adds after
 /// this was written) — all three are meant to be handled the same way by
 /// callers: skip the fallback, don't guess.
 pub fn lang_from_index_url(url: &str) -> Option<&'static str> {
@@ -403,7 +446,7 @@ pub struct PackagedPlugin {
     pub lang: Option<String>,
     pub version: usize,
     pub settings_count: usize,
-    pub skipped_filters: Vec<String>,
+    pub skipped_plugin_settings: Vec<String>,
 }
 
 /// Executes `main_js` to read its own declared metadata (authoritative over
@@ -428,7 +471,7 @@ pub fn package_plugin_js(main_js: &str, index_url: Option<&str>) -> Result<Packa
         raw.lang = index_url.and_then(lang_from_index_url).map(str::to_owned);
     }
 
-    let (setting_definitions, skipped_filters) =
+    let (setting_definitions, skipped_plugin_settings) =
         settings_from_plugin(&raw.filters, &raw.plugin_settings);
 
     let version = encode_version(&raw.version);
@@ -438,6 +481,7 @@ pub fn package_plugin_js(main_js: &str, index_url: Option<&str>) -> Result<Packa
         lang: raw.lang.clone(),
         site: raw.site.clone(),
         version,
+        display_version: display_version(&raw.version),
     };
 
     let bytes = write_aix(
@@ -456,7 +500,7 @@ pub fn package_plugin_js(main_js: &str, index_url: Option<&str>) -> Result<Packa
         lang: raw.lang,
         version,
         settings_count: setting_definitions.len(),
-        skipped_filters,
+        skipped_plugin_settings,
     })
 }
 
@@ -465,7 +509,7 @@ pub fn package_plugin_js(main_js: &str, index_url: Option<&str>) -> Result<Packa
 /// `.aix` bytes ready for `SourceManager::install_source`. Used by
 /// `usecases::install_source` for its `SourceListItem::LnReaderRaw` case —
 /// the single call site this exists for, folding the runtime-toggle check,
-/// the download, and the `skipped_filters` warning together so that call
+/// the download, and the `skipped_plugin_settings` warning together so that call
 /// site doesn't carry any of this orchestration inline.
 pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u8>> {
     if !crate::source::lnreader_mode_enabled(lnreader_enabled) {
@@ -487,11 +531,11 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
     let packaged = package_plugin_js(&main_js, Some(url))
         .with_context(|| format!("couldn't package LNReader plugin from {url}"))?;
 
-    if !packaged.skipped_filters.is_empty() {
+    if !packaged.skipped_plugin_settings.is_empty() {
         log::warn!(
-            "{}: unrecognized filter/setting type(s), skipped: {}",
+            "{}: unsupported pluginSetting type(s), skipped: {}",
             packaged.id,
-            packaged.skipped_filters.join(", ")
+            packaged.skipped_plugin_settings.join(", ")
         );
     }
 
@@ -500,11 +544,6 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
-    use crate::settings::SourceSettingValue;
-    use crate::source::source_settings::default_values_for_definition;
-
     use super::*;
 
     #[test]
@@ -524,13 +563,48 @@ mod tests {
     }
 
     #[test]
-    fn lang_from_index_url_has_no_entry_for_multi() {
+    fn lang_from_index_url_maps_multi_explicitly() {
         assert_eq!(
             lang_from_index_url(
                 "https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.js/src/plugins/multi/komga.js"
             ),
-            None
+            Some("multi")
         );
+    }
+
+    #[test]
+    fn lang_from_index_url_maps_extended_latin_names() {
+        assert_eq!(
+            lang_from_index_url("https://example.com/src/plugins/german/example.js"),
+            Some("de")
+        );
+        assert_eq!(
+            lang_from_index_url("https://example.com/src/plugins/filipino/example.js"),
+            Some("fil")
+        );
+    }
+
+    #[test]
+    fn ignored_filters_do_not_create_settings_or_warnings() {
+        let filters = serde_json::json!({
+            "status": {
+                "type": "Checkbox",
+                "options": [{"label": "Done", "value": "done"}]
+            }
+        });
+        let (definitions, skipped) = settings_from_plugin(&filters, &serde_json::json!({}));
+        assert!(definitions.is_empty());
+        assert!(skipped.is_empty());
+    }
+
+    #[test]
+    fn supported_plugin_settings_are_packaged() {
+        let settings = serde_json::json!({
+            "token": {"type": "Text", "label": "Token", "value": ""}
+        });
+        let (definitions, skipped) = settings_from_plugin(&serde_json::json!({}), &settings);
+        assert_eq!(definitions.len(), 1);
+        assert!(skipped.is_empty());
     }
 
     #[test]
@@ -544,6 +618,14 @@ mod tests {
         assert_eq!(encode_version_str(Some("1")), 1_000_000);
         assert_eq!(encode_version_str(None), 1);
         assert_eq!(encode_version_str(Some("not-a-version")), 1);
+    }
+
+    #[test]
+    fn raw_display_version_is_preserved_separately_from_numeric_version() {
+        let raw = serde_json::json!("2.1.3");
+        assert_eq!(encode_version(&raw), 2_001_003);
+        assert_eq!(display_version(&raw).as_deref(), Some("2.1.3"));
+        assert_eq!(display_version(&serde_json::json!("")), None);
     }
 
     #[test]
@@ -754,23 +836,7 @@ mod tests {
 
         let (defs, skipped) = settings_from_plugin(&filters, &serde_json::json!({}));
         assert!(skipped.is_empty());
-        assert_eq!(defs.len(), 2);
-
-        let mut snapshot = HashMap::new();
-        for def in &defs {
-            snapshot.extend(default_values_for_definition(def));
-        }
-        assert_eq!(
-            snapshot.get("genres__include"),
-            Some(&SourceSettingValue::Vec(vec![
-                "Action".to_string(),
-                "Fantasy".to_string()
-            ]))
-        );
-        assert_eq!(
-            snapshot.get("genres__exclude"),
-            Some(&SourceSettingValue::Vec(vec!["Adult".to_string()]))
-        );
+        assert!(defs.is_empty());
     }
 
     #[test]
@@ -799,18 +865,6 @@ mod tests {
 
         let (defs, skipped) = settings_from_plugin(&filters, &plugin_settings);
         assert!(skipped.is_empty());
-        // 1 for Checkbox + 2 for XCheckbox = 3
-        assert_eq!(defs.len(), 3);
-
-        let keys: Vec<&str> = defs
-            .iter()
-            .map(|d| match d {
-                SettingDefinition::MultiSelect { key, .. } => key.as_str(),
-                _ => panic!("unexpected type"),
-            })
-            .collect();
-        assert!(keys.contains(&"status"));
-        assert!(keys.contains(&"genres__include"));
-        assert!(keys.contains(&"genres__exclude"));
+        assert!(defs.is_empty());
     }
 }

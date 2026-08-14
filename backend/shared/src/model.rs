@@ -95,6 +95,8 @@ pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
     pub version: usize,
+    #[serde(default, rename = "displayVersion")]
+    pub display_version: Option<String>,
 
     // source of source
     #[serde(skip)]
@@ -281,6 +283,7 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
+            display_version: value.info.display_version,
             source_of_source: value.source_of_source,
         }
     }
@@ -471,6 +474,7 @@ mod tests {
                 content_rating: None,
                 name: "Test Source".to_string(),
                 version: 1,
+                display_version: Some("1.0.0".to_string()),
                 url: None,
                 urls: None,
                 min_app_version: None,
@@ -482,6 +486,20 @@ mod tests {
         assert_eq!(info.id.value(), "test_id");
         assert_eq!(info.name, "Test Source");
         assert_eq!(info.version, 1);
+        assert_eq!(info.display_version.as_deref(), Some("1.0.0"));
         assert_eq!(info.source_of_source, Some("test_sos".to_string()));
+    }
+
+    #[test]
+    fn old_aidoku_source_information_json_defaults_display_version() {
+        let info: SourceInformation = serde_json::from_value(serde_json::json!({
+            "id": "old-source",
+            "name": "Old Source",
+            "version": 7
+        }))
+        .unwrap();
+
+        assert_eq!(info.version, 7);
+        assert!(info.display_version.is_none());
     }
 }

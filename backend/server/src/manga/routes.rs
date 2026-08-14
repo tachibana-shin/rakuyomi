@@ -548,7 +548,7 @@ async fn refresh_manga_chapters(
 
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await;
+    usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await?;
 
     Ok(Json(()))
 }
@@ -597,15 +597,8 @@ async fn refresh_manga_details(
     let chapter_storage = &*chapter_storage.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_details(
-        &token.0,
-        &database,
-        chapter_storage,
-        &source,
-        &manga_id,
-        60,
-    )
-    .await;
+    usecases::refresh_manga_details(&token.0, &database, chapter_storage, &source, &manga_id, 60)
+        .await?;
 
     Ok(Json(()))
 }

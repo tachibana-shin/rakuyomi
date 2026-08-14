@@ -113,9 +113,9 @@ fn package_and_write(main_js: &str, index_url: Option<&str>, sources_dir: &Path)
         );
     }
 
-    if packaged.id.contains(['/', '\\']) {
+    if packaged.id.is_empty() || packaged.id.contains(['/', '\\']) {
         anyhow::bail!(
-            "plugin declared an id containing a path separator, refusing to package: {:?}",
+            "plugin declared an empty id or one containing a path separator, refusing to package: {:?}",
             packaged.id
         );
     }

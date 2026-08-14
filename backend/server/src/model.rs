@@ -1,12 +1,38 @@
 use serde::Serialize;
 
 use shared::{
+    chapter_storage::ChapterStorage,
     model::{
         Chapter as DomainChapter, Manga as DomainManga,
         SourceInformation as DomainSourceInformation,
     },
     source::model::MangaViewer,
 };
+
+/// Resolves each manga's cover to a local `file://` URL served from the
+/// chapter storage's downloaded poster, if one exists.
+pub fn resolve_manga_covers(mangas: &mut [DomainManga], chapter_storage: &ChapterStorage) {
+    for manga in mangas.iter_mut() {
+        if manga.information.cover_url.is_some() {
+            manga.information.cover_url = chapter_storage
+                .poster_exists(&manga.information.id)
+                .and_then(|path| path_to_file_url(&path));
+        }
+    }
+}
+
+pub fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
+    match url::Url::from_file_path(path) {
+        Ok(url) => Some(url),
+        Err(_) => match path.canonicalize() {
+            Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
+            Err(e) => {
+                println!("Error canonicalizing path: {}", e);
+                None
+            }
+        },
+    }
+}
 
 #[derive(Serialize)]
 pub struct SourceInformation {

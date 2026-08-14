@@ -16,23 +16,10 @@ use shared::usecases;
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 
-use crate::model::{Chapter, Manga};
+use crate::model::{resolve_manga_covers, Chapter, Manga};
 use crate::source_extractor::SourceExtractor;
 use crate::state::State;
 use crate::AppError;
-
-fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
-    match url::Url::from_file_path(path) {
-        Ok(url) => Some(url),
-        Err(_) => match path.canonicalize() {
-            Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
-            Err(e) => {
-                println!("Error canonicalizing path: {}", e);
-                None
-            }
-        },
-    }
-}
 
 pub fn routes() -> Router<State> {
     Router::new()
@@ -154,13 +141,7 @@ async fn get_manga_library(
         usecases::get_manga_library(&database, &*source_manager, library_sorting_mode).await?;
 
     if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
-        for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
-            }
-        }
+        resolve_manga_covers(&mut mangas, &chapter_storage);
     }
 
     Ok(Json(
@@ -339,13 +320,7 @@ async fn get_mangas(
         .map_err(AppError::from_search_mangas_error)?;
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
-        for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
-            }
-        }
+        resolve_manga_covers(&mut mangas, &chapter_storage);
     }
 
     let results = mangas.into_iter().map(Manga::from).collect();
@@ -616,13 +591,8 @@ async fn mark_chapters_as_read(
 ) -> Result<Json<Option<usize>>, AppError> {
     let manga_id = MangaId::from(params);
 
-    let (delete_downloaded_after_read, tracking_auto_sync) = {
-        let settings = settings.lock().await;
-        (
-            settings.delete_downloaded_after_read,
-            settings.tracking_auto_sync,
-        )
-    };
+    let (delete_downloaded_after_read, tracking_auto_sync) =
+        read_read_tracking_settings(&settings).await;
     let chapter_storage = &*chapter_storage.lock().await;
 
     let count = usecases::mark_chapters_as_read(
@@ -749,13 +719,8 @@ async fn mark_chapter_as_read(
 ) -> Result<Json<()>, AppError> {
     let chapter_id = ChapterId::from(params);
 
-    let (delete_downloaded_after_read, tracking_auto_sync) = {
-        let settings = settings.lock().await;
-        (
-            settings.delete_downloaded_after_read,
-            settings.tracking_auto_sync,
-        )
-    };
+    let (delete_downloaded_after_read, tracking_auto_sync) =
+        read_read_tracking_settings(&settings).await;
     let chapter_storage = chapter_storage.lock().await;
 
     usecases::mark_chapter_as_read(
@@ -1072,6 +1037,15 @@ impl Drop for TokenGuard {
             });
         }
     }
+}
+
+async fn read_read_tracking_settings(settings: &Mutex<shared::settings::Settings>) -> (bool, bool) {
+    let settings = settings.lock().await;
+
+    (
+        settings.delete_downloaded_after_read,
+        settings.tracking_auto_sync,
+    )
 }
 
 async fn create_token(

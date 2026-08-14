@@ -1,4 +1,4 @@
-use crate::model::Manga;
+use crate::model::{resolve_manga_covers, Manga};
 use axum::extract::{Path, State as StateExtractor};
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
@@ -93,25 +93,7 @@ async fn get_mangas_in_playlist(
     .await?;
 
     if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
-        for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url =
-                    if let Some(path) = chapter_storage.poster_exists(&manga.information.id) {
-                        match url::Url::from_file_path(&path) {
-                            Ok(url) => Some(url),
-                            Err(_) => match path.canonicalize() {
-                                Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
-                                Err(e) => {
-                                    println!("Error canonicalizing path: {}", e);
-                                    None
-                                }
-                            },
-                        }
-                    } else {
-                        None
-                    };
-            }
-        }
+        resolve_manga_covers(&mut mangas, &chapter_storage);
     }
 
     Ok(Json(

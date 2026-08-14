@@ -181,6 +181,39 @@ fn zip_comment(chapter_id: &ChapterId) -> String {
     .to_string()
 }
 
+fn add_epub_page(
+    epub: &mut EpubBuilder<ZipLibrary>,
+    idx: usize,
+    title: String,
+    html: &str,
+) -> anyhow::Result<()> {
+    epub.add_content(
+        EpubContent::new(
+            format!("pages/page_{}.xhtml", idx + 1),
+            Cursor::new(create_xhtml(&title, html)),
+        )
+        .title(title)
+        .reftype(ReferenceType::Text),
+    )?;
+
+    Ok(())
+}
+
+fn store_epub_image_resource(
+    epub: &mut EpubBuilder<ZipLibrary>,
+    index_image: &mut usize,
+    image_bytes: &[u8],
+    ext: &str,
+    mime: &str,
+) -> anyhow::Result<String> {
+    let filename = format!("images/img_{}.{}", index_image, ext);
+    *index_image += 1;
+
+    epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
+
+    Ok(filename)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub async fn download_chapter_pages_as_cbz<W>(
     cancel_token: &CancellationToken,
@@ -321,19 +354,11 @@ where
                                                         image.width, image.height, &image.data,
                                                     ) {
                                                         Ok(rgb_pixels) => {
-                                                            let mut comp = mozjpeg::Compress::new(
-                                                                mozjpeg::ColorSpace::JCS_RGB,
-                                                            );
-                                                            comp.set_size(
-                                                                image.width as usize,
-                                                                image.height as usize,
-                                                            );
-                                                            comp.set_fastest_defaults();
-
-                                                            let mut comp = comp.start_compress(Vec::new())?;
-                                                            comp.write_scanlines(&rgb_pixels)?;
-
-                                                            Ok(comp.finish()?)
+                                                            crate::source::decode_image::encode_rgb_to_jpeg(
+                                                                image.width as u32,
+                                                                image.height as u32,
+                                                                &rgb_pixels,
+                                                            )
                                                         }
                                                         Err(e) => {
                                                             eprintln!("failed to convert ARGB to RGB: {e}");
@@ -541,10 +566,13 @@ where
                 };
                 let html = match image_result {
                     Ok((image_bytes, ext, mime)) => {
-                        let filename = format!("images/img_{}.{}", index_image, ext);
-                        index_image += 1;
-
-                        epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
+                        let filename = store_epub_image_resource(
+                            &mut epub,
+                            &mut index_image,
+                            image_bytes,
+                            ext,
+                            mime,
+                        )?;
 
                         format!("<img src=\"../{}\"/>", filename)
                     }
@@ -563,14 +591,7 @@ where
                     }
                 }
 
-                epub.add_content(
-                    EpubContent::new(
-                        format!("pages/page_{}.xhtml", idx + 1),
-                        Cursor::new(create_xhtml(&title, &html)),
-                    )
-                    .title(title)
-                    .reftype(ReferenceType::Text),
-                )?;
+                add_epub_page(&mut epub, idx, title, &html)?;
             } else if let Some(text) = &page.text {
                 let document = Document::from(format!(
                     "<html><body>{}</body></html>",
@@ -589,10 +610,13 @@ where
                     };
                     match image_result {
                         Ok((image_bytes, ext, mime)) => {
-                            let filename = format!("images/img_{}.{}", index_image, ext);
-                            index_image += 1;
-
-                            epub.add_resource(&filename, Cursor::new(image_bytes), mime)?;
+                            let filename = store_epub_image_resource(
+                                &mut epub,
+                                &mut index_image,
+                                image_bytes,
+                                ext,
+                                mime,
+                            )?;
 
                             img.set_attr("src", &format!("../{}", filename));
                         }
@@ -601,34 +625,27 @@ where
 
                             let image_bytes =
                                 generate_error_image("Image error", &e.to_string(), 500, 667)?;
-
-                            let filename = format!("images/img_{}.{}", index_image, "jpeg");
-                            index_image += 1;
-
-                            epub.add_resource(&filename, Cursor::new(image_bytes), "image/jpeg")?;
+                            let filename = store_epub_image_resource(
+                                &mut epub,
+                                &mut index_image,
+                                &image_bytes,
+                                "jpeg",
+                                "image/jpeg",
+                            )?;
 
                             img.set_attr("src", &format!("../{}", filename));
                         }
                     }
                 }
 
-                let xhtml = create_xhtml(&title, document.select_single("body").html().as_ref());
-
-                epub.add_content(
-                    EpubContent::new(format!("pages/page_{}.xhtml", idx + 1), Cursor::new(xhtml))
-                        .title(title)
-                        .reftype(ReferenceType::Text),
-                )?;
+                let body_html = document.select_single("body").html();
+                add_epub_page(&mut epub, idx, title, body_html.as_ref())?;
             } else {
-                let html =
-                    "<p><strong>No content available for this page.</strong></p>".to_string();
-                epub.add_content(
-                    EpubContent::new(
-                        format!("pages/page_{}.xhtml", idx + 1),
-                        Cursor::new(create_xhtml(&title, &html)),
-                    )
-                    .title(title)
-                    .reftype(ReferenceType::Text),
+                add_epub_page(
+                    &mut epub,
+                    idx,
+                    title,
+                    "<p><strong>No content available for this page.</strong></p>",
                 )?;
             }
         }

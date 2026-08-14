@@ -127,7 +127,6 @@ local function sanitizeDescriptionHtml(text)
           end
         elseif DROP_TAGS[tag_name] then
           -- silently drop this void/self-closing tag
-          local _ = tag_name
         elseif ALLOWED_TAGS[tag_name] then
           if is_closing then
             if not VOID_TAGS[tag_name] then
@@ -166,6 +165,47 @@ local function sanitizeDescriptionHtml(text)
   return sanitized, true
 end
 
+--- Convert sanitized description HTML to readable TextViewer text.
+--- @param text string
+--- @return string
+local function descriptionToText(text)
+  local html_body, has_html = sanitizeDescriptionHtml(text)
+  if not has_html then
+    return text
+  end
+
+  html_body = html_body:gsub("<%s*[Bb][Rr]%s*/?%s*>", "\n")
+  html_body = html_body:gsub("<%s*[Hh][Rr]%s*/?%s*>", "\n")
+  html_body = html_body:gsub("</%s*[Pp]%s*>", "\n\n")
+  html_body = html_body:gsub("</%s*[Hh][1-6]%s*>", "\n\n")
+  html_body = html_body:gsub("</%s*[Ll][Ii]%s*>", "\n")
+  html_body = html_body:gsub("<[^>]+>", "")
+
+  -- Decode the entities most commonly found in API descriptions. Numeric
+  -- entities are deliberately limited to printable ASCII characters here;
+  -- this keeps the conversion LuaJIT-safe without introducing a parser.
+  html_body = html_body:gsub("&#(%d+);", function(value)
+    local code = tonumber(value)
+    if code and code >= 32 and code <= 126 then
+      return string.char(code)
+    end
+    return " "
+  end)
+  html_body = html_body:gsub("&#x([%da-fA-F]+);", function(value)
+    local code = tonumber(value, 16)
+    if code and code >= 32 and code <= 126 then
+      return string.char(code)
+    end
+    return " "
+  end)
+  local entities = {
+    ["&quot;"] = '"', ["&apos;"] = "'", ["&amp;"] = "&",
+    ["&lt;"] = "<", ["&gt;"] = ">", ["&nbsp;"] = " ",
+  }
+  html_body = html_body:gsub("&%a+;", entities)
+  return html_body
+end
+
 local function parse_iso8601(str)
   local year, month, day, hour, min, sec =
       str:match("(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)")
@@ -183,6 +223,55 @@ local function parse_iso8601(str)
     sec = sec,
     isdst = false,
   })
+end
+
+local function newDescriptionViewer(description)
+  local viewer = TextViewer:new {
+    title = _("Description"),
+    text = descriptionToText(description or ""),
+    text_type = "book_info",
+  }
+
+  viewer.scroll_text_w.ges_events.TapScrollText = nil
+
+  -- Inside the text, a left/right tap pages through the description. A tap
+  -- outside still closes the reader; TextViewer's stock pan remains enabled.
+  function viewer:onTapClose(arg, ges_ev)
+    if ges_ev.pos:intersectWith(self.textw.dimen) then
+      if ges_ev.pos.x < Screen:getWidth() / 2 then
+        self.scroll_text_w:scrollText(-1)
+      else
+        self.scroll_text_w:scrollText(1)
+      end
+      return true
+    end
+    return TextViewer.onTapClose(self, arg, ges_ev)
+  end
+
+  function viewer:onSwipe(arg, ges_ev)
+    if ges_ev.direction == "north" then
+      self.scroll_text_w:scrollText(1)
+    elseif ges_ev.direction == "south" then
+      self.scroll_text_w:scrollText(-1)
+    end
+    return true
+  end
+
+  return viewer
+end
+
+local function configureDescriptionPreview(scroll_widget)
+  function scroll_widget:onTapScrollText(_, ges_ev)
+    self:scrollText(ges_ev.pos.x < Screen:getWidth() / 2 and -1 or 1)
+    return true
+  end
+  function scroll_widget:onScrollText(_, ges_ev)
+    if ges_ev.direction == "north" then self:scrollText(1)
+    elseif ges_ev.direction == "south" then self:scrollText(-1) end
+    return true
+  end
+  scroll_widget.ges_events.PanText = nil
+  scroll_widget.ges_events.PanReleaseText = nil
 end
 
 --- @class FocusManager
@@ -643,10 +732,7 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
       face = self.medium_font_face,
       width = widget_width,
       height = widget_height,
-      dialog = TextViewer:new {
-        title = _("Description"),
-        text = description,
-      },
+      dialog = newDescriptionViewer(description),
       scroll = true,
       bordersize = Size.border.default,
       focused = false,
@@ -654,6 +740,8 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
       parent = self,
     }
   end
+
+  configureDescriptionPreview(scroll_widget)
 
   self.input_note = scroll_widget
   table.insert(self.layout, { self.input_note })
@@ -667,15 +755,13 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   }
 end
 
-function MangaInfoWidget:onSwipe(_, ges_ev)
-  if ges_ev.direction == "south" then
-    -- Allow easier closing with swipe down
+function MangaInfoWidget:onSwipe(arg, ges_ev)
+  if ges_ev.direction == "south" or ges_ev.direction == "east" then
     self:onClose()
+    return true
   elseif ges_ev.direction == "west" or ges_ev.direction == "north" then
-    UIManager:show(TextViewer:new {
-      title = _("Description"),
-      text = self.manga.description
-    })
+    UIManager:show(newDescriptionViewer(self.manga.description or "N/A"))
+    return true
   elseif ges_ev.direction == "east" or ges_ev.direction == "west" or ges_ev.direction == "north" then
     -- no use for now
     do end -- luacheck: ignore 541
@@ -688,7 +774,7 @@ function MangaInfoWidget:onSwipe(_, ges_ev)
   end
 end
 
-function MangaInfoWidget:onMultiSwipe(_, _)
+function MangaInfoWidget:onMultiSwipe(_, ges_ev)
   -- For consistency with other fullscreen widgets where swipe south can't be
   -- used to close and where we then allow any multiswipe to close, allow any
   -- multiswipe to close this widget too.

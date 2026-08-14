@@ -1368,6 +1368,10 @@ function ChapterListing:onDownloadUnreadChapters()
                 show_parent = self,
                 job = job,
                 dismiss_callback = function()
+                  -- The batch job changes downloaded files asynchronously.
+                  -- Clear the local snapshot so updateChapterList fetches the
+                  -- current flags from the backend instead of reusing it.
+                  self.raw_chapters = {}
                   self:updateChapterList()
                 end
               })

@@ -611,41 +611,103 @@ fn describe_wait_result(result: std::io::Result<std::process::ExitStatus>) -> St
     }
 }
 
-/// Path to the `lnreader_worker` binary — deployed as a sibling of `server`
-/// (same pattern as `uds_http_request`/`cbz_metadata_reader`, see that
-/// crate). Resolved relative to the current executable's directory rather
-/// than assumed to be on `PATH`, so it works the same way in a packaged
-/// install and in a plain `cargo run`/`cargo test` from this workspace.
-/// Test/bench binaries live one level deeper than regular bin targets
-/// (`target/debug/deps/shared-<hash>`, vs. `target/debug/lnreader_worker`),
-/// so both the executable's own directory and its parent are tried.
-fn worker_binary_path() -> Result<std::path::PathBuf> {
-    let current = std::env::current_exe()
-        .context("failed to determine current executable path for LNReader worker")?;
-    let dir = current
-        .parent()
-        .context("current executable has no parent directory")?;
-    let name = if cfg!(windows) {
-        "lnreader_worker.exe"
-    } else {
-        "lnreader_worker"
-    };
+/// Builds the real `lnreader_worker` binary via a nested `cargo build -p
+/// lnreader_worker --message-format=json` invocation, once per test process
+/// (`OnceLock`), and returns its exact output path parsed from cargo's own
+/// `compiler-artifact` message -- see `worker_binary_path`'s doc comment for
+/// why a bare `cargo test` leaves nothing at a well-known path to find in
+/// the first place. Parsing the JSON artifact message (rather than assuming
+/// a fixed `target/<profile>/lnreader_worker` path) keeps this correct
+/// regardless of profile, a custom `CARGO_TARGET_DIR`, or a cross-compile
+/// target triple. `env!("CARGO")` is one of the env vars Cargo bakes into
+/// every crate it compiles (see the Cargo Book's "Environment variables
+/// Cargo sets for crates"), so this always invokes the same `cargo` that's
+/// currently running the test, not whatever happens to be on `PATH`.
+#[cfg(test)]
+fn test_worker_binary_path() -> &'static std::path::PathBuf {
+    static PATH: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+    PATH.get_or_init(|| {
+        let output = std::process::Command::new(env!("CARGO"))
+            .args([
+                "build",
+                "--package",
+                "lnreader_worker",
+                "--message-format=json",
+            ])
+            .output()
+            .expect("failed to invoke cargo to build lnreader_worker for tests");
+        assert!(
+            output.status.success(),
+            "cargo build -p lnreader_worker failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
+            .find_map(|msg| {
+                if msg.get("reason")?.as_str()? != "compiler-artifact" {
+                    return None;
+                }
+                if msg.get("target")?.get("name")?.as_str()? != "lnreader_worker" {
+                    return None;
+                }
+                msg.get("executable")?
+                    .as_str()
+                    .map(std::path::PathBuf::from)
+            })
+            .expect("cargo build -p lnreader_worker produced no executable artifact")
+    })
+}
 
-    let same_dir = dir.join(name);
-    if same_dir.is_file() {
-        return Ok(same_dir);
-    }
-    if let Some(parent_dir) = dir.parent() {
-        let sibling = parent_dir.join(name);
-        if sibling.is_file() {
-            return Ok(sibling);
+/// Path to the `lnreader_worker` binary — deployed as a sibling of `server`
+/// in production (same pattern as `uds_http_request`/`cbz_metadata_reader`,
+/// see that crate), resolved relative to the current executable's directory
+/// rather than assumed to be on `PATH`.
+///
+/// That current-exe-relative walk can't work under `cargo test`: `cargo
+/// test` only ever places a bin target's hashed output under
+/// `target/<profile>/deps/`, never at the friendly `target/<profile>/<name>`
+/// path `cargo build` uplifts to (confirmed empirically -- true even for a
+/// `[[bin]]` target declared directly on `shared`, and true whether or not
+/// `CARGO_BIN_EXE_<name>` happens to be set, since that env var itself is
+/// only populated for integration-test/benchmark targets, never for `--lib`
+/// unit tests like these). So test builds go through
+/// [`test_worker_binary_path`] instead, which builds a real, independently
+/// located copy via a nested `cargo build` rather than trying to find one
+/// `cargo test` already built.
+fn worker_binary_path() -> Result<std::path::PathBuf> {
+    #[cfg(test)]
+    return Ok(test_worker_binary_path().clone());
+
+    #[cfg(not(test))]
+    {
+        let current = std::env::current_exe()
+            .context("failed to determine current executable path for LNReader worker")?;
+        let dir = current
+            .parent()
+            .context("current executable has no parent directory")?;
+        let name = if cfg!(windows) {
+            "lnreader_worker.exe"
+        } else {
+            "lnreader_worker"
+        };
+
+        let same_dir = dir.join(name);
+        if same_dir.is_file() {
+            return Ok(same_dir);
         }
+        if let Some(parent_dir) = dir.parent() {
+            let sibling = parent_dir.join(name);
+            if sibling.is_file() {
+                return Ok(sibling);
+            }
+        }
+        bail!(
+            "couldn't find the lnreader_worker binary next to {} (looked in {} and its parent)",
+            current.display(),
+            dir.display()
+        );
     }
-    bail!(
-        "couldn't find the lnreader_worker binary next to {} (looked in {} and its parent)",
-        current.display(),
-        dir.display()
-    );
 }
 
 #[cfg(unix)]
@@ -680,12 +742,10 @@ pub(super) fn arg_string(
 }
 
 /// End-to-end tests against the real worker subprocess pipeline
-/// (`run_worker`/`worker_binary_path`, same path as production —
-/// `cargo test` builds the `lnreader_worker` bin target into the same
-/// `target/<profile>/` tree as everything else, and `worker_binary_path`
-/// already checks both the test binary's own directory (`target/debug/deps/`)
-/// and its parent (`target/debug/`, where bin targets actually land) to find
-/// it). Every plugin JS here is hand-written and synthetic (same spirit as
+/// (`run_worker`/`worker_binary_path`, same path as production — see
+/// `worker_binary_path`'s doc comment for how it locates a freshly built
+/// worker executable in this test context specifically). Every plugin JS
+/// here is hand-written and synthetic (same spirit as
 /// `tls.rs`'s `https://example.com` plumbing-only network tests and this
 /// module's own `HANG_PLUGIN_JS` below) — no vendored real source and no
 /// actual network I/O, so none of these need `#[ignore]`.

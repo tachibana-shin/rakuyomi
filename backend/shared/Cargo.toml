@@ -106,24 +106,16 @@ criterion = { version = "0.5", features = ["async_tokio"] }
 pprof = { version = "0.15", features = ["criterion", "flamegraph"] }
 # Required by end-to-end tests in `source::sdk_lnreader::tests` (the
 # `cheerio_fixture_plugin_end_to_end` and `hung_worker_times_out_and_respawns`
-# tests) which launch a real `lnreader_worker` subprocess, found at runtime by
-# `worker_binary_path()` next to the current executable. This dev-dependency
-# only links `lnreader_worker`'s library part, not its binary -- the binary
-# itself gets built as a side effect of building the whole workspace (`cargo
-# build`/`cargo test --workspace`, what CI runs), since `lnreader_worker` is
-# also its own workspace member. A bare `cargo test -p shared` does NOT build
-# it on its own; run `cargo build -p lnreader_worker` first (or just use
-# `--workspace`) if running that narrower command locally. Re-declaring a
-# `[[bin]]` here to force it was tried and reverted: it made cargo build
-# `lnreader_worker/src/main.rs` twice under two different unit graphs (once
-# as this crate's own bin, once as the real `lnreader_worker` package),
-# producing an "output filename collision" warning at `target/debug/
-# lnreader_worker` and non-deterministic behavior over which copy actually
-# won that path on a clean build -- the likely cause of intermittent
-# "couldn't find the lnreader_worker binary" failures in CI. The
-# corresponding tests are themselves `#[cfg(feature = "lnreader")]` gated, so
-# a build that disables the `lnreader` feature still skips them cleanly
-# without needing the binary to be present.
+# tests) which launch a real `lnreader_worker` subprocess. This dev-dependency
+# only links `lnreader_worker`'s library part, not its binary -- see
+# `worker_binary_path()`'s doc comment (in `source/sdk_lnreader/mod.rs`) for
+# how the tests actually build and locate a real executable; a `[[bin]]`
+# redeclaration here to force cargo to place one at a well-known path was
+# tried and reverted twice (see git history) -- once because it collided
+# with the real `lnreader_worker` package's own output filename, and again
+# because `cargo test` never uplifts a package's own bin targets to a
+# friendly `target/<profile>/<name>` path the way `cargo build` does, so
+# there was no reliable well-known path to find in the first place.
 lnreader_worker = { path = "../lnreader_worker" }
 
 [[bench]]

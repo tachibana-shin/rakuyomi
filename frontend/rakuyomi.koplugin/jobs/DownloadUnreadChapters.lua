@@ -66,7 +66,7 @@ function DownloadUnreadChapters:start()
   end
 
   if response.type == 'ERROR' then
-    logger.error('could not create download job', response.message)
+    logger.err('could not create download job', response.message)
 
     return false
   end

@@ -52,7 +52,7 @@ function DownloadChapter:start()
     self.current_chapter_id
   )
   if response.type == 'ERROR' then
-    logger.error('could not create download chapter job', response.message)
+    logger.err('could not create download chapter job', response.message)
   else
     self.job_id = response.body
   end

@@ -1288,13 +1288,11 @@ function LibraryView:startCleaner(modeInvalid)
       ),
       ok_text = _("Clean"),
       ok_callback = function()
-        local ProgressbarDialog = require("ui/widget/progressbardialog")
-
-        local progressbar_dialog = ProgressbarDialog:new {
-          title = _("Deleting..."),
-          progress_max = #filenames
+        local progress_message = InfoMessage:new {
+          text = _("Deleting..."),
+          dismissable = false,
         }
-        UIManager:show(progressbar_dialog)
+        UIManager:show(progress_message)
 
         for i, filename in ipairs(filenames) do
           local response_f = Backend.removeFile(filename)
@@ -1302,11 +1300,9 @@ function LibraryView:startCleaner(modeInvalid)
             ErrorDialog:show(response_f.message)
             return
           end
-          progressbar_dialog:reportProgress(i)
-          progressbar_dialog:redrawProgressbarIfNeeded()
         end
 
-        progressbar_dialog:close()
+        UIManager:close(progress_message)
 
         UIManager:show(InfoMessage:new {
           text = string.format(_("Cleaned free %s storage"), total_size)

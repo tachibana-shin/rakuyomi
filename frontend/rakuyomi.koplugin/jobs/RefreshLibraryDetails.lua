@@ -24,7 +24,7 @@ end
 function RefreshLibraryDetails:start()
   local response = Backend.refreshLibraryDetailsJob()
   if response.type == 'ERROR' then
-    logger.error('could not create refresh library details job', response.message)
+    logger.err('could not create refresh library details job', response.message)
     return false
   else
     self.job_id = response.body

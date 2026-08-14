@@ -68,6 +68,7 @@ pared = { git = "https://github.com/hanatsumi/pared.git", branch = "feat/unwrap-
 sanitize-filename = "0.6.0"
 serde_json_lenient = "0.2.4"
 futures-util = "0.3.32"
+flate2 = { version = "1.1.9", default-features = false, features = ["rust_backend"] }
 sha2 = "0.11.0"
 base64 = "0.22"
 epub-builder = { git = "https://github.com/tachibana-shin/epub-builder.git", branch = "main" }

@@ -49,15 +49,19 @@ pub fn source_list_key(list: &SourceList) -> String {
 pub async fn resolve_source_list(list: &SourceList) -> Url {
     let url = &list.url;
     if list.source_type == SourceListType::Keiyoushi {
-        // The keiyoushi extensions index is published to GitHub Pages at a
-        // stable URL; the repository page itself is rewritten to it so
-        // `https://github.com/keiyoushi/extensions` works too.
-        if let Some((owner, repo)) = github_repo_segments(url) {
-            if owner == "keiyoushi" && repo == "extensions" {
-                return "https://keiyoushi.github.io/extensions/index.min.json"
-                    .parse()
-                    .expect("hardcoded GitHub Pages URL is valid");
-            }
+        // The keiyoushi extensions index is published as Mihon's protobuf
+        // `index.pb` on the `repo` branch; GitHub Pages no longer serves the
+        // JSON index. The repository page, its raw URLs and the old Pages
+        // path are all rewritten to the raw protobuf file, which the fetch
+        // layer decodes.
+        let is_keiyoushi_repo = github_repo_segments(url)
+            .is_some_and(|(owner, repo)| owner == "keiyoushi" && repo == "extensions");
+        let is_keiyoushi_pages =
+            url.host_str() == Some("keiyoushi.github.io") && url.path().starts_with("/extensions");
+        if is_keiyoushi_repo || is_keiyoushi_pages {
+            return "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.pb"
+                .parse()
+                .expect("hardcoded raw GitHub URL is valid");
         }
         return url.clone();
     }
@@ -270,15 +274,22 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn keiyoushi_repo_resolves_to_github_pages_index() {
-        let list = SourceList {
-            url: Url::parse("https://github.com/keiyoushi/extensions")
-                .expect("hardcoded URL is valid"),
-            source_type: SourceListType::Keiyoushi,
-        };
-        assert_eq!(
-            resolve_source_list(&list).await.as_str(),
-            "https://keiyoushi.github.io/extensions/index.min.json"
-        );
+    async fn keiyoushi_repo_resolves_to_raw_index_pb() {
+        for url in [
+            "https://github.com/keiyoushi/extensions",
+            "https://github.com/keiyoushi/extensions/raw/repo/index.pb",
+            "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.pb",
+            "https://keiyoushi.github.io/extensions/index.min.json",
+        ] {
+            let list = SourceList {
+                url: Url::parse(url).expect("hardcoded URL is valid"),
+                source_type: SourceListType::Keiyoushi,
+            };
+            assert_eq!(
+                resolve_source_list(&list).await.as_str(),
+                "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.pb",
+                "resolving {url}"
+            );
+        }
     }
 }

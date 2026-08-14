@@ -140,12 +140,12 @@ function SourceListsListing:showAddSourceList()
   input_dialog = InputDialog:new {
     title = _("Add source list"),
     input_hint = _("URL of the source list (index.json or plugins index)"),
-    description = _("For example:") .. "\n" ..
+    description = _("For example:") .. "\n\n" ..
         "https://tachibana-shin.github.io/aidoku-sources-next/index.min.json\n" ..
         "https://github.com/lnreader/lnreader-plugins\n" ..
         "https://kodjodevf.github.io/mangayomi-extensions/index.json\n" ..
         "https://kodjodevf.github.io/mangayomi-extensions/novel_index.json\n" ..
-        "https://keiyoushi.github.io/extensions/index.min.json",
+        "https://github.com/keiyoushi/extensions",
     buttons = {
       {
         {

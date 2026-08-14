@@ -4303,6 +4303,7 @@ dependencies = [
  "dexvm",
  "dom_query",
  "epub-builder",
+ "flate2",
  "font-kit",
  "futures",
  "futures-util",

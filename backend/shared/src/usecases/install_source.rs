@@ -10,6 +10,7 @@ use crate::{
     model::SourceId,
     settings::SourceList,
     source_manager::SourceManager,
+    usecases::fetch_source_list::fetch_source_list,
     usecases::resolve_source_list::{resolve_source_list, source_list_key},
 };
 
@@ -32,16 +33,7 @@ pub async fn install_source(
         let client = crate::tls::client_builder()
             .build()
             .with_context(|| "failed to create HTTP client".to_string())?;
-        let response = client
-            .get(resolved_list.clone())
-            .send()
-            .await
-            .with_context(|| format!("failed to fetch source list at {}", resolved_list))?;
-
-        let value: Value = response
-            .json()
-            .await
-            .with_context(|| format!("failed to parse source list at {}", resolved_list))?;
+        let value = fetch_source_list(&client, &resolved_list).await?;
 
         // Try both formats
         let source_list_items = if value.is_array() {

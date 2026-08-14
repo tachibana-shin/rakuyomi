@@ -3,6 +3,7 @@ use futures::{stream, StreamExt, TryStreamExt};
 
 use crate::model::SourceInformation;
 use crate::settings::SourceList;
+use crate::usecases::fetch_source_list::fetch_source_list;
 use crate::usecases::resolve_source_list::{resolve_source_list, source_list_key};
 use serde_json::Value;
 
@@ -17,16 +18,7 @@ pub async fn list_available_sources(
             let client = crate::tls::client_builder()
                 .build()
                 .with_context(|| "failed to create HTTP client".to_string())?;
-            let response = client
-                .get(resolved_list.clone())
-                .send()
-                .await
-                .with_context(|| format!("failed to fetch source list at {}", resolved_list))?;
-
-            let value: Value = response
-                .json()
-                .await
-                .with_context(|| format!("failed to parse source list at {}", resolved_list))?;
+            let value = fetch_source_list(&client, &resolved_list).await?;
 
             // Try both formats
             let mut sources = if value.is_array() {

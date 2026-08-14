@@ -15,6 +15,7 @@ use crate::{
     source::Source,
 };
 
+/// Errors returned while fetching a manga chapter.
 pub use crate::chapter_downloader::Error;
 
 #[allow(clippy::too_many_arguments)]

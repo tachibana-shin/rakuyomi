@@ -4269,6 +4269,7 @@ dependencies = [
  "html-escape",
  "image",
  "imageproc",
+ "lnreader_worker",
  "log",
  "markdown",
  "mozjpeg",

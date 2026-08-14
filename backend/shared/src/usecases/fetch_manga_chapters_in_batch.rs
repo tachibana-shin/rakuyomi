@@ -105,7 +105,7 @@ async fn apply_chapter_filter(
     filter: Filter,
     langs: &[&str],
 ) -> Result<Vec<ChapterInformation>> {
-    let mut last_read_chapter_num = None;
+    let mut last_read_position: Option<ChapterPosition> = None;
     let target_scanlator = match &filter {
         Filter::ScanlatorChapters { scanlator, .. } => Some(scanlator.clone()),
         _ => None,
@@ -113,14 +113,14 @@ async fn apply_chapter_filter(
 
     let use_lang_filter = !langs.is_empty();
 
-    // Chapters are stored in source order (newest first). Use that order as a
-    // stable number for chapters whose source did not provide one, rather
-    // than making every such chapter number zero.
-    let total = all_chapters.len();
-    let effective_chapter_num = |chapter: &ChapterInformation, index: usize| {
-        chapter
-            .chapter_number
-            .unwrap_or((total.saturating_sub(1) - index) as f32)
+    // Chapters are stored in source order (newest first). Numbered chapters
+    // are compared by their real chapter_number; unnumbered chapters have no
+    // meaningful number, so they're compared by source position instead. The
+    // two spaces aren't comparable to each other, so any comparison spanning
+    // a numbered and an unnumbered chapter falls back to source order too.
+    let chapter_position = |chapter: &ChapterInformation, index: usize| ChapterPosition {
+        index,
+        number: chapter.chapter_number.map(ordered_float::OrderedFloat),
     };
     let chapter_group = |chapter: &ChapterInformation, index: usize| {
         chapter
@@ -161,7 +161,7 @@ async fn apply_chapter_filter(
             .is_some_and(|state| state.read);
 
         if read {
-            last_read_chapter_num = Some(effective_chapter_num(chapter, index));
+            last_read_position = Some(chapter_position(chapter, index));
 
             break;
         }
@@ -182,8 +182,8 @@ async fn apply_chapter_filter(
             true
         })
         .skip_while(move |(index, chapter)| {
-            last_read_chapter_num.is_some_and(|last_read_chapter_num| {
-                last_read_chapter_num >= effective_chapter_num(chapter, *index)
+            last_read_position.is_some_and(|boundary| {
+                chapter_position(chapter, *index).is_at_or_before(&boundary)
             })
         });
 
@@ -239,6 +239,26 @@ pub enum Filter {
 enum ChapterGroup {
     Numbered(ordered_float::OrderedFloat<f32>),
     Unnumbered(usize),
+}
+
+#[derive(Clone, Copy)]
+struct ChapterPosition {
+    index: usize,
+    number: Option<ordered_float::OrderedFloat<f32>>,
+}
+
+impl ChapterPosition {
+    /// Returns true if `self` is at the same position as, or older (further
+    /// from the newest chapter) than, `boundary` in source order. Numbered
+    /// chapters compare by their real chapter_number; when either side has
+    /// no number, source position is used instead, since chapter numbers
+    /// and source-order positions aren't comparable to each other.
+    fn is_at_or_before(&self, boundary: &ChapterPosition) -> bool {
+        match (self.number, boundary.number) {
+            (Some(a), Some(b)) => a <= b,
+            _ => self.index >= boundary.index,
+        }
+    }
 }
 
 pub enum ProgressReport {
@@ -347,6 +367,49 @@ mod tests {
                 .map(|c| c.id.value().as_str())
                 .collect::<Vec<_>>(),
             vec!["chapter-4", "chapter-3", "chapter-2"]
+        );
+    }
+
+    #[tokio::test]
+    async fn unnumbered_chapter_newer_than_read_boundary_is_not_skipped() {
+        // Non-contiguous, large chapter numbers so a source-position-derived
+        // stand-in for the unnumbered chapter would fall well below the read
+        // chapter's real number, wrongly looking "older" than it.
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(100.0)),
+            chapter(&manga_id, 1, None),
+            chapter(&manga_id, 2, Some(50.0)),
+            chapter(&manga_id, 3, None),
+            chapter(&manga_id, 4, Some(10.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        db.upsert_chapter_state(
+            &chapters[2].id,
+            ChapterState {
+                read: true,
+                last_read: None,
+            },
+        )
+        .await
+        .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(&db, chapters, Filter::AllUnreadChapters, &[])
+            .await
+            .unwrap();
+
+        assert_eq!(
+            filtered
+                .iter()
+                .map(|c| c.id.value().as_str())
+                .collect::<Vec<_>>(),
+            vec!["chapter-1", "chapter-0"]
         );
     }
 

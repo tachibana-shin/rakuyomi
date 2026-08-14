@@ -21,12 +21,12 @@ use d4rt_rs::value::Value;
 use d4rt_rs::Context;
 use serde_json::{json, Value as JsonValue};
 
-use crate::settings::SourceSettingValue;
 use crate::source::mangayomi::bridge::{
     filter_list_value, map_set, nmap, register_bridge, value_to_json, wrap, BridgeClasses,
     BridgeState, StateRef,
 };
 use crate::source::mangayomi::html::MangaYomiDom;
+use crate::source::source_settings::SourceSettings;
 
 /// How long a single extension method call may run before it is aborted.
 pub const DEFAULT_INVOKE_TIMEOUT: Duration = Duration::from_secs(60);
@@ -50,7 +50,7 @@ pub struct MangayomiRuntime {
     /// Source preference values (`getPreferenceValue`), shared with the
     /// extension through the bridge and visible to the source so settings
     /// survive worker restarts.
-    prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
     worker: Mutex<Option<WorkerHandle>>,
 }
@@ -64,7 +64,7 @@ impl MangayomiRuntime {
     pub fn new(
         code: String,
         metadata: JsonValue,
-        prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+        prefs: Arc<Mutex<SourceSettings>>,
         timeout: Duration,
     ) -> Result<Self> {
         let runtime = Self {
@@ -155,7 +155,7 @@ fn worker_main(
     rx: Receiver<WorkerRequest>,
     code: &str,
     metadata: &JsonValue,
-    prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
 ) {
     if let Err(err) = worker_loop(rx, code, metadata, prefs, timeout) {
@@ -167,7 +167,7 @@ fn worker_loop(
     rx: Receiver<WorkerRequest>,
     code: &str,
     metadata: &JsonValue,
-    prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    prefs: Arc<Mutex<SourceSettings>>,
     _timeout: Duration,
 ) -> Result<()> {
     let mut ctx = Context::new();

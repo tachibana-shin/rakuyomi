@@ -24,6 +24,7 @@ use serde_json::{json, Value};
 
 use crate::settings::SourceSettingValue;
 use crate::source::mangayomi::html::{attr_regex, MangaYomiDom};
+use crate::source::source_settings::SourceSettings;
 
 use super::crypto;
 
@@ -37,7 +38,7 @@ pub(crate) struct JsBridge {
     pub next_key: u32,
     /// Source preference values (`SharedPreferences`), shared with the
     /// source so settings updates survive worker restarts.
-    pub prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    pub prefs: Arc<Mutex<SourceSettings>>,
 }
 
 thread_local! {
@@ -155,7 +156,7 @@ fn host_log(args: &Value) -> Result<String> {
 fn host_pref_get(args: &Value) -> Result<String> {
     let key = arg_str(args, 0)?;
     let prefs = state().borrow().prefs.clone();
-    let value = prefs.lock().unwrap().get(&key).cloned();
+    let value = prefs.lock().unwrap_or_else(|e| e.into_inner()).get(&key);
     // The app returns the raw stored value (null when missing); the JS side
     // uses `|| fallback`, so missing keys must stay falsy.
     Ok(match value {
@@ -172,7 +173,7 @@ fn host_pref_get_string(args: &Value) -> Result<String> {
     let key = arg_str(args, 0)?;
     let default = arg_str(args, 1)?;
     let prefs = state().borrow().prefs.clone();
-    let value = prefs.lock().unwrap().get(&key).cloned();
+    let value = prefs.lock().unwrap_or_else(|e| e.into_inner()).get(&key);
     Ok(match value {
         Some(SourceSettingValue::String(s)) => s,
         Some(SourceSettingValue::Bool(b)) => b.to_string(),
@@ -183,11 +184,12 @@ fn host_pref_get_string(args: &Value) -> Result<String> {
 fn host_pref_set_string(args: &Value) -> Result<String> {
     let key = arg_str(args, 0)?;
     let value = arg_str(args, 1)?;
-    let prefs = state().borrow().prefs.clone();
-    prefs
+    state()
+        .borrow()
+        .prefs
         .lock()
-        .unwrap()
-        .insert(key, SourceSettingValue::String(value));
+        .unwrap_or_else(|e| e.into_inner())
+        .set(&key, SourceSettingValue::String(value));
     Ok("null".to_string())
 }
 
@@ -288,6 +290,9 @@ fn host_http(message: &str, args: &Value) -> Result<String> {
         .unwrap_or("")
         .to_string();
     let final_url = response.url().to_string();
+    // `Set-Cookie` headers land in the shared RakuYomi store (the single
+    // cookie source, like reqwest's cookie jar).
+    crate::cookie_store::record_response_cookies(&response);
     let mut response_headers: HashMap<String, String> = HashMap::new();
     for (name, value) in response.headers() {
         if let Ok(value) = value.to_str() {
@@ -668,7 +673,21 @@ mod tests {
             dom: MangaYomiDom::new(),
             elements: HashMap::new(),
             next_key: 0,
-            prefs: Arc::new(Mutex::new(HashMap::new())),
+            prefs: Arc::new(Mutex::new(
+                SourceSettings::new(
+                    "test".to_string(),
+                    &[],
+                    &HashMap::new(),
+                    &Arc::new(tokio::sync::Mutex::new(
+                        crate::source_manager::SourceManager::new(
+                            std::path::PathBuf::new(),
+                            HashMap::new(),
+                            crate::settings::Settings::default(),
+                        ),
+                    )),
+                )
+                .unwrap(),
+            )),
         });
     }
 
@@ -745,9 +764,8 @@ mod tests {
     #[test]
     fn preference_get_overwrites_install_state() {
         test_bridge();
-        let prefs = state().borrow().prefs.clone();
-        prefs.lock().unwrap().insert(
-            "site".to_string(),
+        state().borrow().prefs.lock().unwrap().set(
+            "site",
             SourceSettingValue::String("https://installed".to_string()),
         );
         assert_eq!(call("get", r#"["site"]"#).unwrap(), "https://installed");

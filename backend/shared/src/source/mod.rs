@@ -25,6 +25,7 @@ use crate::{
 };
 
 use self::{
+    keiyoushi::KeiyoushiSource,
     lnreader::LnReaderSource,
     mangayomi::MangayomiSource,
     model::{Chapter, Filter, Manga, MangaPageResult, Page, SettingDefinition},
@@ -45,6 +46,7 @@ use self::{
 };
 
 pub(crate) mod decode_image;
+pub mod keiyoushi;
 pub mod lnreader;
 pub mod mangayomi;
 
@@ -57,10 +59,7 @@ pub mod model;
 pub mod next_reader;
 #[cfg(feature = "all")]
 mod next_reader;
-#[cfg(not(feature = "all"))]
 pub mod source_settings;
-#[cfg(feature = "all")]
-mod source_settings;
 #[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_imports;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
@@ -80,9 +79,9 @@ mod wasm_store;
  */
 
 /// The kinds of sources RakuYomi can run: WASM (Aidoku), LNReader
-/// (JavaScript) and MangaYomi (Dart) plugins. All of them are kept behind an
-/// `Arc` so `Source` is cheap to clone; blocking work is always moved to a
-/// `spawn_blocking` thread.
+/// (JavaScript), MangaYomi (Dart) and Keiyoushi (mihon extension DEX)
+/// plugins. All of them are kept behind an `Arc` so `Source` is cheap to
+/// clone; blocking work is always moved to a `spawn_blocking` thread.
 #[derive(Clone)]
 pub enum SourceBackend {
     /// A WASM source, mirroring the legacy tuple layout.
@@ -91,6 +90,8 @@ pub enum SourceBackend {
     LnReader(Arc<LnReaderSource>),
     /// A MangaYomi extension running inside the embedded d4rt_rs interpreter.
     Mangayomi(Arc<MangayomiSource>),
+    /// One source of a keiyoushi extension APK running inside dexvm.
+    Keiyoushi(Arc<KeiyoushiSource>),
 }
 
 #[derive(Clone)]
@@ -123,6 +124,10 @@ macro_rules! wrap_blocking_source_fn {
                 SourceBackend::Mangayomi(mangayomi) => {
                     let mangayomi = mangayomi.clone();
                     ::tokio::task::spawn_blocking(move || mangayomi.$fn_name($($param),*)).await?
+                }
+                SourceBackend::Keiyoushi(keiyoushi) => {
+                    let keiyoushi = keiyoushi.clone();
+                    ::tokio::task::spawn_blocking(move || keiyoushi.$fn_name($($param),*)).await?
                 }
             }
         }
@@ -194,8 +199,12 @@ impl Source {
     }
 
     /// Loads an LNReader plugin (`*.lnreader.js`) from disk.
-    pub fn from_lnreader_file(path: &Path, manager: &SourceManager) -> Result<Self> {
-        let source = LnReaderSource::from_lnreader_file(path, manager)?;
+    pub fn from_lnreader_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let source = LnReaderSource::from_lnreader_file(path, manager, arc_manager)?;
         let features = source.features.clone();
         Ok(Self {
             backend: SourceBackend::LnReader(Arc::new(source)),
@@ -204,13 +213,38 @@ impl Source {
     }
 
     /// Loads a MangaYomi extension (`*.mangayomi.dart`) from disk.
-    pub fn from_mangayomi_file(path: &Path, manager: &SourceManager) -> Result<Self> {
-        let source = MangayomiSource::from_mangayomi_file(path, manager)?;
+    pub fn from_mangayomi_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let source = MangayomiSource::from_mangayomi_file(path, manager, arc_manager)?;
         let features = source.features.clone();
         Ok(Self {
             backend: SourceBackend::Mangayomi(Arc::new(source)),
             features,
         })
+    }
+
+    /// Loads the sources bundled in a keiyoushi extension APK
+    /// (`*.keiyoushi.apk`) from disk. One APK can bundle several sources
+    /// (usually one per language), each of which becomes its own [`Source`].
+    pub fn from_keiyoushi_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Vec<Self>> {
+        let sources = KeiyoushiSource::from_keiyoushi_apk(path, manager, arc_manager)?;
+        Ok(sources
+            .into_iter()
+            .map(|source| {
+                let features = source.features.clone();
+                Source {
+                    backend: SourceBackend::Keiyoushi(Arc::new(source)),
+                    features,
+                }
+            })
+            .collect())
     }
 
     pub fn manifest(&self) -> SourceManifest {
@@ -223,6 +257,7 @@ impl Source {
                 .clone(),
             SourceBackend::LnReader(lnreader) => lnreader.manifest.clone(),
             SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.clone(),
+            SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.clone(),
         }
     }
 
@@ -235,6 +270,7 @@ impl Source {
                 .clone(),
             SourceBackend::LnReader(lnreader) => lnreader.setting_definitions.clone(),
             SourceBackend::Mangayomi(mangayomi) => mangayomi.setting_definitions.clone(),
+            SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.setting_definitions.clone(),
         }
     }
 

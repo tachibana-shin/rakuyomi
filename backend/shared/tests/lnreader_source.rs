@@ -6,6 +6,7 @@
 //! a test is skipped when its fixture is missing.
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use shared::{
     settings::Settings, source_collection::SourceCollection, source_manager::SourceManager,
@@ -37,15 +38,24 @@ async fn run_plugin_smoke(
         std::process::id()
     ));
     let _ = std::fs::remove_dir_all(&dir);
-    let mut manager = SourceManager::from_folder(dir.clone(), settings).unwrap();
+    let manager = Arc::new(tokio::sync::Mutex::new(
+        SourceManager::from_folder(dir.clone(), settings).unwrap(),
+    ));
 
     let contents = std::fs::read(&fixture).unwrap();
     let id = shared::model::SourceId::new(plugin_id.to_string());
     manager
-        .install_lnreader_source(&id, contents, "LNReader".to_string())
+        .lock()
+        .await
+        .install_lnreader_source(&id, contents, "LNReader".to_string(), &manager)
         .unwrap();
 
-    let source = manager.get_by_id(&id).expect("source installed");
+    let source = manager
+        .lock()
+        .await
+        .get_by_id(&id)
+        .expect("source installed")
+        .clone();
     let manifest = source.manifest();
     assert_eq!(manifest.info.id, plugin_id);
     assert_eq!(manifest.info.name, expected_name);

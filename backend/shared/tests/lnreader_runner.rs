@@ -380,14 +380,22 @@ fn temp_sources_dir(tag: &str) -> PathBuf {
     dir
 }
 
-fn manager(dir: &std::path::Path) -> SourceManager {
-    SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap()
+fn manager(dir: &std::path::Path) -> Arc<tokio::sync::Mutex<SourceManager>> {
+    Arc::new(tokio::sync::Mutex::new(
+        SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap(),
+    ))
 }
 
-fn install(manager: &mut SourceManager, id: &str, code: &str) -> shared::model::SourceId {
+async fn install(
+    manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    id: &str,
+    code: &str,
+) -> shared::model::SourceId {
     let source_id = shared::model::SourceId::new(id.to_string());
     manager
-        .install_lnreader_source(&source_id, code.as_bytes(), "LNReader".to_string())
+        .lock()
+        .await
+        .install_lnreader_source(&source_id, code.as_bytes(), "LNReader".to_string(), manager)
         .unwrap();
     source_id
 }
@@ -406,10 +414,15 @@ async fn runner_full_offline() {
     );
 
     let dir = temp_sources_dir("full");
-    let mut manager = manager(&dir);
-    let source_id = install(&mut manager, "testplugin", &plugin_code);
+    let manager = manager(&dir);
+    let source_id = install(&manager, "testplugin", &plugin_code).await;
 
-    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = manager
+        .lock()
+        .await
+        .get_by_id(&source_id)
+        .expect("source installed")
+        .clone();
     let manifest = source.manifest();
     assert_eq!(manifest.info.id, "testplugin");
     assert_eq!(manifest.info.name, "Offline Test Plugin");
@@ -427,7 +440,7 @@ async fn runner_full_offline() {
     );
 
     // Picker coercion: "Ongoing" -> index 1
-    let v = match lnreader(source).invoke(
+    let v = match lnreader(&source).invoke(
         "popular",
         serde_json::json!([1, { "status": "Ongoing", "genre": "romance" }, false]),
     ) {
@@ -442,7 +455,7 @@ async fn runner_full_offline() {
     );
 
     // showLatestNovels flag
-    let v = lnreader(source)
+    let v = lnreader(&source)
         .invoke("popular", serde_json::json!([1, {}, true]))
         .unwrap();
     assert_eq!(v.as_array().unwrap().len(), 2);
@@ -603,7 +616,7 @@ async fn runner_full_offline() {
 
     // error paths
     assert!(
-        lnreader(source)
+        lnreader(&source)
             .invoke("bogus", serde_json::json!([]))
             .is_err(),
         "unknown plugin method must fail"
@@ -641,9 +654,9 @@ async fn runner_url_fallback_without_resolve_url() {
     let plugin_code = FALLBACK_PLUGIN.replace("PORT", &port);
 
     let dir = temp_sources_dir("fallback");
-    let mut manager = manager(&dir);
-    let source_id = install(&mut manager, "fallbackplugin", &plugin_code);
-    let source = manager.get_by_id(&source_id).unwrap();
+    let manager = manager(&dir);
+    let source_id = install(&manager, "fallbackplugin", &plugin_code).await;
+    let source = manager.lock().await.get_by_id(&source_id).unwrap().clone();
 
     let chapters = source
         .get_chapter_list(CancellationToken::new(), "book/f".to_string())
@@ -676,21 +689,31 @@ async fn runner_rejects_invalid_plugins() {
     let _ = server;
 
     let dir = temp_sources_dir("invalid");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
 
     // not valid JavaScript at all
     let source_id = shared::model::SourceId::new("broken".to_string());
     assert!(manager
-        .install_lnreader_source(&source_id, b"this is not js !!!", "LNReader".to_string())
+        .lock()
+        .await
+        .install_lnreader_source(
+            &source_id,
+            b"this is not js !!!",
+            "LNReader".to_string(),
+            &manager,
+        )
         .is_err());
 
     // valid JS but no default export
     let source_id = shared::model::SourceId::new("nodefault".to_string());
     assert!(manager
+        .lock()
+        .await
         .install_lnreader_source(
             &source_id,
             b"module.exports = { some: 'thing' };",
             "LNReader".to_string(),
+            &manager,
         )
         .is_err());
 
@@ -756,10 +779,10 @@ exports.default = {
     let plugin_code = SETTINGS_PLUGIN.replace("PORT", &port);
 
     let dir = temp_sources_dir("settings");
-    let mut manager = manager(&dir);
-    let source_id = install(&mut manager, "settingsplugin", &plugin_code);
-    let source = manager.get_by_id(&source_id).unwrap();
-    let source = lnreader(source);
+    let manager = manager(&dir);
+    let source_id = install(&manager, "settingsplugin", &plugin_code).await;
+    let source = manager.lock().await.get_by_id(&source_id).unwrap().clone();
+    let source = lnreader(&source);
 
     // The browse filters are not exposed as setting definitions; the plugin's
     // own settings page (`pluginSettings`) is.

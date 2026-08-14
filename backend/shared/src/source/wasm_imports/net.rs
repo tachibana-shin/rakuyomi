@@ -354,6 +354,14 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     }
 
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    {
+        // `Set-Cookie` headers land in the shared RakuYomi store (the
+        // single cookie source, like reqwest's cookie jar), so sessions
+        // established by one backend are reused by all of them.
+        crate::cookie_store::record_response_cookies(&response);
+    }
+
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
     let response_data = ResponseData {
         url: response.url().clone(),
         headers: response.headers().clone(),

@@ -10,6 +10,7 @@
 //! ```
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use shared::{
     model::SourceId,
@@ -51,18 +52,31 @@ fn install(
     let dir = temp_sources_dir(id);
     // Leak the manager so the borrowed source stays alive for the whole test;
     // the runtime worker holds the code anyway.
-    let manager: &'static mut SourceManager = Box::leak(Box::new(
-        SourceManager::from_folder(dir, Settings::default()).unwrap(),
-    ));
+    let manager: &'static Arc<tokio::sync::Mutex<SourceManager>> = Box::leak(Box::new(Arc::new(
+        tokio::sync::Mutex::new(SourceManager::from_folder(dir, Settings::default()).unwrap()),
+    )));
     let source_id = SourceId::new(id.to_string());
     let metadata = format!(
         r#"{{"id": "{}", "name": "{}", "lang": "en", "baseUrl": "{}", "apiUrl": "{}", "iconUrl": "", "version": "1.0.0", "sourceCodeLanguage": 1, "typeSource": "single", "itemType": 0, "isManga": true}}"#,
         id, name, base_url, api_url
     );
     manager
-        .install_mangayomi_source(&source_id, code, &metadata, "MangaYomi".to_string())
+        .blocking_lock()
+        .install_mangayomi_source(
+            &source_id,
+            code,
+            &metadata,
+            "MangaYomi".to_string(),
+            manager,
+        )
         .unwrap();
-    mangayomi(manager.get_by_id(&source_id).expect("source installed"))
+    mangayomi(Box::leak(Box::new(
+        manager
+            .blocking_lock()
+            .get_by_id(&source_id)
+            .expect("source installed")
+            .clone(),
+    )))
 }
 
 fn vendored(name: &str) -> String {

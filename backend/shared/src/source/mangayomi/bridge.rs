@@ -29,7 +29,9 @@ use d4rt_rs::{
 use reqwest::blocking::Response as BlockingResponse;
 use reqwest::header::HeaderMap;
 
-use crate::{settings::SourceSettingValue, util::DEFAULT_USER_AGENT};
+use crate::{
+    settings::SourceSettingValue, source::source_settings::SourceSettings, util::DEFAULT_USER_AGENT,
+};
 
 use super::html::{element_attr, MangaYomiDom};
 use chrono::TimeZone;
@@ -41,7 +43,7 @@ pub(crate) struct BridgeState {
     pub dom: MangaYomiDom,
     /// Source preference values (`getPreferenceValue`), shared with the
     /// source so settings updates are visible to the extension.
-    pub prefs: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    pub prefs: Arc<Mutex<SourceSettings>>,
 }
 
 pub(crate) type StateRef = Rc<RefCell<BridgeState>>;
@@ -1255,6 +1257,9 @@ fn client_request(
         .map_err(|e| InterpError::runtime(format!("request {method} {url} failed: {e}")))?;
     let status = resp.status();
     let headers_out = resp.headers().clone();
+    // `Set-Cookie` headers land in the shared RakuYomi store (the single
+    // cookie source, like reqwest's cookie jar).
+    crate::cookie_store::record_response_cookies(&resp);
     let bytes = resp.bytes().map_err(|e| {
         InterpError::runtime(format!("failed to read response body from {url}: {e}"))
     })?;
@@ -1458,7 +1463,6 @@ fn register_top_level_functions(ctx: &mut d4rt_rs::Context, state: &StateRef) {
                     .lock()
                     .unwrap()
                     .get(&key)
-                    .cloned()
                     .map(setting_to_value)
                     .unwrap_or(Value::Null);
                 Ok(value)
@@ -1491,7 +1495,6 @@ fn register_top_level_functions(ctx: &mut d4rt_rs::Context, state: &StateRef) {
                     .lock()
                     .unwrap()
                     .get(&key)
-                    .cloned()
                     .and_then(|v| match v {
                         SourceSettingValue::String(s) => Some(s),
                         _ => None,

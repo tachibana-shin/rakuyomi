@@ -48,6 +48,19 @@ pub fn source_list_key(list: &SourceList) -> String {
 /// way a working index URL is preferred over the original repository page.
 pub async fn resolve_source_list(list: &SourceList) -> Url {
     let url = &list.url;
+    if list.source_type == SourceListType::Keiyoushi {
+        // The keiyoushi extensions index is published to GitHub Pages at a
+        // stable URL; the repository page itself is rewritten to it so
+        // `https://github.com/keiyoushi/extensions` works too.
+        if let Some((owner, repo)) = github_repo_segments(url) {
+            if owner == "keiyoushi" && repo == "extensions" {
+                return "https://keiyoushi.github.io/extensions/index.min.json"
+                    .parse()
+                    .expect("hardcoded GitHub Pages URL is valid");
+            }
+        }
+        return url.clone();
+    }
     if list.source_type != SourceListType::LnReader {
         return url.clone();
     }
@@ -247,5 +260,25 @@ mod tests {
             source_type: SourceListType::Aidoku,
         };
         assert_eq!(source_list_key(&list), "tachibana-shin.github.io");
+
+        let url = Url::parse("https://github.com/keiyoushi/extensions").unwrap();
+        let list = SourceList {
+            url,
+            source_type: SourceListType::Keiyoushi,
+        };
+        assert_eq!(source_list_key(&list), "keiyoushi/extensions");
+    }
+
+    #[tokio::test]
+    async fn keiyoushi_repo_resolves_to_github_pages_index() {
+        let list = SourceList {
+            url: Url::parse("https://github.com/keiyoushi/extensions")
+                .expect("hardcoded URL is valid"),
+            source_type: SourceListType::Keiyoushi,
+        };
+        assert_eq!(
+            resolve_source_list(&list).await.as_str(),
+            "https://keiyoushi.github.io/extensions/index.min.json"
+        );
     }
 }

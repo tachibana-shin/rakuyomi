@@ -121,6 +121,186 @@ pub fn get_user_agent_and_cookie_header(host: &str) -> (Option<String>, Option<S
         .unwrap_or((None, None))
 }
 
+/// The effect of one `Set-Cookie` header on the store: upsert an entry under
+/// its effective domain key, or drop every entry with a given name.
+#[derive(Debug)]
+enum CookieAction {
+    Set(String, CookieEntry),
+    Delete(String, String),
+}
+
+/// Parses a single `Set-Cookie` header value per RFC 6265 (name=value plus
+/// the Domain/Path/Max-Age/Expires/Secure attributes; quoted values are not
+/// supported) into the action to apply to the store.
+///
+/// `host` is the request host and `secure` whether the request URL was
+/// https; both shape the effective storage domain.
+fn parse_set_cookie(header: &str, host: &str, secure: bool) -> Option<CookieAction> {
+    let mut parts = header.split(';');
+    let first = parts.next()?.trim();
+    let (name, value) = first.split_once('=')?;
+    let name = name.trim();
+    if name.is_empty() {
+        return None;
+    }
+    let value = value.trim().to_string();
+
+    let mut domain = host.to_string();
+    let mut path: Option<String> = None;
+    let mut max_age: Option<i64> = None;
+    let mut expires: Option<chrono::DateTime<chrono::Utc>> = None;
+    let mut secure_only = false;
+    for part in parts {
+        let (key, val) = match part.trim().split_once('=') {
+            Some((k, v)) => (k.trim().to_ascii_lowercase(), Some(v.trim())),
+            None => (part.trim().to_ascii_lowercase(), None),
+        };
+        match key.as_str() {
+            "domain" => {
+                if let Some(d) = val {
+                    domain = d.strip_prefix('.').unwrap_or(d).to_string();
+                }
+            }
+            "path" => {
+                if let Some(p) = val {
+                    path = Some(p.to_string());
+                }
+            }
+            "max-age" => {
+                if let Some(v) = val.and_then(|v| v.parse().ok()) {
+                    max_age = Some(v);
+                }
+            }
+            "expires" => {
+                if let Some(v) = val.and_then(|v| chrono::DateTime::parse_from_rfc2822(v).ok()) {
+                    expires = Some(v.with_timezone(&chrono::Utc));
+                }
+            }
+            "secure" => secure_only = true,
+            _ => {}
+        }
+    }
+
+    // Max-Age=0 (or negative) and an expiry in the past both mean "delete".
+    let deletion = max_age.is_some_and(|a| a <= 0)
+        || max_age.is_none() && expires.is_some_and(|e| e <= chrono::Utc::now());
+    // Secure cookies must not be stored when the response arrived over http.
+    if secure_only && !secure && !deletion {
+        return None;
+    }
+
+    // Domain attribute => domain cookie keyed with a leading dot; otherwise
+    // a host-only cookie keyed by the request host.
+    let stored_key = if domain == host {
+        host.to_string()
+    } else {
+        format!(".{domain}")
+    };
+    if deletion {
+        return Some(CookieAction::Delete(stored_key, name.to_string()));
+    }
+    Some(CookieAction::Set(
+        stored_key,
+        CookieEntry {
+            name: name.to_string(),
+            value,
+            domain,
+            path,
+        },
+    ))
+}
+
+/// Anything that carries a final response URL and `Set-Cookie` headers: the
+/// accepted input of [`record_response_cookies`]. Implemented for both
+/// reqwest response flavours (async and blocking).
+pub trait ResponseCookies {
+    /// The final (post-redirect) response URL.
+    fn response_url(&self) -> &Url;
+    /// The raw `Set-Cookie` header values.
+    fn set_cookie_headers(&self) -> Vec<String>;
+}
+
+impl ResponseCookies for reqwest::blocking::Response {
+    fn response_url(&self) -> &Url {
+        self.url()
+    }
+
+    fn set_cookie_headers(&self) -> Vec<String> {
+        self.headers()
+            .get_all(reqwest::header::SET_COOKIE)
+            .iter()
+            .filter_map(|v| v.to_str().ok().map(String::from))
+            .collect()
+    }
+}
+
+impl ResponseCookies for reqwest::Response {
+    fn response_url(&self) -> &Url {
+        self.url()
+    }
+
+    fn set_cookie_headers(&self) -> Vec<String> {
+        self.headers()
+            .get_all(reqwest::header::SET_COOKIE)
+            .iter()
+            .filter_map(|v| v.to_str().ok().map(String::from))
+            .collect()
+    }
+}
+
+/// Records the `Set-Cookie` headers of a response into the global store,
+/// mirroring the capture reqwest's `cookie_store` does — but on the shared
+/// store, so cookies persist across requests, engine instances and
+/// backends. The response's final (post-redirect) URL decides the storage
+/// domain.
+pub fn record_response_cookies<R: ResponseCookies>(response: &R) {
+    record_set_cookie_headers(response.response_url(), &response.set_cookie_headers());
+}
+
+/// Records already-extracted `Set-Cookie` header values against an explicit
+/// final URL. Lower-level entry point used by tests and callers that do not
+/// hold a reqwest response.
+pub fn record_set_cookie_headers(url: &Url, set_cookie_headers: &[String]) {
+    if set_cookie_headers.is_empty() {
+        return;
+    }
+    let Some(host) = url.host_str() else {
+        return;
+    };
+    let secure = url.scheme() == "https";
+    let changed = {
+        let Some(Ok(mut store)) = global_cookie_store().map(|s| s.write()) else {
+            return;
+        };
+        let mut changed = false;
+        for header in set_cookie_headers {
+            match parse_set_cookie(header, host, secure) {
+                Some(CookieAction::Set(key, entry)) => {
+                    let cookies = store.domains.entry(key).or_default();
+                    if let Some(existing) = cookies.iter_mut().find(|c| c.name == entry.name) {
+                        *existing = entry;
+                    } else {
+                        cookies.push(entry);
+                    }
+                    changed = true;
+                }
+                Some(CookieAction::Delete(key, name)) => {
+                    if let Some(cookies) = store.domains.get_mut(&key) {
+                        let before = cookies.len();
+                        cookies.retain(|c| c.name != name);
+                        changed |= cookies.len() != before;
+                    }
+                }
+                None => {}
+            }
+        }
+        changed
+    };
+    if changed {
+        save_cookies_to_disk();
+    }
+}
+
 static COOKIE_STORE: OnceLock<RwLock<CookieStoreData>> = OnceLock::new();
 static COOKIE_STORE_PATH: OnceLock<String> = OnceLock::new();
 static SYNC_HASH: OnceLock<RwLock<Option<String>>> = OnceLock::new();
@@ -569,5 +749,110 @@ mod tests {
 
         store.set_user_agent(".example.com".into(), "UA".into());
         assert!(store.user_agents.contains_key(".example.com"));
+    }
+
+    #[test]
+    fn test_parse_set_cookie_host_only() {
+        let action = parse_set_cookie("session=abc123; Path=/; HttpOnly", "example.com", true)
+            .expect("parseable");
+        match action {
+            CookieAction::Set(key, entry) => {
+                assert_eq!(key, "example.com");
+                assert_eq!(entry.name, "session");
+                assert_eq!(entry.value, "abc123");
+                assert_eq!(entry.path.as_deref(), Some("/"));
+                assert_eq!(entry.domain, "example.com");
+            }
+            _ => panic!("expected Set"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_domain_attribute() {
+        let action = parse_set_cookie(
+            "cf=clearance; Domain=.example.com; Path=/; Secure",
+            "sub.example.com",
+            true,
+        )
+        .expect("parseable");
+        match action {
+            CookieAction::Set(key, entry) => {
+                assert_eq!(key, ".example.com");
+                assert_eq!(entry.name, "cf");
+            }
+            _ => panic!("expected Set"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_secure_over_http_ignored() {
+        assert!(parse_set_cookie("tok=x; Secure", "example.com", false).is_none());
+        assert!(parse_set_cookie("tok=x; Secure", "example.com", true).is_some());
+    }
+
+    #[test]
+    fn test_parse_set_cookie_max_age_zero_deletes() {
+        match parse_set_cookie("session=gone; Max-Age=0", "example.com", true) {
+            Some(CookieAction::Delete(key, name)) => {
+                assert_eq!(key, "example.com");
+                assert_eq!(name, "session");
+            }
+            other => panic!("expected Delete, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_expired_deletes() {
+        let past = chrono::Utc::now() - chrono::Duration::hours(1);
+        let date = past.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
+        match parse_set_cookie(&format!("session=x; Expires={date}"), "example.com", true) {
+            Some(CookieAction::Delete(key, name)) => {
+                assert_eq!(key, "example.com");
+                assert_eq!(name, "session");
+            }
+            other => panic!("expected Delete, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_future_expires_stores() {
+        let future = chrono::Utc::now() + chrono::Duration::days(1);
+        let date = future.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
+        let action = parse_set_cookie(&format!("tok=y; Expires={date}"), "example.com", true)
+            .expect("parseable");
+        assert!(matches!(action, CookieAction::Set(..)));
+    }
+
+    #[test]
+    fn test_record_response_cookies_upsert_and_delete() {
+        init_cookie_store();
+        let url = Url::parse("https://example.com/page").unwrap();
+
+        record_set_cookie_headers(
+            &url,
+            &["a=1; Path=/".to_string(), "b=2; Path=/".to_string()],
+        );
+        let cookies = global_cookie_store()
+            .and_then(|s| s.read().ok())
+            .map(|s| s.get_cookies_for_domain("example.com").len())
+            .unwrap();
+        assert_eq!(cookies, 2);
+
+        // Same-name cookie replaces the stored value.
+        record_set_cookie_headers(&url, &["a=updated".to_string()]);
+        let guard = global_cookie_store().and_then(|s| s.read().ok()).unwrap();
+        let matched = guard.get_cookies_for_domain("example.com");
+        let a = matched.iter().find(|c| c.name == "a").expect("cookie a");
+        assert_eq!(a.value, "updated");
+        drop(guard);
+        record_set_cookie_headers(&url, &["b=x; Max-Age=0".to_string()]);
+        let cookies = global_cookie_store()
+            .and_then(|s| s.read().ok())
+            .map(|s| s.get_cookies_for_domain("example.com").len())
+            .unwrap();
+        assert_eq!(cookies, 1);
+        global_cookie_store()
+            .and_then(|s| s.write().ok())
+            .map(|mut s| s.clear());
     }
 }

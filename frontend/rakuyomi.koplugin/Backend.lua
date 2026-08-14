@@ -850,7 +850,7 @@ end
 
 --- @class SourceList
 --- @field url string The URL of the list.
---- @field type ("aidoku"|"lnreader"|"mangayomi") The kind of index the URL points to. Defaults to "aidoku".
+--- @field type ("aidoku"|"lnreader"|"mangayomi"|"keiyoushi") The kind of index the URL points to. Defaults to "aidoku".
 
 --- @class Settings
 --- @field chapter_sorting_mode ChapterSortingMode

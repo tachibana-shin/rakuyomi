@@ -21,6 +21,8 @@ pub enum SourceListType {
     LnReader,
     /// A MangaYomi Dart extension index (`index.json`).
     Mangayomi,
+    /// A keiyoushi (mihon/Tachiyomi) extension index (`index.min.json`).
+    Keiyoushi,
 }
 
 impl SourceListType {

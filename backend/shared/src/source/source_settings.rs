@@ -60,6 +60,31 @@ impl SourceSettings {
         self.stored.borrow_mut().insert(key.to_owned(), value);
     }
 
+    /// Merges the definition defaults into the stored map (missing keys
+    /// only). Used by backends whose setting definitions are only known
+    /// once their runtime is up (MangaYomi: the container must be handed
+    /// to the runtime first, the definitions come from the first call).
+    pub fn seed_defaults(&self, setting_definitions: &[SettingDefinition]) {
+        let defaults: HashMap<_, _> = setting_definitions
+            .iter()
+            .flat_map(default_values_for_definition)
+            .collect();
+        let mut stored = self.stored.borrow_mut();
+        for (key, value) in defaults {
+            stored.entry(key).or_insert(value);
+        }
+    }
+
+    /// All effective values: stored values overlaid on the definition
+    /// defaults.
+    pub fn all(&self) -> HashMap<String, SourceSettingValue> {
+        let mut out = self.defaults.clone();
+        for (key, value) in self.stored.borrow().iter() {
+            out.insert(key.clone(), value.clone());
+        }
+        out
+    }
+
     pub fn save(&self, key: &str, value: SourceSettingValue) -> Result<()> {
         let snapshot = {
             let mut store = self.stored.borrow_mut();

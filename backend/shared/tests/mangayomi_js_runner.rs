@@ -447,14 +447,21 @@ fn temp_sources_dir(tag: &str) -> PathBuf {
     dir
 }
 
-fn manager(dir: &std::path::Path) -> SourceManager {
-    SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap()
+fn manager(dir: &std::path::Path) -> Arc<tokio::sync::Mutex<SourceManager>> {
+    Arc::new(tokio::sync::Mutex::new(
+        SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap(),
+    ))
 }
 
-fn install(manager: &mut SourceManager, code: &str, metadata: &str) -> SourceId {
+fn install(
+    manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    code: &str,
+    metadata: &str,
+) -> SourceId {
     let source_id = SourceId::new("638504049".to_string());
     manager
-        .install_mangayomi_source(&source_id, code, metadata, "MangaYomi".to_string())
+        .blocking_lock()
+        .install_mangayomi_source(&source_id, code, metadata, "MangaYomi".to_string(), manager)
         .unwrap();
     source_id
 }
@@ -463,7 +470,7 @@ fn install(manager: &mut SourceManager, code: &str, metadata: &str) -> SourceId 
 // Tests
 // ---------------------------------------------------------------------------
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn js_runner_full_offline() {
     let server = FixtureServer::start().await;
     let base = server.base_url();
@@ -475,18 +482,26 @@ async fn js_runner_full_offline() {
     let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
 
     let dir = temp_sources_dir("full");
-    let mut manager = manager(&dir);
-    let source_id = install(
-        &mut manager,
-        &FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
-        &html(
-            r#"{"id": 638504049, "name": "Madara JS Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.2.0", "sourceCodeUrl": "https://example.com/madara.js", "sourceCodeLanguage": 1}"#,
-        ),
-    );
+    let manager = manager(&dir);
+    let source_id = tokio::task::block_in_place(|| {
+        install(
+            &manager,
+            &FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
+            &html(
+                r#"{"id": 638504049, "name": "Madara JS Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.2.0", "sourceCodeUrl": "https://example.com/madara.js", "sourceCodeLanguage": 1}"#,
+            ),
+        )
+    });
 
     // The `sourceCodeLanguage: 1` index entry must be stored with the `.js`
     // suffix and loadable through the shared pipeline.
-    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = tokio::task::block_in_place(|| {
+        manager
+            .blocking_lock()
+            .get_by_id(&source_id)
+            .expect("source installed")
+            .clone()
+    });
     let manifest = source.manifest();
     assert_eq!(manifest.info.id, "638504049");
     assert_eq!(manifest.info.name, "Madara JS Fixture");
@@ -501,7 +516,7 @@ async fn js_runner_full_offline() {
     // `sourceCodeUrl` found in the metadata JSON.
     assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
-    let source = mangayomi(source);
+    let source = mangayomi(&source);
     assert!(source.supports_latest, "sync getter supportsLatest");
     assert!(!source.features.process_page_image);
 
@@ -512,11 +527,11 @@ async fn js_runner_full_offline() {
     assert_eq!(defs.len(), 2);
     let settings = source.settings.lock().unwrap();
     assert!(matches!(
-        settings.get("show_notice"),
+        settings.get(&"show_notice".to_string()),
         Some(SourceSettingValue::Bool(true))
     ));
     assert!(matches!(
-        settings.get("site"),
+        settings.get(&"site".to_string()),
         Some(SourceSettingValue::String(s)) if s.is_empty()
     ));
     drop(settings);
@@ -658,8 +673,8 @@ async fn js_runner_full_offline() {
     // Stored settings reach the extension through `SharedPreferences`: with
     // the empty default, `siteBase` falls back to `source.baseUrl`; once a
     // value is stored, the extension requests `/override/page/1`.
-    source.settings.lock().unwrap().insert(
-        "site".to_string(),
+    source.settings.lock().unwrap().set(
+        "site",
         SourceSettingValue::String(format!("{base}/override")),
     );
     let mangas = source
@@ -687,16 +702,23 @@ fn js_runner_stores_js_suffix() {
     // Even an install whose suffix would (incorrectly) default to Dart must
     // honour the `sourceCodeLanguage` in the index entry.
     let dir = temp_sources_dir("suffix");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let code = r#"class DefaultExtension extends MProvider { getFilterList() { return []; } }"#;
     let metadata = r#"{"id": 638504050, "name": "Suffix Check", "lang": "en", "baseUrl": "http://example.com", "version": "1.0.0", "sourceCodeLanguage": 1}"#;
-    let source_id = install(&mut manager, code, metadata);
-    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source_id = install(&manager, code, metadata);
+    let source = manager
+        .blocking_lock()
+        .get_by_id(&source_id)
+        .expect("source installed")
+        .clone();
     assert_eq!(source.manifest().info.id, "638504050");
-    let mangayomi = mangayomi(source);
+    let mangayomi = mangayomi(&source);
     assert_eq!(mangayomi.base_url, "http://example.com");
     assert!(
-        manager.mangayomi_js_source_path(&source_id).exists(),
+        manager
+            .blocking_lock()
+            .mangayomi_js_source_path(&source_id)
+            .exists(),
         "sourceCodeLanguage: 1 must be stored with the .mangayomi.js suffix"
     );
 
@@ -708,14 +730,18 @@ fn js_runner_rejects_invalid_code() {
     // A JS extension whose `DefaultExtension` fails to evaluate must surface
     // an error on the first invoke instead of hanging.
     let dir = temp_sources_dir("bad-js");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         "this is not javascript ((",
         r#"{"id": 638504051, "name": "Broken", "lang": "en", "baseUrl": "http://example.com", "version": "1.0.0", "sourceCodeLanguage": 1}"#,
     );
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let mangayomi = mangayomi(source);
+    let source = manager
+        .blocking_lock()
+        .get_by_id(&source_id)
+        .expect("source installed")
+        .clone();
+    let mangayomi = mangayomi(&source);
     assert!(
         mangayomi
             .invoke("getSourcePreferences", serde_json::json!([]))
@@ -750,7 +776,19 @@ class DefaultExtension extends MProvider {
             "version": "1.0.0",
             "sourceCodeLanguage": 1
         }),
-        Arc::new(Mutex::new(HashMap::new())),
+        Arc::new(Mutex::new(
+            shared::source::source_settings::SourceSettings::new(
+                "638504052".to_string(),
+                &[],
+                &HashMap::new(),
+                &Arc::new(tokio::sync::Mutex::new(SourceManager::new(
+                    PathBuf::new(),
+                    HashMap::new(),
+                    Settings::default(),
+                ))),
+            )
+            .unwrap(),
+        )),
         Duration::from_millis(500),
     )
     .expect("runtime starts");
@@ -783,14 +821,18 @@ class DefaultExtension extends MProvider {
 }
 "#;
     let dir = temp_sources_dir("flat-pref");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         FLAT_PREF,
         r#"{"id": 638504049, "name": "Flat Pref JS", "lang": "en", "baseUrl": "http://meta.example", "version": "1.0.0", "sourceCodeUrl": "https://example.com/flat.js", "sourceCodeLanguage": 1}"#,
     );
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let source = manager
+        .blocking_lock()
+        .get_by_id(&source_id)
+        .expect("source installed")
+        .clone();
+    let source = mangayomi(&source);
 
     let defs = &source.setting_definitions;
     assert_eq!(defs.len(), 1);
@@ -803,7 +845,7 @@ class DefaultExtension extends MProvider {
     }
     let settings = source.settings.lock().unwrap();
     assert!(matches!(
-        settings.get("override_baseurl"),
+        settings.get(&"override_baseurl".to_string()),
         Some(SourceSettingValue::String(s)) if s == "https://flat.example"
     ));
     drop(settings);
@@ -814,7 +856,7 @@ class DefaultExtension extends MProvider {
     std::fs::remove_dir_all(&dir).ok();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn js_runner_mangafire_like_search_filters() {
     // Mangafire-style search indexes `filters[0..4]` and its "Length" select
     // omits `state`; the runtime must pass the normalised filter list (state
@@ -829,16 +871,24 @@ async fn js_runner_mangafire_like_search_filters() {
         .to_string();
 
     let dir = temp_sources_dir("mangafire");
-    let mut manager = manager(&dir);
-    let source_id = install(
-        &mut manager,
-        &MANGAFIRE_LIKE_EXTENSION.replace("127.0.0.1:PORT", &port),
-        &format!(
-            r#"{{"id": 638504049, "name": "Mangafire Like", "lang": "en", "baseUrl": "http://127.0.0.1:{port}", "version": "1.0.0", "sourceCodeLanguage": 1}}"#
-        ),
-    );
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let manager = manager(&dir);
+    let source_id = tokio::task::block_in_place(|| {
+        install(
+            &manager,
+            &MANGAFIRE_LIKE_EXTENSION.replace("127.0.0.1:PORT", &port),
+            &format!(
+                r#"{{"id": 638504049, "name": "Mangafire Like", "lang": "en", "baseUrl": "http://127.0.0.1:{port}", "version": "1.0.0", "sourceCodeLanguage": 1}}"#
+            ),
+        )
+    });
+    let source = tokio::task::block_in_place(|| {
+        manager
+            .blocking_lock()
+            .get_by_id(&source_id)
+            .expect("source installed")
+            .clone()
+    });
+    let source = mangayomi(&source);
     source
         .search_mangas(CancellationToken::new(), "one piece".to_string(), 1)
         .expect("search must not crash on the filter list");

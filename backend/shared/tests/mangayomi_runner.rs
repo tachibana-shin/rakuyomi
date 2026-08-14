@@ -534,14 +534,40 @@ fn temp_sources_dir(tag: &str) -> PathBuf {
     dir
 }
 
-fn manager(dir: &std::path::Path) -> SourceManager {
-    SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap()
+fn manager(dir: &std::path::Path) -> Arc<tokio::sync::Mutex<SourceManager>> {
+    Arc::new(tokio::sync::Mutex::new(
+        SourceManager::from_folder(dir.to_path_buf(), Settings::default()).unwrap(),
+    ))
 }
 
-fn install(manager: &mut SourceManager, code: &str, metadata: &str) -> SourceId {
+/// Takes the manager lock from either a `#[tokio::test(flavor =
+/// "multi_thread")]` body (blocking lock via `block_in_place`) or a plain
+/// `#[test]` body.
+fn lock_manager(
+    manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+) -> tokio::sync::MutexGuard<'_, SourceManager> {
+    if tokio::runtime::Handle::try_current().is_ok() {
+        tokio::task::block_in_place(|| manager.blocking_lock())
+    } else {
+        manager.blocking_lock()
+    }
+}
+
+fn get_source(manager: &Arc<tokio::sync::Mutex<SourceManager>>, source_id: &SourceId) -> Source {
+    lock_manager(manager)
+        .get_by_id(source_id)
+        .expect("source installed")
+        .clone()
+}
+
+fn install(
+    manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    code: &str,
+    metadata: &str,
+) -> SourceId {
     let source_id = SourceId::new("638504049".to_string());
-    manager
-        .install_mangayomi_source(&source_id, code, metadata, "MangaYomi".to_string())
+    lock_manager(manager)
+        .install_mangayomi_source(&source_id, code, metadata, "MangaYomi".to_string(), manager)
         .unwrap();
     source_id
 }
@@ -550,7 +576,7 @@ fn install(manager: &mut SourceManager, code: &str, metadata: &str) -> SourceId 
 // Tests
 // ---------------------------------------------------------------------------
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn runner_full_offline() {
     let server = FixtureServer::start().await;
     let base = server.base_url();
@@ -566,16 +592,16 @@ async fn runner_full_offline() {
     let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
 
     let dir = temp_sources_dir("full");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         &FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
         &html(
             r#"{"id": 638504049, "name": "Madara Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.2.0", "sourceCodeUrl": "https://example.com/madara.dart"}"#,
         ),
     );
 
-    let source = manager.get_by_id(&source_id).expect("source installed");
+    let source = get_source(&manager, &source_id);
     let manifest = source.manifest();
     assert_eq!(manifest.info.id, "638504049");
     assert_eq!(manifest.info.name, "Madara Fixture");
@@ -590,7 +616,7 @@ async fn runner_full_offline() {
     // `sourceCodeUrl` found in the metadata JSON.
     assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
-    let source = mangayomi(source);
+    let source = mangayomi(&source);
     assert!(source.supports_latest);
     assert!(!source.features.process_page_image);
 
@@ -631,11 +657,11 @@ async fn runner_full_offline() {
     }
     let settings = source.settings.lock().unwrap();
     assert!(matches!(
-        settings.get("show_notice"),
+        settings.get(&"show_notice".to_string()),
         Some(SourceSettingValue::Bool(true))
     ));
     assert!(matches!(
-        settings.get("view_mode"),
+        settings.get(&"view_mode".to_string()),
         Some(SourceSettingValue::String(s)) if s == "grid"
     ));
     drop(settings);
@@ -840,26 +866,27 @@ async fn runner_full_offline() {
     std::fs::remove_dir_all(&dir).ok();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn runner_rejects_invalid_metadata() {
     let dir = temp_sources_dir("invalid-meta");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
 
     // Metadata without an id must be rejected before any code runs
     let source_id = SourceId::new("badmeta".to_string());
-    assert!(manager
+    assert!(lock_manager(&manager)
         .install_mangayomi_source(
             &source_id,
             b"some code",
             r#"{"name": "No id", "baseUrl": "http://example.com"}"#,
             "MangaYomi".to_string(),
+            &manager,
         )
         .is_err());
 
     std::fs::remove_dir_all(&dir).ok();
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn runner_madara_search_with_not_has_selector() {
     // Madara-style sources (e.g. MangaSushi) select search results with
     // `div.c-tabs-item__content` and filter badges via
@@ -917,17 +944,17 @@ MadaraSearch main(MSource source) => MadaraSearch(source: source);
     let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
 
     let dir = temp_sources_dir("madara-search");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         MADARA_SEARCH_EXTENSION,
         &html(
             r#"{"id": 638504049, "name": "Madara Search", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.0.0", "sourceCodeUrl": "https://example.com/madara.dart"}"#,
         ),
     );
 
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let source = get_source(&manager, &source_id);
+    let source = mangayomi(&source);
 
     let (mangas, has_next) = source
         .search_mangas(CancellationToken::new(), "one".to_string(), 1)
@@ -979,14 +1006,14 @@ FlatPref main(MSource source) => FlatPref(source: source);
 "#;
 
     let dir = temp_sources_dir("flat-pref");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         FLAT_PREF,
         r#"{"id": 638504049, "name": "Flat Pref", "lang": "en", "baseUrl": "http://meta.example", "version": "1.0.0", "sourceCodeUrl": "https://example.com/flat.dart"}"#,
     );
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let source = get_source(&manager, &source_id);
+    let source = mangayomi(&source);
 
     // The flat EditTextPreference must become a Text setting with the default
     // collected into the shared settings map.
@@ -1001,7 +1028,7 @@ FlatPref main(MSource source) => FlatPref(source: source);
     }
     let settings = source.settings.lock().unwrap();
     assert!(matches!(
-        settings.get("override_baseurl"),
+        settings.get(&"override_baseurl".to_string()),
         Some(SourceSettingValue::String(s)) if s == "https://flat.example"
     ));
     drop(settings);
@@ -1021,14 +1048,26 @@ fn runner_worker_crashes_on_invalid_code() {
     let runtime = MangayomiRuntime::new(
         "not dart at all !!!".to_string(),
         serde_json::json!({"id": 1, "name": "x", "baseUrl": "http://x"}),
-        Arc::new(Mutex::new(HashMap::new())),
+        Arc::new(Mutex::new(
+            shared::source::source_settings::SourceSettings::new(
+                "1".to_string(),
+                &[],
+                &HashMap::new(),
+                &Arc::new(tokio::sync::Mutex::new(SourceManager::new(
+                    PathBuf::new(),
+                    HashMap::new(),
+                    Settings::default(),
+                ))),
+            )
+            .unwrap(),
+        )),
         Duration::from_secs(2),
     )
     .unwrap();
     assert!(runtime.invoke("getSourcePreferences", vec![]).is_err());
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn runner_light_novel_uses_get_html_content() {
     let server = FixtureServer::start().await;
     let base = server.base_url();
@@ -1040,17 +1079,17 @@ async fn runner_light_novel_uses_get_html_content() {
     let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
 
     let dir = temp_sources_dir("novel");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         &NOVEL_FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
         &html(
             r#"{"id": 638504049, "name": "RoyalRoad Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.0.0", "sourceCodeUrl": "https://example.com/royalroad.dart", "itemType": 2}"#,
         ),
     );
 
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let source = get_source(&manager, &source_id);
+    let source = mangayomi(&source);
     assert_eq!(source.item_type, 2);
 
     // Light novel sources expose no page images; the raw chapter HTML
@@ -1084,17 +1123,19 @@ async fn runner_light_novel_uses_get_html_content() {
 #[test]
 fn runner_rejects_anime_extension() {
     let dir = temp_sources_dir("anime");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
 
     // Anime extensions (`itemType: 1`) are not supported: install must fail
     // before the Dart code is even parsed.
     let source_id = SourceId::new("anime1".to_string());
     let err = manager
+        .blocking_lock()
         .install_mangayomi_source(
             &source_id,
             b"void main() {}",
             r#"{"id": "anime1", "name": "AniList", "lang": "en", "baseUrl": "http://anilist.co", "version": "1.0.0", "sourceCodeUrl": "https://example.com/anilist.dart", "itemType": 1}"#,
             "MangaYomi".to_string(),
+            &manager,
         )
         .expect_err("anime extensions must be rejected");
     assert!(
@@ -1192,7 +1233,7 @@ class XpathMadara extends MProvider {
 XpathMadara main(MSource source) => XpathMadara(source: source);
 "#;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn runner_xpath_extension() {
     let server = FixtureServer::start().await;
     let base = server.base_url();
@@ -1205,17 +1246,17 @@ async fn runner_xpath_extension() {
     let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
 
     let dir = temp_sources_dir("xpath");
-    let mut manager = manager(&dir);
+    let manager = manager(&dir);
     let source_id = install(
-        &mut manager,
+        &manager,
         &XPATH_FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
         &html(
             r#"{"id": 434984458, "name": "Xpath Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.0.0", "sourceCodeUrl": "https://example.com/xpath.dart"}"#,
         ),
     );
 
-    let source = manager.get_by_id(&source_id).expect("source installed");
-    let source = mangayomi(source);
+    let source = get_source(&manager, &source_id);
+    let source = mangayomi(&source);
 
     // Popular list: three `<a>` entries scraped through the top-level
     // `xpath()` helper (the same queries the MangaHere source uses).

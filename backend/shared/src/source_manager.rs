@@ -75,13 +75,14 @@ impl SourceManager {
         id: &SourceId,
         contents: impl AsRef<[u8]>,
         source_of_source: String,
+        arc_manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<()> {
         let target_path = self.lnreader_source_path(id);
         fs::write(&target_path, contents)?;
 
         Source::write_meta_file(&target_path, source_of_source)?;
 
-        let source = Source::from_lnreader_file(&target_path, self)?;
+        let source = Source::from_lnreader_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(
@@ -103,6 +104,7 @@ impl SourceManager {
         code: impl AsRef<[u8]>,
         metadata: impl AsRef<[u8]>,
         source_of_source: String,
+        arc_manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<()> {
         let metadata: serde_json::Value =
             serde_json::from_slice(metadata.as_ref()).context("invalid extension metadata JSON")?;
@@ -143,13 +145,43 @@ impl SourceManager {
 
         Source::write_meta_file(&target_path, source_of_source)?;
 
-        let source = Source::from_mangayomi_file(&target_path, self)?;
+        let source = Source::from_mangayomi_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(
             id.value().to_owned(),
             target_path.to_string_lossy().to_string(),
         );
+
+        Ok(())
+    }
+
+    /// Installs a keiyoushi extension APK: the bytes are stored as
+    /// `<pkg>.keiyoushi.apk` (one per extension package), and every source
+    /// bundled in the APK is registered individually (see
+    /// [`Source::from_keiyoushi_file`]).
+    pub fn install_keiyoushi_source(
+        &mut self,
+        id: &SourceId,
+        contents: impl AsRef<[u8]>,
+        source_of_source: String,
+        arc_manager: &Arc<Mutex<SourceManager>>,
+    ) -> Result<()> {
+        let target_path = self.keiyoushi_source_path(id);
+        fs::write(&target_path, contents)?;
+
+        Source::write_meta_file(&target_path, source_of_source)?;
+
+        let sources = Source::from_keiyoushi_file(&target_path, self, arc_manager)?;
+        for source in sources {
+            let source_id = SourceId::new(source.manifest().info.id.clone());
+            #[cfg(not(feature = "all"))]
+            self.file_sources.insert(
+                source_id.value().to_owned(),
+                target_path.to_string_lossy().to_string(),
+            );
+            self.sources_by_id.insert(source_id, source);
+        }
 
         Ok(())
     }
@@ -165,13 +197,17 @@ impl SourceManager {
         Ok(())
     }
 
-    /// Removes a WASM, an LNReader and a MangaYomi source file if present.
+    /// Removes a WASM, an LNReader, a MangaYomi and a Keiyoushi source file
+    /// if present. Keiyoushi sources of the same APK share one file, so the
+    /// removal clears every registered source of that extension.
     pub fn uninstall_any_source(&mut self, id: &SourceId) -> Result<()> {
         for path in [
             self.source_path(id),
             self.lnreader_source_path(id),
             self.mangayomi_source_path(id),
             self.mangayomi_js_source_path(id),
+            self.keiyoushi_source_path(id),
+            self.keiyoushi_prefs_path(id),
         ] {
             if path.exists() {
                 fs::remove_file(&path)?;
@@ -242,11 +278,27 @@ impl SourceManager {
                 ext.ends_with(crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX)
                     || ext.ends_with(crate::source::mangayomi::MANGA_YOMI_JS_FILE_SUFFIX)
             });
+            let is_keiyoushi = path.file_name().is_some_and(|name| {
+                name.to_string_lossy()
+                    .ends_with(crate::source::keiyoushi::KEIYOUSHI_FILE_SUFFIX)
+            });
 
-            let source = if is_lnreader {
-                Source::from_lnreader_file(&path, self)?
+            let source = if is_keiyoushi {
+                // A keiyoushi APK registers one source per bundled `Source`;
+                // every one of them maps back to this file on disk.
+                for source in Source::from_keiyoushi_file(&path, self, manager)? {
+                    #[cfg(not(feature = "all"))]
+                    self.file_sources.insert(
+                        source.manifest().info.id.clone(),
+                        path.as_path().to_string_lossy().to_string(),
+                    );
+                    sources_by_id.insert(SourceId::new(source.manifest().info.id.clone()), source);
+                }
+                continue;
+            } else if is_lnreader {
+                Source::from_lnreader_file(&path, self, manager)?
             } else if is_mangayomi {
-                Source::from_mangayomi_file(&path, self)?
+                Source::from_mangayomi_file(&path, self, manager)?
             } else {
                 if !path
                     .extension()
@@ -293,6 +345,27 @@ impl SourceManager {
             "{}{}",
             id.value(),
             crate::source::mangayomi::MANGA_YOMI_JS_FILE_SUFFIX
+        ))
+    }
+
+    /// The path of the keiyoushi extension APK of a source id. Multi-source
+    /// APKs register their sources as `<pkg>:<lang>`; they all share the
+    /// `<pkg>.keiyoushi.apk` file.
+    pub fn keiyoushi_source_path(&self, id: &SourceId) -> PathBuf {
+        let pkg = id.value().split(':').next().unwrap_or(id.value());
+        self.sources_folder.join(format!(
+            "{pkg}{}",
+            crate::source::keiyoushi::KEIYOUSHI_FILE_SUFFIX
+        ))
+    }
+
+    /// The path of the persisted `SharedPreferences` of a keiyoushi
+    /// extension APK (one per extension package).
+    pub fn keiyoushi_prefs_path(&self, id: &SourceId) -> PathBuf {
+        let pkg = id.value().split(':').next().unwrap_or(id.value());
+        self.sources_folder.join(format!(
+            "{pkg}{}",
+            crate::source::keiyoushi::KEIYOUSHI_PREFS_SUFFIX
         ))
     }
 }

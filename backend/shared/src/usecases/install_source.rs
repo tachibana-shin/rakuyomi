@@ -79,7 +79,12 @@ pub async fn install_source(
                 .url
                 .context("LNReader source list item is missing a `url`")?;
             let plugin_content = client.get(url).send().await?.bytes().await?;
-            source_manager.install_lnreader_source(&source_id, plugin_content, source_of_source)?;
+            source_manager.install_lnreader_source(
+                &source_id,
+                plugin_content,
+                source_of_source,
+                arc_manager,
+            )?;
         }
         crate::settings::SourceListType::Mangayomi => {
             // MangaYomi extension: the index entry itself carries the
@@ -106,6 +111,22 @@ pub async fn install_source(
                 code,
                 metadata,
                 source_of_source,
+                arc_manager,
+            )?;
+        }
+        crate::settings::SourceListType::Keiyoushi => {
+            // Keiyoushi extension: the index publishes the release APK URL.
+            // Anime-only entries (`isNsfw` is irrelevant here) and other
+            // non-manga packages are rejected by the extension VM.
+            let apk_url = source_list_item
+                .file
+                .context("Keiyoushi source list item is missing an `apk` URL")?;
+            let apk_content = client.get(apk_url).send().await?.bytes().await?;
+            source_manager.install_keiyoushi_source(
+                &source_id,
+                apk_content,
+                source_of_source,
+                arc_manager,
             )?;
         }
         crate::settings::SourceListType::Aidoku => {
@@ -137,7 +158,7 @@ struct SourceListItem {
     #[serde(deserialize_with = "de_source_id")]
     id: SourceId,
     /// Aidoku index: file name of the `.aix`, relative to the source list URL.
-    #[serde(alias = "downloadURL")]
+    #[serde(alias = "downloadURL", alias = "apk")]
     file: Option<String>,
     /// LNReader index: absolute URL of the compiled plugin `.js` file.
     url: Option<String>,

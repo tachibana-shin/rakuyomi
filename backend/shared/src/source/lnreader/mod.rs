@@ -9,7 +9,6 @@ pub mod manifest;
 pub mod runtime;
 
 use std::{
-    collections::HashMap,
     fs,
     path::Path,
     sync::{Arc, Mutex},
@@ -25,6 +24,7 @@ use crate::{
     settings::SourceSettingValue,
     source::{
         model::{Manga, Page, SettingDefinition},
+        source_settings::SourceSettings,
         SourceFeatures, SourceManifest,
     },
     source_manager::SourceManager,
@@ -53,8 +53,11 @@ pub struct LnReaderSource {
     pub features: SourceFeatures,
     props: PluginProps,
     /// Merged source settings (stored values overlaid on the definition
-    /// defaults), used to build the filter/settings JSON for each call.
-    settings: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    /// defaults), used to build the filter/settings JSON for each call. The
+    /// mutex mirrors the wasm backend's `Arc<Mutex<BlockingSource>>`
+    /// wrapper: [`SourceSettings`] is `RefCell`-based and single-threaded,
+    /// the lock makes the source shareable across `spawn_blocking`.
+    settings: Arc<Mutex<SourceSettings>>,
     runtime: LnReaderRuntime,
 }
 
@@ -85,7 +88,11 @@ pub(crate) fn plugin_id_from_path(path: &Path) -> Result<String> {
 
 impl LnReaderSource {
     /// Loads a plugin from a `*.lnreader.js` file and prepares the runtime.
-    pub fn from_lnreader_file(path: &Path, manager: &SourceManager) -> Result<Self> {
+    pub fn from_lnreader_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
         let plugin_code = fs::read_to_string(path)
             .with_context(|| format!("failed to read plugin file {}", path.display()))?;
 
@@ -118,15 +125,12 @@ impl LnReaderSource {
             .cloned()
             .unwrap_or_default();
 
-        let mut settings: HashMap<String, SourceSettingValue> = HashMap::new();
-        for definition in &setting_definitions {
-            collect_defaults(definition, &mut settings);
-        }
-        for (key, value) in stored_settings {
-            settings.insert(key, value);
-        }
-
-        let settings = Arc::new(Mutex::new(settings));
+        let settings = Arc::new(Mutex::new(SourceSettings::new(
+            props.id.clone(),
+            &setting_definitions,
+            &stored_settings,
+            arc_manager,
+        )?));
 
         // Seed the plugin's `@libs/storage` with the pluginSettings values,
         // mirroring how the LNReader app stores them (`pluginId_DB_key`).
@@ -166,7 +170,7 @@ impl LnReaderSource {
     fn storage_seed(
         plugin_id: &str,
         plugin_settings: &Value,
-        settings: &Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+        settings: &Arc<Mutex<SourceSettings>>,
     ) -> Result<Vec<(String, String)>> {
         let Value::Object(map) = plugin_settings else {
             return Ok(Vec::new());
@@ -178,9 +182,8 @@ impl LnReaderSource {
             };
             let value = settings
                 .lock()
-                .unwrap()
+                .unwrap_or_else(|e| e.into_inner())
                 .get(key)
-                .cloned()
                 .map(|v| setting_to_json(&v))
                 .unwrap_or_else(|| declared.clone());
             let item = json!({
@@ -195,8 +198,13 @@ impl LnReaderSource {
     /// Serializes the current settings as a JSON object for the JS side.
     pub fn settings_json(&self) -> Value {
         let mut out = serde_json::Map::new();
-        for (key, value) in self.settings.lock().unwrap().iter() {
-            out.insert(key.clone(), setting_to_json(value));
+        for (key, value) in self
+            .settings
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .all()
+        {
+            out.insert(key.clone(), setting_to_json(&value));
         }
         Value::Object(out)
     }
@@ -486,46 +494,6 @@ impl LnReaderSource {
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
         self.get_image_request(url, ctx)
-    }
-}
-
-fn collect_defaults(definition: &SettingDefinition, out: &mut HashMap<String, SourceSettingValue>) {
-    match definition {
-        SettingDefinition::Group { items, .. } => {
-            for item in items {
-                collect_defaults(item, out);
-            }
-        }
-        SettingDefinition::Select {
-            key,
-            default,
-            values,
-            ..
-        } => {
-            out.insert(
-                key.clone(),
-                SourceSettingValue::String(
-                    default
-                        .clone()
-                        .unwrap_or_else(|| values.first().cloned().unwrap_or_default()),
-                ),
-            );
-        }
-        SettingDefinition::MultiSelect { key, default, .. }
-        | SettingDefinition::EditableList { key, default, .. } => {
-            out.insert(key.clone(), SourceSettingValue::Vec(default.clone()));
-        }
-        SettingDefinition::Switch { key, default, .. } => {
-            out.insert(key.clone(), SourceSettingValue::Bool(*default));
-        }
-        SettingDefinition::Text {
-            key,
-            default: Some(default),
-            ..
-        } => {
-            out.insert(key.clone(), SourceSettingValue::String(default.clone()));
-        }
-        _ => {}
     }
 }
 

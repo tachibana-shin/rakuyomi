@@ -26,9 +26,9 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 
 use crate::{
-    settings::SourceSettingValue,
     source::{
         model::{Manga, Page, SettingDefinition},
+        source_settings::SourceSettings,
         BlockingSource, SourceFeatures, SourceInfo, SourceManifest, SourceMeta,
     },
     source_manager::SourceManager,
@@ -101,8 +101,11 @@ pub struct MangayomiSource {
     pub item_type: u8,
     /// Merged source settings (stored values overlaid on the extension
     /// preference defaults), visible to the extension through
-    /// `getPreferenceValue`.
-    pub settings: Arc<Mutex<HashMap<String, SourceSettingValue>>>,
+    /// `getPreferenceValue`. The mutex mirrors the wasm backend's
+    /// `Arc<Mutex<BlockingSource>>` wrapper: [`SourceSettings`] is
+    /// `RefCell`-based and single-threaded, the lock makes the source
+    /// shareable across `spawn_blocking` and the worker runtime.
+    pub settings: Arc<Mutex<SourceSettings>>,
     runtime: Arc<dyn MangayomiProvider>,
 }
 
@@ -126,7 +129,11 @@ impl MangayomiSource {
     /// index.json entry) and prepares the runtime. The language is taken
     /// from the file suffix, falling back to the `sourceCodeLanguage`
     /// metadata for misnamed installs.
-    pub fn from_mangayomi_file(path: &Path, manager: &SourceManager) -> Result<Self> {
+    pub fn from_mangayomi_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
         let code = fs::read_to_string(path)
             .with_context(|| format!("failed to read extension file {}", path.display()))?;
         let meta_path = path.with_extension("json");
@@ -194,19 +201,28 @@ impl MangayomiSource {
             .cloned()
             .unwrap_or_default();
 
-        let prefs = Arc::new(Mutex::new(HashMap::new()));
+        // The settings container must exist before the runtime: its worker
+        // thread reads the preferences as the extension boots. The
+        // preference definitions are only known once the runtime answers
+        // `getPreferenceDefinitions`, so they are seeded afterwards.
+        let settings = Arc::new(Mutex::new(SourceSettings::new(
+            meta.id.clone(),
+            &[],
+            &stored_settings,
+            arc_manager,
+        )?));
         let runtime: Arc<dyn MangayomiProvider> = if is_js {
             Arc::new(js::MangayomiJsRuntime::new(
                 code,
                 metadata,
-                prefs.clone(),
+                settings.clone(),
                 DEFAULT_INVOKE_TIMEOUT,
             )?)
         } else {
             Arc::new(MangayomiRuntime::new(
                 code,
                 metadata,
-                prefs.clone(),
+                settings.clone(),
                 DEFAULT_INVOKE_TIMEOUT,
             )?)
         };
@@ -214,14 +230,10 @@ impl MangayomiSource {
         // Extension-declared preferences become the source's settings
         // definitions; stored values are merged on top of their defaults.
         let setting_definitions = setting_definitions(&*runtime)?;
-        let mut settings: HashMap<String, SourceSettingValue> = HashMap::new();
-        for definition in &setting_definitions {
-            collect_defaults(definition, &mut settings);
-        }
-        for (key, value) in stored_settings {
-            settings.insert(key, value);
-        }
-        *prefs.lock().unwrap() = settings.clone();
+        settings
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .seed_defaults(&setting_definitions);
 
         // JavaScript extensions expose the base URL through the `MSource`
         // JSON only, so fall back to the metadata for them.
@@ -270,7 +282,7 @@ impl MangayomiSource {
             lang: meta.lang,
             supports_latest,
             item_type: meta.item_type,
-            settings: prefs,
+            settings,
             runtime,
         })
     }
@@ -768,44 +780,4 @@ fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDef
         }
     }
     Ok(out)
-}
-
-fn collect_defaults(definition: &SettingDefinition, out: &mut HashMap<String, SourceSettingValue>) {
-    match definition {
-        SettingDefinition::Group { items, .. } => {
-            for item in items {
-                collect_defaults(item, out);
-            }
-        }
-        SettingDefinition::Select {
-            key,
-            default,
-            values,
-            ..
-        } => {
-            out.insert(
-                key.clone(),
-                SourceSettingValue::String(
-                    default
-                        .clone()
-                        .unwrap_or_else(|| values.first().cloned().unwrap_or_default()),
-                ),
-            );
-        }
-        SettingDefinition::MultiSelect { key, default, .. }
-        | SettingDefinition::EditableList { key, default, .. } => {
-            out.insert(key.clone(), SourceSettingValue::Vec(default.clone()));
-        }
-        SettingDefinition::Switch { key, default, .. } => {
-            out.insert(key.clone(), SourceSettingValue::Bool(*default));
-        }
-        SettingDefinition::Text {
-            key,
-            default: Some(default),
-            ..
-        } => {
-            out.insert(key.clone(), SourceSettingValue::String(default.clone()));
-        }
-        _ => {}
-    }
 }

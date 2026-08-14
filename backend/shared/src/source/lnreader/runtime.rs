@@ -486,6 +486,9 @@ fn do_fetch(url: String, init_json: &str) -> Result<String> {
     let status = response.status().as_u16();
     let ok = response.status().is_success();
     let final_url = response.url().to_string();
+    // `Set-Cookie` headers land in the shared RakuYomi store (the single
+    // cookie source, like reqwest's cookie jar).
+    crate::cookie_store::record_response_cookies(&response);
     let mut headers = serde_json::Map::new();
     for (name, value) in response.headers() {
         if let Ok(value) = value.to_str() {

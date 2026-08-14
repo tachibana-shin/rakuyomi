@@ -28,6 +28,7 @@ local SOURCE_LIST_TYPE_LABELS = {
   aidoku = "Aidoku",
   lnreader = "LNReader",
   mangayomi = "MangaYomi",
+  keiyoushi = "Keiyoushi",
 }
 
 function SourceListsListing:init()
@@ -143,7 +144,8 @@ function SourceListsListing:showAddSourceList()
         "https://tachibana-shin.github.io/aidoku-sources-next/index.min.json\n" ..
         "https://github.com/lnreader/lnreader-plugins\n" ..
         "https://kodjodevf.github.io/mangayomi-extensions/index.json\n" ..
-        "https://kodjodevf.github.io/mangayomi-extensions/novel_index.json",
+        "https://kodjodevf.github.io/mangayomi-extensions/novel_index.json\n" ..
+        "https://keiyoushi.github.io/extensions/index.min.json",
     buttons = {
       {
         {
@@ -210,6 +212,14 @@ function SourceListsListing:chooseSourceListType(url)
 
             self:addSourceList(url, "mangayomi")
           end
+        },
+        {
+          text = "Keiyoushi",
+          callback = function()
+            UIManager:close(dialog_context_menu)
+
+            self:addSourceList(url, "keiyoushi")
+          end
         }
       }
     }
@@ -220,7 +230,7 @@ end
 
 --- @private
 --- @param url string
---- @param source_type "aidoku"|"lnreader"|"mangayomi"
+--- @param source_type "aidoku"|"lnreader"|"mangayomi"|"keiyoushi"
 function SourceListsListing:addSourceList(url, source_type)
   self.settings.source_lists = self.settings.source_lists or {}
   table.insert(self.settings.source_lists, {

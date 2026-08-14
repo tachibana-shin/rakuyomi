@@ -926,13 +926,8 @@ msgid "Description"
 msgstr "Mô tả"
 
 #: ../MangaInfoWidget.lua:280
-msgid "%1% Completed"
-msgstr "%1% đã hoàn thành"
-
-#: ../MangaInfoWidget.lua:280
-#, fuzzy
 msgid "%1 % Completed"
-msgstr "Hoàn thành %1 %"
+msgstr "%1% đã hoàn thành"
 
 #: ../MangaInfoWidget.lua:311 ../MangaInfoWidget.lua:405
 msgid "N/A"

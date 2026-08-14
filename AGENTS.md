@@ -15,8 +15,7 @@ Architecture: `Backend.lua` (Lua) → HTTP/JSON → `server` (axum, Rust) → SQ
     Aidoku WASM sources, `boa_engine` for LNReader/JS sources — see
     `shared/src/source/sdk_lnreader/`), downloader, settings
   - `lnreader_worker/` — persistent per-source subprocess running LNReader/JS plugin
-    sources (`boa_engine`), sibling to `uds_http_request`/`cbz_metadata_reader`; see
-    `docs/lnreader/README.md` for the investigation/decision history behind it
+    sources (`boa_engine`), sibling to `uds_http_request`/`cbz_metadata_reader`
   - `uds_http_request/` — standalone UDS HTTP proxy binary
   - `cbz_metadata_reader/` — CBZ metadata extraction binary
   - `wasm_macros/` — proc-macro crate for WASM bindings
@@ -80,10 +79,9 @@ Data directory: `$KOREARCHIVE_DIR/rakuyomi/` (Unix) or `/storage/emulated/0/kore
 
 ## Git Safety Rules
 
-Adopted after a real incident (destructive `git checkout HEAD --` during a
+Adopted after a real incident: a destructive `git checkout HEAD --` during a
 commit-split attempt discarded uncommitted work in 6 files, plus a 7th
-untracked file deleted via `rm -f` with no backup at all — see
-`docs/lnreader/INCIDENT_GIT_CHECKOUT_DATA_LOSS.md` for the full postmortem).
+untracked file deleted via `rm -f` with no backup at all.
 
 - **Never run a destructive git operation** (`checkout HEAD --`,
   `reset --hard`, `clean -f`, a history-rewriting `rebase`) **on a file
@@ -111,9 +109,7 @@ untracked file deleted via `rm -f` with no backup at all — see
 ## LNReader Constraints
 
 Binding project constraints for the LNReader/JS source execution mode
-(`shared/src/source/sdk_lnreader/`). Full rationale and detail:
-`docs/lnreader/FEASIBILITY.md`'s "Constraints" section — this is the
-condensed version for quick reference.
+(`shared/src/source/sdk_lnreader/`).
 
 - **All-native-Rust**: never bundle/interpret a real JS library (`dayjs`,
   `htmlparser2`, `lodash-es`, cheerio) inside `boa_engine` — polyfill only
@@ -141,9 +137,15 @@ condensed version for quick reference.
 - **Follow Aidoku's own established patterns** rather than inventing new
   ones, absent a real, documented, empirical reason otherwise.
 - **`lnreader` Cargo feature**: on by default, fully removable.
-  **`lnreader_enabled` config toggle**: currently defaults to `true`, a
-  deliberate reversal of the original spec — do not "fix" this back
-  without an explicit decision to end LNReader's active testing period.
+  **`lnreader_enabled` config toggle**: on-disk settings with the key
+  missing (the real-world default for existing/fresh installs, via
+  `#[serde(default = "default_true")]` in `settings/schema.rs`) load as
+  `true` — a deliberate reversal of the original spec. `Settings::default()`
+  itself (the `#[derive(Default)]` used when constructing one in Rust, e.g.
+  in tests) is `false`, since serde's per-field `default` attribute doesn't
+  affect the `Default` trait derive. Do not "fix" the on-disk default back
+  to `false` without an explicit decision to end LNReader's active testing
+  period.
 - **All of `docs/lnreader/` stays out of git tracking** (local-only working
   notes).
 - **Validation**: prefer the full real corpus over a sample when feasible;

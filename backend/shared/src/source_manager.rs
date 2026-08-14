@@ -171,10 +171,11 @@ impl SourceCollection for SourceManager {
 /// `docs/lnreader/REFERENCE.md`) — independent of the `lnreader` Cargo
 /// feature, which is why [`build_lnreader_aix`] and
 /// [`disabled_toggle_rejects_install`]/[`disabled_toggle_is_skipped_on_load`]
-/// don't need `#[cfg(feature = "lnreader")]`: the toggle defaults to `false`
-/// regardless of the feature, so an LNReader-shaped archive must be rejected
-/// the same way whether the mode is merely disabled or not compiled in at
-/// all. Only the "it actually loads once enabled" test needs the feature.
+/// don't need `#[cfg(feature = "lnreader")]`: with `lnreader_enabled`
+/// explicitly configured `false`, an LNReader-shaped archive must be
+/// rejected the same way whether the mode is merely disabled or not
+/// compiled in at all. Only the "it actually loads once enabled" test needs
+/// the feature.
 #[cfg(test)]
 mod lnreader_toggle_tests {
     use std::io::Write;
@@ -217,17 +218,18 @@ mod lnreader_toggle_tests {
     }
 
     /// `install_source` must fail loudly and immediately when
-    /// `lnreader_enabled` is left at its default (`false`) — never silently
+    /// `lnreader_enabled` is explicitly configured `false` — never silently
     /// register an LNReader source.
     #[test]
     fn disabled_toggle_rejects_install() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let arc_manager = manager_pair(tmp_dir.path().to_path_buf(), Settings::default());
-        let mut manager = SourceManager::new(
-            tmp_dir.path().to_path_buf(),
-            HashMap::new(),
-            Settings::default(),
-        );
+        let settings = Settings {
+            lnreader_enabled: false,
+            ..Settings::default()
+        };
+        let arc_manager = manager_pair(tmp_dir.path().to_path_buf(), settings.clone());
+        let mut manager =
+            SourceManager::new(tmp_dir.path().to_path_buf(), HashMap::new(), settings);
 
         let id = SourceId::new("toggle-test".to_string());
         let result =
@@ -235,7 +237,7 @@ mod lnreader_toggle_tests {
 
         assert!(
             result.is_err(),
-            "installing an LNReader source with lnreader_enabled=false (the default) should fail"
+            "installing an LNReader source with lnreader_enabled=false should fail"
         );
         assert!(!manager.sources_by_id.contains_key(&id));
     }
@@ -251,12 +253,16 @@ mod lnreader_toggle_tests {
         fs::write(&aix_path, build_lnreader_aix()).unwrap();
         Source::write_meta_file(&aix_path, "test".to_string()).unwrap();
 
+        let settings = Settings {
+            lnreader_enabled: false,
+            ..Settings::default()
+        };
         let mut manager = SourceManager::new(
             tmp_dir.path().to_path_buf(),
             HashMap::new(),
-            Settings::default(),
+            settings.clone(),
         );
-        let arc_manager = manager_pair(tmp_dir.path().to_path_buf(), Settings::default());
+        let arc_manager = manager_pair(tmp_dir.path().to_path_buf(), settings);
 
         let sources = manager.load_all_sources(&arc_manager).expect(
             "load_all_sources should not fail just because a disabled LNReader source is present",

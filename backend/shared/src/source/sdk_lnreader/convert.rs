@@ -60,7 +60,12 @@ pub(super) fn js_array_to_vec(value: &JsValue, context: &mut Context) -> Result<
         as usize;
 
     let obj = value.as_object().context("expected an array-like object")?;
-    let mut items = Vec::with_capacity(length);
+    // Not `Vec::with_capacity(length)`: `length` is plugin-controlled and
+    // read off the JS value before any element is, so a plugin claiming an
+    // absurd length (deliberately or not) would trigger an immediate,
+    // unbounded allocation before a single real element is read. Growing
+    // naturally bounds the allocation by how many elements actually exist.
+    let mut items = Vec::new();
     for i in 0..length {
         let key: PropertyKey = i.into();
         let item = obj
@@ -739,7 +744,14 @@ pub(super) fn chapters_from_chapter_items(
 /// A missing/absent `totalPages` (or one that doesn't read as a number)
 /// means a single-page list: `1`, so single-page sources keep the exact
 /// pre-pagination behavior with zero `parsePage` calls.
+///
+/// Capped at [`MAX_TOTAL_PAGES`] regardless of what the plugin declares --
+/// `parse_and_convert_novel` loops `2..=totalPages`, each iteration a real
+/// `parsePage` call, so an unbounded value here is unbounded plugin-directed
+/// work (real novel listings top out at a few hundred pages at most).
 pub(super) fn source_novel_total_pages(novel: &JsValue, context: &mut Context) -> Result<usize> {
+    const MAX_TOTAL_PAGES: usize = 1000;
+
     let value = get_prop(novel, "totalPages", context)?;
     if value.is_undefined() || value.is_null() {
         return Ok(1);
@@ -748,7 +760,7 @@ pub(super) fn source_novel_total_pages(novel: &JsValue, context: &mut Context) -
         .to_number(context)
         .map_err(|e| anyhow::anyhow!("`totalPages` is not a number: {e}"))?
         as usize;
-    Ok(pages.max(1))
+    Ok(pages.clamp(1, MAX_TOTAL_PAGES))
 }
 
 fn chapter_from_chapter_item(

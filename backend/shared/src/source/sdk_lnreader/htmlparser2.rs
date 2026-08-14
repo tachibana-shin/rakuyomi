@@ -70,7 +70,25 @@ fn call_handler(
 /// resolved [`Handlers`] for elements, text, comment, and processing-
 /// instruction nodes. Doctype nodes are still skipped entirely (no
 /// `Handler` callback exists for them in real htmlparser2 either).
-fn walk(node: NodeRef<'_>, handlers: &Handlers, context: &mut Context) -> JsResult<()> {
+///
+/// `depth` guards against a native stack overflow (an uncatchable process
+/// abort, not a recoverable JS exception) on pathologically/maliciously
+/// deeply-nested HTML -- real-world markup never comes close to
+/// `MAX_DEPTH`, so this only ever trips on input that would otherwise crash
+/// the worker process outright.
+fn walk(
+    node: NodeRef<'_>,
+    handlers: &Handlers,
+    context: &mut Context,
+    depth: usize,
+) -> JsResult<()> {
+    const MAX_DEPTH: usize = 500;
+    if depth > MAX_DEPTH {
+        return Err(js_error(format!(
+            "HTML document nesting exceeds the maximum supported depth ({MAX_DEPTH})"
+        )));
+    }
+
     if node.is_element() {
         let name = node.node_name().unwrap_or_default().to_string();
         call_handler(
@@ -122,7 +140,7 @@ fn walk(node: NodeRef<'_>, handlers: &Handlers, context: &mut Context) -> JsResu
         let mut child = node.first_child();
         while let Some(c) = child {
             let next = c.next_sibling();
-            walk(c, handlers, context)?;
+            walk(c, handlers, context, depth + 1)?;
             child = next;
         }
 
@@ -184,7 +202,7 @@ fn walk(node: NodeRef<'_>, handlers: &Handlers, context: &mut Context) -> JsResu
         let mut child = node.first_child();
         while let Some(c) = child {
             let next = c.next_sibling();
-            walk(c, handlers, context)?;
+            walk(c, handlers, context, depth + 1)?;
             child = next;
         }
     }
@@ -244,17 +262,6 @@ fn native_htmlparser2_parse(
     let onend = get_handler(&handlers_obj, "onend", context)?;
 
     let doc = Document::fragment(html);
-    // `doc.root()` itself is a real, `is_element()`-true `<html>` node
-    // (confirmed empirically via this pass's own `onopentagname` regression
-    // test — `dom_query::Document::fragment()`'s root is NOT a bare
-    // Document/Fragment marker the way this function's earlier doc comment
-    // assumed). Walking it directly would wrongly dispatch an extra
-    // open/close-tag pair for a wrapper real htmlparser2 never emits at
-    // all for fragment input — so the top-level call walks root's
-    // CHILDREN, unconditionally treating the root as a pure container
-    // regardless of its own element-ness, same as the `walk()` function's
-    // existing Document/Fragment/Doctype branch already does one level
-    // down.
     // `doc.root()` is a bare Fragment marker (not itself an element, so the
     // existing `walk()` Document/Fragment branch already handles it
     // correctly on its own) whose one and only child is a SYNTHETIC
@@ -272,7 +279,7 @@ fn native_htmlparser2_parse(
     let mut child = html_wrapper.and_then(|html| html.first_child());
     while let Some(c) = child {
         let next = c.next_sibling();
-        walk(c, &handlers, context)?;
+        walk(c, &handlers, context, 0)?;
         child = next;
     }
     call_handler(&onend, &[], context)?;

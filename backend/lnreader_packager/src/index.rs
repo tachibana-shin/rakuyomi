@@ -39,7 +39,15 @@ pub struct IndexEntry {
 pub fn build_index(sources_dir: &Path) -> Result<Vec<IndexEntry>> {
     let mut paths: Vec<_> = std::fs::read_dir(sources_dir)
         .with_context(|| format!("couldn't read {}", sources_dir.display()))?
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .map(|entry| entry.map(|e| e.path()))
+        .collect::<std::io::Result<Vec<_>>>()
+        .with_context(|| {
+            format!(
+                "couldn't read a directory entry in {}",
+                sources_dir.display()
+            )
+        })?
+        .into_iter()
         .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("aix"))
         .collect();
     paths.sort();

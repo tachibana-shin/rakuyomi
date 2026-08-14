@@ -786,15 +786,17 @@ function Settings:fetchAndShow(on_return_callback)
     return
   end
 
+  -- Capabilities is best-effort metadata (e.g. whether the server supports
+  -- LNReader, see `self.capabilities and self.capabilities.lnreader_supported`
+  -- above): a server that doesn't expose it -- older builds, or ones
+  -- compiled without LNReader support -- shouldn't block Settings from
+  -- opening at all, just fall back to a nil capabilities value.
   local capabilities_response = Backend.getCapabilities()
-  if capabilities_response.type == 'ERROR' then
-    ErrorDialog:show(capabilities_response.message)
-    return
-  end
+  local capabilities = capabilities_response.type ~= 'ERROR' and capabilities_response.body or nil
 
   local ui = Settings:new {
     settings = response.body,
-    capabilities = capabilities_response.body,
+    capabilities = capabilities,
     on_return_callback = on_return_callback
   }
   ui.on_return_callback = on_return_callback

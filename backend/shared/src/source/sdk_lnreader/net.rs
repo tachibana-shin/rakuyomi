@@ -107,7 +107,7 @@ fn do_fetch(
         }
     };
 
-    let response = executor::block_on(builder.send())?;
+    let mut response = executor::block_on(builder.send())?;
     let ok = response.status().is_success();
     let status = response.status().as_u16();
     let status_text = response
@@ -121,7 +121,19 @@ fn do_fetch(
         .iter()
         .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or_default().to_string()))
         .collect();
-    let bytes = executor::block_on(response.bytes())?.to_vec();
+    // Streamed and capped rather than `response.bytes()`, which buffers the
+    // whole body regardless of size -- a plugin can `fetch()` any
+    // attacker-influenced URL while scraping, and an oversized (or
+    // never-ending chunked) response would otherwise be read fully into
+    // memory before this function ever gets a chance to reject it.
+    const MAX_RESPONSE_BODY_BYTES: usize = 32 * 1024 * 1024;
+    let mut bytes = Vec::new();
+    while let Some(chunk) = executor::block_on(response.chunk())? {
+        if bytes.len() + chunk.len() > MAX_RESPONSE_BODY_BYTES {
+            anyhow::bail!("response body exceeds the {MAX_RESPONSE_BODY_BYTES}-byte limit");
+        }
+        bytes.extend_from_slice(&chunk);
+    }
 
     Ok(FetchResult {
         ok,

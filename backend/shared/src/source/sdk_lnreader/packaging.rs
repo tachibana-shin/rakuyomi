@@ -73,19 +73,32 @@ fn display_version(version: &Value) -> Option<String> {
 /// plain version string (e.g. `plugins.min.json`'s own `version` field —
 /// see `UpstreamIndexEntry`) rather than a `serde_json::Value`.
 pub fn encode_version_str(version: Option<&str>) -> usize {
+    const FALLBACK: usize = 1;
+
     let Some(s) = version else {
-        return 1;
+        return FALLBACK;
     };
 
-    let parts: Vec<u32> = s.split('.').filter_map(|p| p.parse::<u32>().ok()).collect();
+    // Reject the whole version on any invalid/empty component or more than
+    // 3 of them, rather than silently dropping just the bad ones -- e.g.
+    // "2.x.3" used to encode as if it were "2.3" (the invalid middle
+    // component vanishing shifts "3" into the minor slot), a plausible but
+    // wrong version rather than the documented fallback for something that
+    // doesn't parse.
+    let Ok(parts) = s
+        .split('.')
+        .map(str::parse::<u32>)
+        .collect::<std::result::Result<Vec<u32>, _>>()
+    else {
+        return FALLBACK;
+    };
+    if parts.is_empty() || parts.len() > 3 {
+        return FALLBACK;
+    }
 
     let component = |i: usize| parts.get(i).copied().unwrap_or(0).min(999) as usize;
 
-    if parts.is_empty() {
-        1
-    } else {
-        component(0) * 1_000_000 + component(1) * 1_000 + component(2)
-    }
+    component(0) * 1_000_000 + component(1) * 1_000 + component(2)
 }
 
 /// Converts supported `pluginSettings` into source settings. Standard
@@ -327,8 +340,9 @@ pub struct UpstreamIndexEntry {
     pub name: String,
     pub site: Option<String>,
     /// Free-text, human-readable language name as the index author typed
-    /// it ("English", "中文, 汉语, 漢語", "‎العربية" — the last with a stray
-    /// Unicode direction-mark). Fine as an eventual UI display value, but
+    /// it ("English", "中文, 汉语, 漢語", "العربية" — the last preceded in
+    /// the real upstream index by a stray U+200E LEFT-TO-RIGHT MARK).
+    /// Fine as an eventual UI display value, but
     /// **not** used as a mapping key anywhere in this module — see
     /// [`lang_from_index_url`] for why the URL's own folder segment is used
     /// instead.
@@ -618,6 +632,18 @@ mod tests {
         assert_eq!(encode_version_str(Some("1")), 1_000_000);
         assert_eq!(encode_version_str(None), 1);
         assert_eq!(encode_version_str(Some("not-a-version")), 1);
+    }
+
+    #[test]
+    fn encode_version_str_falls_back_on_partially_invalid_or_overlong_versions() {
+        // Regression: an invalid component used to be silently dropped
+        // instead of rejecting the whole version, shifting later
+        // components into the wrong slot ("2.x.3" encoding as if it were
+        // "2.3", not the documented fallback).
+        assert_eq!(encode_version_str(Some("2.x.3")), 1);
+        assert_eq!(encode_version_str(Some("1.2.3.4")), 1);
+        assert_eq!(encode_version_str(Some("")), 1);
+        assert_eq!(encode_version_str(Some(".")), 1);
     }
 
     #[test]

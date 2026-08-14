@@ -80,11 +80,15 @@ local function sanitizeDescriptionHtml(text)
   while pos <= len do
     local lt = text:find("<", pos)
     if not lt then
-      table.insert(out, text:sub(pos))
+      if skip_depth == 0 then
+        table.insert(out, text:sub(pos))
+      end
       break
     end
 
-    table.insert(out, text:sub(pos, lt - 1))
+    if skip_depth == 0 then
+      table.insert(out, text:sub(pos, lt - 1))
+    end
 
     if text:sub(lt, lt + 3) == "<!--" then
       local close = text:find("%-%->", lt + 4)
@@ -96,7 +100,9 @@ local function sanitizeDescriptionHtml(text)
     else
       local gt = text:find(">", lt)
       if not gt then
-        table.insert(out, text:sub(lt))
+        if skip_depth == 0 then
+          table.insert(out, text:sub(lt))
+        end
         break
       end
 
@@ -763,9 +769,6 @@ function MangaInfoWidget:onSwipe(_arg, ges_ev)
   elseif ges_ev.direction == "west" or ges_ev.direction == "north" then
     UIManager:show(newDescriptionViewer(self.manga.description or "N/A"))
     return true
-  elseif ges_ev.direction == "east" or ges_ev.direction == "west" or ges_ev.direction == "north" then
-    -- no use for now
-    do end -- luacheck: ignore 541
   else     -- diagonal swipe
     -- trigger full refresh
     UIManager:setDirty(nil, "full", nil, true)

@@ -72,7 +72,6 @@ async fn install_source(
         (settings.source_lists.clone(), settings.lnreader_enabled)
     };
     usecases::install_source(
-        &mut *source_manager.lock().await,
         &source_manager,
         &source_lists,
         SourceId::new(source_id),

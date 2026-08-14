@@ -238,10 +238,24 @@ pub fn run() -> Result<()> {
                 rt.update_settings_snapshot(request.settings_snapshot);
                 rt
             }
-            None => runtime.insert(js_runtime::new(
-                request.settings_snapshot,
-                &request.main_js,
-            )?),
+            None => match js_runtime::new(request.settings_snapshot, &request.main_js) {
+                Ok(rt) => runtime.insert(rt),
+                Err(e) => {
+                    // Same treatment as an `execute` failure below: report it
+                    // for this request and keep the worker alive for the
+                    // next one, rather than `?`-propagating out of `run()`
+                    // and exiting the process on the first malformed plugin.
+                    write_response(
+                        &mut writer,
+                        &WorkerResponse {
+                            ok: false,
+                            error: Some(format!("failed to initialize plugin runtime: {e:#}")),
+                            ..Default::default()
+                        },
+                    )?;
+                    continue;
+                }
+            },
         };
 
         let response = match execute(rt, &request.source_id, request.operation) {

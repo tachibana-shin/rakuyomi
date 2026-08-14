@@ -113,6 +113,13 @@ fn package_and_write(main_js: &str, index_url: Option<&str>, sources_dir: &Path)
         );
     }
 
+    if packaged.id.contains(['/', '\\']) {
+        anyhow::bail!(
+            "plugin declared an id containing a path separator, refusing to package: {:?}",
+            packaged.id
+        );
+    }
+
     let output_sources_dir = sources_dir.join("sources");
     std::fs::create_dir_all(&output_sources_dir)
         .with_context(|| format!("couldn't create {}", output_sources_dir.display()))?;

@@ -1305,9 +1305,19 @@ function LibraryView:startCleaner(modeInvalid)
             ErrorDialog:show(response_f.message)
             return
           end
-          if progress_dialog.setText then
-            progress_dialog:setText(string.format(_("Deleting... (%d/%d)"), i, #filenames))
-          end
+          -- `Backend.removeFile` runs synchronously in this loop, blocking
+          -- UIManager's own event loop -- an in-place text update wouldn't
+          -- actually reach the screen until the whole loop finishes, so the
+          -- dialog is recreated with the current count and the paint is
+          -- forced instead.
+          UIManager:close(progress_dialog)
+          progress_dialog = InfoMessage:new {
+            modal = false,
+            text = string.format(_("Deleting... (%d/%d)"), i, #filenames),
+            dismissable = false,
+          }
+          UIManager:show(progress_dialog)
+          UIManager:forceRePaint()
         end
 
         UIManager:close(progress_dialog)

@@ -95,6 +95,12 @@ pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
     pub version: usize,
+    /// The original human-readable version string (e.g. `"2.1.3"`), as
+    /// opposed to `version` above (the numerically-encoded form used for
+    /// ordering/comparison, see `packaging::encode_version`). `None`/absent
+    /// when the source declared no version, or an empty string -- the
+    /// frontend falls back to displaying `version` itself in that case (see
+    /// `AvailableSourcesListing.lua`/`InstalledSourcesListing.lua`).
     #[serde(default, rename = "displayVersion")]
     pub display_version: Option<String>,
 

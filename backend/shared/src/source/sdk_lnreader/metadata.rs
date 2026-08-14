@@ -10,7 +10,8 @@
 //! `docs/lnreader/PHASE3_HANDOFF.md` §2.1 non-negotiable (a).
 //!
 //! Used by the `lnreader_packager` binary (Phase 3 packaging pipeline) via
-//! [`super::extract_metadata`]; not called from the runtime itself.
+//! [`crate::source::lnreader_extract_plugin_metadata`]; not called from the
+//! runtime itself.
 
 use std::collections::HashMap;
 
@@ -23,10 +24,18 @@ use super::js_runtime;
 /// (e.g. how a `filters`/`pluginSettings` entry's `type` becomes a
 /// `SettingDefinition` variant) is packaging policy, not something the
 /// runtime needs to know in order to execute a plugin, so it lives in
-/// `lnreader_packager` instead. Fields absent on the plugin object (i.e. not
-/// every plugin defines `filters`/`pluginSettings`) come back as `null`
-/// (`serde_json::Value::Null`), not missing keys — see the `unwrap_or(Null)`
-/// default below.
+/// `lnreader_packager` instead.
+///
+/// Fields absent on the plugin object (i.e. not every plugin defines
+/// `filters`/`pluginSettings`) are `undefined` in JS, and `JSON.stringify`
+/// *omits* an object property whose value is `undefined` rather than
+/// serializing it as `null` — so the `serde_json::Value` this function
+/// returns can be genuinely missing those keys, not merely `Value::Null` at
+/// them. `packaging::RawMetadata`'s `#[serde(default)]` fields turn a
+/// missing key into `Value::Null` when deserializing this into that struct,
+/// but that normalization happens there, not here — any other caller
+/// reading this `Value` directly must treat `filters`/`pluginSettings` (and
+/// `version`) as optional keys, not assume their presence.
 pub fn extract(main_js: &str) -> Result<serde_json::Value> {
     let mut runtime = js_runtime::new(HashMap::new(), main_js)
         .context("failed to load plugin for metadata extraction")?;

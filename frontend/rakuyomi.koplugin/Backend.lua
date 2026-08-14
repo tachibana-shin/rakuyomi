@@ -220,7 +220,7 @@ end
 --- @field id string The ID of the source.
 --- @field name string The name of the source.
 --- @field version number The version of the source.
---- @field display_version string|nil Human-readable source version.
+--- @field displayVersion string|nil Human-readable source version.
 --- @field source_of_source string|nil The domain source load source.
 
 --- @class Manga

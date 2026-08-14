@@ -203,14 +203,13 @@ impl LnReaderSource {
             .read_to_string(&mut main_js)
             .with_context(|| format!("failed reading main.js from zip entry {}", path.display()))?;
 
-        // Eager, like `blocking_source.start()` for a WASM next-SDK source
-        // (`Source::from_aix_file`): the same tradeoff is accepted here on
-        // purpose (a worker process alive for every installed source, even
-        // ones that are never actually opened, rather than guessing at a
-        // lazy-init optimization the project hasn't confirmed it needs) —
-        // revisit only if idle-worker memory turns out to matter in
-        // practice.
-        let worker = Some(spawn_worker()?);
+        // Lazy: `run_worker_with_timeout` already spawns on first use and
+        // respawns transparently on crash/hang (see its own doc comment),
+        // so eagerly spawning here would just front-load one subprocess per
+        // installed LNReader source at startup regardless of whether that
+        // source is ever actually opened in the session — pure waste on
+        // e-reader hardware, not a capability the lazy path is missing.
+        let worker = None;
 
         Ok(Self {
             id,

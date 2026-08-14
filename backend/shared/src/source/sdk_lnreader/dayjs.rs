@@ -88,16 +88,46 @@ fn parse_flexible(s: &str) -> Option<i64> {
 /// English token patterns — real plugin code calls `.format('LL')` etc.
 /// expecting that plugin to already be loaded; we skip the plugin
 /// indirection and go straight to the token pattern it would produce.
+///
+/// Scans `token` for a macro name wherever it appears (real plugin code
+/// often composes one with literal text/other tokens, e.g.
+/// `.format('LL, [at] LT')`, not just a bare macro alone), skipping
+/// bracket-literal (`[...]`) sections the same way `render()` does below --
+/// consistent with `render()`'s own bracket-aware, longest-match-first
+/// token scan, since this expansion's output is fed straight into it.
 fn expand_locale_macros(token: &str) -> String {
-    match token {
-        "LT" => "h:mm A".to_string(),
-        "LTS" => "h:mm:ss A".to_string(),
-        "L" => "MM/DD/YYYY".to_string(),
-        "LL" => "MMMM D, YYYY".to_string(),
-        "LLL" => "MMMM D, YYYY h:mm A".to_string(),
-        "LLLL" => "dddd, MMMM D, YYYY h:mm A".to_string(),
-        other => other.to_string(),
+    const MACROS: &[(&str, &str)] = &[
+        ("LLLL", "dddd, MMMM D, YYYY h:mm A"),
+        ("LLL", "MMMM D, YYYY h:mm A"),
+        ("LTS", "h:mm:ss A"),
+        ("LL", "MMMM D, YYYY"),
+        ("LT", "h:mm A"),
+        ("L", "MM/DD/YYYY"),
+    ];
+
+    let chars: Vec<char> = token.chars().collect();
+    let mut out = String::with_capacity(token.len());
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '[' {
+            if let Some(end) = chars[i + 1..].iter().position(|&c| c == ']') {
+                out.extend(&chars[i + 1..i + 1 + end]);
+                i += end + 2;
+                continue;
+            }
+        }
+        let rest: String = chars[i..].iter().collect();
+        if let Some((matched, expansion)) =
+            MACROS.iter().find(|(pattern, _)| rest.starts_with(pattern))
+        {
+            out.push_str(expansion);
+            i += matched.chars().count();
+        } else {
+            out.push(chars[i]);
+            i += 1;
+        }
     }
+    out
 }
 
 /// Ordinal suffix for the `Do` token (1st, 2nd, 3rd, 4th, 11th, ...).

@@ -645,10 +645,12 @@ fn native_exists(
 /// `__native_is(sel_id, selector) -> bool`
 fn native_is(store: &SharedStore, args: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
     let sel_id = arg_usize(args, 0, context)?;
-    let selector = arg_string(args, 1, context)?;
-    let s = store.borrow();
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
+    let mut s = store.borrow_mut();
+    let matcher = s.compile_matcher(&selector).map_err(js_error)?;
     Ok(JsValue::from(
-        s.sel(sel_id).map_err(js_error)?.is(&selector),
+        s.sel(sel_id).map_err(js_error)?.is_matcher(matcher),
     ))
 }
 
@@ -768,7 +770,8 @@ fn native_filter(
     context: &mut Context,
 ) -> JsResult<JsValue> {
     let sel_id = arg_usize(args, 0, context)?;
-    let selector = arg_string(args, 1, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
     let mut s = store.borrow_mut();
     s.compile_matcher(&selector).map_err(js_error)?;
     let filtered = s.sel(sel_id).map_err(js_error)?.filter(&selector);
@@ -987,7 +990,8 @@ fn native_remove_filtered(
     context: &mut Context,
 ) -> JsResult<JsValue> {
     let sel_id = arg_usize(args, 0, context)?;
-    let selector = arg_string(args, 1, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
     let mut s = store.borrow_mut();
     s.compile_matcher(&selector).map_err(js_error)?;
     let filtered = s.sel(sel_id).map_err(js_error)?.filter(&selector);
@@ -1162,16 +1166,29 @@ fn native_next_until(
         .and_then(|n| n.next_element_sibling());
     let mut current = start;
     let mut handles: Vec<JsValue> = Vec::new();
-    for _ in 0..500 {
-        // Guard against infinite loops, same limit as a composed JS version.
-        let Some(node) = current else { break };
+    // Guard against infinite loops (e.g. a malformed/cyclic sibling chain),
+    // not a limit real sibling counts should ever approach -- warn if it's
+    // ever actually hit, since that means results were silently truncated.
+    const MAX_ITERATIONS: usize = 10_000;
+    let mut reached_limit = true;
+    for _ in 0..MAX_ITERATIONS {
+        let Some(node) = current else {
+            reached_limit = false;
+            break;
+        };
         let one = Selection::from(node);
         if one.is_matcher(matcher) {
+            reached_limit = false;
             break;
         }
         let next = node.next_element_sibling();
         handles.push(s.push_handle(one));
         current = next;
+    }
+    if reached_limit {
+        log::warn!(
+            "native_next_until: hit the {MAX_ITERATIONS}-sibling traversal limit, results were truncated"
+        );
     }
     drop(s);
     let array = JsArray::from_iter(handles, context);
@@ -1205,7 +1222,8 @@ fn optional_matcher(
 /// and the one inherited edge case (adding from an empty selection).
 fn native_add(store: &SharedStore, args: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
     let sel_id = arg_usize(args, 0, context)?;
-    let selector = arg_string(args, 1, context)?;
+    let raw_selector = arg_string(args, 1, context)?;
+    let selector = normalize_contains(&raw_selector);
     let mut s = store.borrow_mut();
     s.compile_matcher(&selector).map_err(js_error)?;
     let added = s.sel(sel_id).map_err(js_error)?.add(&selector);
@@ -1362,14 +1380,24 @@ fn sibling_walk_filtered(
         .and_then(direction);
     let mut current = start;
     let mut handles: Vec<JsValue> = Vec::new();
-    for _ in 0..500 {
-        // Same guard limit as native_next_until.
-        let Some(node) = current else { break };
+    // Same guard limit and truncation warning as native_next_until.
+    const MAX_ITERATIONS: usize = 10_000;
+    let mut reached_limit = true;
+    for _ in 0..MAX_ITERATIONS {
+        let Some(node) = current else {
+            reached_limit = false;
+            break;
+        };
         let one = Selection::from(node);
         if matcher.is_none_or(|m| one.is_matcher(m)) {
             handles.push(s.push_handle(one));
         }
         current = direction(&node);
+    }
+    if reached_limit {
+        log::warn!(
+            "sibling_walk_filtered: hit the {MAX_ITERATIONS}-sibling traversal limit, results were truncated"
+        );
     }
     drop(s);
     let array = JsArray::from_iter(handles, context);

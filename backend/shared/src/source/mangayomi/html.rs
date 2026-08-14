@@ -24,6 +24,7 @@ use dom_query::{Document, Matcher, NodeId, NodeRef, Selection};
 use d4rt_rs::Value;
 
 use super::bridge::map_int;
+use crate::source::html_element::normalize_selector;
 
 /// Owning store for parsed documents.
 #[derive(Default)]
@@ -92,7 +93,7 @@ impl MangaYomiDom {
     /// Selects elements matching `selector` inside `node` (including `node`
     /// itself, mirroring MangaYomi's `MDocument.select`).
     pub fn select(&self, node: NodeRef<'_>, selector: &str) -> Vec<NodeId> {
-        let Ok(matcher) = Matcher::new(selector) else {
+        let Ok(matcher) = Matcher::new(&normalize_selector(selector)) else {
             return Vec::new();
         };
         let mut out = Vec::new();
@@ -112,7 +113,7 @@ impl MangaYomiDom {
     /// Selects the first element matching `selector` (MangaYomi's
     /// `selectFirst` returns null when the node itself matches).
     pub fn select_first(&self, node: NodeRef<'_>, selector: &str) -> Option<NodeId> {
-        let Ok(matcher) = Matcher::new(selector) else {
+        let Ok(matcher) = Matcher::new(&normalize_selector(selector)) else {
             return None;
         };
         Selection::from(node)

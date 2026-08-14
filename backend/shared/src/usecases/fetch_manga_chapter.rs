@@ -15,6 +15,8 @@ use crate::{
     source::Source,
 };
 
+pub use crate::chapter_downloader::Error;
+
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_manga_chapter(
     token: &CancellationToken,
@@ -57,7 +59,7 @@ pub async fn fetch_manga_chapter(
         Err(ChapterDownloaderError::Other(_))
             if use_ram && chapter_storage.tmpfs_full_storage().await? =>
         {
-            return ensure_chapter_is_in_storage(
+            ensure_chapter_is_in_storage(
                 token,
                 chapter_storage,
                 source,
@@ -71,20 +73,7 @@ pub async fn fetch_manga_chapter(
                 chapter_title_format,
             )
             .await
-            .map_err(|e| match e {
-                ChapterDownloaderError::Other(e) => Error::Other(e),
-                ChapterDownloaderError::DownloadError(e) => Error::DownloadError(e),
-            });
         }
-        Err(ChapterDownloaderError::DownloadError(e)) => Err(Error::DownloadError(e)),
-        Err(ChapterDownloaderError::Other(e)) => Err(Error::Other(e)),
+        result => result,
     }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("an error occurred while downloading the chapter pages")]
-    DownloadError(#[source] anyhow::Error),
-    #[error("unknown error")]
-    Other(#[from] anyhow::Error),
 }

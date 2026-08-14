@@ -18,7 +18,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use reqwest::Request;
 
 use crate::model::{ChapterId, MangaId};
-use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast};
+use crate::source::decode_image::{decode_argb_to_rgb, decode_image_fast, encode_rgb_to_jpeg};
 
 const CHAPTER_FILE_EXTENSION: [&str; 2] = ["cbz", "epub"];
 
@@ -431,14 +431,7 @@ impl ChapterStorage {
             }
         };
 
-        let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
-        comp.set_size(width as usize, height as usize);
-        comp.set_fastest_defaults();
-
-        let mut comp = comp.start_compress(Vec::new())?;
-        comp.write_scanlines(&rgb_pixels)?;
-
-        Ok(comp.finish()?)
+        encode_rgb_to_jpeg(width, height, &rgb_pixels)
     }
 
     pub fn get_stored_chapter_and_errors(

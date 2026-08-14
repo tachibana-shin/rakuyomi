@@ -100,3 +100,15 @@ pub fn decode_argb_to_rgb(width: i32, height: i32, data: &[u32]) -> Result<Vec<u
 
     Ok(rgb_pixels)
 }
+
+/// Compress raw RGB8 pixel data into a JPEG using the fastest mozjpeg settings.
+pub fn encode_rgb_to_jpeg(width: u32, height: u32, rgb_pixels: &[u8]) -> Result<Vec<u8>> {
+    let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
+    comp.set_size(width as usize, height as usize);
+    comp.set_fastest_defaults();
+
+    let mut comp = comp.start_compress(Vec::new())?;
+    comp.write_scanlines(rgb_pixels)?;
+
+    Ok(comp.finish()?)
+}

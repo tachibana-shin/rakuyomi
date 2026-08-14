@@ -1400,15 +1400,8 @@ impl BlockingSource {
                 let rgb_pixels = crate::source::decode_image::decode_argb_to_rgb(
                     width as i32, height as i32, &pixels,
                 )?;
-                let mut comp = mozjpeg::Compress::new(mozjpeg::ColorSpace::JCS_RGB);
-                comp.set_size(width as usize, height as usize);
-                comp.set_fastest_defaults();
 
-                let mut comp =  comp.start_compress(Vec::new())?;
-                comp.write_scanlines(&rgb_pixels)?;
-
-
-                comp.finish()?
+                crate::source::decode_image::encode_rgb_to_jpeg(width, height, &rgb_pixels)?
             };
 
             Ok(image_data)

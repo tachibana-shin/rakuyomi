@@ -20,6 +20,8 @@ use boa_engine::{
 use boa_gc::{Finalize, Gc, GcRefCell, Trace};
 use dom_query::{Document, Matcher, NodeRef, Selection};
 
+use super::arg_string;
+
 pub(super) type SharedStore = Gc<GcRefCell<Store>>;
 
 /// Table of parsed documents and live selections, indexed by integer handle.
@@ -71,6 +73,13 @@ impl Store {
     fn push_sel(&mut self, sel: Selection<'static>) -> usize {
         self.sels.push(sel);
         self.sels.len() - 1
+    }
+
+    /// [`Store::push_sel`], wrapped as the `JsValue` handle JS-facing native
+    /// functions hand back — the same two lines repeated at every call site
+    /// that pushes one matched node into a result array.
+    fn push_handle(&mut self, sel: Selection<'static>) -> JsValue {
+        JsValue::from(self.push_sel(sel) as f64)
     }
 
     /// Safe handle resolution: an out-of-bounds handle is a real bug (bad
@@ -253,13 +262,6 @@ mod contains_tests {
             ":contains(\"hello\")"
         );
     }
-}
-
-fn arg_string(args: &[JsValue], index: usize, context: &mut Context) -> JsResult<String> {
-    Ok(args
-        .get_or_undefined(index)
-        .to_string(context)?
-        .to_std_string_escaped())
 }
 
 fn arg_usize(args: &[JsValue], index: usize, context: &mut Context) -> JsResult<usize> {
@@ -482,8 +484,7 @@ fn native_contents(
     while let Some(node) = current {
         let next = node.next_sibling();
         let one = Selection::from(node);
-        let id = s.push_sel(one);
-        handles.push(JsValue::from(id as f64));
+        handles.push(s.push_handle(one));
         current = next;
     }
     drop(s);
@@ -548,8 +549,7 @@ fn native_all_handles(
             Some(node) => Selection::from(node),
             None => Selection::default(),
         };
-        let id = s.push_sel(one);
-        handles.push(JsValue::from(id as f64));
+        handles.push(s.push_handle(one));
     }
     drop(s);
     let array = JsArray::from_iter(handles, context);
@@ -798,8 +798,7 @@ fn native_not(store: &SharedStore, args: &[JsValue], context: &mut Context) -> J
         if let Some(node) = node {
             let one = Selection::from(node);
             if !one.is_matcher(matcher) {
-                let id = s.push_sel(one);
-                handles.push(JsValue::from(id as f64));
+                handles.push(s.push_handle(one));
             }
         }
     }
@@ -874,8 +873,7 @@ fn native_has(store: &SharedStore, args: &[JsValue], context: &mut Context) -> J
             let one = Selection::from(node);
             let descendants = one.select_matcher(matcher);
             if descendants.exists() {
-                let id = s.push_sel(one);
-                handles.push(JsValue::from(id as f64));
+                handles.push(s.push_handle(one));
             }
         }
     }
@@ -930,8 +928,7 @@ fn native_siblings(
                 if matcher.is_some_and(|m| !one.is_matcher(m)) {
                     continue;
                 }
-                let id = s.push_sel(one);
-                handles.push(JsValue::from(id as f64));
+                handles.push(s.push_handle(one));
             }
         }
     }
@@ -966,8 +963,7 @@ fn native_children_filtered(
         if let Some(node) = children.get(i).cloned() {
             let one = Selection::from(node);
             if one.is_matcher(matcher) {
-                let id = s.push_sel(one);
-                handles.push(JsValue::from(id as f64));
+                handles.push(s.push_handle(one));
             }
         }
     }
@@ -1174,8 +1170,7 @@ fn native_next_until(
             break;
         }
         let next = node.next_element_sibling();
-        let id = s.push_sel(one);
-        handles.push(JsValue::from(id as f64));
+        handles.push(s.push_handle(one));
         current = next;
     }
     drop(s);
@@ -1337,8 +1332,7 @@ fn native_parents(
         if matcher.is_some_and(|m| !one.is_matcher(m)) {
             continue;
         }
-        let id = s.push_sel(one);
-        handles.push(JsValue::from(id as f64));
+        handles.push(s.push_handle(one));
     }
     drop(s);
     let array = JsArray::from_iter(handles, context);
@@ -1373,8 +1367,7 @@ fn sibling_walk_filtered(
         let Some(node) = current else { break };
         let one = Selection::from(node);
         if matcher.is_none_or(|m| one.is_matcher(m)) {
-            let id = s.push_sel(one);
-            handles.push(JsValue::from(id as f64));
+            handles.push(s.push_handle(one));
         }
         current = direction(&node);
     }
@@ -1724,7 +1717,13 @@ pub(super) fn register(context: &mut Context) -> SharedStore {
         store.clone(),
         native_prepend_to,
     );
-    register_native(context, "__native_parents", 2, store.clone(), native_parents);
+    register_native(
+        context,
+        "__native_parents",
+        2,
+        store.clone(),
+        native_parents,
+    );
     register_native(
         context,
         "__native_next_all",

@@ -1023,6 +1023,27 @@ Response.prototype.arrayBuffer = function () {
     throw new Error('not implemented: Response.arrayBuffer()');
 };
 
+// Shared by `Headers`/`FormData`/`URLSearchParams`' `.entries()`/`.keys()`/
+// `.values()` below: all 9 build the exact same index-based iterator, only
+// the source array and the per-item mapping differ.
+function __arrayIterator(arr, mapFn) {
+    var i = 0;
+    return {
+        next: function () {
+            if (i >= arr.length) return { done: true, value: undefined };
+            var item = arr[i++];
+            return { done: false, value: mapFn ? mapFn(item) : item };
+        },
+    };
+}
+function __ownKeys(obj) {
+    var keys = [];
+    for (var k in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, k)) keys.push(k);
+    }
+    return keys;
+}
+
 // `Headers` -- found missing (`ReferenceError: Headers is not defined`) via
 // `readfrom.js`, one of 8 real corpus sources constructing one (`this.headers
 // = new Headers(s)`, then handed to `fetchApi` as `init.headers`). Data is
@@ -1071,41 +1092,14 @@ Headers.prototype.forEach = function (callback) {
 // unlike every other gap on this list which had a real, if narrow, use.
 Headers.prototype.entries = function () {
     var self = this;
-    var keys = [];
-    for (var k in this) {
-        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
-    }
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= keys.length) return { done: true, value: undefined };
-            var k = keys[i++];
-            return { done: false, value: [k, self[k]] };
-        },
-    };
+    return __arrayIterator(__ownKeys(this), function (k) { return [k, self[k]]; });
 };
 Headers.prototype.keys = function () {
-    var keys = [];
-    for (var k in this) {
-        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
-    }
-    var i = 0;
-    return { next: function () {
-        if (i >= keys.length) return { done: true, value: undefined };
-        return { done: false, value: keys[i++] };
-    } };
+    return __arrayIterator(__ownKeys(this));
 };
 Headers.prototype.values = function () {
     var self = this;
-    var keys = [];
-    for (var k in this) {
-        if (Object.prototype.hasOwnProperty.call(this, k)) keys.push(k);
-    }
-    var i = 0;
-    return { next: function () {
-        if (i >= keys.length) return { done: true, value: undefined };
-        return { done: false, value: self[keys[i++]] };
-    } };
+    return __arrayIterator(__ownKeys(this), function (k) { return self[k]; });
 };
 Headers.prototype[Symbol.iterator] = function () {
     return this.entries();
@@ -1304,34 +1298,13 @@ FormData.prototype['delete'] = function (key) {
 // (MDN, §1.2.8.1). Real FormData has NO .forEach() (confirmed against MDN --
 // unlike Headers/URLSearchParams, which do), so none is added here either.
 FormData.prototype.entries = function () {
-    var entries = this.__entries;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= entries.length) return { done: true, value: undefined };
-            return { done: false, value: [entries[i][0], entries[i++][1]] };
-        },
-    };
+    return __arrayIterator(this.__entries, function (e) { return [e[0], e[1]]; });
 };
 FormData.prototype.keys = function () {
-    var entries = this.__entries;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= entries.length) return { done: true, value: undefined };
-            return { done: false, value: entries[i++][0] };
-        },
-    };
+    return __arrayIterator(this.__entries, function (e) { return e[0]; });
 };
 FormData.prototype.values = function () {
-    var entries = this.__entries;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= entries.length) return { done: true, value: undefined };
-            return { done: false, value: entries[i++][1] };
-        },
-    };
+    return __arrayIterator(this.__entries, function (e) { return e[1]; });
 };
 FormData.prototype[Symbol.iterator] = function () {
     return this.entries();
@@ -1438,14 +1411,7 @@ URLSearchParams.prototype.forEach = function (callback) {
     }
 };
 URLSearchParams.prototype.entries = function () {
-    var pairs = this.__pairs;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= pairs.length) return { done: true, value: undefined };
-            return { done: false, value: [pairs[i][0], pairs[i++][1]] };
-        },
-    };
+    return __arrayIterator(this.__pairs, function (p) { return [p[0], p[1]]; });
 };
 // .keys/.values/.sort/.size -- closes out the real URLSearchParams surface
 // (MDN, §1.2.8.1). `[Symbol.iterator]` is deliberately aliased to
@@ -1453,24 +1419,10 @@ URLSearchParams.prototype.entries = function () {
 // `for (var pair of params)` works the same as `for (var pair of
 // params.entries())`.
 URLSearchParams.prototype.keys = function () {
-    var pairs = this.__pairs;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= pairs.length) return { done: true, value: undefined };
-            return { done: false, value: pairs[i++][0] };
-        },
-    };
+    return __arrayIterator(this.__pairs, function (p) { return p[0]; });
 };
 URLSearchParams.prototype.values = function () {
-    var pairs = this.__pairs;
-    var i = 0;
-    return {
-        next: function () {
-            if (i >= pairs.length) return { done: true, value: undefined };
-            return { done: false, value: pairs[i++][1] };
-        },
-    };
+    return __arrayIterator(this.__pairs, function (p) { return p[1]; });
 };
 URLSearchParams.prototype.sort = function () {
     this.__pairs.sort(function (a, b) {
@@ -1966,6 +1918,25 @@ pub(super) fn describe_js_error(error: &boa_engine::JsError, context: &mut Conte
         .unwrap_or_else(|| error.to_string())
 }
 
+/// Reads `__lnreader_plugin` off the global object -- the plugin instance
+/// `RUNTIME_PRELUDE`'s bootstrap assigns after evaluating `main.js`. Shared
+/// by [`JsRuntime::plugin_property`]/[`JsRuntime::call_plugin_method_inner`],
+/// which each go on to resolve it as an object differently (`Context`
+/// borrow rules mean the resulting `JsObject`'s lifetime is tied to the
+/// caller's own reborrow of `context`, so only the `JsValue` fetch itself is
+/// shared here).
+fn plugin_value(context: &mut Context) -> Result<JsValue> {
+    context
+        .global_object()
+        .get(js_string!("__lnreader_plugin"), context)
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "failed to read plugin instance: {}",
+                describe_js_error(&e, context)
+            )
+        })
+}
+
 fn setting_value_to_js(value: &SourceSettingValue, context: &mut Context) -> JsValue {
     match value {
         SourceSettingValue::Bool(b) => JsValue::from(*b),
@@ -2287,15 +2258,7 @@ impl JsRuntime {
     /// anything.
     pub(super) fn plugin_property(&mut self, name: &str) -> Result<JsValue> {
         let context = &mut self.context;
-        let plugin = context
-            .global_object()
-            .get(js_string!("__lnreader_plugin"), context)
-            .map_err(|e| {
-                anyhow::anyhow!(
-                    "failed to read plugin instance: {}",
-                    describe_js_error(&e, context)
-                )
-            })?;
+        let plugin = plugin_value(context)?;
         let plugin_obj = plugin
             .as_object()
             .context("plugin instance is not an object")?;
@@ -2336,15 +2299,7 @@ impl JsRuntime {
     fn call_plugin_method_inner(&mut self, method_name: &str, args: &[JsValue]) -> Result<JsValue> {
         let context = &mut self.context;
 
-        let plugin = context
-            .global_object()
-            .get(js_string!("__lnreader_plugin"), context)
-            .map_err(|e| {
-                anyhow::anyhow!(
-                    "failed to read plugin instance: {}",
-                    describe_js_error(&e, context)
-                )
-            })?;
+        let plugin = plugin_value(context)?;
         let plugin_obj = plugin
             .as_object()
             .context("plugin instance is not an object")?;

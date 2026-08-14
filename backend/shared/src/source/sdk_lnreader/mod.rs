@@ -663,6 +663,23 @@ fn describe_exit_status(status: &std::process::ExitStatus) -> String {
     format!("{status:?}")
 }
 
+/// Reads a native function's `args[index]` as a string, coercing per JS
+/// semantics (`ToString`) rather than requiring it already be one. Shared by
+/// [`cheerio`] and [`dayjs`], the two submodules that expose native
+/// functions taking string arguments.
+pub(super) fn arg_string(
+    args: &[boa_engine::JsValue],
+    index: usize,
+    context: &mut boa_engine::Context,
+) -> boa_engine::JsResult<String> {
+    use boa_engine::JsArgs;
+
+    Ok(args
+        .get_or_undefined(index)
+        .to_string(context)?
+        .to_std_string_escaped())
+}
+
 /// End-to-end tests against the real worker subprocess pipeline
 /// (`run_worker`/`worker_binary_path`, same path as production —
 /// `cargo test` builds the `lnreader_worker` bin target into the same

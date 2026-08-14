@@ -20,15 +20,10 @@ use chrono::{
     DateTime, Datelike, Duration, Months, NaiveDate, NaiveDateTime, TimeZone, Timelike, Utc,
 };
 
+use super::arg_string;
+
 fn arg_f64(args: &[JsValue], index: usize, context: &mut Context) -> JsResult<f64> {
     args.get_or_undefined(index).to_number(context)
-}
-
-fn arg_string(args: &[JsValue], index: usize, context: &mut Context) -> JsResult<String> {
-    Ok(args
-        .get_or_undefined(index)
-        .to_string(context)?
-        .to_std_string_escaped())
 }
 
 fn now_ms() -> f64 {

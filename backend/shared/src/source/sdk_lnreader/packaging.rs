@@ -542,8 +542,34 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
         .text()
         .await?;
 
-    let packaged = package_plugin_js(&main_js, Some(url))
-        .with_context(|| format!("couldn't package LNReader plugin from {url}"))?;
+    // `package_plugin_js` runs the plugin's top-level JS in-process to read
+    // its metadata (see its own doc comment) -- unlike every other LNReader
+    // JS execution path, this one isn't isolated in the worker subprocess
+    // (that isolation exists specifically because a large/malicious catalog
+    // can crash the process running it, see this module's own callers), so
+    // a plugin with a pathological/infinite top-level loop could otherwise
+    // hang this install request forever on a live server. `spawn_blocking`
+    // at least keeps that off the async runtime's worker threads (onto the
+    // already-capped blocking pool, see `server::main`'s
+    // `max_blocking_threads`), and the timeout turns an indefinite hang
+    // into a catchable error -- it does not protect against a native
+    // crash/OOM inside `boa_engine` during extraction, which still takes
+    // the whole server down; full subprocess isolation for this path is a
+    // real gap, just too large a change for this pass.
+    const METADATA_EXTRACTION_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+    let index_url = url.to_string();
+    let packaged = tokio::time::timeout(
+        METADATA_EXTRACTION_TIMEOUT,
+        tokio::task::spawn_blocking(move || package_plugin_js(&main_js, Some(&index_url))),
+    )
+    .await
+    .with_context(|| {
+        format!(
+            "timed out packaging LNReader plugin from {url} after {METADATA_EXTRACTION_TIMEOUT:?}"
+        )
+    })?
+    .context("packaging task panicked")?
+    .with_context(|| format!("couldn't package LNReader plugin from {url}"))?;
 
     if !packaged.skipped_plugin_settings.is_empty() {
         log::warn!(

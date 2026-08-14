@@ -18,10 +18,15 @@ cd ../../..
 cp -r frontend/rakuyomi.koplugin/* "$OUT/"
 
 if [ "$TARGET" != "none" ]; then
-    cp backend/target/$TARGET/release/cbz_metadata_reader "$OUT/"
-    cp backend/target/$TARGET/release/server "$OUT/"
-    cp backend/target/$TARGET/release/uds_http_request "$OUT/"
-    cp backend/target/$TARGET/release/lnreader_worker "$OUT/"
+    cp "backend/target/$TARGET/release/cbz_metadata_reader" "$OUT/"
+    cp "backend/target/$TARGET/release/server" "$OUT/"
+    cp "backend/target/$TARGET/release/uds_http_request" "$OUT/"
+    # Only built when the `lnreader` Cargo feature is enabled (on by
+    # default, but fully removable) -- a build with it disabled must still
+    # succeed under `set -e` above.
+    if [ -f "backend/target/$TARGET/release/lnreader_worker" ]; then
+        cp "backend/target/$TARGET/release/lnreader_worker" "$OUT/"
+    fi
 fi
 
 VERSION="${SEMANTIC_RELEASE_VERSION:-1.0.0}"

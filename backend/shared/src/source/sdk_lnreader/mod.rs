@@ -501,6 +501,13 @@ impl LnReaderSource {
                 Ok(response)
             }
             ReadOutcome::Dead(reason) => {
+                // Unlike a closed-pipe/read-error `Dead`, a malformed
+                // (non-JSON) response line leaves the child alive and
+                // blocked on its own next `read_line` -- `proc` still owns
+                // `stdin` at this point, so the child never sees EOF on its
+                // own. Kill it first (same as the `Timeout` arm below) so
+                // `wait()` can't block this thread forever.
+                let _ = proc.child.kill();
                 let status = describe_wait_result(proc.child.wait());
                 // `proc` drops here (never restored into `self.worker`) --
                 // its `Drop` impl's own `wait()` afterward is a harmless

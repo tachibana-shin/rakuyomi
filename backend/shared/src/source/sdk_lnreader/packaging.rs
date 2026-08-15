@@ -456,6 +456,12 @@ pub fn lang_from_index_url(url: &str) -> Option<&'static str> {
 /// Result of running a plugin's `.js` through the full packaging pipeline —
 /// everything a caller needs to write the `.aix` to disk (`bytes`) and to
 /// report what was packaged, without re-deriving it from the archive.
+/// `Serialize`/`Deserialize` exist for `lnreader_packager`'s own
+/// self-re-exec metadata-extraction subprocess (see that crate's
+/// `package_plugin_js_with_timeout`), not for any on-disk format -- `bytes`
+/// round-trips through plain JSON as a number array there, not base64,
+/// since that IPC boundary isn't performance-sensitive.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct PackagedPlugin {
     pub bytes: Vec<u8>,
     pub id: String,

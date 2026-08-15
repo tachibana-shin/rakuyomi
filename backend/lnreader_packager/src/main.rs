@@ -77,6 +77,18 @@ enum Command {
         /// under it, same as `package`).
         sources_dir: PathBuf,
     },
+    /// Not meant to be invoked directly -- `package_plugin_js_with_timeout`
+    /// self-re-execs this binary with this subcommand so a plugin's
+    /// untrusted top-level JS runs in a real child process it can kill on
+    /// timeout, rather than a thread it can only abandon. Reads `input_js`,
+    /// packages it exactly like `package` would, and prints the resulting
+    /// `PackagedPlugin` as one line of JSON on stdout.
+    #[command(hide = true)]
+    InternalExtractMetadata {
+        input_js: PathBuf,
+        #[arg(long)]
+        index_url: Option<String>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -92,45 +104,106 @@ fn main() -> Result<()> {
             index_url,
             sources_dir,
         } => run_fetch(&index_url, &sources_dir),
+        Command::InternalExtractMetadata {
+            input_js,
+            index_url,
+        } => run_internal_extract_metadata(&input_js, index_url.as_deref()),
     }
 }
 
-/// Runs `package_plugin_js` (which executes the plugin's top-level JS
-/// in-process to read its metadata) on a separate OS thread with a timeout,
-/// rather than calling it directly on the CLI's own thread. This binary has
-/// no Tokio runtime to hand the timed-out call off to (unlike the server's
-/// equivalent guard around the same function, see
-/// `sdk_lnreader::packaging::install_from_url`), so a plain
-/// `thread::spawn` + `recv_timeout` is used instead: a plugin with a
-/// pathological/infinite top-level loop makes `run()`'s caller get back a
-/// timeout error instead of hanging the whole `fetch` batch (which already
-/// treats a per-plugin error as skip-and-continue, see `run_fetch`) forever
-/// on one bad entry. The spawned thread itself is not cancelled on
-/// timeout -- same caveat as the server-side guard -- but unlike a
-/// long-lived server process, this one dies with the CLI process at the end
-/// of the command, so a leaked thread here is bounded by that lifetime, not
-/// permanent.
+fn run_internal_extract_metadata(input_js: &Path, index_url: Option<&str>) -> Result<()> {
+    let main_js = std::fs::read_to_string(input_js)
+        .with_context(|| format!("couldn't read {}", input_js.display()))?;
+    let packaged = shared::source::packaging::package_plugin_js(&main_js, index_url)
+        .context("couldn't package plugin")?;
+    println!(
+        "{}",
+        serde_json::to_string(&packaged).context("couldn't serialize packaged plugin")?
+    );
+    Ok(())
+}
+
+/// Runs `package_plugin_js` (which executes the plugin's top-level JS to
+/// read its metadata) in a real child process (a self-re-exec of this same
+/// binary under `internal-extract-metadata`, see that variant's doc
+/// comment) with a timeout, rather than in-process on the CLI's own thread
+/// or even a spawned thread on it: a thread-based timeout can abandon a
+/// hung call, but the underlying OS thread keeps running JS and consuming
+/// CPU/memory for as long as the process lives -- during one `fetch` run
+/// processing many plugins in sequence, several pathological ones would
+/// each leave a live thread accumulating alongside the still-running batch,
+/// not just "until the process eventually exits". A real child process can
+/// actually be killed on timeout, which a thread cannot.
+///
+/// The child's stdout is drained on a background thread rather than read
+/// after waiting for it to exit: the OS pipe buffer is bounded, so a large
+/// enough response (`bytes` included, serialized as a plain JSON number
+/// array) could otherwise leave the child blocked on `write()` before this
+/// function ever gets a chance to read any of it -- indistinguishable from
+/// a genuine hang. Same read-with-timeout/kill-on-timeout shape already
+/// used for the real worker subprocess, see
+/// `sdk_lnreader::mod::read_line_with_timeout`.
 fn package_plugin_js_with_timeout(
     main_js: &str,
     index_url: Option<&str>,
 ) -> Result<shared::source::packaging::PackagedPlugin> {
+    use std::io::Read;
+
     const METADATA_EXTRACTION_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
-    let main_js = main_js.to_string();
-    let index_url = index_url.map(str::to_string);
+    let current_exe =
+        std::env::current_exe().context("failed to determine current executable path")?;
+
+    let mut input_file =
+        tempfile::NamedTempFile::new().context("couldn't create temp file for plugin JS")?;
+    std::io::Write::write_all(&mut input_file, main_js.as_bytes())
+        .context("couldn't write plugin JS to temp file")?;
+
+    let mut command = std::process::Command::new(&current_exe);
+    command
+        .arg("internal-extract-metadata")
+        .arg(input_file.path());
+    if let Some(url) = index_url {
+        command.arg("--index-url").arg(url);
+    }
+    command.stdout(std::process::Stdio::piped());
+    command.stderr(std::process::Stdio::inherit());
+
+    let mut child = command
+        .spawn()
+        .context("failed to spawn metadata-extraction subprocess")?;
+    let mut stdout = child
+        .stdout
+        .take()
+        .context("metadata-extraction subprocess has no stdout")?;
+
     let (tx, rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
-        let result = shared::source::packaging::package_plugin_js(&main_js, index_url.as_deref());
+        let mut buf = String::new();
+        let result = stdout.read_to_string(&mut buf).map(|_| buf);
         let _ = tx.send(result);
     });
 
-    match rx.recv_timeout(METADATA_EXTRACTION_TIMEOUT) {
-        Ok(result) => result,
-        Err(_) => anyhow::bail!(
-            "timed out packaging plugin after {METADATA_EXTRACTION_TIMEOUT:?} \
-             (plugin's top-level JS likely hung)"
-        ),
+    let output = match rx.recv_timeout(METADATA_EXTRACTION_TIMEOUT) {
+        Ok(result) => result.context("failed to read metadata-extraction subprocess output")?,
+        Err(_) => {
+            let _ = child.kill();
+            let _ = child.wait();
+            anyhow::bail!(
+                "timed out packaging plugin after {METADATA_EXTRACTION_TIMEOUT:?} \
+                 (plugin's top-level JS likely hung); subprocess killed"
+            );
+        }
+    };
+
+    let status = child
+        .wait()
+        .context("failed to reap metadata-extraction subprocess")?;
+    if !status.success() {
+        anyhow::bail!("metadata-extraction subprocess exited with {status}: {output}");
     }
+
+    serde_json::from_str(&output).context("failed to parse metadata-extraction subprocess output")
 }
 
 /// Packages one already-fetched plugin's `main_js` into

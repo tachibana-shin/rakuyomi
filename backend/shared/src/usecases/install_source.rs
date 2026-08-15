@@ -147,7 +147,9 @@ pub async fn install_source(
 #[derive(Deserialize)]
 struct SourceListItem {
     /// MangaYomi index entries use numeric ids; both are stringified.
-    #[serde(deserialize_with = "de_source_id")]
+    /// Keiyoushi index entries (protobuf-decoded and JSON alike) name the
+    /// field `pkg` instead of `id`.
+    #[serde(deserialize_with = "de_source_id", alias = "pkg")]
     id: SourceId,
     /// Aidoku index: file name of the `.aix`, relative to the source list URL.
     #[serde(alias = "downloadURL", alias = "apk")]
@@ -195,6 +197,23 @@ mod tests {
         assert_eq!(item.id.value(), "royalroad");
         assert_eq!(item.file, None);
         assert!(item.url.unwrap().ends_with("royalroad.js"));
+    }
+
+    #[test]
+    fn test_source_list_item_keiyoushi_uses_pkg_as_id() {
+        // The protobuf decoder in `fetch_source_list` publishes keiyoushi
+        // entries with `pkg` (not `id`); the install path must accept it.
+        let json = r#"{"name":"MoeTruyen","pkg":"eu.kanade.tachiyomi.extension.vi.moetruyen","apk":"https://example.com/tachiyomi-vi.moetruyen-v1.6.8.apk","lang":"vi","version":"1.6.8"}"#;
+        let item: SourceListItem = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            item.id.value(),
+            "eu.kanade.tachiyomi.extension.vi.moetruyen"
+        );
+        assert_eq!(
+            item.file.as_deref(),
+            Some("https://example.com/tachiyomi-vi.moetruyen-v1.6.8.apk")
+        );
+        assert_eq!(item.item.get("pkg"), None, "flatten consumes the pkg key");
     }
 
     #[test]

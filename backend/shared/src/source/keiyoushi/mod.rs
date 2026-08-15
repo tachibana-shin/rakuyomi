@@ -108,6 +108,11 @@ struct ApkProbe {
     /// Canonical `manifest` package id (e.g.
     /// `eu.kanade.tachiyomi.extension.vi.cuutruyenmoe`).
     package_id: String,
+    /// The `AndroidManifest` `versionName` (e.g. `1.6.8`), when declared.
+    /// `serde(default)` keeps probe caches written before this field was
+    /// introduced readable.
+    #[serde(default)]
+    version_name: Option<String>,
     sources: Vec<(String, String, bool)>,
     setting_definitions: Vec<SettingDefinition>,
 }
@@ -244,7 +249,12 @@ impl KeiyoushiSource {
                     #[cfg(not(feature = "all"))]
                     content_rating: None,
                     name: name.clone(),
-                    version: Value::String("1".to_string()),
+                    version: Value::String(
+                        probe
+                            .version_name
+                            .clone()
+                            .unwrap_or_else(|| "1".to_string()),
+                    ),
                     url: None,
                     urls: None,
                     min_app_version: None,
@@ -680,7 +690,12 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
     // No shared-preferences path is set, so the boot stays read-only and
     // preferences remain in memory.
     let mut ext = Keiyoushi::new(bytes).map_err(|e| anyhow!("failed to boot extension: {e}"))?;
-    let package_id = ext.manifest().map(|m| m.package_id).unwrap_or_default();
+    let manifest = ext.manifest();
+    let package_id = manifest
+        .as_ref()
+        .map(|m| m.package_id.clone())
+        .unwrap_or_default();
+    let version_name = manifest.ok().and_then(|m| m.version_name);
     let sources = ext.sources()?;
     if sources.is_empty() {
         bail!("keiyoushi extension bundles no sources");
@@ -700,6 +715,7 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
         .collect();
     Ok(ApkProbe {
         package_id,
+        version_name,
         sources: out,
         setting_definitions: defs,
     })
@@ -932,6 +948,7 @@ mod tests {
         fs::write(&apk, b"fake apk bytes").unwrap();
         let probe = ApkProbe {
             package_id: "eu.kanade.tachiyomi.extension.en.mangapill".to_string(),
+            version_name: Some("1.4.9".to_string()),
             sources: vec![("MangaPill".to_string(), "en".to_string(), true)],
             setting_definitions: vec![],
         };
@@ -1021,6 +1038,27 @@ mod tests {
         let mut ext = Keiyoushi::new(&bytes).ok()?;
         let src = ext.sources().ok()?.into_iter().next()?;
         Some((ext, src))
+    }
+
+    #[test]
+    fn test_probe_reads_version_name_from_manifest() {
+        let Some(apk) = std::env::var("DEXVM_APK").ok().or_else(|| {
+            let fallback = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
+            fallback
+                .exists()
+                .then(|| fallback.to_string_lossy().into_owned())
+        }) else {
+            eprintln!("skipping: no keiyoushi fixture available");
+            return;
+        };
+        let bytes = fs::read(apk).expect("fixture should be readable");
+        let probe = probe_apk(&bytes).expect("fixture should probe cleanly");
+        assert_eq!(
+            probe.version_name.as_deref(),
+            Some("1.4.9"),
+            "fixture AndroidManifest versionName should surface in the probe"
+        );
     }
 
     #[test]

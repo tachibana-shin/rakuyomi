@@ -264,6 +264,13 @@ fn add_unit(ms: f64, amount: f64, unit: &str) -> f64 {
     let Some(dt) = ms_to_datetime(ms) else {
         return f64::NAN;
     };
+    // `amount as i64` below saturates a non-finite `amount` to 0 rather than
+    // erroring, which would silently turn `.add(NaN, 'day')` into "add zero
+    // days" (returning the original timestamp) instead of the invalid
+    // result real dayjs produces. Reject non-finite input up front instead.
+    if !amount.is_finite() {
+        return f64::NAN;
+    }
     // `amount` is plugin-controlled and can be an arbitrary JS number (e.g.
     // `1e18`): the infallible `Duration::weeks`/`days`/etc. constructors
     // panic on overflow after the `as i64` cast, which would take the whole
@@ -514,6 +521,17 @@ mod tests {
         let ms = sample_ms();
         assert!(add_unit(ms, f64::NEG_INFINITY, "month").is_nan());
         assert!(add_unit(ms, f64::NEG_INFINITY, "year").is_nan());
+    }
+
+    #[test]
+    fn add_nan_amount_is_nan_not_a_silent_no_op() {
+        // `amount as i64` saturates NaN to 0, which would otherwise make
+        // this silently return the original timestamp unchanged instead of
+        // signaling an invalid result.
+        let ms = sample_ms();
+        assert!(add_unit(ms, f64::NAN, "day").is_nan());
+        assert!(add_unit(ms, f64::NAN, "month").is_nan());
+        assert!(add_unit(ms, f64::NAN, "year").is_nan());
     }
 
     #[test]

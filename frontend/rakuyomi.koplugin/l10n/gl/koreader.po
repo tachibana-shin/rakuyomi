@@ -418,7 +418,7 @@ msgstr "Dominios en caché:"
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
-msgstr "Non emparellado. "
+msgstr "Non emparellado. Usa \"Vincular o dispositivo\" para ligar este dispositivo ao teu bot de Telegram."
 
 #: ../CookieSyncView.lua:214
 msgid "Sync Cookies Now"
@@ -531,7 +531,7 @@ msgstr "Cookies sincronizadas para"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr "Queres desvincular este dispositivo? "
+msgstr "Queres desvincular este dispositivo? Isto eliminará todas as cookies sincronizadas."
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"

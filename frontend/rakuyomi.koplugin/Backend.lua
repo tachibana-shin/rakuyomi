@@ -881,9 +881,19 @@ end
 --- Reads the server capabilities.
 --- @return SuccessfulResponse<Capabilities>|ErrorResponse
 function Backend.getCapabilities()
-  return Backend.requestJson({
+  -- `Backend.requestJson` raises instead of returning an `ErrorResponse` when
+  -- the response body isn't decodable JSON -- notably a server build that
+  -- predates this endpoint, which answers `/capabilities` with a 404 and an
+  -- empty body. Callers (e.g. Settings.lua) rely on the ErrorResponse
+  -- contract to degrade gracefully, so that case has to be converted here
+  -- rather than propagated.
+  local ok, response = pcall(Backend.requestJson, {
     path = "/capabilities"
   })
+  if not ok then
+    return { type = 'ERROR', message = tostring(response) }
+  end
+  return response
 end
 
 --- Reads the application settings.

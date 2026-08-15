@@ -54,10 +54,16 @@ pub(super) fn js_array_to_vec(value: &JsValue, context: &mut Context) -> Result<
     if value.is_undefined() || value.is_null() {
         return Ok(Vec::new());
     }
+    // Plugin-controlled: `obj.get()` below returns `undefined` (not an
+    // error) for a missing index, so an uncapped `length` would still drive
+    // the read loop through every declared index, pushing an `undefined`
+    // `JsValue` each time rather than stopping early.
+    const MAX_ARRAY_LENGTH: usize = 100_000;
     let length = get_prop(value, "length", context)?
         .to_number(context)
         .map_err(|e| anyhow::anyhow!("array has no numeric `length`: {e}"))?
         as usize;
+    let length = length.min(MAX_ARRAY_LENGTH);
 
     let obj = value.as_object().context("expected an array-like object")?;
     // Not `Vec::with_capacity(length)`: `length` is plugin-controlled and

@@ -532,7 +532,7 @@ msgstr "Cookies sincronizadas para"
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
-msgstr "¿Desvincular este dispositivo? "
+msgstr "¿Desvincular este dispositivo? Esto borrará todas las cookies sincronizadas."
 
 #: ../CookieSyncView.lua:409
 msgid "Unpair"

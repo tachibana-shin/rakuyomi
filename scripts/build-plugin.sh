@@ -17,6 +17,10 @@ cd ../../..
 
 cp -r frontend/rakuyomi.koplugin/* "$OUT/"
 
+# A prior feature-enabled build into the same $OUT may have left this
+# binary behind; a feature-disabled build must not ship it.
+rm -f "$OUT/lnreader_worker"
+
 if [ "$TARGET" != "none" ]; then
     cp "backend/target/$TARGET/release/cbz_metadata_reader" "$OUT/"
     cp "backend/target/$TARGET/release/server" "$OUT/"

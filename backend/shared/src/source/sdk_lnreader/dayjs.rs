@@ -111,7 +111,10 @@ fn expand_locale_macros(token: &str) -> String {
     while i < chars.len() {
         if chars[i] == '[' {
             if let Some(end) = chars[i + 1..].iter().position(|&c| c == ']') {
-                out.extend(&chars[i + 1..i + 1 + end]);
+                // Keep the delimiters: `render()` is the pass that actually
+                // strips them, and it must still see this section as a
+                // literal rather than plain text open to its own token scan.
+                out.extend(&chars[i..i + 1 + end + 1]);
                 i += end + 2;
                 continue;
             }
@@ -254,15 +257,21 @@ fn add_unit(ms: f64, amount: f64, unit: &str) -> f64 {
     let Some(dt) = ms_to_datetime(ms) else {
         return f64::NAN;
     };
+    // `amount` is plugin-controlled and can be an arbitrary JS number (e.g.
+    // `1e18`): the infallible `Duration::weeks`/`days`/etc. constructors
+    // panic on overflow after the `as i64` cast, which would take the whole
+    // worker down. The `try_*` constructors and `checked_add_signed` turn
+    // that into `f64::NAN` instead, same as any other out-of-range result
+    // here.
     let result = match normalize_unit(unit) {
         "year" => add_months(dt, (amount * 12.0).round() as i64),
         "month" => add_months(dt, amount.round() as i64),
-        "week" => Some(dt + Duration::weeks(amount as i64)),
-        "day" => Some(dt + Duration::days(amount as i64)),
-        "hour" => Some(dt + Duration::hours(amount as i64)),
-        "minute" => Some(dt + Duration::minutes(amount as i64)),
-        "second" => Some(dt + Duration::seconds(amount as i64)),
-        _ => Some(dt + Duration::milliseconds(amount as i64)),
+        "week" => Duration::try_weeks(amount as i64).and_then(|d| dt.checked_add_signed(d)),
+        "day" => Duration::try_days(amount as i64).and_then(|d| dt.checked_add_signed(d)),
+        "hour" => Duration::try_hours(amount as i64).and_then(|d| dt.checked_add_signed(d)),
+        "minute" => Duration::try_minutes(amount as i64).and_then(|d| dt.checked_add_signed(d)),
+        "second" => Duration::try_seconds(amount as i64).and_then(|d| dt.checked_add_signed(d)),
+        _ => Duration::try_milliseconds(amount as i64).and_then(|d| dt.checked_add_signed(d)),
     };
     result
         .map(|d| d.timestamp_millis() as f64)
@@ -455,6 +464,14 @@ mod tests {
     #[test]
     fn honors_literal_brackets() {
         assert_eq!(format_dayjs(sample_ms(), "YYYY[-W]"), "2024-W");
+    }
+
+    #[test]
+    fn literal_bracket_content_is_not_reinterpreted_as_a_token() {
+        // A token name inside a bracket literal must stay literal, not get
+        // expanded a second time once `expand_locale_macros` hands its
+        // output to `render`.
+        assert_eq!(format_dayjs(sample_ms(), "[YYYY] YYYY"), "YYYY 2024");
     }
 
     #[test]

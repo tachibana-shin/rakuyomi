@@ -320,8 +320,12 @@ impl KeiyoushiSource {
         // `preferenceKey() = "source_<id>"`). Changes the extension makes
         // through `SharedPreferences$Editor` are mirrored back into
         // RakuYomi's settings store via `on_update_settings`.
-        let settings = self.settings.lock().unwrap_or_else(|e| e.into_inner());
-        let all_settings = settings.all();
+        let all_settings = {
+            self.settings
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .all()
+        };
         let mut preferences = HashMap::new();
         for (key, value) in all_settings.iter() {
             if let Some(pref) = setting_value_to_pref(value) {
@@ -340,11 +344,13 @@ impl KeiyoushiSource {
                 }
             }
         });
-        let prefs_file = ext
-            .preference_file(&source)
-            .unwrap_or_else(|_| "config".to_string());
+        let prefs_file = ext.preference_file(&source).map_err(|e| {
+            anyhow!(
+                "keiyoushi: failed to resolve source preference file: {}",
+                ext.describe_error(&e)
+            )
+        })?;
         ext.seed_preferences(&prefs_file, &preferences);
-        drop(settings);
 
         let result = f(&mut ext, source).map_err(|e| {
             anyhow!(
@@ -1005,8 +1011,8 @@ mod tests {
     /// fixture is available (same convention as the other fixture tests).
     fn test_engine() -> Option<(Keiyoushi, dexvm::keiyoushi::Source)> {
         let apk = std::env::var("DEXVM_APK").ok().or_else(|| {
-            let fallback =
-                Path::new("/home/shin/dex_runtime/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
+            let fallback = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
             fallback
                 .exists()
                 .then(|| fallback.to_string_lossy().into_owned())
@@ -1067,5 +1073,100 @@ mod tests {
             1,
         );
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_with_engine_seeds_settings_and_mirrors_changes_back() {
+        let apk = std::env::var("DEXVM_APK").ok().or_else(|| {
+            let fallback = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
+            fallback
+                .exists()
+                .then(|| fallback.to_string_lossy().into_owned())
+        });
+        let Some(apk) = apk else {
+            eprintln!("skipping: no keiyoushi fixture available");
+            return;
+        };
+
+        // Load a real source so `with_engine` runs against a genuine engine.
+        let dir = std::env::temp_dir().join(format!(
+            "rakuyomi-keiyoushi-writeback-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        let apk_name = format!("tachiyomi-en.mangapill-v1.4.9{}", KEIYOUSHI_FILE_SUFFIX);
+        let apk_path = dir.join(&apk_name);
+        fs::copy(&apk, &apk_path).unwrap();
+
+        let manager = SourceManager::new(dir, HashMap::new(), crate::settings::Settings::default());
+        let arc_manager = Arc::new(tokio::sync::Mutex::new(manager));
+        let manager_guard = arc_manager.blocking_lock();
+        let sources =
+            KeiyoushiSource::from_keiyoushi_apk(&apk_path, &manager_guard, &arc_manager).unwrap();
+        let Some(first) = sources.into_iter().next() else {
+            panic!("fixture APK exposes no sources");
+        };
+        let source_id = first.id.clone();
+        drop(manager_guard);
+
+        // Seed a stored setting, then reload the source the same way
+        // `update_source_setting` does; the reloaded instance must pick the
+        // stored settings up from `settings.source_settings`.
+        {
+            let mut manager_guard = arc_manager.blocking_lock();
+            manager_guard.settings.source_settings.insert(
+                source_id.clone(),
+                HashMap::from([("enabled".to_string(), SourceSettingValue::Bool(true))]),
+            );
+        }
+        let manager_guard = arc_manager.blocking_lock();
+        let sources =
+            KeiyoushiSource::from_keiyoushi_apk(&apk_path, &manager_guard, &arc_manager).unwrap();
+        let Some(source) = sources.into_iter().next() else {
+            panic!("fixture APK exposes no sources");
+        };
+        drop(manager_guard);
+
+        // Run one engine call that reads the seeded preference and writes a
+        // new one through the extension API.
+        let ((), _base_url) = source
+            .with_engine(|ext, src| {
+                let prefs_file = ext.preference_file(&src)?;
+                let settings = ext.get_settings(&prefs_file);
+                assert_eq!(
+                    settings.get("enabled"),
+                    Some(&SettingValue::Bool(true)),
+                    "seeded setting must be visible to the extension"
+                );
+                ext.update_setting(
+                    &prefs_file,
+                    "display_mode",
+                    SettingValue::String("list".to_string()),
+                )
+                .expect("host-side settings write must succeed");
+                Ok(())
+            })
+            .unwrap();
+
+        // The engine-side write must be mirrored back into
+        // `settings.source_settings` through `on_update_settings`.
+        let manager_guard = arc_manager.blocking_lock();
+        let stored = manager_guard
+            .settings
+            .source_settings
+            .get(&source_id)
+            .cloned()
+            .unwrap_or_default();
+        assert_eq!(
+            stored.get("display_mode"),
+            Some(&SourceSettingValue::String("list".to_string())),
+            "extension write must be persisted into settings.source_settings"
+        );
+        assert_eq!(
+            stored.get("enabled"),
+            Some(&SourceSettingValue::Bool(true)),
+            "seeded setting must survive the write-back"
+        );
     }
 }

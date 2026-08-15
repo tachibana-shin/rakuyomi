@@ -11,9 +11,9 @@
 //! cargo test -p shared --test keiyoushi_live -- --ignored --nocapture
 //! ```
 //!
-//! The APK under test defaults to the vendored mangapill fixture from
-//! dex_runtime (`~/dex_runtime/fixtures/tachiyomi-en.mangapill-v1.4.9.apk`);
-//! point `RAKUYOMI_APK` at another keiyoushi extension to test it instead.
+//! The APK under test defaults to the vendored mangapill fixture in
+//! `backend/shared/tests/fixtures/`; point `RAKUYOMI_APK` at another
+//! keiyoushi extension to test it instead.
 //!
 //! Known live-data caveats (all outside RakuYomi's control):
 //! - mangapill's `mangaDetailsParse` leaves title/url empty; it only fills
@@ -51,8 +51,8 @@ fn apk_path() -> PathBuf {
     if let Ok(path) = std::env::var("RAKUYOMI_APK") {
         return PathBuf::from(path);
     }
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/home/shin".to_string());
-    PathBuf::from(home).join("dex_runtime/fixtures/tachiyomi-en.mangapill-v1.4.9.apk")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk")
 }
 
 fn temp_sources_dir() -> PathBuf {

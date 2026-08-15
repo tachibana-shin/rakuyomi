@@ -261,6 +261,10 @@ fn xcheckbox_value_default(obj: &serde_json::Map<String, Value>, field: &str) ->
         .unwrap_or_default()
 }
 
+/// The manifest fields [`write_aix`] needs to assemble `Payload/source.json`
+/// -- a plain data carrier, not tied to any one caller's source shape
+/// (`package_plugin_js`'s freshly extracted metadata, or a caller supplying
+/// its own values directly).
 pub struct SourceParams {
     pub id: String,
     pub name: String,

@@ -143,7 +143,6 @@ mod tests {
             "id": "arnovel",
             "name": "ArNovel",
             "site": "https://ar-no.com/",
-            "lang": "‎العربية",
             "version": "2.2.0",
             "url": "https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.js/src/plugins/arabic/ArNovel[madara].js",
             "iconUrl": "https://example.com/icon.png",
@@ -158,7 +157,6 @@ mod tests {
             "id": "arnovel",
             "name": "ArNovel",
             "site": "https://ar-no.com/",
-            "lang": "‎العربية",
             "version": "2.2.0",
             "url": "https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.js/src/plugins/arabic/ArNovel[madara].js",
         });

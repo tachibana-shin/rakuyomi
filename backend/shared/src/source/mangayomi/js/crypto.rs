@@ -11,7 +11,7 @@
 //! CryptoJS layout).
 
 use aes::cipher::block_padding::Pkcs7;
-use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use aes::cipher::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
 use aes_gcm::aead::Aead;
 use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
 use anyhow::anyhow;
@@ -100,10 +100,13 @@ pub fn decrypt_aes_gcm(encrypted: &str, key_hex: &str, iv_hex: &str, tag_hex: &s
         let tag_bytes = hex::decode(tag_hex.trim_start_matches("0x"))?;
         let mut data = base64::engine::general_purpose::STANDARD.decode(encrypted)?;
         data.extend_from_slice(&tag_bytes);
-        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
-        let nonce = Nonce::from_slice(&iv_bytes);
+        let key = Key::<Aes256Gcm>::try_from(&key_bytes[..])
+            .map_err(|_| anyhow!("invalid AES-GCM key length"))?;
+        let cipher = Aes256Gcm::new(&key);
+        let nonce =
+            Nonce::try_from(&iv_bytes[..]).map_err(|_| anyhow!("invalid AES-GCM nonce length"))?;
         let plain = cipher
-            .decrypt(nonce, data.as_ref())
+            .decrypt(&nonce, data.as_ref())
             .map_err(|e| anyhow!("aes-gcm decrypt failed: {e}"))?;
         Ok::<String, anyhow::Error>(String::from_utf8_lossy(&plain).into_owned())
     })();
@@ -281,14 +284,14 @@ fn aes_cbc_pkcs7_encrypt(key: &[u8], iv: &[u8], plaintext: &[u8]) -> Vec<u8> {
     type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
     Aes256CbcEnc::new_from_slices(key, iv)
         .expect("invalid AES key/iv length")
-        .encrypt_padded_vec_mut::<Pkcs7>(plaintext)
+        .encrypt_padded_vec::<Pkcs7>(plaintext)
 }
 
 fn aes_cbc_pkcs7_decrypt(key: &[u8], iv: &[u8], ciphertext: &[u8]) -> Vec<u8> {
     type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
     Aes256CbcDec::new_from_slices(key, iv)
         .expect("invalid AES key/iv length")
-        .decrypt_padded_vec_mut::<Pkcs7>(ciphertext)
+        .decrypt_padded_vec::<Pkcs7>(ciphertext)
         .unwrap_or_else(|_| Vec::new())
 }
 
@@ -344,13 +347,16 @@ mod tests {
         // tag 86a8c63f29d8c4df0f94a0d4f1e33a9e (from the AES-GCM validation set)
         let plain = hex::encode("hello");
         // Use our own encryptor to build a valid vector instead.
-        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(
-            &hex::decode("2b7e151628aed2a6abf7158809cf4f3cef4355d8d557f0054a8e0be3ee38f7ca")
-                .unwrap(),
-        ));
+        let cipher = Aes256Gcm::new(
+            &Key::<Aes256Gcm>::try_from(
+                &hex::decode("2b7e151628aed2a6abf7158809cf4f3cef4355d8d557f0054a8e0be3ee38f7ca")
+                    .unwrap()[..],
+            )
+            .unwrap(),
+        );
         let nonce_bytes = hex::decode("000102030405060708090a0b").unwrap();
-        let nonce = Nonce::from_slice(&nonce_bytes);
-        let ciphertext = cipher.encrypt(nonce, b"attack at dawn".as_ref()).unwrap();
+        let nonce = Nonce::try_from(&nonce_bytes[..]).unwrap();
+        let ciphertext = cipher.encrypt(&nonce, b"attack at dawn".as_ref()).unwrap();
         let (ct, tag) = ciphertext.split_at(ciphertext.len() - 16);
         let encrypted = base64::engine::general_purpose::STANDARD.encode(ct);
         let tag_hex = hex::encode(tag);

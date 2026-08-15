@@ -22,6 +22,7 @@ pub mod model;
 
 use std::{
     cell::RefCell,
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
     rc::Rc,
@@ -84,8 +85,6 @@ pub struct KeiyoushiSource {
     /// backend: [`SourceSettings`] is `RefCell`-based and single-threaded,
     /// the lock makes the source shareable across `spawn_blocking`.
     settings: Arc<Mutex<SourceSettings>>,
-    /// Persistence file for the extension's `SharedPreferences`.
-    prefs_path: std::path::PathBuf,
 }
 
 impl std::fmt::Debug for KeiyoushiSource {
@@ -217,7 +216,6 @@ impl KeiyoushiSource {
             source_of_source
         };
 
-        let prefs_path = path.with_extension("keiyoushi.prefs");
         let single = probe.sources.len() == 1;
         let mut out = Vec::with_capacity(probe.sources.len());
         for (index, (name, lang, supports_latest)) in probe.sources.iter().enumerate() {
@@ -268,7 +266,6 @@ impl KeiyoushiSource {
                 apk_path: path.to_path_buf(),
                 source_index: index,
                 settings,
-                prefs_path: prefs_path.clone(),
             });
         }
         Ok(out)
@@ -301,7 +298,6 @@ impl KeiyoushiSource {
             execute_request(&http_client, req, &recorded)
         });
         ext.set_host_headers(crate::cookie_store::get_user_agent_and_cookie_header);
-        ext.set_shared_preferences_path(&self.prefs_path);
 
         let sources = ext.sources().map_err(|e| {
             anyhow!(
@@ -317,26 +313,37 @@ impl KeiyoushiSource {
             )
         })?;
 
-        // Stored source settings are applied on every call: each engine
-        // starts from the extension defaults, so the persisted values are
-        // written back into the preference file the extension reads them
-        // from (mihon's `preferenceKey() = "source_<id>"`; "config" would
-        // be a file the extension never requests).
-        let prefs_file = ext
-            .preference_file(&source)
-            .unwrap_or_else(|_| "config".to_string());
-        let settings = self
-            .settings
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .all();
-        for (key, value) in settings.iter() {
+        // The stored settings are seeded into the extension's in-memory
+        // preferences before every call: each engine starts from the
+        // extension defaults, so the persisted values are written back into
+        // the preference file the extension reads them from (mihon's
+        // `preferenceKey() = "source_<id>"`). Changes the extension makes
+        // through `SharedPreferences$Editor` are mirrored back into
+        // RakuYomi's settings store via `on_update_settings`.
+        let settings = self.settings.lock().unwrap_or_else(|e| e.into_inner());
+        let all_settings = settings.all();
+        let mut preferences = HashMap::new();
+        for (key, value) in all_settings.iter() {
             if let Some(pref) = setting_value_to_pref(value) {
-                if let Err(err) = ext.update_setting(&prefs_file, key, pref) {
+                preferences.insert(key.clone(), pref);
+            }
+        }
+        let settings_store = self.settings.clone();
+        ext.on_update_settings(move |key, value| {
+            if let Some(value) = pref_to_setting_value(value) {
+                if let Err(err) = settings_store
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .save(key, value)
+                {
                     log::warn!("keiyoushi: failed to persist setting `{key}`: {err}");
                 }
             }
-        }
+        });
+        let prefs_file = ext
+            .preference_file(&source)
+            .unwrap_or_else(|_| "config".to_string());
+        ext.seed_preferences(&prefs_file, &preferences);
         drop(settings);
 
         let result = f(&mut ext, source).map_err(|e| {
@@ -846,6 +853,19 @@ fn setting_value_to_pref(value: &SourceSettingValue) -> Option<SettingValue> {
         SourceSettingValue::Float(value) => SettingValue::Float(*value as f32),
         SourceSettingValue::String(value) => SettingValue::String(value.clone()),
         _ => return None,
+    })
+}
+
+/// Converts a dexvm preference value changed by the extension back into
+/// the RakuYomi setting model, so `on_update_settings` changes can be
+/// persisted into `settings.source_settings`.
+fn pref_to_setting_value(value: &SettingValue) -> Option<SourceSettingValue> {
+    Some(match value {
+        SettingValue::Bool(value) => SourceSettingValue::Bool(*value),
+        SettingValue::Long(value) => SourceSettingValue::Int(*value),
+        SettingValue::Int(value) => SourceSettingValue::Int(i64::from(*value)),
+        SettingValue::Float(value) => SourceSettingValue::Float(f64::from(*value)),
+        SettingValue::String(value) => SourceSettingValue::String(value.clone()),
     })
 }
 

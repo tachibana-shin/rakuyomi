@@ -534,6 +534,32 @@ impl KeiyoushiSource {
         ))
     }
 
+    /// Fetches a page image through the extension's own OkHttpClient so the
+    /// extension's client-side interceptors (IMGX-style decryption, per-host
+    /// auth) run, exactly like the `getClient()` -> `newCall()` ->
+    /// `execute()` path mihon uses. The chapter page list is parsed in
+    /// the same engine first because extensions stash per-image decrypt
+    /// grants during `getPageList`.
+    pub fn fetch_page_image(&self, chapter_id: &str, url: &str) -> Result<Vec<u8>> {
+        let chapter = dexvm::keiyoushi::Chapter {
+            url: chapter_id.to_string(),
+            name: chapter_id.to_string(),
+            ..Default::default()
+        };
+        let (bytes, _) = self.with_engine(|ext, src| {
+            call_fallback(
+                "getPageList",
+                ext,
+                &src,
+                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages_coro(src, c),
+                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages(src, c),
+                &chapter,
+            )?;
+            ext.image_data(&src, url)
+        })?;
+        Ok(bytes)
+    }
+
     /// Implements `get_image_request`: image URLs carry their own
     /// authentication parameters, so a plain GET with the shared
     /// user-agent and the per-domain cookie store is enough.

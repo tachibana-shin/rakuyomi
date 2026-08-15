@@ -352,6 +352,24 @@ impl Source {
         chapter_num: Option<f32>
     );
 
+    /// Fetches the plaintext bytes of a page image. Keiyoushi sources run
+    /// the fetch through the extension's own OkHttpClient inside the VM, so
+    /// client-side interceptors (IMGX-style decryption, per-host auth)
+    /// apply; the remaining backends keep the plain GET path via
+    /// [`get_image_request`](Self::get_image_request).
+    pub async fn fetch_page_image(&self, chapter_id: &str, url: &Url) -> Result<Vec<u8>> {
+        match &self.backend {
+            SourceBackend::Keiyoushi(keiyoushi) => {
+                let keiyoushi = keiyoushi.clone();
+                let chapter_id = chapter_id.to_string();
+                let url = url.as_str().to_string();
+                tokio::task::spawn_blocking(move || keiyoushi.fetch_page_image(&chapter_id, &url))
+                    .await?
+            }
+            _ => anyhow::bail!("fetch_page_image is only supported by keiyoushi sources"),
+        }
+    }
+
     wrap_blocking_source_fn!(
         get_image_request,
         Result<Request>,

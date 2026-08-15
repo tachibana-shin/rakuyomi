@@ -407,15 +407,15 @@ msgstr "No se puede recuperar el estado de sincronización de cookies."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr "Dispositivo emparejado como:"
+msgstr "Dispositivo emparejado como: "
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr "ID de chat:"
+msgstr "ID de chat: "
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr "Dominios en caché:"
+msgstr "Dominios en caché: "
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
@@ -447,7 +447,7 @@ msgstr ""
 
 #: ../CookieSyncView.lua:274
 msgid "https://your-bot.deno.dev"
-msgstr "https://tu-bot.deno.dev"
+msgstr "https://your-bot.deno.dev"
 
 #: ../CookieSyncView.lua:284
 msgid "Generate Code"
@@ -459,11 +459,11 @@ msgstr "Generando código de emparejamiento..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr "No se pudo generar el código de emparejamiento:"
+msgstr "No se pudo generar el código de emparejamiento: "
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr "Código de emparejamiento:"
+msgstr "Código de emparejamiento: "
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
@@ -475,7 +475,7 @@ msgstr "2. Envía este comando al bot:"
 
 #: ../CookieSyncView.lua:328
 msgid "DEVICE_NAME"
-msgstr "DISPOSITIVO_NOMBRE"
+msgstr "DEVICE_NAME"
 
 #: ../CookieSyncView.lua:329
 msgid "(Replace DEVICE_NAME with a name for this device, e.g. kindle_bedroom)"
@@ -500,11 +500,11 @@ msgstr "Comprobando el estado de emparejamiento..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr "No se pudo verificar el emparejamiento:"
+msgstr "No se pudo verificar el emparejamiento: "
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr "Dispositivo emparejado exitosamente como:"
+msgstr "Dispositivo emparejado exitosamente como: "
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -520,15 +520,15 @@ msgstr "Sincronizando cookies..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr "No se pudieron sincronizar las cookies:"
+msgstr "No se pudieron sincronizar las cookies: "
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr "dominio(s)."
+msgstr " dominio(s)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr "Cookies sincronizadas para"
+msgstr "Cookies sincronizadas para "
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
@@ -540,7 +540,7 @@ msgstr "Desemparejar"
 
 #: ../CookieSyncView.lua:414
 msgid "Failed to unpair: "
-msgstr "No se pudo desvincular:"
+msgstr "No se pudo desvincular: "
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
@@ -548,7 +548,7 @@ msgstr "Dispositivo desemparejado."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr "No se pudieron enumerar las cookies:"
+msgstr "No se pudieron enumerar las cookies: "
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
@@ -1085,7 +1085,7 @@ msgstr "Borrar"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr "Iniciar sesión con"
+msgstr "Iniciar sesión con "
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
@@ -1129,7 +1129,7 @@ msgstr "No se pudieron guardar los tokens. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
-msgstr "Error:"
+msgstr "Error: "
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
@@ -1137,7 +1137,7 @@ msgstr "Creando sesión de inicio de sesión..."
 
 #: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
-msgstr "No se pudo iniciar el inicio de sesión:"
+msgstr "No se pudo iniciar el inicio de sesión: "
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
@@ -1442,7 +1442,7 @@ msgstr "Proxy HTTP, HTTPS o SOCKS5"
 
 #: ../Settings.lua:476
 msgid "Proxy URL must start with http://, https://, or socks5://"
-msgstr "La URL del proxy debe comenzar con http://, https:// o calcetines5://"
+msgstr "La URL del proxy debe comenzar con http://, https:// o socks5://"
 
 #: ../Settings.lua:481
 msgid "Sync & Updates"
@@ -1699,7 +1699,7 @@ msgstr "Iniciar sesión"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr "Validar"
+msgstr "Validar "
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
@@ -1724,7 +1724,7 @@ msgstr "URL del servidor puente de OAuth"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr "Iniciado sesión como"
+msgstr "Iniciado sesión como "
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
@@ -1751,7 +1751,7 @@ msgstr "¿Quieres actualizar ahora?"
 #: ../UpdateChecker.lua:49
 #, lua-format
 msgid "You're currently running version "
-msgstr "Actualmente estás ejecutando la versión"
+msgstr "Actualmente estás ejecutando la versión "
 
 #: ../UpdateChecker.lua:49
 #, lua-format

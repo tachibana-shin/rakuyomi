@@ -95,6 +95,44 @@ fn main() -> Result<()> {
     }
 }
 
+/// Runs `package_plugin_js` (which executes the plugin's top-level JS
+/// in-process to read its metadata) on a separate OS thread with a timeout,
+/// rather than calling it directly on the CLI's own thread. This binary has
+/// no Tokio runtime to hand the timed-out call off to (unlike the server's
+/// equivalent guard around the same function, see
+/// `sdk_lnreader::packaging::install_from_url`), so a plain
+/// `thread::spawn` + `recv_timeout` is used instead: a plugin with a
+/// pathological/infinite top-level loop makes `run()`'s caller get back a
+/// timeout error instead of hanging the whole `fetch` batch (which already
+/// treats a per-plugin error as skip-and-continue, see `run_fetch`) forever
+/// on one bad entry. The spawned thread itself is not cancelled on
+/// timeout -- same caveat as the server-side guard -- but unlike a
+/// long-lived server process, this one dies with the CLI process at the end
+/// of the command, so a leaked thread here is bounded by that lifetime, not
+/// permanent.
+fn package_plugin_js_with_timeout(
+    main_js: &str,
+    index_url: Option<&str>,
+) -> Result<shared::source::packaging::PackagedPlugin> {
+    const METADATA_EXTRACTION_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+
+    let main_js = main_js.to_string();
+    let index_url = index_url.map(str::to_string);
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let result = shared::source::packaging::package_plugin_js(&main_js, index_url.as_deref());
+        let _ = tx.send(result);
+    });
+
+    match rx.recv_timeout(METADATA_EXTRACTION_TIMEOUT) {
+        Ok(result) => result,
+        Err(_) => anyhow::bail!(
+            "timed out packaging plugin after {METADATA_EXTRACTION_TIMEOUT:?} \
+             (plugin's top-level JS likely hung)"
+        ),
+    }
+}
+
 /// Packages one already-fetched plugin's `main_js` into
 /// `<sources_dir>/sources/<id>.aix`, printing the same progress summary
 /// `package` always has, shared with `fetch`'s per-entry loop below.
@@ -102,8 +140,8 @@ fn main() -> Result<()> {
 /// `package_plugin_js` (see `docs/lnreader/REFERENCE.md` §5.3) -- never
 /// used to derive a download URL here, `main_js` is always already in hand.
 fn package_and_write(main_js: &str, index_url: Option<&str>, sources_dir: &Path) -> Result<()> {
-    let packaged = shared::source::packaging::package_plugin_js(main_js, index_url)
-        .context("couldn't package plugin")?;
+    let packaged =
+        package_plugin_js_with_timeout(main_js, index_url).context("couldn't package plugin")?;
 
     if !packaged.skipped_plugin_settings.is_empty() {
         eprintln!(

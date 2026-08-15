@@ -407,15 +407,15 @@ msgstr "Evästeiden synkronoinnin tilaa ei voi noutaa."
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr "Laite pariksi liitetty seuraavasti:"
+msgstr "Laite pariksi liitetty seuraavasti: "
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr "Chat ID:"
+msgstr "Chat ID: "
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr "Välimuistissa olevat verkkotunnukset:"
+msgstr "Välimuistissa olevat verkkotunnukset: "
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
@@ -459,11 +459,11 @@ msgstr "Luodaan pariliitoskoodia..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr "Pariliitoskoodin luominen epäonnistui:"
+msgstr "Pariliitoskoodin luominen epäonnistui: "
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr "Pariliitoskoodi:"
+msgstr "Pariliitoskoodi: "
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
@@ -500,11 +500,11 @@ msgstr "Tarkistetaan pariliitoksen tilaa..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr "Pariliitoksen tarkistaminen epäonnistui:"
+msgstr "Pariliitoksen tarkistaminen epäonnistui: "
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr "Laitteen pariliitos onnistui seuraavasti:"
+msgstr "Laitteen pariliitos onnistui seuraavasti: "
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -520,15 +520,15 @@ msgstr "Synkronoidaan evästeitä..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr "Evästeiden synkronointi epäonnistui:"
+msgstr "Evästeiden synkronointi epäonnistui: "
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr "verkkotunnukset."
+msgstr " verkkotunnukset."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr "Synkronoidut evästeet kohteelle"
+msgstr "Synkronoidut evästeet kohteelle "
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
@@ -540,7 +540,7 @@ msgstr "Poista pariliitos"
 
 #: ../CookieSyncView.lua:414
 msgid "Failed to unpair: "
-msgstr "Parin purkaminen epäonnistui:"
+msgstr "Parin purkaminen epäonnistui: "
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
@@ -548,7 +548,7 @@ msgstr "Laite on paritettu."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr "Evästeiden luettelointi epäonnistui:"
+msgstr "Evästeiden luettelointi epäonnistui: "
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
@@ -1085,7 +1085,7 @@ msgstr "Poistaa"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr "Kirjaudu sisään tunnuksella"
+msgstr "Kirjaudu sisään tunnuksella "
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
@@ -1129,7 +1129,7 @@ msgstr "Tunnusten tallentaminen epäonnistui. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
-msgstr "Virhe:"
+msgstr "Virhe: "
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
@@ -1137,7 +1137,7 @@ msgstr "Luodaan kirjautumisistuntoa..."
 
 #: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
-msgstr "Kirjautumisen aloittaminen epäonnistui:"
+msgstr "Kirjautumisen aloittaminen epäonnistui: "
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
@@ -1699,7 +1699,7 @@ msgstr "Kirjaudu sisään"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr "Vahvista"
+msgstr "Vahvista "
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
@@ -1724,7 +1724,7 @@ msgstr "OAuth Bridge -palvelimen URL-osoite"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr "Kirjautunut sisään nimellä"
+msgstr "Kirjautunut sisään nimellä "
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
@@ -1751,7 +1751,7 @@ msgstr "Haluatko päivittää nyt?"
 #: ../UpdateChecker.lua:49
 #, lua-format
 msgid "You're currently running version "
-msgstr "Käytössäsi on tällä hetkellä versio"
+msgstr "Käytössäsi on tällä hetkellä versio "
 
 #: ../UpdateChecker.lua:49
 #, lua-format

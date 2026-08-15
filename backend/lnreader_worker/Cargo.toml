@@ -8,4 +8,12 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 shared = { path = "../shared" }
-tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
+# `rt-multi-thread` for `Builder::new_multi_thread()` (see `main.rs::run_worker`).
+# `net`/`time` declared explicitly for the reactor features `net.rs`'s
+# `futures::executor::block_on`-driven `reqwest` calls need at runtime --
+# today these come along for free via Cargo feature unification with
+# `shared`'s own `features = ["full"]`, but that's this crate silently
+# relying on a sibling's declaration rather than stating what it actually
+# needs, which breaks if `lnreader_worker` is ever built standalone outside
+# this workspace or `shared`'s tokio features are trimmed later.
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "net", "time"] }

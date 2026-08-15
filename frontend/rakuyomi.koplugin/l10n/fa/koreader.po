@@ -406,15 +406,15 @@ msgstr "واکشی وضعیت همگام‌سازی کوکی امکان‌پذی
 
 #: ../CookieSyncView.lua:183
 msgid "Device paired as: "
-msgstr "دستگاه جفت شده به عنوان:"
+msgstr "دستگاه جفت شده به عنوان: "
 
 #: ../CookieSyncView.lua:185
 msgid "Chat ID: "
-msgstr "شناسه چت:"
+msgstr "شناسه چت: "
 
 #: ../CookieSyncView.lua:187
 msgid "Cached domains: "
-msgstr "دامنه های ذخیره شده در حافظه پنهان:"
+msgstr "دامنه های ذخیره شده در حافظه پنهان: "
 
 #: ../CookieSyncView.lua:190
 msgid "Not paired. Use 'Pair Device' to link this device to your Telegram bot."
@@ -458,11 +458,11 @@ msgstr "در حال ایجاد کد جفت سازی..."
 
 #: ../CookieSyncView.lua:317
 msgid "Failed to generate pairing code: "
-msgstr "کد جفت سازی ایجاد نشد:"
+msgstr "کد جفت سازی ایجاد نشد: "
 
 #: ../CookieSyncView.lua:325
 msgid "Pairing Code: "
-msgstr "کد جفت شدن:"
+msgstr "کد جفت شدن: "
 
 #: ../CookieSyncView.lua:326
 msgid "1. Open Telegram on your Android phone"
@@ -499,11 +499,11 @@ msgstr "در حال بررسی وضعیت جفت شدن..."
 
 #: ../CookieSyncView.lua:356
 msgid "Failed to check pairing: "
-msgstr "جفت شدن بررسی نشد:"
+msgstr "جفت شدن بررسی نشد: "
 
 #: ../CookieSyncView.lua:363
 msgid "Device paired successfully as: "
-msgstr "دستگاه با موفقیت به عنوان:"
+msgstr "دستگاه با موفقیت به عنوان: "
 
 #: ../CookieSyncView.lua:368
 msgid "Not paired yet. Make sure you sent the /link command to the Telegram bot. Try again?"
@@ -519,15 +519,15 @@ msgstr "در حال همگام سازی کوکی ها..."
 
 #: ../CookieSyncView.lua:394 ../LibraryView.lua:1049
 msgid "Failed to sync cookies: "
-msgstr "همگام سازی کوکی ها انجام نشد:"
+msgstr "همگام سازی کوکی ها انجام نشد: "
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid " domain(s)."
-msgstr "دامنه (ها)."
+msgstr " دامنه (ها)."
 
 #: ../CookieSyncView.lua:401 ../LibraryView.lua:1055
 msgid "Synced cookies for "
-msgstr "کوکی‌های همگام‌سازی شده برای"
+msgstr "کوکی‌های همگام‌سازی شده برای "
 
 #: ../CookieSyncView.lua:408
 msgid "Unpair this device? This will clear all synced cookies."
@@ -539,7 +539,7 @@ msgstr "لغو جفت کردن"
 
 #: ../CookieSyncView.lua:414
 msgid "Failed to unpair: "
-msgstr "لغو جفت شدن انجام نشد:"
+msgstr "لغو جفت شدن انجام نشد: "
 
 #: ../CookieSyncView.lua:419
 msgid "Device unpaired."
@@ -547,7 +547,7 @@ msgstr "دستگاه لغو جفت نشد."
 
 #: ../CookieSyncView.lua:432
 msgid "Failed to list cookies: "
-msgstr "لیست کوکی ها ناموفق بود:"
+msgstr "لیست کوکی ها ناموفق بود: "
 
 #: ../CookieSyncView.lua:445
 msgid "No cookies cached."
@@ -1084,7 +1084,7 @@ msgstr "حذف کنید"
 
 #: ../OAuthFlowView.lua:65
 msgid "Sign in with "
-msgstr "وارد شوید با"
+msgstr "وارد شوید با "
 
 #: ../OAuthFlowView.lua:79
 msgid "Scan this QR code on your phone to sign in."
@@ -1128,7 +1128,7 @@ msgstr "رمزها ذخیره نشد. "
 
 #: ../OAuthFlowView.lua:240
 msgid "Error: "
-msgstr "خطا:"
+msgstr "خطا: "
 
 #: ../OAuthFlowView.lua:302
 msgid "Creating sign-in session..."
@@ -1136,7 +1136,7 @@ msgstr "در حال ایجاد جلسه ورود به سیستم..."
 
 #: ../OAuthFlowView.lua:314
 msgid "Failed to start sign-in: "
-msgstr "ورود به سیستم شروع نشد:"
+msgstr "ورود به سیستم شروع نشد: "
 
 #: ../OAuthFlowView.lua:321
 msgid "Invalid response from server. Please try again."
@@ -1698,7 +1698,7 @@ msgstr "وارد شوید"
 
 #: ../TrackingSettings.lua:184 ../TrackingSettings.lua:215
 msgid "Validate "
-msgstr "اعتبار سنجی"
+msgstr "اعتبار سنجی "
 
 #: ../TrackingSettings.lua:188 ../TrackingSettings.lua:219
 msgid "Validating..."
@@ -1723,7 +1723,7 @@ msgstr "URL سرور OAuth Bridge"
 
 #: ../TrackingSettings.lua:503
 msgid "Signed in as "
-msgstr "به عنوان وارد شده است"
+msgstr "به عنوان وارد شده است "
 
 #: ../TrackingSettings.lua:505
 msgid "No sign"
@@ -1750,7 +1750,7 @@ msgstr "آیا می خواهید اکنون به روز رسانی کنید؟"
 #: ../UpdateChecker.lua:49
 #, lua-format
 msgid "You're currently running version "
-msgstr "شما در حال حاضر نسخه را اجرا می کنید"
+msgstr "شما در حال حاضر نسخه را اجرا می کنید "
 
 #: ../UpdateChecker.lua:49
 #, lua-format

@@ -560,11 +560,42 @@ pub async fn install_from_url(url: &str, lnreader_enabled: bool) -> Result<Vec<u
     // crash/OOM inside `boa_engine` during extraction, which still takes
     // the whole server down; full subprocess isolation for this path is a
     // real gap, just too large a change for this pass.
+    //
+    // The timeout also does NOT cancel the `spawn_blocking` closure itself
+    // -- Tokio has no way to interrupt a blocking OS thread from outside --
+    // so a plugin that hangs past the timeout permanently occupies one
+    // blocking-pool slot for as long as the server process runs, not just
+    // for this one request. `METADATA_EXTRACTION_PERMITS` bounds how many
+    // such leaked extractions can accumulate before *new* install attempts
+    // start queuing on the semaphore instead of leaking further slots -- it
+    // doesn't fix the leak, but it keeps a string of bad installs from
+    // eventually exhausting the whole blocking pool (which every other
+    // `Source` operation also shares). The permit is moved into the
+    // `spawn_blocking` closure itself (an owned permit off an `Arc`, not a
+    // borrowed one held by this `async fn`'s own scope) specifically so it's
+    // only released when that closure actually returns -- however long that
+    // takes -- not when this function gives up waiting on it at the
+    // timeout.
     const METADATA_EXTRACTION_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+    const METADATA_EXTRACTION_PERMITS: usize = 2;
+    static METADATA_EXTRACTION_SEMAPHORE: std::sync::LazyLock<
+        std::sync::Arc<tokio::sync::Semaphore>,
+    > = std::sync::LazyLock::new(|| {
+        std::sync::Arc::new(tokio::sync::Semaphore::new(METADATA_EXTRACTION_PERMITS))
+    });
+    let permit = METADATA_EXTRACTION_SEMAPHORE
+        .clone()
+        .acquire_owned()
+        .await
+        .context("metadata extraction semaphore closed unexpectedly")?;
+
     let index_url = url.to_string();
     let packaged = tokio::time::timeout(
         METADATA_EXTRACTION_TIMEOUT,
-        tokio::task::spawn_blocking(move || package_plugin_js(&main_js, Some(&index_url))),
+        tokio::task::spawn_blocking(move || {
+            let _permit = permit;
+            package_plugin_js(&main_js, Some(&index_url))
+        }),
     )
     .await
     .with_context(|| {

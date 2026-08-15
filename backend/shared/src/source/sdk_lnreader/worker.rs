@@ -103,7 +103,7 @@ impl From<&Manga> for MangaDto {
             tags: m.tags.clone(),
             cover_url: m.cover_url.as_ref().map(ToString::to_string),
             url: m.url.as_ref().map(ToString::to_string),
-            status: format!("{:?}", m.status),
+            status: status_to_str(&m.status).to_string(),
         }
     }
 }
@@ -120,19 +120,43 @@ impl MangaDto {
             tags: self.tags,
             cover_url: self.cover_url.and_then(|u| Url::parse(&u).ok()),
             url: self.url.and_then(|u| Url::parse(&u).ok()),
-            status: status_from_debug_str(&self.status),
+            status: status_from_str(&self.status),
             ..Default::default()
         }
     }
 }
 
-fn status_from_debug_str(s: &str) -> PublishingStatus {
+/// Exhaustive both ways (no wildcard arm on either side) specifically so
+/// adding or renaming a `PublishingStatus` variant is a compile error here,
+/// not a silent `Unknown` on the decode side -- this used to round-trip via
+/// `format!("{:?}", status)`/a string match with a `_ => Unknown` fallback,
+/// which stayed green through either change.
+fn status_to_str(status: &PublishingStatus) -> &'static str {
+    match status {
+        PublishingStatus::Unknown => "Unknown",
+        PublishingStatus::Ongoing => "Ongoing",
+        PublishingStatus::Completed => "Completed",
+        PublishingStatus::Cancelled => "Cancelled",
+        PublishingStatus::Hiatus => "Hiatus",
+        PublishingStatus::NotPublished => "NotPublished",
+    }
+}
+
+fn status_from_str(s: &str) -> PublishingStatus {
     match s {
+        "Unknown" => PublishingStatus::Unknown,
         "Ongoing" => PublishingStatus::Ongoing,
         "Completed" => PublishingStatus::Completed,
         "Cancelled" => PublishingStatus::Cancelled,
         "Hiatus" => PublishingStatus::Hiatus,
         "NotPublished" => PublishingStatus::NotPublished,
+        // Not reachable through `status_to_str`'s own output, but
+        // `into_manga` deserializes whatever the worker subprocess sent
+        // over the wire -- a version-skewed worker binary is the only
+        // realistic way an unrecognized string shows up here, and falling
+        // back to `Unknown` is the same "don't fail the whole manga over a
+        // display-only field" tradeoff `PublishingStatus`'s own
+        // `#[default]` already makes.
         _ => PublishingStatus::Unknown,
     }
 }

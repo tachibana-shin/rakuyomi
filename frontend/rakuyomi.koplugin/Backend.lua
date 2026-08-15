@@ -687,6 +687,16 @@ function Backend.setSourceStoredSettings(source_id, stored_settings)
   })
 end
 
+--- @class SourceUsage: { invokes: integer, total_duration_ms: integer, last_duration_ms: integer, peak_wasm_memory_bytes: integer, last_error: string|nil, disk_bytes: integer }
+
+--- Gets the runtime resource usage of every installed source, keyed by source id.
+--- @return SuccessfulResponse<table<string, SourceUsage>>|ErrorResponse
+function Backend.getSourceUsages()
+  return Backend.requestJson({
+    path = "/installed-sources/usage",
+  })
+end
+
 --- Gets the preferred scanlator for a manga.
 --- @return SuccessfulResponse<string|nil>|ErrorResponse
 function Backend.getPreferredScanlator(source_id, manga_id)

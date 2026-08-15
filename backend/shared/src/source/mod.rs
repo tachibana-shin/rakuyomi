@@ -44,6 +44,7 @@ use self::{
         Value, ValueMap, WasmStore,
     },
 };
+use crate::resource_usage::ResourceRegistry;
 
 pub(crate) mod decode_image;
 pub mod keiyoushi;
@@ -98,6 +99,7 @@ pub enum SourceBackend {
 pub struct Source {
     pub backend: SourceBackend,
     pub features: SourceFeatures,
+    pub usage: ResourceRegistry,
 }
 
 /// Like [`wrap_blocking_source_fn!`], but dispatches between the WASM and
@@ -106,30 +108,54 @@ pub struct Source {
 macro_rules! wrap_blocking_source_fn {
     ($fn_name:ident, $return_type:ty, $($param:ident : $type:ty),*) => {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
-            match &self.backend {
+            let started_at = std::time::Instant::now();
+            let usage = self.usage.clone();
+            let source_id = self.manifest().info.id.clone();
+            let result: ::std::result::Result<$return_type, _> = match &self.backend {
                 SourceBackend::Aidoku(blocking_source) => {
                     let blocking_source = blocking_source.clone();
-
+                    let usage = usage.clone();
+                    let source_id = source_id.clone();
                     ::tokio::task::spawn_blocking(move || {
                         let mut guard = blocking_source
                             .lock()
                             .unwrap_or_else(|e| e.into_inner());
-                        guard.$fn_name($($param),*)
-                    }).await?
+                        let result = guard.$fn_name($($param),*);
+                        if result.is_ok() {
+                            if let (Ok(memory), Some(store)) =
+                                (guard.get_memory(), guard.store.as_ref())
+                            {
+                                usage.record_wasm_memory(
+                                    &source_id,
+                                    memory.data_size(store) as u64,
+                                );
+                            }
+                        }
+                        result
+                    }).await
                 }
                 SourceBackend::LnReader(lnreader) => {
                     let lnreader = lnreader.clone();
-                    ::tokio::task::spawn_blocking(move || lnreader.$fn_name($($param),*)).await?
+                    ::tokio::task::spawn_blocking(move || lnreader.$fn_name($($param),*)).await
                 }
                 SourceBackend::Mangayomi(mangayomi) => {
                     let mangayomi = mangayomi.clone();
-                    ::tokio::task::spawn_blocking(move || mangayomi.$fn_name($($param),*)).await?
+                    ::tokio::task::spawn_blocking(move || mangayomi.$fn_name($($param),*)).await
                 }
                 SourceBackend::Keiyoushi(keiyoushi) => {
                     let keiyoushi = keiyoushi.clone();
-                    ::tokio::task::spawn_blocking(move || keiyoushi.$fn_name($($param),*)).await?
+                    ::tokio::task::spawn_blocking(move || keiyoushi.$fn_name($($param),*)).await
                 }
-            }
+            };
+            usage.record(
+                &source_id,
+                match &result {
+                    Ok(inner) => inner.as_ref().map(|_| ()).map_err(|e| format!("{e:#}")),
+                    Err(e) => Err(format!("worker task failed: {e}")),
+                },
+                started_at.elapsed(),
+            );
+            result?
         }
     };
 }
@@ -194,6 +220,7 @@ impl Source {
         Ok(Self {
             backend: SourceBackend::Aidoku(Arc::new(Mutex::new(blocking_source))),
             features,
+            usage: ResourceRegistry::default(),
         })
     }
 
@@ -208,6 +235,7 @@ impl Source {
         Ok(Self {
             backend: SourceBackend::LnReader(Arc::new(source)),
             features,
+            usage: ResourceRegistry::default(),
         })
     }
 
@@ -222,6 +250,7 @@ impl Source {
         Ok(Self {
             backend: SourceBackend::Mangayomi(Arc::new(source)),
             features,
+            usage: ResourceRegistry::default(),
         })
     }
 
@@ -241,6 +270,7 @@ impl Source {
                 Source {
                     backend: SourceBackend::Keiyoushi(Arc::new(source)),
                     features,
+                    usage: ResourceRegistry::default(),
                 }
             })
             .collect())

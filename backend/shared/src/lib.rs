@@ -8,6 +8,7 @@ pub mod cookie_store;
 pub use aidoku;
 pub mod database;
 pub mod model;
+pub mod resource_usage;
 pub mod settings;
 pub mod source;
 pub mod source_collection;

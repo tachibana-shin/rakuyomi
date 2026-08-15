@@ -30,6 +30,7 @@ local Settings = require("Settings")
 local TrackingSettings = require("TrackingSettings")
 local TrackingMenu = require("TrackingMenu")
 local Testing = require("testing")
+local TaskManagerView = require("TaskManagerView")
 local UpdateChecker = require("UpdateChecker")
 local calcLastReadText = require("utils/calcLastReadText")
 local findEntries = require("utils/findEntries")
@@ -1109,6 +1110,16 @@ function LibraryView:openMenu()
             UIManager:show(InfoMessage:new {
               text = table.concat(parts, "\n\n"),
             })
+          end)
+        end
+      },
+      {
+        text = Icons.FA_GAUGE .. " " .. _("Task manager"),
+        callback = function()
+          UIManager:close(dialog)
+
+          TaskManagerView:fetchAndShow(function()
+            self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
           end)
         end
       },

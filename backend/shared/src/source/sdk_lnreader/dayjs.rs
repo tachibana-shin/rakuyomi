@@ -242,10 +242,17 @@ fn normalize_unit(unit: &str) -> &'static str {
 }
 
 fn add_months(dt: DateTime<Utc>, months: i64) -> Option<DateTime<Utc>> {
+    // `months` is derived from a plugin-controlled `amount` (see `add_unit`)
+    // and can be `i64::MIN`/anything past `u32::MAX`: negating `i64::MIN`
+    // directly would overflow and panic, and a bare `as u32` truncates
+    // instead of rejecting an out-of-range value. `unsigned_abs` handles the
+    // i64::MIN case losslessly (its magnitude fits in u64), and `try_from`
+    // rejects anything that doesn't fit `Months`' u32 rather than wrapping.
+    let months_abs = u32::try_from(months.unsigned_abs()).ok()?;
     if months >= 0 {
-        dt.checked_add_months(Months::new(months as u32))
+        dt.checked_add_months(Months::new(months_abs))
     } else {
-        dt.checked_sub_months(Months::new((-months) as u32))
+        dt.checked_sub_months(Months::new(months_abs))
     }
 }
 
@@ -491,6 +498,22 @@ mod tests {
         let ms = sample_ms();
         let added = add_unit(ms, 1.0, "month");
         assert_eq!(format_dayjs(added, "YYYY-MM-DD"), "2024-02-05");
+    }
+
+    #[test]
+    fn add_calendar_unit_beyond_u32_months_is_nan_not_wraparound() {
+        // Past what `Months` (a u32 count) can represent; this must be
+        // rejected, not silently truncated (via `as u32`) to some other,
+        // wrong month count.
+        let ms = sample_ms();
+        assert!(add_unit(ms, u32::MAX as f64 + 2.0, "month").is_nan());
+    }
+
+    #[test]
+    fn add_calendar_unit_neg_infinity_is_nan_not_a_panic() {
+        let ms = sample_ms();
+        assert!(add_unit(ms, f64::NEG_INFINITY, "month").is_nan());
+        assert!(add_unit(ms, f64::NEG_INFINITY, "year").is_nan());
     }
 
     #[test]

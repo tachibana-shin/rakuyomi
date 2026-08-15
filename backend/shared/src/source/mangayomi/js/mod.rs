@@ -59,15 +59,25 @@ impl MangayomiJsRuntime {
         prefs: Arc<Mutex<SourceSettings>>,
         timeout: Duration,
     ) -> Result<Self> {
-        let runtime = Self {
+        // The worker is not spawned here: `invoke` starts (or restarts) it
+        // on demand, so an extension only occupies a thread while a call is
+        // actually running.
+        Ok(Self {
             code,
             metadata,
             prefs,
             timeout,
             worker: Mutex::new(None),
+        })
+    }
+
+    /// Stops the worker thread, if any. The runtime is fully reusable: the
+    /// next `invoke` spawns a fresh worker.
+    pub fn stop_worker(&self) {
+        let Ok(mut worker) = self.worker.lock() else {
+            return;
         };
-        runtime.start_worker()?;
-        Ok(runtime)
+        *worker = None;
     }
 
     /// Calls a method of the provider instance (`getPopular`, `getDetail`,

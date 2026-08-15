@@ -10,12 +10,14 @@ pub mod runtime;
 
 use std::{
     fs,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
+    time::UNIX_EPOCH,
 };
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header::HeaderMap, Method, Request};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tokio_util::sync::CancellationToken;
 use url::Url;
@@ -41,6 +43,54 @@ use self::{
 
 /// The suffix of installed plugin files (`<id>.lnreader.js`).
 pub(crate) const LNREADER_FILE_SUFFIX: &str = ".lnreader.js";
+
+/// The suffix of the probe cache sidecar (`<id>.lnreader.probe.json`),
+/// which records the `props` result of evaluating the plugin JS once at
+/// install time so later loads skip the JS evaluation entirely.
+pub(crate) const LNREADER_PROBE_SUFFIX: &str = ".lnreader.probe.json";
+
+/// On-disk probe cache (`<id>.lnreader.probe.json`). The plugin fingerprint
+/// (length + mtime) guards against stale metadata when the plugin is
+/// updated or replaced outside the install pipeline.
+#[derive(Serialize, Deserialize)]
+struct ProbeCache {
+    plugin_len: u64,
+    plugin_mtime_ns: u128,
+    props_json: String,
+}
+
+fn probe_cache_path(path: &Path) -> PathBuf {
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default();
+    let stem = name.strip_suffix(LNREADER_FILE_SUFFIX).unwrap_or(name);
+    path.with_file_name(format!("{stem}{LNREADER_PROBE_SUFFIX}"))
+}
+
+/// Returns the cached `props` JSON when it matches the plugin fingerprint.
+fn read_probe_cache(path: &Path, plugin_len: u64, plugin_mtime_ns: u128) -> Option<String> {
+    let contents = fs::read_to_string(probe_cache_path(path)).ok()?;
+    let cache: ProbeCache = serde_json::from_str(&contents).ok()?;
+    (cache.plugin_len == plugin_len && cache.plugin_mtime_ns == plugin_mtime_ns)
+        .then_some(cache.props_json)
+}
+
+/// Persists the `props` result next to the plugin. Failures are logged,
+/// never fatal: the next load simply re-evaluates the plugin.
+fn write_probe_cache(path: &Path, plugin_len: u64, plugin_mtime_ns: u128, props_json: &str) {
+    let cache = ProbeCache {
+        plugin_len,
+        plugin_mtime_ns,
+        props_json: props_json.to_string(),
+    };
+    let result = serde_json::to_vec(&cache)
+        .map_err(anyhow::Error::from)
+        .and_then(|bytes| fs::write(probe_cache_path(path), bytes).map_err(anyhow::Error::from));
+    if let Err(err) = result {
+        log::warn!("failed to write probe cache for {}: {err}", path.display());
+    }
+}
 
 /// A single LNReader plugin exposed through the RakuYomi source API.
 ///
@@ -99,17 +149,39 @@ impl LnReaderSource {
         // The runtime needs the plugin id up front (storage namespacing);
         // the site is only known after the props are evaluated.
         let plugin_id = plugin_id_from_path(path)?;
-        let runtime = LnReaderRuntime::new(
-            plugin_id,
-            plugin_code,
-            String::new(),
-            DEFAULT_USER_AGENT.to_string(),
-            DEFAULT_INVOKE_TIMEOUT,
-        )?;
 
-        let props_json = runtime
-            .invoke("props", "[]")
-            .context("plugin `props` failed")?;
+        // Lazy probe: the plugin JS is only evaluated when the probe cache
+        // is missing or stale; the temporary worker is stopped right after,
+        // so a plugin never holds a thread or JS context at load time.
+        let metadata = fs::metadata(path)
+            .with_context(|| format!("failed to stat plugin file {}", path.display()))?;
+        let plugin_len = metadata.len();
+        let plugin_mtime_ns = metadata
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+            .map(|d| d.as_nanos());
+        let props_json =
+            match plugin_mtime_ns.and_then(|mtime| read_probe_cache(path, plugin_len, mtime)) {
+                Some(cached) => cached,
+                None => {
+                    let probe_runtime = LnReaderRuntime::new(
+                        plugin_id.clone(),
+                        plugin_code.clone(),
+                        String::new(),
+                        DEFAULT_USER_AGENT.to_string(),
+                        DEFAULT_INVOKE_TIMEOUT,
+                    )?;
+                    let result = probe_runtime
+                        .invoke("props", "[]")
+                        .context("plugin `props` failed")?;
+                    probe_runtime.stop_worker();
+                    if let Some(mtime) = plugin_mtime_ns {
+                        write_probe_cache(path, plugin_len, mtime, &result);
+                    }
+                    result
+                }
+            };
         let props = parse_props(&props_json)?;
         let manifest = manifest_from_props(&props, Self::read_source_of_source(path)?);
 
@@ -131,6 +203,15 @@ impl LnReaderSource {
             &stored_settings,
             arc_manager,
         )?));
+
+        // The final runtime starts its worker lazily on the first call.
+        let runtime = LnReaderRuntime::new(
+            props.id.clone(),
+            plugin_code,
+            String::new(),
+            DEFAULT_USER_AGENT.to_string(),
+            DEFAULT_INVOKE_TIMEOUT,
+        )?;
 
         // Seed the plugin's `@libs/storage` with the pluginSettings values,
         // mirroring how the LNReader app stores them (`pluginId_DB_key`).
@@ -506,5 +587,40 @@ fn setting_to_json(value: &SourceSettingValue) -> Value {
         SourceSettingValue::Bool(b) => json!(b),
         SourceSettingValue::Vec(v) => json!(v),
         _ => Value::Null,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_probe_cache_path_uses_lnreader_suffix() {
+        let path = Path::new("/tmp/mangapill.lnreader.js");
+        assert_eq!(
+            probe_cache_path(path),
+            Path::new("/tmp/mangapill.lnreader.probe.json")
+        );
+    }
+
+    #[test]
+    fn test_probe_cache_roundtrip() {
+        let dir =
+            std::env::temp_dir().join(format!("rakuyomi-lnreader-probe-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let plugin = dir.join("mangapill.lnreader.js");
+        fs::write(&plugin, "export function props() { return {}; }").unwrap();
+        write_probe_cache(&plugin, 42, 12345, r#"{"id":"mangapill"}"#);
+        let cached = read_probe_cache(&plugin, 42, 12345).expect("cache should hit");
+        assert_eq!(cached, r#"{"id":"mangapill"}"#);
+        assert!(
+            read_probe_cache(&plugin, 43, 12345).is_none(),
+            "length mismatch"
+        );
+        assert!(
+            read_probe_cache(&plugin, 42, 12346).is_none(),
+            "mtime mismatch"
+        );
+        let _ = fs::remove_dir_all(&dir);
     }
 }

@@ -7,6 +7,7 @@ use crate::{settings::SourceSettingValue, source_manager::SourceManager};
 
 use super::model::SettingDefinition;
 
+#[derive(Clone)]
 pub struct SourceSettings {
     source_id: String,
     defaults: HashMap<String, SourceSettingValue>,

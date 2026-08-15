@@ -15,12 +15,14 @@ pub mod xpath;
 use std::{
     collections::HashMap,
     fs,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
+    time::UNIX_EPOCH,
 };
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header::HeaderMap, Method, Request};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tokio_util::sync::CancellationToken;
 use url::Url;
@@ -49,6 +51,11 @@ pub(crate) const MANGA_YOMI_FILE_SUFFIX: &str = ".mangayomi.dart";
 /// (`0` Dart, `1` JavaScript).
 pub(crate) const MANGA_YOMI_JS_FILE_SUFFIX: &str = ".mangayomi.js";
 
+/// The suffix of the probe cache sidecar (`<id>.mangayomi.probe.json`),
+/// which records the metadata collected by booting the extension once at
+/// install time so later loads skip the boot entirely.
+pub(crate) const MANGA_YOMI_PROBE_SUFFIX: &str = ".mangayomi.probe.json";
+
 /// A MangaYomi provider runtime: either the d4rt_rs Dart interpreter
 /// ([`MangayomiRuntime`]) or the QuickJS JavaScript runtime
 /// ([`js::MangayomiJsRuntime`]). Method calls are synchronous from the
@@ -61,6 +68,63 @@ pub trait MangayomiProvider: Send + Sync {
         method: &str,
         args: Vec<serde_json::Value>,
     ) -> anyhow::Result<serde_json::Value>;
+
+    /// Stops the worker thread, if any. The runtime is fully reusable: the
+    /// next `invoke` spawns a fresh worker.
+    fn stop_worker(&self);
+}
+
+/// On-disk probe cache (`<id>.mangayomi.probe.json`). The extension
+/// fingerprint (length + mtime) guards against stale metadata when the
+/// extension is updated or replaced outside the install pipeline.
+#[derive(Serialize, Deserialize, Clone)]
+struct ProbeMeta {
+    base_url: String,
+    supports_latest: bool,
+    setting_definitions: Vec<SettingDefinition>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ProbeCache {
+    extension_len: u64,
+    extension_mtime_ns: u128,
+    #[serde(flatten)]
+    meta: ProbeMeta,
+}
+
+fn probe_cache_path(path: &Path) -> PathBuf {
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default();
+    let stem = name
+        .strip_suffix(MANGA_YOMI_FILE_SUFFIX)
+        .or_else(|| name.strip_suffix(MANGA_YOMI_JS_FILE_SUFFIX))
+        .unwrap_or(name);
+    path.with_file_name(format!("{stem}{MANGA_YOMI_PROBE_SUFFIX}"))
+}
+
+/// Returns the cached metadata when it matches the extension fingerprint.
+fn read_probe_cache(path: &Path, len: u64, mtime_ns: u128) -> Option<ProbeMeta> {
+    let contents = fs::read_to_string(probe_cache_path(path)).ok()?;
+    let cache: ProbeCache = serde_json::from_str(&contents).ok()?;
+    (cache.extension_len == len && cache.extension_mtime_ns == mtime_ns).then_some(cache.meta)
+}
+
+/// Persists the metadata next to the extension. Failures are logged, never
+/// fatal: the next load simply re-boots.
+fn write_probe_cache(path: &Path, len: u64, mtime_ns: u128, meta: &ProbeMeta) {
+    let cache = ProbeCache {
+        extension_len: len,
+        extension_mtime_ns: mtime_ns,
+        meta: meta.clone(),
+    };
+    let result = serde_json::to_vec(&cache)
+        .map_err(anyhow::Error::from)
+        .and_then(|bytes| fs::write(probe_cache_path(path), bytes).map_err(anyhow::Error::from));
+    if let Err(err) = result {
+        log::warn!("failed to write probe cache for {}: {err}", path.display());
+    }
 }
 
 impl MangayomiProvider for MangayomiRuntime {
@@ -71,6 +135,10 @@ impl MangayomiProvider for MangayomiRuntime {
     ) -> anyhow::Result<serde_json::Value> {
         self.invoke(method, args)
     }
+
+    fn stop_worker(&self) {
+        self.stop_worker();
+    }
 }
 
 impl MangayomiProvider for js::MangayomiJsRuntime {
@@ -80,6 +148,10 @@ impl MangayomiProvider for js::MangayomiJsRuntime {
         args: Vec<serde_json::Value>,
     ) -> anyhow::Result<serde_json::Value> {
         self.invoke(method, args)
+    }
+
+    fn stop_worker(&self) {
+        self.stop_worker();
     }
 }
 
@@ -106,7 +178,16 @@ pub struct MangayomiSource {
     /// `RefCell`-based and single-threaded, the lock makes the source
     /// shareable across `spawn_blocking` and the worker runtime.
     pub settings: Arc<Mutex<SourceSettings>>,
-    runtime: Arc<dyn MangayomiProvider>,
+    /// The extension source code, used to boot the runtime on first use.
+    code: String,
+    /// The `index.json` entry of the extension, used to build the `MSource`
+    /// argument for `main()`.
+    metadata: Value,
+    /// Whether the extension is JavaScript (`true`) or Dart (`false`).
+    is_js: bool,
+    /// Lazily booted provider runtime. `invoke` spawns the worker on demand
+    /// and the runtime is only created once per source lifetime.
+    runtime: Mutex<Option<Arc<dyn MangayomiProvider>>>,
 }
 
 impl std::fmt::Debug for MangayomiSource {
@@ -211,47 +292,58 @@ impl MangayomiSource {
             &stored_settings,
             arc_manager,
         )?));
-        let runtime: Arc<dyn MangayomiProvider> = if is_js {
-            Arc::new(js::MangayomiJsRuntime::new(
-                code,
-                metadata,
-                settings.clone(),
-                DEFAULT_INVOKE_TIMEOUT,
-            )?)
-        } else {
-            Arc::new(MangayomiRuntime::new(
-                code,
-                metadata,
-                settings.clone(),
-                DEFAULT_INVOKE_TIMEOUT,
-            )?)
+
+        // Lazy probe: the extension is only booted when the probe cache is
+        // missing or stale; the temporary worker is stopped right after, so
+        // load time never runs the interpreter.
+        let stat = fs::metadata(path)
+            .with_context(|| format!("failed to stat extension file {}", path.display()))?;
+        let extension_len = stat.len();
+        let extension_mtime_ns = stat
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+            .map(|d| d.as_nanos());
+        let probe = match extension_mtime_ns
+            .and_then(|mtime| read_probe_cache(path, extension_len, mtime))
+        {
+            Some(meta) => meta,
+            None => {
+                let probe_runtime: Arc<dyn MangayomiProvider> = if is_js {
+                    Arc::new(js::MangayomiJsRuntime::new(
+                        code.clone(),
+                        metadata.clone(),
+                        settings.clone(),
+                        DEFAULT_INVOKE_TIMEOUT,
+                    )?)
+                } else {
+                    Arc::new(MangayomiRuntime::new(
+                        code.clone(),
+                        metadata.clone(),
+                        settings.clone(),
+                        DEFAULT_INVOKE_TIMEOUT,
+                    )?)
+                };
+                let probe = ProbeMeta {
+                    base_url: probe_base_url(&*probe_runtime, is_js, &meta),
+                    supports_latest: probe_supports_latest(&*probe_runtime),
+                    setting_definitions: setting_definitions(&*probe_runtime)?,
+                };
+                probe_runtime.stop_worker();
+                if let Some(mtime) = extension_mtime_ns {
+                    write_probe_cache(path, extension_len, mtime, &probe);
+                }
+                probe
+            }
         };
 
         // Extension-declared preferences become the source's settings
         // definitions; stored values are merged on top of their defaults.
-        let setting_definitions = setting_definitions(&*runtime)?;
+        let setting_definitions = probe.setting_definitions;
         settings
             .lock()
             .unwrap_or_else(|e| e.into_inner())
             .seed_defaults(&setting_definitions);
-
-        // JavaScript extensions expose the base URL through the `MSource`
-        // JSON only, so fall back to the metadata for them.
-        let base_url = if is_js {
-            meta.base_url.clone()
-        } else {
-            runtime
-                .invoke("baseUrl", vec![])
-                .ok()
-                .and_then(|v| v.as_str().map(|s| s.to_string()))
-                .filter(|s| !s.is_empty())
-                .unwrap_or_else(|| meta.base_url.clone())
-        };
-        let supports_latest = runtime
-            .invoke("supportsLatest", vec![])
-            .ok()
-            .and_then(|v| v.as_bool())
-            .unwrap_or(true);
 
         let manifest = SourceManifest {
             info: SourceInfo {
@@ -262,7 +354,7 @@ impl MangayomiSource {
                 content_rating: None,
                 name: meta.name.clone(),
                 version: Value::String(meta.version.clone()),
-                url: Some(base_url.clone()),
+                url: Some(probe.base_url.clone()),
                 urls: None,
                 min_app_version: None,
             },
@@ -277,14 +369,42 @@ impl MangayomiSource {
             features: SourceFeatures {
                 process_page_image: false,
             },
-            base_url,
+            base_url: probe.base_url,
             name: meta.name,
             lang: meta.lang,
-            supports_latest,
+            supports_latest: probe.supports_latest,
             item_type: meta.item_type,
             settings,
-            runtime,
+            code,
+            metadata,
+            is_js,
+            runtime: Mutex::new(None),
         })
+    }
+
+    /// Boots the provider runtime on first use and returns a clone to call.
+    fn ensure_runtime(&self) -> Result<Arc<dyn MangayomiProvider>> {
+        let mut guard = self.runtime.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(runtime) = guard.as_ref() {
+            return Ok(runtime.clone());
+        }
+        let runtime: Arc<dyn MangayomiProvider> = if self.is_js {
+            Arc::new(js::MangayomiJsRuntime::new(
+                self.code.clone(),
+                self.metadata.clone(),
+                self.settings.clone(),
+                DEFAULT_INVOKE_TIMEOUT,
+            )?)
+        } else {
+            Arc::new(MangayomiRuntime::new(
+                self.code.clone(),
+                self.metadata.clone(),
+                self.settings.clone(),
+                DEFAULT_INVOKE_TIMEOUT,
+            )?)
+        };
+        *guard = Some(runtime.clone());
+        Ok(runtime)
     }
 
     /// Invokes an extension method with JSON args and parses the response.
@@ -293,7 +413,7 @@ impl MangayomiSource {
             .as_array()
             .cloned()
             .ok_or_else(|| anyhow!("mangayomi args must be a JSON array"))?;
-        self.runtime
+        self.ensure_runtime()?
             .invoke(method, args)
             .with_context(|| format!("extension method `{}` failed", method))
     }
@@ -780,4 +900,76 @@ fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDef
         }
     }
     Ok(out)
+}
+
+/// Probes the extension's base URL. JavaScript extensions expose it through
+/// the `MSource` JSON only, so the metadata value is used for them.
+fn probe_base_url(runtime: &dyn MangayomiProvider, is_js: bool, meta: &ExtensionMeta) -> String {
+    if is_js {
+        return meta.base_url.clone();
+    }
+    runtime
+        .invoke("baseUrl", vec![])
+        .ok()
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| meta.base_url.clone())
+}
+
+/// Probes whether the extension supports the "latest" listing.
+fn probe_supports_latest(runtime: &dyn MangayomiProvider) -> bool {
+    runtime
+        .invoke("supportsLatest", vec![])
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_probe_cache_path_uses_mangayomi_suffix() {
+        assert_eq!(
+            probe_cache_path(Path::new("/tmp/manga.mangayomi.dart")),
+            Path::new("/tmp/manga.mangayomi.probe.json")
+        );
+        assert_eq!(
+            probe_cache_path(Path::new("/tmp/manga.mangayomi.js")),
+            Path::new("/tmp/manga.mangayomi.probe.json")
+        );
+    }
+
+    #[test]
+    fn test_probe_cache_roundtrip() {
+        let dir =
+            std::env::temp_dir().join(format!("rakuyomi-mangayomi-probe-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let extension = dir.join("manga.mangayomi.dart");
+        fs::write(&extension, "void main() {}").unwrap();
+        let meta = ProbeMeta {
+            base_url: "https://example.com".to_string(),
+            supports_latest: true,
+            setting_definitions: vec![SettingDefinition::Switch {
+                title: "T".to_string(),
+                key: "k".to_string(),
+                default: true,
+            }],
+        };
+        write_probe_cache(&extension, 14, 12345, &meta);
+        let cached = read_probe_cache(&extension, 14, 12345).expect("cache should hit");
+        assert_eq!(cached.base_url, meta.base_url);
+        assert_eq!(cached.supports_latest, meta.supports_latest);
+        assert_eq!(cached.setting_definitions.len(), 1);
+        assert!(
+            read_probe_cache(&extension, 15, 12345).is_none(),
+            "length mismatch"
+        );
+        assert!(
+            read_probe_cache(&extension, 14, 12346).is_none(),
+            "mtime mismatch"
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
 }

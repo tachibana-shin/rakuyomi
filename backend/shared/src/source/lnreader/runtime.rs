@@ -77,7 +77,10 @@ impl LnReaderRuntime {
         user_agent: String,
         timeout: Duration,
     ) -> Result<Self> {
-        let runtime = Self {
+        // The worker is not spawned here: `invoke` starts (or restarts) it
+        // on demand, so a plugin only occupies a thread + JS context while a
+        // call is actually running.
+        Ok(Self {
             plugin_id,
             plugin_code,
             site,
@@ -85,9 +88,16 @@ impl LnReaderRuntime {
             storage: Arc::new(Mutex::new(HashMap::new())),
             timeout,
             worker: Mutex::new(None),
+        })
+    }
+
+    /// Stops the worker thread, if any. The runtime is fully reusable: the
+    /// next `invoke` spawns a fresh worker.
+    pub fn stop_worker(&self) {
+        let Ok(mut worker) = self.worker.lock() else {
+            return;
         };
-        runtime.start_worker()?;
-        Ok(runtime)
+        *worker = None;
     }
 
     /// Inserts raw storage entries (`pluginId_DB_key` → JSON item) before any

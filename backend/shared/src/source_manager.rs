@@ -204,10 +204,12 @@ impl SourceManager {
         for path in [
             self.source_path(id),
             self.lnreader_source_path(id),
+            self.lnreader_probe_path(id),
             self.mangayomi_source_path(id),
             self.mangayomi_js_source_path(id),
+            self.mangayomi_probe_path(id),
             self.keiyoushi_source_path(id),
-            self.keiyoushi_prefs_path(id),
+            self.keiyoushi_probe_path(id),
         ] {
             if path.exists() {
                 fs::remove_file(&path)?;
@@ -332,6 +334,15 @@ impl SourceManager {
         ))
     }
 
+    /// The path of the probe cache sidecar of an LNReader plugin.
+    pub fn lnreader_probe_path(&self, id: &SourceId) -> PathBuf {
+        self.sources_folder.join(format!(
+            "{}{}",
+            id.value(),
+            crate::source::lnreader::LNREADER_PROBE_SUFFIX
+        ))
+    }
+
     pub fn mangayomi_source_path(&self, id: &SourceId) -> PathBuf {
         self.sources_folder.join(format!(
             "{}{}",
@@ -348,6 +359,15 @@ impl SourceManager {
         ))
     }
 
+    /// The path of the probe cache sidecar of a MangaYomi extension.
+    pub fn mangayomi_probe_path(&self, id: &SourceId) -> PathBuf {
+        self.sources_folder.join(format!(
+            "{}{}",
+            id.value(),
+            crate::source::mangayomi::MANGA_YOMI_PROBE_SUFFIX
+        ))
+    }
+
     /// The path of the keiyoushi extension APK of a source id. Multi-source
     /// APKs register their sources as `<pkg>:<lang>`; they all share the
     /// `<pkg>.keiyoushi.apk` file.
@@ -359,13 +379,13 @@ impl SourceManager {
         ))
     }
 
-    /// The path of the persisted `SharedPreferences` of a keiyoushi
-    /// extension APK (one per extension package).
-    pub fn keiyoushi_prefs_path(&self, id: &SourceId) -> PathBuf {
+    /// The path of the probe cache sidecar of a keiyoushi extension APK
+    /// (one per extension package).
+    pub fn keiyoushi_probe_path(&self, id: &SourceId) -> PathBuf {
         let pkg = id.value().split(':').next().unwrap_or(id.value());
         self.sources_folder.join(format!(
             "{pkg}{}",
-            crate::source::keiyoushi::KEIYOUSHI_PREFS_SUFFIX
+            crate::source::keiyoushi::KEIYOUSHI_PROBE_SUFFIX
         ))
     }
 }

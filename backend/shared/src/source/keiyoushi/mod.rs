@@ -23,10 +23,10 @@ pub mod model;
 use std::{
     cell::RefCell,
     fs,
-    path::Path,
+    path::{Path, PathBuf},
     rc::Rc,
     sync::{Arc, Mutex},
-    time::Duration,
+    time::{Duration, UNIX_EPOCH},
 };
 
 use anyhow::{anyhow, bail, Context as _, Result};
@@ -34,6 +34,7 @@ use dexvm::context::SettingValue;
 use dexvm::keiyoushi::{HttpData, HttpResp, Keiyoushi};
 use dexvm::vm::error::JvmError;
 use reqwest::{header::HeaderMap, Method, Request};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio_util::sync::CancellationToken;
 use url::Url;
@@ -52,9 +53,10 @@ use crate::{
 /// The suffix of installed extension APKs (`<pkg>.keiyoushi.apk`).
 pub(crate) const KEIYOUSHI_FILE_SUFFIX: &str = ".keiyoushi.apk";
 
-/// The suffix of the persisted SharedPreferences file of an installed APK
-/// (`<pkg>.keiyoushi.prefs`).
-pub(crate) const KEIYOUSHI_PREFS_SUFFIX: &str = ".keiyoushi.prefs";
+/// The suffix of the probe cache sidecar (`<pkg>.keiyoushi.probe.json`),
+/// which records the metadata collected by booting the APK once at install
+/// time so later loads can skip the boot entirely.
+pub(crate) const KEIYOUSHI_PROBE_SUFFIX: &str = ".keiyoushi.probe.json";
 
 /// How long a single HTTP request issued through the extension may take.
 const HTTP_TIMEOUT: Duration = Duration::from_secs(60);
@@ -70,8 +72,10 @@ pub struct KeiyoushiSource {
     pub name: String,
     pub lang: String,
     pub supports_latest: bool,
-    /// The extension APK bytes, shared by every source bundled in it.
-    apk_bytes: Arc<Vec<u8>>,
+    /// Path of the extension APK on disk. The APK is only read from disk
+    /// when a call needs a fresh engine, so installed extensions do not hold
+    /// their (potentially tens of MB) bytes in memory.
+    apk_path: PathBuf,
     /// Which source of the APK (`createSources()` index) this instance is.
     source_index: usize,
     /// Merged source settings (stored values overlaid on the extension
@@ -100,12 +104,55 @@ impl std::fmt::Debug for KeiyoushiSource {
 
 /// The result of booting an extension APK once: the manifest package id,
 /// the sources it bundles and the preference definitions it materialises.
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct ApkProbe {
     /// Canonical `manifest` package id (e.g.
     /// `eu.kanade.tachiyomi.extension.vi.cuutruyenmoe`).
     package_id: String,
     sources: Vec<(String, String, bool)>,
     setting_definitions: Vec<SettingDefinition>,
+}
+
+/// On-disk probe cache (`<pkg>.keiyoushi.probe.json`). The APK fingerprint
+/// (length + mtime) guards against stale metadata when the extension is
+/// updated or replaced outside the install pipeline.
+#[derive(Serialize, Deserialize)]
+struct ProbeCache {
+    apk_len: u64,
+    apk_mtime_ns: u128,
+    probe: ApkProbe,
+}
+
+fn probe_cache_path(path: &Path) -> PathBuf {
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default();
+    let stem = name.strip_suffix(KEIYOUSHI_FILE_SUFFIX).unwrap_or(name);
+    path.with_file_name(format!("{stem}{KEIYOUSHI_PROBE_SUFFIX}"))
+}
+
+/// Returns the cached probe when it matches the APK fingerprint on disk.
+fn read_probe_cache(path: &Path, apk_len: u64, apk_mtime_ns: u128) -> Option<ApkProbe> {
+    let contents = fs::read_to_string(probe_cache_path(path)).ok()?;
+    let cache: ProbeCache = serde_json::from_str(&contents).ok()?;
+    (cache.apk_len == apk_len && cache.apk_mtime_ns == apk_mtime_ns).then_some(cache.probe)
+}
+
+/// Persists the probe next to the APK. Failures are logged, never fatal:
+/// the next load simply re-boots.
+fn write_probe_cache(path: &Path, apk_len: u64, apk_mtime_ns: u128, probe: &ApkProbe) {
+    let cache = ProbeCache {
+        apk_len,
+        apk_mtime_ns,
+        probe: probe.clone(),
+    };
+    let result = serde_json::to_vec(&cache)
+        .map_err(anyhow::Error::from)
+        .and_then(|bytes| fs::write(probe_cache_path(path), bytes).map_err(anyhow::Error::from));
+    if let Err(err) = result {
+        log::warn!("failed to write probe cache for {}: {err}", path.display());
+    }
 }
 
 impl KeiyoushiSource {
@@ -120,9 +167,29 @@ impl KeiyoushiSource {
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Vec<Self>> {
-        let bytes = fs::read(path)
-            .with_context(|| format!("failed to read extension file {}", path.display()))?;
-        let probe = probe_apk(&bytes)?;
+        // The APK is only booted when the probe cache is missing or stale;
+        // booting happens again on the first actual call (`with_engine`),
+        // so load time never runs the VM.
+        let metadata = fs::metadata(path)
+            .with_context(|| format!("failed to stat extension file {}", path.display()))?;
+        let apk_len = metadata.len();
+        let apk_mtime_ns = metadata
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+            .map(|d| d.as_nanos());
+        let probe = match apk_mtime_ns.and_then(|mtime| read_probe_cache(path, apk_len, mtime)) {
+            Some(probe) => probe,
+            None => {
+                let bytes = fs::read(path)
+                    .with_context(|| format!("failed to read extension file {}", path.display()))?;
+                let probe = probe_apk(&bytes)?;
+                if let Some(mtime) = apk_mtime_ns {
+                    write_probe_cache(path, apk_len, mtime, &probe);
+                }
+                probe
+            }
+        };
 
         // The canonical package id comes from the manifest; the file name is
         // only a fallback for containers without one.
@@ -152,7 +219,6 @@ impl KeiyoushiSource {
 
         let prefs_path = path.with_extension("keiyoushi.prefs");
         let single = probe.sources.len() == 1;
-        let apk_bytes = Arc::new(bytes);
         let mut out = Vec::with_capacity(probe.sources.len());
         for (index, (name, lang, supports_latest)) in probe.sources.iter().enumerate() {
             let id = if single {
@@ -199,7 +265,7 @@ impl KeiyoushiSource {
                 name: name.clone(),
                 lang: lang.clone(),
                 supports_latest: *supports_latest,
-                apk_bytes: apk_bytes.clone(),
+                apk_path: path.to_path_buf(),
                 source_index: index,
                 settings,
                 prefs_path: prefs_path.clone(),
@@ -217,7 +283,10 @@ impl KeiyoushiSource {
         &self,
         f: impl FnOnce(&mut Keiyoushi, dexvm::keiyoushi::Source) -> Result<T, JvmError>,
     ) -> Result<(T, Option<Url>)> {
-        let mut ext = Keiyoushi::new(&self.apk_bytes)
+        let bytes = fs::read(&self.apk_path).with_context(|| {
+            format!("failed to read extension file {}", self.apk_path.display())
+        })?;
+        let mut ext = Keiyoushi::new(&bytes)
             .map_err(|e| anyhow!("failed to boot keiyoushi extension: {e}"))?;
 
         let client = crate::tls::blocking_client_builder()
@@ -818,6 +887,46 @@ fn setting_definition_from_dexvm(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_probe_cache_path_uses_keiyoushi_suffix() {
+        let path = Path::new("/tmp/eu.kanade.tachiyomi.extension.en.mangapill.keiyoushi.apk");
+        assert_eq!(
+            probe_cache_path(path),
+            Path::new("/tmp/eu.kanade.tachiyomi.extension.en.mangapill.keiyoushi.probe.json")
+        );
+    }
+
+    #[test]
+    fn test_probe_cache_roundtrip() {
+        let dir =
+            std::env::temp_dir().join(format!("rakuyomi-keiyoushi-probe-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let apk = dir.join("eu.kanade.tachiyomi.extension.en.mangapill.keiyoushi.apk");
+        fs::write(&apk, b"fake apk bytes").unwrap();
+        let probe = ApkProbe {
+            package_id: "eu.kanade.tachiyomi.extension.en.mangapill".to_string(),
+            sources: vec![("MangaPill".to_string(), "en".to_string(), true)],
+            setting_definitions: vec![],
+        };
+        write_probe_cache(&apk, 14, 12345, &probe);
+        let cached = read_probe_cache(&apk, 14, 12345).expect("cache should hit");
+        assert_eq!(cached.package_id, probe.package_id);
+        assert_eq!(cached.sources, probe.sources);
+        assert!(
+            read_probe_cache(&apk, 15, 12345).is_none(),
+            "length mismatch"
+        );
+        assert!(
+            read_probe_cache(&apk, 14, 12346).is_none(),
+            "mtime mismatch"
+        );
+        assert!(
+            read_probe_cache(&apk, 14, 12345).is_some(),
+            "cached value survives reads"
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn test_setting_value_to_pref() {

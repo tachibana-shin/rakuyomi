@@ -166,6 +166,7 @@ fn definition(key: &str, item: &Value) -> Result<SettingDefinition> {
         }
         "Text" | "TextInput" => Ok(SettingDefinition::Text {
             placeholder: None,
+            title: Some(label.to_string()),
             key: key.to_string(),
             default: item
                 .get("value")
@@ -177,12 +178,9 @@ fn definition(key: &str, item: &Value) -> Result<SettingDefinition> {
             Ok(SettingDefinition::Select {
                 title: label.to_string(),
                 key: key.to_string(),
-                default: item
-                    .get("value")
-                    .and_then(Value::as_u64)
-                    .and_then(|i| options.get(i as usize).cloned()),
+                default: picker_default(item, &options),
                 values: options,
-                titles: None,
+                titles: option_titles(item),
             })
         }
         "Switch" => Ok(SettingDefinition::Switch {
@@ -205,7 +203,7 @@ fn definition(key: &str, item: &Value) -> Result<SettingDefinition> {
                     })
                     .unwrap_or_default(),
                 values: option_values(item),
-                titles: None,
+                titles: option_titles(item),
             })
         }
         other => anyhow::bail!("unsupported LNReader filter type `{}`", other),
@@ -244,4 +242,116 @@ fn option_values(item: &Value) -> Vec<String> {
             .collect();
     }
     Vec::new()
+}
+
+/// The display titles of a checkbox/picker filter's options. Falls back to
+/// `None` when the plugin declares no `options` (so `keys`/`values` arrays
+/// are used) or when any label is missing, in which case the UI shows the
+/// option values as labels.
+fn option_titles(item: &Value) -> Option<Vec<String>> {
+    let options = item.get("options").and_then(Value::as_array)?;
+    let titles: Vec<String> = options
+        .iter()
+        .map(|o| {
+            o.get("label")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        })
+        .collect();
+    if titles.iter().any(|t| t.is_empty()) {
+        return None;
+    }
+    Some(titles)
+}
+
+/// The selected option of a picker filter. The plugin stores the selected
+/// option *value* (e.g. `"hits"`), so the default only resolves when it
+/// matches one of the declared options.
+fn picker_default(item: &Value, options: &[String]) -> Option<String> {
+    let value = item.get("value").and_then(Value::as_str)?;
+    if value.is_empty() {
+        return None;
+    }
+    options.iter().find(|o| *o == value).cloned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_picker_maps_selected_value_and_labels() {
+        let item = json!({
+            "type": "Picker",
+            "label": "Sort by",
+            "value": "hits",
+            "options": [
+                { "label": "Best Match", "value": "_score" },
+                { "label": "Hits", "value": "hits" },
+            ],
+        });
+        let def = definition("sort", &item).unwrap();
+        assert!(matches!(
+            def,
+            SettingDefinition::Select { title, key, values, titles, default }
+                if title == "Sort by"
+                    && key == "sort"
+                    && values == vec!["_score", "hits"]
+                    && titles == Some(vec!["Best Match".to_string(), "Hits".to_string()])
+                    && default == Some("hits".to_string())
+        ));
+    }
+
+    #[test]
+    fn test_picker_default_unset_when_value_is_empty_or_unknown() {
+        for value in [json!(""), json!("nope")] {
+            let item = json!({
+                "type": "Picker",
+                "label": "Sort by",
+                "value": value,
+                "options": [{ "label": "Hits", "value": "hits" }],
+            });
+            let def = definition("sort", &item).unwrap();
+            assert!(matches!(
+                def,
+                SettingDefinition::Select { default: None, .. }
+            ));
+        }
+    }
+
+    #[test]
+    fn test_checkbox_maps_labels_and_selected_values() {
+        let item = json!({
+            "type": "Checkbox",
+            "label": "Categories",
+            "value": ["22", "24"],
+            "options": [
+                { "label": "F/F", "value": "116" },
+                { "label": "F/M", "value": "22" },
+                { "label": "Other", "value": "24" },
+            ],
+        });
+        let def = definition("categories", &item).unwrap();
+        assert!(matches!(
+            def,
+            SettingDefinition::MultiSelect { key, values, titles, default, .. }
+                if key == "categories"
+                    && values == vec!["116", "22", "24"]
+                    && titles == Some(vec!["F/F".to_string(), "F/M".to_string(), "Other".to_string()])
+                    && default == vec!["22", "24"]
+        ));
+    }
+
+    #[test]
+    fn test_text_keeps_label_as_title() {
+        let item = json!({ "type": "Text", "label": "Author", "value": "Jane" });
+        let def = definition("author", &item).unwrap();
+        assert!(matches!(
+            def,
+            SettingDefinition::Text { title, default, .. }
+                if title == Some("Author".to_string()) && default == Some("Jane".to_string())
+        ));
+    }
 }

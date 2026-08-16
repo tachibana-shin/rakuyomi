@@ -72,6 +72,10 @@ pub enum SettingDefinition {
     },
     #[serde(rename = "text")]
     Text {
+        /// `serde(default)` keeps definitions without a title (aidoku WASM
+        /// sources, older probe caches) readable.
+        #[serde(default)]
+        title: Option<String>,
         placeholder: Option<String>,
         key: String,
         // FIXME is text the only setting type that's allowed to not have a default?

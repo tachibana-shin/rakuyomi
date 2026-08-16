@@ -102,6 +102,22 @@ local function mapSettingDefinitionToValueDefinition(setting_definition)
   end
 end
 
+local function stored_value_matches(setting_definition, stored_value)
+  if stored_value == nil then
+    return false
+  end
+
+  if setting_definition.type == 'switch' then
+    return type(stored_value) == 'boolean'
+  elseif setting_definition.type == 'select' or setting_definition.type == 'text' or setting_definition.type == 'login' then
+    return type(stored_value) == 'string'
+  elseif setting_definition.type == 'multi-select' or setting_definition.type == 'editable-list' then
+    return type(stored_value) == 'table'
+  end
+
+  return false
+end
+
 local SourceSettings = FocusManager:extend {
   source_id = nil,
   setting_definitions = nil,
@@ -170,6 +186,12 @@ function SourceSettings:init()
       return
     end
 
+    -- Only trust stored values whose type matches the definition; stale
+    -- values of the wrong type (e.g. a boolean leftover from when the
+    -- setting used to be a switch) would crash the value widget.
+    local stored_value = self.stored_settings[def.key]
+    local value = stored_value_matches(def, stored_value) and stored_value or def.default
+
     local setting_item = SettingItem:new {
       show_parent = self,
       width = self.item_width,
@@ -178,7 +200,7 @@ function SourceSettings:init()
       -- leak here
       label = def.title or def.placeholder,
       value_definition = mapSettingDefinitionToValueDefinition(def),
-      value = self.stored_settings[def.key] or def.default,
+      value = value,
       source_id = self.source_id,
       on_value_changed_callback = function(new_value)
         self:updateStoredSetting(def.key, new_value)

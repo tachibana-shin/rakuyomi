@@ -84,8 +84,14 @@ function SettingItemValue:createValueWidget()
       label_for_value[option.value] = option.label
     end
 
+    -- The stored value may not match any option (e.g. a boolean leftover
+    -- from when the setting used to be a switch), so fall back to the raw
+    -- value instead of concatenating nil.
+    local current_value = self:getCurrentValue()
+    local label = label_for_value[current_value] or tostring(current_value)
+
     return TextWidget:new {
-      text = label_for_value[self:getCurrentValue()] .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = label .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -126,7 +132,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "string" then
     local value = self:getCurrentValue()
-    if value == nil or value == "" then
+    if type(value) ~= "string" or value == "" then
       value = _("Not set")
     end
     return TextWidget:new {
@@ -136,7 +142,8 @@ function SettingItemValue:createValueWidget()
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "list" then
-    local value = table.concat(self:getCurrentValue() or {}, "\n")
+    local current_value = self:getCurrentValue()
+    local value = table.concat(type(current_value) == "table" and current_value or {}, "\n")
     if value == "" then
       value = _("Not set")
     end
@@ -293,9 +300,10 @@ function SettingItemValue:onTap()
     UIManager:show(dialog)
   elseif self.value_definition.type == "string" then
     local dialog
+    local current_value = self:getCurrentValue()
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue() or "",
+      input = type(current_value) == "string" and current_value or "",
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -330,9 +338,10 @@ function SettingItemValue:onTap()
     end)
   elseif self.value_definition.type == "list" then
     local dialog
+    local current_value = self:getCurrentValue()
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = table.concat(self:getCurrentValue() or {}, "\n"),
+      input = table.concat(type(current_value) == "table" and current_value or {}, "\n"),
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -365,9 +374,10 @@ function SettingItemValue:onTap()
     end)
   elseif self.value_definition.type == "path" then
     local path_chooser
+    local current_path = self:getCurrentValue()
     path_chooser = PathChooser:new({
       title = self.value_definition.title,
-      path = self:getCurrentValue(),
+      path = type(current_path) == "string" and current_path or nil,
       onConfirm = function(new_path)
         self:updateCurrentValue(new_path)
         UIManager:close(path_chooser)

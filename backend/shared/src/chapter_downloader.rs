@@ -236,7 +236,6 @@ where
                     let source = source.clone();
                     let cancel_token = cancel_token.clone();
                     let chapter_id_str = chapter_id_str.clone();
-                    let page_index_width = page_index_width;
 
                     async move {
                         let page_index = page.index;

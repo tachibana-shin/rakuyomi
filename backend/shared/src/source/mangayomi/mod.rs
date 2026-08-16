@@ -778,6 +778,10 @@ fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDef
             if let Some(default) = value.as_str() {
                 out.push(SettingDefinition::Text {
                     placeholder: None,
+                    title: item
+                        .get("title")
+                        .and_then(Value::as_str)
+                        .map(|s| s.to_string()),
                     key: key.to_string(),
                     default: Some(default.to_string()),
                 });
@@ -891,6 +895,10 @@ fn setting_definitions(runtime: &dyn MangayomiProvider) -> Result<Vec<SettingDef
         } else if let Some(pref) = item.get("editTextPreference") {
             out.push(SettingDefinition::Text {
                 placeholder: None,
+                title: pref
+                    .get("title")
+                    .and_then(Value::as_str)
+                    .map(|s| s.to_string()),
                 key: key.to_string(),
                 default: pref
                     .get("value")

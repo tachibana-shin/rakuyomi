@@ -1171,15 +1171,46 @@ fn setting_definition_from_dexvm(
         return None;
     }
     let title = title.unwrap_or_else(|| key.clone());
-    let default = match definition.default_value {
-        dexvm::vm::value::JValue::Int(value) => value != 0,
-        _ => false,
-    };
-    Some(SettingDefinition::Switch {
-        title,
-        key,
-        default,
-    })
+    let values = definition.entry_values.clone();
+    let titles = (!definition.entries.is_empty()).then(|| definition.entries.clone());
+    let short = definition
+        .kind
+        .as_deref()
+        .and_then(|kind| kind.rsplit('.').next())
+        .unwrap_or_default();
+    match short {
+        "ListPreference" => Some(SettingDefinition::Select {
+            title,
+            key,
+            values,
+            titles,
+            default: definition.default_text,
+        }),
+        "MultiSelectListPreference" => Some(SettingDefinition::MultiSelect {
+            title,
+            key,
+            values,
+            titles,
+            default: definition.default_values,
+        }),
+        "EditTextPreference" | "TextPreference" => Some(SettingDefinition::Text {
+            placeholder: None,
+            title: Some(title),
+            key,
+            default: definition.default_text,
+        }),
+        _ => {
+            let default = match definition.default_value {
+                dexvm::vm::value::JValue::Int(value) => value != 0,
+                _ => false,
+            };
+            Some(SettingDefinition::Switch {
+                title,
+                key,
+                default,
+            })
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1251,11 +1282,84 @@ mod tests {
             enabled: true,
             visible: true,
             children: Vec::new(),
+            kind: Some("androidx.preference.SwitchPreferenceCompat".to_string()),
+            entries: Vec::new(),
+            entry_values: Vec::new(),
+            default_text: None,
+            default_values: Vec::new(),
         };
         let converted = setting_definition_from_dexvm(def).unwrap();
         assert!(matches!(
             converted,
             SettingDefinition::Switch { key, default, .. } if key == "nsfw" && default
+        ));
+
+        let list = dexvm::context::SettingDefinition {
+            key: Some("domain".to_string()),
+            title: Some("Chọn tên miền".to_string()),
+            summary: None,
+            default_value: dexvm::vm::value::JValue::Null,
+            enabled: true,
+            visible: true,
+            children: Vec::new(),
+            kind: Some("androidx.preference.ListPreference".to_string()),
+            entries: vec!["Domain A".to_string(), "Domain B".to_string()],
+            entry_values: vec!["a.net".to_string(), "b.net".to_string()],
+            default_text: Some("a.net".to_string()),
+            default_values: Vec::new(),
+        };
+        let converted = setting_definition_from_dexvm(list).unwrap();
+        assert!(matches!(
+            converted,
+            SettingDefinition::Select { key, values, titles, default, .. }
+                if key == "domain"
+                    && values == vec!["a.net".to_string(), "b.net".to_string()]
+                    && titles == Some(vec!["Domain A".to_string(), "Domain B".to_string()])
+                    && default == Some("a.net".to_string())
+        ));
+
+        let multi = dexvm::context::SettingDefinition {
+            key: Some("genres".to_string()),
+            title: Some("Genres".to_string()),
+            summary: None,
+            default_value: dexvm::vm::value::JValue::Null,
+            enabled: true,
+            visible: true,
+            children: Vec::new(),
+            kind: Some("androidx.preference.MultiSelectListPreference".to_string()),
+            entries: Vec::new(),
+            entry_values: vec!["action".to_string(), "drama".to_string()],
+            default_text: None,
+            default_values: vec!["action".to_string()],
+        };
+        let converted = setting_definition_from_dexvm(multi).unwrap();
+        assert!(matches!(
+            converted,
+            SettingDefinition::MultiSelect { key, values, default, .. }
+                if key == "genres" && values.len() == 2 && default == vec!["action".to_string()]
+        ));
+
+        let text = dexvm::context::SettingDefinition {
+            key: Some("alt".to_string()),
+            title: Some("Alt domain".to_string()),
+            summary: None,
+            default_value: dexvm::vm::value::JValue::Null,
+            enabled: true,
+            visible: true,
+            children: Vec::new(),
+            kind: Some("androidx.preference.EditTextPreference".to_string()),
+            entries: Vec::new(),
+            entry_values: Vec::new(),
+            default_text: Some("x.net".to_string()),
+            default_values: Vec::new(),
+        };
+        let converted = setting_definition_from_dexvm(text).unwrap();
+        assert!(matches!(
+            converted,
+            SettingDefinition::Text { key, title, default, .. }
+                if key == "alt"
+                    && title == Some("Alt domain".to_string())
+                    && default == Some("x.net".to_string())
         ));
 
         let group = dexvm::context::SettingDefinition {
@@ -1273,7 +1377,17 @@ mod tests {
                 enabled: true,
                 visible: true,
                 children: Vec::new(),
+                kind: Some("androidx.preference.SwitchPreferenceCompat".to_string()),
+                entries: Vec::new(),
+                entry_values: Vec::new(),
+                default_text: None,
+                default_values: Vec::new(),
             }],
+            kind: None,
+            entries: Vec::new(),
+            entry_values: Vec::new(),
+            default_text: None,
+            default_values: Vec::new(),
         };
         let converted = setting_definition_from_dexvm(group).unwrap();
         assert!(matches!(converted, SettingDefinition::Group { items, .. } if items.len() == 1));
@@ -1466,4 +1580,15 @@ mod tests {
             "seeded setting must survive the write-back"
         );
     }
+}
+
+#[test]
+#[ignore = "needs RAKUYOMI_APK"]
+fn dump_probe_definitions() {
+    let apk = std::env::var("RAKUYOMI_APK").unwrap();
+    let probe = probe_apk(&std::fs::read(&apk).unwrap()).unwrap();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&probe.setting_definitions).unwrap()
+    );
 }

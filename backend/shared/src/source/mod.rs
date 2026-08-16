@@ -353,20 +353,27 @@ impl Source {
     );
 
     /// Fetches the plaintext bytes of a page image. Keiyoushi sources run
-    /// the fetch through the extension's own OkHttpClient inside the VM, so
-    /// client-side interceptors (IMGX-style decryption, per-host auth)
-    /// apply; the remaining backends keep the plain GET path via
+    /// the request through the extension's own OkHttpClient inside the
+    /// persistent engine session (`getPageList` is parsed once per chapter,
+    /// then every image of the chapter), so client-side interceptors
+    /// (IMGX-style decryption, per-host auth) apply; the remaining backends
+    /// keep the plain GET path via
     /// [`get_image_request`](Self::get_image_request).
-    pub async fn fetch_page_image(&self, chapter_id: &str, url: &Url) -> Result<Vec<u8>> {
+    pub async fn fetch_page_image(&self, chapter_id: &str, url: &str) -> Result<Vec<u8>, String> {
         match &self.backend {
             SourceBackend::Keiyoushi(keiyoushi) => {
                 let keiyoushi = keiyoushi.clone();
                 let chapter_id = chapter_id.to_string();
-                let url = url.as_str().to_string();
-                tokio::task::spawn_blocking(move || keiyoushi.fetch_page_image(&chapter_id, &url))
-                    .await?
+                let url = url.to_string();
+                tokio::task::spawn_blocking(move || {
+                    keiyoushi
+                        .fetch_page_image(&chapter_id, &url)
+                        .map_err(|err| err.to_string())
+                })
+                .await
+                .unwrap_or_else(|err| Err(err.to_string()))
             }
-            _ => anyhow::bail!("fetch_page_image is only supported by keiyoushi sources"),
+            _ => Err("fetch_page_image is only supported by keiyoushi sources".to_string()),
         }
     }
 

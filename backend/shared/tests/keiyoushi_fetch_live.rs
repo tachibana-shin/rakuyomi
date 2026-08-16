@@ -1,8 +1,9 @@
 //! TEMPORARY live probe: verifies the full RakuYomi download path for
 //! IMGX-encrypted keiyoushi sources. Installs the moetruyen extension,
-//! fetches a page list, then calls Source::fetch_page_image and checks
-//! the bytes are decrypted (not "IMGX"-headed). Run with RAKUYOMI_APK set.
-//! Not part of the permanent suite: remove after promotion.
+//! fetches a page list, then calls Source::fetch_page_image per page and
+//! checks the bytes are decrypted (not "IMGX"-headed). Run with
+//! RAKUYOMI_APK set. Not part of the permanent suite: remove after
+//! promotion.
 
 use std::sync::Arc;
 
@@ -117,31 +118,40 @@ fn probe_fetch_page_image() {
         Err(e) => panic!("pages ERR {e:#}"),
     };
 
-    let first = pages[0].image_url.clone().unwrap();
-    eprintln!("fetch_page_image: chapter={} url={first}", chapter.id);
+    eprintln!(
+        "fetch_page_image: chapter={} url_count={}",
+        chapter.id,
+        pages.len()
+    );
     let rt = tokio::runtime::Runtime::new().unwrap();
-    let out = rt.block_on(source.fetch_page_image(&chapter.id, &first));
-    match &out {
-        Ok(b) => {
-            let head: Vec<u8> = b.iter().take(8).copied().collect();
-            let magic = String::from_utf8_lossy(&head).to_string();
-            eprintln!(
-                "fetch_page_image OK: {} bytes, magic={:?} text={:?}",
-                b.len(),
-                head,
-                magic
-            );
-            assert!(
-                !head.starts_with(b"IMGX"),
-                "bytes still IMGX-encrypted: {head:?}"
-            );
-            assert!(
-                b.len() > 1000,
-                "suspiciously small image: {} bytes",
-                b.len()
-            );
+    for (i, url) in pages
+        .iter()
+        .filter_map(|p| p.image_url.clone())
+        .take(5)
+        .enumerate()
+    {
+        match rt.block_on(source.fetch_page_image(&chapter.id, url.as_str())) {
+            Ok(b) => {
+                let head: Vec<u8> = b.iter().take(8).copied().collect();
+                let magic = String::from_utf8_lossy(&head).to_string();
+                eprintln!(
+                    "fetch_page_image[{i}] OK: {} bytes, magic={:?} text={:?}",
+                    b.len(),
+                    head,
+                    magic
+                );
+                assert!(
+                    !head.starts_with(b"IMGX"),
+                    "bytes still IMGX-encrypted: {head:?}"
+                );
+                assert!(
+                    b.len() > 1000,
+                    "suspiciously small image: {} bytes",
+                    b.len()
+                );
+            }
+            Err(e) => panic!("fetch_page_image[{i}] ERR {e:#}"),
         }
-        Err(e) => panic!("fetch_page_image ERR {e:#}"),
     }
     eprintln!("=== FETCH-PAGE-IMAGE PROBE PASSED ===");
 }

@@ -25,8 +25,8 @@ use crate::{
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
-        create_xhtml, download_all_images, generate_error_image, get_image_src, into_html,
-        prepare_cover, request_with_forced_referer_from_request,
+        create_xhtml, detect_image_extension, download_all_images, generate_error_image,
+        get_image_src, into_html, prepare_cover, request_with_forced_referer_from_request,
     },
 };
 
@@ -258,15 +258,45 @@ where
                             ) {
                                 // keiyoushi images may be IMGX-encrypted: fetch through the
                                 // extension's own client so its interceptor decrypts them.
-                                Bytes::from(
-                                    source
-                                        .fetch_page_image(&chapter_id_str, &image_url)
-                                        .await
-                                        .map_err(|err| {
-                                            eprintln!("Failed keiyoushi image fetch {err}");
-                                            err
-                                        })?,
-                                )
+                                let bytes = source
+                                    .fetch_page_image(&chapter_id_str, image_url.as_str())
+                                    .await
+                                    .map_err(|err| {
+                                        eprintln!("Failed keiyoushi image fetch {err}");
+                                        anyhow::anyhow!(err)
+                                    })?;
+
+                                // The extension's client swallows HTTP statuses
+                                // (only its interceptor sees them), so a failed
+                                // request or decrypt can still come back as
+                                // bytes; render the same error image as the
+                                // plain GET path when they are not an image.
+                                if detect_image_extension(&bytes).is_none() {
+                                    let head = String::from_utf8_lossy(
+                                        &bytes[..bytes.len().min(16)],
+                                    )
+                                    .to_string();
+                                    let reason = if bytes.starts_with(b"IMGX") {
+                                        "image is still IMGX-encrypted".to_string()
+                                    } else {
+                                        format!("invalid image data: {head:?}")
+                                    };
+                                    let err = DownloadError {
+                                        page_index: page.index,
+                                        url: image_url.to_string(),
+                                        reason: reason.clone(),
+                                        attempts: 1,
+                                    };
+                                    eprintln!("{:?}", err);
+                                    return Ok((
+                                        page.index,
+                                        format!("{:0>4}.jpg", page.index),
+                                        generate_error_image("Error", &reason, 500, 667)?,
+                                        Some(err),
+                                    ));
+                                }
+
+                                Bytes::from(bytes)
                             } else {
                                 let request = source
                                     .get_image_request(image_url, page.ctx.clone())
@@ -409,6 +439,14 @@ where
                         .await
                         {
                             Ok((index, filename, final_bytes, error_info)) => {
+                                // Keiyoushi image URLs may end in a disguised
+                                // extension (e.g. .js for IMGX-encrypted WebP):
+                                // trust the magic bytes of the decrypted image
+                                // over the extension derived from the URL.
+                                let filename = match detect_image_extension(&final_bytes) {
+                                    Some(ext) => format!("{:0>4}.{}", index, ext),
+                                    None => filename,
+                                };
                                 // Send result
                                 let _ = tx
                                     .send((index, filename, final_bytes, error_info))

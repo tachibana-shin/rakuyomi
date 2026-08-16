@@ -10,13 +10,12 @@
 //! extension package name); multi-source "all" APKs register one source per
 //! bundled language as `<pkg>:<lang>`.
 //!
-//! Method calls are synchronous from the outside: each call boots a fresh
-//! [`Keiyoushi`] engine (the VM is `!Send`, so it is created and used inside
-//! the `spawn_blocking` thread the caller already runs on), wires its HTTP
-//! callback to the RakuYomi cookie/UA store through a blocking reqwest
-//! client, then executes the requested method. Engines are cheap to create
-//! (~100 ms release), which keeps the runtime self-healing: no worker
-//! threads, no stuck-runtime restarts.
+//! Method calls are synchronous from the outside: the extension VM is booted
+//! once per source and driven by a dedicated worker thread, like the
+//! LNReader runtime and the MangaYomi provider. The engine is `!Send`
+//! (dexvm uses `Rc` internally), so it never leaves the worker thread;
+//! callers send typed requests through a channel and block on the reply
+//! with a timeout, and a wedged worker is restarted on the next call.
 
 pub mod model;
 
@@ -26,7 +25,11 @@ use std::{
     fs,
     path::{Path, PathBuf},
     rc::Rc,
-    sync::{Arc, Mutex},
+    sync::{
+        mpsc::{channel, Receiver, Sender},
+        Arc, Mutex,
+    },
+    thread::JoinHandle,
     time::{Duration, UNIX_EPOCH},
 };
 
@@ -74,17 +77,21 @@ pub struct KeiyoushiSource {
     pub lang: String,
     pub supports_latest: bool,
     /// Path of the extension APK on disk. The APK is only read from disk
-    /// when a call needs a fresh engine, so installed extensions do not hold
-    /// their (potentially tens of MB) bytes in memory.
+    /// when the engine is booted on first use, so installed extensions do
+    /// not hold their (potentially tens of MB) bytes in memory.
     apk_path: PathBuf,
     /// Which source of the APK (`createSources()` index) this instance is.
     source_index: usize,
     /// Merged source settings (stored values overlaid on the extension
-    /// preference defaults), applied to the engine before every call. The
-    /// mutex mirrors the `Arc<Mutex<BlockingSource>>` wrapper of the wasm
-    /// backend: [`SourceSettings`] is `RefCell`-based and single-threaded,
-    /// the lock makes the source shareable across `spawn_blocking`.
+    /// preference defaults), seeded into the engine once at boot. The mutex
+    /// mirrors the `Arc<Mutex<BlockingSource>>` wrapper of the wasm backend:
+    /// [`SourceSettings`] is `RefCell`-based and single-threaded, the lock
+    /// makes the source shareable across `spawn_blocking`.
     settings: Arc<Mutex<SourceSettings>>,
+    /// The worker driving the engine, spawned lazily on the first call and
+    /// restarted when it wedges or dies, like the LNReader/MangaYomi
+    /// runtimes. The engine itself never leaves the worker thread.
+    worker: Mutex<Option<WorkerHandle>>,
 }
 
 impl std::fmt::Debug for KeiyoushiSource {
@@ -97,9 +104,68 @@ impl std::fmt::Debug for KeiyoushiSource {
             .field("lang", &self.lang)
             .field("base_url", &self.base_url)
             .field("supports_latest", &self.supports_latest)
+            .field(
+                "worker_alive",
+                &self
+                    .worker
+                    .lock()
+                    .is_ok_and(|w| w.as_ref().is_some_and(|h| !h.thread.is_finished())),
+            )
             .finish()
     }
 }
+
+/// The engine of one source: the dexvm VM plus the per-call bookkeeping it
+/// needs. Lives on the worker thread only (dexvm uses `Rc` internally and
+/// is `!Send`).
+struct KeiyoushiEngine {
+    ext: Keiyoushi,
+    /// The bundled source this instance maps to (arena id, stable for the
+    /// context lifetime).
+    source: dexvm::keiyoushi::Source,
+    /// URL of the last request the extension made, used to absolutise
+    /// relative manga/page URLs. Reset before every call.
+    last_url: Rc<RefCell<Option<String>>>,
+    /// Chapter id whose `getPageList` decrypt grants are currently stashed
+    /// in the VM. Image fetches skip the re-parse while it matches, so a
+    /// chapter parses its page list exactly once.
+    page_list_chapter: Option<String>,
+}
+
+/// Request dispatched to the engine worker thread.
+struct WorkerRequest {
+    kind: RequestKind,
+    reply: Sender<Result<KeiyoushiReply, String>>,
+}
+
+/// The typed engine call to execute on the worker.
+#[derive(Clone)]
+enum RequestKind {
+    MangaList { use_latest: bool },
+    Search { query: String, page: i32 },
+    MangaDetails { manga_id: String },
+    ChapterList { manga_id: String },
+    PageList { chapter_id: String },
+    Image { chapter_id: String, url: String },
+}
+
+/// Typed result of an engine call, carried back across the channel.
+enum KeiyoushiReply {
+    Mangas { mangas: Vec<Manga>, has_next: bool },
+    Manga(Box<Manga>),
+    Chapters(Vec<Chapter>),
+    Pages(Vec<Page>),
+    Image(Vec<u8>),
+}
+
+/// Handle of one engine worker thread.
+struct WorkerHandle {
+    tx: Sender<WorkerRequest>,
+    thread: JoinHandle<()>,
+}
+
+/// How long a single engine call may run before it is aborted.
+const DEFAULT_INVOKE_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// The result of booting an extension APK once: the manifest package id,
 /// the sources it bundles and the preference definitions it materialises.
@@ -157,6 +223,289 @@ fn write_probe_cache(path: &Path, apk_len: u64, apk_mtime_ns: u128, probe: &ApkP
     if let Err(err) = result {
         log::warn!("failed to write probe cache for {}: {err}", path.display());
     }
+}
+
+/// Boots the extension APK once, wiring its HTTP callback to the RakuYomi
+/// cookie/UA store through a blocking reqwest client, and seeds the stored
+/// settings into the extension's in-memory preferences.
+fn boot_engine(
+    apk_path: &Path,
+    source_index: usize,
+    settings: &Arc<Mutex<SourceSettings>>,
+) -> Result<KeiyoushiEngine> {
+    let bytes = fs::read(apk_path)
+        .with_context(|| format!("failed to read extension file {}", apk_path.display()))?;
+    let mut ext =
+        Keiyoushi::new(&bytes).map_err(|e| anyhow!("failed to boot keiyoushi extension: {e}"))?;
+
+    let client = crate::tls::blocking_client_builder()
+        .timeout(HTTP_TIMEOUT)
+        .build()
+        .context("failed to build HTTP client for keiyoushi extension")?;
+
+    let last_url = Rc::new(RefCell::new(None::<String>));
+    let recorded = last_url.clone();
+    let http_client = client.clone();
+    ext.set_http(move |req: &HttpData| -> HttpResp {
+        execute_request(&http_client, req, &recorded)
+    });
+    ext.set_host_headers(crate::cookie_store::get_user_agent_and_cookie_header);
+
+    let sources = ext.sources().map_err(|e| {
+        anyhow!(
+            "keiyoushi extension has no sources: {}",
+            ext.describe_error(&e)
+        )
+    })?;
+    let source = *sources.get(source_index).ok_or_else(|| {
+        anyhow!(
+            "keiyoushi extension source index {} is out of bounds ({} sources)",
+            source_index,
+            sources.len()
+        )
+    })?;
+
+    // The stored settings are seeded once into the extension's in-memory
+    // preferences (mihon's `preferenceKey() = "source_<id>"`). Changes the
+    // extension makes through `SharedPreferences$Editor` are mirrored back
+    // into RakuYomi's settings store via `on_update_settings`, so later
+    // boots seed the updated values.
+    let all_settings = { settings.lock().unwrap_or_else(|e| e.into_inner()).all() };
+    let mut preferences = HashMap::new();
+    for (key, value) in all_settings.iter() {
+        if let Some(pref) = setting_value_to_pref(value) {
+            preferences.insert(key.clone(), pref);
+        }
+    }
+    let settings_store = settings.clone();
+    ext.on_update_settings(move |key, value| {
+        if let Some(value) = pref_to_setting_value(value) {
+            if let Err(err) = settings_store
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .save(key, value)
+            {
+                log::warn!("keiyoushi: failed to persist setting `{key}`: {err}");
+            }
+        }
+    });
+    let prefs_file = ext.preference_file(&source).map_err(|e| {
+        anyhow!(
+            "keiyoushi: failed to resolve source preference file: {}",
+            ext.describe_error(&e)
+        )
+    })?;
+    ext.seed_preferences(&prefs_file, &preferences);
+
+    Ok(KeiyoushiEngine {
+        ext,
+        source,
+        last_url,
+        page_list_chapter: None,
+    })
+}
+
+/// The engine worker: boots the VM once and executes every queued request
+/// on this thread. Exits when the channel closes (the source was dropped
+/// or the worker handle was replaced after a timeout).
+fn worker_loop(
+    rx: Receiver<WorkerRequest>,
+    apk_path: &Path,
+    source_index: usize,
+    settings: &Arc<Mutex<SourceSettings>>,
+    source_id: &str,
+) -> Result<()> {
+    let mut engine = boot_engine(apk_path, source_index, settings)?;
+    log::debug!("keiyoushi worker started for {source_id}");
+    while let Ok(request) = rx.recv() {
+        *engine.last_url.borrow_mut() = None;
+        let result = handle_request(&mut engine, source_id, request.kind);
+        let _ = request.reply.send(result);
+    }
+    Ok(())
+}
+
+/// Executes one typed engine call, absolutising the extension's results
+/// against the URL of its last request.
+fn handle_request(
+    engine: &mut KeiyoushiEngine,
+    source_id: &str,
+    kind: RequestKind,
+) -> Result<KeiyoushiReply, String> {
+    let result = match kind {
+        RequestKind::MangaList { use_latest } => if use_latest {
+            call_fallback(
+                "getLatestUpdates",
+                &mut engine.ext,
+                &engine.source,
+                |ext, src, page| ext.latest_coro(src, page),
+                |ext, src, page| ext.latest(src, page),
+                1,
+            )
+        } else {
+            call_fallback(
+                "getPopularManga",
+                &mut engine.ext,
+                &engine.source,
+                |ext, src, page| ext.popular_coro(src, page),
+                |ext, src, page| ext.popular(src, page),
+                1,
+            )
+        }
+        .map(|pages| KeiyoushiReply::Mangas {
+            mangas: model::mangas_from_page(source_id, base(engine).as_ref(), pages.mangas),
+            has_next: false,
+        }),
+        RequestKind::Search { query, page } => {
+            if query.is_empty() {
+                // An empty query means "browse", which the extensions expose
+                // through the popular listing.
+                call_fallback(
+                    "getPopularManga",
+                    &mut engine.ext,
+                    &engine.source,
+                    |ext, src, _| ext.popular_coro(src, page.max(1)),
+                    |ext, src, _| ext.popular(src, page.max(1)),
+                    0,
+                )
+            } else {
+                call_fallback(
+                    "getSearchManga",
+                    &mut engine.ext,
+                    &engine.source,
+                    |ext, src, q: &str| ext.search_coro(src, page.max(1), q, &[]),
+                    |ext, src, q: &str| ext.search(src, page.max(1), q, &[]),
+                    query.as_str(),
+                )
+            }
+            .map(|pages| KeiyoushiReply::Mangas {
+                mangas: model::mangas_from_page(source_id, base(engine).as_ref(), pages.mangas),
+                has_next: pages.has_next,
+            })
+        }
+        RequestKind::MangaDetails { manga_id } => {
+            let manga = dexvm::keiyoushi::Manga {
+                url: manga_id.clone(),
+                title: manga_id.clone(),
+                ..Default::default()
+            };
+            call_fallback(
+                "getMangaUpdate",
+                &mut engine.ext,
+                &engine.source,
+                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_update_details(src, m),
+                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_details(src, m),
+                &manga,
+            )
+            .map(|manga| {
+                KeiyoushiReply::Manga(Box::new(model::manga_from_keiyoushi(
+                    source_id,
+                    base(engine).as_ref(),
+                    manga,
+                )))
+            })
+        }
+        RequestKind::ChapterList { manga_id } => {
+            let manga = dexvm::keiyoushi::Manga {
+                url: manga_id.clone(),
+                title: manga_id.clone(),
+                ..Default::default()
+            };
+            call_fallback(
+                "getMangaUpdate",
+                &mut engine.ext,
+                &engine.source,
+                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_update_chapters(src, m),
+                |ext, src, m: &dexvm::keiyoushi::Manga| ext.chapters(src, m),
+                &manga,
+            )
+            .map(|chapters| {
+                let mut out = model::chapters_from_keiyoushi(
+                    source_id,
+                    &manga_id,
+                    base(engine).as_ref(),
+                    chapters,
+                );
+                crate::source::model::normalize_chapter_order(&mut out);
+                KeiyoushiReply::Chapters(out)
+            })
+        }
+        RequestKind::PageList { chapter_id } => {
+            let chapter = dexvm::keiyoushi::Chapter {
+                url: chapter_id.clone(),
+                name: chapter_id.clone(),
+                ..Default::default()
+            };
+            let pages = call_fallback(
+                "getPageList",
+                &mut engine.ext,
+                &engine.source,
+                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages_coro(src, c),
+                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages(src, c),
+                &chapter,
+            );
+            if std::env::var("DEXVM_TRACE").is_ok() {
+                eprintln!(
+                    "DEXVM_TRACE keiyoushi get_page_list: raw={}",
+                    pages.as_ref().map_or(0, |p| p.len())
+                );
+            }
+            pages.map(|pages| {
+                // The decrypt grants stashed during this parse survive in the
+                // persistent VM, so image fetches of this chapter skip the
+                // re-parse.
+                engine.page_list_chapter = Some(chapter_id.clone());
+                KeiyoushiReply::Pages(model::pages_from_keiyoushi(
+                    source_id,
+                    &chapter_id,
+                    base(engine).as_ref(),
+                    pages,
+                ))
+            })
+        }
+        RequestKind::Image { chapter_id, url } => {
+            let chapter = dexvm::keiyoushi::Chapter {
+                url: chapter_id.clone(),
+                name: chapter_id.clone(),
+                ..Default::default()
+            };
+            if engine.page_list_chapter.as_deref() != Some(chapter_id.as_str()) {
+                call_fallback(
+                    "getPageList",
+                    &mut engine.ext,
+                    &engine.source,
+                    |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages_coro(src, c),
+                    |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages(src, c),
+                    &chapter,
+                )
+                .map(|_| engine.page_list_chapter = Some(chapter_id))
+            } else {
+                Ok(())
+            }
+            .and_then(|()| {
+                engine
+                    .ext
+                    .image_data(&engine.source, &url)
+                    .map(KeiyoushiReply::Image)
+            })
+        }
+    };
+    result.map_err(|e| {
+        format!(
+            "keiyoushi extension call failed: {}",
+            engine.ext.describe_error(&e)
+        )
+    })
+}
+
+/// Parses the URL of the last request the extension made, used to
+/// absolutise relative manga/page URLs.
+fn base(engine: &KeiyoushiEngine) -> Option<Url> {
+    engine
+        .last_url
+        .borrow()
+        .as_deref()
+        .and_then(|url| Url::parse(url).ok())
 }
 
 impl KeiyoushiSource {
@@ -276,103 +625,80 @@ impl KeiyoushiSource {
                 apk_path: path.to_path_buf(),
                 source_index: index,
                 settings,
+                worker: Mutex::new(None),
             });
         }
         Ok(out)
     }
 
-    /// Runs `f` on a fresh engine configured with the RakuYomi HTTP
-    /// infrastructure and the stored source settings.
-    ///
-    /// Returns the call result together with the URL of the last request the
-    /// extension made, which is used to absolutise relative manga/page URLs.
-    fn with_engine<T>(
-        &self,
-        f: impl FnOnce(&mut Keiyoushi, dexvm::keiyoushi::Source) -> Result<T, JvmError>,
-    ) -> Result<(T, Option<Url>)> {
-        let bytes = fs::read(&self.apk_path).with_context(|| {
-            format!("failed to read extension file {}", self.apk_path.display())
-        })?;
-        let mut ext = Keiyoushi::new(&bytes)
-            .map_err(|e| anyhow!("failed to boot keiyoushi extension: {e}"))?;
+    /// Runs one engine call on the worker thread, starting (or restarting)
+    /// the worker on demand. Blocks until the worker replies or the call
+    /// times out; a wedged worker is restarted for the next call.
+    fn invoke(&self, kind: RequestKind) -> Result<KeiyoushiReply> {
+        let mut attempts = 0;
+        loop {
+            let reply_rx = {
+                let mut worker = self.worker.lock().unwrap_or_else(|e| e.into_inner());
+                let needs_restart = worker
+                    .as_ref()
+                    .map(|w| w.thread.is_finished())
+                    .unwrap_or(true);
+                if needs_restart {
+                    *worker = None;
+                    drop(worker);
+                    self.start_worker()?;
+                    continue;
+                }
+                let (reply_tx, reply_rx) = channel();
+                worker
+                    .as_ref()
+                    .unwrap()
+                    .tx
+                    .send(WorkerRequest {
+                        kind: kind.clone(),
+                        reply: reply_tx,
+                    })
+                    .context("failed to send request to keiyoushi worker")?;
+                reply_rx
+            };
 
-        let client = crate::tls::blocking_client_builder()
-            .timeout(HTTP_TIMEOUT)
-            .build()
-            .context("failed to build HTTP client for keiyoushi extension")?;
-
-        let last_url = Rc::new(RefCell::new(None::<String>));
-        let recorded = last_url.clone();
-        let http_client = client.clone();
-        ext.set_http(move |req: &HttpData| -> HttpResp {
-            execute_request(&http_client, req, &recorded)
-        });
-        ext.set_host_headers(crate::cookie_store::get_user_agent_and_cookie_header);
-
-        let sources = ext.sources().map_err(|e| {
-            anyhow!(
-                "keiyoushi extension has no sources: {}",
-                ext.describe_error(&e)
-            )
-        })?;
-        let source = *sources.get(self.source_index).ok_or_else(|| {
-            anyhow!(
-                "keiyoushi extension source index {} is out of bounds ({} sources)",
-                self.source_index,
-                sources.len()
-            )
-        })?;
-
-        // The stored settings are seeded into the extension's in-memory
-        // preferences before every call: each engine starts from the
-        // extension defaults, so the persisted values are written back into
-        // the preference file the extension reads them from (mihon's
-        // `preferenceKey() = "source_<id>"`). Changes the extension makes
-        // through `SharedPreferences$Editor` are mirrored back into
-        // RakuYomi's settings store via `on_update_settings`.
-        let all_settings = {
-            self.settings
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .all()
-        };
-        let mut preferences = HashMap::new();
-        for (key, value) in all_settings.iter() {
-            if let Some(pref) = setting_value_to_pref(value) {
-                preferences.insert(key.clone(), pref);
-            }
-        }
-        let settings_store = self.settings.clone();
-        ext.on_update_settings(move |key, value| {
-            if let Some(value) = pref_to_setting_value(value) {
-                if let Err(err) = settings_store
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .save(key, value)
-                {
-                    log::warn!("keiyoushi: failed to persist setting `{key}`: {err}");
+            match reply_rx.recv_timeout(DEFAULT_INVOKE_TIMEOUT) {
+                Ok(result) => return result.map_err(anyhow::Error::msg),
+                Err(_) => {
+                    // The worker is stuck (e.g. a dexvm bug or a pathological
+                    // extension). Restart it so the next call works.
+                    log::warn!("keiyoushi extension call timed out; restarting the worker");
+                    let mut worker = self.worker.lock().unwrap_or_else(|e| e.into_inner());
+                    *worker = None;
+                    attempts += 1;
+                    if attempts >= 2 {
+                        bail!("keiyoushi extension call timed out twice");
+                    }
                 }
             }
-        });
-        let prefs_file = ext.preference_file(&source).map_err(|e| {
-            anyhow!(
-                "keiyoushi: failed to resolve source preference file: {}",
-                ext.describe_error(&e)
-            )
-        })?;
-        ext.seed_preferences(&prefs_file, &preferences);
+        }
+    }
 
-        let result = f(&mut ext, source).map_err(|e| {
-            anyhow!(
-                "keiyoushi extension call failed: {}",
-                ext.describe_error(&e)
-            )
-        })?;
-        let base = last_url
-            .borrow()
-            .as_deref()
-            .and_then(|url| Url::parse(url).ok());
-        Ok((result, base))
+    /// Spawns the engine worker thread. The engine boots inside it (the
+    /// dexvm VM is `!Send`), so the APK bytes, VM state and per-call
+    /// bookkeeping never leave this thread.
+    fn start_worker(&self) -> Result<()> {
+        let apk_path = self.apk_path.clone();
+        let source_index = self.source_index;
+        let settings = self.settings.clone();
+        let source_id = self.id.clone();
+
+        let (tx, rx) = channel();
+        let thread = std::thread::Builder::new()
+            .name(format!("keiyoushi-worker-{source_id}"))
+            .spawn(move || {
+                if let Err(err) = worker_loop(rx, &apk_path, source_index, &settings, &source_id) {
+                    log::warn!("keiyoushi worker exited: {:#}", err);
+                }
+            })
+            .context("failed to spawn keiyoushi worker thread")?;
+        *self.worker.lock().unwrap_or_else(|e| e.into_inner()) = Some(WorkerHandle { tx, thread });
+        Ok(())
     }
 
     /// Implements `get_manga_list`: `popular` (or `latest` for the "latest"
@@ -383,32 +709,10 @@ impl KeiyoushiSource {
         listing: aidoku::Listing,
     ) -> Result<Vec<Manga>> {
         let use_latest = listing.name.eq_ignore_ascii_case("latest") && self.supports_latest;
-        let (pages, base) = self.with_engine(|ext, src| {
-            if use_latest {
-                call_fallback(
-                    "getLatestUpdates",
-                    ext,
-                    &src,
-                    |ext, src, page| ext.latest_coro(src, page),
-                    |ext, src, page| ext.latest(src, page),
-                    1,
-                )
-            } else {
-                call_fallback(
-                    "getPopularManga",
-                    ext,
-                    &src,
-                    |ext, src, page| ext.popular_coro(src, page),
-                    |ext, src, page| ext.popular(src, page),
-                    1,
-                )
-            }
-        })?;
-        Ok(model::mangas_from_page(
-            &self.id,
-            base.as_ref(),
-            pages.mangas,
-        ))
+        match self.invoke(RequestKind::MangaList { use_latest })? {
+            KeiyoushiReply::Mangas { mangas, .. } => Ok(mangas),
+            _ => unreachable!("manga list request must reply with mangas"),
+        }
     }
 
     /// Implements `search_mangas`. The keiyoushi filter list is not exposed
@@ -421,33 +725,10 @@ impl KeiyoushiSource {
         page: i32,
     ) -> Result<(Vec<Manga>, bool)> {
         let query = query.trim().to_string();
-        let (pages, base) = self.with_engine(|ext, src| {
-            if query.is_empty() {
-                // An empty query means "browse", which the extensions expose
-                // through the popular listing.
-                call_fallback(
-                    "getPopularManga",
-                    ext,
-                    &src,
-                    |ext, src, _| ext.popular_coro(src, page.max(1)),
-                    |ext, src, _| ext.popular(src, page.max(1)),
-                    0,
-                )
-            } else {
-                call_fallback(
-                    "getSearchManga",
-                    ext,
-                    &src,
-                    |ext, src, q: &str| ext.search_coro(src, page.max(1), q, &[]),
-                    |ext, src, q: &str| ext.search(src, page.max(1), q, &[]),
-                    query.as_str(),
-                )
-            }
-        })?;
-        Ok((
-            model::mangas_from_page(&self.id, base.as_ref(), pages.mangas),
-            pages.has_next,
-        ))
+        match self.invoke(RequestKind::Search { query, page })? {
+            KeiyoushiReply::Mangas { mangas, has_next } => Ok((mangas, has_next)),
+            _ => unreachable!("search request must reply with mangas"),
+        }
     }
 
     /// Implements `get_manga_details` from a raw manga URL.
@@ -456,22 +737,10 @@ impl KeiyoushiSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Manga> {
-        let manga = dexvm::keiyoushi::Manga {
-            url: manga_id.clone(),
-            title: manga_id.clone(),
-            ..Default::default()
-        };
-        let (manga, base) = self.with_engine(|ext, src| {
-            call_fallback(
-                "getMangaUpdate",
-                ext,
-                &src,
-                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_update_details(src, m),
-                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_details(src, m),
-                &manga,
-            )
-        })?;
-        Ok(model::manga_from_keiyoushi(&self.id, base.as_ref(), manga))
+        match self.invoke(RequestKind::MangaDetails { manga_id })? {
+            KeiyoushiReply::Manga(manga) => Ok(*manga),
+            _ => unreachable!("manga details request must reply with a manga"),
+        }
     }
 
     /// Implements `get_chapter_list` from a raw manga URL.
@@ -480,24 +749,10 @@ impl KeiyoushiSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Vec<Chapter>> {
-        let manga = dexvm::keiyoushi::Manga {
-            url: manga_id.clone(),
-            title: manga_id.clone(),
-            ..Default::default()
-        };
-        let (chapters, base) = self.with_engine(|ext, src| {
-            call_fallback(
-                "getMangaUpdate",
-                ext,
-                &src,
-                |ext, src, m: &dexvm::keiyoushi::Manga| ext.manga_update_chapters(src, m),
-                |ext, src, m: &dexvm::keiyoushi::Manga| ext.chapters(src, m),
-                &manga,
-            )
-        })?;
-        let mut out = model::chapters_from_keiyoushi(&self.id, &manga_id, base.as_ref(), chapters);
-        crate::source::model::normalize_chapter_order(&mut out);
-        Ok(out)
+        match self.invoke(RequestKind::ChapterList { manga_id })? {
+            KeiyoushiReply::Chapters(chapters) => Ok(chapters),
+            _ => unreachable!("chapter list request must reply with chapters"),
+        }
     }
 
     /// Implements `get_page_list` from a raw chapter URL.
@@ -508,56 +763,28 @@ impl KeiyoushiSource {
         chapter_id: String,
         _chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
-        let chapter = dexvm::keiyoushi::Chapter {
-            url: chapter_id.clone(),
-            name: chapter_id.clone(),
-            ..Default::default()
-        };
-        let (pages, base) = self.with_engine(|ext, src| {
-            call_fallback(
-                "getPageList",
-                ext,
-                &src,
-                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages_coro(src, c),
-                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages(src, c),
-                &chapter,
-            )
-        })?;
-        if std::env::var("DEXVM_TRACE").is_ok() {
-            eprintln!("DEXVM_TRACE keiyoushi get_page_list: raw={}", pages.len());
+        match self.invoke(RequestKind::PageList { chapter_id })? {
+            KeiyoushiReply::Pages(pages) => Ok(pages),
+            _ => unreachable!("page list request must reply with pages"),
         }
-        Ok(model::pages_from_keiyoushi(
-            &self.id,
-            &chapter_id,
-            base.as_ref(),
-            pages,
-        ))
     }
 
     /// Fetches a page image through the extension's own OkHttpClient so the
     /// extension's client-side interceptors (IMGX-style decryption, per-host
     /// auth) run, exactly like the `getClient()` -> `newCall()` ->
-    /// `execute()` path mihon uses. The chapter page list is parsed in
-    /// the same engine first because extensions stash per-image decrypt
-    /// grants during `getPageList`.
+    /// `execute()` path mihon uses. Extensions stash per-image decrypt
+    /// grants during `getPageList`; the persistent engine keeps them, so
+    /// the page list is only parsed once per chapter (tracked by
+    /// [`KeiyoushiEngine::page_list_chapter`]) and every image of the
+    /// chapter reuses those grants.
     pub fn fetch_page_image(&self, chapter_id: &str, url: &str) -> Result<Vec<u8>> {
-        let chapter = dexvm::keiyoushi::Chapter {
-            url: chapter_id.to_string(),
-            name: chapter_id.to_string(),
-            ..Default::default()
-        };
-        let (bytes, _) = self.with_engine(|ext, src| {
-            call_fallback(
-                "getPageList",
-                ext,
-                &src,
-                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages_coro(src, c),
-                |ext, src, c: &dexvm::keiyoushi::Chapter| ext.pages(src, c),
-                &chapter,
-            )?;
-            ext.image_data(&src, url)
-        })?;
-        Ok(bytes)
+        match self.invoke(RequestKind::Image {
+            chapter_id: chapter_id.to_string(),
+            url: url.to_string(),
+        })? {
+            KeiyoushiReply::Image(bytes) => Ok(bytes),
+            _ => unreachable!("image request must reply with bytes"),
+        }
     }
 
     /// Implements `get_image_request`: image URLs carry their own
@@ -1140,7 +1367,7 @@ mod tests {
     }
 
     #[test]
-    fn test_with_engine_seeds_settings_and_mirrors_changes_back() {
+    fn test_boot_engine_seeds_settings_and_mirrors_changes_back() {
         let apk = std::env::var("DEXVM_APK").ok().or_else(|| {
             let fallback = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
@@ -1192,26 +1419,29 @@ mod tests {
         };
         drop(manager_guard);
 
-        // Run one engine call that reads the seeded preference and writes a
-        // new one through the extension API.
-        let ((), _base_url) = source
-            .with_engine(|ext, src| {
-                let prefs_file = ext.preference_file(&src)?;
-                let settings = ext.get_settings(&prefs_file);
-                assert_eq!(
-                    settings.get("enabled"),
-                    Some(&SettingValue::Bool(true)),
-                    "seeded setting must be visible to the extension"
-                );
-                ext.update_setting(
-                    &prefs_file,
-                    "display_mode",
-                    SettingValue::String("list".to_string()),
-                )
-                .expect("host-side settings write must succeed");
-                Ok(())
-            })
-            .unwrap();
+        // Boot the engine the way the worker thread does, then run one engine
+        // call that reads the seeded preference and writes a new one through
+        // the extension API.
+        let mut engine = boot_engine(&source.apk_path, source.source_index, &source.settings)
+            .expect("fixture should boot cleanly");
+        let prefs_file = engine
+            .ext
+            .preference_file(&engine.source)
+            .expect("preference file should resolve");
+        let settings = engine.ext.get_settings(&prefs_file);
+        assert_eq!(
+            settings.get("enabled"),
+            Some(&SettingValue::Bool(true)),
+            "seeded setting must be visible to the extension"
+        );
+        engine
+            .ext
+            .update_setting(
+                &prefs_file,
+                "display_mode",
+                SettingValue::String("list".to_string()),
+            )
+            .expect("host-side settings write must succeed");
 
         // The engine-side write must be mirrored back into
         // `settings.source_settings` through `on_update_settings`.

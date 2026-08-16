@@ -201,6 +201,7 @@ impl SourceManager {
     /// if present. Keiyoushi sources of the same APK share one file, so the
     /// removal clears every registered source of that extension.
     pub fn uninstall_any_source(&mut self, id: &SourceId) -> Result<()> {
+        let mut removed = Vec::new();
         for path in [
             self.source_path(id),
             self.lnreader_source_path(id),
@@ -213,15 +214,43 @@ impl SourceManager {
         ] {
             if path.exists() {
                 fs::remove_file(&path)?;
+                removed.push(path.clone());
             }
             let meta_path = path.with_extension("json");
             if meta_path.exists() {
                 fs::remove_file(&meta_path)?;
             }
+            if let Ok(meta_path) = crate::source::BlockingSource::meta_source_path(&path) {
+                if meta_path.exists() {
+                    fs::remove_file(&meta_path)?;
+                }
+            }
         }
-        self.sources_by_id.remove(id);
-        #[cfg(not(feature = "all"))]
-        self.file_sources.remove(id.value());
+        let removed: std::collections::HashSet<std::path::PathBuf> = removed.into_iter().collect();
+        // An APK/JS container can register several sources under one file
+        // (keiyoushi multiple extensions): every registered source whose
+        // file was removed is dropped together with the requested one, so
+        // the list never keeps dangling sources.
+        let doomed: Vec<SourceId> = self
+            .sources_by_id
+            .keys()
+            .filter(|id2| {
+                let candidates = [
+                    self.source_path(id2),
+                    self.lnreader_source_path(id2),
+                    self.mangayomi_source_path(id2),
+                    self.mangayomi_js_source_path(id2),
+                    self.keiyoushi_source_path(id2),
+                ];
+                candidates.iter().any(|p| removed.contains(p))
+            })
+            .cloned()
+            .collect();
+        for d in doomed {
+            self.sources_by_id.remove(&d);
+            #[cfg(not(feature = "all"))]
+            self.file_sources.remove(d.value());
+        }
         Ok(())
     }
 

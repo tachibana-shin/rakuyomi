@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs, path::PathBuf, sync::Arc};
+use std::{
+    collections::{BTreeSet, HashMap},
+    fs,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::sync::Mutex;
 
 use anyhow::{bail, Context, Result};
@@ -6,7 +11,7 @@ use anyhow::{bail, Context, Result};
 use crate::{
     model::SourceId,
     settings::{Settings, SourceSettingValue},
-    source::Source,
+    source::{Source, SourceBackend},
     source_collection::SourceCollection,
 };
 
@@ -259,8 +264,120 @@ impl SourceManager {
         settings: Settings,
         manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<()> {
+        // Only the per-source stored settings affect the loaded sources;
+        // global settings (source lists, languages, ...) must not tear down
+        // every extension. Reload just the files backing the sources whose
+        // settings changed, instead of re-scanning and re-probing the whole
+        // collection.
+        let changed = self.changed_source_ids(&settings);
         self.settings = settings;
-        self.sources_by_id = self.load_all_sources(manager)?;
+        if changed.is_empty() {
+            return Ok(());
+        }
+
+        // Several sources may share one file (a keiyoushi APK registers one
+        // source per bundled `Source`), so dedupe the affected files.
+        let mut files = BTreeSet::new();
+        for id in &changed {
+            if let Some(path) = self.source_file_for_id(id) {
+                files.insert(path);
+            }
+        }
+        for path in files {
+            self.reload_source_file(&path, manager)?;
+        }
+
+        Ok(())
+    }
+
+    /// The ids of the sources whose stored settings differ between the
+    /// current settings and the given one.
+    fn changed_source_ids(&self, settings: &Settings) -> Vec<SourceId> {
+        let old = &self.settings.source_settings;
+        let new = &settings.source_settings;
+        let mut keys: Vec<&String> = old.keys().collect();
+        keys.extend(new.keys());
+        keys.sort();
+        keys.dedup();
+        keys.into_iter()
+            .filter(|key| old.get(*key) != new.get(*key))
+            .map(|key| SourceId::new(key.clone()))
+            .collect()
+    }
+
+    /// The on-disk file a registered source was loaded from, if any.
+    fn source_file_for_id(&self, id: &SourceId) -> Option<PathBuf> {
+        #[cfg(not(feature = "all"))]
+        if let Some(path) = self.file_sources.get(id.value()) {
+            return Some(PathBuf::from(path));
+        }
+        let candidates = match self.sources_by_id.get(id).map(|source| &source.backend) {
+            Some(SourceBackend::Keiyoushi(keiyoushi)) => {
+                vec![keiyoushi.apk_path().to_path_buf()]
+            }
+            _ => vec![],
+        };
+        candidates
+            .into_iter()
+            .chain([
+                self.lnreader_source_path(id),
+                self.mangayomi_source_path(id),
+                self.mangayomi_js_source_path(id),
+                self.keiyoushi_source_path(id),
+            ])
+            .find(|path| path.exists())
+    }
+
+    /// Drop every source registered from `path`, then re-register them from
+    /// the file. Re-running the loader picks up the freshly saved stored
+    /// settings, and dropping the old sources tears down their worker
+    /// engines so the next call boots with the new values.
+    fn reload_source_file(
+        &mut self,
+        path: &Path,
+        manager: &Arc<Mutex<SourceManager>>,
+    ) -> Result<()> {
+        let doomed: Vec<SourceId> = self
+            .sources_by_id
+            .keys()
+            .filter(|id| self.source_file_for_id(id).as_deref() == Some(path))
+            .cloned()
+            .collect();
+        for id in &doomed {
+            self.sources_by_id.remove(id);
+            #[cfg(not(feature = "all"))]
+            self.file_sources.remove(id.value());
+        }
+
+        let name = path.file_name().map(|n| n.to_string_lossy().to_string());
+        let is_keiyoushi = name
+            .as_deref()
+            .is_some_and(|name| name.ends_with(crate::source::keiyoushi::KEIYOUSHI_FILE_SUFFIX));
+        let is_lnreader = name
+            .as_deref()
+            .is_some_and(|name| name.ends_with(crate::source::lnreader::LNREADER_FILE_SUFFIX));
+        let is_mangayomi = name.as_deref().is_some_and(|name| {
+            name.ends_with(crate::source::mangayomi::MANGA_YOMI_FILE_SUFFIX)
+                || name.ends_with(crate::source::mangayomi::MANGA_YOMI_JS_FILE_SUFFIX)
+        });
+
+        let sources = if is_keiyoushi {
+            Source::from_keiyoushi_file(path, self, manager)?
+        } else if is_lnreader {
+            vec![Source::from_lnreader_file(path, self, manager)?]
+        } else if is_mangayomi {
+            vec![Source::from_mangayomi_file(path, self, manager)?]
+        } else {
+            vec![Source::from_aix_file(path, self, manager)?]
+        };
+
+        for source in sources {
+            let id = source.manifest().info.id.clone();
+            #[cfg(not(feature = "all"))]
+            self.file_sources
+                .insert(id.clone(), path.to_string_lossy().to_string());
+            self.sources_by_id.insert(SourceId::new(id.clone()), source);
+        }
 
         Ok(())
     }

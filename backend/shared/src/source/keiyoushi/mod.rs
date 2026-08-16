@@ -509,6 +509,11 @@ fn base(engine: &KeiyoushiEngine) -> Option<Url> {
 }
 
 impl KeiyoushiSource {
+    /// The path of the extension APK this source was loaded from.
+    pub fn apk_path(&self) -> &Path {
+        &self.apk_path
+    }
+
     /// Boots the APK at `path` and returns one source per bundled `Source`.
     ///
     /// The SourceId is the extension package name when the APK bundles a
@@ -1702,6 +1707,90 @@ mod tests {
                 );
                 eprintln!("fourkhd search blocked by network ({msg}); RegexOption resolved fine");
             }
+        }
+    }
+
+    #[test]
+    fn test_update_settings_reloads_only_affected_sources() {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
+        assert!(fixture.exists(), "keiyoushi fixture missing");
+        let dir = std::env::temp_dir().join(format!(
+            "rakuyomi-keiyoushi-update-settings-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+
+        let mut settings = crate::settings::Settings::default();
+        let manager = SourceManager::new(dir, HashMap::new(), settings.clone());
+        let arc_manager = Arc::new(tokio::sync::Mutex::new(manager));
+        let id =
+            crate::model::SourceId::new("eu.kanade.tachiyomi.extension.en.mangapill".to_string());
+
+        {
+            let mut guard = arc_manager.blocking_lock();
+            guard
+                .install_keiyoushi_source(
+                    &id,
+                    fs::read(&fixture).unwrap(),
+                    String::new(),
+                    &arc_manager,
+                )
+                .unwrap();
+            assert!(
+                guard.sources_by_id.contains_key(&id),
+                "source must be registered"
+            );
+        }
+
+        // A change to this source's stored settings reloads only its file
+        // and re-seeds the merged settings the engine will boot with.
+        {
+            let mut guard = arc_manager.blocking_lock();
+            let mut stored = HashMap::new();
+            stored.insert(
+                "display_mode".to_string(),
+                crate::settings::SourceSettingValue::String("List".to_string()),
+            );
+            settings.source_settings.insert(id.value().clone(), stored);
+            guard
+                .update_settings(settings.clone(), &arc_manager)
+                .unwrap();
+            assert!(
+                guard.sources_by_id.contains_key(&id),
+                "affected source must stay registered"
+            );
+            let source = guard.sources_by_id.get(&id).unwrap();
+            let crate::source::SourceBackend::Keiyoushi(keiyoushi) = &source.backend else {
+                panic!("expected a keiyoushi source");
+            };
+            assert_eq!(
+                keiyoushi
+                    .settings
+                    .lock()
+                    .unwrap()
+                    .get(&"display_mode".to_string()),
+                Some(crate::settings::SourceSettingValue::String(
+                    "List".to_string()
+                )),
+                "changed stored settings must reach the reloaded source"
+            );
+        }
+
+        // Removing the APK while it stays registered must not tear the
+        // source down: the targeted reload skips files that no longer
+        // exist, whereas a full rescan would wipe every source.
+        {
+            let mut guard = arc_manager.blocking_lock();
+            let apk_path = guard.keiyoushi_source_path(&id);
+            fs::remove_file(&apk_path).unwrap();
+            guard
+                .update_settings(settings.clone(), &arc_manager)
+                .unwrap();
+            assert!(
+                guard.sources_by_id.contains_key(&id),
+                "source whose file vanished must not be dropped by a settings update"
+            );
         }
     }
 }

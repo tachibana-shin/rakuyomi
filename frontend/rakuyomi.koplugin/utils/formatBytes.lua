@@ -1,24 +1,16 @@
---- Formats a byte count into a human-readable string (e.g. "1.5 MB").
+--- Formats a byte count into a human-readable string (e.g. "1.5 KiB").
 --- @param bytes number|nil
 --- @return string
 local function formatBytes(bytes)
-  if not bytes or bytes <= 0 then
-    return "0 B"
+  if not bytes or bytes < 1024 then
+    return (bytes or 0) .. " B"
+  elseif bytes < 1024 * 1024 then
+    return string.format("%.1f KiB", bytes / 1024)
+  elseif bytes < 1024 * 1024 * 1024 then
+    return string.format("%.1f MiB", bytes / (1024 * 1024))
+  else
+    return string.format("%.1f GiB", bytes / (1024 * 1024 * 1024))
   end
-
-  local units = { "B", "KB", "MB", "GB", "TB" }
-  local size = bytes
-  local i = 1
-  while size >= 1024 and i < #units do
-    size = size / 1024
-    i = i + 1
-  end
-
-  if i == 1 then
-    return string.format("%d %s", size, units[i])
-  end
-
-  return string.format("%.1f %s", size, units[i])
 end
 
 return formatBytes

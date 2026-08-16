@@ -8,6 +8,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local Menu = require("widgets/Menu")
 local Testing = require("testing")
+local formatBytes = require("utils/formatBytes")
 
 --- @class TaskManagerView: { [any]: any }
 --- @field installed_sources SourceInformation[]
@@ -24,18 +25,6 @@ local TaskManagerView = Menu:extend {
   -- callback to be called when pressing the back button
   on_return_callback = nil,
 }
-
-local function humanizeBytes(bytes)
-  if bytes < 1024 then
-    return bytes .. " B"
-  elseif bytes < 1024 * 1024 then
-    return string.format("%.1f KiB", bytes / 1024)
-  elseif bytes < 1024 * 1024 * 1024 then
-    return string.format("%.1f MiB", bytes / (1024 * 1024))
-  else
-    return string.format("%.1f GiB", bytes / (1024 * 1024 * 1024))
-  end
-end
 
 --- @private
 local function humanizeDuration(ms)
@@ -80,10 +69,10 @@ function TaskManagerView:updateItems()
       table.insert(parts, _("Calls") .. ": " .. usage.invokes .. " | "
         .. _("Total") .. ": " .. humanizeDuration(usage.total_duration_ms))
       if usage.peak_wasm_memory_bytes > 0 then
-        table.insert(parts, _("Wasm memory") .. ": " .. humanizeBytes(usage.peak_wasm_memory_bytes))
+        table.insert(parts, _("Wasm memory") .. ": " .. formatBytes(usage.peak_wasm_memory_bytes))
       end
       if usage.disk_bytes > 0 then
-        table.insert(parts, _("Disk") .. ": " .. humanizeBytes(usage.disk_bytes))
+        table.insert(parts, _("Disk") .. ": " .. formatBytes(usage.disk_bytes))
       end
       table.insert(item_table, {
         source_information = source_information,
@@ -131,10 +120,10 @@ function TaskManagerView:onPrimaryMenuChoice(item)
     _("Calls") .. ": " .. usage.invokes,
     _("Last call") .. ": " .. humanizeDuration(usage.last_duration_ms),
     _("Total time") .. ": " .. humanizeDuration(usage.total_duration_ms),
-    _("Disk usage") .. ": " .. humanizeBytes(usage.disk_bytes),
+    _("Disk usage") .. ": " .. formatBytes(usage.disk_bytes),
   }
   if usage.peak_wasm_memory_bytes > 0 then
-    table.insert(parts, _("Peak wasm memory") .. ": " .. humanizeBytes(usage.peak_wasm_memory_bytes))
+    table.insert(parts, _("Peak wasm memory") .. ": " .. formatBytes(usage.peak_wasm_memory_bytes))
   end
   if usage.last_error then
     table.insert(parts, "")

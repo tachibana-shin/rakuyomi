@@ -1582,7 +1582,76 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "needs RAKUYOMI_APK"]
+    fn test_uninstall_keiyoushi_removes_shared_apk() {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/tachiyomi-en.mangapill-v1.4.9.apk");
+        assert!(fixture.exists(), "keiyoushi fixture missing");
+        let dir = std::env::temp_dir().join(format!(
+            "rakuyomi-keiyoushi-uninstall-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+
+        let manager = SourceManager::new(dir, HashMap::new(), crate::settings::Settings::default());
+        let arc_manager = Arc::new(tokio::sync::Mutex::new(manager));
+        let id =
+            crate::model::SourceId::new("eu.kanade.tachiyomi.extension.en.mangapill".to_string());
+
+        {
+            let mut manager_guard = arc_manager.blocking_lock();
+            manager_guard
+                .install_keiyoushi_source(
+                    &id,
+                    fs::read(&fixture).unwrap(),
+                    String::new(),
+                    &arc_manager,
+                )
+                .unwrap();
+            let apk_path = manager_guard.keiyoushi_source_path(&id);
+            assert!(
+                apk_path.exists(),
+                "installed APK must exist at {}",
+                apk_path.display()
+            );
+            assert!(
+                crate::source::BlockingSource::meta_source_path(&apk_path)
+                    .unwrap()
+                    .exists(),
+                "meta sidecar must exist"
+            );
+            assert!(
+                manager_guard.sources_by_id.contains_key(&id),
+                "source must be registered"
+            );
+            let source = manager_guard.sources_by_id[&id].clone();
+            let sibling = crate::model::SourceId::new(format!("{}:en", id.value()));
+            manager_guard.sources_by_id.insert(sibling.clone(), source);
+        }
+
+        {
+            let mut manager_guard = arc_manager.blocking_lock();
+            manager_guard.uninstall_any_source(&id).unwrap();
+            let apk_path = manager_guard.keiyoushi_source_path(&id);
+            assert!(!apk_path.exists(), "APK must be removed on uninstall");
+            assert!(
+                !crate::source::BlockingSource::meta_source_path(&apk_path)
+                    .unwrap()
+                    .exists(),
+                "meta sidecar must be removed"
+            );
+            assert!(
+                !manager_guard.sources_by_id.contains_key(&id),
+                "source must be unregistered"
+            );
+            assert!(
+                !manager_guard
+                    .sources_by_id
+                    .contains_key(&crate::model::SourceId::new(format!("{}:en", id.value()))),
+                "sibling source sharing the APK must be unregistered too"
+            );
+        }
+    }
+
     fn dump_probe_definitions() {
         let apk = std::env::var("RAKUYOMI_APK").unwrap();
         let probe = probe_apk(&std::fs::read(&apk).unwrap()).unwrap();

@@ -31,6 +31,7 @@ fn status_from_mihon(index: i32) -> PublishingStatus {
 /// made by the extension. Protocol-relative URLs (`//host/path`) join
 /// through the base scheme.
 pub(crate) fn resolve_url(base: Option<&Url>, url: &str) -> Option<Url> {
+    let url = url.trim();
     if url.is_empty() {
         return None;
     }
@@ -200,6 +201,19 @@ mod tests {
         );
         assert!(resolve_url(Some(&base()), "").is_none());
         assert!(resolve_url(None, "relative/path").is_none());
+        // some WordPress themes emit `src=" https://host/img.jpg"`.
+        assert_eq!(
+            resolve_url(Some(&base()), " https://x.example.com/a.png")
+                .unwrap()
+                .as_str(),
+            "https://x.example.com/a.png"
+        );
+        assert_eq!(
+            resolve_url(Some(&base()), " /manga/one.json")
+                .unwrap()
+                .as_str(),
+            "https://akuma.example.com/manga/one.json"
+        );
     }
 
     #[test]

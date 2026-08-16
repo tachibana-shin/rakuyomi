@@ -1580,15 +1580,59 @@ mod tests {
             "seeded setting must survive the write-back"
         );
     }
-}
 
-#[test]
-#[ignore = "needs RAKUYOMI_APK"]
-fn dump_probe_definitions() {
-    let apk = std::env::var("RAKUYOMI_APK").unwrap();
-    let probe = probe_apk(&std::fs::read(&apk).unwrap()).unwrap();
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&probe.setting_definitions).unwrap()
-    );
+    #[test]
+    #[ignore = "needs RAKUYOMI_APK"]
+    fn dump_probe_definitions() {
+        let apk = std::env::var("RAKUYOMI_APK").unwrap();
+        let probe = probe_apk(&std::fs::read(&apk).unwrap()).unwrap();
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&probe.setting_definitions).unwrap()
+        );
+    }
+
+    #[test]
+    #[ignore = "needs RAKUYOMI_APK + network"]
+    fn search_with_shrunk_regex_option() {
+        let apk = std::env::var("RAKUYOMI_APK").unwrap();
+        let dir = std::env::temp_dir().join(format!(
+            "rakuyomi-keiyoushi-regexopt-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        let apk_name = format!("tachiyomi-regexopt{}", KEIYOUSHI_FILE_SUFFIX);
+        let apk_path = dir.join(&apk_name);
+        fs::copy(&apk, &apk_path).unwrap();
+
+        let manager = SourceManager::new(dir, HashMap::new(), crate::settings::Settings::default());
+        let arc_manager = Arc::new(tokio::sync::Mutex::new(manager));
+        let manager_guard = arc_manager.blocking_lock();
+        let sources =
+            KeiyoushiSource::from_keiyoushi_apk(&apk_path, &manager_guard, &arc_manager).unwrap();
+        let Some(first) = sources.into_iter().next() else {
+            panic!("fixture APK exposes no sources");
+        };
+        drop(manager_guard);
+
+        match first.search_mangas(CancellationToken::new(), String::new(), 1) {
+            Ok((mangas, has_next)) => {
+                assert!(!mangas.is_empty());
+                assert!(has_next);
+                println!(
+                    "fourkhd search returned {} mangas (has_next={})",
+                    mangas.len(),
+                    has_next
+                );
+            }
+            Err(err) => {
+                let msg = format!("{err:#}");
+                assert!(
+                    !msg.contains("class not found"),
+                    "search must not fail on missing RegexOption class: {msg}"
+                );
+                eprintln!("fourkhd search blocked by network ({msg}); RegexOption resolved fine");
+            }
+        }
+    }
 }

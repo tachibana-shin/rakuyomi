@@ -21,6 +21,7 @@ use d4rt_rs::value::Value;
 use d4rt_rs::Context;
 use serde_json::{json, Value as JsonValue};
 
+use crate::resource_usage::ResourceRegistry;
 use crate::source::mangayomi::bridge::{
     filter_list_value, map_set, nmap, register_bridge, value_to_json, wrap, BridgeClasses,
     BridgeState, StateRef,
@@ -53,6 +54,10 @@ pub struct MangayomiRuntime {
     prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
     worker: Mutex<Option<WorkerHandle>>,
+    /// The source id this runtime reports its VM memory under.
+    source_id: String,
+    /// Runtime usage registry this runtime reports its VM memory to.
+    usage: ResourceRegistry,
 }
 
 struct WorkerHandle {
@@ -62,10 +67,12 @@ struct WorkerHandle {
 
 impl MangayomiRuntime {
     pub fn new(
+        source_id: String,
         code: String,
         metadata: JsonValue,
         prefs: Arc<Mutex<SourceSettings>>,
         timeout: Duration,
+        usage: ResourceRegistry,
     ) -> Result<Self> {
         // The worker is not spawned here: `invoke` starts (or restarts) it
         // on demand, so an extension only occupies a thread while a call is
@@ -76,6 +83,8 @@ impl MangayomiRuntime {
             prefs,
             timeout,
             worker: Mutex::new(None),
+            source_id,
+            usage,
         })
     }
 
@@ -144,16 +153,18 @@ impl MangayomiRuntime {
     }
 
     fn start_worker(&self) -> Result<()> {
+        let source_id = self.source_id.clone();
         let code = self.code.clone();
         let metadata = self.metadata.clone();
         let prefs = self.prefs.clone();
         let timeout = self.timeout;
+        let usage = self.usage.clone();
 
         let (tx, rx) = channel();
         let thread = std::thread::Builder::new()
             .name("mangayomi-worker".to_string())
             .spawn(move || {
-                worker_main(rx, &code, &metadata, prefs, timeout);
+                worker_main(rx, &source_id, &code, &metadata, prefs, timeout, usage);
             })
             .context("failed to spawn MangaYomi extension worker thread")?;
         *self.worker.lock().unwrap() = Some(WorkerHandle { tx, thread });
@@ -163,22 +174,26 @@ impl MangayomiRuntime {
 
 fn worker_main(
     rx: Receiver<WorkerRequest>,
+    source_id: &str,
     code: &str,
     metadata: &JsonValue,
     prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
+    usage: ResourceRegistry,
 ) {
-    if let Err(err) = worker_loop(rx, code, metadata, prefs, timeout) {
+    if let Err(err) = worker_loop(rx, source_id, code, metadata, prefs, timeout, usage) {
         log::warn!("MangaYomi extension worker exited: {:#}", err);
     }
 }
 
 fn worker_loop(
     rx: Receiver<WorkerRequest>,
+    source_id: &str,
     code: &str,
     metadata: &JsonValue,
     prefs: Arc<Mutex<SourceSettings>>,
     _timeout: Duration,
+    usage: ResourceRegistry,
 ) -> Result<()> {
     let mut ctx = Context::new();
     ctx.grant(d4rt_rs::permission::Permission::Filesystem(
@@ -210,9 +225,15 @@ fn worker_loop(
             .map_err(|e| anyhow!("MangaYomi extension main() failed to complete: {e}"))?;
     }
     log::debug!("MangaYomi extension worker started");
+    if usage.is_active() {
+        usage.record_wasm_memory(source_id, context_memory_estimate(&ctx));
+    }
 
     while let Ok(request) = rx.recv() {
         let result = invoke_method(&mut ctx, &request.method, &request.args);
+        if result.is_ok() && usage.is_active() {
+            usage.record_wasm_memory(source_id, context_memory_estimate(&ctx));
+        }
         if request.reply.send(result).is_err() {
             // The caller gave up (timeout); stop the worker so a stuck
             // script does not linger.
@@ -220,6 +241,28 @@ fn worker_loop(
         }
     }
     Ok(())
+}
+
+/// Rough resident-memory estimate of the d4rt_rs interpreter, in bytes.
+/// d4rt_rs exposes no memory stats, so the heap-owned tables of the global
+/// environment (bindings, bridged classes/enums, extensions) are summed
+/// instead of the fixed `size_of` footprint of the structs themselves.
+fn context_memory_estimate(ctx: &Context) -> u64 {
+    let mut total: u64 = 0;
+    let env_ref = ctx.env();
+    let env = env_ref.borrow();
+    total += (std::mem::size_of::<Value>() * env.values.len()) as u64;
+    for key in env.values.keys() {
+        total += key.len() as u64;
+    }
+    for key in env.bridged_classes.keys() {
+        total += key.len() as u64;
+    }
+    for key in env.bridged_enums.keys() {
+        total += key.len() as u64;
+    }
+    total += (std::mem::size_of::<usize>() * env.unnamed_extensions.len()) as u64;
+    total
 }
 
 /// Builds the `MSource` bridged instance passed to `main()` from the

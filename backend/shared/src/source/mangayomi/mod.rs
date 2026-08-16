@@ -28,6 +28,7 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 
 use crate::{
+    resource_usage::ResourceRegistry,
     source::{
         model::{Manga, Page, SettingDefinition},
         source_settings::SourceSettings,
@@ -188,6 +189,8 @@ pub struct MangayomiSource {
     /// Lazily booted provider runtime. `invoke` spawns the worker on demand
     /// and the runtime is only created once per source lifetime.
     runtime: Mutex<Option<Arc<dyn MangayomiProvider>>>,
+    /// Runtime usage registry this source reports its VM memory to.
+    pub(crate) usage: ResourceRegistry,
 }
 
 impl std::fmt::Debug for MangayomiSource {
@@ -311,17 +314,21 @@ impl MangayomiSource {
             None => {
                 let probe_runtime: Arc<dyn MangayomiProvider> = if is_js {
                     Arc::new(js::MangayomiJsRuntime::new(
+                        String::new(),
                         code.clone(),
                         metadata.clone(),
                         settings.clone(),
                         DEFAULT_INVOKE_TIMEOUT,
+                        ResourceRegistry::default(),
                     )?)
                 } else {
                     Arc::new(MangayomiRuntime::new(
+                        String::new(),
                         code.clone(),
                         metadata.clone(),
                         settings.clone(),
                         DEFAULT_INVOKE_TIMEOUT,
+                        ResourceRegistry::default(),
                     )?)
                 };
                 let probe = ProbeMeta {
@@ -379,6 +386,7 @@ impl MangayomiSource {
             metadata,
             is_js,
             runtime: Mutex::new(None),
+            usage: ResourceRegistry::default(),
         })
     }
 
@@ -390,17 +398,21 @@ impl MangayomiSource {
         }
         let runtime: Arc<dyn MangayomiProvider> = if self.is_js {
             Arc::new(js::MangayomiJsRuntime::new(
+                self.id.clone(),
                 self.code.clone(),
                 self.metadata.clone(),
                 self.settings.clone(),
                 DEFAULT_INVOKE_TIMEOUT,
+                self.usage.clone(),
             )?)
         } else {
             Arc::new(MangayomiRuntime::new(
+                self.id.clone(),
                 self.code.clone(),
                 self.metadata.clone(),
                 self.settings.clone(),
                 DEFAULT_INVOKE_TIMEOUT,
+                self.usage.clone(),
             )?)
         };
         *guard = Some(runtime.clone());

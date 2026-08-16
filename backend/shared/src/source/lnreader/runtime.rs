@@ -13,6 +13,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crate::resource_usage::ResourceRegistry;
+
 /// How long a single plugin method call may run before it is aborted.
 pub const DEFAULT_INVOKE_TIMEOUT: Duration = Duration::from_secs(60);
 
@@ -62,6 +64,8 @@ pub struct LnReaderRuntime {
     storage: Arc<Mutex<HashMap<String, String>>>,
     timeout: Duration,
     worker: Mutex<Option<WorkerHandle>>,
+    /// Runtime usage registry this runtime reports its QuickJS memory to.
+    usage: ResourceRegistry,
 }
 
 struct WorkerHandle {
@@ -76,6 +80,7 @@ impl LnReaderRuntime {
         site: String,
         user_agent: String,
         timeout: Duration,
+        usage: ResourceRegistry,
     ) -> Result<Self> {
         // The worker is not spawned here: `invoke` starts (or restarts) it
         // on demand, so a plugin only occupies a thread + JS context while a
@@ -88,6 +93,7 @@ impl LnReaderRuntime {
             storage: Arc::new(Mutex::new(HashMap::new())),
             timeout,
             worker: Mutex::new(None),
+            usage,
         })
     }
 
@@ -170,6 +176,7 @@ impl LnReaderRuntime {
         let user_agent = self.user_agent.clone();
         let storage = self.storage.clone();
         let timeout = self.timeout;
+        let usage = self.usage.clone();
 
         let (tx, rx) = channel();
         let thread = std::thread::Builder::new()
@@ -183,6 +190,7 @@ impl LnReaderRuntime {
                     &user_agent,
                     storage,
                     timeout,
+                    usage,
                 )
             })
             .context("failed to spawn LNReader plugin worker thread")?;
@@ -191,6 +199,7 @@ impl LnReaderRuntime {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn worker_main(
     rx: Receiver<WorkerRequest>,
     plugin_id: &str,
@@ -199,6 +208,7 @@ fn worker_main(
     user_agent: &str,
     storage: Arc<Mutex<HashMap<String, String>>>,
     timeout: Duration,
+    usage: ResourceRegistry,
 ) {
     let result = worker_loop(
         rx,
@@ -208,12 +218,14 @@ fn worker_main(
         user_agent,
         storage,
         timeout,
+        usage,
     );
-    if let Err(err) = result {
-        log::warn!("LNReader plugin worker exited: {:#}", err);
+    if let Err(result) = result {
+        log::warn!("LNReader plugin worker exited: {:#}", result);
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn worker_loop(
     rx: Receiver<WorkerRequest>,
     plugin_id: &str,
@@ -222,6 +234,7 @@ fn worker_loop(
     user_agent: &str,
     storage: Arc<Mutex<HashMap<String, String>>>,
     timeout: Duration,
+    usage: ResourceRegistry,
 ) -> Result<()> {
     let runtime = Runtime::new().context("failed to create QuickJS runtime")?;
     let interrupt_deadline: Arc<Mutex<Option<Instant>>> = Arc::new(Mutex::new(None));
@@ -249,7 +262,12 @@ fn worker_loop(
         })
         .context("failed to initialise plugin runtime")?;
     log::debug!("LNReader plugin worker started");
-
+    if usage.is_active() {
+        usage.record_wasm_memory(
+            plugin_id,
+            runtime.memory_usage().memory_used_size.max(0) as u64,
+        );
+    }
     while let Ok(request) = rx.recv() {
         let result = context.with(|ctx| {
             let deadline = if timeout > INTERRUPT_LEEWAY {
@@ -262,6 +280,12 @@ fn worker_loop(
             *interrupt_deadline.lock().unwrap() = None;
             result
         });
+        if result.is_ok() && usage.is_active() {
+            usage.record_wasm_memory(
+                plugin_id,
+                runtime.memory_usage().memory_used_size.max(0) as u64,
+            );
+        }
         if request.reply.send(result).is_err() {
             // The caller gave up (timeout); stop the worker so a stuck
             // script does not linger.

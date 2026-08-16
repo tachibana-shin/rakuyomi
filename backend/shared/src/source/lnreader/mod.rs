@@ -23,6 +23,7 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 
 use crate::{
+    resource_usage::ResourceRegistry,
     settings::SourceSettingValue,
     source::{
         model::{Manga, Page, SettingDefinition},
@@ -109,6 +110,8 @@ pub struct LnReaderSource {
     /// the lock makes the source shareable across `spawn_blocking`.
     settings: Arc<Mutex<SourceSettings>>,
     runtime: LnReaderRuntime,
+    /// Runtime usage registry this source reports its JS memory to.
+    pub(crate) usage: ResourceRegistry,
 }
 
 impl std::fmt::Debug for LnReaderSource {
@@ -171,6 +174,7 @@ impl LnReaderSource {
                         String::new(),
                         DEFAULT_USER_AGENT.to_string(),
                         DEFAULT_INVOKE_TIMEOUT,
+                        ResourceRegistry::default(),
                     )?;
                     let result = probe_runtime
                         .invoke("props", "[]")
@@ -205,12 +209,14 @@ impl LnReaderSource {
         )?));
 
         // The final runtime starts its worker lazily on the first call.
+        let usage = ResourceRegistry::default();
         let runtime = LnReaderRuntime::new(
             props.id.clone(),
             plugin_code,
             String::new(),
             DEFAULT_USER_AGENT.to_string(),
             DEFAULT_INVOKE_TIMEOUT,
+            usage.clone(),
         )?;
 
         // Seed the plugin's `@libs/storage` with the pluginSettings values,
@@ -231,6 +237,7 @@ impl LnReaderSource {
             props,
             settings,
             runtime,
+            usage,
         })
     }
 

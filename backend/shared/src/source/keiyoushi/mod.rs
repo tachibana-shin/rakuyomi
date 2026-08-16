@@ -36,7 +36,10 @@ use std::{
 use anyhow::{anyhow, bail, Context as _, Result};
 use dexvm::context::SettingValue;
 use dexvm::keiyoushi::{HttpData, HttpResp, Keiyoushi};
+use dexvm::vm::class::Class;
 use dexvm::vm::error::JvmError;
+use dexvm::vm::object::JObject;
+use dexvm::JValue;
 use reqwest::{header::HeaderMap, Method, Request};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -44,6 +47,7 @@ use tokio_util::sync::CancellationToken;
 use url::Url;
 
 use crate::{
+    resource_usage::ResourceRegistry,
     settings::SourceSettingValue,
     source::{
         model::{Chapter, Manga, Page, SettingDefinition},
@@ -92,6 +96,8 @@ pub struct KeiyoushiSource {
     /// restarted when it wedges or dies, like the LNReader/MangaYomi
     /// runtimes. The engine itself never leaves the worker thread.
     worker: Mutex<Option<WorkerHandle>>,
+    /// Runtime usage registry this source reports its VM memory estimate to.
+    pub(crate) usage: ResourceRegistry,
 }
 
 impl std::fmt::Debug for KeiyoushiSource {
@@ -314,15 +320,50 @@ fn worker_loop(
     source_index: usize,
     settings: &Arc<Mutex<SourceSettings>>,
     source_id: &str,
+    usage: ResourceRegistry,
 ) -> Result<()> {
     let mut engine = boot_engine(apk_path, source_index, settings)?;
     log::debug!("keiyoushi worker started for {source_id}");
+    if usage.is_active() {
+        usage.record_wasm_memory(source_id, vm_memory_estimate(&mut engine));
+    }
     while let Ok(request) = rx.recv() {
         *engine.last_url.borrow_mut() = None;
         let result = handle_request(&mut engine, source_id, request.kind);
+        if result.is_ok() && usage.is_active() {
+            usage.record_wasm_memory(source_id, vm_memory_estimate(&mut engine));
+        }
         let _ = request.reply.send(result);
     }
     Ok(())
+}
+
+/// Rough resident-memory estimate of the dexvm VM, in bytes. There is no
+/// exact "linear memory" like in WASM, so the heap-owned buffers of the VM
+/// are summed instead of the fixed `size_of` footprint of the structs
+/// themselves. The dex string tables are skipped: their bytes live inside
+/// `dex.data`, which already counts them.
+fn vm_memory_estimate(engine: &mut KeiyoushiEngine) -> u64 {
+    let vm = engine.ext.ctx().vm();
+    let mut total: u64 = 0;
+    for dex in &vm.dexes {
+        total += dex.data.len() as u64;
+    }
+    for bytes in vm.resources.values() {
+        total += bytes.len() as u64;
+    }
+    for string in &vm.intern {
+        total += string.len() as u64;
+    }
+    total += (std::mem::size_of::<Class>() * vm.classes.len()) as u64;
+    for obj in &vm.arena.objects {
+        total += (std::mem::size_of::<JObject>() + std::mem::size_of::<JValue>() * obj.fields.len())
+            as u64;
+    }
+    for key in vm.runtime_strings.keys() {
+        total += key.len() as u64;
+    }
+    total
 }
 
 /// Executes one typed engine call, absolutising the extension's results
@@ -631,6 +672,7 @@ impl KeiyoushiSource {
                 source_index: index,
                 settings,
                 worker: Mutex::new(None),
+                usage: ResourceRegistry::default(),
             });
         }
         Ok(out)
@@ -692,12 +734,15 @@ impl KeiyoushiSource {
         let source_index = self.source_index;
         let settings = self.settings.clone();
         let source_id = self.id.clone();
+        let usage = self.usage.clone();
 
         let (tx, rx) = channel();
         let thread = std::thread::Builder::new()
             .name(format!("keiyoushi-worker-{source_id}"))
             .spawn(move || {
-                if let Err(err) = worker_loop(rx, &apk_path, source_index, &settings, &source_id) {
+                if let Err(err) =
+                    worker_loop(rx, &apk_path, source_index, &settings, &source_id, usage)
+                {
                     log::warn!("keiyoushi worker exited: {:#}", err);
                 }
             })

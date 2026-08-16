@@ -172,7 +172,8 @@ fn disk_bytes_of(
 }
 
 /// Returns the runtime usage of every installed source in one response,
-/// keyed by source id.
+/// keyed by source id. Polling this endpoint keeps the demand-driven VM
+/// memory tracking alive (see [`ResourceRegistry::mark_active`]).
 async fn get_all_source_usage(
     StateExtractor(State { source_manager, .. }): StateExtractor<State>,
 ) -> Json<HashMap<String, SourceUsageResponse>> {
@@ -181,7 +182,11 @@ async fn get_all_source_usage(
         .sources_by_id
         .iter()
         .map(|(source_id, source)| {
+            // Read first: the first poll of a reopened view discards any
+            // stale memory data left from the previous session, then the
+            // poll itself restarts the demand-driven tracking.
             let usage = source.usage.usage(source_id.value()).unwrap_or_default();
+            source.usage.mark_active();
             let usage_response = SourceUsageResponse {
                 usage,
                 disk_bytes: disk_bytes_of(&source_manager, source),

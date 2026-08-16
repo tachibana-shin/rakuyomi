@@ -122,13 +122,15 @@ macro_rules! wrap_blocking_source_fn {
                             .unwrap_or_else(|e| e.into_inner());
                         let result = guard.$fn_name($($param),*);
                         if result.is_ok() {
-                            if let (Ok(memory), Some(store)) =
-                                (guard.get_memory(), guard.store.as_ref())
-                            {
-                                usage.record_wasm_memory(
-                                    &source_id,
-                                    memory.data_size(store) as u64,
-                                );
+                            if usage.is_active() {
+                                if let (Ok(memory), Some(store)) =
+                                    (guard.get_memory(), guard.store.as_ref())
+                                {
+                                    usage.record_wasm_memory(
+                                        &source_id,
+                                        memory.data_size(store) as u64,
+                                    );
+                                }
                             }
                         }
                         result
@@ -230,12 +232,16 @@ impl Source {
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
-        let source = LnReaderSource::from_lnreader_file(path, manager, arc_manager)?;
+        let mut source = LnReaderSource::from_lnreader_file(path, manager, arc_manager)?;
         let features = source.features.clone();
+        let usage = ResourceRegistry::default();
+        // The worker records the QuickJS memory through the source's own
+        // registry, so both sides share one handle.
+        source.usage = usage.clone();
         Ok(Self {
             backend: SourceBackend::LnReader(Arc::new(source)),
             features,
-            usage: ResourceRegistry::default(),
+            usage,
         })
     }
 
@@ -245,12 +251,16 @@ impl Source {
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
-        let source = MangayomiSource::from_mangayomi_file(path, manager, arc_manager)?;
+        let mut source = MangayomiSource::from_mangayomi_file(path, manager, arc_manager)?;
         let features = source.features.clone();
+        let usage = ResourceRegistry::default();
+        // The worker records the runtime memory through the source's own
+        // registry, so both sides share one handle.
+        source.usage = usage.clone();
         Ok(Self {
             backend: SourceBackend::Mangayomi(Arc::new(source)),
             features,
-            usage: ResourceRegistry::default(),
+            usage,
         })
     }
 
@@ -265,12 +275,16 @@ impl Source {
         let sources = KeiyoushiSource::from_keiyoushi_apk(path, manager, arc_manager)?;
         Ok(sources
             .into_iter()
-            .map(|source| {
+            .map(|mut source| {
                 let features = source.features.clone();
+                let usage = ResourceRegistry::default();
+                // The worker records the VM memory estimate through the
+                // source's own registry, so both sides share one handle.
+                source.usage = usage.clone();
                 Source {
                     backend: SourceBackend::Keiyoushi(Arc::new(source)),
                     features,
-                    usage: ResourceRegistry::default(),
+                    usage,
                 }
             })
             .collect())

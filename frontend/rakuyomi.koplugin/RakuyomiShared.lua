@@ -96,7 +96,7 @@ function Shared:openChapterListingFromFile(filepath, hideTopClose)
   ---@description The fake data
   local manga = {
     id = origin.manga_id.manga_id,
-    source = { id = origin.manga_id.source_id, name = "", version = 0 },
+    source = { id = origin.manga_id.source_id, name = "", version = 0, languages = {} },
     title = "",
     in_library = false,
     ---@diagnostic disable-next-line: assign-type-mismatch

@@ -13,6 +13,7 @@ use anyhow::{anyhow, bail, Context as _, Result};
 use rquickjs::{Context, Ctx, Exception, Function, Promise, Runtime, Value as JsValue};
 use serde_json::Value as JsonValue;
 
+use crate::resource_usage::ResourceRegistry;
 use crate::source::mangayomi::html::MangaYomiDom;
 use crate::source::mangayomi::js::bridge::{host_send_message, install, JsBridge};
 use crate::source::source_settings::SourceSettings;
@@ -45,6 +46,10 @@ pub struct MangayomiJsRuntime {
     prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
     worker: Mutex<Option<WorkerHandle>>,
+    /// The source id this runtime reports its QuickJS memory under.
+    source_id: String,
+    /// Runtime usage registry this runtime reports its QuickJS memory to.
+    usage: ResourceRegistry,
 }
 
 struct WorkerHandle {
@@ -54,10 +59,12 @@ struct WorkerHandle {
 
 impl MangayomiJsRuntime {
     pub fn new(
+        source_id: String,
         code: String,
         metadata: JsonValue,
         prefs: Arc<Mutex<SourceSettings>>,
         timeout: Duration,
+        usage: ResourceRegistry,
     ) -> Result<Self> {
         // The worker is not spawned here: `invoke` starts (or restarts) it
         // on demand, so an extension only occupies a thread while a call is
@@ -68,6 +75,8 @@ impl MangayomiJsRuntime {
             prefs,
             timeout,
             worker: Mutex::new(None),
+            source_id,
+            usage,
         })
     }
 
@@ -134,16 +143,18 @@ impl MangayomiJsRuntime {
     }
 
     fn start_worker(&self) -> Result<()> {
+        let source_id = self.source_id.clone();
         let code = self.code.clone();
         let metadata = self.metadata.clone();
         let prefs = self.prefs.clone();
         let timeout = self.timeout;
+        let usage = self.usage.clone();
 
         let (tx, rx) = channel();
         let thread = std::thread::Builder::new()
             .name("mangayomi-js-worker".to_string())
             .spawn(move || {
-                worker_main(rx, &code, &metadata, prefs, timeout);
+                worker_main(rx, &source_id, &code, &metadata, prefs, timeout, usage);
             })
             .context("failed to spawn MangaYomi JS extension worker thread")?;
         *self.worker.lock().unwrap() = Some(WorkerHandle { tx, thread });
@@ -153,12 +164,14 @@ impl MangayomiJsRuntime {
 
 fn worker_main(
     rx: Receiver<WorkerRequest>,
+    source_id: &str,
     code: &str,
     metadata: &JsonValue,
     prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
+    usage: ResourceRegistry,
 ) {
-    if let Err(err) = worker_loop(rx, code, metadata, prefs, timeout) {
+    if let Err(err) = worker_loop(rx, source_id, code, metadata, prefs, timeout, usage) {
         log::warn!("MangaYomi JS extension worker exited: {:#}", err);
     }
 }
@@ -191,10 +204,12 @@ fn msource_json(metadata: &JsonValue) -> JsonValue {
 
 fn worker_loop(
     rx: Receiver<WorkerRequest>,
+    source_id: &str,
     code: &str,
     metadata: &JsonValue,
     prefs: Arc<Mutex<SourceSettings>>,
     timeout: Duration,
+    usage: ResourceRegistry,
 ) -> Result<()> {
     let runtime = Runtime::new().context("failed to create QuickJS runtime")?;
     let interrupt_deadline: Arc<Mutex<Option<Instant>>> = Arc::new(Mutex::new(None));
@@ -232,6 +247,12 @@ fn worker_loop(
         }
     }
     log::debug!("MangaYomi JS extension worker started");
+    if usage.is_active() {
+        usage.record_wasm_memory(
+            source_id,
+            runtime.memory_usage().memory_used_size.max(0) as u64,
+        );
+    }
 
     while let Ok(request) = rx.recv() {
         let result = context.with(|ctx| {
@@ -245,6 +266,12 @@ fn worker_loop(
             *interrupt_deadline.lock().unwrap() = None;
             result
         });
+        if result.is_ok() && usage.is_active() {
+            usage.record_wasm_memory(
+                source_id,
+                runtime.memory_usage().memory_used_size.max(0) as u64,
+            );
+        }
         if request.reply.send(result).is_err() {
             // The caller gave up (timeout); stop the worker so a stuck
             // script does not linger.

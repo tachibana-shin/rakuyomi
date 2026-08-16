@@ -1294,7 +1294,7 @@ function LibraryView:startCleaner(modeInvalid)
         }
         UIManager:show(progress_message)
 
-        for i, filename in ipairs(filenames) do
+        for _, filename in ipairs(filenames) do
           local response_f = Backend.removeFile(filename)
           if response_f.type == 'ERROR' then
             ErrorDialog:show(response_f.message)

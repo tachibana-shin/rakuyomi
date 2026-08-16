@@ -57,3 +57,8 @@ skills-lock.json
 openspec/
 .opencode/commands/
 .opencode/skills/openspec-*/
+.opencode/perf-skills/
+
+# git worktree checkouts used for parallel branch work (per-machine, not
+# meant to be shared via git)
+.slim/

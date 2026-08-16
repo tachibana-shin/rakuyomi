@@ -21,3 +21,44 @@ dev.db
 node_modules
 
 /BUILD_INFO.json
+
+# LNReader integration: Claude Code working notes (feasibility research,
+# phase handoffs, investigation findings) -- session-scratch, not shipped
+# documentation, kept local only. This also covers docs/lnreader/test_home/
+# (a local server home directory used for real, end-to-end manual testing
+# against the live HTTP API), whose churn was previously excluded on its own.
+docs/lnreader/
+
+# Claude Code's own runtime state for this repo (scheduled tasks, worktree/
+# checkpoint/mailbox bookkeeping, agent registry/memory) -- tooling-local,
+# regenerated per machine, never meant to be shared via git. Previously
+# only excluded per-clone via .git/info/exclude (not shared with a fresh
+# clone); formalized here so it can't be accidentally committed from any
+# checkout.
+.claude/
+
+# codebase-memory-mcp local knowledge graph cache (per-project, regenerated)
+.codebase-memory/
+
+# codegraph local index (per-project, regenerated)
+.codegraph/
+
+# Local agent tooling (not upstream): agent-browser skill, session state
+.agents/
+
+# OhMyOpenCode session/plan state (local-only)
+.omo/
+
+# OpenCode local config + OpenSpec workflow files (not upstream).
+# NOTE: .opencode/skills/rakuyomi-topzone-gesture/ IS tracked upstream --
+# only the local openspec-* skills and commands are ignored.
+opencode.json
+skills-lock.json
+openspec/
+.opencode/commands/
+.opencode/skills/openspec-*/
+.opencode/perf-skills/
+
+# git worktree checkouts used for parallel branch work (per-machine, not
+# meant to be shared via git)
+.slim/

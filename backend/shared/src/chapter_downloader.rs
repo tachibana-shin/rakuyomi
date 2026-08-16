@@ -225,6 +225,10 @@ where
         let cancel_token = cancel_token.clone();
 
         async move {
+            // Zero-pad page indices to the width of the page count, so
+            // lexicographic filename ordering matches page order.
+            let page_index_width = pages.len().to_string().len().max(2);
+
             stream::iter(pages)
                 .map(|page| {
                     let tx = tx.clone();
@@ -232,6 +236,7 @@ where
                     let source = source.clone();
                     let cancel_token = cancel_token.clone();
                     let chapter_id_str = chapter_id_str.clone();
+                    let page_index_width = page_index_width;
 
                     async move {
                         let page_index = page.index;
@@ -245,10 +250,11 @@ where
                                 .unwrap_or("jpg")
                                 .to_owned();
 
-                            // FIXME we should left pad this number with zeroes up to the maximum
-                            // amount of pages needed, but for now we pad 4 digits
-                            // stop reading the bible if this ever becomes an issue
-                            let filename = format!("{:0>4}.{}", page.index, extension);
+                            // Fallback filename (URL-derived extension): the
+                            // success arm may override it with the real
+                            // extension sniffed from the image magic bytes.
+                            let filename =
+                                format!("{:0>page_index_width$}.{}", page.index, extension);
 
                             // TODO we could stream the data from the client into the file
                             // would save a bit of memory but i dont think its a big deal
@@ -290,7 +296,7 @@ where
                                     eprintln!("{:?}", err);
                                     return Ok((
                                         page.index,
-                                        format!("{:0>4}.jpg", page.index),
+                                        format!("{:0>page_index_width$}.jpg", page.index),
                                         generate_error_image("Error", &reason, 500, 667)?,
                                         Some(err),
                                     ));
@@ -326,7 +332,7 @@ where
 
                                     return Ok((
                                         page.index,
-                                        filename,
+                                        format!("{:0>page_index_width$}.{}", page.index, extension),
                                         generate_error_image(
                                             &response.status().as_u16().to_string(),
                                             response
@@ -444,7 +450,7 @@ where
                                 // trust the magic bytes of the decrypted image
                                 // over the extension derived from the URL.
                                 let filename = match detect_image_extension(&final_bytes) {
-                                    Some(ext) => format!("{:0>4}.{}", index, ext),
+                                    Some(ext) => format!("{:0>page_index_width$}.{}", index, ext),
                                     None => filename,
                                 };
                                 // Send result
@@ -454,7 +460,7 @@ where
                             }
                             Err(e) => {
                                 eprintln!("Error downloading page {}: {e}", page_index);
-                                let filename = format!("{:0>4}.jpg", page_index);
+                                let filename = format!("{:0>page_index_width$}.jpg", page_index);
                                 let bytes = generate_error_image("Error", &e.to_string(), 500, 667)
                                     .unwrap_or_default();
                                 let _ = tx

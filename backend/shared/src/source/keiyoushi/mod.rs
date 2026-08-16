@@ -790,6 +790,9 @@ impl KeiyoushiSource {
     /// Implements `get_image_request`: image URLs carry their own
     /// authentication parameters, so a plain GET with the shared
     /// user-agent and the per-domain cookie store is enough.
+    ///
+    /// # TODO
+    /// maybe is deadcode because matches in chapter_downloader only call fetch_page_image
     pub fn get_image_request(
         &self,
         url: Url,

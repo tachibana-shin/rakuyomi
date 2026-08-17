@@ -28,9 +28,15 @@ build_one() {
 
   local base_flags=""
 
+  # The 32-bit ARM musl targets have no 64-bit atomics, so the quickjs
+  # runtime needs libatomic and libgcc at link time.
+  if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
+    base_flags="-C link-arg=-latomic -C link-arg=-lgcc"
+  fi
+
   if [[ "$name" == "kindlea9" ]]; then
     echo "🚀 Applying aggressive optimizations for Cortex-A9..."
-    base_flags="-C target-cpu=cortex-a9 -C target-feature=+thumb2,+neon"
+    base_flags="$base_flags -C target-cpu=cortex-a9 -C target-feature=+thumb2,+neon"
   fi
 
   mkdir -p .cargo

@@ -23,14 +23,17 @@ jobs:
         include:
           - target: "macos"
             os: macos-14
-          # Android is split into two parallel jobs: armv7 targets API 18,
-          # aarch64/x86_64 target API 21.
+          # Android is split into parallel jobs, one per ABI: armv7 targets
+          # API 18, aarch64/x86_64 target API 21.
           - target: "android-armv7"
             os: ubuntu-latest
             abi: "armv7"
           - target: "android-aarch64"
             os: ubuntu-latest
-            abi: "aarch64 x86_64"
+            abi: "aarch64"
+          - target: "android-x86_64"
+            os: ubuntu-latest
+            abi: "x86_64"
 
     steps:
     - uses: actions/checkout@v3

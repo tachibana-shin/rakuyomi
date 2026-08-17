@@ -201,6 +201,11 @@ impl ServerCertVerifier for AcceptAllVerifier {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    /// The proxy tests share the global `PROXY_URL`, so they must not run in
+    /// parallel or they race each other.
+    static PROXY_LOCK: Mutex<()> = Mutex::new(());
 
     #[tokio::test]
     #[ignore] // requires network
@@ -289,6 +294,7 @@ mod tests {
 
     #[test]
     fn proxy_set_and_get() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
         assert_eq!(proxy_url(), Some("http://127.0.0.1:8080".to_string()));
         set_proxy_url(None);
@@ -297,6 +303,7 @@ mod tests {
 
     #[test]
     fn proxy_switching() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://proxy1:8080".to_string()));
         assert_eq!(proxy_url(), Some("http://proxy1:8080".to_string()));
         set_proxy_url(Some("http://proxy2:3128".to_string()));
@@ -323,6 +330,7 @@ mod tests {
 
     #[test]
     fn builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
             .build();
@@ -334,6 +342,7 @@ mod tests {
 
     #[test]
     fn insecure_builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         let client = client_builder_insecure()
             .timeout(std::time::Duration::from_secs(5))
             .build();
@@ -345,6 +354,7 @@ mod tests {
 
     #[test]
     fn proxy_builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
@@ -358,6 +368,7 @@ mod tests {
 
     #[test]
     fn invalid_proxy_does_not_break_builder() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("not-a-valid-url://??".to_string()));
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))

@@ -265,15 +265,20 @@ fn option_titles(item: &Value) -> Option<Vec<String>> {
     Some(titles)
 }
 
-/// The selected option of a picker filter. The plugin stores the selected
-/// option *value* (e.g. `"hits"`), so the default only resolves when it
-/// matches one of the declared options.
+/// The selected option of a picker filter. The plugin stores either the
+/// selected option *value* (e.g. `"hits"`) or its index into the options
+/// array (e.g. `1`), so the default resolves whichever way the plugin uses.
 fn picker_default(item: &Value, options: &[String]) -> Option<String> {
-    let value = item.get("value").and_then(Value::as_str)?;
-    if value.is_empty() {
-        return None;
+    let value = item.get("value")?;
+    if let Some(s) = value.as_str() {
+        if s.is_empty() {
+            return None;
+        }
+        return options.iter().find(|o| *o == s).cloned();
     }
-    options.iter().find(|o| *o == value).cloned()
+    value
+        .as_u64()
+        .and_then(|i| options.get(i as usize).cloned())
 }
 
 #[cfg(test)]

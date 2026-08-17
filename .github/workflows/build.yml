@@ -136,6 +136,10 @@ jobs:
       if: ${{ matrix.target == 'android' }}
       run: cargo install cargo-ndk && rustup target install aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
+    - name: Install clang for rquickjs bindgen
+      if: ${{ matrix.target == 'android' }}
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends clang libclang-dev
+
     - name: Build plugin for android
       if: ${{ matrix.target == 'android' }}
       run: bash scripts/build-rust-android.sh

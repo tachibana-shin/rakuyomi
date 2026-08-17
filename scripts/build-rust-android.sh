@@ -61,12 +61,12 @@ EOF
 TARGETS=("aarch64-linux-android")
 
 # rquickjs-sys has no pre-generated bindings for Android targets, so it
-# generates them with bindgen at build time. Point bindgen at the NDK's
-# clang and libclang, which know the Android sysroot on their own.
+# generates them with bindgen at build time. The clang driver and libclang
+# come from the system packages installed in CI; the NDK sysroot headers
+# are passed to bindgen per target.
 if [[ -n "${ANDROID_NDK_HOME:-}" ]]; then
   NDK_LLVM="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64"
-  export CLANG_PATH="$NDK_LLVM/bin/clang"
-  export LIBCLANG_PATH="$NDK_LLVM/lib"
+  NDK_SYSROOT="$NDK_LLVM/sysroot/usr/include"
 fi
 
 if [[ "$MODE" != "dev" ]]; then
@@ -82,16 +82,27 @@ for target in "${TARGETS[@]}"; do
   echo "+ Building server for $target"
 
   case "$target" in
-    aarch64-linux-android|x86_64-linux-android)
+    aarch64-linux-android)
       PLATFORM=21
+      ANDROID_ARCH_DIR="aarch64-linux-android"
       ;;
     armv7-linux-androideabi)
       PLATFORM=18
+      ANDROID_ARCH_DIR="arm-linux-androideabi"
+      ;;
+    x86_64-linux-android)
+      PLATFORM=21
+      ANDROID_ARCH_DIR="x86_64-linux-android"
       ;;
     *)
       PLATFORM=21
+      ANDROID_ARCH_DIR="aarch64-linux-android"
       ;;
   esac
+
+  if [[ -n "${NDK_SYSROOT:-}" ]]; then
+    export BINDGEN_EXTRA_CLANG_ARGS="-isystem $NDK_SYSROOT/$ANDROID_ARCH_DIR -isystem $NDK_SYSROOT"
+  fi
 
   echo "  Android API level: $PLATFORM"
   if [[ "$PLATFORM" -lt 21 ]]; then

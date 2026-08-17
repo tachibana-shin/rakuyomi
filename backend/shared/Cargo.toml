@@ -87,7 +87,7 @@ unicode-normalization = "0.1.25"
 ordered-float = "5.3.0"
 dom_query = { version = "0.28.0", features = ["atomic"] }
 d4rt_rs = "0.1.4"
-rquickjs = { version = "0.12.2", features = ["futures"] }
+rquickjs = { version = "0.12.2", features = ["futures", "bindgen"] }
 dexvm = { version = "0.1.14", features = ["keiyoushi"] }
 zune-png = "0.5.2"
 zune-jpeg = "0.5.15"

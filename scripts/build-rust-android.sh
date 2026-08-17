@@ -60,6 +60,15 @@ EOF
 
 TARGETS=("aarch64-linux-android")
 
+# rquickjs-sys has no pre-generated bindings for Android targets, so it
+# generates them with bindgen at build time. Point bindgen at the NDK's
+# clang and libclang, which know the Android sysroot on their own.
+if [[ -n "${ANDROID_NDK_HOME:-}" ]]; then
+  NDK_LLVM="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64"
+  export CLANG_PATH="$NDK_LLVM/bin/clang"
+  export LIBCLANG_PATH="$NDK_LLVM/lib"
+fi
+
 if [[ "$MODE" != "dev" ]]; then
   TARGETS=(
     "aarch64-linux-android"

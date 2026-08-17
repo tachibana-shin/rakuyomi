@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an idea for rakuyomi
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an idea! Tell us what you would like to see.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem are you trying to solve? Ex. I'm always frustrated when [...]
+      placeholder: I'm always frustrated when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: A clear and concise description of what you want to happen.
+      placeholder: I would like ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or workarounds you've tried.
+      placeholder: I also tried ...
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of rakuyomi would this affect?
+      multiple: true
+      options:
+        - Reading / viewer
+        - Library
+        - Downloads
+        - Sources / extensions
+        - Settings
+        - Performance
+        - Other
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add screenshots, mockups, or any other context here.

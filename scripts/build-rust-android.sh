@@ -101,7 +101,7 @@ for target in "${TARGETS[@]}"; do
   esac
 
   if [[ -n "${NDK_SYSROOT:-}" ]]; then
-    export BINDGEN_EXTRA_CLANG_ARGS="-isystem $NDK_SYSROOT/$ANDROID_ARCH_DIR -isystem $NDK_SYSROOT -D__ANDROID_API__=$PLATFORM"
+    export BINDGEN_EXTRA_CLANG_ARGS="-isystem $NDK_SYSROOT/$ANDROID_ARCH_DIR -isystem $NDK_SYSROOT"
   fi
 
   echo "  Android API level: $PLATFORM"

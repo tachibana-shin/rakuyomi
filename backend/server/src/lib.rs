@@ -27,6 +27,8 @@ pub mod state;
 pub mod system;
 pub mod update;
 
+mod android18_compat;
+
 mod app;
 
 pub use app::{build_router, build_state, init_logging, log_startup, run, serve};

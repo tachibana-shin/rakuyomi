@@ -121,6 +121,7 @@ impl LnReaderRuntime {
     /// JS runtime.
     pub fn invoke(&self, method: &str, args: &str) -> Result<String> {
         let mut attempts = 0;
+        let mut restarts = 0;
         loop {
             let reply_rx = {
                 let mut worker = self.worker.lock().unwrap();
@@ -131,6 +132,10 @@ impl LnReaderRuntime {
                 if needs_restart {
                     *worker = None;
                     drop(worker);
+                    restarts += 1;
+                    if restarts >= 2 {
+                        bail!("plugin runtime failed to start twice");
+                    }
                     self.start_worker()?;
                     continue;
                 }

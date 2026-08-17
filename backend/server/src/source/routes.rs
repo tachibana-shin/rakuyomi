@@ -148,27 +148,32 @@ fn file_size(path: &std::path::Path) -> u64 {
     std::fs::metadata(path).map(|m| m.len()).unwrap_or(0)
 }
 
-fn disk_bytes_of(
+/// The on-disk files backing a source, without touching the filesystem.
+fn source_files_of(
     source_manager: &shared::source_manager::SourceManager,
     source: &shared::source::Source,
-) -> u64 {
+) -> Vec<std::path::PathBuf> {
     let source_id = SourceId::new(source.manifest().info.id.clone());
     match &source.backend {
-        SourceBackend::Aidoku(_) => file_size(&source_manager.source_path(&source_id)),
-        SourceBackend::LnReader(_) => {
-            file_size(&source_manager.lnreader_source_path(&source_id))
-                + file_size(&source_manager.lnreader_probe_path(&source_id))
-        }
-        SourceBackend::Mangayomi(_) => {
-            file_size(&source_manager.mangayomi_source_path(&source_id))
-                + file_size(&source_manager.mangayomi_js_source_path(&source_id))
-                + file_size(&source_manager.mangayomi_probe_path(&source_id))
-        }
-        SourceBackend::Keiyoushi(_) => {
-            file_size(&source_manager.keiyoushi_source_path(&source_id))
-                + file_size(&source_manager.keiyoushi_probe_path(&source_id))
-        }
+        SourceBackend::Aidoku(_) => vec![source_manager.source_path(&source_id)],
+        SourceBackend::LnReader(_) => vec![
+            source_manager.lnreader_source_path(&source_id),
+            source_manager.lnreader_probe_path(&source_id),
+        ],
+        SourceBackend::Mangayomi(_) => vec![
+            source_manager.mangayomi_source_path(&source_id),
+            source_manager.mangayomi_js_source_path(&source_id),
+            source_manager.mangayomi_probe_path(&source_id),
+        ],
+        SourceBackend::Keiyoushi(_) => vec![
+            source_manager.keiyoushi_source_path(&source_id),
+            source_manager.keiyoushi_probe_path(&source_id),
+        ],
     }
+}
+
+fn disk_bytes_of(files: &[std::path::PathBuf]) -> u64 {
+    files.iter().map(|p| file_size(p)).sum()
 }
 
 /// Returns the runtime usage of every installed source in one response,
@@ -178,7 +183,7 @@ async fn get_all_source_usage(
     StateExtractor(State { source_manager, .. }): StateExtractor<State>,
 ) -> Json<HashMap<String, SourceUsageResponse>> {
     let source_manager = source_manager.lock().await;
-    let out = source_manager
+    let entries = source_manager
         .sources_by_id
         .iter()
         .map(|(source_id, source)| {
@@ -187,14 +192,28 @@ async fn get_all_source_usage(
             // poll itself restarts the demand-driven tracking.
             let usage = source.usage.usage(source_id.value()).unwrap_or_default();
             source.usage.mark_active();
-            let usage_response = SourceUsageResponse {
-                usage,
-                disk_bytes: disk_bytes_of(&source_manager, source),
-            };
-            (source_id.value().to_string(), usage_response)
+            let files = source_files_of(&source_manager, source);
+            (source_id.value().to_string(), usage, files)
         })
-        .collect();
+        .collect::<Vec<_>>();
     drop(source_manager);
+
+    let out = tokio::task::spawn_blocking(move || {
+        entries
+            .into_iter()
+            .map(|(source_id, usage, files)| {
+                (
+                    source_id,
+                    SourceUsageResponse {
+                        usage,
+                        disk_bytes: disk_bytes_of(&files),
+                    },
+                )
+            })
+            .collect::<HashMap<_, _>>()
+    })
+    .await
+    .unwrap_or_default();
 
     Json(out)
 }

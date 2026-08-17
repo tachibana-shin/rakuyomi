@@ -693,6 +693,10 @@ impl KeiyoushiSource {
                 if needs_restart {
                     *worker = None;
                     drop(worker);
+                    attempts += 1;
+                    if attempts >= 3 {
+                        bail!("keiyoushi worker failed to start");
+                    }
                     self.start_worker()?;
                     continue;
                 }

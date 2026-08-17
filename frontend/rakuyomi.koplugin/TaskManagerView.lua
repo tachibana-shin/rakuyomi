@@ -916,10 +916,14 @@ function TaskManagerView:scheduleRefresh()
   if not self.auto_refresh or self.refresh_timer then
     return
   end
-  self.refresh_timer = UIManager:scheduleIn(self.refresh_interval_s * 1000, function()
+  local function on_refresh()
     self.refresh_timer = nil
     self:onRefreshTick()
-  end)
+  end
+  -- UIManager:scheduleIn expects seconds and does not return a handle, so
+  -- keep the callback itself and unschedule with the same reference.
+  self.refresh_timer = on_refresh
+  UIManager:scheduleIn(self.refresh_interval_s, on_refresh)
 end
 
 --- @private

@@ -110,54 +110,86 @@ macro_rules! wrap_blocking_source_fn {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
             let started_at = std::time::Instant::now();
             let usage = self.usage.clone();
-            let source_id = self.manifest().info.id.clone();
-            let result: ::std::result::Result<$return_type, _> = match &self.backend {
+            let result: ::std::result::Result<($return_type, String), _> = match &self.backend {
                 SourceBackend::Aidoku(blocking_source) => {
                     let blocking_source = blocking_source.clone();
                     let usage = usage.clone();
-                    let source_id = source_id.clone();
                     ::tokio::task::spawn_blocking(move || {
                         let mut guard = blocking_source
                             .lock()
                             .unwrap_or_else(|e| e.into_inner());
+                        let source_id = guard.manifest.info.id.clone();
                         let result = guard.$fn_name($($param),*);
-                        if result.is_ok() {
-                            if usage.is_active() {
-                                if let (Ok(memory), Some(store)) =
-                                    (guard.get_memory(), guard.store.as_ref())
-                                {
-                                    usage.record_wasm_memory(
-                                        &source_id,
-                                        memory.data_size(store) as u64,
-                                    );
-                                }
+                        if result.is_ok() && usage.is_active() {
+                            if let (Ok(memory), Some(store)) =
+                                (guard.get_memory(), guard.store.as_ref())
+                            {
+                                usage.record_wasm_memory(
+                                    &source_id,
+                                    memory.data_size(store) as u64,
+                                );
                             }
                         }
-                        result
+                        (result, source_id)
                     }).await
                 }
                 SourceBackend::LnReader(lnreader) => {
                     let lnreader = lnreader.clone();
-                    ::tokio::task::spawn_blocking(move || lnreader.$fn_name($($param),*)).await
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = lnreader.$fn_name($($param),*);
+                        (result, lnreader.manifest.info.id.clone())
+                    }).await
                 }
                 SourceBackend::Mangayomi(mangayomi) => {
                     let mangayomi = mangayomi.clone();
-                    ::tokio::task::spawn_blocking(move || mangayomi.$fn_name($($param),*)).await
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = mangayomi.$fn_name($($param),*);
+                        (result, mangayomi.manifest.info.id.clone())
+                    }).await
                 }
                 SourceBackend::Keiyoushi(keiyoushi) => {
                     let keiyoushi = keiyoushi.clone();
-                    ::tokio::task::spawn_blocking(move || keiyoushi.$fn_name($($param),*)).await
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = keiyoushi.$fn_name($($param),*);
+                        (result, keiyoushi.manifest.info.id.clone())
+                    }).await
+                }
+            };
+            let (result, source_id) = match result {
+                Ok(pair) => pair,
+                Err(e) => {
+                    // The worker panicked before returning its id; read the
+                    // manifest on the async path only in this exceptional
+                    // case so the failure still lands in the usage log.
+                    let source_id = match &self.backend {
+                        SourceBackend::Aidoku(blocking_source) => blocking_source
+                            .lock()
+                            .unwrap_or_else(|e| e.into_inner())
+                            .manifest
+                            .info
+                            .id
+                            .clone(),
+                        SourceBackend::LnReader(lnreader) => lnreader.manifest.info.id.clone(),
+                        SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.info.id.clone(),
+                        SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.info.id.clone(),
+                    };
+                    usage.record(
+                        &source_id,
+                        Err(format!("worker task failed: {e}")),
+                        started_at.elapsed(),
+                    );
+                    return Err(::anyhow::anyhow!("worker task failed: {e}"));
                 }
             };
             usage.record(
                 &source_id,
                 match &result {
-                    Ok(inner) => inner.as_ref().map(|_| ()).map_err(|e| format!("{e:#}")),
-                    Err(e) => Err(format!("worker task failed: {e}")),
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(format!("{e:#}")),
                 },
                 started_at.elapsed(),
             );
-            result?
+            result
         }
     };
 }

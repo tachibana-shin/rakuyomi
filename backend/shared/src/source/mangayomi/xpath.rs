@@ -14,25 +14,17 @@
 //! `contains`/`starts-with`/`ends-with` string functions. Anything else
 //! produces an [`XPathError`].
 
-use std::fmt;
-
 use dom_query::NodeRef;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
+use thiserror::Error;
 
 /// Errors produced while parsing or executing an XPath expression.
-#[derive(Debug)]
+#[derive(Debug, Error)]
+#[error("{message}")]
 pub struct XPathError {
     message: String,
 }
-
-impl fmt::Display for XPathError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.message)
-    }
-}
-
-impl std::error::Error for XPathError {}
 
 impl XPathError {
     fn parse(message: impl Into<String>) -> Self {

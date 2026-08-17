@@ -278,7 +278,8 @@ fn picker_default(item: &Value, options: &[String]) -> Option<String> {
     }
     value
         .as_u64()
-        .and_then(|i| options.get(i as usize).cloned())
+        .and_then(|i| usize::try_from(i).ok())
+        .and_then(|i| options.get(i).cloned())
 }
 
 #[cfg(test)]

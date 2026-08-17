@@ -71,7 +71,7 @@ if [[ $# -eq 1 ]]; then
   # Single argument → must be a valid build key
   key="$1"
 
-  if [[ "$key" == "android" ]]; then
+  if [[ "$key" == "android" || "$key" == android-* ]]; then
     bash ./scripts/build-plugin.sh "none" "rakuyomi.koplugin" "android"
   elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"

@@ -18,11 +18,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["aarch64", "desktop", "kindle", "kindlehf", "kindlea9", "android"]
+        target: ["aarch64", "desktop", "kindle", "kindlehf", "kindlea9"]
         os: [ubuntu-latest]
         include:
           - target: "macos"
             os: macos-14
+          # Android is split into two parallel jobs: armv7 targets API 18,
+          # aarch64/x86_64 target API 21.
+          - target: "android-armv7"
+            os: ubuntu-latest
+            abi: "armv7"
+          - target: "android-aarch64"
+            os: ubuntu-latest
+            abi: "aarch64 x86_64"
 
     steps:
     - uses: actions/checkout@v3
@@ -113,36 +121,36 @@ jobs:
         path: build/rakuyomi-${{ matrix.target }}.zip
 
     - uses: actions/setup-java@v4
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
       with:
         distribution: temurin
         java-version: 17
 
     - uses: android-actions/setup-android@v3
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
 
     - name: Install Android NDK (r23b)
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
       run: sdkmanager "ndk;23.1.7779620"
 
     - name: Configure NDK
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
       run: |
         echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.1.7779620" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/23.1.7779620" >> $GITHUB_ENV
         echo "$ANDROID_SDK_ROOT/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install cargo-ndk
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
       run: cargo install cargo-ndk && rustup target install aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
     - name: Install clang for rquickjs bindgen
-      if: ${{ matrix.target == 'android' }}
+      if: ${{ startsWith(matrix.target, 'android') }}
       run: sudo apt-get update && sudo apt-get install -y --no-install-recommends clang libclang-dev
 
     - name: Build plugin for android
-      if: ${{ matrix.target == 'android' }}
-      run: bash scripts/build-rust-android.sh
+      if: ${{ startsWith(matrix.target, 'android') }}
+      run: bash scripts/build-rust-android.sh ${{ matrix.abi }}
 
   generate-settings-schema:
     runs-on: ubuntu-latest

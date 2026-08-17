@@ -19,7 +19,6 @@ use std::os::raw::{c_int, c_void};
 /// Equivalent to `utimensat(fd, NULL, times, 0)` — the same implementation
 /// bionic uses.
 #[no_mangle]
-#[used]
 pub unsafe extern "C" fn futimens(fd: c_int, times: *const libc::timespec) -> c_int {
     unsafe { libc::utimensat(fd, std::ptr::null(), times, 0) }
 }
@@ -30,7 +29,6 @@ pub unsafe extern "C" fn futimens(fd: c_int, times: *const libc::timespec) -> c_
 /// default (realtime) clock, which is fine since the only caller (quickjs's
 /// `Atomics.wait`) is never exercised by RakuYomi.
 #[no_mangle]
-#[used]
 pub unsafe extern "C" fn pthread_condattr_setclock(_attr: *mut c_void, _clock_id: c_int) -> c_int {
     0
 }

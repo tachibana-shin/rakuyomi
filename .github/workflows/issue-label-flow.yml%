@@ -1,0 +1,88 @@
+name: Issue label flow
+
+on:
+  issues:
+    types: [opened, closed]
+  issue_comment:
+    types: [created]
+
+jobs:
+  manage-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+
+            // ---- ISSUE OPENED ----
+            if (context.eventName === 'issues' && context.payload.action === 'opened') {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: context.payload.issue.number,
+                labels: ['Needs triage'],
+              });
+            }
+
+            // ---- ISSUE CLOSED ----
+            if (context.eventName === 'issues' && context.payload.action === 'closed') {
+              const labelsToRemove = ['Needs triage', 'Needs info'];
+
+              for (const label of labelsToRemove) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: context.payload.issue.number,
+                    name: label,
+                  });
+                } catch (e) {
+                  // ignore if label does not exist
+                }
+              }
+            }
+
+            // ---- MAINTAINER COMMENT ----
+            if (context.eventName === 'issue_comment') {
+              const commentAuthor = context.payload.comment.user.login;
+              const association = context.payload.comment.author_association;
+              const issueNumber = context.payload.issue.number;
+
+              // Only react to maintainer / owner comments
+              if (['OWNER', 'MEMBER', 'COLLABORATOR'].includes(association)) {
+                // remove Needs triage
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: issueNumber,
+                    name: 'Needs triage',
+                  });
+                } catch (e) {}
+
+                // add Needs info
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  labels: ['Needs info'],
+                });
+              } else {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: issueNumber,
+                    name: 'Needs info',
+                  });
+                } catch (e) {}
+
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  labels: ['Needs triage'],
+                });
+              }
+            }

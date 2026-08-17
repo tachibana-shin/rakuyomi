@@ -1046,6 +1046,7 @@ fn runner_worker_crashes_on_invalid_code() {
     // A worker whose `main()` fails dies quickly; the next invoke must
     // surface the failure instead of hanging or returning garbage.
     let runtime = MangayomiRuntime::new(
+        "1".to_string(),
         "not dart at all !!!".to_string(),
         serde_json::json!({"id": 1, "name": "x", "baseUrl": "http://x"}),
         Arc::new(Mutex::new(
@@ -1062,6 +1063,7 @@ fn runner_worker_crashes_on_invalid_code() {
             .unwrap(),
         )),
         Duration::from_secs(2),
+        shared::resource_usage::ResourceRegistry::default(),
     )
     .unwrap();
     assert!(runtime.invoke("getSourcePreferences", vec![]).is_err());

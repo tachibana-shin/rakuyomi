@@ -81,6 +81,9 @@ jobs:
 
     - name: Setup bun
       uses: oven-sh/setup-bun@v2
+      with:
+        # bun.lock files use the v2 format (written by bun 1.4.x)
+        bun-version: 1.4.0
 
     - name: Cache Rust Dependencies
       uses: swatinem/rust-cache@v2
@@ -164,6 +167,9 @@ jobs:
 
     - name: Setup bun
       uses: oven-sh/setup-bun@v2
+      with:
+        # bun.lock files use the v2 format (written by bun 1.4.x)
+        bun-version: 1.4.0
 
     - name: Build settings schema
       run: bash scripts/generate-settings-schema.sh

@@ -23,7 +23,6 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
 local formatBytes = require("utils/formatBytes")
-local Icons = require("Icons")
 
 local ffi = require("ffi")
 

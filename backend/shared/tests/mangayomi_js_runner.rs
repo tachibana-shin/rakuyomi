@@ -767,6 +767,7 @@ class DefaultExtension extends MProvider {
 }
 "#;
     let runtime = shared::source::mangayomi::js::MangayomiJsRuntime::new(
+        "638504052".to_string(),
         code.to_string(),
         serde_json::json!({
             "id": 638504052,
@@ -790,6 +791,7 @@ class DefaultExtension extends MProvider {
             .unwrap(),
         )),
         Duration::from_millis(500),
+        shared::resource_usage::ResourceRegistry::default(),
     )
     .expect("runtime starts");
     let value = runtime.invoke("getPopular", vec![serde_json::json!(1)]);

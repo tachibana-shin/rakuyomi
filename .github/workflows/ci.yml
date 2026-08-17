@@ -28,6 +28,9 @@ jobs:
 
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
+        with:
+          # bun.lock files use the v2 format (written by bun 1.4.x)
+          bun-version: 1.4.0
 
       - name: Install Rust 1.97.1
         uses: actions-rs/toolchain@v1

@@ -5,12 +5,16 @@
 #   - MangaYomi:   mangayomi/polyfill/ -> mangayomi/js_assets/polyfill.js
 set -euo pipefail
 
-cd "$(dirname "$0")/../backend/shared/src/source/lnreader/lnreader_js"
+# Resolve the script's own directory once: every `cd` below must be
+# relative to it, because the working directory changes as we build.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+cd "$SCRIPT_DIR/../backend/shared/src/source/lnreader/lnreader_js"
 bun install
 bun run build
 echo "libs.js rebuilt: $(wc -c < ../assets/libs.js) bytes"
 
-cd "$(dirname "$0")/../backend/shared/src/source/mangayomi/polyfill"
+cd "$SCRIPT_DIR/../backend/shared/src/source/mangayomi/polyfill"
 bun install
 bun run build
 echo "polyfill.js rebuilt: $(wc -c < ../js_assets/polyfill.js) bytes"

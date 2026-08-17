@@ -81,21 +81,19 @@ for target in "${TARGETS[@]}"; do
   echo ""
   echo "+ Building server for $target"
 
+  PLATFORM=21
+
   case "$target" in
     aarch64-linux-android)
-      PLATFORM=21
       ANDROID_ARCH_DIR="aarch64-linux-android"
       ;;
     armv7-linux-androideabi)
-      PLATFORM=18
       ANDROID_ARCH_DIR="arm-linux-androideabi"
       ;;
     x86_64-linux-android)
-      PLATFORM=21
       ANDROID_ARCH_DIR="x86_64-linux-android"
       ;;
     *)
-      PLATFORM=21
       ANDROID_ARCH_DIR="aarch64-linux-android"
       ;;
   esac
@@ -105,13 +103,8 @@ for target in "${TARGETS[@]}"; do
   fi
 
   echo "  Android API level: $PLATFORM"
-  if [[ "$PLATFORM" -lt 21 ]]; then
-    FEATURES="ffi,api_18"
-    DEFAULT_FLAG="--no-default-features"
-  else
-    FEATURES="ffi"
-    DEFAULT_FLAG=""
-  fi
+  FEATURES="ffi"
+  DEFAULT_FLAG=""
 
   cargo ndk \
       --target "$target" \

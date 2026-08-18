@@ -29,9 +29,12 @@ build_one() {
   local base_flags=""
 
   # The 32-bit ARM musl targets have no 64-bit atomics, so the quickjs
-  # runtime needs libatomic and libgcc at link time.
+  # runtime needs libatomic and libgcc at link time. Force a fully static
+  # binary: without `-static` the linker picks the libatomic/libgcc shared
+  # libraries from the cross image, and Kindles have no musl dynamic linker
+  # or those .so files, so the server would fail to start.
   if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
-    base_flags="-C link-arg=-latomic -C link-arg=-lgcc"
+    base_flags="-C link-arg=-static -C link-arg=-latomic -C link-arg=-lgcc"
   fi
 
   if [[ "$name" == "kindlea9" ]]; then
@@ -62,6 +65,15 @@ EOF
 
   # Package osh output
   bash ./scripts/build-plugin.sh "$target" "rakuyomi.koplugin" "$name"
+
+  # The e-readers have no dynamic linker or shared libs for the 32-bit ARM
+  # musl binaries; fail the build instead of shipping a broken plugin.
+  if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
+    if readelf -d build/rakuyomi.koplugin/server 2>/dev/null | grep -q NEEDED; then
+      echo "❌ $name server binary has dynamic library dependencies; refusing to package"
+      exit 1
+    fi
+  fi
 
   echo "=== DONE: $name ==="
 }

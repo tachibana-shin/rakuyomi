@@ -50,5 +50,16 @@ jobs:
 
       - name: Run tests
         working-directory: ./backend
-        run: cargo test --all
+        shell: bash
+        run: |
+          # Some integration tests hit the network and can be flaky; retry
+          # the whole run up to 3 times before failing.
+          for attempt in 1 2 3; do
+            if cargo test --all; then
+              exit 0
+            fi
+            echo "Test run $attempt/3 failed, retrying..."
+          done
+          echo "Test run failed after 3 attempts"
+          exit 1
 

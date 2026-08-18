@@ -150,6 +150,23 @@ pub fn init_cookie_store() {
 }
 
 pub fn init_cookie_store_with_path(path: &Path) -> Result<()> {
+    #[cfg(target_os = "android")]
+    if COOKIE_STORE.get().is_some() {
+        let new_path = path.to_string_lossy().to_string();
+        match COOKIE_STORE_PATH.get() {
+            Some(existing_path) if existing_path != &new_path => {
+                return Err(anyhow::anyhow!(
+                    "cookie store already initialized with a different path ({existing_path} != {new_path})"
+                ));
+            }
+            Some(_) => {}
+            None => {
+                let _ = COOKIE_STORE_PATH.set(new_path);
+            }
+        }
+        return Ok(());
+    }
+
     let store = CookieStoreData::load_from_file(path).unwrap_or_default();
     SYNC_HASH.get_or_init(|| RwLock::new(sync_hash_from_store(&store)));
     COOKIE_STORE

@@ -35,17 +35,7 @@ jobs:
           export RUST_FONTCONFIG_DLOPEN=on
           export FONTCONFIG_NO_PKG_CONFIG=1
           mkdir -p .cargo
-          cat > .cargo/config.toml << 'EOF'
-[env]
-RUST_FONTCONFIG_DLOPEN = "on"
-FONTCONFIG_NO_PKG_CONFIG = "1"
-
-[profile.release]
-opt-level = 3
-lto = "fat"
-codegen-units = 1
-panic = "abort"
-EOF
+          printf '[env]\nRUST_FONTCONFIG_DLOPEN = "on"\nFONTCONFIG_NO_PKG_CONFIG = "1"\n\n[profile.release]\nopt-level = 3\nlto = "fat"\ncodegen-units = 1\npanic = "abort"\n' > .cargo/config.toml
           RUSTFLAGS="-C link-arg=-static -C link-arg=-latomic -C link-arg=-lgcc" \
             cross build --release --target arm-unknown-linux-musleabi -v 2>&1 | tail -120
           echo "=== READELF ==="

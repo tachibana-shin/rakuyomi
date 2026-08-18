@@ -5,6 +5,8 @@ use std::time::Duration;
 use axum::extract::{Path, Query, State as StateExtractor};
 use axum::routing::{delete, get, patch, post};
 use axum::{Json, Router};
+#[cfg(target_os = "android")]
+use cbz_metadata_reader::{extract_metadata, MetadataError};
 use futures::Future;
 use log::warn;
 use serde::{Deserialize, Serialize};
@@ -35,7 +37,7 @@ fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
 }
 
 pub fn routes() -> Router<State> {
-    Router::new()
+    let router = Router::new()
         .route("/library", get(get_manga_library))
         .route("/storage-stats", get(get_storage_stats))
         .route("/find-orphan-or-read-files", get(find_orphan_or_read_files))
@@ -133,7 +135,15 @@ pub fn routes() -> Router<State> {
         .route(
             "/mangas/{source_id}/{manga_id}/viewer",
             post(set_manga_viewer),
-        )
+        );
+
+    #[cfg(target_os = "android")]
+    let router = router.route(
+        "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/metadata",
+        get(get_chapter_metadata),
+    );
+
+    router
 }
 
 async fn get_manga_library(
@@ -741,6 +751,43 @@ async fn revoke_manga_chapter(
     .await?;
 
     Ok(Json(result))
+}
+
+/// Returns the ComicInfo.xml metadata of a downloaded chapter, in the shape
+/// expected by KOReader's document properties. Only available on Android,
+/// where the `cbz_metadata_reader` binary cannot be executed (noexec storage).
+#[cfg(target_os = "android")]
+async fn get_chapter_metadata(
+    StateExtractor(State {
+        chapter_storage, ..
+    }): StateExtractor<State>,
+    Path(params): Path<DownloadMangaChapterParams>,
+) -> Result<Json<cbz_metadata_reader::KoReaderMetadata>, AppError> {
+    let chapter_id = ChapterId::from(params);
+
+    let path = {
+        let storage = chapter_storage.lock().await;
+        match storage.get_stored_chapter_and_errors(&chapter_id, true) {
+            Ok(Some((path, _))) => Some(path),
+            _ => storage
+                .get_stored_chapter_and_errors(&chapter_id, false)?
+                .map(|(path, _)| path),
+        }
+    };
+
+    let Some(path) = path else {
+        return Err(AppError::NotFound);
+    };
+
+    let metadata = tokio::task::spawn_blocking(move || extract_metadata(&path))
+        .await
+        .map_err(AppError::from)?
+        .map_err(|err| match err {
+            MetadataError::MissingComicInfo => AppError::NotFound,
+            MetadataError::Other(inner) => AppError::from(inner),
+        })?;
+
+    Ok(Json(metadata))
 }
 
 #[derive(Deserialize)]

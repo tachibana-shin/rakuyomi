@@ -604,6 +604,19 @@ function Backend.updateLastReadChapter(source_id, manga_id, chapter_id)
   })
 end
 
+--- Gets the ComicInfo metadata of a downloaded chapter.
+---@param source_id string
+---@param manga_id string
+---@param chapter_id string
+---@return SuccessfulResponse<ChapterMetadata>|ErrorResponse
+function Backend.getChapterMetadata(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/metadata",
+    method = "GET",
+  })
+end
+
 --- Marks the chapter as read.
 --- @param value boolean|nil
 --- @return SuccessfulResponse<nil>|ErrorResponse

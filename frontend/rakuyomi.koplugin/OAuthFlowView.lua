@@ -119,7 +119,7 @@ function OAuthFlowView:init()
   }
   table.insert(widgets, self.status_widget)
 
-  table.insert(widgets, VerticalSpan:new { width = Size.span.vertical_small })
+  table.insert(widgets, VerticalSpan:new { width = Size.span.vertical_default })
 
   -- Manual check button
   table.insert(widgets, Button:new {

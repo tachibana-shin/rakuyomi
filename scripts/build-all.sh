@@ -4,7 +4,7 @@ set -e
 # Use Podman as container backend
 export CROSS_CONTAINER_ENGINE=podman
 
-# Generate the LNReader JS runtime bundle on the host (cross containers have
+# Generate the LNReader JS runtime bundle on the host (cross containersandroid-armv7 have
 # no bun, and the generated file is mounted into them by cross).
 bash ./scripts/build-js-assets.sh
 
@@ -71,7 +71,7 @@ if [[ $# -eq 1 ]]; then
   # Single argument → must be a valid build key
   key="$1"
 
-  if [[ "$key" == "android" || "$key" == android-* ]]; then
+  if [[ "$key" == android* ]]; then
     bash ./scripts/build-plugin.sh "none" "rakuyomi.koplugin" "android"
   elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"

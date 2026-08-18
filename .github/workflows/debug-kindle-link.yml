@@ -34,7 +34,19 @@ jobs:
           export CROSS_CONTAINER_ENGINE=podman
           export RUST_FONTCONFIG_DLOPEN=on
           export FONTCONFIG_NO_PKG_CONFIG=1
+          mkdir -p .cargo
+          cat > .cargo/config.toml << 'EOF'
+[env]
+RUST_FONTCONFIG_DLOPEN = "on"
+FONTCONFIG_NO_PKG_CONFIG = "1"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+EOF
           RUSTFLAGS="-C link-arg=-static -C link-arg=-latomic -C link-arg=-lgcc" \
-            cross build --release --target arm-unknown-linux-musleabi -v 2>&1 | tail -200 | grep -B2 -A8 "link-arg" | tail -40
+            cross build --release --target arm-unknown-linux-musleabi -v 2>&1 | tail -120
           echo "=== READELF ==="
           readelf -d target/arm-unknown-linux-musleabi/release/server | grep -E "NEEDED|INTERP" || echo "no NEEDED/INTERP"

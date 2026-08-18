@@ -70,7 +70,13 @@ EOF
   # The e-readers have no dynamic linker or shared libs for the 32-bit ARM
   # musl binaries; fail the build instead of shipping a broken plugin.
   if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
-    if readelf -d build/rakuyomi.koplugin/server 2>/dev/null | grep -q NEEDED; then
+    local readelf_out
+    if ! readelf_out=$(readelf -d build/rakuyomi.koplugin/server 2>&1); then
+      echo "❌ $name server binary: readelf inspection failed; refusing to package"
+      echo "$readelf_out"
+      exit 1
+    fi
+    if grep -q NEEDED <<< "$readelf_out"; then
       echo "❌ $name server binary has dynamic library dependencies; refusing to package"
       exit 1
     fi

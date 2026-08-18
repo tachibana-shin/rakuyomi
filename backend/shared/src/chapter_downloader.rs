@@ -8,6 +8,7 @@ use std::{
     time::Duration,
 };
 use tempfile::NamedTempFile;
+use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
 
 use anyhow::{anyhow, Context};
@@ -24,8 +25,8 @@ use crate::{
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
-        create_xhtml, download_all_images, generate_error_image, get_image_src, into_html,
-        prepare_cover, request_with_forced_referer_from_request,
+        create_xhtml, detect_image_extension, download_all_images, generate_error_image,
+        get_image_src, into_html, prepare_cover, request_with_forced_referer_from_request,
     },
 };
 
@@ -217,18 +218,24 @@ where
     );
 
     let tx_main = tx.clone();
+    let chapter_id_str = chapter_id.value().clone();
     tokio::spawn({
         let client = client.clone();
         let source = source.clone();
         let cancel_token = cancel_token.clone();
 
         async move {
+            // Zero-pad page indices to the width of the page count, so
+            // lexicographic filename ordering matches page order.
+            let page_index_width = pages.len().to_string().len().max(2);
+
             stream::iter(pages)
                 .map(|page| {
                     let tx = tx.clone();
                     let client = client.clone();
                     let source = source.clone();
                     let cancel_token = cancel_token.clone();
+                    let chapter_id_str = chapter_id_str.clone();
 
                     async move {
                         let page_index = page.index;
@@ -242,30 +249,76 @@ where
                                 .unwrap_or("jpg")
                                 .to_owned();
 
-                            // FIXME we should left pad this number with zeroes up to the maximum
-                            // amount of pages needed, but for now we pad 4 digits
-                            // stop reading the bible if this ever becomes an issue
-                            let filename = format!("{:0>4}.{}", page.index, extension);
+                            // Fallback filename (URL-derived extension): the
+                            // success arm may override it with the real
+                            // extension sniffed from the image magic bytes.
+                            let filename =
+                                format!("{:0>page_index_width$}.{}", page.index, extension);
 
                             // TODO we could stream the data from the client into the file
                             // would save a bit of memory but i dont think its a big deal
-                            let request = source
-                                .get_image_request(image_url, page.ctx.clone())
-                                .await
-                                .map_err(|err| {
-                                    eprintln!("Failed WASM modify request {err}");
-                                    err
-                                })?;
-                            let req_url = request.url().clone();
-                            let req_headers = request.headers().clone();
-                            let response =
-                                request_with_forced_referer_from_request(&client, request, 10)
+                            let response_bytes = if matches!(
+                                &source.backend,
+                                crate::source::SourceBackend::Keiyoushi(_)
+                            ) {
+                                // keiyoushi images may be IMGX-encrypted: fetch through the
+                                // extension's own client so its interceptor decrypts them.
+                                let bytes = source
+                                    .fetch_page_image(&chapter_id_str, image_url.as_str())
                                     .await
-                                    .inspect_err(|err| {
-                                        eprintln!("Request error: {err}");
+                                    .map_err(|err| {
+                                        eprintln!("Failed keiyoushi image fetch {err}");
+                                        anyhow::anyhow!(err)
                                     })?;
 
-                            let (final_bytes, error_info) = {
+                                // The extension's client swallows HTTP statuses
+                                // (only its interceptor sees them), so a failed
+                                // request or decrypt can still come back as
+                                // bytes; render the same error image as the
+                                // plain GET path when they are not an image.
+                                if detect_image_extension(&bytes).is_none() {
+                                    let head = String::from_utf8_lossy(
+                                        &bytes[..bytes.len().min(16)],
+                                    )
+                                    .to_string();
+                                    let reason = if bytes.starts_with(b"IMGX") {
+                                        "image is still IMGX-encrypted".to_string()
+                                    } else {
+                                        format!("invalid image data: {head:?}")
+                                    };
+                                    let err = DownloadError {
+                                        page_index: page.index,
+                                        url: image_url.to_string(),
+                                        reason: reason.clone(),
+                                        attempts: 1,
+                                    };
+                                    eprintln!("{:?}", err);
+                                    return Ok((
+                                        page.index,
+                                        format!("{:0>page_index_width$}.jpg", page.index),
+                                        generate_error_image("Error", &reason, 500, 667)?,
+                                        Some(err),
+                                    ));
+                                }
+
+                                Bytes::from(bytes)
+                            } else {
+                                let request = source
+                                    .get_image_request(image_url, page.ctx.clone())
+                                    .await
+                                    .map_err(|err| {
+                                        eprintln!("Failed WASM modify request {err}");
+                                        err
+                                    })?;
+                                let req_url = request.url().clone();
+                                let req_headers = request.headers().clone();
+                                let response =
+                                    request_with_forced_referer_from_request(&client, request, 10)
+                                        .await
+                                        .inspect_err(|err| {
+                                            eprintln!("Request error: {err}");
+                                        })?;
+
                                 if !response.status().is_success() {
                                     let err = DownloadError {
                                         page_index: page.index,
@@ -276,7 +329,9 @@ where
 
                                     eprintln!("{:?}", err);
 
-                                    (
+                                    return Ok((
+                                        page.index,
+                                        format!("{:0>page_index_width$}.{}", page.index, extension),
                                         generate_error_image(
                                             &response.status().as_u16().to_string(),
                                             response
@@ -287,14 +342,16 @@ where
                                             667,
                                         )?,
                                         Some(err),
-                                    )
-                                } else {
-                                    let status = response.status();
-                                    let headers = response.headers().clone();
+                                    ));
+                                }
 
-                                    let response_bytes = response.bytes().await?;
+                                let status = response.status();
+                                let headers = response.headers().clone();
 
-                                    let response_bytes = if source.1.process_page_image {
+                                let response_bytes = response.bytes().await?;
+
+                                if source.features.process_page_image {
+                                    Bytes::from(
                                         source
                                             .process_page_image(
                                                 cancel_token.clone(),
@@ -307,8 +364,18 @@ where
                                             .map_err(|err| {
                                                 eprintln!("Error = {err}");
                                                 err
-                                            })?
-                                    } else if optimize_image {
+                                            })?,
+                                    )
+                                } else {
+                                    response_bytes
+                                }
+                            };
+
+                            let (final_bytes, error_info) =
+                                if source.features.process_page_image {
+                                    (response_bytes.to_vec(), None)
+                                } else if optimize_image {
+                                        (
                                         tokio::task::spawn_blocking(move || -> anyhow::Result<Vec<u8>> {
                                             let data = response_bytes.to_vec();
                                             if let Some(image) =
@@ -347,46 +414,52 @@ where
                                                 Ok(data)
                                             }
                                         })
-                                        .await??
+                                        .await??,
+                                        None,
+                                    )
                                     } else {
-                                        response_bytes.to_vec()
+                                        (response_bytes.to_vec(), None)
                                     };
 
-                                    let final_image = if let Some(blocks_json) = page.base64.as_ref() {
-                                        let blocks: Vec<Block> = serde_json::from_str(blocks_json)
-                                            .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
+                            let final_bytes = if let Some(blocks_json) = page.base64.as_ref() {
+                                let blocks: Vec<Block> = serde_json::from_str(blocks_json)
+                                    .map_err(|e| anyhow!("Invalid blocks JSON: {:?}", e))?;
 
-                                        tokio::task::spawn_blocking(move || {
-                                            match unscrable_image(response_bytes.to_vec(), blocks) {
-                                                Ok(result) => Ok(result),
-                                                Err(e) => {
-                                                    eprintln!("unscrable_image failed: {}", e);
-                                                    anyhow::bail!(e)
-                                                }
-                                            }
-                                        })
-                                        .await??
-                                    } else {
-                                        response_bytes.to_vec()
-                                    };
-
-                                    (final_image, None)
-                                }
+                                tokio::task::spawn_blocking(move || {
+                                    match unscrable_image(final_bytes, blocks) {
+                                        Ok(result) => Ok(result),
+                                        Err(e) => {
+                                            eprintln!("unscrable_image failed: {}", e);
+                                            anyhow::bail!(e)
+                                        }
+                                    }
+                                })
+                                .await??
+                            } else {
+                                final_bytes
                             };
 
-                            // Send result
-                            let _ = tx
-                                .send((page.index, filename, final_bytes, error_info))
-                                .await;
-
-                            Ok::<_, anyhow::Error>(())
+                            Ok::<_, anyhow::Error>((page.index, filename, final_bytes, error_info))
                         }
                         .await
                         {
-                            Ok(()) => {}
+                            Ok((index, filename, final_bytes, error_info)) => {
+                                // Keiyoushi image URLs may end in a disguised
+                                // extension (e.g. .js for IMGX-encrypted WebP):
+                                // trust the magic bytes of the decrypted image
+                                // over the extension derived from the URL.
+                                let filename = match detect_image_extension(&final_bytes) {
+                                    Some(ext) => format!("{:0>page_index_width$}.{}", index, ext),
+                                    None => filename,
+                                };
+                                // Send result
+                                let _ = tx
+                                    .send((index, filename, final_bytes, error_info))
+                                    .await;
+                            }
                             Err(e) => {
                                 eprintln!("Error downloading page {}: {e}", page_index);
-                                let filename = format!("{:0>4}.jpg", page_index);
+                                let filename = format!("{:0>page_index_width$}.jpg", page_index);
                                 let bytes = generate_error_image("Error", &e.to_string(), 500, 667)
                                     .unwrap_or_default();
                                 let _ = tx

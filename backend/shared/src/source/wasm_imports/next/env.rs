@@ -58,7 +58,7 @@ impl HostError for AbortError {}
 pub(crate) fn abort(caller: Caller<'_, WasmStore>) -> core::result::Result<(), wasmi::Error> {
     let wasm_store = caller.data();
 
-    error!("{}: env.abort called", &wasm_store.id);
+    error!("{}: env.abort called", wasm_store.id);
 
     Err(wasmi::Error::host(AbortError {}))
 }

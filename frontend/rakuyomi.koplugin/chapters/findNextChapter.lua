@@ -21,41 +21,44 @@ end
 --- Attempts to find the next chapter from the given chapter, comparing by chapter number.
 --- If multiple candidates are found, we'll attempt to pick a chapter belonging to
 --- the same scanlation group.
---- If no candidate is found, a next chapter will be determined from the source order,
---- the chapter right after the current one.
+--- If no candidate is found, the publish date is used, then the position in the
+--- chapter list.
 ---
 --- @param chapters Chapter[] The list of chapters of the manga.
 --- @param current_chapter Chapter The current chapter.
+--- @param is_desc boolean? Whether the chapter list is sorted newest first
+--- (descending). Defaults to `true`, keeping the historical assumption that
+--- the chapter list is ordered newest first.
 --- @return Chapter|nil chapter The next chapter, if found, or nil.
-local function findNextChapter(chapters, current_chapter)
+local function findNextChapter(chapters, current_chapter, is_desc)
   local best_candidate = nil
 
   for _, candidate in ipairs(chapters) do
-    if candidate.chapter_num == nil or current_chapter.chapter_num == nil then
+    if candidate.chapter_num ~= nil and current_chapter.chapter_num ~= nil then
+      if candidate.chapter_num <= current_chapter.chapter_num then
+        goto continue
+      end
+
+      if best_candidate == nil then
+        best_candidate = candidate
+      elseif candidate.chapter_num < best_candidate.chapter_num then
+        best_candidate = candidate
+      elseif candidate.chapter_num == best_candidate.chapter_num
+          and current_chapter.scanlator ~= nil
+          and candidate.scanlator == current_chapter.scanlator then
+        best_candidate = candidate
+      end
+
       goto continue
     end
 
-    if candidate.chapter_num <= current_chapter.chapter_num then
-      goto continue
-    end
-
-    if best_candidate == nil then
-      best_candidate = candidate
-    end
-
-    if candidate.chapter_num > best_candidate.chapter_num then
-      goto continue
-    end
-
-    -- Now, we either have a chapter that's our current chapter and our
-    -- current best candidate (open on the left, closed on the right). Check whether
-    -- it's a better candidate:
-    -- - if it's closer to the current chapter number;
-    -- - if it belongs to the same scanlation group.
-    if candidate.chapter_num < best_candidate.chapter_num then
-      best_candidate = candidate
-    elseif current_chapter.scanlator ~= nil and candidate.scanlator == current_chapter.scanlator then
-      best_candidate = candidate
+    -- Both chapter numbers are unknown: compare by publish date instead,
+    -- picking the closest chapter published after the current one.
+    if candidate.last_updated ~= nil and current_chapter.last_updated ~= nil
+        and candidate.last_updated > current_chapter.last_updated then
+      if best_candidate == nil or candidate.last_updated < best_candidate.last_updated then
+        best_candidate = candidate
+      end
     end
 
     ::continue::
@@ -65,13 +68,17 @@ local function findNextChapter(chapters, current_chapter)
     return best_candidate
   end
 
-  -- If finding by the chapter number fails, try to find the chapter next to this one.
-  -- The next chapter should come _before_ the current one in the `chapters` array, as the
-  -- source order is from newer chapters -> older chapters.
+  -- Fallback to the position in the chapter list. With descending order the
+  -- next chapter sits right before the current one; with ascending order it
+  -- sits right after it.
   local index = findChapterIndex(chapters, current_chapter)
   assert(index ~= nil)
 
-  if index > 1 then
+  if is_desc == false then
+    if index < #chapters then
+      return chapters[index + 1]
+    end
+  elseif index > 1 then
     return chapters[index - 1]
   end
 

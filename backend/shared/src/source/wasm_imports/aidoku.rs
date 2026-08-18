@@ -270,10 +270,7 @@ fn offset_from_i32(offset_i32: i32) -> Option<usize> {
 }
 
 fn length_from_i32(len_i32: i32) -> Option<usize> {
-    len_i32
-        .try_into()
-        .ok()
-        .and_then(|len| if len > 0 { Some(len) } else { None })
+    len_i32.try_into().ok().filter(|&len| len > 0)
 }
 
 fn maybe_read_sized_string(

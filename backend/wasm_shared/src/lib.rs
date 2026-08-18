@@ -46,7 +46,7 @@ impl<T> TryFromWasmValues<T> for String {
             .ok_or_else(|| anyhow!("expected to receive a i32 as the length argument"))?
             .try_into()
             .ok()
-            .and_then(|length: usize| if length > 0 { Some(length) } else { None })
+            .filter(|&length: &usize| length > 0)
             .ok_or_else(|| anyhow!("expected the length argument to be strictly positive"))?;
 
         let memory = get_memory(caller).ok_or_else(|| anyhow!("could not get WASM memory"))?;
@@ -98,7 +98,7 @@ impl<T> TryFromWasmValues<T> for Vec<u8> {
             .ok_or_else(|| anyhow!("expected to receive a i32 as the length argument"))?
             .try_into()
             .ok()
-            .and_then(|length: usize| if length > 0 { Some(length) } else { None })
+            .filter(|&length: &usize| length > 0)
             .ok_or_else(|| anyhow!("expected the length argument to be strictly positive"))?;
 
         let memory = get_memory(caller).ok_or_else(|| anyhow!("could not get WASM memory"))?;

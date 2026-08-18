@@ -34,4 +34,5 @@ return {
   FA_PEN               = "\u{f304}",
   FA_TRASH             = "\u{f1f8}",
   FA_PLUS              = "\u{f067}",
+  FA_GAUGE             = "\u{f0e4}",
 }

@@ -31,7 +31,7 @@ local SETTING_ITEM_FONT_SIZE = 18
 --- @class IntegerValueDefinition: { type: 'integer', title: string, min_value: number, max_value: number, unit?: string, is_local: boolean|nil, default: number|nil }
 --- @class StringValueDefinition: { type: 'string', title: string, placeholder: string, validate_error?: string, validate?: fun(value: string): boolean }
 --- @class ListValueDefinition: { type: 'list', title: string, placeholder: string }
---- @class LabelValueDefinition: { type: 'label', title: string, text: string }
+--- @class LabelValueDefinition: { type: 'label', title: string, text: string, callback?: (fun():nil)|nil }
 --- @class PathValueDefinition: { type: 'path', title: string, path_type: 'directory' }
 --- @class ButtonDefinition: { type: 'button', title: string, key: string|nil, callback: (fun():nil)|nil, confirm_title: string|nil, confirm_message: string|nil }
 
@@ -84,8 +84,14 @@ function SettingItemValue:createValueWidget()
       label_for_value[option.value] = option.label
     end
 
+    -- The stored value may not match any option (e.g. a boolean leftover
+    -- from when the setting used to be a switch), so fall back to the raw
+    -- value instead of concatenating nil.
+    local current_value = self:getCurrentValue()
+    local label = label_for_value[current_value] or tostring(current_value)
+
     return TextWidget:new {
-      text = label_for_value[self:getCurrentValue()] .. " " .. Icons.UNICODE_ARROW_RIGHT,
+      text = label .. " " .. Icons.UNICODE_ARROW_RIGHT,
       editable = true,
       face = Font:getFace("cfont", SETTING_ITEM_FONT_SIZE),
       max_width = self.max_width,
@@ -126,7 +132,7 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "string" then
     local value = self:getCurrentValue()
-    if value == nil or value == "" then
+    if type(value) ~= "string" or value == "" then
       value = _("Not set")
     end
     return TextWidget:new {
@@ -136,7 +142,8 @@ function SettingItemValue:createValueWidget()
       max_width = self.max_width,
     }
   elseif self.value_definition.type == "list" then
-    local value = table.concat(self:getCurrentValue() or {}, "\n")
+    local current_value = self:getCurrentValue()
+    local value = table.concat(type(current_value) == "table" and current_value or {}, "\n")
     if value == "" then
       value = _("Not set")
     end
@@ -237,7 +244,11 @@ end
 
 --- @private
 function SettingItemValue:onTap()
-  if self.value_definition.type == "enum" then
+  if self.value_definition.type == "label" then
+    if self.value_definition.callback then
+      self.value_definition.callback()
+    end
+  elseif self.value_definition.type == "enum" then
     local radio_buttons = {}
     for _, option in ipairs(self.value_definition.options) do
       table.insert(radio_buttons, {
@@ -289,9 +300,10 @@ function SettingItemValue:onTap()
     UIManager:show(dialog)
   elseif self.value_definition.type == "string" then
     local dialog
+    local current_value = self:getCurrentValue()
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = self:getCurrentValue() or "",
+      input = type(current_value) == "string" and current_value or "",
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -326,9 +338,10 @@ function SettingItemValue:onTap()
     end)
   elseif self.value_definition.type == "list" then
     local dialog
+    local current_value = self:getCurrentValue()
     dialog = InputDialog:new {
       title = self.value_definition.title,
-      input = table.concat(self:getCurrentValue() or {}, "\n"),
+      input = table.concat(type(current_value) == "table" and current_value or {}, "\n"),
       input_hint = self.value_definition.placeholder,
       buttons = {
         {
@@ -361,9 +374,10 @@ function SettingItemValue:onTap()
     end)
   elseif self.value_definition.type == "path" then
     local path_chooser
+    local current_path = self:getCurrentValue()
     path_chooser = PathChooser:new({
       title = self.value_definition.title,
-      path = self:getCurrentValue(),
+      path = type(current_path) == "string" and current_path or nil,
       onConfirm = function(new_path)
         self:updateCurrentValue(new_path)
         UIManager:close(path_chooser)

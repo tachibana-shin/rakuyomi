@@ -9,6 +9,72 @@ use serde::{
 use size::{Base, Size};
 use url::Url;
 
+/// The type of a source list, distinguishing the format of the index it
+/// points to.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum SourceListType {
+    /// An Aidoku-compatible WASM source index (e.g. `index.min.json`).
+    #[default]
+    Aidoku,
+    /// An LNReader JavaScript plugin index (`plugins.min.json`).
+    LnReader,
+    /// A MangaYomi Dart extension index (`index.json`).
+    Mangayomi,
+    /// A keiyoushi (mihon/Tachiyomi) extension index (`index.pb` protobuf).
+    Keiyoushi,
+}
+
+impl SourceListType {
+    fn is_aidoku(&self) -> bool {
+        *self == SourceListType::Aidoku
+    }
+}
+
+/// A source list configured in the settings, together with its type.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SourceList {
+    /// The URL of the list.
+    pub url: Url,
+    /// The kind of index the URL points to. Defaults to `aidoku`.
+    #[serde(
+        rename = "type",
+        default,
+        skip_serializing_if = "SourceListType::is_aidoku"
+    )]
+    pub source_type: SourceListType,
+}
+
+/// Deserializes `source_lists`, accepting both the new structured format
+/// (`[{"url": ..., "type": ...}]`) and the legacy plain-string format
+/// (`["https://..."]`). Legacy entries are always Aidoku indexes, which was
+/// the only supported format before the `type` field existed.
+pub(crate) fn deserialize_source_lists<'de, D>(deserializer: D) -> Result<Vec<SourceList>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum SourceListEntry {
+        Plain(String),
+        Structured(SourceList),
+    }
+
+    let entries = Vec::<SourceListEntry>::deserialize(deserializer)?;
+    entries
+        .into_iter()
+        .map(|entry| match entry {
+            SourceListEntry::Plain(url) => Url::parse(&url)
+                .map(|url| SourceList {
+                    url,
+                    source_type: SourceListType::Aidoku,
+                })
+                .map_err(serde::de::Error::custom),
+            SourceListEntry::Structured(list) => Ok(list),
+        })
+        .collect()
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct StorageSizeLimit(pub Size);
 
@@ -102,12 +168,19 @@ pub struct TrackingServiceSettings {
 /// Settings used to configure rakuyomi's behavior.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, JsonSchema)]
 pub struct Settings {
-    /// A list of URLs containing Aidoku-compatible source lists, which will be available
-    /// for installation from inside the plugin.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub source_lists: Vec<Url>,
+    /// A list of URLs containing source lists, which will be available for
+    /// installation from inside the plugin. Each entry may optionally carry a
+    /// `type` distinguishing the index format.
+    #[serde(
+        default,
+        skip_serializing_if = "Vec::is_empty",
+        deserialize_with = "deserialize_source_lists"
+    )]
+    pub source_lists: Vec<SourceList>,
 
-    /// If set, only chapters translated to those languages will be shown.
+    /// Languages selected in the available sources listing, used to filter
+    /// which sources are shown. Also exposed to sources as the `languages`
+    /// global setting.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub languages: Vec<String>,
 
@@ -501,5 +574,58 @@ mod tests {
             deserialized.chapter_title_format,
             settings.chapter_title_format
         );
+    }
+
+    #[test]
+    fn test_source_lists_deserialize_legacy_strings() {
+        let json = r#"{"source_lists": ["https://a.example.com/index.min.json", "https://b.example.com/index.json"]}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(settings.source_lists.len(), 2);
+        assert_eq!(
+            settings.source_lists[0].url.as_str(),
+            "https://a.example.com/index.min.json"
+        );
+        assert_eq!(settings.source_lists[0].source_type, SourceListType::Aidoku);
+        assert_eq!(settings.source_lists[1].source_type, SourceListType::Aidoku);
+    }
+
+    #[test]
+    fn test_source_lists_deserialize_structured() {
+        let json = r#"{"source_lists": [
+            {"url": "https://a.example.com/index.min.json", "type": "aidoku"},
+            {"url": "https://github.com/lnreader/lnreader-plugins", "type": "lnreader"},
+            {"url": "https://c.example.com/index.json"}
+        ]}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(settings.source_lists.len(), 3);
+        assert_eq!(settings.source_lists[0].source_type, SourceListType::Aidoku);
+        assert_eq!(
+            settings.source_lists[1].source_type,
+            SourceListType::LnReader
+        );
+        assert_eq!(settings.source_lists[2].source_type, SourceListType::Aidoku);
+    }
+
+    #[test]
+    fn test_source_lists_serialize_roundtrip() {
+        let json = r#"{"source_lists": [
+            {"url": "https://a.example.com/index.min.json", "type": "aidoku"},
+            {"url": "https://github.com/lnreader/lnreader-plugins", "type": "lnreader"}
+        ]}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&settings).unwrap();
+        let deserialized: Settings = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.source_lists, settings.source_lists);
+    }
+
+    #[test]
+    fn test_source_lists_serialize_omits_default_type() {
+        let json = r#"{"source_lists": [{"url": "https://a.example.com/index.json"}]}"#;
+        let settings: Settings = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&settings).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&serialized).unwrap();
+        let first = &value["source_lists"][0];
+        assert!(first.get("type").is_none());
+        assert_eq!(first["url"], "https://a.example.com/index.json");
     }
 }

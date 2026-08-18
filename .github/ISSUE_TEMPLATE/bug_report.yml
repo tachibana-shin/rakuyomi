@@ -1,0 +1,142 @@
+name: Bug report
+description: Report a bug in rakuyomi
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report. The more detail you give, the faster it can be fixed.
+
+  - type: input
+    id: rakuyomi_version
+    attributes:
+      label: RakuYomi version
+      description: The plugin version shown in the RakuYomi menu (or in `-- About`).
+      placeholder: e.g. 0.14.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Device platform
+      description: Which platform are you running KOReader on?
+      options:
+        - Kindle
+        - Kobo
+        - PocketBook
+        - Cervantes
+        - Android
+        - Linux (desktop / bridge mode)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device model
+      placeholder: e.g. Kindle Paperwhite 5, Kobo Libra 2
+    validations:
+      required: true
+
+  - type: input
+    id: koreader_version
+    attributes:
+      label: KOReader version
+      placeholder: e.g. 2025.08
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: What kind of issue is this?
+      description: Select all that apply.
+      multiple: true
+      options:
+        - Crash / restart
+        - Download fails or gets stuck
+        - Images fail to load
+        - Search returns nothing / wrong results
+        - Wrong metadata or missing chapters
+        - UI issue
+        - Slow or battery drain
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: Source type
+      description: If the bug involves a specific source, which kind is it? Otherwise pick "Not source-related".
+      options:
+        - Not source-related
+        - LNReader
+        - MangaYomi (JS)
+        - MangaYomi (Dart)
+        - Tachiyomi / Mihon (Keiyoushi)
+        - Aidoku
+
+  - type: input
+    id: source_name
+    attributes:
+      label: Source / extension name
+      description: The exact name of the source, as shown in the source list.
+      placeholder: e.g. MangaDex, Light Novel World
+
+  - type: textarea
+    id: describe
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened and why you think it is wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: To reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to ...
+        2. Tap on ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: I expected ...
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        If you can, attach or paste the relevant log lines. `crash.log` is created automatically when
+        KOReader crashes and lives next to the KOReader directory:
+
+        * `koreader/` on Kindle
+        * `.adds/koreader/` on Kobo
+        * `applications/koreader/` on PocketBook
+        * `/mnt/private/koreader` on Cervantes
+
+        You can also copy the last lines from `crash.log` (or the app log on Android).
+      placeholder: Drag and drop crash.log here, or paste the last log lines.
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: I am running the latest release or nightly and the issue still happens.
+          required: true

@@ -373,6 +373,7 @@ function ChapterListing:generateItemTableFromChapters(chapters)
       index = i,
       volume_num = ch.volume_num,
       chapter_num = ch.chapter_num,
+      last_updated = ch.last_updated,
       ch = ch,
     }
   end

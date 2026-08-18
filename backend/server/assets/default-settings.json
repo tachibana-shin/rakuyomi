@@ -1,8 +1,18 @@
 {
   "$schema": "https://github.com/tachibana-shin/rakuyomi/releases/latest/download/settings.schema.json",
   "source_lists": [
-    "https://tachibana-shin.github.io/aidoku-sources-next/index.min.json",
-    "https://aidoku-community.github.io/sources/index.min.json"
+    {
+      "url": "https://tachibana-shin.github.io/aidoku-sources-next/index.min.json",
+      "type": "aidoku"
+    },
+    {
+      "url": "https://aidoku-community.github.io/sources/index.min.json",
+      "type": "aidoku"
+    },
+    {
+      "url": "https://github.com/lnreader/lnreader-plugins",
+      "type": "lnreader"
+    }
   ],
   "languages": ["en"]
 }

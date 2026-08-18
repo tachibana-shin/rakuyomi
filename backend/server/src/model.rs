@@ -12,7 +12,8 @@ use shared::{
 pub struct SourceInformation {
     id: String,
     name: String,
-    version: usize,
+    version: serde_json::Value,
+    languages: Vec<String>,
     source_of_source: Option<String>,
 }
 
@@ -22,6 +23,7 @@ impl From<DomainSourceInformation> for SourceInformation {
             id: value.id.value().clone(),
             name: value.name,
             version: value.version,
+            languages: value.languages,
             source_of_source: value.source_of_source,
         }
     }
@@ -67,6 +69,9 @@ pub struct Chapter {
     scanlator: Option<String>,
     chapter_num: Option<f32>,
     volume_num: Option<f32>,
+    /// The timestamp (in seconds since epoch) of when this chapter was
+    /// published by the source, if known.
+    last_updated: Option<i64>,
     read: bool,
     last_read: Option<i64>,
     downloaded: bool,
@@ -93,6 +98,7 @@ impl From<DomainChapter> for Chapter {
             scanlator: chapter_information.scanlator,
             chapter_num: chapter_information.chapter_number,
             volume_num: chapter_information.volume_number,
+            last_updated: chapter_information.last_updated,
             read: state.read,
             last_read: state.last_read,
             downloaded,

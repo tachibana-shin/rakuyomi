@@ -48,8 +48,7 @@ pub fn register_net_imports(linker: &mut Linker<WasmStore>) -> Result<()> {
     Ok(())
 }
 
-pub const DEFAULT_USER_AGENT: &str =
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0";
+pub use crate::util::DEFAULT_USER_AGENT;
 
 #[derive(Debug, Default, FromPrimitive)]
 #[repr(u8)]
@@ -251,7 +250,7 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
     let warn_cancellation = || {
         warn!(
             "request to {:?} was cancelled mid-flight!",
-            &request_builder.url.as_ref().map(|u| u.to_string())
+            request_builder.url.as_ref().map(|u| u.to_string())
         );
     };
 
@@ -352,6 +351,14 @@ pub fn send(mut caller: Caller<'_, WasmStore>, request_descriptor_i32: i32) -> R
                 }
             }
         }
+    }
+
+    #[cfg(not(any(feature = "ffi", not(feature = "all"))))]
+    {
+        // `Set-Cookie` headers land in the shared RakuYomi store (the
+        // single cookie source, like reqwest's cookie jar), so sessions
+        // established by one backend are reused by all of them.
+        crate::cookie_store::record_response_cookies(&response);
     }
 
     #[cfg(not(any(feature = "ffi", not(feature = "all"))))]

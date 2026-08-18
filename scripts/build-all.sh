@@ -4,6 +4,10 @@ set -e
 # Use Podman as container backend
 export CROSS_CONTAINER_ENGINE=podman
 
+# Generate the LNReader JS runtime bundle on the host (cross containers have
+# no bun, and the generated file is mounted into them by cross).
+bash ./scripts/build-js-assets.sh
+
 # --- Mapping build names to actual Rust targets ---
 declare -A TARGETS=(
   ["desktop"]="x86_64-unknown-linux-musl"
@@ -24,9 +28,15 @@ build_one() {
 
   local base_flags=""
 
+  # The 32-bit ARM musl targets have no 64-bit atomics, so the quickjs
+  # runtime needs libatomic and libgcc at link time.
+  if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
+    base_flags="-C link-arg=-latomic -C link-arg=-lgcc"
+  fi
+
   if [[ "$name" == "kindlea9" ]]; then
     echo "🚀 Applying aggressive optimizations for Cortex-A9..."
-    base_flags="-C target-cpu=cortex-a9 -C target-feature=+thumb2,+neon"
+    base_flags="$base_flags -C target-cpu=cortex-a9 -C target-feature=+thumb2,+neon"
   fi
 
   mkdir -p .cargo
@@ -61,7 +71,7 @@ if [[ $# -eq 1 ]]; then
   # Single argument → must be a valid build key
   key="$1"
 
-  if [[ "$key" == "android" ]]; then
+  if [[ "$key" == "android" || "$key" == android-* ]]; then
     bash ./scripts/build-plugin.sh "none" "rakuyomi.koplugin" "android"
   elif [[ -n "${TARGETS[$key]}" ]]; then
     build_one "$key"

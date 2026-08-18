@@ -1,0 +1,28 @@
+{
+  "name": "rakuyomi-lnreader-js-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "description": "TypeScript source of the LNReader plugin runtime embedded in the RakuYomi backend. Build with bun, the output is a single file embedded via include_str!.",
+  "type": "module",
+  "scripts": {
+    "build": "bun build ./src/libs.ts --outfile ../assets/libs.js --target=browser --format=iife --minify --define process.env.NODE_ENV='\"production\"'",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "sh scripts/copy-stubs.sh"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^2.2.0",
+    "cheerio": "^1.2.0",
+    "dayjs": "^1.11.21",
+    "htmlparser2": "^12.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "htmlparser2": "12.0.0",
+    "entities": "8.0.0",
+    "dom-serializer": "3.1.1",
+    "parse5": "file:stubs/parse5",
+    "parse5-htmlparser2-tree-adapter": "file:stubs/parse5-htmlparser2-tree-adapter"
+  }
+}

@@ -1,0 +1,163 @@
+name: Extension bug report
+description: Report a problem with a specific source / extension (LNReader, MangaYomi, Tachiyomi/Mihon, Aidoku)
+title: "[Extension]: "
+labels: [bug, source]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for bugs that happen inside a specific source or extension — wrong data, empty lists,
+        broken images, or crashes caused by the source itself.
+
+        If you are unsure whether the problem is the source or rakuyomi, open a regular [Bug report](../issues/new?template=bug_report.yml) instead.
+
+  - type: dropdown
+    id: source_kind
+    attributes:
+      label: Source type
+      description: Which kind of source is the extension?
+      options:
+        - LNReader
+        - MangaYomi (JS)
+        - MangaYomi (Dart)
+        - Tachiyomi / Mihon (Keiyoushi)
+        - Aidoku
+    validations:
+      required: true
+
+  - type: input
+    id: source_name
+    attributes:
+      label: Source name
+      description: The exact name as shown in the source list.
+      placeholder: e.g. MangaDex, Light Novel World
+    validations:
+      required: true
+
+  - type: input
+    id: source_id
+    attributes:
+      label: Source ID
+      description: The identifier of the source (shown on its detail screen). Optional but very helpful.
+      placeholder: e.g. mangadex.org
+
+  - type: input
+    id: extension_source
+    attributes:
+      label: Where does the extension come from?
+      description: The URL of the extension list / repo you installed it from.
+      placeholder: e.g. https://raw.githubusercontent.com/keiyoushi/extensions/master/index.min.json
+
+  - type: input
+    id: extension_version
+    attributes:
+      label: Extension version
+      description: The version shown next to the source, if any.
+      placeholder: e.g. 1.2.3
+
+  - type: input
+    id: rakuyomi_version
+    attributes:
+      label: RakuYomi version
+      placeholder: e.g. 0.14.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Device platform
+      options:
+        - Kindle
+        - Kobo
+        - PocketBook
+        - Cervantes
+        - Android
+        - Linux (desktop / bridge mode)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: koreader_version
+    attributes:
+      label: KOReader version
+      placeholder: e.g. 2025.08
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: broken_features
+    attributes:
+      label: What is broken?
+      description: Select all features that fail with this extension.
+      multiple: true
+      options:
+        - Popular list / catalog is empty or fails
+        - Search returns nothing or wrong results
+        - Manga details (cover, authors, description) are missing or wrong
+        - Chapter list is empty / missing chapters
+        - Chapters cannot be opened or images fail to load
+        - Download fails or gets stuck
+        - Source settings do not work
+        - App crashes or freezes
+      validations:
+        required: true
+
+  - type: textarea
+    id: describe
+    attributes:
+      label: Describe the problem
+      description: What exactly happens? Include error messages if any.
+      placeholder: When I open the popular list, it stays empty ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: To reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to ...
+        2. Tap on ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: I expected ...
+
+  - type: textarea
+    id: works_elsewhere
+    attributes:
+      label: Does it work elsewhere?
+      description: |
+        This helps us tell apart source-side problems from rakuyomi bugs.
+        For example: does the same search work on the original app (Mihon, Aidoku, LNReader, MangaYomi)?
+      placeholder: e.g. Yes, the same search works in Mihon.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Paste the relevant log lines around the failure. On Unix devices `crash.log` lives next to the
+        KOReader directory (`koreader/` on Kindle, `.adds/koreader/` on Kobo); on Android use the app log.
+        Drag and drop `crash.log` here or paste the lines.
+      placeholder: Drag and drop crash.log here, or paste the last log lines.
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: The same source works on the original app (if applicable).
+        - label: I am running the latest release or nightly and the issue still happens.
+          required: true

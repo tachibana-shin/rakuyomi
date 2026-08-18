@@ -69,8 +69,12 @@ impl From<&AppError> for ErrorResponse {
             AppError::DownloadAllChaptersProgressNotFound => {
                 "No download is in progress.".to_string()
             }
-            AppError::NetworkFailure(_) => {
-                "There was a network error. Check your connection and try again.".to_string()
+            AppError::NetworkFailure(e) => {
+                eprintln!("Networke error: {:?}", e);
+                format!(
+                    "There was a network error. Check your connection and try again ({:?})",
+                    e
+                )
             }
             AppError::MountTmpFs(ref e) => format!("Failed to mount tmpfs: {}{}", e, setcap_hint()),
             AppError::Other(ref e) => {

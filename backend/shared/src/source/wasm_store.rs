@@ -183,14 +183,55 @@ pub struct ImageResponse {
     pub image: ImageRef,
 }
 
-#[derive(From, Debug)]
-pub struct JsContext(pub(crate) boa_engine::Context);
+/// A JS context for the Aidoku `js` namespace, backed by QuickJS (same engine
+/// family as the LNReader runtime). Each context owns its own runtime so
+/// scripts cannot interfere with each other.
+pub struct JsContext {
+    /// Kept alive for the lifetime of the context: dropping the runtime
+    /// first would invalidate the QuickJS engine behind the context.
+    #[allow(dead_code)]
+    runtime: rquickjs::Runtime,
+    context: rquickjs::Context,
+}
 
-// Safety: `boa_engine::Context` is not `Send` (uses `Rc` internally).
-// However, `JsContext` is stored in `WasmStore` behind `Arc<Mutex<...>>`,
-// and is never cloned or moved across threads while aliased.
-// The `Rc` is only accessed through `&mut` after locking the mutex,
-// so no concurrent reference counting occurs.
+impl JsContext {
+    pub(crate) fn new() -> anyhow::Result<Self> {
+        let runtime = rquickjs::Runtime::new()
+            .map_err(|e| anyhow!("failed to create QuickJS runtime: {e}"))?;
+        let context = rquickjs::Context::full(&runtime)
+            .map_err(|e| anyhow!("failed to create QuickJS context: {e}"))?;
+        Ok(Self { runtime, context })
+    }
+
+    /// Evaluates a script and returns the result stringified like Boa did
+    /// (i.e. via the JS `String()` conversion).
+    pub(crate) fn eval(&mut self, src: &str) -> anyhow::Result<String> {
+        self.context
+            .with(|ctx| {
+                let value: rquickjs::Value = ctx.eval(src)?;
+                let string_fn: rquickjs::Function = ctx.globals().get("String")?;
+                string_fn.call((value,))
+            })
+            .map_err(|e| anyhow!("failed to evaluate JS script: {e}"))
+    }
+
+    /// Returns a global variable stringified via the JS `String()` conversion.
+    pub(crate) fn get_global(&mut self, name: &str) -> anyhow::Result<String> {
+        self.context
+            .with(|ctx| {
+                let value: rquickjs::Value = ctx.globals().get(name)?;
+                let string_fn: rquickjs::Function = ctx.globals().get("String")?;
+                string_fn.call((value,))
+            })
+            .map_err(|e| anyhow!("failed to read JS global `{name}`: {e}"))
+    }
+}
+
+// Safety: `rquickjs` runtime and context are not `Send` (they use internal
+// reference counting). However, `JsContext` is stored in `WasmStore` behind
+// `Arc<Mutex<...>>`, and is never cloned or moved across threads while
+// aliased. The reference count is only accessed through `&mut` after locking
+// the mutex, so no concurrent reference counting occurs.
 unsafe impl Send for JsContext {}
 
 #[derive(From)]
@@ -633,13 +674,20 @@ impl WasmStore {
 
         idx
     }
-    pub fn create_js_context(&mut self) -> usize {
+    pub fn create_js_context(&mut self) -> Option<usize> {
+        let context = match JsContext::new() {
+            Ok(context) => context,
+            Err(e) => {
+                log::error!("failed to create JS context: {e}");
+                return None;
+            }
+        };
+
         let idx = self.increase_and_get_std_desciptor_pointer();
 
-        self.jscontexts
-            .insert(idx, JsContext(boa_engine::Context::default()));
+        self.jscontexts.insert(idx, context);
 
-        idx
+        Some(idx)
     }
     pub fn get_js_context(&mut self, pointer: usize) -> Option<&mut JsContext> {
         self.jscontexts.get_mut(&pointer)
@@ -844,5 +892,27 @@ impl From<SourceSettingValue> for Value {
             SourceSettingValue::Vec(v) => Value::Array(v.into_iter().map(Value::String).collect()),
             SourceSettingValue::Null => Value::Null,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::JsContext;
+
+    #[test]
+    fn js_context_eval_stringifies_like_boa() {
+        let mut ctx = JsContext::new().expect("failed to create JS context");
+        assert_eq!(ctx.eval("1 + 2").unwrap(), "3");
+        assert_eq!(ctx.eval("const s = 'hello'; s").unwrap(), "hello");
+        assert_eq!(ctx.eval("({ a: 1 })").unwrap(), "[object Object]");
+        assert_eq!(ctx.eval("null").unwrap(), "null");
+    }
+
+    #[test]
+    fn js_context_get_global() {
+        let mut ctx = JsContext::new().expect("failed to create JS context");
+        ctx.eval("globalThis.foo = 'bar'").unwrap();
+        assert_eq!(ctx.get_global("foo").unwrap(), "bar");
+        assert_eq!(ctx.get_global("missing").unwrap(), "undefined");
     }
 }

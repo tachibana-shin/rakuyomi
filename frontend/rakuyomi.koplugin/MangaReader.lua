@@ -472,7 +472,7 @@ function MangaReader:applyViewMode(ui)
   end
 
   if self.viewer ~= MangaViewer.DefaultViewer then
-    if G_reader_settings:nilOrFalse('rakuyomi_page_margin') and doc.configurable.page_margin > 0 then
+    if G_reader_settings:nilOrFalse('rakuyomi_page_margin') and doc.configurable.page_margin ~= nil and doc.configurable.page_margin > 0 then
       -- -- recommend option
       ui:handleEvent(Event:new("ConfigChange", "page_margin", 0))
       ui:handleEvent(Event:new("MarginUpdate", 0))

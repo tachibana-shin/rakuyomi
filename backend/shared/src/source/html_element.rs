@@ -27,7 +27,7 @@ impl HTMLElement {
             return Ok(None);
         };
 
-        let matcher = Matcher::new(&normalize_contains(selector))
+        let matcher = Matcher::new(&normalize_selector(selector))
             .map_err(|err| anyhow!("[{selector}]{:?}", err))?;
         let mut elements = if matcher.match_element(&node) {
             vec![self.clone()]
@@ -51,7 +51,7 @@ impl HTMLElement {
             return Ok(None);
         };
 
-        let matcher = Matcher::new(&normalize_contains(selector))
+        let matcher = Matcher::new(&normalize_selector(selector))
             .map_err(|err| anyhow!("[{selector}]{:?}", err))?;
         if matcher.match_element(&node) {
             return Ok(Some(self.clone()));
@@ -63,10 +63,26 @@ impl HTMLElement {
             .first()
             .map(|node| self.to_element(node.id)))
     }
+    /// Reads an attribute. The `abs:` prefix resolves the value against
+    /// the element's base URI (Aidoku's `HtmlAttribute::abs`).
     pub fn attr(&self, store: &mut WasmStore, name: &str) -> Option<String> {
         let node = self.node_ref(store)?;
 
-        node.attr(name).map(|v| v.to_string())
+        let (name, absolute) = match name.strip_prefix("abs:") {
+            Some(name) => (name, true),
+            None => (name, false),
+        };
+        let value = node.attr(name)?.to_string();
+        if !absolute {
+            return Some(value);
+        }
+
+        let base_uri = self.base_uri.as_deref().unwrap_or("");
+        let absolute_url = url::Url::parse(base_uri)
+            .unwrap_or_else(|_| url::Url::parse("file:///").unwrap())
+            .join(&value)
+            .ok()?;
+        Some(absolute_url.to_string())
     }
     pub fn next(&self, store: &mut WasmStore) -> Option<Self> {
         let node = self.node_ref(store)?;
@@ -318,7 +334,13 @@ impl HTMLElement {
     }
 }
 
-fn normalize_contains(selector: &str) -> String {
+/// Normalises a CSS selector for [`Matcher`], whose `selectors`-crate
+/// parser rejects two common inputs: the jQuery-style `:contains(...)`
+/// pseudo-class and unquoted `[...]` attribute values (e.g.
+/// `[href=/manga/1]` — only identifiers or quoted strings parse).
+///
+/// Both are rewritten into the quoted forms the parser accepts.
+pub(crate) fn normalize_selector(selector: &str) -> String {
     let mut out = String::with_capacity(selector.len());
     let chars: Vec<char> = selector.chars().collect();
     let mut i = 0;
@@ -361,11 +383,114 @@ fn normalize_contains(selector: &str) -> String {
             continue;
         }
 
+        if chars[i] == '[' {
+            // Copy the whole bracket up to the matching `]` (quote-aware),
+            // normalising the attribute selector inside.
+            let mut j = i + 1;
+            let mut quote: Option<char> = None;
+            while j < chars.len() {
+                let c = chars[j];
+                if let Some(q) = quote {
+                    if c == q {
+                        quote = None;
+                    }
+                } else if c == '"' || c == '\'' {
+                    quote = Some(c);
+                } else if c == ']' {
+                    break;
+                }
+                j += 1;
+            }
+            if j >= chars.len() {
+                // Unclosed bracket: copy verbatim.
+                out.push(chars[i]);
+                i += 1;
+                continue;
+            }
+            let inner: String = chars[i + 1..j].iter().collect();
+            out.push('[');
+            out.push_str(&normalize_attribute(&inner));
+            out.push(']');
+            i = j + 1;
+            continue;
+        }
+
         out.push(chars[i]);
         i += 1;
     }
 
     out
+}
+
+/// Normalises the inside of one `[...]` attribute selector: wraps an
+/// unquoted attribute value in double quotes (the `selectors`-crate parser
+/// rejects values like `/manga/1`, which are neither identifiers nor
+/// strings). Already quoted values and the bare existence form `[attr]` are
+/// kept as-is, as are the case-insensitive `i`/`s` flags.
+fn normalize_attribute(inner: &str) -> String {
+    let inner = inner.trim();
+    if inner.is_empty() {
+        return inner.to_string();
+    }
+
+    // Find the first operator: `~=`, `|=`, `^=`, `$=`, `*=` or `=`. A bare
+    // `|` (e.g. the `xlink|href` namespace prefix) is not an operator.
+    let bytes = inner.as_bytes();
+    let mut op: Option<(usize, usize)> = None;
+    for (idx, byte) in bytes.iter().enumerate() {
+        if matches!(byte, b'~' | b'|' | b'^' | b'$' | b'*') {
+            if bytes.get(idx + 1) == Some(&b'=') {
+                op = Some((idx, 2));
+                break;
+            }
+        } else if *byte == b'=' {
+            op = Some((idx, 1));
+            break;
+        }
+    }
+    let Some((op_start, op_len)) = op else {
+        // `[attr]` existence check.
+        return inner.to_string();
+    };
+
+    let key = inner[..op_start].trim();
+    let operator = &inner[op_start..op_start + op_len];
+    let value_part = inner[op_start + op_len..].trim();
+
+    if value_part.is_empty() {
+        return format!("{key}{operator}\"\"");
+    }
+
+    let (value, flag) = split_attr_value(value_part);
+    if value.starts_with('"') || value.starts_with('\'') || value.contains('"') {
+        // Already quoted, or unsafe to quote: reassemble untouched.
+        if flag.is_empty() {
+            return format!("{key}{operator}{value}");
+        }
+        return format!("{key}{operator}{value} {flag}");
+    }
+    if flag.is_empty() {
+        return format!("{key}{operator}\"{value}\"");
+    }
+    format!("{key}{operator}\"{value}\" {flag}")
+}
+
+/// Splits an attribute value part into the value and an optional trailing
+/// `i`/`s` case flag, honouring quoted values (which may contain spaces).
+fn split_attr_value(value_part: &str) -> (&str, &str) {
+    if let Some(first) = value_part.chars().next() {
+        if first == '"' || first == '\'' {
+            let close = value_part[1..]
+                .find(first)
+                .map(|p| p + 2)
+                .unwrap_or(value_part.len());
+            return (&value_part[..close], value_part[close..].trim());
+        }
+    }
+    match value_part.find(char::is_whitespace) {
+        Some(pos) => (&value_part[..pos], value_part[pos..].trim()),
+        None => (value_part, ""),
+    }
 }
 
 fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
@@ -388,7 +513,7 @@ fn text_nodes<'a>(node: NodeRef<'a>) -> Vec<NodeRef<'a>> {
 
 #[cfg(test)]
 mod tests {
-    use super::normalize_contains;
+    use super::normalize_selector;
 
     fn setup_html_store(html: &str) -> (crate::source::wasm_store::WasmStore, super::HTMLElement) {
         use crate::settings::Settings;
@@ -469,32 +594,32 @@ mod tests {
     #[test]
     fn keeps_selector_without_contains_unchanged() {
         let sel = "div.content > a[href^=\"https\"]";
-        assert_eq!(normalize_contains(sel), sel);
+        assert_eq!(normalize_selector(sel), sel);
     }
 
     #[test]
     fn adds_quotes_when_missing_simple() {
         let sel = ":contains(hello)";
-        assert_eq!(normalize_contains(sel), ":contains(\"hello\")");
+        assert_eq!(normalize_selector(sel), ":contains(\"hello\")");
     }
 
     #[test]
     fn preserves_existing_double_quotes() {
         let sel = ":contains(\"hello world\")";
-        assert_eq!(normalize_contains(sel), ":contains(\"hello world\")");
+        assert_eq!(normalize_selector(sel), ":contains(\"hello world\")");
     }
 
     #[test]
     fn trims_inner_whitespace() {
         let sel = ":contains(   hello   )";
-        assert_eq!(normalize_contains(sel), ":contains(\"hello\")");
+        assert_eq!(normalize_selector(sel), ":contains(\"hello\")");
     }
 
     #[test]
     fn handles_multiple_contains_in_selector() {
         let sel = "div:contains(hello) span:contains(world)";
         let expected = "div:contains(\"hello\") span:contains(\"world\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
@@ -502,56 +627,56 @@ mod tests {
         // Inner has parentheses that should be treated as content; algorithm tracks depth.
         let sel = ":contains(text(with(parens)))";
         let expected = ":contains(\"text(with(parens))\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn nested_contains_inside_not() {
         let sel = ":not(:contains(hello world))";
         let expected = ":not(:contains(\"hello world\"))";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn keeps_other_colon_pseudo_selectors_intact() {
         let sel = ":first-child:contains(foo)";
         let expected = ":first-child:contains(\"foo\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn special_characters_are_preserved() {
         let sel = ":contains(he[llo].*+?|^$)";
         let expected = ":contains(\"he[llo].*+?|^$\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn unicode_is_preserved() {
         let sel = ":contains(xin chào 🌟)";
         let expected = ":contains(\"xin chào 🌟\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn mixed_content_around_contains() {
         let sel = "ul li.item:contains(Item 1) > a.active";
         let expected = "ul li.item:contains(\"Item 1\") > a.active";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn inner_already_quoted_with_extra_spaces() {
         let sel = ":contains(   \"hello world\"   )";
         let expected = ":contains(\"hello world\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
     fn does_not_add_quotes_twice_when_already_quoted() {
         let sel = "div:contains(\"a(b)c\")";
         let expected = "div:contains(\"a(b)c\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
@@ -560,7 +685,7 @@ mod tests {
         // It will still wrap in quotes.
         let sel = "div:contains(unclosed";
         let expected = "div:contains(\"unclosed\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
@@ -569,7 +694,7 @@ mod tests {
         // The parser will stop at the first matching ')' that closes depth to 0.
         // The extra ')' should be copied verbatim after processing.
         let expected = ":contains(\"abc\")) trailing";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
     }
 
     #[test]
@@ -577,6 +702,137 @@ mod tests {
         let sel = "section[data-id=\"123\"] .card:contains(New (2025)) .title:contains(Đặc biệt)";
         let expected =
             "section[data-id=\"123\"] .card:contains(\"New (2025)\") .title:contains(\"Đặc biệt\")";
-        assert_eq!(normalize_contains(sel), expected);
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn quotes_unquoted_attribute_value() {
+        let sel = "a[href=/manga/1]";
+        let expected = "a[href=\"/manga/1\"]";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn quotes_unquoted_numeric_value() {
+        let sel = "[data-id=123]";
+        let expected = "[data-id=\"123\"]";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn quotes_each_operator_form() {
+        for (sel, expected) in [
+            ("[href^=/manga]", "[href^=\"/manga\"]"),
+            ("[href$=.jpg]", "[href$=\".jpg\"]"),
+            ("[href*=manga/1]", "[href*=\"manga/1\"]"),
+            ("[lang~=en]", "[lang~=\"en\"]"),
+            ("[lang|=en]", "[lang|=\"en\"]"),
+        ] {
+            assert_eq!(normalize_selector(sel), expected);
+        }
+    }
+
+    #[test]
+    fn keeps_already_quoted_attribute_values() {
+        let sel = "a[href=\"/manga/1\"]";
+        assert_eq!(normalize_selector(sel), sel);
+    }
+
+    #[test]
+    fn keeps_single_quoted_attribute_values() {
+        let sel = "a[href='/manga/1']";
+        assert_eq!(normalize_selector(sel), sel);
+    }
+
+    #[test]
+    fn keeps_existence_attribute_selector() {
+        let sel = "input[disabled]";
+        assert_eq!(normalize_selector(sel), sel);
+    }
+
+    #[test]
+    fn quotes_empty_attribute_value() {
+        let sel = "[data-x=]";
+        let expected = "[data-x=\"\"]";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn keeps_case_insensitive_flag_on_quoted_value() {
+        let sel = "[data-x=\"foo\" i]";
+        assert_eq!(normalize_selector(sel), sel);
+    }
+
+    #[test]
+    fn quotes_value_with_case_flag() {
+        let sel = "[data-x=foo i]";
+        let expected = "[data-x=\"foo\" i]";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn preserves_namespace_prefix() {
+        let sel = "[xlink|href=foo]";
+        let expected = "[xlink|href=\"foo\"]";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn bracket_scan_ignores_quotes_and_nested_contains() {
+        let sel = "div[data-x=\"a]b\"] span:contains(hello)";
+        let expected = "div[data-x=\"a]b\"] span:contains(\"hello\")";
+        assert_eq!(normalize_selector(sel), expected);
+    }
+
+    #[test]
+    fn selector_with_unquoted_attribute_matches_document() {
+        let (mut store, element) =
+            setup_html_store("<div><a href=\"/manga/1\">One</a><a href=\"/other\">Two</a></div>");
+        let links = element
+            .select_soup(&mut store, "a[href^=/manga]")
+            .unwrap()
+            .unwrap();
+        assert_eq!(links.len(), 1);
+        assert_eq!(links[0].attr(&mut store, "href").unwrap(), "/manga/1");
+    }
+
+    #[test]
+    fn attr_with_abs_prefix_resolves_against_base_uri() {
+        let (mut store, element) = setup_html_store("<div><a href=\"/manga/1\">One</a></div>");
+        let element = super::HTMLElement {
+            base_uri: Some("https://example.com".to_owned()),
+            ..element
+        };
+        let link = element.select_soup_first(&mut store, "a").unwrap().unwrap();
+        assert_eq!(
+            link.attr(&mut store, "abs:href").unwrap(),
+            "https://example.com/manga/1"
+        );
+    }
+
+    #[test]
+    fn attr_abs_with_absolute_value_keeps_url() {
+        let (mut store, element) =
+            setup_html_store("<div><a href=\"https://cdn.example.com/manga/1.jpg\">One</a></div>");
+        let element = super::HTMLElement {
+            base_uri: Some("https://example.com".to_owned()),
+            ..element
+        };
+        let link = element.select_soup_first(&mut store, "a").unwrap().unwrap();
+        assert_eq!(
+            link.attr(&mut store, "abs:href").unwrap(),
+            "https://cdn.example.com/manga/1.jpg"
+        );
+    }
+
+    #[test]
+    fn attr_without_abs_prefix_returns_raw_value() {
+        let (mut store, element) = setup_html_store("<div><a href=\"/manga/1\">One</a></div>");
+        let element = super::HTMLElement {
+            base_uri: Some("https://example.com".to_owned()),
+            ..element
+        };
+        let link = element.select_soup_first(&mut store, "a").unwrap().unwrap();
+        assert_eq!(link.attr(&mut store, "href").unwrap(), "/manga/1");
     }
 }

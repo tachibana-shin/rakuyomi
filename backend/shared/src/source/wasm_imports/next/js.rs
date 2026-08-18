@@ -3,7 +3,6 @@
 
 use anyhow::Result;
 
-use boa_engine::{JsString, Source};
 use wasm_macros::{aidoku_wasm_function, register_wasm_function};
 use wasmi::{Caller, Linker};
 
@@ -62,12 +61,16 @@ impl From<ResultContext> for i32 {
 fn context_create(mut caller: Caller<'_, WasmStore>) -> FFIResult {
     let store = caller.data_mut();
 
-    Ok(store.create_js_context() as i32)
+    let Some(idx) = store.create_js_context() else {
+        return Ok(ResultContext::InvalidContext.into());
+    };
+
+    Ok(idx as i32)
 }
 #[aidoku_wasm_function]
 fn context_eval(mut caller: Caller<'_, WasmStore>, ctx_id: i32, src: Option<String>) -> FFIResult {
     let store = caller.data_mut();
-    let Some(context) = store.get_js_context(ctx_id as usize).map(|ctx| &mut ctx.0) else {
+    let Some(context) = store.get_js_context(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
@@ -75,14 +78,7 @@ fn context_eval(mut caller: Caller<'_, WasmStore>, ctx_id: i32, src: Option<Stri
         return Ok(ResultContext::InvalidString.into());
     };
 
-    let Ok(result) = context.eval(Source::from_bytes(&src)) else {
-        return Ok(ResultContext::MissingResult.into());
-    };
-    let Some(result_string) = result
-        .to_string(context)
-        .ok()
-        .and_then(|s| s.to_std_string().ok())
-    else {
+    let Ok(result_string) = context.eval(&src) else {
         return Ok(ResultContext::MissingResult.into());
     };
 
@@ -101,7 +97,7 @@ fn context_eval_async(
 #[aidoku_wasm_function]
 fn context_get(mut caller: Caller<'_, WasmStore>, ctx_id: i32, name: Option<String>) -> FFIResult {
     let store = caller.data_mut();
-    let Some(context) = store.get_js_context(ctx_id as usize).map(|ctx| &mut ctx.0) else {
+    let Some(context) = store.get_js_context(ctx_id as usize) else {
         return Ok(ResultContext::InvalidContext.into());
     };
 
@@ -109,15 +105,7 @@ fn context_get(mut caller: Caller<'_, WasmStore>, ctx_id: i32, name: Option<Stri
         return Ok(ResultContext::InvalidString.into());
     };
 
-    let key: JsString = name.into();
-    let Ok(result) = context.global_object().get(key, context) else {
-        return Ok(ResultContext::MissingResult.into());
-    };
-    let Some(result_string) = result
-        .to_string(context)
-        .ok()
-        .and_then(|s| s.to_std_string().ok())
-    else {
+    let Ok(result_string) = context.get_global(&name) else {
         return Ok(ResultContext::MissingResult.into());
     };
 

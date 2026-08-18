@@ -9,6 +9,8 @@
 > Thank [@hanatsumi](https://github.com/hanatsumi) for the great work!!
 > 
 > `rakuyomi` currently supports all [Aidoku](https://github.com/Aidoku) sources including sources written with legacy SDK or next SDK ([Aidoku Community Sources](https://github.com/Aidoku-Community/sources), [Tachibana Shin Sources](https://github.com/tachibana-shin/aidoku-community-sources)...)
+>
+> It also supports extensions from **LNReader**, **Mangayomi** (JavaScript and Dart), and **Tachiyomi/Mihon (Keiyoushi)**.
 
 ## Android Support
 

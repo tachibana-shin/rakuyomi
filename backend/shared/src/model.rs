@@ -1,4 +1,5 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 use url::Url;
 
 use crate::source::{
@@ -94,11 +95,39 @@ impl ChapterId {
 pub struct SourceInformation {
     pub id: SourceId,
     pub name: String,
-    pub version: usize,
+    /// The version of the source, as published by the source itself:
+    /// a number for Aidoku sources (`"version": 1`) or a string for
+    /// LNReader sources (`"2.3.1"`). The type is preserved as-is so the
+    /// frontend can compare versions numerically when both are numbers.
+    pub version: serde_json::Value,
+    /// The languages of the source. Aidoku source lists publish an array of
+    /// language codes (`["en"]`), while LNReader source lists publish a
+    /// single language name (`"English"`); both are folded into this field.
+    /// Defaults to an empty list when the source list does not publish any
+    /// language information.
+    #[serde(default, alias = "lang", deserialize_with = "deserialize_languages")]
+    pub languages: Vec<String>,
 
     // source of source
     #[serde(skip)]
     pub source_of_source: Option<String>,
+}
+
+/// Accepts `["en", "vi"]` (Aidoku), `"English"` (LNReader) or `null` and
+/// always produces a list of language strings.
+fn deserialize_languages<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    match Option::<Value>::deserialize(deserializer)? {
+        None => Ok(Vec::new()),
+        Some(Value::String(s)) => Ok(vec![s]),
+        Some(Value::Array(items)) => items
+            .into_iter()
+            .map(|item| serde_json::from_value(item).map_err(serde::de::Error::custom))
+            .collect(),
+        Some(_) => Ok(Vec::new()),
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -281,6 +310,7 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
+            languages: value.info.languages.unwrap_or_default(),
             source_of_source: value.source_of_source,
         }
     }
@@ -465,12 +495,11 @@ mod tests {
             info: crate::source::SourceInfo {
                 id: "test_id".to_string(),
                 lang: Some("en".to_string()),
-                #[cfg(not(feature = "all"))]
-                languages: None,
+                languages: Some(vec!["en".to_string()]),
                 #[cfg(not(feature = "all"))]
                 content_rating: None,
                 name: "Test Source".to_string(),
-                version: 1,
+                version: serde_json::json!("1"),
                 url: None,
                 urls: None,
                 min_app_version: None,
@@ -481,7 +510,62 @@ mod tests {
         let info = SourceInformation::from(manifest);
         assert_eq!(info.id.value(), "test_id");
         assert_eq!(info.name, "Test Source");
-        assert_eq!(info.version, 1);
+        assert_eq!(info.version, serde_json::json!("1"));
+        assert_eq!(info.languages, vec!["en".to_string()]);
         assert_eq!(info.source_of_source, Some("test_sos".to_string()));
+    }
+
+    #[test]
+    fn test_source_information_deserializes_aidoku_languages() {
+        let json =
+            r#"{"id":"en.aquamanga","name":"Aqua Manga","version":1,"languages":["en","vi"]}"#;
+        let info: SourceInformation = serde_json::from_str(json).unwrap();
+        assert_eq!(info.languages, vec!["en".to_string(), "vi".to_string()]);
+    }
+
+    #[test]
+    fn test_source_information_deserializes_lnreader_lang_name() {
+        let json =
+            r#"{"id":"1stkissnovel","name":"FirstKissNovel","version":"2.2.0","lang":"English"}"#;
+        let info: SourceInformation = serde_json::from_str(json).unwrap();
+        assert_eq!(info.languages, vec!["English".to_string()]);
+    }
+
+    #[test]
+    fn test_source_information_languages_default_to_empty() {
+        let json = r#"{"id":"en.aquamanga","name":"Aqua Manga","version":1}"#;
+        let info: SourceInformation = serde_json::from_str(json).unwrap();
+        assert!(info.languages.is_empty());
+    }
+
+    #[test]
+    fn test_source_information_preserves_numeric_version() {
+        let json = r#"{"id":"en.royalroad","name":"Royal Road","version":3}"#;
+        let info: SourceInformation = serde_json::from_str(json).unwrap();
+        assert_eq!(info.version, serde_json::json!(3));
+    }
+
+    #[test]
+    fn test_source_information_preserves_string_version() {
+        let json = r#"{"id":"en.royalroad","name":"Royal Road","version":"2.3.1"}"#;
+        let info: SourceInformation = serde_json::from_str(json).unwrap();
+        assert_eq!(info.version, serde_json::json!("2.3.1"));
+    }
+
+    #[test]
+    fn test_source_manifest_preserves_numeric_version() {
+        let json = r#"{
+            "info": {
+                "id": "en.aquamanga",
+                "name": "Aqua Manga",
+                "version": 1,
+                "url": "https://aquareader.net",
+                "contentRating": 1,
+                "languages": ["en"]
+            }
+        }"#;
+        let manifest: SourceManifest = serde_json::from_str(json).unwrap();
+        assert_eq!(manifest.info.id, "en.aquamanga");
+        assert_eq!(manifest.info.version, serde_json::json!(1));
     }
 }

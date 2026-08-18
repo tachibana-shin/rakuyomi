@@ -1,0 +1,5 @@
+[target.arm-unknown-linux-musleabi]
+dockerfile = "cross/arm-unknown-linux-musleabi.Dockerfile"
+
+[target.arm-unknown-linux-musleabihf]
+dockerfile = "cross/arm-unknown-linux-musleabihf.Dockerfile"

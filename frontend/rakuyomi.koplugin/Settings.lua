@@ -597,6 +597,7 @@ function Settings:init()
           type = 'label',
           title = definition.title,
           text = definition.text(),
+          callback = definition.callback,
         },
         value = nil,
       })

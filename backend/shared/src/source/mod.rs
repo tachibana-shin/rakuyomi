@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs,
     io::Read,
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 use tokio_util::bytes::Bytes;
@@ -15,7 +15,7 @@ use wasmi::*;
 use zip::ZipArchive;
 
 use crate::{
-    settings::SourceSettingValue,
+    settings::{Settings, SourceSettingValue},
     source::{
         next_reader::read_next,
         wasm_imports::next as sdk_next,
@@ -25,6 +25,9 @@ use crate::{
 };
 
 use self::{
+    keiyoushi::KeiyoushiSource,
+    lnreader::LnReaderSource,
+    mangayomi::MangayomiSource,
     model::{Chapter, Filter, Manga, MangaPageResult, Page, SettingDefinition},
     source_settings::SourceSettings,
     wasm_imports::{
@@ -41,8 +44,12 @@ use self::{
         Value, ValueMap, WasmStore,
     },
 };
+use crate::resource_usage::ResourceRegistry;
 
 pub(crate) mod decode_image;
+pub mod keiyoushi;
+pub mod lnreader;
+pub mod mangayomi;
 
 #[cfg(not(feature = "all"))]
 pub mod html_element;
@@ -53,10 +60,7 @@ pub mod model;
 pub mod next_reader;
 #[cfg(feature = "all")]
 mod next_reader;
-#[cfg(not(feature = "all"))]
 pub mod source_settings;
-#[cfg(feature = "all")]
-mod source_settings;
 #[cfg(any(feature = "ffi", feature = "all"))]
 pub mod wasm_imports;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
@@ -66,45 +70,126 @@ pub mod wasm_store;
 #[cfg(not(any(feature = "ffi", feature = "all")))]
 mod wasm_store;
 
-/**
+/*
  * params need mark encode
  * handle_notification
  * handle_deep_link
  * handle_basic_login
  * handle_web_login
  * handle_key_migration
- *
  */
 
+/// The kinds of sources RakuYomi can run: WASM (Aidoku), LNReader
+/// (JavaScript), MangaYomi (Dart) and Keiyoushi (mihon extension DEX)
+/// plugins. All of them are kept behind an `Arc` so `Source` is cheap to
+/// clone; blocking work is always moved to a `spawn_blocking` thread.
 #[derive(Clone)]
-pub struct Source(
-    /// In order to avoid issues when calling functions that block inside the `Source` from an
-    /// async context, we wrap all data and functions that need to block inside `BlockingSource`
-    /// and call them using `spawn_blocking` from within the facades exposed by `Source`.
-    /// Particularly, all calls to `reqwest::blocking` methods from an async context causes the
-    /// program to panic (see https://github.com/seanmonstar/reqwest/issues/1017), and we do call
-    /// them inside the `net` module.
-    ///
-    /// This also provides interior mutability, but we probably could also do it inside the
-    /// `BlockingSource` itself, by placing things inside a mutex. It might be a cleaner design.
-    #[cfg(feature = "all")]
-    Arc<Mutex<BlockingSource>>,
-    #[cfg(not(feature = "all"))] pub Arc<Mutex<BlockingSource>>,
-    pub SourceFeatures,
-);
+pub enum SourceBackend {
+    /// A WASM source, mirroring the legacy tuple layout.
+    Aidoku(Arc<Mutex<BlockingSource>>),
+    /// An LNReader plugin running inside an embedded QuickJS runtime.
+    LnReader(Arc<LnReaderSource>),
+    /// A MangaYomi extension running inside the embedded d4rt_rs interpreter.
+    Mangayomi(Arc<MangayomiSource>),
+    /// One source of a keiyoushi extension APK running inside dexvm.
+    Keiyoushi(Arc<KeiyoushiSource>),
+}
 
+#[derive(Clone)]
+pub struct Source {
+    pub backend: SourceBackend,
+    pub features: SourceFeatures,
+    pub usage: ResourceRegistry,
+}
+
+/// Like [`wrap_blocking_source_fn!`], but dispatches between the WASM and
+/// LNReader backends.
 #[macro_export]
 macro_rules! wrap_blocking_source_fn {
     ($fn_name:ident, $return_type:ty, $($param:ident : $type:ty),*) => {
         pub async fn $fn_name(&self, $($param: $type),*) -> $return_type {
-            let blocking_source = self.0.clone();
-
-            ::tokio::task::spawn_blocking(move || {
-                let mut guard = blocking_source
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner());
-                guard.$fn_name($($param),*)
-            }).await?
+            let started_at = std::time::Instant::now();
+            let usage = self.usage.clone();
+            let result: ::std::result::Result<($return_type, String), _> = match &self.backend {
+                SourceBackend::Aidoku(blocking_source) => {
+                    let blocking_source = blocking_source.clone();
+                    let usage = usage.clone();
+                    ::tokio::task::spawn_blocking(move || {
+                        let mut guard = blocking_source
+                            .lock()
+                            .unwrap_or_else(|e| e.into_inner());
+                        let source_id = guard.manifest.info.id.clone();
+                        let result = guard.$fn_name($($param),*);
+                        if result.is_ok() && usage.is_active() {
+                            if let (Ok(memory), Some(store)) =
+                                (guard.get_memory(), guard.store.as_ref())
+                            {
+                                usage.record_wasm_memory(
+                                    &source_id,
+                                    memory.data_size(store) as u64,
+                                );
+                            }
+                        }
+                        (result, source_id)
+                    }).await
+                }
+                SourceBackend::LnReader(lnreader) => {
+                    let lnreader = lnreader.clone();
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = lnreader.$fn_name($($param),*);
+                        (result, lnreader.manifest.info.id.clone())
+                    }).await
+                }
+                SourceBackend::Mangayomi(mangayomi) => {
+                    let mangayomi = mangayomi.clone();
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = mangayomi.$fn_name($($param),*);
+                        (result, mangayomi.manifest.info.id.clone())
+                    }).await
+                }
+                SourceBackend::Keiyoushi(keiyoushi) => {
+                    let keiyoushi = keiyoushi.clone();
+                    ::tokio::task::spawn_blocking(move || {
+                        let result = keiyoushi.$fn_name($($param),*);
+                        (result, keiyoushi.manifest.info.id.clone())
+                    }).await
+                }
+            };
+            let (result, source_id) = match result {
+                Ok(pair) => pair,
+                Err(e) => {
+                    // The worker panicked before returning its id; read the
+                    // manifest on the async path only in this exceptional
+                    // case so the failure still lands in the usage log.
+                    let source_id = match &self.backend {
+                        SourceBackend::Aidoku(blocking_source) => blocking_source
+                            .lock()
+                            .unwrap_or_else(|e| e.into_inner())
+                            .manifest
+                            .info
+                            .id
+                            .clone(),
+                        SourceBackend::LnReader(lnreader) => lnreader.manifest.info.id.clone(),
+                        SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.info.id.clone(),
+                        SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.info.id.clone(),
+                    };
+                    usage.record(
+                        &source_id,
+                        Err(format!("worker task failed: {e}")),
+                        started_at.elapsed(),
+                    );
+                    return Err(::anyhow::anyhow!("worker task failed: {e}"));
+                }
+            };
+            usage.record(
+                &source_id,
+                match &result {
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(format!("{e:#}")),
+                },
+                started_at.elapsed(),
+            );
+            result
         }
     };
 }
@@ -119,17 +204,21 @@ macro_rules! call_cleanup {
         as $result_ty:ty,
         parse = $parse_fn:expr
     ) => {{
-        let call_result = $func.call(&mut $blocking.store, ($($args),*));
+        let call_result = $func.call(
+            $blocking.engine_store_mut()?,
+            ($($args),*),
+        );
 
         match call_result {
             Ok(result_descriptor) => {
+                let instance = $blocking.engine_instance()?;
                 let parsed: Result<$result_ty> = {
-                    let store: &mut Store<WasmStore> = &mut $blocking.store;
-                    $parse_fn(result_descriptor, store, $blocking.instance)
+                    let store: &mut Store<WasmStore> = $blocking.engine_store_mut()?;
+                    $parse_fn(result_descriptor, store, instance)
                 };
 
                 {
-                    let store_mut = $blocking.store.data_mut();
+                    let store_mut = $blocking.engine_store_mut()?.data_mut();
                     $(store_mut.take_std_value($descriptor as usize);)*
                     $blocking.free_result(result_descriptor);
                 }
@@ -138,7 +227,7 @@ macro_rules! call_cleanup {
             }
             Err(e) => {
                 {
-                    let store_mut = $blocking.store.data_mut();
+                    let store_mut = $blocking.engine_store_mut()?.data_mut();
                     $(store_mut.take_std_value($descriptor as usize);)*
                 }
 
@@ -155,36 +244,109 @@ impl Source {
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
         #[cfg(feature = "all")]
-        let mut blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
-
-        #[cfg(feature = "all")]
-        if blocking_source.next_sdk {
-            blocking_source.start()?;
-        }
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
 
         #[cfg(not(feature = "all"))]
         let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
 
         let features = { blocking_source.features.clone() };
 
-        Ok(Self(Arc::new(Mutex::new(blocking_source)), features))
+        Ok(Self {
+            backend: SourceBackend::Aidoku(Arc::new(Mutex::new(blocking_source))),
+            features,
+            usage: ResourceRegistry::default(),
+        })
+    }
+
+    /// Loads an LNReader plugin (`*.lnreader.js`) from disk.
+    pub fn from_lnreader_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let mut source = LnReaderSource::from_lnreader_file(path, manager, arc_manager)?;
+        let features = source.features.clone();
+        let usage = ResourceRegistry::default();
+        // The worker records the QuickJS memory through the source's own
+        // registry, so both sides share one handle.
+        source.usage = usage.clone();
+        Ok(Self {
+            backend: SourceBackend::LnReader(Arc::new(source)),
+            features,
+            usage,
+        })
+    }
+
+    /// Loads a MangaYomi extension (`*.mangayomi.dart`) from disk.
+    pub fn from_mangayomi_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Self> {
+        let mut source = MangayomiSource::from_mangayomi_file(path, manager, arc_manager)?;
+        let features = source.features.clone();
+        let usage = ResourceRegistry::default();
+        // The worker records the runtime memory through the source's own
+        // registry, so both sides share one handle.
+        source.usage = usage.clone();
+        Ok(Self {
+            backend: SourceBackend::Mangayomi(Arc::new(source)),
+            features,
+            usage,
+        })
+    }
+
+    /// Loads the sources bundled in a keiyoushi extension APK
+    /// (`*.keiyoushi.apk`) from disk. One APK can bundle several sources
+    /// (usually one per language), each of which becomes its own [`Source`].
+    pub fn from_keiyoushi_file(
+        path: &Path,
+        manager: &SourceManager,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+    ) -> Result<Vec<Self>> {
+        let sources = KeiyoushiSource::from_keiyoushi_apk(path, manager, arc_manager)?;
+        Ok(sources
+            .into_iter()
+            .map(|mut source| {
+                let features = source.features.clone();
+                let usage = ResourceRegistry::default();
+                // The worker records the VM memory estimate through the
+                // source's own registry, so both sides share one handle.
+                source.usage = usage.clone();
+                Source {
+                    backend: SourceBackend::Keiyoushi(Arc::new(source)),
+                    features,
+                    usage,
+                }
+            })
+            .collect())
     }
 
     pub fn manifest(&self) -> SourceManifest {
         // FIXME we dont actually need to clone here but yeah it's easier
-        self.0
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .manifest
-            .clone()
+        match &self.backend {
+            SourceBackend::Aidoku(blocking_source) => blocking_source
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .manifest
+                .clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.manifest.clone(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.clone(),
+            SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.clone(),
+        }
     }
 
     pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
-        self.0
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .setting_definitions
-            .clone()
+        match &self.backend {
+            SourceBackend::Aidoku(blocking_source) => blocking_source
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .setting_definitions
+                .clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.setting_definitions.clone(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.setting_definitions.clone(),
+            SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.setting_definitions.clone(),
+        }
     }
 
     pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
@@ -235,6 +397,31 @@ impl Source {
         chapter_id: String,
         chapter_num: Option<f32>
     );
+
+    /// Fetches the plaintext bytes of a page image. Keiyoushi sources run
+    /// the request through the extension's own OkHttpClient inside the
+    /// persistent engine session (`getPageList` is parsed once per chapter,
+    /// then every image of the chapter), so client-side interceptors
+    /// (IMGX-style decryption, per-host auth) apply; the remaining backends
+    /// keep the plain GET path via
+    /// [`get_image_request`](Self::get_image_request).
+    pub async fn fetch_page_image(&self, chapter_id: &str, url: &str) -> Result<Vec<u8>, String> {
+        match &self.backend {
+            SourceBackend::Keiyoushi(keiyoushi) => {
+                let keiyoushi = keiyoushi.clone();
+                let chapter_id = chapter_id.to_string();
+                let url = url.to_string();
+                tokio::task::spawn_blocking(move || {
+                    keiyoushi
+                        .fetch_page_image(&chapter_id, &url)
+                        .map_err(|err| err.to_string())
+                })
+                .await
+                .unwrap_or_else(|err| Err(err.to_string()))
+            }
+            _ => Err("fetch_page_image is only supported by keiyoushi sources".to_string()),
+        }
+    }
 
     wrap_blocking_source_fn!(
         get_image_request,
@@ -307,13 +494,12 @@ impl Source {
 pub struct SourceInfo {
     pub id: String,
     pub lang: Option<String>,
-    #[cfg(not(feature = "all"))]
     pub languages: Option<Vec<String>>,
     #[cfg(not(feature = "all"))]
     #[serde(rename = "contentRating")]
     pub content_rating: Option<i32>,
     pub name: String,
-    pub version: usize,
+    pub version: serde_json::Value,
     pub url: Option<String>,
     pub urls: Option<Vec<String>>,
     #[serde(rename = "minAppVersion")]
@@ -366,22 +552,42 @@ pub struct NextMangaPageResult {
 #[cfg(not(feature = "all"))]
 pub struct BlockingSource {
     pub id: String,
-    pub store: Store<WasmStore>,
-    pub instance: Instance,
+    /// Lazily booted engine: `None` until the first call. The module is
+    /// compiled and instantiated from the `.aix` file on first use.
+    pub store: Option<Store<WasmStore>>,
+    pub instance: Option<Instance>,
     pub manifest: SourceManifest,
     pub setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
+    path: PathBuf,
+    source_settings: Option<SourceSettings>,
+    manager_settings: Settings,
+    /// Which SDK mode the source was installed as (`force_mode` records a
+    /// boot-time retry with the opposite mode).
+    aidoku_sdk_next: bool,
+    aidoku_sdk_next_from_meta: Option<bool>,
+    force_mode: Option<bool>,
 }
 #[cfg(feature = "all")]
-struct BlockingSource {
+pub struct BlockingSource {
     id: String,
-    store: Store<WasmStore>,
-    instance: Instance,
+    /// Lazily booted engine: `None` until the first call. The module is
+    /// compiled and instantiated from the `.aix` file on first use.
+    store: Option<Store<WasmStore>>,
+    instance: Option<Instance>,
     manifest: SourceManifest,
     setting_definitions: Vec<SettingDefinition>,
     pub next_sdk: bool,
     pub features: SourceFeatures,
+    path: PathBuf,
+    source_settings: Option<SourceSettings>,
+    manager_settings: Settings,
+    /// Which SDK mode the source was installed as (`force_mode` records a
+    /// boot-time retry with the opposite mode).
+    aidoku_sdk_next: bool,
+    aidoku_sdk_next_from_meta: Option<bool>,
+    force_mode: Option<bool>,
 }
 
 impl BlockingSource {
@@ -474,23 +680,134 @@ impl BlockingSource {
             }
         }
 
+        // The engine is not booted here: `ensure_booted` compiles and
+        // instantiates the module from the `.aix` file on the first actual
+        // call, so load time never runs the wasm runtime.
+        Ok(Self {
+            id,
+            store: None,
+            instance: None,
+            manifest,
+            next_sdk: aidoku_sdk_next,
+            setting_definitions,
+            features: SourceFeatures {
+                process_page_image: false,
+            },
+            path: path.to_path_buf(),
+            source_settings: Some(source_settings),
+            manager_settings: manager.settings.clone(),
+            aidoku_sdk_next,
+            aidoku_sdk_next_from_meta,
+            force_mode,
+        })
+    }
+
+    /// Boots the engine from the `.aix` file on first use, retrying with the
+    /// opposite SDK mode when instantiation fails (the legacy fallback that
+    /// used to live in [`Self::from_aix_file`]).
+    fn ensure_booted(&mut self) -> Result<()> {
+        if self.instance.is_some() {
+            return Ok(());
+        }
+        let sdk_next = self.force_mode.unwrap_or(self.aidoku_sdk_next);
+        let (mut store, instance) = match self.boot(sdk_next) {
+            Ok(booted) => booted,
+            Err(error) => {
+                if self.force_mode.is_some() {
+                    return Err(error);
+                }
+                let retry = !sdk_next;
+                self.force_mode = Some(retry);
+                self.boot(retry).map_err(|retry_error| {
+                    anyhow!(
+                        "failed instantiating {} ({}): {retry_error:#} (first attempt: {error:#})",
+                        self.id,
+                        if sdk_next { "next" } else { "legacy" }
+                    )
+                })?
+            }
+        };
+
+        self.features.process_page_image = instance
+            .get_typed_func::<(i32, i32), i32>(&mut store, "process_page_image")
+            .map(|_| true)
+            .ok()
+            .unwrap_or_default();
+        self.next_sdk = sdk_next;
+
+        if self.aidoku_sdk_next_from_meta != Some(sdk_next) {
+            let meta_file = Self::meta_source_path(&self.path)?;
+            let _ = fs::write(
+                &meta_file,
+                serde_json::to_string(&SourceMeta {
+                    source_of_source: self.manifest.source_of_source.clone(),
+                    is_next_sdk: Some(sdk_next),
+                })?,
+            );
+        }
+
+        self.store = Some(store);
+        self.instance = Some(instance);
+        // The engine now owns its own copy; drop the load-time snapshot.
+        self.source_settings = None;
+
+        // Aidoku SDK-next sources run a `start` init function once the
+        // module is live; it used to run right after install.
+        if sdk_next {
+            self.start()?;
+        }
+        Ok(())
+    }
+
+    /// Returns the wasm store, erroring when the engine has not been booted.
+    fn engine_store_mut(&mut self) -> Result<&mut Store<WasmStore>> {
+        self.store
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("wasm engine is not booted"))
+    }
+
+    /// Returns the wasm store, erroring when the engine has not been booted.
+    fn engine_store(&self) -> Result<&Store<WasmStore>> {
+        self.store
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("wasm engine is not booted"))
+    }
+
+    /// Returns the wasm instance, erroring when the engine has not been booted.
+    fn engine_instance(&self) -> Result<Instance> {
+        self.instance
+            .ok_or_else(|| anyhow::anyhow!("wasm engine is not booted"))
+    }
+
+    /// Compiles and instantiates the module in the requested SDK mode.
+    fn boot(&mut self, aidoku_sdk_next: bool) -> Result<(Store<WasmStore>, Instance)> {
+        let mut archive = ZipArchive::new(
+            fs::File::open(&self.path)
+                .with_context(|| format!("couldn't open {}", self.path.display()))?,
+        )
+        .with_context(|| format!("couldn't open source archive {}", self.path.display()))?;
+
         let mut wasm_bytes = Vec::new();
         archive
             .by_name("Payload/main.wasm")
             .with_context(|| "while loading main.wasm")?
             .read_to_end(&mut wasm_bytes)
-            .with_context(|| format!("failed reading wasm from zip entry {}", path.display()))?;
+            .with_context(|| {
+                format!("failed reading wasm from zip entry {}", self.path.display())
+            })?;
 
         let engine = Engine::default();
         let wasm_store = WasmStore::new(
-            manifest.info.id.clone(),
-            source_settings,
-            manager.settings.clone(),
+            self.manifest.info.id.clone(),
+            self.source_settings
+                .clone()
+                .ok_or_else(|| anyhow::anyhow!("source settings are missing"))?,
+            self.manager_settings.clone(),
         );
         let mut store = Store::new(&engine, wasm_store);
 
         let module = Module::new(&engine, &wasm_bytes)
-            .with_context(|| format!("failed loading module from {}", path.display()))?;
+            .with_context(|| format!("failed loading module from {}", self.path.display()))?;
 
         let mut linker = Linker::new(&engine);
 
@@ -514,57 +831,11 @@ impl BlockingSource {
             register_std_imports(&mut linker)?;
         }
 
-        let instance = match linker
+        let instance = linker
             .instantiate_and_start(&mut store, &module)
-            .with_context(|| format!("failed creating instance from {}", path.display()))
-        {
-            Ok(instance) => instance,
-            Err(error) => {
-                if force_mode.is_none() {
-                    println!(
-                        "Info: failed instantiating {id} retry mode {}",
-                        if aidoku_sdk_next { "legacy" } else { "next" }
-                    );
+            .with_context(|| format!("failed creating instance from {}", self.path.display()))?;
 
-                    return Self::from_aix_file(path, manager, arc_manager, Some(!aidoku_sdk_next));
-                }
-
-                eprintln!("Error instantiating: {:?}", error);
-                return Err(error);
-            }
-        };
-
-        let features = SourceFeatures {
-            process_page_image: instance
-                .get_typed_func::<(i32, i32), i32>(&mut store, "process_page_image")
-                .map(|_| true)
-                .ok()
-                .unwrap_or(false),
-        };
-
-        if aidoku_sdk_next_from_meta.is_none()
-            || aidoku_sdk_next_from_meta.unwrap() != aidoku_sdk_next
-        {
-            let meta_file = Self::meta_source_path(path)?;
-
-            let _ = fs::write(
-                &meta_file,
-                serde_json::to_string(&SourceMeta {
-                    source_of_source: manifest.source_of_source.clone(),
-                    is_next_sdk: Some(aidoku_sdk_next),
-                })?,
-            );
-        }
-
-        Ok(Self {
-            id,
-            store,
-            instance,
-            manifest,
-            next_sdk: aidoku_sdk_next,
-            setting_definitions,
-            features,
-        })
+        Ok((store, instance))
     }
 
     pub fn meta_source_path(path: &Path) -> anyhow::Result<std::path::PathBuf> {
@@ -587,7 +858,7 @@ impl BlockingSource {
     fn is_aidoku_sdk_next(min: &Option<String>) -> bool {
         use semver::Version;
         // parse "0.7" into a SemVer
-        let target = Version::parse("0.7.0").unwrap();
+        let target = Version::new(0, 7, 0);
 
         match min {
             Some(v) => {
@@ -606,6 +877,7 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         listing: aidoku::Listing,
     ) -> Result<Vec<Manga>> {
+        self.ensure_booted()?;
         if self.next_sdk {
             return self
                 .get_manga_list_next(cancellation_token, listing, 1)
@@ -627,6 +899,7 @@ impl BlockingSource {
         query: String,
         page: i32,
     ) -> Result<(Vec<Manga>, bool)> {
+        self.ensure_booted()?;
         if self.next_sdk {
             return self
                 .get_search_manga_list_next(cancellation_token, query, page, [].to_vec())
@@ -650,9 +923,9 @@ impl BlockingSource {
 
     fn search_mangas_by_filters_inner(&mut self, filters: Vec<Filter>) -> Result<Vec<Manga>> {
         let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
-        let filters_descriptor = self.store.data_mut().store_std_value(
+            .engine_instance()?
+            .get_typed_func::<(i32, i32), i32>(&mut self.engine_store_mut()?, "get_manga_list")?;
+        let filters_descriptor = self.engine_store_mut()?.data_mut().store_std_value(
             Value::from(
                 filters
                     .iter()
@@ -694,6 +967,7 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Manga> {
+        self.ensure_booted()?;
         if self.next_sdk {
             return self
                 .get_manga_update_next(
@@ -720,14 +994,14 @@ impl BlockingSource {
         let mut manga_hashmap = ValueMap::new();
         manga_hashmap.insert("id".to_string(), manga_id.into());
 
-        let manga_descriptor = self.store.data_mut().store_std_value(
+        let manga_descriptor = self.engine_store_mut()?.data_mut().store_std_value(
             Value::Object(ObjectValue::ValueMap(manga_hashmap)).into(),
             None,
         );
 
         let wasm_function = self
-            .instance
-            .get_typed_func::<i32, i32>(&mut self.store, "get_manga_details")?;
+            .engine_instance()?
+            .get_typed_func::<i32, i32>(&mut self.engine_store_mut()?, "get_manga_details")?;
 
         let manga = call_cleanup!(
             blocking = self,
@@ -791,6 +1065,7 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Vec<Chapter>> {
+        self.ensure_booted()?;
         if self.next_sdk {
             return self
                 .get_manga_update_next(
@@ -824,15 +1099,15 @@ impl BlockingSource {
         let mut manga_hashmap = ValueMap::new();
         manga_hashmap.insert("id".to_string(), manga_id.into());
 
-        let manga_descriptor = self.store.data_mut().store_std_value(
+        let manga_descriptor = self.engine_store_mut()?.data_mut().store_std_value(
             Value::Object(ObjectValue::ValueMap(manga_hashmap)).into(),
             None,
         );
 
         // FIXME what the fuck is chapter counter, aidoku sets it here
         let wasm_function = self
-            .instance
-            .get_typed_func::<i32, i32>(&mut self.store, "get_chapter_list")?;
+            .engine_instance()?
+            .get_typed_func::<i32, i32>(&mut self.engine_store_mut()?, "get_chapter_list")?;
 
         let chapters = call_cleanup!(
         blocking = self,
@@ -884,6 +1159,7 @@ impl BlockingSource {
         chapter_id: String,
         chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
+        self.ensure_booted()?;
         if self.next_sdk {
             return self
                 .get_page_list_next(
@@ -929,15 +1205,15 @@ impl BlockingSource {
             chapter_hashmap.insert("chapterNum".to_string(), Value::Float(chapter_num as f64));
         }
 
-        let chapter_descriptor = self.store.data_mut().store_std_value(
+        let chapter_descriptor = self.engine_store_mut()?.data_mut().store_std_value(
             Value::Object(ObjectValue::ValueMap(chapter_hashmap)).into(),
             None,
         );
 
         // FIXME what the fuck is chapter counter, aidoku sets it here
         let wasm_function = self
-            .instance
-            .get_typed_func::<i32, i32>(&mut self.store, "get_page_list")?;
+            .engine_instance()?
+            .get_typed_func::<i32, i32>(&mut self.engine_store_mut()?, "get_page_list")?;
 
         let pages = call_cleanup!(
         blocking = self,
@@ -973,6 +1249,7 @@ impl BlockingSource {
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        self.ensure_booted()?;
         if self.next_sdk {
             self.get_image_request_next(url, ctx)
         } else {
@@ -980,12 +1257,12 @@ impl BlockingSource {
         }
     }
     pub fn get_image_request_inner(&mut self, url: Url) -> Result<Request> {
-        let request_descriptor = self.store.data_mut().create_request();
+        let request_descriptor = self.engine_store_mut()?.data_mut().create_request();
 
         // FIXME scoping here is so fucking scuffed
         {
             let request_state = &mut self
-                .store
+                .engine_store_mut()?
                 .data_mut()
                 .get_mut_request(request_descriptor)
                 .ok_or_else(|| anyhow::anyhow!("failed to get mutable request state"))?;
@@ -1007,18 +1284,18 @@ impl BlockingSource {
         // it seems that it's fine for an extension to not have this function defined, so we only
         // call it if it exists
         {
-            let mut wasm_store = &mut self.store;
+            let instance = self.engine_instance()?;
+            let mut wasm_store = self.engine_store_mut()?;
 
-            if let Ok(wasm_function) = self
-                .instance
-                .get_typed_func::<i32, ()>(&mut wasm_store, "modify_image_request")
+            if let Ok(wasm_function) =
+                instance.get_typed_func::<i32, ()>(&mut wasm_store, "modify_image_request")
             {
                 wasm_function.call(&mut wasm_store, request_descriptor as i32)?;
             }
         }
 
         let request_state = &mut self
-            .store
+            .engine_store_mut()?
             .data_mut()
             .remove_request(request_descriptor)
             .ok_or_else(|| anyhow::anyhow!("failed to remove request state"))?;
@@ -1034,23 +1311,30 @@ impl BlockingSource {
     // next sdk
 
     pub fn start(&mut self) -> Result<()> {
+        self.ensure_booted()?;
         let wasm_function = self
-            .instance
-            .get_typed_func::<(), ()>(&mut self.store, "start")?;
+            .engine_instance()?
+            .get_typed_func::<(), ()>(&mut self.engine_store_mut()?, "start")?;
 
-        wasm_function.call(&mut self.store, ())?;
+        wasm_function.call(self.engine_store_mut()?, ())?;
 
         Ok(())
     }
     pub fn free_result(&mut self, pointer: i32) {
-        let Ok(wasm_function) = self
-            .instance
-            .get_typed_func::<i32, ()>(&mut self.store, "free_memory")
-        else {
+        let Ok(wasm_function) = self.engine_instance().and_then(|instance| {
+            let store = self.engine_store_mut()?;
+            instance
+                .get_typed_func::<i32, ()>(store, "free_memory")
+                .map_err(anyhow::Error::from)
+        }) else {
             return;
         };
 
-        if let Err(e) = wasm_function.call(&mut self.store, pointer) {
+        if let Err(e) = self.engine_store_mut().and_then(|store| {
+            wasm_function
+                .call(store, pointer)
+                .map_err(anyhow::Error::from)
+        }) {
             log::warn!("failed to free WASM memory at pointer {pointer}: {e}");
         }
     }
@@ -1062,13 +1346,18 @@ impl BlockingSource {
         page: i32,
         filters: Vec<aidoku::FilterValue>,
     ) -> Result<NextMangaPageResult> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.get_search_manga_list_next_inner(query, page, filters)
         })
     }
 
-    fn get_memory(&self) -> Result<Memory> {
-        match self.instance.get_export(&self.store, "memory") {
+    fn get_memory(&mut self) -> Result<Memory> {
+        self.ensure_booted()?;
+        match self
+            .engine_instance()?
+            .get_export(self.engine_store()?, "memory")
+        {
             Some(Extern::Memory(memory)) => Ok(memory),
             _ => bail!("failed to get memory"),
         }
@@ -1081,10 +1370,13 @@ impl BlockingSource {
         filters: Vec<FilterValue>,
     ) -> Result<NextMangaPageResult> {
         let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_search_manga_list")?;
+            .engine_instance()?
+            .get_typed_func::<(i32, i32, i32), i32>(
+                &mut self.engine_store_mut()?,
+                "get_search_manga_list",
+            )?;
 
-        let store = self.store.data_mut();
+        let store = self.engine_store_mut()?.data_mut();
 
         let keyword = store.store_std_value(Value::from(keyword).into(), None);
         let filters = store.store_std_value(Value::NextFilters(filters).into(), None);
@@ -1111,6 +1403,7 @@ impl BlockingSource {
         needs_details: bool,
         needs_chapters: bool,
     ) -> Result<aidoku::Manga> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.get_manga_update_next_inner(manga, needs_details, needs_chapters)
         })
@@ -1122,13 +1415,16 @@ impl BlockingSource {
         needs_details: bool,
         needs_chapters: bool,
     ) -> Result<aidoku::Manga> {
-        let store = self.store.data_mut();
+        let store = self.engine_store_mut()?.data_mut();
 
         let manga = store.store_std_value(Value::NextManga(manga).into(), None);
 
         let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32, i32), i32>(&mut self.store, "get_manga_update")?;
+            .engine_instance()?
+            .get_typed_func::<(i32, i32, i32), i32>(
+                &mut self.engine_store_mut()?,
+                "get_manga_update",
+            )?;
 
         let manga_o = call_cleanup!(
         blocking = self,
@@ -1152,6 +1448,7 @@ impl BlockingSource {
         manga: aidoku::Manga,
         chapter: aidoku::Chapter,
     ) -> Result<Vec<aidoku::Page>> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.get_page_list_next_inner(manga, chapter)
         })
@@ -1162,14 +1459,14 @@ impl BlockingSource {
         manga: aidoku::Manga,
         chapter: aidoku::Chapter,
     ) -> Result<Vec<aidoku::Page>> {
-        let store = self.store.data_mut();
+        let store = self.engine_store_mut()?.data_mut();
 
         let manga = store.store_std_value(Value::NextManga(manga).into(), None);
         let chapter = store.store_std_value(Value::NextChapter(chapter).into(), None);
 
         let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_page_list")?;
+            .engine_instance()?
+            .get_typed_func::<(i32, i32), i32>(&mut self.engine_store_mut()?, "get_page_list")?;
 
         let pages = call_cleanup!(
         blocking = self,
@@ -1201,7 +1498,7 @@ impl BlockingSource {
         context: Option<aidoku::PageContext>,
     ) -> Result<Request> {
         let (url_key, context_key) = {
-            let store = self.store.data_mut();
+            let store = self.engine_store_mut()?.data_mut();
 
             let url_key = store.store_std_value(Value::String(url.clone().into()).into(), None);
             store.mark_str_encode(url_key);
@@ -1216,18 +1513,19 @@ impl BlockingSource {
         };
 
         let request_state_ptr = {
-            let wasm_function = self
-                .instance
-                .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_image_request");
+            let wasm_function = self.engine_instance()?.get_typed_func::<(i32, i32), i32>(
+                &mut self.engine_store_mut()?,
+                "get_image_request",
+            );
 
             match wasm_function {
-                Ok(func) => Some(func.call(&mut self.store, (url_key, context_key))?),
+                Ok(func) => Some(func.call(self.engine_store_mut()?, (url_key, context_key))?),
                 Err(_) => None,
             }
         };
         // Drop std_value entries now
         {
-            let store = self.store.data_mut();
+            let store = self.engine_store_mut()?.data_mut();
             store.take_std_value(url_key as usize);
             if context_key >= 0 {
                 store.take_std_value(context_key as usize);
@@ -1241,10 +1539,10 @@ impl BlockingSource {
             }
 
             let memory = self.get_memory()?;
-            let req_id = read_next::<i32>(&memory, &self.store, request_state_ptr)?;
+            let req_id = read_next::<i32>(&memory, self.engine_store()?, request_state_ptr)?;
             self.free_result(request_state_ptr);
 
-            let store = self.store.data_mut();
+            let store = self.engine_store_mut()?.data_mut();
 
             store.remove_request(req_id as usize)
         } else {
@@ -1288,6 +1586,7 @@ impl BlockingSource {
         bytes: Bytes,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Vec<u8>> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.process_page_image_inner(request, response, bytes, ctx)
         })
@@ -1301,7 +1600,7 @@ impl BlockingSource {
         context: Option<aidoku::PageContext>,
     ) -> Result<Vec<u8>> {
         let (image_id, image_ref, context_id) = {
-            let store = self.store.data_mut();
+            let store = self.engine_store_mut()?.data_mut();
 
             let image_ref = store.create_image(&bytes).unwrap_or_else(|| {
                 eprintln!("failed create image for process_page_image use mode image raw");
@@ -1363,9 +1662,10 @@ impl BlockingSource {
             (image_id, image_ref, context_id)
         };
 
-        let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32), i32>(&mut self.store, "process_page_image")?;
+        let wasm_function = self.engine_instance()?.get_typed_func::<(i32, i32), i32>(
+            &mut self.engine_store_mut()?,
+            "process_page_image",
+        )?;
 
         let image_data = call_cleanup!(
         blocking = self,
@@ -1423,6 +1723,7 @@ impl BlockingSource {
         listing: aidoku::Listing,
         page: i32,
     ) -> Result<NextMangaPageResult> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.get_manga_list_next_inner(listing, page)
         })
@@ -1434,10 +1735,10 @@ impl BlockingSource {
         page: i32,
     ) -> Result<NextMangaPageResult> {
         let wasm_function = self
-            .instance
-            .get_typed_func::<(i32, i32), i32>(&mut self.store, "get_manga_list")?;
+            .engine_instance()?
+            .get_typed_func::<(i32, i32), i32>(&mut self.engine_store_mut()?, "get_manga_list")?;
 
-        let store = self.store.data_mut();
+        let store = self.engine_store_mut()?.data_mut();
 
         let listing = store.store_std_value(Value::NextListing(listing).into(), None);
 
@@ -1461,6 +1762,7 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         key: String,
     ) -> Result<()> {
+        self.ensure_booted()?;
         self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
             this.handle_notification_next_inner(key)
         })
@@ -1468,15 +1770,15 @@ impl BlockingSource {
 
     fn handle_notification_next_inner(&mut self, key: String) -> Result<()> {
         let wasm_function = self
-            .instance
-            .get_typed_func::<i32, i32>(&mut self.store, "handle_notification")?;
+            .engine_instance()?
+            .get_typed_func::<i32, i32>(&mut self.engine_store_mut()?, "handle_notification")?;
 
-        let store = self.store.data_mut();
+        let store = self.engine_store_mut()?.data_mut();
 
         let key = store.store_std_value(Value::from(key).into(), None);
 
-        wasm_function.call(&mut self.store, key as i32)?;
-        let _ = &self.store.data_mut().take_std_value(key);
+        wasm_function.call(self.engine_store_mut()?, key as i32)?;
+        self.engine_store_mut()?.data_mut().take_std_value(key);
 
         Ok(())
     }
@@ -1486,18 +1788,19 @@ impl BlockingSource {
         cancellation_token: CancellationToken,
         current_object: OperationContextObject,
         f: F,
-    ) -> T
+    ) -> Result<T>
     where
-        F: FnOnce(&mut Self) -> T,
+        F: FnOnce(&mut Self) -> Result<T>,
     {
-        self.store.data_mut().context = OperationContext {
+        self.ensure_booted()?;
+        self.engine_store_mut()?.data_mut().context = OperationContext {
             cancellation_token,
             current_object,
         };
 
         let result = f(self);
 
-        self.store.data_mut().context = OperationContext::default();
+        self.engine_store_mut()?.data_mut().context = OperationContext::default();
 
         result
     }

@@ -92,4 +92,35 @@ describe('findNextChapter', function()
 
     assert.equal(expected_next_chapter, next_chapter)
   end)
+
+  it('should use the chapter right after the current one with ascending order', function()
+    --- @type Chapter[]
+    local chapters = {
+      makeChapter({ volume_num = 1, title = 'Prologue' }),
+      makeChapter({ volume_num = 1, chapter_num = 1 }),
+      makeChapter({ volume_num = 1, chapter_num = 2 }),
+    }
+    local current_chapter = chapters[1]
+    local expected_next_chapter = chapters[2]
+
+    local next_chapter = findNextChapter(chapters, current_chapter)
+
+    assert.equal(expected_next_chapter, next_chapter)
+  end)
+
+  it('should pick the closest chapter published after the current one when numbers are unknown', function()
+    --- @type Chapter[]
+    local chapters = {
+      makeChapter({ volume_num = 1, title = 'A', last_updated = 300 }),
+      makeChapter({ volume_num = 1, title = 'B', last_updated = 100 }),
+      makeChapter({ volume_num = 1, title = 'C', last_updated = 200 }),
+    }
+    local current_chapter = chapters[2]
+
+    local next_chapter = findNextChapter(chapters, current_chapter)
+
+    assert.is_not_nil(next_chapter)
+    ---@diagnostic disable-next-line: need-check-nil
+    assert.equal('C', next_chapter.title)
+  end)
 end)

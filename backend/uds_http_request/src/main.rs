@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
     let request_json = env::args().nth(1).expect("missing json argument");
 
     let request: Request = serde_json::from_str(request_json.as_str())
-        .with_context(|| format!("while parsing the request from stdin: {}", &request_json))?;
+        .with_context(|| format!("while parsing the request from stdin: {}", request_json))?;
     let request_result = match perform_request(request).await {
         Ok(data) => RequestResult::Response(data),
         Err(e) => {

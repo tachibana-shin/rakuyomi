@@ -16,6 +16,9 @@ use url::Url;
 
 use crate::source::{model::Page, Source};
 
+pub const DEFAULT_USER_AGENT: &str =
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36";
+
 pub async fn has_internet_connection() -> bool {
     try_connecting_to_cloudflare().await.is_ok()
 }
@@ -118,6 +121,32 @@ pub async fn request_with_forced_referer_from_request(
     }
 
     anyhow::bail!("too many redirects")
+}
+
+/// Sniffs the image format from the magic bytes of a byte slice and
+/// returns the matching file extension (without the dot), or `None`
+/// when the data does not look like a known image format.
+pub fn detect_image_extension(bytes: &[u8]) -> Option<&'static str> {
+    if bytes.len() >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF {
+        return Some("jpg");
+    }
+    if bytes.len() >= 8
+        && bytes[0] == 0x89
+        && &bytes[1..4] == b"PNG"
+        && &bytes[4..8] == b"\x0D\x0A\x1A\x0A"
+    {
+        return Some("png");
+    }
+    if bytes.len() >= 4 && &bytes[0..4] == b"GIF8" {
+        return Some("gif");
+    }
+    if bytes.len() >= 12 && &bytes[0..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+        return Some("webp");
+    }
+    if bytes.len() >= 2 && &bytes[0..2] == b"BM" {
+        return Some("bmp");
+    }
+    None
 }
 
 pub fn generate_error_image(

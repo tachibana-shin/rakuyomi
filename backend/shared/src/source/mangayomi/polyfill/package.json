@@ -1,0 +1,14 @@
+{
+  "name": "rakuyomi-mangayomi-js-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "description": "TypeScript source of the MangaYomi JS extension polyfill embedded in the RakuYomi backend. Build with bun, the output is embedded via include_str!.",
+  "type": "module",
+  "scripts": {
+    "build": "bun build ./src/polyfill.ts --outfile ../js_assets/polyfill.js --target=browser --format=iife --minify",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

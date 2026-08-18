@@ -52,6 +52,28 @@ fn apply_proxy(builder: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
     }
 }
 
+fn apply_proxy_blocking(
+    builder: reqwest::blocking::ClientBuilder,
+) -> reqwest::blocking::ClientBuilder {
+    let url = match PROXY_URL.read() {
+        Ok(guard) => guard.clone(),
+        Err(e) => {
+            warn!("PROXY_URL lock poisoned, skipping proxy configuration: {e}");
+            return builder;
+        }
+    };
+    match url.as_ref() {
+        Some(url) => match reqwest::Proxy::all(url) {
+            Ok(proxy) => builder.proxy(proxy),
+            Err(e) => {
+                warn!("invalid proxy URL: {e}");
+                builder
+            }
+        },
+        None => builder,
+    }
+}
+
 fn base_tls_config() -> rustls::ClientConfig {
     static CONFIG: Lazy<rustls::ClientConfig> = Lazy::new(|| {
         let mut root_store = rustls::RootCertStore::empty();
@@ -74,7 +96,21 @@ fn base_config_builder() -> rustls::ConfigBuilder<rustls::ClientConfig, rustls::
 /// Creates a reqwest ClientBuilder configured with the standard WebPKI root trust store
 /// and the currently configured global proxy.
 pub fn client_builder() -> reqwest::ClientBuilder {
-    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(base_tls_config()))
+    apply_proxy(
+        reqwest::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(base_tls_config()),
+    )
+}
+
+/// Creates a blocking reqwest ClientBuilder configured with the standard
+/// WebPKI root trust store and the currently configured global proxy.
+pub fn blocking_client_builder() -> reqwest::blocking::ClientBuilder {
+    apply_proxy_blocking(
+        reqwest::blocking::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(base_tls_config()),
+    )
 }
 
 /// Creates a reqwest ClientBuilder that disables certificate validation.
@@ -90,7 +126,11 @@ pub fn client_builder_insecure() -> reqwest::ClientBuilder {
             .with_custom_certificate_verifier(VERIFIER.clone())
             .with_no_client_auth()
     });
-    apply_proxy(reqwest::Client::builder().use_preconfigured_tls(CONFIG.clone()))
+    apply_proxy(
+        reqwest::Client::builder()
+            .user_agent(concat!("rakuyomi/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls(CONFIG.clone()),
+    )
 }
 
 /// Test whether a given proxy URL is reachable by making a lightweight HTTP request
@@ -161,6 +201,11 @@ impl ServerCertVerifier for AcceptAllVerifier {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    /// The proxy tests share the global `PROXY_URL`, so they must not run in
+    /// parallel or they race each other.
+    static PROXY_LOCK: Mutex<()> = Mutex::new(());
 
     #[tokio::test]
     #[ignore] // requires network
@@ -249,6 +294,7 @@ mod tests {
 
     #[test]
     fn proxy_set_and_get() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
         assert_eq!(proxy_url(), Some("http://127.0.0.1:8080".to_string()));
         set_proxy_url(None);
@@ -257,6 +303,7 @@ mod tests {
 
     #[test]
     fn proxy_switching() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://proxy1:8080".to_string()));
         assert_eq!(proxy_url(), Some("http://proxy1:8080".to_string()));
         set_proxy_url(Some("http://proxy2:3128".to_string()));
@@ -283,6 +330,7 @@ mod tests {
 
     #[test]
     fn builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
             .build();
@@ -294,6 +342,7 @@ mod tests {
 
     #[test]
     fn insecure_builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         let client = client_builder_insecure()
             .timeout(std::time::Duration::from_secs(5))
             .build();
@@ -305,6 +354,7 @@ mod tests {
 
     #[test]
     fn proxy_builder_creates_valid_client() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("http://127.0.0.1:8080".to_string()));
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))
@@ -318,6 +368,7 @@ mod tests {
 
     #[test]
     fn invalid_proxy_does_not_break_builder() {
+        let _guard = PROXY_LOCK.lock().unwrap();
         set_proxy_url(Some("not-a-valid-url://??".to_string()));
         let client = client_builder()
             .timeout(std::time::Duration::from_secs(5))

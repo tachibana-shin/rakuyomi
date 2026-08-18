@@ -154,13 +154,6 @@ pub fn attr(
     let descriptor: usize = descriptor_i32.try_into().context("invalid descriptor")?;
     let selector = selector.context("selector is required for attr function")?;
 
-    let has_abs_prefix = selector.starts_with("abs:");
-    let selector = if has_abs_prefix {
-        selector.strip_prefix("abs:").unwrap().to_owned()
-    } else {
-        selector
-    };
-
     let wasm_store = caller.data_mut();
     let std_value = wasm_store
         .get_std_value(descriptor)
@@ -176,22 +169,6 @@ pub fn attr(
         .find_map(|element| element.attr(wasm_store, &selector))
         .context(AttributeNotFound)?
         .to_owned();
-
-    let attr = if has_abs_prefix {
-        let base_uri = elements
-            .iter()
-            .find_map(|element| element.base_uri.as_ref())
-            .map_or("", |v| v);
-
-        let absolute_url = url::Url::parse(base_uri)
-            .unwrap_or_else(|_| url::Url::parse("file:///").unwrap())
-            .join(&attr)
-            .context("failed to join base URI and attribute URL")?;
-
-        absolute_url.to_string()
-    } else {
-        attr
-    };
 
     Ok(wasm_store.store_std_value(Value::from(attr).into(), Some(descriptor)) as i32)
 }

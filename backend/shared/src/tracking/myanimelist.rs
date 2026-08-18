@@ -55,6 +55,9 @@ impl Tracker for MalTracker {
         }
         let request = request.query(&[
             ("q", query),
+            // MAL hides NSFW entries from search by default unless the
+            // nsfw flag is explicitly enabled.
+            ("nsfw", "true"),
             ("limit", "5"),
             ("fields", "id,title,num_chapters,num_volumes"),
         ]);

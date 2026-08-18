@@ -117,18 +117,6 @@ jobs:
         bash scripts/build-all.sh ${{ matrix.target }}
     - name: Package plugin contents
       run: "cd build && zip -r rakuyomi-${{ matrix.target }}.zip rakuyomi.koplugin"
-
-    - name: Debug kindle link (temporary)
-      if: ${{ matrix.target == 'kindle' }}
-      working-directory: ./backend
-      run: |
-        export CROSS_CONTAINER_ENGINE=podman
-        RUSTFLAGS="-C link-arg=-static -C link-arg=-latomic -C link-arg=-lgcc" \
-          cross build --release --target arm-unknown-linux-musleabi -v 2>&1 \
-          | grep -E "Running.*rustc.*server.*link|link-arg" | tail -2
-        echo "=== readelf ==="
-        readelf -d target/arm-unknown-linux-musleabi/release/server | grep -E "NEEDED|INTERP" || echo "no NEEDED/INTERP"
-
     - name: Upload plugin as workflow artifact
       uses: actions/upload-artifact@v4
       with:

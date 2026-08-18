@@ -76,8 +76,7 @@ impl Tracker for MangaBakaTracker {
                     .or(series.native_title)
                     .unwrap_or_else(|| "Unknown".to_owned()),
                 url: Some(
-                    Url::parse(&format!("{MANGABAKA_SITE_URL}/{}", series.id))
-                        .expect("valid URL"),
+                    Url::parse(&format!("{MANGABAKA_SITE_URL}/{}", series.id)).expect("valid URL"),
                 ),
                 total_chapters: series.total_chapters,
                 total_volumes: series.total_volumes,
@@ -110,9 +109,12 @@ impl Tracker for MangaBakaTracker {
 
         let auth = resolve_auth(settings)?;
         let client = build_client();
-        let response = apply_auth(client.get(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}")), &auth)
-            .send()
-            .await?;
+        let response = apply_auth(
+            client.get(format!("{MANGABAKA_API_URL}/v1/my/library/{media_id}")),
+            &auth,
+        )
+        .send()
+        .await?;
 
         // 404 means not in library yet
         if response.status() == 404 {
@@ -213,14 +215,17 @@ impl Tracker for MangaBakaTracker {
 
         let auth = resolve_auth(settings)?;
         let client = build_client();
-        let profile: Profile = apply_auth(client.get(format!("{MANGABAKA_API_URL}/v1/my/profile")), &auth)
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<ProfileResponse>()
-            .await
-            .context("failed to decode MangaBaka profile response")?
-            .data;
+        let profile: Profile = apply_auth(
+            client.get(format!("{MANGABAKA_API_URL}/v1/my/profile")),
+            &auth,
+        )
+        .send()
+        .await?
+        .error_for_status()?
+        .json::<ProfileResponse>()
+        .await
+        .context("failed to decode MangaBaka profile response")?
+        .data;
 
         Ok(Some(
             profile

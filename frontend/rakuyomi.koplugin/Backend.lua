@@ -1293,7 +1293,6 @@ end
 --- @field access_token string|nil
 --- @field refresh_token string|nil
 --- @field client_id string|nil
---- @field client_secret string|nil
 
 --- @alias OAuthPollResponse
 --- | { status: 'pending', service: OAuthServiceName }

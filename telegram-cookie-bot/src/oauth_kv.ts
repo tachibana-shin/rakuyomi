@@ -6,10 +6,7 @@ export type { OAuthService }
 export interface OAuthTokens {
   access_token?: string
   refresh_token?: string
-  // MAL uses the OAuth bearer token when access_token is available, falling
-  // back to client_id only for unauthenticated search; also sent for
-  // MangaBaka, whose client_secret is kept server-side only and never
-  // shipped to the device.
+  // MAL requires client_id for search even after auth
   client_id?: string
 }
 

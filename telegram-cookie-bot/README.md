@@ -7,12 +7,6 @@ service sign-in (AniList, MyAnimeList, Shikimori, Bangumi, MangaBaka).
 Self-hosted services (Kavita, Komga, Suwayomi) are configured directly in the
 KOReader plugin since they require local network access.
 
-MangaBaka can also be configured directly in the KOReader plugin using a
-Personal Access Token (`mb-...`) instead of going through the OAuth bridge —
-generating a PAT from your account settings is simpler than registering an
-OAuth app. Both methods work: the Rust backend prefers the OAuth access token
-when present and falls back to the PAT otherwise.
-
 ## Architecture
 
 - **Bot** — grammY, handles `/link`, `/devices`, cookie ingestion via text messages
@@ -51,7 +45,7 @@ src/
     myanimelist.ts                       # MAL token exchange
     shikimori.ts                 # Shikimori token exchange
     bangumi.ts                   # Bangumi token exchange
-    mangabaka.ts                 # MangaBaka token exchange (PKCE S256 + secret)
+    mangabaka.ts                 # MangaBaka token exchange (PKCE S256)
   utils/
     oauth.tsx                    # Route helpers (error/success/validateSession)
     schema.ts                    # Cookie validation schemas
@@ -102,8 +96,8 @@ src/
 | `SHIKIMORI_CLIENT_SECRET` | No     | Shikimori OAuth client secret                                |
 | `BANGUMI_CLIENT_ID`    | No       | Bangumi OAuth client ID ([create here](https://bgm.tv/dev/app/create)) |
 | `BANGUMI_CLIENT_SECRET`| No       | Bangumi OAuth client secret                                  |
-| `MANGABAKA_CLIENT_ID`  | No       | MangaBaka OAuth client ID (see [mangabaka.org/api](https://mangabaka.org/api)) |
-| `MANGABAKA_CLIENT_SECRET` | No    | MangaBaka OAuth client secret                                |
+| `MANGABAKA_CLIENT_ID`  | No       | MangaBaka OAuth client ID                                   |
+| `MANGABAKA_CLIENT_SECRET` | No     | MangaBaka OAuth client secret                               |
 
 4. Set the bot webhook (if using webhook mode):
    ```

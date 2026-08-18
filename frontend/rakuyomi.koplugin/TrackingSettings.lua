@@ -126,8 +126,10 @@ local service_configs = {
     id = "mangabaka",
     oauth = true,
     fields = {
-      { key = "refresh_token", placeholder = _("Paste MangaBaka refresh token") },
-      { key = "api_key",       placeholder = _("Paste MangaBaka API Key (mb-...)") },
+      -- MangaBaka also accepts a Personal Access Token as a simpler
+      -- alternative to signing in via OAuth; the backend prefers the OAuth
+      -- access token when both are present.
+      { key = "api_key", placeholder = _("Paste MangaBaka API Key (mb-...)") },
     },
   },
   {
@@ -209,7 +211,7 @@ local function build_validate_button(self, service_id)
   }
 end
 
-local function build_validate_button_plain(service_id)
+local function build_validate_button_plain(self, service_id)
   return {
     type = 'button',
     title = _("Validate ") .. TrackingServices.getLabel(service_id),
@@ -227,7 +229,12 @@ local function build_validate_button_plain(service_id)
           return
         end
 
-        UIManager:show(InfoMessage:new { text = _("Credentials are valid.") })
+        local username = self:fetchAndShowUsername(service_id)
+        if username then
+          UIManager:show(InfoMessage:new { text = _("Credentials are valid.") .. " (" .. username .. ")" })
+        else
+          UIManager:show(InfoMessage:new { text = _("Credentials are valid.") })
+        end
       end)
     end
   }
@@ -289,7 +296,7 @@ function TrackingSettings:init()
     else
       table.insert(self.tracking_value_definitions, {
         'validate_' .. svc.id,
-        build_validate_button_plain(svc.id),
+        build_validate_button_plain(self, svc.id),
       })
     end
   end
@@ -538,7 +545,8 @@ function TrackingSettings:fetchAllUsernames()
   for _, service in ipairs(services) do
     self:showUsername(service)
     local svc = self.settings[service] or {}
-    local has_token = svc.access_token ~= nil and svc.access_token ~= ""
+    local has_token = (svc.access_token ~= nil and svc.access_token ~= "")
+        or (svc.api_key ~= nil and svc.api_key ~= "")
     local has_username = svc.username ~= nil and svc.username ~= ""
     if has_token and not has_username then
       self:fetchAndShowUsername(service)

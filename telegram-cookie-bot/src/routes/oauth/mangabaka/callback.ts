@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { getOAuthSession, completeOAuthSession, errorOAuthSession } from "../../../oauth_kv.ts"
 import { exchangeMangabakaCode } from "../../../services/oauth/mangabaka.ts"
+import { getOAuthConfigs } from "../../../config.ts"
 import { error, success, validateSession, notifyTelegramBot } from "../../../utils/oauth.tsx"
 
 const app = new Hono()
@@ -24,9 +25,13 @@ app.get("/oauth/mangabaka/callback", async (c) => {
 
   try {
     const tokens = await exchangeMangabakaCode(code, redirectUri, check.session.pkce_verifier)
+    const cfg = getOAuthConfigs().mangabaka
     await completeOAuthSession(sessionId, {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
+      // The client_secret stays server-side only (never shipped to devices);
+      // client_id alone is enough to identify the app, matching MAL's pattern.
+      client_id: cfg.client_id,
     })
     if (check.session.chat_id) {
       await notifyTelegramBot(check.session.chat_id, "MangaBaka")

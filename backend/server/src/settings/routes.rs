@@ -290,6 +290,9 @@ async fn poll_oauth_status(
                         if let Some(t) = refresh {
                             settings.mangabaka.refresh_token = Some(t);
                         }
+                        if let Some(id) = tokens.client_id.clone() {
+                            settings.mangabaka.client_id = Some(id);
+                        }
                     }
                 }
 

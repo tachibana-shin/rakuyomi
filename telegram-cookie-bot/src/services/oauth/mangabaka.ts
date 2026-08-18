@@ -10,14 +10,11 @@ export async function exchangeMangabakaCode(
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: cfg.client_id,
+    client_secret: cfg.client_secret,
     redirect_uri: redirectUri,
     code,
     code_verifier: codeVerifier,
   })
-  // Public PKCE apps don't have a client_secret
-  if (cfg.client_secret) {
-    body.set("client_secret", cfg.client_secret)
-  }
   const res = await fetch(cfg.token_url, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

@@ -666,6 +666,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shared",
+ "thiserror",
 ]
 
 [[package]]
@@ -4076,6 +4077,7 @@ dependencies = [
  "anyhow",
  "axum",
  "axum-macros",
+ "cbz_metadata_reader",
  "clap",
  "futures",
  "humansize",

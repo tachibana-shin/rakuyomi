@@ -25,6 +25,7 @@ anyhow = "1.0.103"
 axum-macros = "0.5.1"
 clap = { version = "4.6.1", features = ["derive"] }
 shared = { path = "../shared" }
+cbz_metadata_reader = { path = "../cbz_metadata_reader" }
 futures = "0.3.32"
 log = { version = "0.4.33", features = ["std"] }
 serde = { version = "1.0.228", features = ["derive"] }

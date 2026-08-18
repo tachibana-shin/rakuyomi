@@ -2,11 +2,17 @@ local PdfDocument = require('document/pdfdocument')
 local logger = require("logger")
 local rapidjson = require("rapidjson")
 local Paths = require('Paths')
+local Device = require("device")
 local execute_binary_fast = require("utils/executeBinaryFast")
 
 -- Environment variable for overriding the command
 local CBZ_METADATA_READER_COMMAND_OVERRIDE = os.getenv('RAKUYOMI_CBZ_METADATA_READER_COMMAND_OVERRIDE')
 local CBZ_METADATA_READER_COMMAND_WORKING_DIRECTORY = os.getenv('RAKUYOMI_CBZ_METADATA_READER_WORKING_DIRECTORY')
+
+-- Maps opened file paths to their RakuYomi chapter info, so metadata can be
+-- fetched from the backend server instead of executing `cbz_metadata_reader`
+-- (which is not executable from noexec storage on Android).
+local chapter_by_file_path = {}
 
 
 local function getString(metadata, key)
@@ -35,9 +41,9 @@ local CbzDocument = PdfDocument:extend {
 function CbzDocument:getDocumentProps()
   local base_props = PdfDocument.getDocumentProps(self)
 
-  local json_content = self:_getComicBookInfoJSONFromBinary()
+  local json_content = self:_getComicBookInfoJSON()
   if not json_content then
-    logger.warn("CbzDocument: No JSON content received from binary.")
+    logger.warn("CbzDocument: No JSON content received from metadata source.")
     return base_props
   end
 
@@ -55,9 +61,58 @@ function CbzDocument:getDocumentProps()
   return base_props
 end
 
+--- Associates a file path with the RakuYomi chapter it belongs to, so that
+--- metadata can be fetched from the backend server when the file is opened.
+---@param file_path string The path of the chapter file.
+---@param chapter Chapter|nil The chapter, or nil to clear the association.
+function CbzDocument:registerChapterFile(file_path, chapter)
+  chapter_by_file_path[file_path] = chapter
+end
+
+--- Gets the simplified metadata JSON, trying the backend server first on
+--- Android (where the binary cannot be executed from noexec storage) and
+--- falling back to the external Rust binary otherwise.
+---@private
+---@return string|nil The JSON string or nil if no metadata was obtained.
+function CbzDocument:_getComicBookInfoJSON()
+  local chapter = chapter_by_file_path[self.file]
+  if Device:isAndroid() and chapter then
+    local json_content = self:_getComicBookInfoJSONFromServer(chapter)
+    if json_content then
+      return json_content
+    end
+  end
+
+  return self:_getComicBookInfoJSONFromBinary()
+end
+
+--- Calls the backend server to get simplified metadata JSON for a chapter.
+---@private
+---@param chapter Chapter
+---@return string|nil The JSON string or nil if the server had no metadata.
+function CbzDocument:_getComicBookInfoJSONFromServer(chapter)
+  local Backend = require("Backend")
+  local ok, response = pcall(Backend.getChapterMetadata, chapter.source_id,
+      chapter.manga_id, chapter.id)
+  if not ok or response == nil or response.type ~= 'SUCCESS' then
+    logger.warn("CbzDocument: Server returned no metadata for", self.file,
+        response and response.message or "")
+    return nil
+  end
+
+  local json_content = rapidjson.encode(response.body)
+  if json_content == "{}" then
+    logger.dbg("CbzDocument: Server returned empty metadata for", self.file)
+    return nil
+  end
+
+  logger.dbg("CbzDocument: Successfully received JSON from server for", self.file)
+  return json_content
+end
+
 --- Calls the external Rust binary to get simplified metadata JSON.
---- @private
---- @return string|nil The JSON string or nil if an error occurred.
+---@private
+---@return string|nil The JSON string or nil if an error occurred.
 function CbzDocument:_getComicBookInfoJSONFromBinary()
   local file_path = self.file
 
@@ -89,9 +144,9 @@ function CbzDocument:_getComicBookInfoJSONFromBinary()
 end
 
 --- Parses the simplified metadata JSON content from the Rust binary.
---- @private
---- @param json_content string The JSON content to parse.
---- @return table|nil The parsed metadata table or nil if parsing failed.
+---@private
+---@param json_content string The JSON content to parse.
+---@return table|nil The parsed metadata table or nil if parsing failed.
 function CbzDocument:_parseMetadata(json_content)
   -- Use rapidjson for decoding
   if not rapidjson or not rapidjson.decode then

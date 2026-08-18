@@ -796,11 +796,12 @@ local function formatDownloadErrors(errors)
   return table.concat(lines, "\n")
 end
 
---- @private
---- @param chapter Chapter
---- @param download_job DownloadChapter|nil
---- @param callback fun(manga_path)
-function ChapterListing:downloadChapter(chapter, download_job, callback)
+---@private
+---@param chapter Chapter
+---@param download_job DownloadChapter|nil
+---@param callback fun(manga_path)
+---@param retried boolean|nil Whether this call is the retry after a Wi-Fi reconnect.
+function ChapterListing:downloadChapter(chapter, download_job, callback, retried)
   Trapper:wrap(function()
     if chapter.file ~= nil then
       return callback(chapter.file)
@@ -867,6 +868,35 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     end
 
     if response.type == 'ERROR' then
+      if not NetworkMgr:isConnected() then
+        if retried then
+          -- The reconnect retry also failed while offline: stop here.
+          ErrorDialog:show(response.message)
+
+          return
+        end
+
+        -- The download failed because we're offline. Try to get back online
+        -- (honoring the "action when Wi-Fi is off" setting), then retry once.
+        local connection_pending = NetworkMgr.pending_connection
+        local wifi_enable = NetworkMgr:beforeWifiAction(function()
+          self:downloadChapter(chapter, nil, callback, true)
+        end)
+
+        if wifi_enable == false then
+          ErrorDialog:show(response.message)
+        elseif wifi_enable == nil and connection_pending then
+          -- beforeWifiAction dropped our retry callback (EBUSY) because a
+          -- previous connection attempt is still ongoing. Queue the retry for
+          -- when it finishes instead of silently giving up.
+          NetworkMgr:scheduleConnectivityCheck(function()
+            self:downloadChapter(chapter, nil, callback, true)
+          end)
+        end
+
+        return
+      end
+
       ErrorDialog:show(response.message)
 
       return

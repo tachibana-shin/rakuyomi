@@ -30,11 +30,12 @@ build_one() {
 
   # The 32-bit ARM musl targets have no 64-bit atomics, so the quickjs
   # runtime needs libatomic and libgcc at link time. Force a fully static
-  # binary: without `-static` the linker picks the libatomic/libgcc shared
-  # libraries from the cross image, and Kindles have no musl dynamic linker
+  # binary: rustc emits `-Wl,-Bdynamic` after its crt objects, so plain
+  # `-static` is not enough — libs passed via `-C link-arg` would be linked
+  # dynamically (libatomic.so.1), and Kindles have no musl dynamic linker
   # or those .so files, so the server would fail to start.
   if [[ "$name" == "kindle" || "$name" == "kindlea9" || "$name" == "kindlehf" ]]; then
-    base_flags="-C link-arg=-static -C link-arg=-latomic -C link-arg=-lgcc"
+    base_flags="-C link-arg=-static -C link-arg=-Wl,-Bstatic -C link-arg=-latomic -C link-arg=-lgcc -C link-arg=-Wl,-Bdynamic"
   fi
 
   if [[ "$name" == "kindlea9" ]]; then

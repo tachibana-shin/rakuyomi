@@ -866,6 +866,20 @@ function ChapterListing:downloadChapter(chapter, download_job, callback)
     end
 
     if response.type == 'ERROR' then
+      if not NetworkMgr:isConnected() then
+        -- The download failed because we're offline. Try to get back online
+        -- (honoring the "action when Wi-Fi is off" setting), then retry once.
+        local wifi_enable = NetworkMgr:beforeWifiAction(function()
+          self:downloadChapter(chapter, nil, callback)
+        end)
+
+        if wifi_enable == false then
+          ErrorDialog:show(response.message)
+        end
+
+        return
+      end
+
       ErrorDialog:show(response.message)
 
       return

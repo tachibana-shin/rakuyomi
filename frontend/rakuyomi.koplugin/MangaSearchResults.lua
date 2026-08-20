@@ -104,6 +104,16 @@ end
 function MangaSearchResults:updateItems()
   self.item_table = self:generateItemTableFromSearchResults(self.results)
 
+  if #self.item_table > 0 then
+    self.multilines_show_more_text = false
+    self.single_line = true
+    self.items_per_page = nil
+  else
+    self.multilines_show_more_text = true
+    self.single_line = false
+    self.items_per_page = 1
+  end
+
   local mode = self.search_view_mode
   local MenuItemChoice = MenuItemCover
   if mode == "grid" then

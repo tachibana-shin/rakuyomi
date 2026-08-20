@@ -15,7 +15,6 @@ use crate::{
 };
 
 pub async fn install_source(
-    source_manager: &mut SourceManager,
     arc_manager: &Arc<Mutex<SourceManager>>,
     source_lists: &[SourceList],
     source_id: SourceId,
@@ -71,12 +70,18 @@ pub async fn install_source(
                 .url
                 .context("LNReader source list item is missing a `url`")?;
             let plugin_content = client.get(url).send().await?.bytes().await?;
-            source_manager.install_lnreader_source(
-                &source_id,
-                plugin_content,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_lnreader_source(
+                    &source_id,
+                    plugin_content,
+                    source_of_source,
+                    &manager,
+                )
+            })
+            .await
+            .map_err(|e| anyhow!("LNReader install task panicked: {e}"))??;
         }
         crate::settings::SourceListType::Mangayomi => {
             // MangaYomi extension: the index entry itself carries the
@@ -98,13 +103,19 @@ pub async fn install_source(
             );
             let metadata = serde_json::to_vec(&metadata_obj)
                 .context("failed to serialise MangaYomi extension metadata")?;
-            source_manager.install_mangayomi_source(
-                &source_id,
-                code,
-                metadata,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_mangayomi_source(
+                    &source_id,
+                    code,
+                    metadata,
+                    source_of_source,
+                    &manager,
+                )
+            })
+            .await
+            .map_err(|e| anyhow!("MangaYomi install task panicked: {e}"))??;
         }
         crate::settings::SourceListType::Keiyoushi => {
             // Keiyoushi extension: the index publishes the release APK URL.
@@ -114,12 +125,13 @@ pub async fn install_source(
                 .file
                 .context("Keiyoushi source list item is missing an `apk` URL")?;
             let apk_content = client.get(apk_url).send().await?.bytes().await?;
-            source_manager.install_keiyoushi_source(
-                &source_id,
-                apk_content,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_keiyoushi_source(&source_id, apk_content, source_of_source, &manager)
+            })
+            .await
+            .map_err(|e| anyhow!("Keiyoushi install task panicked: {e}"))??;
         }
         crate::settings::SourceListType::Aidoku => {
             let file = source_list_item
@@ -131,13 +143,13 @@ pub async fn install_source(
                 source_list.url.join(&format!("sources/{}", file)).unwrap()
             };
             let aix_content = client.get(aix_url).send().await?.bytes().await?;
-
-            source_manager.install_source(
-                &source_id,
-                aix_content,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_source(&source_id, aix_content, source_of_source, &manager)
+            })
+            .await
+            .map_err(|e| anyhow!("Aidoku install task panicked: {e}"))??;
         }
     }
 

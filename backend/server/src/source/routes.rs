@@ -67,10 +67,12 @@ async fn install_source(
     Path(InstallSourceParams { source_id }): Path<InstallSourceParams>,
     Json(source_of_source): Json<String>,
 ) -> Result<Json<()>, AppError> {
+    let source_lists = settings.lock().await.source_lists.clone();
+    // The use case locks the manager inside a blocking task: the eager probe
+    // (JS evaluation / runtime boot) must not run on the async worker.
     usecases::install_source(
-        &mut *source_manager.lock().await,
         &source_manager,
-        &settings.lock().await.source_lists,
+        &source_lists,
         SourceId::new(source_id),
         source_of_source,
     )
@@ -101,8 +103,19 @@ async fn uninstall_source(
 
 async fn get_source_setting_definitions(
     SourceExtractor(source): SourceExtractor,
-) -> Json<Vec<SettingDefinition>> {
-    Json(usecases::get_source_setting_definitions(&source))
+) -> Result<Json<Vec<SettingDefinition>>, AppError> {
+    // LNReader/MangaYomi sources probe lazily on first use; the probe
+    // evaluates JS / boots a runtime, so run it off the async worker and
+    // propagate its outcome instead of silently returning no definitions.
+    let definitions = tokio::task::spawn_blocking(move || {
+        source.probe()?;
+        Ok::<_, anyhow::Error>(usecases::get_source_setting_definitions(&source))
+    })
+    .await
+    .map_err(|e| AppError::Other(anyhow::anyhow!("settings probe task failed: {e}")))?
+    .map_err(AppError::Other)?;
+
+    Ok(Json(definitions))
 }
 
 async fn get_source_stored_settings(

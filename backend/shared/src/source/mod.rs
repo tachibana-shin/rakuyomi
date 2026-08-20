@@ -741,8 +741,6 @@ impl BlockingSource {
 
         self.store = Some(store);
         self.instance = Some(instance);
-        // The engine now owns its own copy; drop the load-time snapshot.
-        self.source_settings = None;
 
         // Aidoku SDK-next sources run a `start` init function once the
         // module is live; it used to run right after install.
@@ -757,6 +755,8 @@ impl BlockingSource {
                 return Err(error);
             }
         }
+        // The engine now owns its own copy; drop the load-time snapshot.
+        self.source_settings = None;
         Ok(())
     }
 

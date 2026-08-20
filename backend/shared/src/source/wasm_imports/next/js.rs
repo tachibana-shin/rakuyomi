@@ -38,7 +38,8 @@ enum ResultContext {
     MissingResult,
     InvalidContext,
     InvalidString,
-    // InvalidRuleList,
+    #[cfg(not(feature = "all"))]
+    InvalidRuleList,
     // InvalidHandler,
     // InvalidRequest,
 }
@@ -50,9 +51,10 @@ impl From<ResultContext> for i32 {
             ResultContext::MissingResult => -1,
             ResultContext::InvalidContext => -2,
             ResultContext::InvalidString => -3,
+            #[cfg(not(feature = "all"))]
+            ResultContext::InvalidRuleList => -6,
             // ResultContext::InvalidHandler => -4,
             // ResultContext::InvalidRequest => -5,
-            // ResultContext::InvalidRuleList => -6,
         }
     }
 }

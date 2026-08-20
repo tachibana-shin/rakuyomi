@@ -105,15 +105,16 @@ async fn apply_chapter_filter(
     filter: Filter,
     langs: &[&str],
 ) -> Result<Vec<ChapterInformation>> {
-    // Sort oldest-to-newest by chapter number so the position in the array is
-    // a stable, monotonic sequence regardless of numbering scheme. Unnumbered
-    // chapters (None → 0) sort to the front; slice::sort_by is stable so they
-    // keep their DB order relative to each other.
-    all_chapters.sort_by(|a, b| {
-        a.chapter_number
-            .unwrap_or_default()
-            .partial_cmp(&b.chapter_number.unwrap_or_default())
-            .unwrap_or(std::cmp::Ordering::Equal)
+    // Sort oldest-to-newest by chapter number so the sorted position is a
+    // stable, monotonic sequence. Unnumbered chapters (None) sort before
+    // every numbered chapter — including Some(0.0) — so they can never sit
+    // after a read chapter in the sorted order. slice::sort_by is stable,
+    // so equal-ranked unnumbered chapters keep their DB order.
+    all_chapters.sort_by(|a, b| match (&a.chapter_number, &b.chapter_number) {
+        (None, None) => std::cmp::Ordering::Equal,
+        (None, Some(_)) => std::cmp::Ordering::Less,
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (Some(a), Some(b)) => a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal),
     });
 
     let target_scanlator = match &filter {
@@ -412,6 +413,45 @@ mod tests {
         // Group keys:  Unnumbered(1), Numbered(1.0), Numbered(2.0), Numbered(2.0), Numbered(3.0).
         // amount=2 → groups {Unnumbered(1), Numbered(1.0)} → ch-1, ch-4.
         assert_eq!(ids(&filtered), vec!["chapter-1", "chapter-4"]);
+    }
+
+    #[tokio::test]
+    async fn unnumbered_chapter_not_selected_after_read_zero() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // DB order: ch-0(Some(0.0)), ch-1(None).  Without the fix the stable
+        // sort places them in DB order [Some(0.0), None], so marking ch-0
+        // read sets boundary=0 and ch-1(None) leaks through as "unread".
+        // With the fix, None sorts before Some(0.0) → sorted order becomes
+        // [ch-1(None), ch-0(Some(0.0))]; marking ch-0 read sets boundary=1,
+        // skipping both chapters.
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(0.0)),
+            chapter(&manga_id, 1, None),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        db.upsert_chapter_state(
+            &chapters[0].id,
+            ChapterState {
+                read: true,
+                last_read: None,
+            },
+        )
+        .await
+        .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(&db, chapters, Filter::AllUnreadChapters, &[])
+            .await
+            .unwrap();
+
+        // Nothing should be returned — the unnumbered chapter sorts before
+        // the read Some(0.0) and is excluded by the boundary.
+        assert!(filtered.is_empty());
     }
 
     #[tokio::test]

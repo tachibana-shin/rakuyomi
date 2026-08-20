@@ -326,8 +326,7 @@ impl MangayomiSource {
             arc_manager,
         )?));
 
-        let placeholder_manifest =
-            Self::build_manifest(&meta, &source_of_source, &meta.base_url);
+        let placeholder_manifest = Self::build_manifest(&meta, &source_of_source, &meta.base_url);
 
         // Eager cache hit: reading the stored metadata is cheap, so the
         // source starts fully probed. On a miss the extension is not booted;
@@ -465,10 +464,7 @@ impl MangayomiSource {
             .map(Arc::new)
             .map_err(|error| format!("{error:#}"));
         if let Err(error) = &outcome {
-            log::warn!(
-                "failed to probe MangaYomi extension {}: {error}",
-                self.id
-            );
+            log::warn!("failed to probe MangaYomi extension {}: {error}", self.id);
         }
         *guard = Some(outcome.clone());
         outcome.map_err(|error| anyhow!("{error}"))
@@ -689,8 +685,7 @@ impl MangayomiSource {
         let state = self.ensure_probed()?;
         let value = self.invoke("getDetail", json!([manga_id.clone()]))?;
         let chapters = value.get("chapters").unwrap_or(&Value::Null);
-        let mut out =
-            model::chapters_from_value(&self.id, &manga_id, &state.base_url, chapters);
+        let mut out = model::chapters_from_value(&self.id, &manga_id, &state.base_url, chapters);
         crate::source::model::normalize_chapter_order(&mut out);
         Ok(out)
     }

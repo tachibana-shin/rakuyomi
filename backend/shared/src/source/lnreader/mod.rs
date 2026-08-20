@@ -197,34 +197,30 @@ impl LnReaderSource {
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_nanos());
         let usage = ResourceRegistry::default();
-        let probe = match plugin_mtime_ns
-            .and_then(|mtime| read_probe_cache(path, plugin_len, mtime))
-        {
-            Some(props_json) => {
-                match Self::build_probed(
-                    &id,
-                    &plugin_code,
-                    &source_of_source,
-                    &stored_settings,
-                    arc_manager,
-                    &props_json,
-                    usage.clone(),
-                ) {
-                    Ok(state) => Some(Ok(Arc::new(state))),
-                    Err(e) => {
-                        log::warn!(
-                            "failed to parse probe cache for {}: {e}",
-                            path.display()
-                        );
-                        // Remove the invalid cache so run_probe re-evaluates
-                        // the plugin instead of reading the same bad data.
-                        let _ = fs::remove_file(probe_cache_path(path));
-                        None
+        let probe =
+            match plugin_mtime_ns.and_then(|mtime| read_probe_cache(path, plugin_len, mtime)) {
+                Some(props_json) => {
+                    match Self::build_probed(
+                        &id,
+                        &plugin_code,
+                        &source_of_source,
+                        &stored_settings,
+                        arc_manager,
+                        &props_json,
+                        usage.clone(),
+                    ) {
+                        Ok(state) => Some(Ok(Arc::new(state))),
+                        Err(e) => {
+                            log::warn!("failed to parse probe cache for {}: {e}", path.display());
+                            // Remove the invalid cache so run_probe re-evaluates
+                            // the plugin instead of reading the same bad data.
+                            let _ = fs::remove_file(probe_cache_path(path));
+                            None
+                        }
                     }
                 }
-            }
-            None => None,
-        };
+                None => None,
+            };
 
         Ok(Self {
             id,
@@ -378,29 +374,29 @@ impl LnReaderSource {
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_nanos());
-        let props_json =
-            match plugin_mtime_ns.and_then(|mtime| read_probe_cache(&self.path, plugin_len, mtime))
-            {
-                Some(cached) => cached,
-                None => {
-                    let probe_runtime = LnReaderRuntime::new(
-                        self.id.clone(),
-                        self.plugin_code.clone(),
-                        String::new(),
-                        DEFAULT_USER_AGENT.to_string(),
-                        DEFAULT_INVOKE_TIMEOUT,
-                        ResourceRegistry::default(),
-                    )?;
-                    let result = probe_runtime
-                        .invoke("props", "[]")
-                        .context("plugin `props` failed")?;
-                    probe_runtime.stop_worker();
-                    if let Some(mtime) = plugin_mtime_ns {
-                        write_probe_cache(&self.path, plugin_len, mtime, &result);
-                    }
-                    result
+        let props_json = match plugin_mtime_ns
+            .and_then(|mtime| read_probe_cache(&self.path, plugin_len, mtime))
+        {
+            Some(cached) => cached,
+            None => {
+                let probe_runtime = LnReaderRuntime::new(
+                    self.id.clone(),
+                    self.plugin_code.clone(),
+                    String::new(),
+                    DEFAULT_USER_AGENT.to_string(),
+                    DEFAULT_INVOKE_TIMEOUT,
+                    ResourceRegistry::default(),
+                )?;
+                let result = probe_runtime
+                    .invoke("props", "[]")
+                    .context("plugin `props` failed")?;
+                probe_runtime.stop_worker();
+                if let Some(mtime) = plugin_mtime_ns {
+                    write_probe_cache(&self.path, plugin_len, mtime, &result);
                 }
-            };
+                result
+            }
+        };
         Self::build_probed(
             &self.id,
             &self.plugin_code,
@@ -507,11 +503,7 @@ impl LnReaderSource {
     /// Resolves a manga cover URL. Absolute URLs are kept as-is; relative
     /// paths (e.g. `/uploads/cover.jpg`) are resolved against the plugin's
     /// site, mirroring how the app builds the cover URL.
-    fn resolve_manga_cover(
-        &self,
-        state: &ProbedLnReader,
-        cover: Option<String>,
-    ) -> Option<String> {
+    fn resolve_manga_cover(&self, state: &ProbedLnReader, cover: Option<String>) -> Option<String> {
         let cover = cover?;
         if Url::parse(&cover).is_ok() {
             return Some(cover);

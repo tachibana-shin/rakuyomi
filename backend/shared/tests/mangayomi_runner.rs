@@ -1392,7 +1392,10 @@ async fn runner_lazy_probe_without_cache() {
         )
         .unwrap();
     assert_eq!(mangas.len(), 2, "two mangas in the fixture list");
-    assert!(probe_path.exists(), "first use must rewrite the probe cache");
+    assert!(
+        probe_path.exists(),
+        "first use must rewrite the probe cache"
+    );
     assert_eq!(source.setting_definitions().len(), 2);
     assert!(source.supports_latest());
     assert_eq!(source.base_url(), base);

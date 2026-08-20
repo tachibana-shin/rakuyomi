@@ -12,6 +12,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use serde_json::Value;
 use shared::{
     settings::Settings,
     source::lnreader::LnReaderSource,
@@ -24,7 +25,6 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
 };
-use serde_json::Value;
 use tokio_util::sync::CancellationToken;
 
 fn lnreader(source: &shared::source::Source) -> &LnReaderSource {
@@ -922,10 +922,7 @@ async fn runner_lazy_probe_without_cache() {
         manifest.info.name, "testplugin",
         "placeholder name until the plugin is probed"
     );
-    assert_eq!(
-        manifest.info.version,
-        Value::String(String::new())
-    );
+    assert_eq!(manifest.info.version, Value::String(String::new()));
     assert!(source.setting_definitions().is_empty());
 
     // The first call probes lazily: the cache is rewritten and the real
@@ -935,13 +932,13 @@ async fn runner_lazy_probe_without_cache() {
         .await
         .unwrap();
     assert_eq!(mangas.len(), 2, "two novels in the fixture list");
-    assert!(probe_path.exists(), "first use must rewrite the probe cache");
+    assert!(
+        probe_path.exists(),
+        "first use must rewrite the probe cache"
+    );
     let manifest = source.manifest();
     assert_eq!(manifest.info.name, "Offline Test Plugin");
-    assert_eq!(
-        manifest.info.version,
-        Value::String("1.2.3".into())
-    );
+    assert_eq!(manifest.info.version, Value::String("1.2.3".into()));
 
     std::fs::remove_dir_all(&dir).ok();
 }

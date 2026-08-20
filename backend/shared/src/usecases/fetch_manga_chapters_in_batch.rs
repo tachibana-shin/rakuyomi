@@ -105,11 +105,10 @@ async fn apply_chapter_filter(
     filter: Filter,
     langs: &[&str],
 ) -> Result<Vec<ChapterInformation>> {
-    // Do not rely on the DB order: databases created before the order
-    // normalization may still store chapters newest-first. Sort by chapter
-    // number so the filter logic below is correct regardless. Chapters
-    // without a parseable number fall back to 0 and keep their DB order as a
-    // tiebreaker (slice::sort_by is stable).
+    // Sort oldest-to-newest by chapter number so the position in the array is
+    // a stable, monotonic sequence regardless of numbering scheme. Unnumbered
+    // chapters (None → 0) sort to the front; slice::sort_by is stable so they
+    // keep their DB order relative to each other.
     all_chapters.sort_by(|a, b| {
         a.chapter_number
             .unwrap_or_default()
@@ -117,34 +116,6 @@ async fn apply_chapter_filter(
             .unwrap_or(std::cmp::Ordering::Equal)
     });
 
-    // Assign each chapter an effective number for comparison: numbered
-    // chapters use their actual chapter_number; unnumbered chapters use their
-    // position in the sorted (oldest-to-newest) array so that every
-    // unnumbered chapter has a distinct, order-preserving value.
-    let effective_num = |chapter: &ChapterInformation, idx: usize| -> f32 {
-        chapter.chapter_number.unwrap_or(idx as f32)
-    };
-
-    // Group key for deduplication: numbered chapters with the same float
-    // value share one group, while each unnumbered chapter is its own group
-    // (identified by its sorted-array index).
-    let chapter_group = |chapter: &ChapterInformation, idx: usize| -> ChapterGroup {
-        chapter
-            .chapter_number
-            .map(ordered_float::OrderedFloat)
-            .map(ChapterGroup::Numbered)
-            .unwrap_or(ChapterGroup::Unnumbered(idx))
-    };
-
-    // Pre-compute effective numbers so they survive across the into_iter
-    // chain below.
-    let effective_nums: Vec<f32> = all_chapters
-        .iter()
-        .enumerate()
-        .map(|(i, ch)| effective_num(ch, i))
-        .collect();
-
-    let mut last_read_chapter_num = None;
     let target_scanlator = match &filter {
         Filter::ScanlatorChapters { scanlator, .. } => Some(scanlator.clone()),
         _ => None,
@@ -152,7 +123,7 @@ async fn apply_chapter_filter(
 
     let use_lang_filter = !langs.is_empty();
 
-    // Batch-fetch all chapter states for this manga in a single query
+    // Batch-fetch all chapter states for this manga in a single query.
     let manga_id = all_chapters.first().map(|c| c.id.manga_id().clone());
     let chapter_states = if let Some(id) = manga_id {
         db.find_chapter_states_for_manga(&id).await?
@@ -160,18 +131,17 @@ async fn apply_chapter_filter(
         HashMap::new()
     };
 
-    // Starting from the newest chapter (the one with the highest chapter
-    // number), find out the first one marked as read.
-    for (index, chapter) in all_chapters.iter().enumerate().rev() {
-        // Filter: language
+    // Walk newest-to-oldest (reverse of the sorted order) to locate the
+    // highest sorted index where a chapter is marked read. That index is the
+    // read boundary — everything at or before it is skipped.
+    let mut last_read_boundary: Option<usize> = None;
+    for (rev_idx, chapter) in all_chapters.iter().enumerate().rev() {
         if use_lang_filter {
             let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
             if !langs.contains(&ch_lang) {
                 continue;
             }
         }
-
-        // Skip chapters that don't match our target scanlator (if filtering by scanlator)
         if let Some(ref target_scanlator) = target_scanlator {
             let chapter_scanlator = chapter.scanlator.as_deref().unwrap_or("Unknown");
             if chapter_scanlator != target_scanlator {
@@ -179,23 +149,21 @@ async fn apply_chapter_filter(
             }
         }
 
-        let read = chapter_states
+        if chapter_states
             .get(chapter.id.value())
-            .is_some_and(|state| state.read);
-
-        if read {
-            last_read_chapter_num = Some(effective_nums[index]);
-
+            .is_some_and(|s| s.read)
+        {
+            last_read_boundary = Some(rev_idx);
             break;
         }
     }
 
-    // In oldest-to-newest order (by chapter number), find out which unread
-    // chapters to download.
-    let unread_chapters = all_chapters
+    // Collect unread chapters (oldest-to-newest), skipping everything at or
+    // before the read boundary index.
+    let unread_chapters: Vec<_> = all_chapters
         .into_iter()
         .enumerate()
-        .filter(move |(_, chapter)| {
+        .filter(|(_, chapter)| {
             if use_lang_filter {
                 let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
                 if !langs.contains(&ch_lang) {
@@ -204,28 +172,26 @@ async fn apply_chapter_filter(
             }
             true
         })
-        .skip_while(move |(index, _)| {
-            last_read_chapter_num
-                .is_some_and(|last_read_num| last_read_num >= effective_nums[*index])
-        });
+        .skip_while(move |(index, _)| last_read_boundary.is_some_and(|boundary| *index <= boundary))
+        .collect();
 
     let filtered_chapters: Vec<_> = match filter {
-        Filter::AllUnreadChapters => unread_chapters.map(|(_, ch)| ch).collect(),
+        Filter::AllUnreadChapters => unread_chapters.into_iter().map(|(_, ch)| ch).collect(),
         Filter::NextUnreadChapters(amount) => {
             let mut seen_groups = HashSet::new();
 
             unread_chapters
+                .into_iter()
                 .take_while(|(index, chapter)| {
                     seen_groups.insert(chapter_group(chapter, *index));
-
                     seen_groups.len() <= amount
                 })
                 .map(|(_, chapter)| chapter)
                 .collect()
         }
         Filter::ScanlatorChapters { scanlator, amount } => {
-            // Filter by scanlator first
             let scanlator_chapters: Vec<_> = unread_chapters
+                .into_iter()
                 .filter(|(_, chapter)| {
                     chapter
                         .scanlator
@@ -236,7 +202,6 @@ async fn apply_chapter_filter(
                 .map(|(_, chapter)| chapter)
                 .collect();
 
-            // Then limit by amount if specified
             if let Some(amount) = amount {
                 scanlator_chapters.into_iter().take(amount).collect()
             } else {
@@ -257,10 +222,21 @@ pub enum Filter {
     },
 }
 
+/// Grouping key for `NextUnreadChapters` deduplication: numbered chapters
+/// with the same value share one group; each unnumbered chapter is distinct
+/// (identified by its sorted-array index).
 #[derive(Hash, Eq, PartialEq)]
 enum ChapterGroup {
     Numbered(ordered_float::OrderedFloat<f32>),
     Unnumbered(usize),
+}
+
+fn chapter_group(chapter: &ChapterInformation, index: usize) -> ChapterGroup {
+    chapter
+        .chapter_number
+        .map(ordered_float::OrderedFloat)
+        .map(ChapterGroup::Numbered)
+        .unwrap_or(ChapterGroup::Unnumbered(index))
 }
 
 pub enum ProgressReport {
@@ -308,7 +284,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn all_un_numbered_chapters_stop_at_read_boundary() {
+    async fn all_unnumbered_chapters_stop_at_read_boundary() {
         let (_tmp_dir, db, manga_id) = test_db().await;
         let chapters: Vec<_> = (0..5).map(|i| chapter(&manga_id, i, None)).collect();
         db.upsert_cached_chapter_informations(&manga_id, &chapters)
@@ -332,19 +308,86 @@ mod tests {
             .await
             .unwrap();
 
-        // After sort (oldest-to-newest), chapter-2 (index 2) is the read
-        // boundary. Unread chapters newer than that are chapter-3 and chapter-4.
+        // Sorted oldest-to-newest: [ch-0, ch-1, ch-2(R), ch-3, ch-4].
+        // Boundary index 2; keep indices 3, 4.
+        assert_eq!(ids(&filtered), vec!["chapter-3", "chapter-4"]);
+    }
+
+    #[tokio::test]
+    async fn mixed_none_and_fractional_read_boundary() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // Created as: ch-0(None), ch-1(None), ch-2(Some(0.5)), ch-3(Some(1.0)).
+        // After sort (oldest-to-newest): [ch-0(None), ch-1(None), ch-2(0.5), ch-3(1.0)].
+        let chapters = vec![
+            chapter(&manga_id, 0, None),
+            chapter(&manga_id, 1, None),
+            chapter(&manga_id, 2, Some(0.5)),
+            chapter(&manga_id, 3, Some(1.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        // Mark the fractional chapter (sorted index 2) as read.
+        db.upsert_chapter_state(
+            &chapters[2].id,
+            ChapterState {
+                read: true,
+                last_read: None,
+            },
+        )
+        .await
+        .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(&db, chapters, Filter::AllUnreadChapters, &[])
+            .await
+            .unwrap();
+
+        // Boundary index 2; only ch-3 (1.0) at index 3 is returned.
+        // Neither the read chapter nor the older unnumbered ones appear.
+        assert_eq!(ids(&filtered), vec!["chapter-3"]);
+    }
+
+    #[tokio::test]
+    async fn next_unread_chapters_amount_reaches_duplicate_numbered() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // ch-0(1.0), ch-1(1.0) duplicate, ch-2(2.0), ch-3(3.0).
+        // After sort: same order (1.0, 1.0, 2.0, 3.0).
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(1.0)),
+            chapter(&manga_id, 1, Some(1.0)),
+            chapter(&manga_id, 2, Some(2.0)),
+            chapter(&manga_id, 3, Some(3.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        // amount=3 so the iterator passes through both duplicates (same group)
+        // and reaches ch-2 (second unique group) and ch-3 (third).
+        let filtered = apply_chapter_filter(&db, chapters, Filter::NextUnreadChapters(3), &[])
+            .await
+            .unwrap();
+
+        // First unique group: Numbered(1.0) → ch-0, ch-1.
+        // Second unique group: Numbered(2.0) → ch-2.
+        // Third unique group: Numbered(3.0) → ch-3.
+        // amount=3 keeps all four chapters.
         assert_eq!(
-            filtered
-                .iter()
-                .map(|c| c.id.value().as_str())
-                .collect::<Vec<_>>(),
-            vec!["chapter-3", "chapter-4"]
+            ids(&filtered),
+            vec!["chapter-0", "chapter-1", "chapter-2", "chapter-3"]
         );
     }
 
     #[tokio::test]
-    async fn mixed_numbered_and_unnumbered_chapters_keep_numbered_duplicates_grouped() {
+    async fn mixed_numbered_and_unnumbered_keep_numbered_duplicates_grouped() {
         let (_tmp_dir, db, manga_id) = test_db().await;
         let chapters = vec![
             chapter(&manga_id, 0, Some(3.0)),
@@ -365,21 +408,14 @@ mod tests {
             .await
             .unwrap();
 
-        // After sort (oldest-to-newest): ch-1(None,eff 0), ch-4(1.0),
-        // ch-2(2.0), ch-3(2.0), ch-0(3.0). NextUnreadChapters(2) takes the
-        // first 2 unique chapter-group keys: Unnumbered(0) and Numbered(1.0).
-        // Numbered duplicates (ch-2 and ch-3) share a key.
-        assert_eq!(
-            filtered
-                .iter()
-                .map(|c| c.id.value().as_str())
-                .collect::<Vec<_>>(),
-            vec!["chapter-1", "chapter-4"]
-        );
+        // Sort order: ch-1(None), ch-4(1.0), ch-2(2.0), ch-3(2.0), ch-0(3.0).
+        // Group keys:  Unnumbered(1), Numbered(1.0), Numbered(2.0), Numbered(2.0), Numbered(3.0).
+        // amount=2 → groups {Unnumbered(1), Numbered(1.0)} → ch-1, ch-4.
+        assert_eq!(ids(&filtered), vec!["chapter-1", "chapter-4"]);
     }
 
     #[tokio::test]
-    async fn next_unread_chapters_respects_amount_for_unnumbered_chapters() {
+    async fn next_unread_chapters_amount_for_unnumbered() {
         let (_tmp_dir, db, manga_id) = test_db().await;
         let chapters: Vec<_> = (0..6).map(|i| chapter(&manga_id, i, None)).collect();
         db.upsert_cached_chapter_informations(&manga_id, &chapters)
@@ -394,14 +430,11 @@ mod tests {
             .await
             .unwrap();
 
-        // After sort (oldest-to-newest): ch-0(0), ch-1(1), ch-2(2), ...
-        // Each unnumbered chapter is its own group, so the first 2 are taken.
-        assert_eq!(
-            filtered
-                .iter()
-                .map(|c| c.id.value().as_str())
-                .collect::<Vec<_>>(),
-            vec!["chapter-0", "chapter-1"]
-        );
+        // Each unnumbered chapter is its own group; first 2 are taken.
+        assert_eq!(ids(&filtered), vec!["chapter-0", "chapter-1"]);
+    }
+
+    fn ids(chapters: &[ChapterInformation]) -> Vec<&str> {
+        chapters.iter().map(|c| c.id.value().as_str()).collect()
     }
 }

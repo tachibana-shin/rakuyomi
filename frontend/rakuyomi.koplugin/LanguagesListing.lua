@@ -144,6 +144,7 @@ function LanguagesListing:showAddLanguage()
           is_enter_default = true,
           callback = function()
             local code = input_dialog:getInputText()
+            code = code:match("^%s*(.-)%s*$"):lower()
             UIManager:close(input_dialog)
 
             if code == '' then
@@ -167,7 +168,7 @@ end
 --- @param code string
 function LanguagesListing:addLanguage(code)
   local languages = self.settings.languages or {}
-  for _, existing in ipairs(languages) do
+  for _idx, existing in ipairs(languages) do
     if existing == code then
       ErrorDialog:show(_("This language is already in the list."))
 
@@ -175,28 +176,43 @@ function LanguagesListing:addLanguage(code)
     end
   end
 
+  local previous_languages = {}
+  for i, lang in ipairs(languages) do
+    previous_languages[i] = lang
+  end
+
   table.insert(languages, code)
   table.sort(languages)
   self.settings.languages = languages
 
-  self:persist()
+  self:persist(previous_languages)
 end
 
 --- @private
 --- @param index number
 function LanguagesListing:removeLanguage(index)
   local languages = self.settings.languages or {}
+
+  local previous_languages = {}
+  for i, lang in ipairs(languages) do
+    previous_languages[i] = lang
+  end
+
   table.remove(languages, index)
   self.settings.languages = languages
 
-  self:persist()
+  self:persist(previous_languages)
 end
 
 --- Saves the settings and refreshes the listing.
 --- @private
-function LanguagesListing:persist()
+--- @param previous_languages string[]|nil
+function LanguagesListing:persist(previous_languages)
   local response = Backend.setSettings(self.settings)
   if response.type == 'ERROR' then
+    if previous_languages then
+      self.settings.languages = previous_languages
+    end
     ErrorDialog:show(response.message)
 
     return

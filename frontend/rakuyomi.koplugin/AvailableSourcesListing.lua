@@ -56,9 +56,9 @@ end
 --- @param url string
 --- @return string
 local function source_list_key(url)
-  local scheme, host, path = url:match("^([%w+.-]+)://([^/]+)(/.*)$")
+  local scheme, host, path = url:match("^([%w+.-]+)://([^/]+)(.*)$")
   if not scheme then
-    host, path = url:match("^([^/]+)(/.*)$")
+    host, path = url:match("^([^/]+)(.*)$")
   end
   if not host then
     host = url
@@ -238,7 +238,7 @@ function AvailableSourcesListing:filterAvailableSources()
   end
 
   local filtered = {}
-  for _, source_information in ipairs(self.available_sources) do
+  for _idx, source_information in ipairs(self.available_sources) do
     local lang_matches = #self.langs_selected == 0 or #source_information.languages == 0
     for _, lang in ipairs(source_information.languages) do
       if langs_set[lang] then
@@ -363,7 +363,7 @@ function AvailableSourcesListing:patchTitleBar()
   self.title_bar.left_button = filter_group
   if self.filter_group then
     self.title_bar[2] = filter_group
-  elseif self.title_bar[2] ~= nil then
+  else
     table.insert(self.title_bar, 2, filter_group)
   end
   self.filter_group = filter_group

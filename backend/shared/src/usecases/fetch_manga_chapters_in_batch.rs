@@ -117,8 +117,6 @@ async fn apply_chapter_filter(
             .unwrap_or(std::cmp::Ordering::Equal)
     });
 
-    let total = all_chapters.len();
-
     // Assign each chapter an effective number for comparison: numbered
     // chapters use their actual chapter_number; unnumbered chapters use their
     // position in the sorted (oldest-to-newest) array so that every

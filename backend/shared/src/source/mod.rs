@@ -589,6 +589,9 @@ pub struct BlockingSource {
 }
 
 impl BlockingSource {
+    /// Loads a source archive from an AIX file without booting its WASM
+    /// engine; the engine is compiled and instantiated lazily on first use
+    /// by [`BlockingSource::ensure_booted`].
     pub fn from_aix_file(
         path: &Path,
         manager: &SourceManager,
@@ -726,13 +729,14 @@ impl BlockingSource {
 
         if self.aidoku_sdk_next_from_meta != Some(sdk_next) {
             let meta_file = Self::meta_source_path(&self.path)?;
-            let _ = fs::write(
+            fs::write(
                 &meta_file,
                 serde_json::to_string(&SourceMeta {
                     source_of_source: self.manifest.source_of_source.clone(),
                     is_next_sdk: Some(sdk_next),
                 })?,
-            );
+            )
+            .with_context(|| format!("failed persisting SDK mode for {}", self.id))?;
         }
 
         self.store = Some(store);
@@ -743,7 +747,15 @@ impl BlockingSource {
         // Aidoku SDK-next sources run a `start` init function once the
         // module is live; it used to run right after install.
         if sdk_next {
-            self.start()?;
+            if let Err(error) = self.start() {
+                // Roll back the boot so a later call re-boots the engine
+                // instead of exiting through the `instance.is_some()` fast
+                // path with a partially initialized module.
+                self.store = None;
+                self.instance = None;
+                self.next_sdk = false;
+                return Err(error);
+            }
         }
         Ok(())
     }

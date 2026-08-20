@@ -738,6 +738,7 @@ impl MangayomiSource {
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        self.ensure_probed()?;
         let headers = self.headers();
         let mut builder = crate::tls::client_builder()
             .build()
@@ -875,6 +876,7 @@ impl MangayomiSource {
         chapter: aidoku::Chapter,
     ) -> Result<Vec<aidoku::Page>> {
         let _ = cancellation_token;
+        self.ensure_probed()?;
         let value = self.invoke("getPageList", json!([chapter.key.clone()]))?;
         Ok(value
             .as_array()

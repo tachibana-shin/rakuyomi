@@ -92,9 +92,20 @@ impl SourceManager {
         // probe runs right away: it writes the probe cache (later loads read
         // it and skip the JS evaluation) and the source is fully probed from
         // the start, showing its real manifest in the installed-sources list.
-        source
+        if let Err(e) = source
             .probe()
-            .with_context(|| format!("failed to probe LNReader plugin {}", id.value()))?;
+            .with_context(|| format!("failed to probe LNReader plugin {}", id.value()))
+        {
+            // Probe failed: remove the plugin and metadata files to avoid
+            // leaving a partially installed source on disk.
+            let _ = fs::remove_file(&target_path);
+            if let Ok(meta_path) = crate::source::BlockingSource::meta_source_path(&target_path) {
+                let _ = fs::remove_file(&meta_path);
+            }
+            let probe_path = self.lnreader_probe_path(id);
+            let _ = fs::remove_file(&probe_path);
+            return Err(e);
+        }
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(
@@ -160,9 +171,21 @@ impl SourceManager {
         let source = Source::from_mangayomi_file(&target_path, self, arc_manager)?;
         // See `install_lnreader_source`: the probe runs eagerly so the probe
         // cache is written and the source is fully probed from the start.
-        source
+        if let Err(e) = source
             .probe()
-            .with_context(|| format!("failed to probe MangaYomi extension {}", id.value()))?;
+            .with_context(|| format!("failed to probe MangaYomi extension {}", id.value()))
+        {
+            // Probe failed: remove the extension, metadata, and meta files to
+            // avoid leaving a partially installed source on disk.
+            let _ = fs::remove_file(&target_path);
+            let _ = fs::remove_file(target_path.with_extension("json"));
+            if let Ok(meta_path) = crate::source::BlockingSource::meta_source_path(&target_path) {
+                let _ = fs::remove_file(&meta_path);
+            }
+            let probe_path = self.mangayomi_probe_path(id);
+            let _ = fs::remove_file(&probe_path);
+            return Err(e);
+        }
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(

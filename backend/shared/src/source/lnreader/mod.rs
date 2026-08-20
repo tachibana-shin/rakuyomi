@@ -196,6 +196,7 @@ impl LnReaderSource {
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_nanos());
+        let usage = ResourceRegistry::default();
         let probe = match plugin_mtime_ns
             .and_then(|mtime| read_probe_cache(path, plugin_len, mtime))
         {
@@ -207,6 +208,7 @@ impl LnReaderSource {
                     &stored_settings,
                     arc_manager,
                     &props_json,
+                    usage.clone(),
                 ) {
                     Ok(state) => Some(Ok(Arc::new(state))),
                     Err(e) => {
@@ -214,6 +216,9 @@ impl LnReaderSource {
                             "failed to parse probe cache for {}: {e}",
                             path.display()
                         );
+                        // Remove the invalid cache so run_probe re-evaluates
+                        // the plugin instead of reading the same bad data.
+                        let _ = fs::remove_file(probe_cache_path(path));
                         None
                     }
                 }
@@ -226,7 +231,7 @@ impl LnReaderSource {
             features: SourceFeatures {
                 process_page_image: false,
             },
-            usage: ResourceRegistry::default(),
+            usage,
             path: path.to_path_buf(),
             plugin_code,
             source_of_source,
@@ -245,6 +250,7 @@ impl LnReaderSource {
         stored_settings: &HashMap<String, SourceSettingValue>,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
         props_json: &str,
+        usage: ResourceRegistry,
     ) -> Result<ProbedLnReader> {
         let props = parse_props(props_json)?;
         let mut manifest = manifest_from_props(&props, source_of_source.clone());
@@ -261,14 +267,15 @@ impl LnReaderSource {
             arc_manager,
         )?));
 
-        // The final runtime starts its worker lazily on the first call.
+        // The final runtime starts its worker lazily on the first call,
+        // using the source's usage registry to track its memory.
         let runtime = LnReaderRuntime::new(
             props.id.clone(),
             plugin_code.to_string(),
             String::new(),
             DEFAULT_USER_AGENT.to_string(),
             DEFAULT_INVOKE_TIMEOUT,
-            ResourceRegistry::default(),
+            usage,
         )?;
 
         // Seed the plugin's `@libs/storage` with the pluginSettings values,
@@ -401,6 +408,7 @@ impl LnReaderSource {
             &self.stored_settings,
             &self.arc_manager,
             &props_json,
+            self.usage.clone(),
         )
     }
 

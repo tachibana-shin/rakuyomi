@@ -156,7 +156,9 @@ end
 ---@return boolean success Whether the backend was initialized successfully.
 ---@return string|nil logs On error, the last logs written by the server.
 function Backend.initialize()
-  assert(Backend.server == nil, "backend was already initialized!")
+  if Backend.running() then
+    return true, nil
+  end
 
   Backend.server = Platform:startServer()
 

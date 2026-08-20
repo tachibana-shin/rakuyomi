@@ -244,10 +244,10 @@ impl Source {
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
         #[cfg(feature = "all")]
-        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
         #[cfg(not(feature = "all"))]
-        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
         let features = { blocking_source.features.clone() };
 
@@ -563,11 +563,10 @@ pub struct BlockingSource {
     path: PathBuf,
     source_settings: Option<SourceSettings>,
     manager_settings: Settings,
-    /// Which SDK mode the source was installed as (`force_mode` records a
-    /// boot-time retry with the opposite mode).
-    aidoku_sdk_next: bool,
+    /// The SDK mode recorded in the sidecar meta file after the first boot
+    /// (`None` until then), so the first boot attempt matches the mode the
+    /// module actually instantiated with, without re-detecting.
     aidoku_sdk_next_from_meta: Option<bool>,
-    force_mode: Option<bool>,
 }
 #[cfg(feature = "all")]
 pub struct BlockingSource {
@@ -583,11 +582,10 @@ pub struct BlockingSource {
     path: PathBuf,
     source_settings: Option<SourceSettings>,
     manager_settings: Settings,
-    /// Which SDK mode the source was installed as (`force_mode` records a
-    /// boot-time retry with the opposite mode).
-    aidoku_sdk_next: bool,
+    /// The SDK mode recorded in the sidecar meta file after the first boot
+    /// (`None` until then), so the first boot attempt matches the mode the
+    /// module actually instantiated with, without re-detecting.
     aidoku_sdk_next_from_meta: Option<bool>,
-    force_mode: Option<bool>,
 }
 
 impl BlockingSource {
@@ -595,7 +593,6 @@ impl BlockingSource {
         path: &Path,
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
-        force_mode: Option<bool>,
     ) -> Result<Self> {
         let file =
             fs::File::open(path).with_context(|| format!("couldn't open {}", path.display()))?;
@@ -654,11 +651,6 @@ impl BlockingSource {
             setting_definitions.insert(0, url);
         }
 
-        let aidoku_sdk_next = force_mode.unwrap_or_else(|| {
-            aidoku_sdk_next_from_meta
-                .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version))
-        });
-
         let stored_source_settings = manager
             .settings
             .source_settings
@@ -688,7 +680,7 @@ impl BlockingSource {
             store: None,
             instance: None,
             manifest,
-            next_sdk: aidoku_sdk_next,
+            next_sdk: false,
             setting_definitions,
             features: SourceFeatures {
                 process_page_image: false,
@@ -696,9 +688,7 @@ impl BlockingSource {
             path: path.to_path_buf(),
             source_settings: Some(source_settings),
             manager_settings: manager.settings.clone(),
-            aidoku_sdk_next,
             aidoku_sdk_next_from_meta,
-            force_mode,
         })
     }
 
@@ -709,22 +699,21 @@ impl BlockingSource {
         if self.instance.is_some() {
             return Ok(());
         }
-        let sdk_next = self.force_mode.unwrap_or(self.aidoku_sdk_next);
-        let (mut store, instance) = match self.boot(sdk_next) {
-            Ok(booted) => booted,
+        let sdk_next = self
+            .aidoku_sdk_next_from_meta
+            .unwrap_or_else(|| Self::is_aidoku_sdk_next(&self.manifest.info.min_app_version));
+        let (mut store, instance, sdk_next) = match self.boot(sdk_next) {
+            Ok((store, instance)) => (store, instance, sdk_next),
             Err(error) => {
-                if self.force_mode.is_some() {
-                    return Err(error);
-                }
                 let retry = !sdk_next;
-                self.force_mode = Some(retry);
-                self.boot(retry).map_err(|retry_error| {
+                let (store, instance) = self.boot(retry).map_err(|retry_error| {
                     anyhow!(
                         "failed instantiating {} ({}): {retry_error:#} (first attempt: {error:#})",
                         self.id,
                         if sdk_next { "next" } else { "legacy" }
                     )
-                })?
+                })?;
+                (store, instance, retry)
             }
         };
 

@@ -32,7 +32,7 @@ pub fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
         Err(_) => match path.canonicalize() {
             Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
             Err(e) => {
-                println!("Error canonicalizing path: {}", e);
+                log::warn!("Error canonicalizing path: {}", e);
                 None
             }
         },

@@ -88,6 +88,13 @@ impl SourceManager {
         Source::write_meta_file(&target_path, source_of_source)?;
 
         let source = Source::from_lnreader_file(&target_path, self, arc_manager)?;
+        // Installing is an explicit user action with the network up, so the
+        // probe runs right away: it writes the probe cache (later loads read
+        // it and skip the JS evaluation) and the source is fully probed from
+        // the start, showing its real manifest in the installed-sources list.
+        source
+            .probe()
+            .with_context(|| format!("failed to probe LNReader plugin {}", id.value()))?;
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(
@@ -151,6 +158,11 @@ impl SourceManager {
         Source::write_meta_file(&target_path, source_of_source)?;
 
         let source = Source::from_mangayomi_file(&target_path, self, arc_manager)?;
+        // See `install_lnreader_source`: the probe runs eagerly so the probe
+        // cache is written and the source is fully probed from the start.
+        source
+            .probe()
+            .with_context(|| format!("failed to probe MangaYomi extension {}", id.value()))?;
         self.sources_by_id.insert(id.clone(), source);
         #[cfg(not(feature = "all"))]
         self.file_sources.insert(

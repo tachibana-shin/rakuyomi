@@ -517,13 +517,13 @@ async fn js_runner_full_offline() {
     assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
     let source = mangayomi(&source);
-    assert!(source.supports_latest, "sync getter supportsLatest");
+    assert!(source.supports_latest(), "sync getter supportsLatest");
     assert!(!source.features.process_page_image);
 
     // Extension-declared preferences become the settings definitions and are
     // merged into the shared settings map (and therefore visible to the
     // extension through `SharedPreferences`).
-    let defs = &source.setting_definitions;
+    let defs = &source.setting_definitions();
     assert_eq!(defs.len(), 2);
     let settings = source.settings.lock().unwrap();
     assert!(matches!(
@@ -713,7 +713,7 @@ fn js_runner_stores_js_suffix() {
         .clone();
     assert_eq!(source.manifest().info.id, "638504050");
     let mangayomi = mangayomi(&source);
-    assert_eq!(mangayomi.base_url, "http://example.com");
+    assert_eq!(mangayomi.base_url(), "http://example.com");
     assert!(
         manager
             .blocking_lock()
@@ -836,7 +836,7 @@ class DefaultExtension extends MProvider {
         .clone();
     let source = mangayomi(&source);
 
-    let defs = &source.setting_definitions;
+    let defs = source.setting_definitions();
     assert_eq!(defs.len(), 1);
     match &defs[0] {
         SettingDefinition::Text { key, default, .. } => {

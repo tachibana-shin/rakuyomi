@@ -111,6 +111,8 @@ pub fn manifest_from_props(
             id: props.id.clone(),
             lang: None,
             languages: None,
+            #[cfg(not(feature = "all"))]
+            content_rating: None,
             name: props.name.clone(),
             version: serde_json::Value::String(props.version.clone()),
             url: Some(props.site.clone()),

@@ -80,7 +80,7 @@ end
 --- @param current string[]
 --- @param options { id: string }[]
 --- @return string[]
-local function sanitizeSelection(current, options)
+local function sanitize_selection(current, options)
   local valid = {}
   for _, option in ipairs(options) do
     valid[option.id] = true
@@ -138,8 +138,8 @@ function AvailableSourcesListing:init()
 
   self:extractAvailableLangs()
   self:extractAvailableRepos()
-  self.langs_selected = sanitizeSelection(self.langs_selected, self.langs)
-  self.repos_selected = sanitizeSelection(self.repos_selected, self.repos)
+  self.langs_selected = sanitize_selection(self.langs_selected, self.langs)
+  self.repos_selected = sanitize_selection(self.repos_selected, self.repos)
   self:patchTitleBar()
 
   -- self:updateItems()
@@ -180,7 +180,10 @@ function AvailableSourcesListing:extractAvailableLangs()
   local langs_set = {}
   local langs_list = {}
 
-  for _, lang in ipairs(G_reader_settings:readSetting("rakuyomi_languages", {})) do
+  -- The languages managed in the Languages screen are stored in the
+  -- backend settings; read them from there so both screens share one
+  -- source of truth.
+  for _, lang in ipairs(self.settings.languages or {}) do
     langs_set[lang] = true
     table.insert(langs_list, lang)
   end
@@ -238,7 +241,7 @@ function AvailableSourcesListing:filterAvailableSources()
   end
 
   local filtered = {}
-  for _idx, source_information in ipairs(self.available_sources) do
+  for __, source_information in ipairs(self.available_sources) do
     local lang_matches = #self.langs_selected == 0 or #source_information.languages == 0
     for _, lang in ipairs(source_information.languages) do
       if langs_set[lang] then
@@ -361,7 +364,7 @@ function AvailableSourcesListing:patchTitleBar()
   -- copies would be painted on top of the fresh one.
   local filter_group = HorizontalGroup:new(buttons)
   self.title_bar.left_button = filter_group
-  if self.filter_group then
+  if self.title_bar[2] ~= nil then
     self.title_bar[2] = filter_group
   else
     table.insert(self.title_bar, 2, filter_group)

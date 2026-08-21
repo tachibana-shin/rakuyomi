@@ -168,7 +168,7 @@ end
 --- @param code string
 function LanguagesListing:addLanguage(code)
   local languages = self.settings.languages or {}
-  for _idx, existing in ipairs(languages) do
+  for __, existing in ipairs(languages) do
     if existing == code then
       ErrorDialog:show(_("This language is already in the list."))
 

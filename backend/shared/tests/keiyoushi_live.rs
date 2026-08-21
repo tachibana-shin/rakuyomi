@@ -87,6 +87,7 @@ fn install_mangapill() -> Source {
             bytes,
             "keiyoushi/extensions".to_string(),
             manager,
+            None,
         )
         .unwrap_or_else(|e| panic!("failed to install keiyoushi APK: {e:#}"));
 

@@ -349,12 +349,17 @@ impl Source {
         }
     }
 
-    pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
+    pub fn write_meta_file(
+        path: &Path,
+        source_of_source: String,
+        languages: Option<Vec<String>>,
+    ) -> anyhow::Result<()> {
         fs::write(
             BlockingSource::meta_source_path(path)?,
             serde_json::to_string(&SourceMeta {
                 source_of_source: Some(source_of_source),
                 is_next_sdk: None,
+                languages,
             })?,
         )
         .context("while writing meta file")
@@ -530,6 +535,10 @@ pub struct SourceMeta {
     #[serde(rename = "from")]
     pub source_of_source: Option<String>,
     pub is_next_sdk: Option<bool>,
+    /// The languages selected at install time for a multi-source keiyoushi
+    /// APK; `None` (or missing) keeps every bundled source.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub languages: Option<Vec<String>>,
 }
 
 fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory> {
@@ -742,6 +751,7 @@ impl BlockingSource {
                 serde_json::to_string(&SourceMeta {
                     source_of_source: self.manifest.source_of_source.clone(),
                     is_next_sdk: Some(sdk_next),
+                    languages: None,
                 })?,
             );
         }

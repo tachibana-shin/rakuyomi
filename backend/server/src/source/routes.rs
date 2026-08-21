@@ -4,7 +4,7 @@ use axum::extract::{Path, State as StateExtractor};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use serde::Deserialize;
-use shared::model::SourceId;
+use shared::model::{InstallOutcome, SourceId};
 use shared::resource_usage::SourceUsage;
 use shared::settings::SourceSettingValue;
 use shared::source::model::SettingDefinition;
@@ -58,6 +58,13 @@ struct InstallSourceParams {
     source_id: String,
 }
 
+#[derive(Deserialize)]
+struct InstallSourceRequest {
+    source_of_source: String,
+    #[serde(default)]
+    languages: Option<Vec<String>>,
+}
+
 async fn install_source(
     StateExtractor(State {
         source_manager,
@@ -65,18 +72,22 @@ async fn install_source(
         ..
     }): StateExtractor<State>,
     Path(InstallSourceParams { source_id }): Path<InstallSourceParams>,
-    Json(source_of_source): Json<String>,
-) -> Result<Json<()>, AppError> {
-    usecases::install_source(
+    Json(InstallSourceRequest {
+        source_of_source,
+        languages,
+    }): Json<InstallSourceRequest>,
+) -> Result<Json<InstallOutcome>, AppError> {
+    let outcome = usecases::install_source(
         &mut *source_manager.lock().await,
         &source_manager,
         &settings.lock().await.source_lists,
         SourceId::new(source_id),
         source_of_source,
+        languages,
     )
     .await?;
 
-    Ok(Json(()))
+    Ok(Json(outcome))
 }
 
 async fn list_installed_sources(

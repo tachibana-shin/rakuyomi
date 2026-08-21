@@ -310,7 +310,12 @@ impl From<SourceManifest> for SourceInformation {
             id: SourceId::new(value.info.id),
             name: value.info.name,
             version: value.info.version,
-            languages: value.info.languages.unwrap_or_default(),
+            languages: value
+                .info
+                .languages
+                .filter(|langs| !langs.is_empty())
+                .or_else(|| value.info.lang.map(|lang| vec![lang]))
+                .unwrap_or_default(),
             source_of_source: value.source_of_source,
         }
     }
@@ -371,6 +376,20 @@ pub struct PlaylistManga {
     pub playlist_id: i64,
     pub source_id: String,
     pub manga_id: String,
+}
+
+/// The result of an install request. A multi-source keiyoushi APK asks the
+/// user which languages to install before anything is written to disk.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum InstallOutcome {
+    Installed,
+    SelectionRequired {
+        /// Display name of the extension, for the selection dialog title.
+        name: String,
+        /// Languages bundled in the APK, one entry per language.
+        languages: Vec<String>,
+    },
 }
 
 #[cfg(test)]
@@ -516,6 +535,30 @@ mod tests {
     }
 
     #[test]
+    fn test_source_information_from_manifest_falls_back_to_lang() {
+        // Keiyoushi and MangaYomi sources only set `lang` in the manifest;
+        // the reported languages must fall back to it.
+        let manifest = crate::source::SourceManifest {
+            info: crate::source::SourceInfo {
+                id: "test_id".to_string(),
+                lang: Some("vi".to_string()),
+                languages: None,
+                #[cfg(not(feature = "all"))]
+                content_rating: None,
+                name: "Test Source".to_string(),
+                version: serde_json::json!("1"),
+                url: None,
+                urls: None,
+                min_app_version: None,
+            },
+            config: None,
+            source_of_source: Some("test_sos".to_string()),
+        };
+        let info = SourceInformation::from(manifest);
+        assert_eq!(info.languages, vec!["vi".to_string()]);
+    }
+
+    #[test]
     fn test_source_information_deserializes_aidoku_languages() {
         let json =
             r#"{"id":"en.aquamanga","name":"Aqua Manga","version":1,"languages":["en","vi"]}"#;
@@ -550,6 +593,26 @@ mod tests {
         let json = r#"{"id":"en.royalroad","name":"Royal Road","version":"2.3.1"}"#;
         let info: SourceInformation = serde_json::from_str(json).unwrap();
         assert_eq!(info.version, serde_json::json!("2.3.1"));
+    }
+
+    #[test]
+    fn test_install_outcome_serializes_with_type_tag() {
+        assert_eq!(
+            serde_json::to_value(InstallOutcome::Installed).unwrap(),
+            serde_json::json!({ "type": "installed" })
+        );
+        assert_eq!(
+            serde_json::to_value(InstallOutcome::SelectionRequired {
+                name: "MangaDex".to_string(),
+                languages: vec!["en".to_string(), "vi".to_string()],
+            })
+            .unwrap(),
+            serde_json::json!({
+                "type": "selection_required",
+                "name": "MangaDex",
+                "languages": ["en", "vi"],
+            })
+        );
     }
 
     #[test]

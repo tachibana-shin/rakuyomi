@@ -14,6 +14,10 @@ local Menu = require("widgets/Menu")
 local _ = require("gettext+")
 local Testing = require("testing")
 local CheckboxDialog = require("CheckboxDialog")
+local format_languages = require("utils/formatLanguages")
+local hasValue = require("utils/hasValue")
+---@diagnostic disable-next-line: different-requires
+local util = require("util")
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local Font = require("ui/font")
@@ -393,13 +397,19 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
     callback = function() self:installSource(source_information) end
   end
 
+  local languages_text = format_languages(source_information.languages)
+  local post_text = source_information.source_of_source
+      and string.sub(source_information.source_of_source, 1, 6) .. "..." or
+      _("Unknown")
+  if languages_text then
+    post_text = languages_text .. " · " .. post_text
+  end
+
   return {
     source_information = source_information,
     text = source_information.name .. " (" .. _("version") .. " " .. tostring(source_information.version) .. ")",
     mandatory = mandatory,
-    post_text = source_information.source_of_source
-        and string.sub(source_information.source_of_source, 1, 6) .. "..." or
-        _("Unknown"),
+    post_text = post_text,
     callback = callback,
   }
 end
@@ -462,10 +472,17 @@ end
 --- @private
 --- @param source_information SourceInformation
 function AvailableSourcesListing:installSource(source_information)
+  self:installSourceWithLanguages(source_information, nil)
+end
+
+--- @private
+--- @param source_information SourceInformation
+--- @param languages string[]|nil
+function AvailableSourcesListing:installSourceWithLanguages(source_information, languages)
   Trapper:wrap(function()
     local response = LoadingDialog:showAndRun(
       _("Installing source..."),
-      function() return Backend.installSource(source_information.id, source_information.source_of_source) end
+      function() return Backend.installSource(source_information.id, source_information.source_of_source, languages) end
     )
 
     if response.type == 'ERROR' then
@@ -474,21 +491,83 @@ function AvailableSourcesListing:installSource(source_information)
       return
     end
 
-    local installed_sources_response = Backend.listInstalledSources()
-    if installed_sources_response.type == 'ERROR' then
-      ErrorDialog:show(installed_sources_response.message)
+    if response.body.type == 'selection_required' then
+      self:showLanguageSelection(source_information, response.body)
 
       return
     end
 
-    self.installed_sources = installed_sources_response.body
-
-    Testing:emitEvent("source_installed", {
-      source = source_information
-    })
-
-    self:updateItems()
+    self:refreshAfterInstall(source_information)
   end)
+end
+
+--- Asks which languages of a multi-source keiyoushi APK to install, then
+--- installs the selection.
+--- @private
+--- @param source_information SourceInformation
+--- @param outcome InstallOutcomeSelectionRequired
+function AvailableSourcesListing:showLanguageSelection(source_information, outcome)
+  local options = {}
+  for _, lang in ipairs(outcome.languages) do
+    table.insert(options, {
+      id = lang,
+      name = lang,
+    })
+  end
+
+  -- Pre-check the language of the tapped entry; fall back to checking
+  -- every language when the entry carries none.
+  local current = {}
+  if source_information.languages then
+    for _, lang in ipairs(source_information.languages) do
+      if hasValue(outcome.languages, lang) then
+        table.insert(current, lang)
+      end
+    end
+  end
+  if #current == 0 then
+    current = util.tableDeepCopy(outcome.languages)
+  end
+
+  local selected = current
+  ---@diagnostic disable-next-line: redundant-parameter
+  local dialog = CheckboxDialog:new {
+    title = _("Select languages to install") .. ": " .. outcome.name,
+    current = current,
+    options = options,
+    update_callback = function(value)
+      selected = value
+    end,
+    dismiss_callback = function()
+      if #selected == 0 then
+        self:showLanguageSelection(source_information, outcome)
+
+        return
+      end
+      self:installSourceWithLanguages(source_information, selected)
+    end,
+  }
+
+  UIManager:show(dialog)
+end
+
+--- @private
+--- @param source_information SourceInformation
+function AvailableSourcesListing:refreshAfterInstall(source_information)
+  local installed_sources_response = Backend.listInstalledSources()
+  if installed_sources_response.type == 'ERROR' then
+    ErrorDialog:show(installed_sources_response.message)
+
+    return
+  end
+
+  self.installed_sources = installed_sources_response.body
+
+  Testing:emitEvent("source_installed", {
+    source = source_information
+  })
+
+  self:updateItems()
 end
 
 --- Fetches and shows the available sources. Must be called from a function wrapped with `Trapper:wrap()`.

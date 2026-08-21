@@ -1209,10 +1209,10 @@ function LibraryView:openSettingsSearchDialog()
 
   local key = "exlucde_source_ids_select_search"
   local options = {}
-  local formatLanguages = require("utils/formatLanguages")
+  local format_languages = require("utils/formatLanguages")
   for _, source_information in ipairs(response.body) do
     local name = source_information.name
-    local languages_text = formatLanguages(source_information.languages)
+    local languages_text = format_languages(source_information.languages)
     if languages_text then
       name = name .. " (" .. languages_text .. ")"
     end

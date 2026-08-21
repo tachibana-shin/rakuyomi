@@ -185,7 +185,10 @@ pub struct ApkProbe {
     /// introduced readable.
     #[serde(default)]
     pub version_name: Option<String>,
+    /// The `(name, lang, supports_latest)` triple of every source bundled
+    /// in the APK.
     pub sources: Vec<(String, String, bool)>,
+    /// Preference definitions materialised by the APK's sources.
     pub setting_definitions: Vec<SettingDefinition>,
 }
 

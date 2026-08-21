@@ -135,10 +135,19 @@ function Testing:periodicallyReadIPC()
           install_source = function()
             local Backend = require("Backend")
             local source_id = decoded.params.source_id
+            local languages = decoded.params.languages
 
-            local response = Backend.installSource(source_id, "")
+            local response = Backend.installSource(source_id, "", languages)
             if response.type == 'ERROR' then
               logger.warn("Failed to install source:", response.message)
+
+              return
+            end
+
+            if response.body.type == "selection_required" then
+              logger.warn(
+                "Source installation requires a language selection; pass `languages` via IPC params",
+                response.body.name)
 
               return
             end

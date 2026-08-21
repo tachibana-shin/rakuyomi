@@ -175,6 +175,10 @@ impl SourceManager {
         arc_manager: &Arc<Mutex<SourceManager>>,
         languages: Option<&[String]>,
     ) -> Result<()> {
+        if languages.is_some_and(|langs| langs.is_empty()) {
+            bail!("keiyoushi language selection is empty");
+        }
+
         let target_path = self.keiyoushi_source_path(id);
         fs::write(&target_path, contents)?;
 
@@ -189,9 +193,13 @@ impl SourceManager {
         // the registered set would mix the old and the new selection.
         let doomed: Vec<SourceId> = self
             .sources_by_id
-            .keys()
-            .filter(|id2| self.keiyoushi_source_path(id2) == target_path)
-            .cloned()
+            .iter()
+            .filter_map(|(id, source)| match &source.backend {
+                SourceBackend::Keiyoushi(keiyoushi) => {
+                    (keiyoushi.apk_path() == target_path).then(|| id.clone())
+                }
+                _ => None,
+            })
             .collect();
         for doomed_id in doomed {
             self.sources_by_id.remove(&doomed_id);

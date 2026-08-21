@@ -645,11 +645,16 @@ function Backend.listAvailableSources()
   })
 end
 
---- @class InstallOutcome: { type: 'installed' } | { type: 'selection_required', name: string, languages: string[] }
----
+--- @class InstallOutcomeInstalled: { type: 'installed' }
+--- @class InstallOutcomeSelectionRequired: { type: 'selection_required', name: string, languages: string[] }
+--- @alias InstallOutcome InstallOutcomeInstalled|InstallOutcomeSelectionRequired
+
 --- Installs a source. `languages` (keiyoushi multi-source APKs) restricts
 --- which bundled languages are installed; when omitted, a multi-source APK
 --- answers `selection_required` instead of installing.
+--- @param source_id string
+--- @param source_of_source string
+--- @param languages string[]|nil
 --- @return SuccessfulResponse<InstallOutcome>|ErrorResponse
 function Backend.installSource(source_id, source_of_source, languages)
   local body = {

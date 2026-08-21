@@ -13,7 +13,7 @@ local Menu = require("widgets/Menu")
 local _ = require("gettext+")
 local Testing = require("testing")
 local CheckboxDialog = require("CheckboxDialog")
-local formatLanguages = require("utils/formatLanguages")
+local format_languages = require("utils/formatLanguages")
 local hasValue = require("utils/hasValue")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
@@ -256,7 +256,7 @@ function AvailableSourcesListing:makeItem(source_information, installed_info)
     callback = function() self:installSource(source_information) end
   end
 
-  local languages_text = formatLanguages(source_information.languages)
+  local languages_text = format_languages(source_information.languages)
   local post_text = source_information.source_of_source
       and string.sub(source_information.source_of_source, 1, 6) .. "..." or
       _("Unknown")
@@ -364,7 +364,7 @@ end
 --- installs the selection.
 --- @private
 --- @param source_information SourceInformation
---- @param outcome { type: 'selection_required', name: string, languages: string[] }
+--- @param outcome InstallOutcomeSelectionRequired
 function AvailableSourcesListing:showLanguageSelection(source_information, outcome)
   local options = {}
   for _, lang in ipairs(outcome.languages) do

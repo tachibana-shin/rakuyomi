@@ -10,7 +10,7 @@ local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
 local SourceSettings = require("SourceSettings")
 local Testing = require("testing")
-local formatLanguages = require("utils/formatLanguages")
+local format_languages = require("utils/formatLanguages")
 
 --- @class InstalledSourcesListing: { [any]: any }
 --- @field installed_sources SourceInformation[]
@@ -79,7 +79,7 @@ end
 function InstalledSourcesListing:generateItemTableFromInstalledSources(installed_sources)
   local item_table = {}
   for __,source_information in ipairs(installed_sources) do
-    local languages_text = formatLanguages(source_information.languages)
+    local languages_text = format_languages(source_information.languages)
     local post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
         _("Unknown")
     if languages_text then

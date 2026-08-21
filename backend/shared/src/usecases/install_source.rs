@@ -14,6 +14,15 @@ use crate::{
     usecases::resolve_source_list::{resolve_source_list, source_list_key},
 };
 
+/// Installs the source identified by `source_id` from the source list
+/// named by `source_of_source`.
+///
+/// For keiyoushi extensions, `languages` restricts which bundled sources
+/// of a multi-source APK get registered. Passing `None` for a multi-source
+/// APK installs nothing and returns
+/// [`InstallOutcome::SelectionRequired`] with the bundled languages so the
+/// caller can ask the user for a selection; a non-empty selection must
+/// only contain languages the APK actually bundles.
 pub async fn install_source(
     source_manager: &mut SourceManager,
     arc_manager: &Arc<Mutex<SourceManager>>,
@@ -152,6 +161,23 @@ pub async fn install_source(
                     None,
                 )?;
             } else if let Some(languages) = languages {
+                let bundled = probe
+                    .sources
+                    .iter()
+                    .map(|(_, lang, _)| lang.as_str())
+                    .collect::<std::collections::HashSet<_>>();
+                if languages.is_empty() {
+                    anyhow::bail!("keiyoushi language selection is empty");
+                }
+                if let Some(unknown) = languages
+                    .iter()
+                    .find(|lang| !bundled.contains(lang.as_str()))
+                {
+                    anyhow::bail!(
+                        "keiyoushi extension does not bundle the selected language '{unknown}'"
+                    );
+                }
+
                 source_manager.install_keiyoushi_source(
                     &source_id,
                     apk_content,

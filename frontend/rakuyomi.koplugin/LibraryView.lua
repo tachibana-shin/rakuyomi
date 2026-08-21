@@ -9,6 +9,7 @@ local Icons = require("Icons")
 local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
 local SourceListsListing = require("SourceListsListing")
+local LanguagesListing = require("LanguagesListing")
 local IconButton = require("ui/widget/iconbutton")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
@@ -902,7 +903,7 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = Icons.FA_LIST .. " " .. _("Source lists"),
+        text = Icons.REPO .. " " .. _("Source lists"),
         callback = function()
           UIManager:close(dialog)
 
@@ -910,6 +911,17 @@ function LibraryView:openMenu()
             self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
           end
           SourceListsListing:fetchAndShow(onReturnCallback)
+        end
+      },
+      {
+        text = Icons.LANG .. " " .. _("Languages"),
+        callback = function()
+          UIManager:close(dialog)
+
+          local onReturnCallback = function()
+            self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+          end
+          LanguagesListing:fetchAndShow(onReturnCallback)
         end
       },
     },

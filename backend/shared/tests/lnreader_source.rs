@@ -68,12 +68,25 @@ async fn run_plugin_smoke(
         "LNReader version is a string"
     );
 
-    // search_mangas with an empty query acts as the popular list -- needs network
-
-    let (mangas, has_next) = source
-        .search_mangas(CancellationToken::new(), String::new(), 1)
-        .await
-        .unwrap();
+    // search_mangas with an empty query acts as the popular list -- needs network.
+    // When several CI runs hit the site concurrently it sometimes answers with
+    // an empty result (rate limiting / bot challenge), so retry a few times
+    // with backoff before failing.
+    let mut mangas = Vec::new();
+    let mut has_next = false;
+    for attempt in 1..=4 {
+        let (result, next) = source
+            .search_mangas(CancellationToken::new(), String::new(), 1)
+            .await
+            .unwrap();
+        mangas = result;
+        has_next = next;
+        if !mangas.is_empty() {
+            break;
+        }
+        eprintln!("popular list came back empty (attempt {attempt}), retrying...");
+        tokio::time::sleep(std::time::Duration::from_secs(5 * attempt)).await;
+    }
     assert!(!mangas.is_empty(), "popular list must not be empty");
     assert!(!has_next);
     assert!(
@@ -136,12 +149,7 @@ async fn run_plugin_smoke(
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-// Live smoke tests against third-party sites: they fail when the site
-// blocks datacenter IPs (e.g. GitHub Actions runners behind Cloudflare),
-// so they are excluded from CI runs. Run them explicitly with:
-//   cargo test -p shared --test lnreader_source -- --ignored
 #[tokio::test]
-#[ignore = "live network test; the site may block datacenter IPs"]
 async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
     run_plugin_smoke(
         "chrysanthemumgarden.js",
@@ -156,7 +164,6 @@ async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
 /// Royal Road has no `resolveUrl`, so this also exercises the `site + path`
 /// chapter URL fallback.
 #[tokio::test]
-#[ignore = "live network test; the site may block datacenter IPs"]
 async fn lnreader_plugin_end_to_end_royalroad() {
     run_plugin_smoke(
         "royalroad.js",

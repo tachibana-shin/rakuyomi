@@ -244,10 +244,10 @@ impl Source {
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
     ) -> Result<Self> {
         #[cfg(feature = "all")]
-        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
         #[cfg(not(feature = "all"))]
-        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager, None)?;
+        let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
         let features = { blocking_source.features.clone() };
 
@@ -361,12 +361,17 @@ impl Source {
         }
     }
 
-    pub fn write_meta_file(path: &Path, source_of_source: String) -> anyhow::Result<()> {
+    pub fn write_meta_file(
+        path: &Path,
+        source_of_source: String,
+        languages: Option<Vec<String>>,
+    ) -> anyhow::Result<()> {
         fs::write(
             BlockingSource::meta_source_path(path)?,
             serde_json::to_string(&SourceMeta {
                 source_of_source: Some(source_of_source),
                 is_next_sdk: None,
+                languages,
             })?,
         )
         .context("while writing meta file")
@@ -542,6 +547,10 @@ pub struct SourceMeta {
     #[serde(rename = "from")]
     pub source_of_source: Option<String>,
     pub is_next_sdk: Option<bool>,
+    /// The languages selected at install time for a multi-source keiyoushi
+    /// APK; `None` (or missing) keeps every bundled source.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub languages: Option<Vec<String>>,
 }
 
 fn get_memory(instance: Instance, store: &mut Store<WasmStore>) -> Result<Memory> {
@@ -575,11 +584,10 @@ pub struct BlockingSource {
     path: PathBuf,
     source_settings: Option<SourceSettings>,
     manager_settings: Settings,
-    /// Which SDK mode the source was installed as (`force_mode` records a
-    /// boot-time retry with the opposite mode).
-    aidoku_sdk_next: bool,
+    /// The SDK mode recorded in the sidecar meta file after the first boot
+    /// (`None` until then), so the first boot attempt matches the mode the
+    /// module actually instantiated with, without re-detecting.
     aidoku_sdk_next_from_meta: Option<bool>,
-    force_mode: Option<bool>,
 }
 #[cfg(feature = "all")]
 pub struct BlockingSource {
@@ -595,19 +603,20 @@ pub struct BlockingSource {
     path: PathBuf,
     source_settings: Option<SourceSettings>,
     manager_settings: Settings,
-    /// Which SDK mode the source was installed as (`force_mode` records a
-    /// boot-time retry with the opposite mode).
-    aidoku_sdk_next: bool,
+    /// The SDK mode recorded in the sidecar meta file after the first boot
+    /// (`None` until then), so the first boot attempt matches the mode the
+    /// module actually instantiated with, without re-detecting.
     aidoku_sdk_next_from_meta: Option<bool>,
-    force_mode: Option<bool>,
 }
 
 impl BlockingSource {
+    /// Loads a source archive from an AIX file without booting its WASM
+    /// engine; the engine is compiled and instantiated lazily on first use
+    /// by [`BlockingSource::ensure_booted`].
     pub fn from_aix_file(
         path: &Path,
         manager: &SourceManager,
         arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
-        force_mode: Option<bool>,
     ) -> Result<Self> {
         let file =
             fs::File::open(path).with_context(|| format!("couldn't open {}", path.display()))?;
@@ -666,11 +675,6 @@ impl BlockingSource {
             setting_definitions.insert(0, url);
         }
 
-        let aidoku_sdk_next = force_mode.unwrap_or_else(|| {
-            aidoku_sdk_next_from_meta
-                .unwrap_or_else(|| Self::is_aidoku_sdk_next(&manifest.info.min_app_version))
-        });
-
         let stored_source_settings = manager
             .settings
             .source_settings
@@ -700,7 +704,7 @@ impl BlockingSource {
             store: None,
             instance: None,
             manifest,
-            next_sdk: aidoku_sdk_next,
+            next_sdk: false,
             setting_definitions,
             features: SourceFeatures {
                 process_page_image: false,
@@ -708,9 +712,7 @@ impl BlockingSource {
             path: path.to_path_buf(),
             source_settings: Some(source_settings),
             manager_settings: manager.settings.clone(),
-            aidoku_sdk_next,
             aidoku_sdk_next_from_meta,
-            force_mode,
         })
     }
 
@@ -721,22 +723,21 @@ impl BlockingSource {
         if self.instance.is_some() {
             return Ok(());
         }
-        let sdk_next = self.force_mode.unwrap_or(self.aidoku_sdk_next);
-        let (mut store, instance) = match self.boot(sdk_next) {
-            Ok(booted) => booted,
+        let sdk_next = self
+            .aidoku_sdk_next_from_meta
+            .unwrap_or_else(|| Self::is_aidoku_sdk_next(&self.manifest.info.min_app_version));
+        let (mut store, instance, sdk_next) = match self.boot(sdk_next) {
+            Ok((store, instance)) => (store, instance, sdk_next),
             Err(error) => {
-                if self.force_mode.is_some() {
-                    return Err(error);
-                }
                 let retry = !sdk_next;
-                self.force_mode = Some(retry);
-                self.boot(retry).map_err(|retry_error| {
+                let (store, instance) = self.boot(retry).map_err(|retry_error| {
                     anyhow!(
                         "failed instantiating {} ({}): {retry_error:#} (first attempt: {error:#})",
                         self.id,
                         if sdk_next { "next" } else { "legacy" }
                     )
-                })?
+                })?;
+                (store, instance, retry)
             }
         };
 
@@ -749,25 +750,35 @@ impl BlockingSource {
 
         if self.aidoku_sdk_next_from_meta != Some(sdk_next) {
             let meta_file = Self::meta_source_path(&self.path)?;
-            let _ = fs::write(
+            fs::write(
                 &meta_file,
                 serde_json::to_string(&SourceMeta {
                     source_of_source: self.manifest.source_of_source.clone(),
                     is_next_sdk: Some(sdk_next),
+                    languages: None,
                 })?,
-            );
+            )
+            .with_context(|| format!("failed persisting SDK mode for {}", self.id))?;
         }
 
         self.store = Some(store);
         self.instance = Some(instance);
-        // The engine now owns its own copy; drop the load-time snapshot.
-        self.source_settings = None;
 
         // Aidoku SDK-next sources run a `start` init function once the
         // module is live; it used to run right after install.
         if sdk_next {
-            self.start()?;
+            if let Err(error) = self.start() {
+                // Roll back the boot so a later call re-boots the engine
+                // instead of exiting through the `instance.is_some()` fast
+                // path with a partially initialized module.
+                self.store = None;
+                self.instance = None;
+                self.next_sdk = false;
+                return Err(error);
+            }
         }
+        // The engine now owns its own copy; drop the load-time snapshot.
+        self.source_settings = None;
         Ok(())
     }
 

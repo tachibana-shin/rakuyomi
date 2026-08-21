@@ -45,6 +45,7 @@ fn probe_apk() {
             bytes,
             "keiyoushi/extensions".to_string(),
             &manager,
+            None,
         )
         .unwrap_or_else(|e| panic!("install failed: {e:#}"));
     let manager_guard = manager.blocking_lock();

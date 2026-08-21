@@ -10,6 +10,7 @@ local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
 local SourceSettings = require("SourceSettings")
 local Testing = require("testing")
+local format_languages = require("utils/formatLanguages")
 
 --- @class InstalledSourcesListing: { [any]: any }
 --- @field installed_sources SourceInformation[]
@@ -60,10 +61,12 @@ function InstalledSourcesListing:updateItems()
     self.item_table = self:generateItemTableFromInstalledSources(self.installed_sources)
     self.multilines_show_more_text = false
     self.items_per_page = nil
+    self.single_line = true
   else
     self.item_table = self:generateEmptyViewItemTable()
     self.multilines_show_more_text = true
     self.items_per_page = 1
+    self.single_line = false
   end
 
   Menu.updateItems(self)
@@ -76,11 +79,17 @@ end
 function InstalledSourcesListing:generateItemTableFromInstalledSources(installed_sources)
   local item_table = {}
   for __,source_information in ipairs(installed_sources) do
+    local languages_text = format_languages(source_information.languages)
+    local post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
+        _("Unknown")
+    if languages_text then
+      post_text = languages_text .. " · " .. post_text
+    end
+
     table.insert(item_table, {
       source_information = source_information,
       text = source_information.name .. " (" .. _("version") .. " " .. tostring(source_information.version) .. ")",
-      post_text = source_information.source_of_source and string.sub(source_information.source_of_source, 0, 6) .. "..." or
-          _("Unknown"),
+      post_text = post_text,
     })
   end
 

@@ -96,11 +96,19 @@ function Backend.requestJson(request)
   end
 
   -- Under normal conditions, we should always have a request body, even when the status code
-  -- is not 2xx
+  -- is not 2xx. Should that ever change (e.g. a rejection body produced by the HTTP
+  -- framework itself), surface it as an ERROR response instead of raising and crashing
+  -- KOReader.
   local parsed_body, err = rapidjson.decode(response.body)
   if err then
-    error("Expected to be able to decode the response body as JSON: " ..
-      response.body .. "(status code: " .. response.status .. ")")
+    logger.err("Request returned a non-JSON body with status code", response.status, "and body",
+      response.body)
+
+    return {
+      type = 'ERROR',
+      status = response.status,
+      message = tostring(response.body),
+    }
   end
 
   if not (response.status and response.status >= 200 and response.status <= 299) then
@@ -156,7 +164,9 @@ end
 ---@return boolean success Whether the backend was initialized successfully.
 ---@return string|nil logs On error, the last logs written by the server.
 function Backend.initialize()
-  assert(Backend.server == nil, "backend was already initialized!")
+  if Backend.running() then
+    return true, nil
+  end
 
   Backend.server = Platform:startServer()
 
@@ -645,13 +655,28 @@ function Backend.listAvailableSources()
   })
 end
 
---- Installs a source.
---- @return SuccessfulResponse<SourceInformation[]>|ErrorResponse
-function Backend.installSource(source_id, source_of_source)
+--- @class InstallOutcomeInstalled: { type: 'installed' }
+--- @class InstallOutcomeSelectionRequired: { type: 'selection_required', name: string, languages: string[] }
+--- @alias InstallOutcome InstallOutcomeInstalled|InstallOutcomeSelectionRequired
+
+--- Installs a source. `languages` (keiyoushi multi-source APKs) restricts
+--- which bundled languages are installed; when omitted, a multi-source APK
+--- answers `selection_required` instead of installing.
+--- @param source_id string
+--- @param source_of_source string
+--- @param languages string[]|nil
+--- @return SuccessfulResponse<InstallOutcome>|ErrorResponse
+function Backend.installSource(source_id, source_of_source, languages)
+  local body = {
+    source_of_source = source_of_source,
+  }
+  if languages ~= nil then
+    body.languages = languages
+  end
   return Backend.requestJson({
     path = "/available-sources/" .. source_id .. "/install",
     method = "POST",
-    body = source_of_source,
+    body = body,
   })
 end
 

@@ -4,7 +4,7 @@ use axum::extract::{Path, State as StateExtractor};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use serde::Deserialize;
-use shared::model::SourceId;
+use shared::model::{InstallOutcome, SourceId};
 use shared::resource_usage::SourceUsage;
 use shared::settings::SourceSettingValue;
 use shared::source::model::SettingDefinition;
@@ -58,6 +58,13 @@ struct InstallSourceParams {
     source_id: String,
 }
 
+#[derive(Deserialize)]
+struct InstallSourceRequest {
+    source_of_source: String,
+    #[serde(default)]
+    languages: Option<Vec<String>>,
+}
+
 async fn install_source(
     StateExtractor(State {
         source_manager,
@@ -65,20 +72,24 @@ async fn install_source(
         ..
     }): StateExtractor<State>,
     Path(InstallSourceParams { source_id }): Path<InstallSourceParams>,
-    Json(source_of_source): Json<String>,
-) -> Result<Json<()>, AppError> {
+    Json(InstallSourceRequest {
+        source_of_source,
+        languages,
+    }): Json<InstallSourceRequest>,
+) -> Result<Json<InstallOutcome>, AppError> {
     let source_lists = settings.lock().await.source_lists.clone();
     // The use case locks the manager inside a blocking task: the eager probe
     // (JS evaluation / runtime boot) must not run on the async worker.
-    usecases::install_source(
+    let outcome = usecases::install_source(
         &source_manager,
         &source_lists,
         SourceId::new(source_id),
         source_of_source,
+        languages,
     )
     .await?;
 
-    Ok(Json(()))
+    Ok(Json(outcome))
 }
 
 async fn list_installed_sources(

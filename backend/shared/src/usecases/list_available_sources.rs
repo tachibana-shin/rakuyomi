@@ -39,6 +39,21 @@ pub async fn list_available_sources(
                 src.source_of_source = Some(key.clone());
             }
 
+            // Keiyoushi publishes one entry per bundled source language
+            // under the same package id; multi-source extensions get
+            // `<pkg>:<lang>` ids so entries match the sources installing
+            // them produces.
+            if source_list.source_type == crate::settings::SourceListType::Keiyoushi {
+                let mut entries = sources
+                    .iter()
+                    .map(|src| (src.id.value().to_string(), src.languages.first().cloned()))
+                    .collect::<Vec<_>>();
+                crate::usecases::fetch_source_list::expand_keiyoushi_ids(&mut entries);
+                for (src, (id, _)) in sources.iter_mut().zip(entries) {
+                    src.id = crate::model::SourceId::new(id);
+                }
+            }
+
             Ok(sources)
         })
         .try_collect::<Vec<_>>()

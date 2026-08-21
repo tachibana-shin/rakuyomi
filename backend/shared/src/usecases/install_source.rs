@@ -7,19 +7,29 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
-    model::SourceId,
+    model::{InstallOutcome, SourceId},
     settings::SourceList,
     source_manager::SourceManager,
     usecases::fetch_source_list::fetch_source_list,
     usecases::resolve_source_list::{resolve_source_list, source_list_key},
 };
 
+/// Installs the source identified by `source_id` from the source list
+/// named by `source_of_source`.
+///
+/// For keiyoushi extensions, `languages` restricts which bundled sources
+/// of a multi-source APK get registered. Passing `None` for a multi-source
+/// APK installs nothing and returns
+/// [`InstallOutcome::SelectionRequired`] with the bundled languages so the
+/// caller can ask the user for a selection; a non-empty selection must
+/// only contain languages the APK actually bundles.
 pub async fn install_source(
     arc_manager: &Arc<Mutex<SourceManager>>,
     source_lists: &[SourceList],
     source_id: SourceId,
     source_of_source: String,
-) -> Result<()> {
+    languages: Option<Vec<String>>,
+) -> Result<InstallOutcome> {
     let (source_list, source_list_item, source_of_source) = stream::iter(
         source_lists
             .iter()
@@ -35,7 +45,7 @@ pub async fn install_source(
         let value = fetch_source_list(&client, &resolved_list).await?;
 
         // Try both formats
-        let source_list_items = if value.is_array() {
+        let mut source_list_items = if value.is_array() {
             serde_json::from_value::<Vec<SourceListItem>>(value)?
         } else if let Some(arr) = value.get("sources").and_then(|v| v.as_array()) {
             serde_json::from_value::<Vec<SourceListItem>>(Value::Array(arr.clone()))?
@@ -46,6 +56,29 @@ pub async fn install_source(
                 value
             );
         };
+
+        // Match the id expansion `list_available_sources` applies: entries
+        // of a keiyoushi package published with several languages are named
+        // `<pkg>:<lang>`.
+        if source_list.source_type == crate::settings::SourceListType::Keiyoushi {
+            let mut entries = source_list_items
+                .iter()
+                .map(|item| {
+                    (
+                        item.id.value().to_string(),
+                        item.item
+                            .get("lang")
+                            .and_then(|lang| lang.as_str())
+                            .map(String::from),
+                    )
+                })
+                .collect::<Vec<_>>();
+            crate::usecases::fetch_source_list::expand_keiyoushi_ids(&mut entries);
+            for (item, (id, _)) in source_list_items.iter_mut().zip(entries) {
+                item.id = SourceId::new(id);
+            }
+        }
+
         anyhow::Ok((source_list, source_list_items, key))
     })
     .try_collect::<Vec<_>>()
@@ -125,13 +158,80 @@ pub async fn install_source(
                 .file
                 .context("Keiyoushi source list item is missing an `apk` URL")?;
             let apk_content = client.get(apk_url).send().await?.bytes().await?;
+
+            // Probing boots the extension VM and installing registers its
+            // sources: both are blocking work, so run them off the async
+            // worker. A multi-source APK bundles one source per language;
+            // installing one without a selection would register every
+            // language, so it first asks which languages to install.
             let manager = arc_manager.clone();
-            tokio::task::spawn_blocking(move || {
+            let outcome = tokio::task::spawn_blocking(move || -> Result<InstallOutcome> {
+                let probe = crate::source::keiyoushi::probe_keiyoushi_apk(&apk_content)?;
+                if probe.sources.len() == 1 {
+                    let mut guard = manager.blocking_lock();
+                    guard.install_keiyoushi_source(
+                        &source_id,
+                        apk_content,
+                        source_of_source,
+                        &manager,
+                        None,
+                    )?;
+                    return Ok(InstallOutcome::Installed);
+                }
+
+                let mut bundled_languages = probe
+                    .sources
+                    .iter()
+                    .map(|(_, lang, _)| lang.clone())
+                    .collect::<Vec<_>>();
+                bundled_languages.sort();
+                bundled_languages.dedup();
+
+                let Some(languages) = languages else {
+                    let name = source_list_item
+                        .item
+                        .get("name")
+                        .and_then(|name| name.as_str())
+                        .unwrap_or(source_id.value())
+                        .to_string();
+
+                    return Ok(InstallOutcome::SelectionRequired {
+                        name,
+                        languages: bundled_languages,
+                    });
+                };
+
+                let bundled = probe
+                    .sources
+                    .iter()
+                    .map(|(_, lang, _)| lang.as_str())
+                    .collect::<std::collections::HashSet<_>>();
+                if languages.is_empty() {
+                    anyhow::bail!("keiyoushi language selection is empty");
+                }
+                if let Some(unknown) = languages
+                    .iter()
+                    .find(|lang| !bundled.contains(lang.as_str()))
+                {
+                    anyhow::bail!(
+                        "keiyoushi extension does not bundle the selected language '{unknown}'"
+                    );
+                }
+
                 let mut guard = manager.blocking_lock();
-                guard.install_keiyoushi_source(&source_id, apk_content, source_of_source, &manager)
+                guard.install_keiyoushi_source(
+                    &source_id,
+                    apk_content,
+                    source_of_source,
+                    &manager,
+                    Some(&languages),
+                )?;
+                Ok(InstallOutcome::Installed)
             })
             .await
             .map_err(|e| anyhow!("Keiyoushi install task panicked: {e}"))??;
+
+            return Ok(outcome);
         }
         crate::settings::SourceListType::Aidoku => {
             let file = source_list_item
@@ -153,7 +253,7 @@ pub async fn install_source(
         }
     }
 
-    Ok(())
+    Ok(InstallOutcome::Installed)
 }
 
 #[derive(Deserialize)]

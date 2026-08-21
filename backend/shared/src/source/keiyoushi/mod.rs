@@ -176,17 +176,20 @@ const DEFAULT_INVOKE_TIMEOUT: Duration = Duration::from_secs(60);
 /// The result of booting an extension APK once: the manifest package id,
 /// the sources it bundles and the preference definitions it materialises.
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct ApkProbe {
+pub struct ApkProbe {
     /// Canonical `manifest` package id (e.g.
     /// `eu.kanade.tachiyomi.extension.vi.cuutruyenmoe`).
-    package_id: String,
+    pub package_id: String,
     /// The `AndroidManifest` `versionName` (e.g. `1.6.8`), when declared.
     /// `serde(default)` keeps probe caches written before this field was
     /// introduced readable.
     #[serde(default)]
-    version_name: Option<String>,
-    sources: Vec<(String, String, bool)>,
-    setting_definitions: Vec<SettingDefinition>,
+    pub version_name: Option<String>,
+    /// The `(name, lang, supports_latest)` triple of every source bundled
+    /// in the APK.
+    pub sources: Vec<(String, String, bool)>,
+    /// Preference definitions materialised by the APK's sources.
+    pub setting_definitions: Vec<SettingDefinition>,
 }
 
 /// On-disk probe cache (`<pkg>.keiyoushi.probe.json`). The APK fingerprint
@@ -603,22 +606,30 @@ impl KeiyoushiSource {
             probe.package_id.clone()
         };
 
-        let source_of_source = {
+        // The meta file records where the extension was installed from and,
+        // for multi-source APKs, which bundled languages were selected at
+        // install time; a missing selection keeps every bundled source.
+        let (source_of_source, selected_languages) = {
             let meta_file = BlockingSource::meta_source_path(path)?;
-            let mut source_of_source = None;
             if meta_file.exists() {
                 let meta: SourceMeta = serde_json::from_str(
                     &fs::read_to_string(&meta_file)
                         .with_context(|| format!("failed to read meta file {:?}", meta_file))?,
                 )?;
-                source_of_source = meta.source_of_source;
+                (meta.source_of_source, meta.languages)
+            } else {
+                (None, None)
             }
-            source_of_source
         };
 
         let single = probe.sources.len() == 1;
         let mut out = Vec::with_capacity(probe.sources.len());
         for (index, (name, lang, supports_latest)) in probe.sources.iter().enumerate() {
+            if let Some(filter) = &selected_languages {
+                if !filter.iter().any(|selected| selected == lang) {
+                    continue;
+                }
+            }
             let id = if single {
                 pkg.to_string()
             } else {
@@ -1029,6 +1040,13 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
         sources: out,
         setting_definitions: defs,
     })
+}
+
+/// Boots an extension APK once and returns the metadata shared by all of
+/// its bundled sources. Used by the install pipeline to decide whether a
+/// multi-source APK needs a language selection before being installed.
+pub fn probe_keiyoushi_apk(bytes: &[u8]) -> Result<ApkProbe> {
+    probe_apk(bytes)
 }
 
 /// Runs a coroutine-style (`getPopularManga` & friends) keiyoushi call,
@@ -1659,6 +1677,7 @@ mod tests {
                     fs::read(&fixture).unwrap(),
                     String::new(),
                     &arc_manager,
+                    None,
                 )
                 .unwrap();
             let apk_path = manager_guard.keiyoushi_source_path(&id);
@@ -1784,6 +1803,7 @@ mod tests {
                     fs::read(&fixture).unwrap(),
                     String::new(),
                     &arc_manager,
+                    None,
                 )
                 .unwrap();
             assert!(

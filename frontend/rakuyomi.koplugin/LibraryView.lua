@@ -9,6 +9,7 @@ local Icons = require("Icons")
 local ButtonDialog = require("ui/widget/buttondialog")
 local InstalledSourcesListing = require("InstalledSourcesListing")
 local SourceListsListing = require("SourceListsListing")
+local LanguagesListing = require("LanguagesListing")
 local IconButton = require("ui/widget/iconbutton")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
@@ -370,11 +371,15 @@ function LibraryView:updateItems()
   if #self.mangas > 0 then
     self.item_table = self:generateItemTableFromMangas(self.mangas)
     self.multilines_show_more_text = false
+    self.single_line = true
     self.items_per_page = nil
+    self.single_line = true
   else
     self.item_table = self:generateEmptyViewItemTable()
     self.multilines_show_more_text = true
+    self.single_line = false
     self.items_per_page = 1
+    self.single_line = false
   end
 
   local mode = self:getLibraryViewMode()
@@ -902,7 +907,7 @@ function LibraryView:openMenu()
         end
       },
       {
-        text = Icons.FA_LIST .. " " .. _("Source lists"),
+        text = Icons.REPO .. " " .. _("Source lists"),
         callback = function()
           UIManager:close(dialog)
 
@@ -910,6 +915,17 @@ function LibraryView:openMenu()
             self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
           end
           SourceListsListing:fetchAndShow(onReturnCallback)
+        end
+      },
+      {
+        text = Icons.LANG .. " " .. _("Languages"),
+        callback = function()
+          UIManager:close(dialog)
+
+          local onReturnCallback = function()
+            self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+          end
+          LanguagesListing:fetchAndShow(onReturnCallback)
         end
       },
     },
@@ -1206,11 +1222,25 @@ function LibraryView:openSettingsSearchDialog()
   end
 
   local key = "exlucde_source_ids_select_search"
+  local options = {}
+  local format_languages = require("utils/formatLanguages")
+  for _, source_information in ipairs(response.body) do
+    local name = source_information.name
+    local languages_text = format_languages(source_information.languages)
+    if languages_text then
+      name = name .. " (" .. languages_text .. ")"
+    end
+    table.insert(options, {
+      id = source_information.id,
+      name = name,
+    })
+  end
+
   ---@diagnostic disable-next-line: redundant-parameter
   local dialog = CheckboxDialog:new {
     title = _("Exclude source search for") .. " \"" .. _("Search") .. "*\"",
     current = G_reader_settings:readSetting(key, {}),
-    options = response.body,
+    options = options,
     update_callback = function(value)
       G_reader_settings:saveSetting(key, value)
     end

@@ -24,6 +24,45 @@ pub fn update_settings(
     Ok(())
 }
 
+/// Deserializes an optional `i64` from a JSON number that a Lua client may
+/// have encoded as a floating point value: LuaJIT numbers are doubles and
+/// the KOReader rapidjson binding only keeps the integer encoding for
+/// values inside the 32-bit range, so chat ids beyond it arrive as e.g.
+/// `8820500297.0`.
+fn deserialize_chat_id<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+
+    let value = Option::<serde_json::Value>::deserialize(deserializer)?;
+    match value {
+        None | Some(serde_json::Value::Null) => Ok(None),
+        Some(serde_json::Value::Number(number)) => {
+            if let Some(int) = number.as_i64() {
+                return Ok(Some(int));
+            }
+
+            let float = number.as_f64().ok_or_else(|| {
+                D::Error::custom("cookie_sync_chat_id must be an integer".to_string())
+            })?;
+            // `i64::MAX` is not exactly representable as f64 (it rounds up
+            // to 2^63), so the upper bound must be strict; `i64::MIN`
+            // (-2^63) is exact.
+            if float.fract() == 0.0 && float >= i64::MIN as f64 && float < 9223372036854775808.0 {
+                Ok(Some(float as i64))
+            } else {
+                Err(D::Error::custom(format!(
+                    "cookie_sync_chat_id must be an integer, got {float}"
+                )))
+            }
+        }
+        Some(other) => Err(D::Error::custom(format!(
+            "cookie_sync_chat_id must be an integer, got {other}"
+        ))),
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct UpdateableSettings {
     chapter_sorting_mode: ChapterSortingMode,
@@ -51,6 +90,7 @@ pub struct UpdateableSettings {
     ram_storage_size_mb: usize,
     cookie_sync_server_url: Option<String>,
     cookie_sync_device_name: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_chat_id")]
     cookie_sync_chat_id: Option<i64>,
     proxy_url: Option<String>,
     oauth_server_url: String,
@@ -220,5 +260,67 @@ mod tests {
         updateable.apply_updates(&mut settings);
 
         assert_eq!(settings.source_lists, source_lists);
+    }
+
+    #[test]
+    fn test_updateable_settings_accepts_float_encoded_chat_id() {
+        // The KOReader rapidjson binding encodes integers beyond the 32-bit
+        // range as floating point values (LuaJIT numbers are doubles), so a
+        // Telegram chat id round-trips as `8820500297.0`.
+        let settings = sample_settings();
+        let mut value: serde_json::Value =
+            serde_json::to_value(UpdateableSettings::from(&settings)).unwrap();
+        value["cookie_sync_chat_id"] = serde_json::json!(8820500297.0);
+
+        let deserialized: UpdateableSettings = serde_json::from_value(value).unwrap();
+        assert_eq!(deserialized.cookie_sync_chat_id, Some(8820500297));
+    }
+
+    #[test]
+    fn test_updateable_settings_rejects_fractional_chat_id() {
+        let settings = sample_settings();
+        let mut value: serde_json::Value =
+            serde_json::to_value(UpdateableSettings::from(&settings)).unwrap();
+        value["cookie_sync_chat_id"] = serde_json::json!(1.5);
+
+        let result = serde_json::from_value::<UpdateableSettings>(value);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_updateable_settings_rejects_chat_id_rounding_past_i64_max() {
+        // 2^63 is the f64 that `i64::MAX as f64` rounds up to; it is one
+        // past the representable i64 range and must be rejected.
+        let settings = sample_settings();
+        let mut value: serde_json::Value =
+            serde_json::to_value(UpdateableSettings::from(&settings)).unwrap();
+        value["cookie_sync_chat_id"] = serde_json::json!(9223372036854775808.0);
+
+        let result = serde_json::from_value::<UpdateableSettings>(value);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_updateable_settings_rejects_chat_id_below_i64_min() {
+        // The next f64 below -2^63.
+        let settings = sample_settings();
+        let mut value: serde_json::Value =
+            serde_json::to_value(UpdateableSettings::from(&settings)).unwrap();
+        value["cookie_sync_chat_id"] = serde_json::json!(-9223372036854777856.0);
+
+        let result = serde_json::from_value::<UpdateableSettings>(value);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_updateable_settings_accepts_exact_i64_min_chat_id() {
+        // -2^63 is exactly representable and valid.
+        let settings = sample_settings();
+        let mut value: serde_json::Value =
+            serde_json::to_value(UpdateableSettings::from(&settings)).unwrap();
+        value["cookie_sync_chat_id"] = serde_json::json!(-9223372036854775808.0);
+
+        let deserialized: UpdateableSettings = serde_json::from_value(value).unwrap();
+        assert_eq!(deserialized.cookie_sync_chat_id, Some(i64::MIN));
     }
 }

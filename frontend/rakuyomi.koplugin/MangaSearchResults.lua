@@ -19,6 +19,7 @@ local Icons = require("Icons")
 local MangaInfoWidget = require("MangaInfoWidget")
 local calcLastReadText = require("utils/calcLastReadText")
 local Trapper = require("ui/trapper")
+local format_languages = require("utils/formatLanguages")
 
 --- @class MangaSearchResults: { [any]: any }
 --- @field results Manga[]
@@ -104,6 +105,16 @@ end
 function MangaSearchResults:updateItems()
   self.item_table = self:generateItemTableFromSearchResults(self.results)
 
+  if #self.item_table > 0 then
+    self.multilines_show_more_text = false
+    self.single_line = true
+    self.items_per_page = nil
+  else
+    self.multilines_show_more_text = true
+    self.single_line = false
+    self.items_per_page = 1
+  end
+
   local mode = self.search_view_mode
   local MenuItemChoice = MenuItemCover
   if mode == "grid" then
@@ -144,10 +155,16 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
 
     local mandatory = table.concat(mandatory_parts)
 
+    local source_text = manga.source.name
+    local languages_text = format_languages(manga.source.languages)
+    if languages_text then
+      source_text = source_text .. " (" .. languages_text .. ")"
+    end
+
     table.insert(item_table, {
       manga = manga,
       text = manga.title,
-      post_text = is_cover and mandatory or manga.source.name,
+      post_text = is_cover and mandatory or source_text,
       manga_cover = self.search_view_mode ~= "base" and manga.manga_cover or nil,
       mandatory = not is_cover and mandatory or nil,
     })

@@ -181,9 +181,9 @@ function AvailableSourcesListing:extractAvailableLangs()
   local langs_list = {}
 
   -- The languages managed in the Languages screen are stored in the
-  -- backend settings; read them from there so both screens share one
+  -- global reader settings; read them from there so both screens share one
   -- source of truth.
-  for _, lang in ipairs(self.settings.languages or {}) do
+  for _, lang in ipairs(G_reader_settings:readSetting("rakuyomi_languages", {})) do
     langs_set[lang] = true
     table.insert(langs_list, lang)
   end

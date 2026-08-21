@@ -136,7 +136,12 @@ async fn run_plugin_smoke(
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+// Live smoke tests against third-party sites: they fail when the site
+// blocks datacenter IPs (e.g. GitHub Actions runners behind Cloudflare),
+// so they are excluded from CI runs. Run them explicitly with:
+//   cargo test -p shared --test lnreader_source -- --ignored
 #[tokio::test]
+#[ignore = "live network test; the site may block datacenter IPs"]
 async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
     run_plugin_smoke(
         "chrysanthemumgarden.js",
@@ -151,6 +156,7 @@ async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
 /// Royal Road has no `resolveUrl`, so this also exercises the `site + path`
 /// chapter URL fallback.
 #[tokio::test]
+#[ignore = "live network test; the site may block datacenter IPs"]
 async fn lnreader_plugin_end_to_end_royalroad() {
     run_plugin_smoke(
         "royalroad.js",

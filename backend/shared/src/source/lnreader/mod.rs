@@ -9,6 +9,7 @@ pub mod manifest;
 pub mod runtime;
 
 use std::{
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
@@ -28,7 +29,7 @@ use crate::{
     source::{
         model::{Manga, Page, SettingDefinition},
         source_settings::SourceSettings,
-        SourceFeatures, SourceManifest,
+        SourceConfig, SourceFeatures, SourceInfo, SourceManifest,
     },
     source_manager::SourceManager,
     util::DEFAULT_USER_AGENT,
@@ -97,11 +98,38 @@ fn write_probe_cache(path: &Path, plugin_len: u64, plugin_mtime_ns: u128, props_
 ///
 /// All method calls block on the underlying JS runtime; the async wrappers
 /// used by the rest of the codebase run them inside `spawn_blocking`.
+///
+/// The plugin JS is only evaluated lazily: a valid probe cache is parsed at
+/// load time (cheap), and a missing or stale cache defers the JS evaluation
+/// to the first actual method call (`ensure_probed`), so loading a plugin
+/// collection never boots an interpreter.
 pub struct LnReaderSource {
+    /// Canonical source id, derived from the file name (`<id>.lnreader.js`).
+    /// It is stable whether or not the plugin has been probed yet, which is
+    /// what the settings and library entries are keyed by.
     pub id: String,
-    pub manifest: SourceManifest,
-    pub setting_definitions: Vec<SettingDefinition>,
     pub features: SourceFeatures,
+    /// Runtime usage registry this source reports its JS memory to.
+    pub(crate) usage: ResourceRegistry,
+    path: PathBuf,
+    plugin_code: String,
+    source_of_source: Option<String>,
+    /// Snapshot of the stored settings at load time, applied when the probe
+    /// runs (the settings container needs them up front).
+    stored_settings: HashMap<String, SourceSettingValue>,
+    /// Manager handle the settings container persists changes through.
+    arc_manager: Arc<tokio::sync::Mutex<SourceManager>>,
+    /// Lazy probe state. `None` until probed, then the cached outcome (both
+    /// success and failure) so a plugin that fails to probe is not
+    /// re-evaluated on every call.
+    probe: Mutex<Option<Result<Arc<ProbedLnReader>, String>>>,
+}
+
+/// Everything derived from evaluating the plugin `props`: either parsed from
+/// the probe cache at load time, or built by evaluating the JS on first use.
+pub(crate) struct ProbedLnReader {
+    manifest: SourceManifest,
+    setting_definitions: Vec<SettingDefinition>,
     props: PluginProps,
     /// Merged source settings (stored values overlaid on the definition
     /// defaults), used to build the filter/settings JSON for each call. The
@@ -110,17 +138,13 @@ pub struct LnReaderSource {
     /// the lock makes the source shareable across `spawn_blocking`.
     settings: Arc<Mutex<SourceSettings>>,
     runtime: LnReaderRuntime,
-    /// Runtime usage registry this source reports its JS memory to.
-    pub(crate) usage: ResourceRegistry,
 }
 
 impl std::fmt::Debug for LnReaderSource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LnReaderSource")
             .field("id", &self.id)
-            .field("manifest", &self.manifest)
-            .field("setting_definitions", &self.setting_definitions)
-            .field("props", &self.props)
+            .field("probed", &self.probe.try_lock().map(|p| p.is_some()))
             .finish()
     }
 }
@@ -140,7 +164,10 @@ pub(crate) fn plugin_id_from_path(path: &Path) -> Result<String> {
 }
 
 impl LnReaderSource {
-    /// Loads a plugin from a `*.lnreader.js` file and prepares the runtime.
+    /// Loads a plugin from a `*.lnreader.js` file. The plugin JS is only
+    /// evaluated when the probe cache is missing or stale; with a valid
+    /// cache the source starts fully probed (parsing the cached props is
+    /// cheap), without one it stays pending until the first method call.
     pub fn from_lnreader_file(
         path: &Path,
         manager: &SourceManager,
@@ -149,13 +176,18 @@ impl LnReaderSource {
         let plugin_code = fs::read_to_string(path)
             .with_context(|| format!("failed to read plugin file {}", path.display()))?;
 
-        // The runtime needs the plugin id up front (storage namespacing);
-        // the site is only known after the props are evaluated.
-        let plugin_id = plugin_id_from_path(path)?;
+        // The plugin id is derived from the file name so it is known before
+        // the props are evaluated and stays stable across the probe; the
+        // runtime still uses the plugin-declared id for storage namespacing.
+        let id = plugin_id_from_path(path)?;
+        let source_of_source = Self::read_source_of_source(path)?;
+        let stored_settings = manager
+            .settings
+            .source_settings
+            .get(&id)
+            .cloned()
+            .unwrap_or_default();
 
-        // Lazy probe: the plugin JS is only evaluated when the probe cache
-        // is missing or stale; the temporary worker is stopped right after,
-        // so a plugin never holds a thread or JS context at load time.
         let metadata = fs::metadata(path)
             .with_context(|| format!("failed to stat plugin file {}", path.display()))?;
         let plugin_len = metadata.len();
@@ -164,59 +196,82 @@ impl LnReaderSource {
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_nanos());
-        let props_json =
+        let usage = ResourceRegistry::default();
+        let probe =
             match plugin_mtime_ns.and_then(|mtime| read_probe_cache(path, plugin_len, mtime)) {
-                Some(cached) => cached,
-                None => {
-                    let probe_runtime = LnReaderRuntime::new(
-                        plugin_id.clone(),
-                        plugin_code.clone(),
-                        String::new(),
-                        DEFAULT_USER_AGENT.to_string(),
-                        DEFAULT_INVOKE_TIMEOUT,
-                        ResourceRegistry::default(),
-                    )?;
-                    let result = probe_runtime
-                        .invoke("props", "[]")
-                        .context("plugin `props` failed")?;
-                    probe_runtime.stop_worker();
-                    if let Some(mtime) = plugin_mtime_ns {
-                        write_probe_cache(path, plugin_len, mtime, &result);
+                Some(props_json) => {
+                    match Self::build_probed(
+                        &id,
+                        &plugin_code,
+                        &source_of_source,
+                        &stored_settings,
+                        arc_manager,
+                        &props_json,
+                        usage.clone(),
+                    ) {
+                        Ok(state) => Some(Ok(Arc::new(state))),
+                        Err(e) => {
+                            log::warn!("failed to parse probe cache for {}: {e}", path.display());
+                            // Remove the invalid cache so run_probe re-evaluates
+                            // the plugin instead of reading the same bad data.
+                            let _ = fs::remove_file(probe_cache_path(path));
+                            None
+                        }
                     }
-                    result
                 }
+                None => None,
             };
-        let props = parse_props(&props_json)?;
-        let manifest = manifest_from_props(&props, Self::read_source_of_source(path)?);
+
+        Ok(Self {
+            id,
+            features: SourceFeatures {
+                process_page_image: false,
+            },
+            usage,
+            path: path.to_path_buf(),
+            plugin_code,
+            source_of_source,
+            stored_settings,
+            arc_manager: arc_manager.clone(),
+            probe: Mutex::new(probe),
+        })
+    }
+
+    /// Builds the probed state from the plugin `props` JSON (either read
+    /// from the probe cache or produced by evaluating the JS).
+    fn build_probed(
+        id: &str,
+        plugin_code: &str,
+        source_of_source: &Option<String>,
+        stored_settings: &HashMap<String, SourceSettingValue>,
+        arc_manager: &Arc<tokio::sync::Mutex<SourceManager>>,
+        props_json: &str,
+        usage: ResourceRegistry,
+    ) -> Result<ProbedLnReader> {
+        let props = parse_props(props_json)?;
+        let mut manifest = manifest_from_props(&props, source_of_source.clone());
+        // The registered id (from the file name) is the stable identity; the
+        // plugin-declared id only namespaces the JS storage.
+        manifest.info.id = id.to_string();
 
         let setting_definitions = setting_definitions(&props.plugin_settings)?;
 
-        // A `url`-like Select mirrors what wasm sources do for base URLs.
-        // LNReader plugins have no such concept, so nothing is added.
-
-        let stored_settings = manager
-            .settings
-            .source_settings
-            .get(&props.id)
-            .cloned()
-            .unwrap_or_default();
-
         let settings = Arc::new(Mutex::new(SourceSettings::new(
-            props.id.clone(),
+            id.to_string(),
             &setting_definitions,
-            &stored_settings,
+            stored_settings,
             arc_manager,
         )?));
 
-        // The final runtime starts its worker lazily on the first call.
-        let usage = ResourceRegistry::default();
+        // The final runtime starts its worker lazily on the first call,
+        // using the source's usage registry to track its memory.
         let runtime = LnReaderRuntime::new(
             props.id.clone(),
-            plugin_code,
+            plugin_code.to_string(),
             String::new(),
             DEFAULT_USER_AGENT.to_string(),
             DEFAULT_INVOKE_TIMEOUT,
-            usage.clone(),
+            usage,
         )?;
 
         // Seed the plugin's `@libs/storage` with the pluginSettings values,
@@ -227,18 +282,130 @@ impl LnReaderSource {
             &settings,
         )?);
 
-        Ok(Self {
-            id: props.id.clone(),
+        Ok(ProbedLnReader {
             manifest,
             setting_definitions,
-            features: SourceFeatures {
-                process_page_image: false,
-            },
             props,
             settings,
             runtime,
-            usage,
         })
+    }
+
+    /// The manifest reported while the plugin is not probed yet. The id
+    /// (from the file name) and `source_of_source` are known up front; the
+    /// name falls back to the id until the props are evaluated.
+    fn placeholder_manifest(&self) -> SourceManifest {
+        SourceManifest {
+            info: SourceInfo {
+                id: self.id.clone(),
+                lang: None,
+                languages: None,
+                #[cfg(not(feature = "all"))]
+                content_rating: None,
+                name: self.id.clone(),
+                version: Value::String(String::new()),
+                url: None,
+                urls: None,
+                min_app_version: None,
+            },
+            config: Some(SourceConfig {
+                allows_base_url_select: Some(false),
+            }),
+            source_of_source: self.source_of_source.clone(),
+        }
+    }
+
+    /// The probed state, if the probe has run (or the plugin was loaded from
+    /// a valid cache). Never triggers the probe; while another thread is
+    /// mid-probe the lock is contended, so `try_lock` yields the placeholder
+    /// instead of blocking the caller.
+    fn probed(&self) -> Option<Arc<ProbedLnReader>> {
+        self.probe
+            .try_lock()
+            .ok()?
+            .as_ref()
+            .and_then(|outcome| outcome.as_ref().ok())
+            .cloned()
+    }
+
+    /// The source manifest: the probed one once available, a placeholder
+    /// derived from the file name before that.
+    pub fn manifest(&self) -> SourceManifest {
+        self.probed()
+            .map(|state| state.manifest.clone())
+            .unwrap_or_else(|| self.placeholder_manifest())
+    }
+
+    /// The setting definitions: empty until the plugin is probed.
+    pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
+        self.probed()
+            .map(|state| state.setting_definitions.clone())
+            .unwrap_or_default()
+    }
+
+    /// Runs the probe on first use: re-reads the probe cache (it may have
+    /// appeared since load), otherwise evaluates the plugin JS, writes the
+    /// cache and builds the full probed state. The outcome is cached, so a
+    /// plugin that fails to probe errors fast on every later call.
+    pub(crate) fn ensure_probed(&self) -> Result<Arc<ProbedLnReader>> {
+        let mut guard = self.probe.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(cached) = guard.as_ref() {
+            return cached.clone().map_err(|error| anyhow!("{error}"));
+        }
+        let outcome = self
+            .run_probe()
+            .map(Arc::new)
+            .map_err(|error| format!("{error:#}"));
+        if let Err(error) = &outcome {
+            log::warn!("failed to probe LNReader plugin {}: {error}", self.id);
+        }
+        *guard = Some(outcome.clone());
+        outcome.map_err(|error| anyhow!("{error}"))
+    }
+
+    /// Evaluates the plugin `props` (or reads them from the probe cache) and
+    /// builds the probed state from the result.
+    fn run_probe(&self) -> Result<ProbedLnReader> {
+        let metadata = fs::metadata(&self.path)
+            .with_context(|| format!("failed to stat plugin file {}", self.path.display()))?;
+        let plugin_len = metadata.len();
+        let plugin_mtime_ns = metadata
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+            .map(|d| d.as_nanos());
+        let props_json = match plugin_mtime_ns
+            .and_then(|mtime| read_probe_cache(&self.path, plugin_len, mtime))
+        {
+            Some(cached) => cached,
+            None => {
+                let probe_runtime = LnReaderRuntime::new(
+                    self.id.clone(),
+                    self.plugin_code.clone(),
+                    String::new(),
+                    DEFAULT_USER_AGENT.to_string(),
+                    DEFAULT_INVOKE_TIMEOUT,
+                    ResourceRegistry::default(),
+                )?;
+                let result = probe_runtime
+                    .invoke("props", "[]")
+                    .context("plugin `props` failed")?;
+                probe_runtime.stop_worker();
+                if let Some(mtime) = plugin_mtime_ns {
+                    write_probe_cache(&self.path, plugin_len, mtime, &result);
+                }
+                result
+            }
+        };
+        Self::build_probed(
+            &self.id,
+            &self.plugin_code,
+            &self.source_of_source,
+            &self.stored_settings,
+            &self.arc_manager,
+            &props_json,
+            self.usage.clone(),
+        )
     }
 
     /// Reads the `source_of_source` from the sidecar meta file, if any.
@@ -284,9 +451,20 @@ impl LnReaderSource {
     }
 
     /// Serializes the current settings as a JSON object for the JS side.
+    /// Returns an empty object while the plugin is not probed yet.
     pub fn settings_json(&self) -> Value {
+        match self.ensure_probed() {
+            Ok(state) => Self::settings_json_from(&state),
+            Err(e) => {
+                log::warn!("failed to probe plugin {} for settings: {e:#}", self.id);
+                Value::Object(serde_json::Map::new())
+            }
+        }
+    }
+
+    fn settings_json_from(state: &ProbedLnReader) -> Value {
         let mut out = serde_json::Map::new();
-        for (key, value) in self
+        for (key, value) in state
             .settings
             .lock()
             .unwrap_or_else(|e| e.into_inner())
@@ -299,7 +477,12 @@ impl LnReaderSource {
 
     /// Invokes a plugin method with JSON args and parses the JSON response.
     pub fn invoke(&self, method: &str, args: Value) -> Result<Value> {
-        let output = self
+        let state = self.ensure_probed()?;
+        Self::invoke_with(&state, method, &args)
+    }
+
+    fn invoke_with(state: &ProbedLnReader, method: &str, args: &Value) -> Result<Value> {
+        let output = state
             .runtime
             .invoke(method, &args.to_string())
             .with_context(|| format!("plugin method `{}` failed", method))?;
@@ -308,34 +491,33 @@ impl LnReaderSource {
 
     /// Resolves a path to an absolute URL the way the app does
     /// (`resolveUrl`, falling back to `site + path`).
-    fn resolve_url(&self, path: &str, is_novel: bool) -> Option<Url> {
-        let out = self
-            .invoke("resolveUrl", json!([path, is_novel]))
+    fn resolve_url(&self, state: &ProbedLnReader, path: &str, is_novel: bool) -> Option<Url> {
+        let out = Self::invoke_with(state, "resolveUrl", &json!([path, is_novel]))
             .ok()
             .and_then(|v| v.as_str().map(|s| s.to_string()))
             .filter(|s| !s.is_empty())
-            .unwrap_or_else(|| format!("{}{}", self.props.site, path));
+            .unwrap_or_else(|| format!("{}{}", state.props.site, path));
         Url::parse(&out).ok()
     }
 
     /// Resolves a manga cover URL. Absolute URLs are kept as-is; relative
     /// paths (e.g. `/uploads/cover.jpg`) are resolved against the plugin's
     /// site, mirroring how the app builds the cover URL.
-    fn resolve_manga_cover(&self, cover: Option<String>) -> Option<String> {
+    fn resolve_manga_cover(&self, state: &ProbedLnReader, cover: Option<String>) -> Option<String> {
         let cover = cover?;
         if Url::parse(&cover).is_ok() {
             return Some(cover);
         }
         let path = cover.trim_start_matches('/');
-        Url::parse(&format!("{}{}", self.props.site, path))
+        Url::parse(&format!("{}{}", state.props.site, path))
             .ok()
             .map(|u| u.to_string())
     }
 
     /// Converts a plugin manga, resolving its cover URL.
-    fn manga_from(&self, manga: aidoku::Manga) -> Manga {
+    fn manga_from(&self, state: &ProbedLnReader, manga: aidoku::Manga) -> Manga {
         let mut manga = manga;
-        manga.cover = self.resolve_manga_cover(manga.cover);
+        manga.cover = self.resolve_manga_cover(state, manga.cover);
         Manga::from(manga, self.id.clone())
     }
 
@@ -345,12 +527,13 @@ impl LnReaderSource {
         _cancellation_token: CancellationToken,
         listing: aidoku::Listing,
     ) -> Result<Vec<Manga>> {
+        let state = self.ensure_probed()?;
         let show_latest = listing.name.eq_ignore_ascii_case("latest");
-        let settings = self.settings_json();
-        let value = self.invoke("popular", json!([1, settings, show_latest]))?;
+        let settings = Self::settings_json_from(&state);
+        let value = Self::invoke_with(&state, "popular", &json!([1, settings, show_latest]))?;
         Ok(mangas_from_search(&value)?
             .into_iter()
-            .map(|manga| self.manga_from(manga))
+            .map(|manga| self.manga_from(&state, manga))
             .collect())
     }
 
@@ -364,15 +547,16 @@ impl LnReaderSource {
         query: String,
         page: i32,
     ) -> Result<(Vec<Manga>, bool)> {
+        let state = self.ensure_probed()?;
         let value = if query.trim().is_empty() {
-            let settings = self.settings_json();
-            self.invoke("popular", json!([page.max(1), settings, false]))?
+            let settings = Self::settings_json_from(&state);
+            Self::invoke_with(&state, "popular", &json!([page.max(1), settings, false]))?
         } else {
-            self.invoke("search", json!([query, page]))?
+            Self::invoke_with(&state, "search", &json!([query, page]))?
         };
         let mangas = mangas_from_search(&value)?
             .into_iter()
-            .map(|manga| self.manga_from(manga))
+            .map(|manga| self.manga_from(&state, manga))
             .collect();
         Ok((mangas, false))
     }
@@ -383,8 +567,9 @@ impl LnReaderSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Manga> {
-        let value = self.invoke("novel", json!([manga_id]))?;
-        Ok(self.manga_from(manga_from_novel(&value)?))
+        let state = self.ensure_probed()?;
+        let value = Self::invoke_with(&state, "novel", &json!([manga_id]))?;
+        Ok(self.manga_from(&state, manga_from_novel(&value)?))
     }
 
     /// Implements `get_chapter_list`. Plugins with `parsePage` paginate their
@@ -394,13 +579,14 @@ impl LnReaderSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Vec<crate::source::model::Chapter>> {
-        let novel = self.invoke("novel", json!([manga_id]))?;
+        let state = self.ensure_probed()?;
+        let novel = Self::invoke_with(&state, "novel", &json!([manga_id]))?;
         let mut out = chapters(novel.get("chapters").unwrap_or(&Value::Null))?;
 
         let total_pages = novel.get("totalPages").and_then(Value::as_u64).unwrap_or(1);
-        if self.props.has_parse_page && total_pages > 1 {
+        if state.props.has_parse_page && total_pages > 1 {
             for page in 2..=total_pages {
-                let value = self.invoke("page", json!([manga_id, page]))?;
+                let value = Self::invoke_with(&state, "page", &json!([manga_id, page]))?;
                 out.extend(chapters(&value)?);
             }
         }
@@ -410,10 +596,10 @@ impl LnReaderSource {
         // the app's `chapterPathToUrl`: `resolveUrl` when the plugin defines
         // it, `site + path` otherwise.
         for chapter in out.iter_mut() {
-            let url = if self.props.has_resolve_url {
-                self.resolve_url(&chapter.key, false)
+            let url = if state.props.has_resolve_url {
+                self.resolve_url(&state, &chapter.key, false)
             } else {
-                Url::parse(&format!("{}{}", self.props.site, chapter.key)).ok()
+                Url::parse(&format!("{}{}", state.props.site, chapter.key)).ok()
             };
             chapter.url = url.map(|u| u.to_string());
         }
@@ -436,7 +622,8 @@ impl LnReaderSource {
         chapter_id: String,
         _chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
-        let value = self.invoke("chapter", json!([chapter_id]))?;
+        let state = self.ensure_probed()?;
+        let value = Self::invoke_with(&state, "chapter", &json!([chapter_id]))?;
         let html = value.as_str().unwrap_or_default();
         Ok(vec![page_from_chapter_html(0, html, chapter_id)])
     }
@@ -447,7 +634,8 @@ impl LnReaderSource {
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
-        let init = self.props.image_request_init.as_ref();
+        let state = self.ensure_probed()?;
+        let init = state.props.image_request_init.as_ref();
         let method = init
             .and_then(|init| init.method.as_deref())
             .and_then(|m| Method::from_bytes(m.as_bytes()).ok())
@@ -511,9 +699,10 @@ impl LnReaderSource {
         _page: i32,
     ) -> Result<crate::source::NextMangaPageResult> {
         let _ = cancellation_token;
+        let state = self.ensure_probed()?;
         let show_latest = listing.name.eq_ignore_ascii_case("latest");
-        let settings = self.settings_json();
-        let value = self.invoke("popular", json!([1, settings, show_latest]))?;
+        let settings = Self::settings_json_from(&state);
+        let value = Self::invoke_with(&state, "popular", &json!([1, settings, show_latest]))?;
         Ok(crate::source::NextMangaPageResult {
             entries: mangas_from_search(&value)?,
             has_next_page: false,
@@ -528,7 +717,8 @@ impl LnReaderSource {
         _filters: Vec<aidoku::FilterValue>,
     ) -> Result<crate::source::NextMangaPageResult> {
         let _ = cancellation_token;
-        let value = self.invoke("search", json!([query, page]))?;
+        let state = self.ensure_probed()?;
+        let value = Self::invoke_with(&state, "search", &json!([query, page]))?;
         Ok(crate::source::NextMangaPageResult {
             entries: mangas_from_search(&value)?,
             has_next_page: false,
@@ -543,8 +733,9 @@ impl LnReaderSource {
         needs_chapters: bool,
     ) -> Result<aidoku::Manga> {
         let _ = cancellation_token;
+        let state = self.ensure_probed()?;
         let mut manga = if needs_details {
-            let value = self.invoke("novel", json!([manga.key]))?;
+            let value = Self::invoke_with(&state, "novel", &json!([manga.key]))?;
             manga_from_novel(&value)?
         } else {
             manga
@@ -566,7 +757,8 @@ impl LnReaderSource {
         chapter: aidoku::Chapter,
     ) -> Result<Vec<aidoku::Page>> {
         let _ = cancellation_token;
-        let value = self.invoke("chapter", json!([chapter.key]))?;
+        let state = self.ensure_probed()?;
+        let value = Self::invoke_with(&state, "chapter", &json!([chapter.key]))?;
         let html = value.as_str().unwrap_or_default();
         Ok(vec![aidoku::Page {
             content: aidoku::PageContent::Text(format!("{HTML_MARKER}{html}")),

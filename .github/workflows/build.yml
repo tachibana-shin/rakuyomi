@@ -14,6 +14,9 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
   build:
+    # The build matrix is expensive, so only start it after the tests pass:
+    # the ci job runs the full test suite once for this workflow.
+    needs: [ci]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -156,6 +159,7 @@ jobs:
       run: bash scripts/build-rust-android.sh ${{ matrix.abi }}
 
   generate-settings-schema:
+    needs: [ci]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

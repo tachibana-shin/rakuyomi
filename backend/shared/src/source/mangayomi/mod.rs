@@ -158,17 +158,20 @@ impl MangayomiProvider for js::MangayomiJsRuntime {
 
 /// A single MangaYomi extension exposed through the RakuYomi source API.
 ///
-/// All method calls block on the underlying Dart runtime; the async wrappers
-/// used by the rest of the codebase run them inside `spawn_blocking`.
+/// All method calls block on the underlying runtime; the async wrappers used
+/// by the rest of the codebase run them inside `spawn_blocking`.
+///
+/// The extension is only probed lazily: a valid probe cache is read at load
+/// time (cheap), and a missing or stale cache defers the boot to the first
+/// actual method call (`ensure_probed`), so loading an extension collection
+/// never runs the interpreter. The index metadata (id, name, lang, version,
+/// base URL) is available up front, so the placeholder manifest is already
+/// complete apart from the probed Dart base URL.
 pub struct MangayomiSource {
     pub id: String,
-    pub manifest: SourceManifest,
-    pub setting_definitions: Vec<SettingDefinition>,
     pub features: SourceFeatures,
-    pub base_url: String,
     pub name: String,
     pub lang: String,
-    pub supports_latest: bool,
     /// Extension kind from the index: `0` manga, `2` light novel (`1` anime
     /// is rejected at install). `2` switches page listing to `getHtmlContent`.
     pub item_type: u8,
@@ -181,6 +184,9 @@ pub struct MangayomiSource {
     pub settings: Arc<Mutex<SourceSettings>>,
     /// The extension source code, used to boot the runtime on first use.
     code: String,
+    /// The on-disk extension file, re-read when the probe runs (the probe
+    /// cache may have appeared since load).
+    path: PathBuf,
     /// The `index.json` entry of the extension, used to build the `MSource`
     /// argument for `main()`.
     metadata: Value,
@@ -191,18 +197,38 @@ pub struct MangayomiSource {
     runtime: Mutex<Option<Arc<dyn MangayomiProvider>>>,
     /// Runtime usage registry this source reports its VM memory to.
     pub(crate) usage: ResourceRegistry,
+    /// Index metadata parsed once at load; the probe only refines the base
+    /// URL and the preference definitions.
+    meta: ExtensionMeta,
+    /// The `source_of_source` from the sidecar meta file, reported in the
+    /// manifest.
+    source_of_source: Option<String>,
+    /// The metadata-derived manifest reported while the extension is not
+    /// probed yet (already complete apart from the probed Dart base URL).
+    placeholder_manifest: SourceManifest,
+    /// Lazy probe state. `None` until probed, then the cached outcome (both
+    /// success and failure) so an extension that fails to probe is not
+    /// re-booted on every call.
+    probe: Mutex<Option<Result<Arc<ProbedMangayomi>, String>>>,
+}
+
+/// Everything derived from booting the extension: either read from the probe
+/// cache at load time, or collected by booting the interpreter on first use.
+pub(crate) struct ProbedMangayomi {
+    manifest: SourceManifest,
+    base_url: String,
+    supports_latest: bool,
+    setting_definitions: Vec<SettingDefinition>,
 }
 
 impl std::fmt::Debug for MangayomiSource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MangayomiSource")
             .field("id", &self.id)
-            .field("manifest", &self.manifest)
-            .field("setting_definitions", &self.setting_definitions)
-            .field("base_url", &self.base_url)
             .field("name", &self.name)
             .field("lang", &self.lang)
-            .field("supports_latest", &self.supports_latest)
+            .field("item_type", &self.item_type)
+            .field("probed", &self.probe.try_lock().map(|p| p.is_some()))
             .finish()
     }
 }
@@ -210,9 +236,13 @@ impl std::fmt::Debug for MangayomiSource {
 impl MangayomiSource {
     /// Loads an extension from a `<id>.mangayomi.dart` or
     /// `<id>.mangayomi.js` file with its `<id>.mangayomi.json` sidecar (the
-    /// index.json entry) and prepares the runtime. The language is taken
-    /// from the file suffix, falling back to the `sourceCodeLanguage`
-    /// metadata for misnamed installs.
+    /// index.json entry). The language is taken from the file suffix, falling
+    /// back to the `sourceCodeLanguage` metadata for misnamed installs.
+    ///
+    /// With a valid probe cache the source starts fully probed (reading it is
+    /// cheap); without one the extension stays pending until the first method
+    /// call, which runs the probe. Either way the interpreter never runs at
+    /// load time.
     pub fn from_mangayomi_file(
         path: &Path,
         manager: &SourceManager,
@@ -296,9 +326,11 @@ impl MangayomiSource {
             arc_manager,
         )?));
 
-        // Lazy probe: the extension is only booted when the probe cache is
-        // missing or stale; the temporary worker is stopped right after, so
-        // load time never runs the interpreter.
+        let placeholder_manifest = Self::build_manifest(&meta, &source_of_source, &meta.base_url);
+
+        // Eager cache hit: reading the stored metadata is cheap, so the
+        // source starts fully probed. On a miss the extension is not booted;
+        // `ensure_probed` does that on first use instead.
         let stat = fs::metadata(path)
             .with_context(|| format!("failed to stat extension file {}", path.display()))?;
         let extension_len = stat.len();
@@ -310,49 +342,52 @@ impl MangayomiSource {
         let probe = match extension_mtime_ns
             .and_then(|mtime| read_probe_cache(path, extension_len, mtime))
         {
-            Some(meta) => meta,
-            None => {
-                let probe_runtime: Arc<dyn MangayomiProvider> = if is_js {
-                    Arc::new(js::MangayomiJsRuntime::new(
-                        String::new(),
-                        code.clone(),
-                        metadata.clone(),
-                        settings.clone(),
-                        DEFAULT_INVOKE_TIMEOUT,
-                        ResourceRegistry::default(),
-                    )?)
-                } else {
-                    Arc::new(MangayomiRuntime::new(
-                        String::new(),
-                        code.clone(),
-                        metadata.clone(),
-                        settings.clone(),
-                        DEFAULT_INVOKE_TIMEOUT,
-                        ResourceRegistry::default(),
-                    )?)
+            Some(cached) => {
+                let probed = ProbedMangayomi {
+                    manifest: Self::build_manifest(&meta, &source_of_source, &cached.base_url),
+                    base_url: cached.base_url,
+                    supports_latest: cached.supports_latest,
+                    setting_definitions: cached.setting_definitions,
                 };
-                let probe = ProbeMeta {
-                    base_url: probe_base_url(&*probe_runtime, is_js, &meta),
-                    supports_latest: probe_supports_latest(&*probe_runtime),
-                    setting_definitions: setting_definitions(&*probe_runtime)?,
-                };
-                probe_runtime.stop_worker();
-                if let Some(mtime) = extension_mtime_ns {
-                    write_probe_cache(path, extension_len, mtime, &probe);
-                }
-                probe
+                settings
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .seed_defaults(&probed.setting_definitions);
+                Some(Ok(Arc::new(probed)))
             }
+            None => None,
         };
 
-        // Extension-declared preferences become the source's settings
-        // definitions; stored values are merged on top of their defaults.
-        let setting_definitions = probe.setting_definitions;
-        settings
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .seed_defaults(&setting_definitions);
+        Ok(Self {
+            id: meta.id.clone(),
+            features: SourceFeatures {
+                process_page_image: false,
+            },
+            name: meta.name.clone(),
+            lang: meta.lang.clone(),
+            item_type: meta.item_type,
+            settings,
+            code,
+            path: path.to_path_buf(),
+            metadata,
+            is_js,
+            runtime: Mutex::new(None),
+            usage: ResourceRegistry::default(),
+            meta,
+            source_of_source,
+            placeholder_manifest,
+            probe: Mutex::new(probe),
+        })
+    }
 
-        let manifest = SourceManifest {
+    /// Builds the manifest from the index metadata; the base URL is the
+    /// metadata value until the Dart probe refines it.
+    fn build_manifest(
+        meta: &ExtensionMeta,
+        source_of_source: &Option<String>,
+        base_url: &str,
+    ) -> SourceManifest {
+        SourceManifest {
             info: SourceInfo {
                 id: meta.id.clone(),
                 lang: Some(meta.lang.clone()),
@@ -361,32 +396,143 @@ impl MangayomiSource {
                 content_rating: None,
                 name: meta.name.clone(),
                 version: Value::String(meta.version.clone()),
-                url: Some(probe.base_url.clone()),
+                url: Some(base_url.to_string()),
                 urls: None,
                 min_app_version: None,
             },
             config: None,
-            source_of_source,
+            source_of_source: source_of_source.clone(),
+        }
+    }
+
+    /// The probed state, if the probe has run (or the extension was loaded
+    /// from a valid cache). Never triggers the probe; while another thread
+    /// is mid-probe the lock is contended, so `try_lock` yields the
+    /// placeholder instead of blocking the caller.
+    fn probed(&self) -> Option<Arc<ProbedMangayomi>> {
+        self.probe
+            .try_lock()
+            .ok()?
+            .as_ref()
+            .and_then(|outcome| outcome.as_ref().ok())
+            .cloned()
+    }
+
+    /// The source manifest: the probed one once available, the
+    /// metadata-derived one before that.
+    pub fn manifest(&self) -> SourceManifest {
+        self.probed()
+            .map(|state| state.manifest.clone())
+            .unwrap_or_else(|| self.placeholder_manifest.clone())
+    }
+
+    /// The setting definitions: empty until the extension is probed.
+    pub fn setting_definitions(&self) -> Vec<SettingDefinition> {
+        self.probed()
+            .map(|state| state.setting_definitions.clone())
+            .unwrap_or_default()
+    }
+
+    /// The extension's base URL: the probed value once available, the index
+    /// entry's `baseUrl` before that.
+    pub fn base_url(&self) -> String {
+        self.probed()
+            .map(|state| state.base_url.clone())
+            .unwrap_or_else(|| self.meta.base_url.clone())
+    }
+
+    /// Whether the extension supports the "latest" listing. Defaults to
+    /// `true` (the probe fallback) until the extension is probed.
+    pub fn supports_latest(&self) -> bool {
+        self.probed()
+            .map(|state| state.supports_latest)
+            .unwrap_or(true)
+    }
+
+    /// Runs the probe on first use: re-reads the probe cache (it may have
+    /// appeared since load), otherwise boots a temporary runtime, collects
+    /// the metadata, writes the cache and builds the full probed state. The
+    /// outcome is cached, so an extension that fails to probe errors fast on
+    /// every later call.
+    pub(crate) fn ensure_probed(&self) -> Result<Arc<ProbedMangayomi>> {
+        let mut guard = self.probe.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(cached) = guard.as_ref() {
+            return cached.clone().map_err(|error| anyhow!("{error}"));
+        }
+        let outcome = self
+            .run_probe()
+            .map(Arc::new)
+            .map_err(|error| format!("{error:#}"));
+        if let Err(error) = &outcome {
+            log::warn!("failed to probe MangaYomi extension {}: {error}", self.id);
+        }
+        *guard = Some(outcome.clone());
+        outcome.map_err(|error| anyhow!("{error}"))
+    }
+
+    /// Boots the extension (or reads the probe cache) and builds the probed
+    /// state from the collected metadata.
+    fn run_probe(&self) -> Result<ProbedMangayomi> {
+        let stat = fs::metadata(&self.path)
+            .with_context(|| format!("failed to stat extension file {}", self.path.display()))?;
+        let extension_len = stat.len();
+        let extension_mtime_ns = stat
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+            .map(|d| d.as_nanos());
+        let probe = match extension_mtime_ns
+            .and_then(|mtime| read_probe_cache(&self.path, extension_len, mtime))
+        {
+            Some(meta) => meta,
+            None => {
+                let probe_runtime: Arc<dyn MangayomiProvider> = if self.is_js {
+                    Arc::new(js::MangayomiJsRuntime::new(
+                        String::new(),
+                        self.code.clone(),
+                        self.metadata.clone(),
+                        self.settings.clone(),
+                        DEFAULT_INVOKE_TIMEOUT,
+                        ResourceRegistry::default(),
+                    )?)
+                } else {
+                    Arc::new(MangayomiRuntime::new(
+                        String::new(),
+                        self.code.clone(),
+                        self.metadata.clone(),
+                        self.settings.clone(),
+                        DEFAULT_INVOKE_TIMEOUT,
+                        ResourceRegistry::default(),
+                    )?)
+                };
+                let probe = ProbeMeta {
+                    base_url: probe_base_url(&*probe_runtime, self.is_js, &self.meta),
+                    supports_latest: probe_supports_latest(&*probe_runtime),
+                    setting_definitions: setting_definitions(&*probe_runtime)?,
+                };
+                probe_runtime.stop_worker();
+                if let Some(mtime) = extension_mtime_ns {
+                    write_probe_cache(&self.path, extension_len, mtime, &probe);
+                }
+                probe
+            }
         };
 
-        Ok(Self {
-            id: meta.id.clone(),
+        // Extension-declared preferences become the source's settings
+        // definitions; stored values are merged on top of their defaults.
+        let setting_definitions = probe.setting_definitions;
+        self.settings
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .seed_defaults(&setting_definitions);
+
+        let manifest = Self::build_manifest(&self.meta, &self.source_of_source, &probe.base_url);
+
+        Ok(ProbedMangayomi {
             manifest,
-            setting_definitions,
-            features: SourceFeatures {
-                process_page_image: false,
-            },
             base_url: probe.base_url,
-            name: meta.name,
-            lang: meta.lang,
             supports_latest: probe.supports_latest,
-            item_type: meta.item_type,
-            settings,
-            code,
-            metadata,
-            is_js,
-            runtime: Mutex::new(None),
-            usage: ResourceRegistry::default(),
+            setting_definitions,
         })
     }
 
@@ -445,13 +591,13 @@ impl MangayomiSource {
 
     /// Converts an `MPages` result (already serialised as
     /// `{"list": [...], "hasNextPage": bool}`) into rakuyomi mangas.
-    fn mangas_from_page(&self, value: &Value) -> Vec<Manga> {
+    fn mangas_from_page(&self, state: &ProbedMangayomi, value: &Value) -> Vec<Manga> {
         value
             .get("list")
             .and_then(Value::as_array)
             .map(|list| {
                 list.iter()
-                    .map(|manga| model::manga_from_value(&self.id, &self.base_url, manga))
+                    .map(|manga| model::manga_from_value(&self.id, &state.base_url, manga))
                     .collect()
             })
             .unwrap_or_default()
@@ -488,12 +634,13 @@ impl MangayomiSource {
         _cancellation_token: CancellationToken,
         listing: aidoku::Listing,
     ) -> Result<Vec<Manga>> {
-        let value = if listing.name.eq_ignore_ascii_case("latest") && self.supports_latest {
+        let state = self.ensure_probed()?;
+        let value = if listing.name.eq_ignore_ascii_case("latest") && state.supports_latest {
             self.invoke("getLatestUpdates", json!([1]))?
         } else {
             self.invoke("getPopular", json!([1]))?
         };
-        Ok(self.mangas_from_page(&value))
+        Ok(self.mangas_from_page(&state, &value))
     }
 
     /// Implements `search_mangas`. An empty query means "browse", which the
@@ -504,6 +651,7 @@ impl MangayomiSource {
         query: String,
         page: i32,
     ) -> Result<(Vec<Manga>, bool)> {
+        let state = self.ensure_probed()?;
         let value = if query.trim().is_empty() {
             self.invoke("getPopular", json!([page.max(1)]))?
         } else {
@@ -513,7 +661,7 @@ impl MangayomiSource {
             .get("hasNextPage")
             .and_then(Value::as_bool)
             .unwrap_or(false);
-        Ok((self.mangas_from_page(&value), has_next_page))
+        Ok((self.mangas_from_page(&state, &value), has_next_page))
     }
 
     /// Implements `get_manga_details`: `getDetail(mangaUrl)`.
@@ -522,8 +670,9 @@ impl MangayomiSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Manga> {
+        let state = self.ensure_probed()?;
         let value = self.invoke("getDetail", json!([manga_id]))?;
-        Ok(model::manga_from_value(&self.id, &self.base_url, &value))
+        Ok(model::manga_from_value(&self.id, &state.base_url, &value))
     }
 
     /// Implements `get_chapter_list` from the `chapters` field of
@@ -533,9 +682,10 @@ impl MangayomiSource {
         _cancellation_token: CancellationToken,
         manga_id: String,
     ) -> Result<Vec<crate::source::model::Chapter>> {
+        let state = self.ensure_probed()?;
         let value = self.invoke("getDetail", json!([manga_id.clone()]))?;
         let chapters = value.get("chapters").unwrap_or(&Value::Null);
-        let mut out = model::chapters_from_value(&self.id, &manga_id, &self.base_url, chapters);
+        let mut out = model::chapters_from_value(&self.id, &manga_id, &state.base_url, chapters);
         crate::source::model::normalize_chapter_order(&mut out);
         Ok(out)
     }
@@ -552,6 +702,7 @@ impl MangayomiSource {
         chapter_id: String,
         _chapter_num: Option<f32>,
     ) -> Result<Vec<Page>> {
+        let state = self.ensure_probed()?;
         if self.item_type == 2 {
             let html = self.invoke(
                 "getHtmlContent",
@@ -571,7 +722,7 @@ impl MangayomiSource {
         Ok(model::pages_from_value(
             &self.id,
             &chapter_id,
-            &self.base_url,
+            &state.base_url,
             &value,
         ))
     }
@@ -582,6 +733,7 @@ impl MangayomiSource {
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        self.ensure_probed()?;
         let headers = self.headers();
         let mut builder = crate::tls::client_builder()
             .build()
@@ -639,7 +791,8 @@ impl MangayomiSource {
         _page: i32,
     ) -> Result<crate::source::NextMangaPageResult> {
         let _ = cancellation_token;
-        let value = if listing.name.eq_ignore_ascii_case("latest") && self.supports_latest {
+        let state = self.ensure_probed()?;
+        let value = if listing.name.eq_ignore_ascii_case("latest") && state.supports_latest {
             self.invoke("getLatestUpdates", json!([1]))?
         } else {
             self.invoke("getPopular", json!([1]))?
@@ -649,7 +802,7 @@ impl MangayomiSource {
             .and_then(Value::as_bool)
             .unwrap_or(false);
         Ok(crate::source::NextMangaPageResult {
-            entries: self.aidoku_mangas(self.mangas_from_page(&value)),
+            entries: self.aidoku_mangas(self.mangas_from_page(&state, &value)),
             has_next_page,
         })
     }
@@ -662,6 +815,7 @@ impl MangayomiSource {
         _filters: Vec<aidoku::FilterValue>,
     ) -> Result<crate::source::NextMangaPageResult> {
         let _ = cancellation_token;
+        let state = self.ensure_probed()?;
         let value = if query.trim().is_empty() {
             self.invoke("getPopular", json!([page.max(1)]))?
         } else {
@@ -672,7 +826,7 @@ impl MangayomiSource {
             .and_then(Value::as_bool)
             .unwrap_or(false);
         Ok(crate::source::NextMangaPageResult {
-            entries: self.aidoku_mangas(self.mangas_from_page(&value)),
+            entries: self.aidoku_mangas(self.mangas_from_page(&state, &value)),
             has_next_page,
         })
     }
@@ -685,9 +839,10 @@ impl MangayomiSource {
         _needs_chapters: bool,
     ) -> Result<aidoku::Manga> {
         let _ = cancellation_token;
+        let state = self.ensure_probed()?;
         if needs_details {
             let value = self.invoke("getDetail", json!([manga.key.clone()]))?;
-            let updated = model::manga_from_value(&self.id, &self.base_url, &value);
+            let updated = model::manga_from_value(&self.id, &state.base_url, &value);
             Ok(aidoku::Manga {
                 key: updated.id.clone(),
                 title: updated.title.unwrap_or_default(),
@@ -716,6 +871,7 @@ impl MangayomiSource {
         chapter: aidoku::Chapter,
     ) -> Result<Vec<aidoku::Page>> {
         let _ = cancellation_token;
+        self.ensure_probed()?;
         let value = self.invoke("getPageList", json!([chapter.key.clone()]))?;
         Ok(value
             .as_array()

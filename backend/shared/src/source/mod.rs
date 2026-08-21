@@ -137,14 +137,14 @@ macro_rules! wrap_blocking_source_fn {
                     let lnreader = lnreader.clone();
                     ::tokio::task::spawn_blocking(move || {
                         let result = lnreader.$fn_name($($param),*);
-                        (result, lnreader.manifest.info.id.clone())
+                        (result, lnreader.manifest().info.id.clone())
                     }).await
                 }
                 SourceBackend::Mangayomi(mangayomi) => {
                     let mangayomi = mangayomi.clone();
                     ::tokio::task::spawn_blocking(move || {
                         let result = mangayomi.$fn_name($($param),*);
-                        (result, mangayomi.manifest.info.id.clone())
+                        (result, mangayomi.manifest().info.id.clone())
                     }).await
                 }
                 SourceBackend::Keiyoushi(keiyoushi) => {
@@ -169,8 +169,8 @@ macro_rules! wrap_blocking_source_fn {
                             .info
                             .id
                             .clone(),
-                        SourceBackend::LnReader(lnreader) => lnreader.manifest.info.id.clone(),
-                        SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.info.id.clone(),
+                        SourceBackend::LnReader(lnreader) => lnreader.manifest().info.id.clone(),
+                        SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest().info.id.clone(),
                         SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.info.id.clone(),
                     };
                     usage.record(
@@ -330,8 +330,8 @@ impl Source {
                 .unwrap_or_else(|e| e.into_inner())
                 .manifest
                 .clone(),
-            SourceBackend::LnReader(lnreader) => lnreader.manifest.clone(),
-            SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest.clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.manifest(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest(),
             SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.clone(),
         }
     }
@@ -343,9 +343,21 @@ impl Source {
                 .unwrap_or_else(|e| e.into_inner())
                 .setting_definitions
                 .clone(),
-            SourceBackend::LnReader(lnreader) => lnreader.setting_definitions.clone(),
-            SourceBackend::Mangayomi(mangayomi) => mangayomi.setting_definitions.clone(),
+            SourceBackend::LnReader(lnreader) => lnreader.setting_definitions(),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.setting_definitions(),
             SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.setting_definitions.clone(),
+        }
+    }
+
+    /// Runs the backend probe eagerly. Used by the install pipeline so the
+    /// probe cache is written right away and the source is fully probed from
+    /// the start (later loads then read the cache). WASM and keiyoushi
+    /// sources are probed at load time already and need no-op here.
+    pub fn probe(&self) -> Result<()> {
+        match &self.backend {
+            SourceBackend::LnReader(lnreader) => lnreader.ensure_probed().map(|_| ()),
+            SourceBackend::Mangayomi(mangayomi) => mangayomi.ensure_probed().map(|_| ()),
+            SourceBackend::Aidoku(_) | SourceBackend::Keiyoushi(_) => Ok(()),
         }
     }
 

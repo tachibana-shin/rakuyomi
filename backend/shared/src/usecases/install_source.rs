@@ -24,7 +24,6 @@ use crate::{
 /// caller can ask the user for a selection; a non-empty selection must
 /// only contain languages the APK actually bundles.
 pub async fn install_source(
-    source_manager: &mut SourceManager,
     arc_manager: &Arc<Mutex<SourceManager>>,
     source_lists: &[SourceList],
     source_id: SourceId,
@@ -104,12 +103,18 @@ pub async fn install_source(
                 .url
                 .context("LNReader source list item is missing a `url`")?;
             let plugin_content = client.get(url).send().await?.bytes().await?;
-            source_manager.install_lnreader_source(
-                &source_id,
-                plugin_content,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_lnreader_source(
+                    &source_id,
+                    plugin_content,
+                    source_of_source,
+                    &manager,
+                )
+            })
+            .await
+            .map_err(|e| anyhow!("LNReader install task panicked: {e}"))??;
         }
         crate::settings::SourceListType::Mangayomi => {
             // MangaYomi extension: the index entry itself carries the
@@ -131,13 +136,19 @@ pub async fn install_source(
             );
             let metadata = serde_json::to_vec(&metadata_obj)
                 .context("failed to serialise MangaYomi extension metadata")?;
-            source_manager.install_mangayomi_source(
-                &source_id,
-                code,
-                metadata,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_mangayomi_source(
+                    &source_id,
+                    code,
+                    metadata,
+                    source_of_source,
+                    &manager,
+                )
+            })
+            .await
+            .map_err(|e| anyhow!("MangaYomi install task panicked: {e}"))??;
         }
         crate::settings::SourceListType::Keiyoushi => {
             // Keiyoushi extension: the index publishes the release APK URL.
@@ -148,19 +159,48 @@ pub async fn install_source(
                 .context("Keiyoushi source list item is missing an `apk` URL")?;
             let apk_content = client.get(apk_url).send().await?.bytes().await?;
 
-            // A keiyoushi APK bundles one source per language; installing a
-            // multi-source APK without a selection would register every
+            // Probing boots the extension VM and installing registers its
+            // sources: both are blocking work, so run them off the async
+            // worker. A multi-source APK bundles one source per language;
+            // installing one without a selection would register every
             // language, so it first asks which languages to install.
-            let probe = crate::source::keiyoushi::probe_keiyoushi_apk(&apk_content)?;
-            if probe.sources.len() == 1 {
-                source_manager.install_keiyoushi_source(
-                    &source_id,
-                    apk_content,
-                    source_of_source,
-                    arc_manager,
-                    None,
-                )?;
-            } else if let Some(languages) = languages {
+            let manager = arc_manager.clone();
+            let outcome = tokio::task::spawn_blocking(move || -> Result<InstallOutcome> {
+                let probe = crate::source::keiyoushi::probe_keiyoushi_apk(&apk_content)?;
+                if probe.sources.len() == 1 {
+                    let mut guard = manager.blocking_lock();
+                    guard.install_keiyoushi_source(
+                        &source_id,
+                        apk_content,
+                        source_of_source,
+                        &manager,
+                        None,
+                    )?;
+                    return Ok(InstallOutcome::Installed);
+                }
+
+                let mut bundled_languages = probe
+                    .sources
+                    .iter()
+                    .map(|(_, lang, _)| lang.clone())
+                    .collect::<Vec<_>>();
+                bundled_languages.sort();
+                bundled_languages.dedup();
+
+                let Some(languages) = languages else {
+                    let name = source_list_item
+                        .item
+                        .get("name")
+                        .and_then(|name| name.as_str())
+                        .unwrap_or(source_id.value())
+                        .to_string();
+
+                    return Ok(InstallOutcome::SelectionRequired {
+                        name,
+                        languages: bundled_languages,
+                    });
+                };
+
                 let bundled = probe
                     .sources
                     .iter()
@@ -178,33 +218,20 @@ pub async fn install_source(
                     );
                 }
 
-                source_manager.install_keiyoushi_source(
+                let mut guard = manager.blocking_lock();
+                guard.install_keiyoushi_source(
                     &source_id,
                     apk_content,
                     source_of_source,
-                    arc_manager,
+                    &manager,
                     Some(&languages),
                 )?;
-            } else {
-                let mut bundled_languages = probe
-                    .sources
-                    .iter()
-                    .map(|(_, lang, _)| lang.clone())
-                    .collect::<Vec<_>>();
-                bundled_languages.sort();
-                bundled_languages.dedup();
-                let name = source_list_item
-                    .item
-                    .get("name")
-                    .and_then(|name| name.as_str())
-                    .unwrap_or(source_id.value())
-                    .to_string();
+                Ok(InstallOutcome::Installed)
+            })
+            .await
+            .map_err(|e| anyhow!("Keiyoushi install task panicked: {e}"))??;
 
-                return Ok(InstallOutcome::SelectionRequired {
-                    name,
-                    languages: bundled_languages,
-                });
-            }
+            return Ok(outcome);
         }
         crate::settings::SourceListType::Aidoku => {
             let file = source_list_item
@@ -216,13 +243,13 @@ pub async fn install_source(
                 source_list.url.join(&format!("sources/{}", file)).unwrap()
             };
             let aix_content = client.get(aix_url).send().await?.bytes().await?;
-
-            source_manager.install_source(
-                &source_id,
-                aix_content,
-                source_of_source,
-                arc_manager,
-            )?;
+            let manager = arc_manager.clone();
+            tokio::task::spawn_blocking(move || {
+                let mut guard = manager.blocking_lock();
+                guard.install_source(&source_id, aix_content, source_of_source, &manager)
+            })
+            .await
+            .map_err(|e| anyhow!("Aidoku install task panicked: {e}"))??;
         }
     }
 

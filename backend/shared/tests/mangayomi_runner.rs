@@ -617,12 +617,12 @@ async fn runner_full_offline() {
     assert_eq!(manifest.source_of_source.as_deref(), Some("MangaYomi"));
 
     let source = mangayomi(&source);
-    assert!(source.supports_latest);
+    assert!(source.supports_latest());
     assert!(!source.features.process_page_image);
 
     // Extension-declared preferences become the settings definitions, with
     // defaults collected into the shared settings map.
-    let defs = &source.setting_definitions;
+    let defs = &source.setting_definitions();
     assert_eq!(defs.len(), 2);
     match &defs[0] {
         SettingDefinition::Switch {
@@ -1017,7 +1017,7 @@ FlatPref main(MSource source) => FlatPref(source: source);
 
     // The flat EditTextPreference must become a Text setting with the default
     // collected into the shared settings map.
-    let defs = &source.setting_definitions;
+    let defs = source.setting_definitions();
     assert_eq!(defs.len(), 1);
     match &defs[0] {
         SettingDefinition::Text { key, default, .. } => {
@@ -1332,6 +1332,73 @@ async fn runner_xpath_extension() {
         pages[1].image_url.as_ref().map(|u| u.to_string()),
         Some("https://cdn.example.com/p2.jpg".to_string())
     );
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn runner_lazy_probe_without_cache() {
+    // An extension loaded without its probe cache must not boot the
+    // interpreter at load time: the metadata-based manifest is complete, but
+    // the probed parts (preference definitions, Dart base URL, latest
+    // support) are deferred until the first method call.
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+    let port = base
+        .trim_start_matches("http://")
+        .rsplit(':')
+        .next()
+        .unwrap();
+    let html = |s: &str| s.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}"));
+
+    let dir = temp_sources_dir("lazy");
+    let manager = manager(&dir);
+    let source_id = install(
+        &manager,
+        &FIXTURE_EXTENSION.replace("127.0.0.1:PORT", &format!("127.0.0.1:{port}")),
+        &html(
+            r#"{"id": 638504049, "name": "Madara Fixture", "lang": "en", "baseUrl": "http://127.0.0.1:PORT", "version": "1.2.0", "sourceCodeUrl": "https://example.com/madara.dart"}"#,
+        ),
+    );
+    let probe_path = lock_manager(&manager).mangayomi_probe_path(&source_id);
+    assert!(probe_path.exists(), "install must write the probe cache");
+    std::fs::remove_file(&probe_path).unwrap();
+
+    let source = lock_manager(&manager)
+        .load_all_sources(&manager)
+        .unwrap()
+        .get(&source_id)
+        .expect("source registered")
+        .clone();
+    let manifest = source.manifest();
+    assert_eq!(manifest.info.id, "638504049");
+    assert_eq!(manifest.info.name, "Madara Fixture");
+    assert!(
+        source.setting_definitions().is_empty(),
+        "no preference definitions before the probe"
+    );
+
+    // The first call probes lazily: the cache is rewritten and the probed
+    // metadata (preferences, base URL, latest support) becomes available.
+    let source = mangayomi(&source);
+    let mangas = source
+        .get_manga_list(
+            CancellationToken::new(),
+            shared::aidoku::Listing {
+                id: "popular".to_string(),
+                name: "popular".to_string(),
+                kind: Default::default(),
+            },
+        )
+        .unwrap();
+    assert_eq!(mangas.len(), 2, "two mangas in the fixture list");
+    assert!(
+        probe_path.exists(),
+        "first use must rewrite the probe cache"
+    );
+    assert_eq!(source.setting_definitions().len(), 2);
+    assert!(source.supports_latest());
+    assert_eq!(source.base_url(), base);
 
     std::fs::remove_dir_all(&dir).ok();
 }

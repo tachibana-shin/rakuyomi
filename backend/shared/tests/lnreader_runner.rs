@@ -12,6 +12,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use serde_json::Value;
 use shared::{
     settings::Settings,
     source::lnreader::LnReaderSource,
@@ -786,7 +787,7 @@ exports.default = {
 
     // The browse filters are not exposed as setting definitions; the plugin's
     // own settings page (`pluginSettings`) is.
-    let defs = &source.setting_definitions;
+    let defs = source.setting_definitions();
     assert_eq!(defs.len(), 3);
     let get = |key: &str| {
         defs.iter()
@@ -886,4 +887,58 @@ fn setting_key(def: &SettingDefinition) -> &str {
         } => title,
         _ => "",
     }
+}
+
+#[tokio::test]
+async fn runner_lazy_probe_without_cache() {
+    // A plugin loaded without its probe cache must not evaluate its JS at
+    // load time: the manifest is the file-name placeholder until the first
+    // method call probes the plugin (and rewrites the cache).
+    let server = FixtureServer::start().await;
+    let base = server.base_url();
+    let plugin_code = FIXTURE_PLUGIN.replace(
+        "PORT",
+        base.trim_end_matches('/').rsplit(':').next().unwrap(),
+    );
+
+    let dir = temp_sources_dir("lazy");
+    let manager = manager(&dir);
+    let source_id = install(&manager, "testplugin", &plugin_code).await;
+    let probe_path = manager.lock().await.lnreader_probe_path(&source_id);
+    assert!(probe_path.exists(), "install must write the probe cache");
+    std::fs::remove_file(&probe_path).unwrap();
+
+    let source = manager
+        .lock()
+        .await
+        .load_all_sources(&manager)
+        .unwrap()
+        .get(&source_id)
+        .expect("source registered")
+        .clone();
+    let manifest = source.manifest();
+    assert_eq!(manifest.info.id, "testplugin");
+    assert_eq!(
+        manifest.info.name, "testplugin",
+        "placeholder name until the plugin is probed"
+    );
+    assert_eq!(manifest.info.version, Value::String(String::new()));
+    assert!(source.setting_definitions().is_empty());
+
+    // The first call probes lazily: the cache is rewritten and the real
+    // manifest is reported afterwards.
+    let (mangas, _) = source
+        .search_mangas(CancellationToken::new(), String::new(), 1)
+        .await
+        .unwrap();
+    assert_eq!(mangas.len(), 2, "two novels in the fixture list");
+    assert!(
+        probe_path.exists(),
+        "first use must rewrite the probe cache"
+    );
+    let manifest = source.manifest();
+    assert_eq!(manifest.info.name, "Offline Test Plugin");
+    assert_eq!(manifest.info.version, Value::String("1.2.3".into()));
+
+    std::fs::remove_dir_all(&dir).ok();
 }

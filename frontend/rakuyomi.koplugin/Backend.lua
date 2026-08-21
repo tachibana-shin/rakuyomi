@@ -96,11 +96,19 @@ function Backend.requestJson(request)
   end
 
   -- Under normal conditions, we should always have a request body, even when the status code
-  -- is not 2xx
+  -- is not 2xx. Should that ever change (e.g. a rejection body produced by the HTTP
+  -- framework itself), surface it as an ERROR response instead of raising and crashing
+  -- KOReader.
   local parsed_body, err = rapidjson.decode(response.body)
   if err then
-    error("Expected to be able to decode the response body as JSON: " ..
-      response.body .. "(status code: " .. response.status .. ")")
+    logger.err("Request returned a non-JSON body with status code", response.status, "and body",
+      response.body)
+
+    return {
+      type = 'ERROR',
+      status = response.status,
+      message = tostring(response.body),
+    }
   end
 
   if not (response.status and response.status >= 200 and response.status <= 299) then

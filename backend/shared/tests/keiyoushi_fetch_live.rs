@@ -46,6 +46,7 @@ fn probe_fetch_page_image() {
             bytes,
             "keiyoushi/extensions".to_string(),
             &manager,
+            None,
         )
         .unwrap_or_else(|e| panic!("install failed: {e:#}"));
     let manager_guard = manager.blocking_lock();

@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use serde_json::Value;
+use std::collections::HashMap;
 use url::Url;
 
 /// Fetches a source list index and returns its JSON form.
@@ -146,6 +147,26 @@ fn decode_repo_index(data: &[u8]) -> Result<Value> {
         }
     }
     Ok(Value::Array(entries))
+}
+
+/// Expands keiyoushi entry ids in place: the index publishes one entry per
+/// bundled source language, all sharing the extension package name, and a
+/// loaded multi-source APK registers its sources as `<pkg>:<lang>`. Entries
+/// of a package published with several languages therefore get
+/// `<pkg>:<lang>` ids (matching the sources an install produces), while
+/// single-language packages keep the plain package id.
+pub fn expand_keiyoushi_ids(entries: &mut [(String, Option<String>)]) {
+    let mut counts: HashMap<String, usize> = HashMap::new();
+    for (id, _) in entries.iter() {
+        *counts.entry(id.clone()).or_default() += 1;
+    }
+    for (id, lang) in entries.iter_mut() {
+        if counts.get(id.as_str()).copied().unwrap_or(0) > 1 {
+            if let Some(lang) = lang.clone() {
+                *id = format!("{id}:{lang}");
+            }
+        }
+    }
 }
 
 /// Decodes one `Extension` message into the JSON entries of the keiyoushi
@@ -537,5 +558,48 @@ mod tests {
         let entries = value.as_array().unwrap();
         assert_eq!(entries[0]["lang"], "all");
         assert_eq!(entries[0]["version"], "1.0.1");
+    }
+
+    #[test]
+    fn test_expand_keiyoushi_ids_multi_language_package() {
+        let mut entries = vec![
+            (
+                "eu.kanade.tachiyomi.extension.all.hentai3".to_string(),
+                Some("all".to_string()),
+            ),
+            (
+                "eu.kanade.tachiyomi.extension.all.hentai3".to_string(),
+                Some("en".to_string()),
+            ),
+            (
+                "eu.kanade.tachiyomi.extension.all.hentai3".to_string(),
+                Some("ja".to_string()),
+            ),
+            (
+                "eu.kanade.tachiyomi.extension.en.mangapill".to_string(),
+                Some("en".to_string()),
+            ),
+        ];
+        expand_keiyoushi_ids(&mut entries);
+        assert_eq!(
+            entries[0].0,
+            "eu.kanade.tachiyomi.extension.all.hentai3:all"
+        );
+        assert_eq!(entries[1].0, "eu.kanade.tachiyomi.extension.all.hentai3:en");
+        assert_eq!(entries[2].0, "eu.kanade.tachiyomi.extension.all.hentai3:ja");
+        // Single-language packages keep the plain package id.
+        assert_eq!(entries[3].0, "eu.kanade.tachiyomi.extension.en.mangapill");
+    }
+
+    #[test]
+    fn test_expand_keiyoushi_ids_keeps_entry_without_lang() {
+        let mut entries = vec![
+            ("some.pkg".to_string(), None),
+            ("some.pkg".to_string(), Some("en".to_string())),
+        ];
+        expand_keiyoushi_ids(&mut entries);
+        // No language to append: the id stays untouched.
+        assert_eq!(entries[0].0, "some.pkg");
+        assert_eq!(entries[1].0, "some.pkg:en");
     }
 }

@@ -371,10 +371,12 @@ function LibraryView:updateItems()
     self.item_table = self:generateItemTableFromMangas(self.mangas)
     self.multilines_show_more_text = false
     self.items_per_page = nil
+    self.single_line = true
   else
     self.item_table = self:generateEmptyViewItemTable()
     self.multilines_show_more_text = true
     self.items_per_page = 1
+    self.single_line = false
   end
 
   local mode = self:getLibraryViewMode()
@@ -1206,11 +1208,25 @@ function LibraryView:openSettingsSearchDialog()
   end
 
   local key = "exlucde_source_ids_select_search"
+  local options = {}
+  local formatLanguages = require("utils/formatLanguages")
+  for _, source_information in ipairs(response.body) do
+    local name = source_information.name
+    local languages_text = formatLanguages(source_information.languages)
+    if languages_text then
+      name = name .. " (" .. languages_text .. ")"
+    end
+    table.insert(options, {
+      id = source_information.id,
+      name = name,
+    })
+  end
+
   ---@diagnostic disable-next-line: redundant-parameter
   local dialog = CheckboxDialog:new {
     title = _("Exclude source search for") .. " \"" .. _("Search") .. "*\"",
     current = G_reader_settings:readSetting(key, {}),
-    options = response.body,
+    options = options,
     update_callback = function(value)
       G_reader_settings:saveSetting(key, value)
     end

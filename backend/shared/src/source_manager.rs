@@ -61,7 +61,7 @@ impl SourceManager {
         let target_path = self.source_path(id);
         fs::write(&target_path, contents)?;
 
-        Source::write_meta_file(&target_path, source_of_source)?;
+        Source::write_meta_file(&target_path, source_of_source, None)?;
 
         let source = Source::from_aix_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
@@ -85,7 +85,7 @@ impl SourceManager {
         let target_path = self.lnreader_source_path(id);
         fs::write(&target_path, contents)?;
 
-        Source::write_meta_file(&target_path, source_of_source)?;
+        Source::write_meta_file(&target_path, source_of_source, None)?;
 
         let source = Source::from_lnreader_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
@@ -148,7 +148,7 @@ impl SourceManager {
         fs::write(&target_path, code)?;
         fs::write(target_path.with_extension("json"), metadata.to_string())?;
 
-        Source::write_meta_file(&target_path, source_of_source)?;
+        Source::write_meta_file(&target_path, source_of_source, None)?;
 
         let source = Source::from_mangayomi_file(&target_path, self, arc_manager)?;
         self.sources_by_id.insert(id.clone(), source);
@@ -164,18 +164,40 @@ impl SourceManager {
     /// Installs a keiyoushi extension APK: the bytes are stored as
     /// `<pkg>.keiyoushi.apk` (one per extension package), and every source
     /// bundled in the APK is registered individually (see
-    /// [`Source::from_keiyoushi_file`]).
+    /// [`Source::from_keiyoushi_file`]). For a multi-source APK,
+    /// `languages` restricts which bundled sources are registered; the
+    /// selection is stored in the meta file so reloads keep it.
     pub fn install_keiyoushi_source(
         &mut self,
         id: &SourceId,
         contents: impl AsRef<[u8]>,
         source_of_source: String,
         arc_manager: &Arc<Mutex<SourceManager>>,
+        languages: Option<&[String]>,
     ) -> Result<()> {
         let target_path = self.keiyoushi_source_path(id);
         fs::write(&target_path, contents)?;
 
-        Source::write_meta_file(&target_path, source_of_source)?;
+        Source::write_meta_file(
+            &target_path,
+            source_of_source,
+            languages.map(|l| l.to_vec()),
+        )?;
+
+        // The selection in the meta file replaces any previous one, so drop
+        // the sources previously registered from this APK first; otherwise
+        // the registered set would mix the old and the new selection.
+        let doomed: Vec<SourceId> = self
+            .sources_by_id
+            .keys()
+            .filter(|id2| self.keiyoushi_source_path(id2) == target_path)
+            .cloned()
+            .collect();
+        for doomed_id in doomed {
+            self.sources_by_id.remove(&doomed_id);
+            #[cfg(not(feature = "all"))]
+            self.file_sources.remove(doomed_id.value());
+        }
 
         let sources = Source::from_keiyoushi_file(&target_path, self, arc_manager)?;
         for source in sources {

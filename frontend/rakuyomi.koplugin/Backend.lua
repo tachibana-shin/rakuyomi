@@ -645,13 +645,23 @@ function Backend.listAvailableSources()
   })
 end
 
---- Installs a source.
---- @return SuccessfulResponse<SourceInformation[]>|ErrorResponse
-function Backend.installSource(source_id, source_of_source)
+--- @class InstallOutcome: { type: 'installed' } | { type: 'selection_required', name: string, languages: string[] }
+---
+--- Installs a source. `languages` (keiyoushi multi-source APKs) restricts
+--- which bundled languages are installed; when omitted, a multi-source APK
+--- answers `selection_required` instead of installing.
+--- @return SuccessfulResponse<InstallOutcome>|ErrorResponse
+function Backend.installSource(source_id, source_of_source, languages)
+  local body = {
+    source_of_source = source_of_source,
+  }
+  if languages ~= nil then
+    body.languages = languages
+  end
   return Backend.requestJson({
     path = "/available-sources/" .. source_id .. "/install",
     method = "POST",
-    body = source_of_source,
+    body = body,
   })
 end
 

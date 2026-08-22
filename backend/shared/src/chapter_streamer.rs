@@ -20,6 +20,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::model::ChapterId;
 use crate::source::{model::Page, Source};
+use crate::unscrable_image::{unscrable_image, Block};
 use crate::util::{
     detect_image_extension, generate_error_image, request_with_forced_referer_from_request,
 };
@@ -498,6 +499,29 @@ async fn download_page(
         }
     };
 
+    // Sources like mangayomi may serve scrambled images: when the page
+    // carries a blocks descriptor, descramble before anything else —
+    // mirroring `chapter_downloader`.
+    let response_bytes = if let Some(blocks_json) = page.base64.as_ref() {
+        let blocks: Vec<Block> = serde_json::from_str(blocks_json)
+            .map_err(|err| Error::Fetch(anyhow!("Invalid blocks JSON: {err:?}")))?;
+
+        let scrambled = response_bytes.to_vec();
+        let unscrambled = tokio::task::spawn_blocking(move || unscrable_image(scrambled, blocks))
+            .await
+            .map_err(|err| Error::Fetch(anyhow!("unscrable_image task failed: {err}")))?
+            .map_err(|err| {
+                error!("page {index}: unscrable_image failed: {err}");
+                Error::Fetch(anyhow!("unscrable_image failed: {err}"))
+            })?;
+
+        Bytes::from(unscrambled)
+    } else {
+        response_bytes
+    };
+
+    // Trust the magic bytes of the final image over any URL-derived
+    // extension (keiyoushi URLs may end in disguised extensions).
     let extension = detect_image_extension(&response_bytes).unwrap_or(url_extension);
 
     Ok((response_bytes.to_vec(), extension))

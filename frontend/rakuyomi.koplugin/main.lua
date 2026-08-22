@@ -7,6 +7,7 @@ local OfflineAlertDialog = require("OfflineAlertDialog")
 
 local Backend = require("Backend")
 local CbzDocument = require("extensions/CbzDocument")
+local StreamedChapterDocument = require("extensions/StreamedChapterDocument")
 local ErrorDialog = require("ErrorDialog")
 local LibraryView = require("LibraryView")
 local MangaReader = require("MangaReader")
@@ -36,6 +37,9 @@ function Rakuyomi:init()
   if not ok or not android then
     CbzDocument:register(DocumentRegistry)
   end
+  -- Streamed chapters are a Rakuyomi-specific format: registered on every
+  -- platform, since no stock KOReader engine knows the .rcbz extension.
+  StreamedChapterDocument:register(DocumentRegistry)
   Dispatcher:registerAction("start_library_view", {
     category = "none",
     event = "StartLibraryView",

@@ -768,9 +768,7 @@ async fn revoke_manga_chapter(
 /// Returns page metadata for a chapter without downloading anything, for the
 /// on-demand streaming reader mode.
 async fn get_chapter_stream_info(
-    StateExtractor(State {
-        database, ..
-    }): StateExtractor<State>,
+    StateExtractor(State { database, .. }): StateExtractor<State>,
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<DownloadMangaChapterParams>,
 ) -> Result<Json<shared::chapter_streamer::StreamInfo>, AppError> {
@@ -802,16 +800,9 @@ async fn get_chapter_stream_page(
     SourceExtractor(source): SourceExtractor,
     Path(params): Path<StreamPageParams>,
 ) -> Result<axum::response::Response, AppError> {
-    let page_index: usize = params
-        .page_index
-        .parse()
-        .map_err(|_| AppError::NotFound)?;
+    let page_index: usize = params.page_index.parse().map_err(|_| AppError::NotFound)?;
 
-    let chapter_id = ChapterId::from_strings(
-        params.source_id,
-        params.manga_id,
-        params.chapter_id,
-    );
+    let chapter_id = ChapterId::from_strings(params.source_id, params.manga_id, params.chapter_id);
     let token = CancellationToken::new();
 
     // Clone the storage under a short-lived lock: the usecase only reads
@@ -833,29 +824,33 @@ async fn get_chapter_stream_page(
     let content_type = content_type_for_extension(fetched.extension);
     let bytes = axum::body::Bytes::from(fetched.bytes);
 
-    let mut response = ([(axum::http::header::CONTENT_TYPE, content_type.to_owned())], bytes)
+    let mut response = (
+        [(axum::http::header::CONTENT_TYPE, content_type.to_owned())],
+        bytes,
+    )
         .into_response();
-    response
-        .headers_mut()
-        .insert(axum::http::header::CACHE_CONTROL, "no-store".parse().unwrap());
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        "no-store".parse().unwrap(),
+    );
 
     Ok(response)
 }
 
-fn map_stream_usecase_error(
-    value: shared::usecases::get_chapter_stream_info::Error,
-) -> AppError {
+fn map_stream_usecase_error(value: shared::usecases::get_chapter_stream_info::Error) -> AppError {
     match value {
-        shared::usecases::get_chapter_stream_info::Error::PageList(e) => AppError::NetworkFailure(e),
+        shared::usecases::get_chapter_stream_info::Error::PageList(e) => {
+            AppError::NetworkFailure(e)
+        }
         shared::usecases::get_chapter_stream_info::Error::Other(e) => AppError::Other(e),
     }
 }
 
-fn map_stream_page_error(
-    value: shared::usecases::fetch_chapter_stream_page::Error,
-) -> AppError {
+fn map_stream_page_error(value: shared::usecases::fetch_chapter_stream_page::Error) -> AppError {
     match value {
-        shared::usecases::fetch_chapter_stream_page::Error::PageOutOfRange { .. } => AppError::NotFound,
+        shared::usecases::fetch_chapter_stream_page::Error::PageOutOfRange { .. } => {
+            AppError::NotFound
+        }
         shared::usecases::fetch_chapter_stream_page::Error::TextChapter => {
             AppError::Other(anyhow::Error::msg("the chapter has no image pages"))
         }

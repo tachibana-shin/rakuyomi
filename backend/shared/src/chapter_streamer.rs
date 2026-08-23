@@ -197,9 +197,7 @@ pub async fn fetch_chapter_page(
             .extension()
             .and_then(|ext| ext.to_str())
             .and_then(|ext| detect_extension_from_filename(ext));
-        if let (Some(extension), Ok(bytes)) =
-            (extension, tokio::fs::read(&path).await)
-        {
+        if let (Some(extension), Ok(bytes)) = (extension, tokio::fs::read(&path).await) {
             info!(
                 "stream [{}]: page {}/{} served from cache ({} bytes)",
                 chapter_id.value(),
@@ -210,7 +208,10 @@ pub async fn fetch_chapter_page(
             return Ok(FetchedPage { bytes, extension });
         }
 
-        warn!("Failed to read cached stream page at {}, refetching", path.display());
+        warn!(
+            "Failed to read cached stream page at {}, refetching",
+            path.display()
+        );
     }
 
     let started_at = std::time::Instant::now();
@@ -268,7 +269,11 @@ pub async fn revoke_chapter_cache(stream_pages_root: &Path, chapter_id: &Chapter
     match tokio::fs::remove_dir_all(&dir).await {
         Ok(_) => info!("Deleted stream page cache at {}", dir.display()),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
-        Err(err) => warn!("Failed to delete stream page cache {}: {}", dir.display(), err),
+        Err(err) => warn!(
+            "Failed to delete stream page cache {}: {}",
+            dir.display(),
+            err
+        ),
     }
 }
 
@@ -350,7 +355,7 @@ async fn enforce_cache_limit(stream_pages_root: &Path) {
     static INSERT_COUNT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
     let count = INSERT_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    if count % CACHE_ENFORCEMENT_INTERVAL != 0 {
+    if !count.is_multiple_of(CACHE_ENFORCEMENT_INTERVAL) {
         return;
     }
 
@@ -392,7 +397,10 @@ fn enforce_cache_limit_sync(stream_pages_root: &Path) -> anyhow::Result<()> {
         if total <= STREAM_CACHE_SIZE_LIMIT_BYTES {
             break;
         }
-        info!("Evicting stream page cache at {} to free space", path.display());
+        info!(
+            "Evicting stream page cache at {} to free space",
+            path.display()
+        );
         if std::fs::remove_dir_all(&path).is_ok() {
             total = total.saturating_sub(dir_size);
         }
@@ -424,9 +432,10 @@ async fn download_page(
     page: &Page,
     index: usize,
 ) -> Result<DownloadedPage, Error> {
-    let image_url = page.image_url.clone().ok_or_else(|| {
-        Error::Fetch(anyhow!("page {index} has no image URL"))
-    })?;
+    let image_url = page
+        .image_url
+        .clone()
+        .ok_or_else(|| Error::Fetch(anyhow!("page {index} has no image URL")))?;
 
     let url_extension = Path::new(image_url.path())
         .extension()
@@ -478,7 +487,10 @@ async fn download_page(
 
             let status = response.status();
             let headers = response.headers().clone();
-            let body = response.bytes().await.map_err(|err| Error::Fetch(err.into()))?;
+            let body = response
+                .bytes()
+                .await
+                .map_err(|err| Error::Fetch(err.into()))?;
 
             if source.features.process_page_image {
                 let processed = source

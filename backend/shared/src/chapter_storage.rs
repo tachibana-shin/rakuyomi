@@ -279,6 +279,27 @@ impl ChapterStorage {
         &self.downloads_folder_path
     }
 
+    /// Preferred root path for the on-demand page stream cache. Lives inside
+    /// the RAM-backed tmpfs when that is enabled (mirroring downloaded
+    /// chapters), so streamed pages never touch flash storage — at the cost
+    /// of being lost on power off, which is fine for a cache.
+    pub fn stream_pages_path(&self) -> PathBuf {
+        if self.ram_enabled {
+            return self.tmpfs_path().join("stream_pages");
+        }
+
+        self.stream_pages_fallback_path()
+    }
+
+    /// Persistent (disk) root for the page stream cache, used as fallback
+    /// when the tmpfs is unavailable or full.
+    pub fn stream_pages_fallback_path(&self) -> PathBuf {
+        self.downloads_folder_path
+            .parent()
+            .unwrap_or(&self.downloads_folder_path)
+            .join("stream_pages")
+    }
+
     pub fn collect_all_files(&self, depth: usize) -> std::collections::HashSet<PathBuf> {
         WalkDir::new(&self.downloads_folder_path)
             .max_depth(depth)

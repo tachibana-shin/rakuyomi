@@ -3,6 +3,7 @@ pub mod arima_light;
 pub mod cbz_metadata;
 pub mod chapter_downloader;
 pub mod chapter_storage;
+pub mod chapter_streamer;
 pub mod cookie_store;
 /// The aidoku-rs types used across the source API.
 pub use aidoku;

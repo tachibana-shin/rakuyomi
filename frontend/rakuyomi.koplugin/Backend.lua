@@ -265,6 +265,10 @@ end
 --- @field source_information SourceInformation Information about the source that generated those results.
 --- @field mangas Manga[] Found mangas.
 
+--- @class ChapterStreamInfo
+--- @field page_count number The number of pages in the chapter.
+--- @field is_novel boolean Whether the chapter is a text chapter (novel) instead of images.
+
 --- @class FileSummary
 --- @field filenames string[] The names
 --- @field total_size number The total size
@@ -625,6 +629,57 @@ function Backend.getChapterMetadata(source_id, manga_id, chapter_id)
         source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/metadata",
     method = "GET",
   })
+end
+
+--- Performs an HTTP request, returning the raw response body without any
+--- JSON decoding. Used to fetch binary data (e.g. streamed page images).
+--- @param request RequestParameters The parameters used for this request.
+--- @return SuccessfulResponse<string>|ErrorResponse # The raw body as a string.
+function Backend.requestRaw(request)
+  assert(Backend.server ~= nil, "backend wasn't initialized!")
+
+  local response = Backend.server:request({
+    path = request.path,
+    method = request.method or "GET",
+    headers = {},
+    body = nil,
+    timeout_seconds = request.timeout,
+  })
+
+  if response.type == 'ERROR' then
+    return response
+  end
+
+  if not (response.status and response.status >= 200 and response.status <= 299) then
+    return {
+      type = 'ERROR',
+      status = response.status,
+      message = tostring(response.body),
+    }
+  end
+
+  return { type = 'SUCCESS', status = response.status, body = response.body }
+end
+
+--- Returns metadata about a chapter's pages (count, whether it is a text
+--- chapter), without downloading anything.
+--- @return SuccessfulResponse<ChapterStreamInfo>|ErrorResponse
+function Backend.getChapterStreamInfo(source_id, manga_id, chapter_id)
+  return Backend.requestJson({
+    path = "/mangas/" ..
+        source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) .. "/stream/info",
+    method = "GET",
+    timeout = 120,
+  })
+end
+
+--- Builds the backend path that serves a single streamed page image of a
+--- chapter (1-based page index).
+--- @return string
+function Backend.getChapterStreamPagePath(source_id, manga_id, chapter_id, page_index)
+  return "/mangas/" ..
+      source_id .. "/" .. util.urlEncode(manga_id) .. "/chapters/" .. util.urlEncode(chapter_id) ..
+      "/stream/pages/" .. tostring(page_index)
 end
 
 --- Marks the chapter as read.

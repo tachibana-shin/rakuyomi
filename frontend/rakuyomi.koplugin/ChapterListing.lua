@@ -38,15 +38,8 @@ local findLastRead = require("utils/findLastRead")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
 
 local TrackingMenu = require("TrackingMenu")
-local StreamedChapters = require("extensions/StreamedChapters")
 local findNextChapter = require("chapters/findNextChapter")
 local findPreviousChapter = require("chapters/findPreviousChapter")
-
---- @return boolean Whether chapters should be streamed page-by-page instead
---- of being downloaded as a whole before reading.
-local function isStreamingModeEnabled()
-  return G_reader_settings:isTrue("rakuyomi_streaming_mode")
-end
 
 local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local Font = require("ui/font")
@@ -994,115 +987,11 @@ function ChapterListing:prunePreloadJobs()
 end
 
 --- @private
---- Resolves the file path used to display a chapter on the reader: the
---- already-downloaded CBZ file, or a streaming descriptor when streaming
---- mode is enabled and the chapter is not downloaded.
---- @param chapter Chapter
---- @param download_job DownloadChapter|nil
---- @param callback fun(path: string)
-function ChapterListing:resolveChapterForReading(chapter, download_job, callback)
-  if chapter.file ~= nil then
-    return callback(chapter.file)
-  end
-
-  if isStreamingModeEnabled() and not chapter.downloaded then
-    return self:streamChapter(chapter, nil, callback)
-  end
-
-  return self:downloadChapter(chapter, download_job, callback)
-end
-
---- @private
---- Prepares a chapter for streamed reading: warms up the backend page cache
---- with its first pages and creates the `.rcbz` descriptor file that the
---- StreamedChapterDocument provider consumes. Text chapters fall back to
---- the regular download path.
---- @param chapter Chapter
---- @param retried boolean|nil Whether this call is a retry after a Wi-Fi reconnect.
---- @param callback fun(path: string)
-function ChapterListing:streamChapter(chapter, retried, callback)
-  Trapper:wrap(function()
-    local message = _("Loading chapter (streaming)...")
-        .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
-        .. ' ' .. (chapter.title or '')
-
-    local response, cancelled = LoadingDialog:showAndRun(message, function()
-      -- Runs in a Trapper subprocess: backend requests only, no state changes.
-      local info = Backend.getChapterStreamInfo(
-        chapter.source_id, chapter.manga_id, chapter.id)
-      if info.type == 'ERROR' then
-        return info
-      end
-
-      if info.body.is_novel then
-        return { type = 'NOVEL' }
-      end
-
-      -- Warm the backend page cache so the reader doesn't stall right
-      -- after opening.
-      for page_index = 1, math.min(2, info.body.page_count) do
-        local page = Backend.requestRaw{
-          path = Backend.getChapterStreamPagePath(
-            chapter.source_id, chapter.manga_id, chapter.id, page_index),
-          timeout = 120,
-        }
-        if page.type == 'ERROR' then
-          return page
-        end
-      end
-
-      return { type = 'SUCCESS', body = true }
-    end)
-
-    if cancelled or response == nil then
-      return
-    end
-
-    if response.type == 'NOVEL' then
-      -- Text chapters cannot be streamed as images: force the download path.
-      return self:downloadChapter(chapter, nil, callback, retried)
-    end
-
-    if response.type == 'ERROR' then
-      if not NetworkMgr:isConnected() and not retried then
-        -- We're offline: try to get back online (honoring the "action when
-        -- Wi-Fi is off" setting), then retry once.
-        local connection_pending = NetworkMgr.pending_connection
-        local wifi_enable = NetworkMgr:beforeWifiAction(function()
-          self:streamChapter(chapter, true, callback)
-        end)
-
-        if wifi_enable == false then
-          ErrorDialog:show(response.message)
-        elseif wifi_enable == nil and connection_pending then
-          NetworkMgr:scheduleConnectivityCheck(function()
-            self:streamChapter(chapter, true, callback)
-          end)
-        end
-
-        return
-      end
-
-      ErrorDialog:show(response.message)
-      return
-    end
-
-    local descriptor_path, err = StreamedChapters.createDescriptor(self.manga, chapter)
-    if not descriptor_path then
-      ErrorDialog:show(tostring(err))
-      return
-    end
-
-    callback(ffiutil.realpath(descriptor_path))
-  end)
-end
-
---- @private
 --- @param chapter Chapter
 --- @param download_job DownloadChapter|nil
 --- @param on_opened nil|fun(on_return_callback)
 function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
-  self:resolveChapterForReading(chapter, download_job, function(manga_path)
+  self:downloadChapter(chapter, download_job, function(manga_path)
     local onReturnCallback = function()
       self:updateItems()
       self:prunePreloadJobs()
@@ -1202,7 +1091,7 @@ function ChapterListing:openChapterOnReader(chapter, download_job, on_opened)
       on_return_callback = onReturnCallback,
     })
 
-    if self.preload_count > 0 and not isStreamingModeEnabled() then
+    if self.preload_count > 0 then
       Trapper:wrap(function()
         self:preloadChapters(chapter)
       end)

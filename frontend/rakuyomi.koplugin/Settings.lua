@@ -538,19 +538,6 @@ Settings.setting_value_definitions = {
   },
   {
     nil,
-    { type = 'divider', title = _("Reading") }
-  },
-  {
-    'rakuyomi_streaming_mode',
-    {
-      type = 'boolean',
-      title = _("Stream chapters instead of downloading"),
-      is_local = true,
-      default = false
-    }
-  },
-  {
-    nil,
     { type = 'divider', title = _("Logging") }
   },
   {

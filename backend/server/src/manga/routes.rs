@@ -3,7 +3,6 @@ use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
 use axum::extract::{Path, Query, State as StateExtractor};
-use axum::response::IntoResponse;
 use axum::routing::{delete, get, patch, post};
 use axum::{Json, Router};
 #[cfg(target_os = "android")]
@@ -92,14 +91,6 @@ pub fn routes() -> Router<State> {
         .route(
             "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/revoke",
             post(revoke_manga_chapter),
-        )
-        .route(
-            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/stream/info",
-            get(get_chapter_stream_info),
-        )
-        .route(
-            "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/stream/pages/{page_index}",
-            get(get_chapter_stream_page),
         )
         .route(
             "/mangas/{source_id}/{manga_id}/chapters/{chapter_id}/mark-as-read",
@@ -759,117 +750,7 @@ async fn revoke_manga_chapter(
     )
     .await?;
 
-    // Best-effort cleanup of the on-demand page stream cache.
-    usecases::revoke_chapter_stream_cache(chapter_storage, &chapter_id).await;
-
     Ok(Json(result))
-}
-
-/// Returns page metadata for a chapter without downloading anything, for the
-/// on-demand streaming reader mode.
-async fn get_chapter_stream_info(
-    StateExtractor(State { database, .. }): StateExtractor<State>,
-    SourceExtractor(source): SourceExtractor,
-    Path(params): Path<DownloadMangaChapterParams>,
-) -> Result<Json<shared::chapter_streamer::StreamInfo>, AppError> {
-    let token = CancellationToken::new();
-
-    let chapter_id = ChapterId::from(params);
-    let info = shared::usecases::get_chapter_stream_info(&token, &database, &source, &chapter_id)
-        .await
-        .map_err(map_stream_usecase_error)?;
-
-    Ok(Json(info))
-}
-
-#[derive(Deserialize)]
-struct StreamPageParams {
-    source_id: String,
-    manga_id: String,
-    chapter_id: String,
-    page_index: String,
-}
-
-/// Streams a single page image of a chapter as raw bytes.
-async fn get_chapter_stream_page(
-    StateExtractor(State {
-        database,
-        chapter_storage,
-        ..
-    }): StateExtractor<State>,
-    SourceExtractor(source): SourceExtractor,
-    Path(params): Path<StreamPageParams>,
-) -> Result<axum::response::Response, AppError> {
-    let page_index: usize = params.page_index.parse().map_err(|_| AppError::NotFound)?;
-
-    let chapter_id = ChapterId::from_strings(params.source_id, params.manga_id, params.chapter_id);
-    let token = CancellationToken::new();
-
-    // Clone the storage under a short-lived lock: the usecase only reads
-    // paths/settings from it, and no lock may be held across network fetches.
-    let fetched = {
-        let chapter_storage = chapter_storage.lock().await.clone();
-        shared::usecases::fetch_chapter_stream_page(
-            &token,
-            &database,
-            &source,
-            &chapter_storage,
-            &chapter_id,
-            page_index,
-        )
-        .await
-        .map_err(map_stream_page_error)?
-    };
-
-    let content_type = content_type_for_extension(fetched.extension);
-    let bytes = axum::body::Bytes::from(fetched.bytes);
-
-    let mut response = (
-        [(axum::http::header::CONTENT_TYPE, content_type.to_owned())],
-        bytes,
-    )
-        .into_response();
-    response.headers_mut().insert(
-        axum::http::header::CACHE_CONTROL,
-        "no-store".parse().unwrap(),
-    );
-
-    Ok(response)
-}
-
-fn map_stream_usecase_error(value: shared::usecases::get_chapter_stream_info::Error) -> AppError {
-    match value {
-        shared::usecases::get_chapter_stream_info::Error::PageList(e) => {
-            AppError::NetworkFailure(e)
-        }
-        shared::usecases::get_chapter_stream_info::Error::Other(e) => AppError::Other(e),
-    }
-}
-
-fn map_stream_page_error(value: shared::usecases::fetch_chapter_stream_page::Error) -> AppError {
-    match value {
-        shared::usecases::fetch_chapter_stream_page::Error::PageOutOfRange { .. } => {
-            AppError::NotFound
-        }
-        shared::usecases::fetch_chapter_stream_page::Error::TextChapter => {
-            AppError::Other(anyhow::Error::msg("the chapter has no image pages"))
-        }
-        shared::usecases::fetch_chapter_stream_page::Error::Fetch(e) => AppError::NetworkFailure(e),
-        shared::usecases::fetch_chapter_stream_page::Error::Other(e) => AppError::Other(e),
-    }
-}
-
-fn content_type_for_extension(extension: &str) -> &'static str {
-    match extension {
-        "jpg" => "image/jpeg",
-        "png" => "image/png",
-        "gif" => "image/gif",
-        "webp" => "image/webp",
-        "bmp" => "image/bmp",
-        "avif" => "image/avif",
-        "jxl" => "image/jxl",
-        _ => "application/octet-stream",
-    }
 }
 
 /// Returns the ComicInfo.xml metadata of a downloaded chapter, in the shape

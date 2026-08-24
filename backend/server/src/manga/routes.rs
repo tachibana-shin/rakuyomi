@@ -18,23 +18,10 @@ use shared::usecases;
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 
-use crate::model::{Chapter, Manga};
+use crate::model::{resolve_manga_covers, Chapter, Manga};
 use crate::source_extractor::SourceExtractor;
 use crate::state::State;
 use crate::AppError;
-
-fn path_to_file_url(path: &std::path::Path) -> Option<url::Url> {
-    match url::Url::from_file_path(path) {
-        Ok(url) => Some(url),
-        Err(_) => match path.canonicalize() {
-            Ok(canonical_path) => url::Url::from_file_path(canonical_path).ok(),
-            Err(e) => {
-                println!("Error canonicalizing path: {}", e);
-                None
-            }
-        },
-    }
-}
 
 pub fn routes() -> Router<State> {
     let router = Router::new()
@@ -164,13 +151,7 @@ async fn get_manga_library(
         usecases::get_manga_library(&database, &*source_manager, library_sorting_mode).await?;
 
     if settings.library_view_mode != shared::settings::LibraryViewMode::Base {
-        for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
-            }
-        }
+        resolve_manga_covers(&mut mangas, &chapter_storage);
     }
 
     Ok(Json(
@@ -349,13 +330,7 @@ async fn get_mangas(
         .map_err(AppError::from_search_mangas_error)?;
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
-        for manga in mangas.iter_mut() {
-            if manga.information.cover_url.is_some() {
-                manga.information.cover_url = chapter_storage
-                    .poster_exists(&manga.information.id)
-                    .and_then(|path| path_to_file_url(&path));
-            }
-        }
+        resolve_manga_covers(&mut mangas, &chapter_storage);
     }
 
     let results = mangas.into_iter().map(Manga::from).collect();
@@ -558,11 +533,7 @@ async fn refresh_manga_chapters(
 
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    if let Err(e) =
-        usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await
-    {
-        warn!("refresh_manga_chapters failed: {e:#}");
-    }
+    usecases::refresh_manga_chapters(&token.0, &database, &source, &manga_id, 60).await?;
 
     Ok(Json(()))
 }
@@ -611,15 +582,8 @@ async fn refresh_manga_details(
     let chapter_storage = &*chapter_storage.lock().await;
     let token = create_token(cancel_token_store, cancel_id).await;
 
-    let _ = usecases::refresh_manga_details(
-        &token.0,
-        &database,
-        chapter_storage,
-        &source,
-        &manga_id,
-        60,
-    )
-    .await;
+    usecases::refresh_manga_details(&token.0, &database, chapter_storage, &source, &manga_id, 60)
+        .await?;
 
     Ok(Json(()))
 }

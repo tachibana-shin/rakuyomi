@@ -556,6 +556,9 @@ where
         .ok()
         .flatten();
 
+    #[cfg(not(feature = "all"))]
+    let on_progress_images = on_progress.clone();
+
     let images = download_all_images(
         chapter.url.as_ref(),
         &pages,
@@ -569,7 +572,7 @@ where
 
             if let Ok(mut stored) = stored_process_images.lock() {
                 stored.insert(idx, progress);
-                if let Some(ref cb) = on_progress {
+                if let Some(ref cb) = on_progress_images {
                     cb(stored.values().copied().sum(), total);
                 }
             }

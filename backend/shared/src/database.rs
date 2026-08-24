@@ -1495,7 +1495,12 @@ impl Database {
             builder.build().execute(&*self.pool.read().await).await?;
         }
 
-        const INSERT_FIELD_COUNT: usize = 8;
+        // Must match the column count in the `INSERT INTO chapter_informations`
+        // list below exactly: a stale, too-low value here makes `CHUNK_SIZE`
+        // too large, so a single chunk's bound parameter count
+        // (chunk_len * INSERT_FIELD_COUNT) can exceed SQLite's `BIND_LIMIT`
+        // and the whole insert silently fails for manga with many chapters.
+        const INSERT_FIELD_COUNT: usize = 12;
         const CHUNK_SIZE: usize = BIND_LIMIT / INSERT_FIELD_COUNT;
 
         for (offset, chunk) in chapter_informations.chunks(CHUNK_SIZE).enumerate() {
@@ -1533,7 +1538,8 @@ impl Database {
                 scanlator = excluded.scanlator,
                 chapter_number = excluded.chapter_number,
                 volume_number = excluded.volume_number,
-                last_updated = excluded.last_updated",
+                last_updated = excluded.last_updated,
+                lang = excluded.lang",
             );
 
             builder.build().execute(&*self.pool.read().await).await?;
@@ -3555,5 +3561,106 @@ impl From<NotificationInformationRow> for NotificationInformation {
             chapter_number: value.chapter_number.unwrap_or(-1.0),
             created_at: value.created_at,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    fn chapter_information(manga_id: &MangaId, chapter_id: &str, lang: &str) -> ChapterInformation {
+        ChapterInformation {
+            id: ChapterId::new(manga_id.clone(), chapter_id.to_string()),
+            title: Some(chapter_id.to_string()),
+            scanlator: Some("scanlator".to_string()),
+            chapter_number: None,
+            volume_number: None,
+            last_updated: None,
+            thumbnail: None,
+            lang: Some(lang.to_string()),
+            url: None,
+            locked: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn upsert_cached_chapter_informations_chunks_at_sqlite_bind_limit() {
+        let directory = tempdir().unwrap();
+        let database = Database::new(&directory.path().join("database.sqlite"))
+            .await
+            .unwrap();
+        let manga_id = MangaId::from_strings("source".to_string(), "manga".to_string());
+        let chapters = (0..(BIND_LIMIT / 12 + 1))
+            .map(|index| chapter_information(&manga_id, &index.to_string(), "en"))
+            .collect::<Vec<_>>();
+
+        database
+            .upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM chapter_informations WHERE source_id = ? AND manga_id = ?",
+        )
+        .bind(manga_id.source_id().value())
+        .bind(manga_id.value())
+        .fetch_one(&*database.pool.read().await)
+        .await
+        .unwrap();
+        assert_eq!(count, chapters.len() as i64);
+    }
+
+    #[tokio::test]
+    async fn upsert_cached_chapter_informations_refreshes_language() {
+        let directory = tempdir().unwrap();
+        let database = Database::new(&directory.path().join("database.sqlite"))
+            .await
+            .unwrap();
+        let manga_id = MangaId::from_strings("source".to_string(), "manga".to_string());
+
+        database
+            .upsert_cached_chapter_informations(
+                &manga_id,
+                &[chapter_information(&manga_id, "chapter", "en")],
+            )
+            .await
+            .unwrap();
+        database
+            .upsert_cached_chapter_informations(
+                &manga_id,
+                &[chapter_information(&manga_id, "chapter", "fr")],
+            )
+            .await
+            .unwrap();
+
+        let lang = sqlx::query_scalar::<_, Option<String>>(
+            "SELECT lang FROM chapter_informations WHERE source_id = ? AND manga_id = ? AND chapter_id = ?",
+        )
+        .bind(manga_id.source_id().value())
+        .bind(manga_id.value())
+        .bind("chapter")
+        .fetch_one(&*database.pool.read().await)
+        .await
+        .unwrap();
+        assert_eq!(lang.as_deref(), Some("fr"));
+
+        let mut chapter_without_language = chapter_information(&manga_id, "chapter", "fr");
+        chapter_without_language.lang = None;
+        database
+            .upsert_cached_chapter_informations(&manga_id, &[chapter_without_language])
+            .await
+            .unwrap();
+
+        let lang = sqlx::query_scalar::<_, Option<String>>(
+            "SELECT lang FROM chapter_informations WHERE source_id = ? AND manga_id = ? AND chapter_id = ?",
+        )
+        .bind(manga_id.source_id().value())
+        .bind(manga_id.value())
+        .bind("chapter")
+        .fetch_one(&*database.pool.read().await)
+        .await
+        .unwrap();
+        assert_eq!(lang, None);
     }
 }

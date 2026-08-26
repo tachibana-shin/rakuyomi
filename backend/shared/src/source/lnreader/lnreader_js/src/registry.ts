@@ -80,6 +80,7 @@ export function registerModules(): void {
 
   __register("@libs/novelStatus", { NovelStatus });
   __register("@libs/defaultCover", { defaultCover });
+  __register("@/types/constants", { defaultCover });
   __register("@libs/isAbsoluteUrl", { isUrlAbsolute });
   __register("@libs/filterInputs", { FilterTypes });
   __register("@libs/aes", {

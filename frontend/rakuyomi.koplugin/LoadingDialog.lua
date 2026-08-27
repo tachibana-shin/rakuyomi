@@ -5,6 +5,7 @@ local Trapper = require("ui/trapper")
 local _ = require("gettext+")
 local ffi = require("ffi")
 local bit = require("bit")
+require("ffi/posix_h")
 
 -- register shared memory for tracking progress
 pcall(ffi.cdef, [[
@@ -17,11 +18,7 @@ pcall(ffi.cdef, [[
   int munmap(void *addr, size_t length);
 ]])
 
--- set consts for mmap
-local PROT_READ = 1
-local PROT_WRITE = 2
-local MAP_SHARED = 1
-local MAP_ANONYMOUS = 0x20 -- standard value on ARM/x86 Linux
+local C = ffi.C
 
 local LoadingDialog = {}
 
@@ -97,7 +94,7 @@ function LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onCon
 
   -- allocate shared memory directly in RAM
   local shm_size = ffi.sizeof("ko_progress_shm_t")
-  local raw_shm = ffi.C.mmap(nil, shm_size, bit.bor(PROT_READ, PROT_WRITE), bit.bor(MAP_SHARED, MAP_ANONYMOUS), -1, 0)
+  local raw_shm = C.mmap(nil, shm_size, bit.bor(C.PROT_READ, C.PROT_WRITE), bit.bor(C.MAP_SHARED, C.MAP_ANONYMOUS), -1, 0)
 
   if raw_shm == ffi.cast("void *", -1) then
     error("can't allocate shared memory")
@@ -192,7 +189,7 @@ function LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onCon
 
   -- cleanup
   UIManager:unschedule(poll_action)
-  ffi.C.munmap(raw_shm, shm_size)
+  C.munmap(raw_shm, shm_size)
 
   local completed = trapper_results[1]
   if not completed then

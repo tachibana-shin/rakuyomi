@@ -33,9 +33,8 @@ function Rakuyomi:init()
     self.ui.menu:registerToMainMenu(self)
   end
 
-  if not ok or not android then
-    CbzDocument:register(DocumentRegistry)
-  end
+  CbzDocument:register(DocumentRegistry)
+  
   Dispatcher:registerAction("start_library_view", {
     category = "none",
     event = "StartLibraryView",

@@ -15,6 +15,7 @@ local _ = require("gettext+")
 local Testing = require("testing")
 local CheckboxDialog = require("CheckboxDialog")
 local format_languages = require("utils/formatLanguages")
+local langNames = require("utils/languageNames")
 local hasValue = require("utils/hasValue")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
@@ -91,9 +92,12 @@ local function sanitize_selection(current, options)
   end
 
   local cleaned = {}
+  local seen = {}
   for _, id in ipairs(current or {}) do
-    if valid[id] then
-      cleaned[#cleaned + 1] = id
+    local key = langNames.normalize(id)
+    if valid[key] and not seen[key] then
+      seen[key] = true
+      cleaned[#cleaned + 1] = key
     end
   end
   return cleaned
@@ -188,14 +192,18 @@ function AvailableSourcesListing:extractAvailableLangs()
   -- global reader settings; read them from there so both screens share one
   -- source of truth.
   for _, lang in ipairs(G_reader_settings:readSetting("rakuyomi_languages", {})) do
-    langs_set[lang] = true
-    table.insert(langs_list, lang)
+    local key = langNames.normalize(lang)
+    if not langs_set[key] then
+      langs_set[key] = true
+      table.insert(langs_list, key)
+    end
   end
   for _, source_information in ipairs(self.available_sources) do
     for _, lang in ipairs(source_information.languages) do
-      if not langs_set[lang] then
-        langs_set[lang] = true
-        table.insert(langs_list, lang)
+      local key = langNames.normalize(lang)
+      if not langs_set[key] then
+        langs_set[key] = true
+        table.insert(langs_list, key)
       end
     end
   end
@@ -204,7 +212,7 @@ function AvailableSourcesListing:extractAvailableLangs()
 
   self.langs = {}
   for _, lang in ipairs(langs_list) do
-    table.insert(self.langs, { id = lang, name = lang })
+    table.insert(self.langs, { id = lang, name = langNames.nameFor(lang) })
   end
 end
 
@@ -237,7 +245,7 @@ end
 function AvailableSourcesListing:filterAvailableSources()
   local langs_set = {}
   for _, lang in ipairs(self.langs_selected) do
-    langs_set[lang] = true
+    langs_set[langNames.normalize(lang)] = true
   end
   local repos_set = {}
   for _, repo in ipairs(self.repos_selected) do
@@ -248,7 +256,7 @@ function AvailableSourcesListing:filterAvailableSources()
   for __, source_information in ipairs(self.available_sources) do
     local lang_matches = #self.langs_selected == 0 or #source_information.languages == 0
     for _, lang in ipairs(source_information.languages) do
-      if langs_set[lang] then
+      if langs_set[langNames.normalize(lang)] then
         lang_matches = true
         break
       end
@@ -327,7 +335,9 @@ function AvailableSourcesListing:patchTitleBar()
         face = SMALL_FONT_FACE,
         bordersize = 0,
         enabled = true,
-        text_font_size = left_icon_size,
+        width = left_icon_size,
+        height = left_icon_size,
+        text_font_size = 16,
         text_font_bold = false,
         callback = function()
           self:showSelectLanguage()
@@ -347,7 +357,9 @@ function AvailableSourcesListing:patchTitleBar()
         face = SMALL_FONT_FACE,
         bordersize = 0,
         enabled = true,
-        text_font_size = left_icon_size,
+        width = left_icon_size,
+        height = left_icon_size,
+        text_font_size = 16,
         text_font_bold = false,
         callback = function()
           self:showSelectRepos()
@@ -511,7 +523,7 @@ function AvailableSourcesListing:showLanguageSelection(source_information, outco
   for _, lang in ipairs(outcome.languages) do
     table.insert(options, {
       id = lang,
-      name = lang,
+      name = langNames.nameFor(lang),
     })
   end
 

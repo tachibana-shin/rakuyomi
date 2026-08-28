@@ -115,6 +115,8 @@ struct CreateDownloadUnreadChaptersJobBody {
     source_id: String,
     manga_id: String,
     amount: Option<usize>,
+    start_chapter: Option<f32>,
+    end_chapter: Option<f32>,
     langs: Option<Vec<String>>,
 }
 
@@ -137,9 +139,10 @@ async fn create_download_unread_chapters_job(
 ) -> Result<Json<Uuid>, AppError> {
     let langs = body.langs.clone().unwrap_or_default();
 
-    let filter = match body.amount {
-        Some(amount) => ChaptersToDownloadFilter::NextUnreadChapters(amount),
-        None => ChaptersToDownloadFilter::AllUnreadChapters,
+    let filter = match (body.start_chapter, body.end_chapter, body.amount) {
+        (Some(start), Some(end), _) => ChaptersToDownloadFilter::ChapterRange { start, end },
+        (None, None, Some(amount)) => ChaptersToDownloadFilter::NextUnreadChapters(amount),
+        _ => ChaptersToDownloadFilter::AllUnreadChapters,
     };
     let manga_id = MangaId::from(body);
 
@@ -179,6 +182,8 @@ struct CreateDownloadScanlatorChaptersJobBody {
     manga_id: String,
     scanlator: String,
     amount: Option<usize>,
+    start_chapter: Option<f32>,
+    end_chapter: Option<f32>,
     langs: Option<Vec<String>>,
 }
 
@@ -214,6 +219,8 @@ async fn create_download_scanlator_chapters_job(
     let scanlator_filter = ScanlatorFilter {
         scanlator: body.scanlator,
         amount: body.amount,
+        start_chapter: body.start_chapter,
+        end_chapter: body.end_chapter,
     };
 
     let id = Uuid::new_v4();

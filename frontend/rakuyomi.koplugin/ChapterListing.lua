@@ -1359,11 +1359,11 @@ function ChapterListing:onDownloadUnreadChapters()
   local input_dialog
   input_dialog = InputDialog:new {
     title = _("Download unread chapters..."),
-    input_type = "number",
-    input_hint = _("Amount of unread chapters (default: all)"),
+    input_type = "text",
+    input_hint = _("Chapter range (for example: 20-30)"),
     description = self.selected_scanlator and
-        (_("Will download from") .. ": " .. self.selected_scanlator .. "\n\n" .. _("Specify amount or leave empty for all.")) or
-        _("Specify the amount of unread chapters to download") .. ", " .. _("or leave empty to download all of them."),
+        (_("Will download from") .. ": " .. self.selected_scanlator .. "\n\n" .. _("Enter a range such as 20-30, a single number, or leave empty for all.")) or
+        _("Enter a range such as 20-30, a single number, or leave empty for all."),
     buttons = {
       {
         {
@@ -1380,18 +1380,28 @@ function ChapterListing:onDownloadUnreadChapters()
             UIManager:close(input_dialog)
 
             local amount = nil
-            if input_dialog:getInputText() ~= '' then
-              amount = tonumber(input_dialog:getInputText())
+            local start_chapter = nil
+            local end_chapter = nil
+            local input = input_dialog:getInputText()
+            if input ~= '' then
+              local range_start, range_end = input:match('^%s*([%d%.]+)%s*%-%s*([%d%.]+)%s*$')
+              if range_start and range_end then
+                start_chapter = tonumber(range_start)
+                end_chapter = tonumber(range_end)
+              else
+                amount = tonumber(input)
+              end
 
-              if amount == nil then
-                ErrorDialog:show(_("Invalid amount of chapters!"))
+              if (start_chapter and end_chapter and start_chapter > end_chapter) or
+                  (not start_chapter and not amount) then
+                ErrorDialog:show(_("Invalid chapter range!"))
 
                 return
               end
             end
 
             -- Use scanlator-aware download
-            local job = self:createDownloadJob(amount)
+            local job = self:createDownloadJob(amount, start_chapter, end_chapter)
             if job then
               ---@diagnostic disable-next-line: undefined-field
               local dialog = DownloadUnreadChaptersJobDialog:new({
@@ -1418,11 +1428,13 @@ function ChapterListing:onDownloadUnreadChapters()
   UIManager:show(input_dialog)
 end
 
-function ChapterListing:createDownloadJob(amount)
+function ChapterListing:createDownloadJob(amount, start_chapter, end_chapter)
   return DownloadUnreadChapters:new({
     source_id = self.manga.source.id,
     manga_id = self.manga.id,
     amount = amount,
+    start_chapter = start_chapter,
+    end_chapter = end_chapter,
     scanlator = self.selected_scanlator,
     langs = self.langs_selected,
   })

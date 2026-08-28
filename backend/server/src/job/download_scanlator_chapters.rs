@@ -32,6 +32,8 @@ pub struct DownloadScanlatorChaptersJob {
 pub struct ScanlatorFilter {
     pub scanlator: String,
     pub amount: Option<usize>,
+    pub start_chapter: Option<f32>,
+    pub end_chapter: Option<f32>,
 }
 
 impl DownloadScanlatorChaptersJob {
@@ -61,6 +63,8 @@ impl DownloadScanlatorChaptersJob {
             let filter = Filter::ScanlatorChapters {
                 scanlator: scanlator_filter.scanlator,
                 amount: scanlator_filter.amount,
+                start_chapter: scanlator_filter.start_chapter,
+                end_chapter: scanlator_filter.end_chapter,
             };
             let db_clone = database.clone();
             let lang_refs: Vec<&str> = langs.iter().map(|s| s.as_str()).collect();

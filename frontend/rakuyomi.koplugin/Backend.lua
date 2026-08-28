@@ -990,7 +990,7 @@ end
 
 --- Creates a new download unread chapters job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, langs)
+function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, start_chapter, end_chapter, langs)
   return Backend.requestJson({
     path = "/jobs/download-unread-chapters",
     method = 'POST',
@@ -998,6 +998,8 @@ function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, la
       source_id = source_id,
       manga_id = manga_id,
       amount = amount,
+      start_chapter = start_chapter,
+      end_chapter = end_chapter,
       langs = #langs > 0 and langs or nil,
     }
   })
@@ -1005,12 +1007,15 @@ end
 
 --- Creates a new download scanlator chapters job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
-function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlator, amount, langs)
+function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlator, amount, start_chapter, end_chapter,
+                                                    langs)
   local body = {
     source_id = source_id,
     manga_id = manga_id,
     scanlator = scanlator,
     amount = amount,
+    start_chapter = start_chapter,
+    end_chapter = end_chapter,
     langs = #langs > 0 and langs or nil,
   }
 

@@ -190,7 +190,21 @@ async fn apply_chapter_filter(
                 .map(|(_, chapter)| chapter)
                 .collect()
         }
-        Filter::ScanlatorChapters { scanlator, amount } => {
+        Filter::ChapterRange { start, end } => unread_chapters
+            .into_iter()
+            .filter_map(|(_, chapter)| {
+                chapter
+                    .chapter_number
+                    .filter(|number| *number >= start && *number <= end)
+                    .map(|_| chapter)
+            })
+            .collect(),
+        Filter::ScanlatorChapters {
+            scanlator,
+            amount,
+            start_chapter,
+            end_chapter,
+        } => {
             let scanlator_chapters: Vec<_> = unread_chapters
                 .into_iter()
                 .filter(|(_, chapter)| {
@@ -203,7 +217,16 @@ async fn apply_chapter_filter(
                 .map(|(_, chapter)| chapter)
                 .collect();
 
-            if let Some(amount) = amount {
+            if let (Some(start), Some(end)) = (start_chapter, end_chapter) {
+                scanlator_chapters
+                    .into_iter()
+                    .filter(|chapter| {
+                        chapter
+                            .chapter_number
+                            .is_some_and(|number| number >= start && number <= end)
+                    })
+                    .collect()
+            } else if let Some(amount) = amount {
                 scanlator_chapters.into_iter().take(amount).collect()
             } else {
                 scanlator_chapters
@@ -217,9 +240,15 @@ async fn apply_chapter_filter(
 pub enum Filter {
     NextUnreadChapters(usize),
     AllUnreadChapters,
+    ChapterRange {
+        start: f32,
+        end: f32,
+    },
     ScanlatorChapters {
         scanlator: String,
         amount: Option<usize>,
+        start_chapter: Option<f32>,
+        end_chapter: Option<f32>,
     },
 }
 
@@ -385,6 +414,39 @@ mod tests {
             ids(&filtered),
             vec!["chapter-0", "chapter-1", "chapter-2", "chapter-3"]
         );
+    }
+
+    #[tokio::test]
+    async fn chapter_range_is_inclusive() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(19.0)),
+            chapter(&manga_id, 1, Some(20.0)),
+            chapter(&manga_id, 2, Some(25.0)),
+            chapter(&manga_id, 3, Some(30.0)),
+            chapter(&manga_id, 4, Some(31.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::ChapterRange {
+                start: 20.0,
+                end: 30.0,
+            },
+            &[],
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(ids(&filtered), vec!["chapter-1", "chapter-2", "chapter-3"]);
     }
 
     #[tokio::test]

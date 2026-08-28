@@ -7,6 +7,8 @@ local Job = require('jobs/Job')
 --- @field private source_id string
 --- @field private manga_id string
 --- @field private amount number|nil
+--- @field private start_chapter number|nil
+--- @field private end_chapter number|nil
 --- @field private scanlator string|nil
 --- @field private job_id string
 --- @field private langs string[]
@@ -17,6 +19,8 @@ local DownloadUnreadChapters = Job:extend()
 --- @field source_id string
 --- @field manga_id string
 --- @field amount number|nil
+--- @field start_chapter number|nil
+--- @field end_chapter number|nil
 --- @field scanlator string|nil NEW: Optional scanlator filt
 --- @field langs string[]
 
@@ -27,6 +31,8 @@ function DownloadUnreadChapters:new(params)
     source_id = params.source_id,
     manga_id = params.manga_id,
     amount = params.amount,
+    start_chapter = params.start_chapter,
+    end_chapter = params.end_chapter,
     scanlator = params.scanlator,
     langs = params.langs,
   }
@@ -54,6 +60,8 @@ function DownloadUnreadChapters:start()
       self.manga_id,
       self.scanlator,
       self.amount,
+      self.start_chapter,
+      self.end_chapter,
       self.langs
     )
   else
@@ -61,6 +69,8 @@ function DownloadUnreadChapters:start()
       self.source_id,
       self.manga_id,
       self.amount,
+      self.start_chapter,
+      self.end_chapter,
       self.langs
     )
   end

@@ -14,6 +14,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use shared::{
     model::SourceId, settings::Settings, source::SourceBackend, source_manager::SourceManager, tls,
+    util::request_with_forced_referer_from_request,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -231,4 +232,102 @@ async fn mangaplus_page_list_issue325() {
         pages.len()
     );
     eprintln!("OK: {valid}/{} pages have valid image URLs", pages.len());
+
+    // 7. Download + decrypt EVERY page concurrently (like the real reader),
+    //    to surface issues that only appear under MangaPlus's shared view_token
+    //    across 23 parallel CDN requests. This is what issue #325 reports.
+    let client = tls::client_builder().build().unwrap();
+    let mut handles = Vec::new();
+    for page in pages.iter() {
+        let url = match &page.image_url {
+            Some(u) => u.clone(),
+            None => continue,
+        };
+        let ctx = page.ctx.clone();
+        let source = source.clone();
+        let client = client.clone();
+        handles.push(tokio::task::spawn(async move {
+            // Build the source request (next-sdk path applies Plus-Vw-Token).
+            let req = {
+                let source = source.clone();
+                let url = url.clone();
+                let ctx = ctx.clone();
+                tokio::task::spawn_blocking(move || {
+                    let mut backend = match &source.backend {
+                        SourceBackend::Aidoku(s) => s.lock().unwrap(),
+                        _ => panic!("not an aidoku source"),
+                    };
+                    backend.get_image_request(url, ctx)
+                })
+                .await
+                .unwrap()
+            }
+            .expect("get_image_request failed");
+
+            let req_headers = req.headers().clone();
+            let resp = request_with_forced_referer_from_request(&client, req, 10)
+                .await
+                .expect("image request failed");
+            let status = resp.status();
+            let resp_headers = resp.headers().clone();
+            let raw_bytes = resp.bytes().await.expect("read image bytes");
+
+            let decrypted = {
+                let source = source.clone();
+                let url = url.clone();
+                let req_headers = req_headers.clone();
+                let resp_headers = resp_headers.clone();
+                let raw = raw_bytes.clone();
+                let ctx = ctx.clone();
+                tokio::task::spawn_blocking(move || {
+                    let mut backend = match &source.backend {
+                        SourceBackend::Aidoku(s) => s.lock().unwrap(),
+                        _ => panic!("not an aidoku source"),
+                    };
+                    backend.process_page_image(
+                        CancellationToken::new(),
+                        (url, req_headers),
+                        (status, resp_headers),
+                        raw,
+                        ctx,
+                    )
+                })
+                .await
+                .unwrap()
+            }
+            .expect("process_page_image failed");
+
+            let is_jpeg = decrypted.len() >= 3 && decrypted[..3] == [0xFF, 0xD8, 0xFF];
+            let is_png = decrypted.len() >= 4 && decrypted[..4] == [0x89, 0x50, 0x4E, 0x47];
+            (status, raw_bytes.len(), decrypted.len(), is_jpeg || is_png)
+        }));
+    }
+
+    let mut blank = 0;
+    let mut ok = 0;
+    for (i, h) in handles.into_iter().enumerate() {
+        let (status, raw, dec, valid) = h.await.unwrap();
+        if valid {
+            ok += 1;
+        } else {
+            blank += 1;
+            eprintln!(
+                "BLANK page {i}: status={status}, raw={raw}B, decrypted={dec}B (not a valid image)"
+            );
+        }
+    }
+    eprintln!(
+        "concurrent download: {ok} valid, {blank} blank out of {} pages",
+        pages.len()
+    );
+    assert_eq!(
+        blank,
+        0,
+        "blank pages bug reproduced: {blank}/{} pages are blank",
+        pages.len()
+    );
+    eprintln!(
+        "OK: all {} pages downloaded and decrypted into valid images",
+        pages.len()
+    );
 }

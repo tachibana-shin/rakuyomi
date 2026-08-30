@@ -127,7 +127,7 @@ impl HTMLElement {
     pub fn children(&self, store: &mut WasmStore) -> Option<Vec<Self>> {
         let node = self.node_ref(store)?;
 
-        node.children()
+        node.element_children()
             .into_iter()
             .map(|node| self.to_element(node.id))
             .collect::<Vec<_>>()
@@ -589,6 +589,29 @@ mod tests {
             .collect();
         assert!(text_kinds.contains(&2));
         assert!(text_kinds.contains(&5));
+    }
+
+    #[test]
+    fn children_returns_elements_while_child_nodes_returns_all_nodes() {
+        let (mut store, element) = setup_html_store(
+            "<div>leading<!-- comment --><span>one</span>middle<a>two</a>trailing</div>",
+        );
+        let div = element.select_soup(&mut store, "div").unwrap().unwrap();
+
+        let children = div[0].children(&mut store).unwrap();
+        assert_eq!(children.len(), 2);
+        assert!(children
+            .iter()
+            .all(|child| child.kind(&mut store).unwrap() == 5));
+
+        let child_nodes = div[0].child_nodes(&mut store).unwrap();
+        let kinds: Vec<i32> = child_nodes
+            .iter()
+            .map(|node| node.kind(&mut store).unwrap())
+            .collect();
+        assert!(kinds.contains(&2));
+        assert!(kinds.contains(&4));
+        assert_eq!(kinds.iter().filter(|&&kind| kind == 5).count(), 2);
     }
 
     #[test]

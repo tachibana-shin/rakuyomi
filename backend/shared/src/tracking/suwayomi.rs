@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -31,7 +31,12 @@ impl Tracker for SuwayomiTracker {
 
         #[derive(Deserialize)]
         struct SearchData {
-            search: Vec<SeriesNode>,
+            mangas: MangaNodeList,
+        }
+
+        #[derive(Deserialize)]
+        struct MangaNodeList {
+            nodes: Vec<SeriesNode>,
         }
 
         #[derive(Deserialize)]
@@ -57,11 +62,17 @@ impl Tracker for SuwayomiTracker {
 
         let graphql_query = r#"
             query SearchSeries($query: String!) {
-                search(query: $query, type: MANGA) {
-                    id
-                    title
-                    chapters {
-                        totalCount
+                mangas(
+                    condition: { inLibrary: true }
+                    filter: { title: { includesInsensitive: $query } }
+                    first: 50
+                ) {
+                    nodes {
+                        id
+                        title
+                        chapters {
+                            totalCount
+                        }
                     }
                 }
             }
@@ -88,7 +99,8 @@ impl Tracker for SuwayomiTracker {
 
         Ok(response
             .data
-            .search
+            .mangas
+            .nodes
             .into_iter()
             .map(|series| TrackingCandidate {
                 service: TrackingService::Suwayomi,
@@ -145,7 +157,7 @@ impl Tracker for SuwayomiTracker {
         let client = build_client();
 
         let graphql_query = r#"
-            query MangaProgress($id: Long!) {
+            query MangaProgress($id: Int!) {
                 manga(id: $id) {
                     unreadCount
                     chapters {
@@ -248,6 +260,47 @@ impl Tracker for SuwayomiTracker {
 
         self.fetch_progress(settings, media_id).await
     }
+
+    async fn get_user(&self, settings: &Settings) -> Result<Option<String>> {
+        #[derive(Deserialize)]
+        struct ProbeResponse {
+            data: Option<serde_json::Value>,
+            #[serde(default)]
+            errors: Option<serde_json::Value>,
+        }
+
+        let base_url = require_url(settings)?;
+        let api_key = require_api_key(settings)?;
+        let client = build_client();
+
+        let mut request = client.post(format!("{base_url}/graphql"));
+        if let Some((user, pass)) = api_key.split_once(':') {
+            request = request.basic_auth(user, Some(pass));
+        } else {
+            request = request.basic_auth(api_key, None::<&str>);
+        }
+        let request = request.json(&GraphqlRequest {
+            query: "query Probe { mangas(first: 1) { totalCount } }".to_string(),
+            variables: None,
+        });
+
+        let response: ProbeResponse = request
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<ProbeResponse>()
+            .await
+            .context("failed to decode Suwayomi probe response")?;
+
+        if let Some(errors) = response.errors {
+            bail!("Suwayomi returned GraphQL errors: {errors}");
+        }
+        if response.data.is_none() {
+            bail!("Suwayomi returned no data");
+        }
+
+        Ok(Some("suwayomi".to_string()))
+    }
 }
 
 impl SuwayomiTracker {
@@ -290,7 +343,7 @@ impl SuwayomiTracker {
         }
 
         let graphql_query = r#"
-            query MangaChapters($id: Long!) {
+            query MangaChapters($id: Int!) {
                 manga(id: $id) {
                     chapters {
                         nodes { id }

@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 const INDEX_URL: &str = "https://aidoku-community.github.io/sources/index.min.json";
 const SOURCE_ID: &str = "en.novelbuddy";
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 #[ignore = "live network test; run with --ignored"]
 async fn novelbuddy_chapter_contains_text_issue328() {
     let client = tls::client_builder().build().unwrap();

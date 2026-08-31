@@ -124,6 +124,10 @@ impl HTMLElement {
             .collect::<Vec<_>>()
             .into()
     }
+    /// Returns direct element children.
+    ///
+    /// Text and comment nodes are excluded. Use `child_nodes` to retrieve all
+    /// direct child nodes.
     pub fn children(&self, store: &mut WasmStore) -> Option<Vec<Self>> {
         let node = self.node_ref(store)?;
 

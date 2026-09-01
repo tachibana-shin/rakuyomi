@@ -311,6 +311,8 @@ function LibraryView:patchTitleBar(count_notify)
         face = SMALL_FONT_FACE,
         bordersize = 0,
         enabled = true,
+        width = right_icon_size,
+        height = right_icon_size,
         text_font_size = 16,
         text_font_bold = false,
         callback = function()

@@ -219,7 +219,9 @@ function ChapterListing:patchTitleBar(count_lang)
           face = SMALL_FONT_FACE,
           bordersize = 0,
           enabled = true,
-          text_font_size = left_icon_size,
+          width = left_icon_size,
+          height = left_icon_size,
+          text_font_size = 16,
           text_font_bold = false,
           callback = function()
             self:showSelectLanguage()

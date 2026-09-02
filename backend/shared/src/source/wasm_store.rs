@@ -597,12 +597,13 @@ impl WasmStore {
         self.canvass.get_mut(&descriptor)
     }
     pub fn create_image(&mut self, data: &[u8]) -> Option<usize> {
-        if let Some(data) = super::decode_image::decode_image_fast(data) {
-            let data = data
-                .map_err(|err| eprintln!("failed to load image with faster {err}"))
-                .ok()?;
-
-            return Some(self.set_image_data(data));
+        if let Some(result) = super::decode_image::decode_image_fast(data) {
+            if let Ok(data) = result {
+                return Some(self.set_image_data(data));
+            }
+            // Fast decoder recognized the format but failed to decode (e.g.
+            // corrupted or encrypted data). Fall through to the generic
+            // decoder which may still succeed, or to the caller's fallback.
         }
         // fallback with image
 

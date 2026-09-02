@@ -337,9 +337,12 @@ fn child_nodes(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
     };
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| element.child_nodes(wasm_store))
+        .flat_map(|element| element.child_nodes(wasm_store).into_iter().flatten())
         .collect();
-    Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
+    Ok(wasm_store.store_std_value(
+        Value::HTMLElements(selected_elements).into(),
+        Some(descriptor),
+    ) as i32)
 }
 
 #[aidoku_wasm_function]
@@ -361,10 +364,13 @@ fn children(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| element.children(wasm_store))
+        .flat_map(|element| element.children(wasm_store).into_iter().flatten())
         .collect();
 
-    Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
+    Ok(wasm_store.store_std_value(
+        Value::HTMLElements(selected_elements).into(),
+        Some(descriptor),
+    ) as i32)
 }
 #[aidoku_wasm_function]
 fn siblings(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
@@ -385,10 +391,13 @@ fn siblings(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {
 
     let selected_elements: Vec<_> = html_elements
         .iter()
-        .flat_map(|element| element.siblings(wasm_store))
+        .flat_map(|element| element.siblings(wasm_store).into_iter().flatten())
         .collect();
 
-    Ok(wasm_store.store_std_value(Value::from(selected_elements).into(), Some(descriptor)) as i32)
+    Ok(wasm_store.store_std_value(
+        Value::HTMLElements(selected_elements).into(),
+        Some(descriptor),
+    ) as i32)
 }
 #[aidoku_wasm_function]
 fn next(mut caller: Caller<'_, WasmStore>, ptr: i32) -> FFIResult {

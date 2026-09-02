@@ -897,7 +897,7 @@ impl From<SourceSettingValue> for Value {
 
 #[cfg(test)]
 mod tests {
-    use super::JsContext;
+    use super::{JsContext, Value};
 
     #[test]
     fn js_context_eval_stringifies_like_boa() {
@@ -914,5 +914,46 @@ mod tests {
         ctx.eval("globalThis.foo = 'bar'").unwrap();
         assert_eq!(ctx.get_global("foo").unwrap(), "bar");
         assert_eq!(ctx.get_global("missing").unwrap(), "undefined");
+    }
+
+    #[test]
+    fn vec_html_element_converts_to_html_elements_variant() {
+        use crate::source::html_element::HTMLElement;
+        use dom_query::Document;
+
+        let doc = Document::from("<div><p>a</p><p>b</p></div>");
+        let root_id = doc.root().id;
+        let els: Vec<HTMLElement> = vec![HTMLElement {
+            document: 0,
+            node_id: root_id,
+            base_uri: None,
+        }];
+        let value = Value::from(els);
+        assert!(
+            matches!(value, Value::HTMLElements(_)),
+            "Vec<HTMLElement> must produce Value::HTMLElements, got {:?}",
+            std::mem::discriminant(&value)
+        );
+    }
+
+    #[test]
+    fn vec_vec_html_element_converts_to_array_variant() {
+        use crate::source::html_element::HTMLElement;
+        use dom_query::Document;
+
+        let doc = Document::from("<div><p>a</p></div>");
+        let root_id = doc.root().id;
+        let inner: Vec<HTMLElement> = vec![HTMLElement {
+            document: 0,
+            node_id: root_id,
+            base_uri: None,
+        }];
+        let nested: Vec<Vec<HTMLElement>> = vec![inner];
+        let value = Value::from(nested);
+        assert!(
+            matches!(value, Value::Array(_)),
+            "Vec<Vec<HTMLElement>> must produce Value::Array, got {:?}",
+            std::mem::discriminant(&value)
+        );
     }
 }

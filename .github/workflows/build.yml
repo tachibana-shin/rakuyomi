@@ -108,6 +108,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Get next version
+      if: github.ref == 'refs/heads/main'
       run: npx semantic-release --dry-run
       id: get-next-version
       env:

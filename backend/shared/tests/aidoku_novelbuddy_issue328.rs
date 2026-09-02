@@ -127,10 +127,12 @@ async fn novelbuddy_chapter_contains_text_issue328() {
     .unwrap();
     assert!(!pages.is_empty(), "NovelBuddy returned no chapter pages");
     assert!(
-        pages.iter().any(|page| page
-            .text
-            .as_ref()
-            .is_some_and(|text| !text.trim().is_empty())),
-        "NovelBuddy chapter pages contained no text"
+        pages.iter().any(|page| {
+            page.text.as_ref().is_some_and(|text| {
+                let text = text.trim();
+                !text.is_empty() && text != "(empty chapter)"
+            })
+        }),
+        "NovelBuddy chapter pages contained no converted text"
     );
 }

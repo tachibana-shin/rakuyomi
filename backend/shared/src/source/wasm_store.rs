@@ -931,8 +931,7 @@ mod tests {
         let value = Value::from(els);
         assert!(
             matches!(value, Value::HTMLElements(_)),
-            "Vec<HTMLElement> must produce Value::HTMLElements, got {:?}",
-            std::mem::discriminant(&value)
+            "Vec<HTMLElement> must produce Value::HTMLElements, got {value:?}"
         );
     }
 
@@ -952,8 +951,7 @@ mod tests {
         let value = Value::from(nested);
         assert!(
             matches!(value, Value::Array(_)),
-            "Vec<Vec<HTMLElement>> must produce Value::Array, got {:?}",
-            std::mem::discriminant(&value)
+            "Vec<Vec<HTMLElement>> must produce Value::Array, got {value:?}"
         );
     }
 }

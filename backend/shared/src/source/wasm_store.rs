@@ -151,6 +151,9 @@ pub struct ImageData {
     pub data: Vec<u32>,
     pub width: i32,
     pub height: i32,
+    /// Original byte length before u32 packing. Used to strip padding zeros
+    /// when the raw byte count was not a multiple of 4 (e.g. encrypted images).
+    pub raw_byte_len: usize,
 }
 
 /// from aidoku sdk
@@ -625,6 +628,7 @@ impl WasmStore {
             data: pixels,
             width,
             height,
+            raw_byte_len: (width * height * 4) as usize,
         };
 
         Some(self.set_image_data(image))

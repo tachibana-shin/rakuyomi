@@ -49,6 +49,7 @@ fn decode_png(data: &[u8]) -> Result<ImageData> {
         width,
         height,
         data: pixels,
+        raw_byte_len: (width * height * 4) as usize,
     })
 }
 
@@ -76,6 +77,7 @@ fn decode_jpeg(data: &[u8]) -> Result<ImageData> {
         width: info.width as i32,
         height: info.height as i32,
         data: pixels,
+        raw_byte_len: (info.width as usize) * (info.height as usize) * 4,
     })
 }
 

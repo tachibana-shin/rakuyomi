@@ -1625,10 +1625,14 @@ impl BlockingSource {
         let (image_id, image_ref, context_id) = {
             let store = self.engine_store_mut()?.data_mut();
 
+            // Try to decode the image normally first. If decoding fails (e.g. the
+            // bytes are encrypted like MangaPlus), store the raw bytes as a 0x0
+            // image so the WASM `process_page_image` can still access them via
+            // `response.image.data()` and perform decryption before creating the
+            // final image.
             let image_ref = store.create_image(&bytes).unwrap_or_else(|| {
-                eprintln!("failed create image for process_page_image use mode image raw");
-
                 store.set_image_data(wasm_store::ImageData {
+                    raw_byte_len: bytes.len(),
                     data: bytes
                         .chunks(4)
                         .map(|chunk| {

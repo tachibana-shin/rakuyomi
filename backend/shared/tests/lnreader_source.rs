@@ -150,13 +150,13 @@ async fn run_plugin_smoke(
 }
 
 #[tokio::test]
-async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
+async fn lnreader_plugin_end_to_end_novelbuddy() {
     run_plugin_smoke(
-        "chrysanthemumgarden.js",
-        "chrysanthemumgarden",
-        "Chrysanthemum Garden",
-        "chrysanthemumgarden.com",
-        "abyss",
+        "novelbuddy.js",
+        "novelbuddy",
+        "NovelBuddy",
+        "novelbuddy.me",
+        "shadow slave",
     )
     .await;
 }

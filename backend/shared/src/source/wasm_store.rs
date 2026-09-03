@@ -629,7 +629,7 @@ impl WasmStore {
             data: pixels,
             width,
             height,
-            raw_byte_len: (width * height * 4) as usize,
+            raw_byte_len: rgba_img.as_raw().len(),
         };
 
         Some(self.set_image_data(image))

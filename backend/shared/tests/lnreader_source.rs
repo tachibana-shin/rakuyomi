@@ -68,14 +68,15 @@ async fn run_plugin_smoke(
         "LNReader version is a string"
     );
 
-    // search_mangas with a query exercises the plugin's searchNovels method.
-    // An empty query would call popularNovels, which requires filters that the
-    // LNReader runtime does not pass, so we use a real search term instead.
+    // search_mangas with an empty query acts as the popular list -- needs network.
+    // When several CI runs hit the site concurrently it sometimes answers with
+    // an empty result (rate limiting / bot challenge), so retry a few times
+    // with backoff before failing.
     let mut mangas = Vec::new();
     let mut has_next = false;
     for attempt in 1..=4 {
         let (result, next) = source
-            .search_mangas(CancellationToken::new(), search_query.to_string(), 1)
+            .search_mangas(CancellationToken::new(), String::new(), 1)
             .await
             .unwrap();
         mangas = result;
@@ -83,10 +84,10 @@ async fn run_plugin_smoke(
         if !mangas.is_empty() {
             break;
         }
-        eprintln!("search came back empty (attempt {attempt}), retrying...");
+        eprintln!("popular list came back empty (attempt {attempt}), retrying...");
         tokio::time::sleep(std::time::Duration::from_secs(5 * attempt)).await;
     }
-    assert!(!mangas.is_empty(), "search must return results");
+    assert!(!mangas.is_empty(), "popular list must not be empty");
     assert!(!has_next);
     assert!(
         !mangas[0].id.is_empty() && !mangas[0].id.starts_with('/'),
@@ -149,13 +150,13 @@ async fn run_plugin_smoke(
 }
 
 #[tokio::test]
-async fn lnreader_plugin_end_to_end_novelbuddy() {
+async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
     run_plugin_smoke(
-        "novelbuddy.js",
-        "novelbuddy",
-        "NovelBuddy",
-        "novelbuddy.me",
-        "shadow slave",
+        "chrysanthemumgarden.js",
+        "chrysanthemumgarden",
+        "Chrysanthemum Garden",
+        "chrysanthemumgarden.com",
+        "abyss",
     )
     .await;
 }

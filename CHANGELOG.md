@@ -1,3 +1,10 @@
+## [1.41.6](https://github.com/tachibana-shin/rakuyomi/compare/v1.41.5...v1.41.6) (2026-09-05)
+
+
+### Bug Fixes
+
+* **html:** flatten nested element lists + MangaPlus blank images ([#336](https://github.com/tachibana-shin/rakuyomi/issues/336)) ([c46b1a8](https://github.com/tachibana-shin/rakuyomi/commit/c46b1a8e3ce3274584c0e8787da1d3b19c464b6a))
+
 ## [1.41.5](https://github.com/tachibana-shin/rakuyomi/compare/v1.41.4...v1.41.5) (2026-09-01)
 
 

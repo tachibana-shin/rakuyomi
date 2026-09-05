@@ -459,8 +459,10 @@ fn get_image(mut caller: Caller<'_, WasmStore>, ctx_id: i32) -> Result<i32> {
     };
 
     let data = canvas.0.get_data();
+    let data_vec = data.to_vec();
     let image = crate::source::wasm_store::ImageData {
-        data: data.to_vec(),
+        raw_byte_len: data_vec.len() * 4,
+        data: data_vec,
         width: canvas.0.width(),
         height: canvas.0.height(),
     };
@@ -478,7 +480,12 @@ fn get_image_data(mut caller: Caller<'_, WasmStore>, img_id: i32) -> Result<i32>
     let height = image.height as u32;
 
     let png_data = if width == 0 && height == 0 {
-        image.data.iter().flat_map(|&b| b.to_le_bytes()).collect()
+        // When raw bytes were stored as u32s (e.g. encrypted images), the
+        // chunks(4) packing may have padded the last chunk with zeros.
+        // Truncate to the original byte length to strip that padding.
+        let mut raw: Vec<u8> = image.data.iter().flat_map(|&b| b.to_le_bytes()).collect();
+        raw.truncate(image.raw_byte_len);
+        raw
     } else {
         // ARGB(u32) → RGBA(u8[4]) に変換する（PNG は alpha 対応）
         let mut rgba_pixels: Vec<u8> = Vec::with_capacity((width * height * 4) as usize);

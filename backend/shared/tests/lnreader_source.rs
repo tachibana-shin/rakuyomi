@@ -150,6 +150,7 @@ async fn run_plugin_smoke(
 }
 
 #[tokio::test]
+#[ignore = "chrysanthemumgarden.com rate-limits CI runs"]
 async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
     run_plugin_smoke(
         "chrysanthemumgarden.js",

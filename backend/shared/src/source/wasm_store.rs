@@ -151,6 +151,9 @@ pub struct ImageData {
     pub data: Vec<u32>,
     pub width: i32,
     pub height: i32,
+    /// Original byte length before u32 packing. Used to strip padding zeros
+    /// when the raw byte count was not a multiple of 4 (e.g. encrypted images).
+    pub raw_byte_len: usize,
 }
 
 /// from aidoku sdk
@@ -594,12 +597,13 @@ impl WasmStore {
         self.canvass.get_mut(&descriptor)
     }
     pub fn create_image(&mut self, data: &[u8]) -> Option<usize> {
-        if let Some(data) = super::decode_image::decode_image_fast(data) {
-            let data = data
-                .map_err(|err| eprintln!("failed to load image with faster {err}"))
-                .ok()?;
-
-            return Some(self.set_image_data(data));
+        if let Some(result) = super::decode_image::decode_image_fast(data) {
+            if let Ok(data) = result {
+                return Some(self.set_image_data(data));
+            }
+            // Fast decoder recognized the format but failed to decode (e.g.
+            // corrupted or encrypted data). Fall through to the generic
+            // decoder which may still succeed, or to the caller's fallback.
         }
         // fallback with image
 
@@ -625,6 +629,7 @@ impl WasmStore {
             data: pixels,
             width,
             height,
+            raw_byte_len: rgba_img.as_raw().len(),
         };
 
         Some(self.set_image_data(image))
@@ -897,7 +902,7 @@ impl From<SourceSettingValue> for Value {
 
 #[cfg(test)]
 mod tests {
-    use super::JsContext;
+    use super::{JsContext, Value};
 
     #[test]
     fn js_context_eval_stringifies_like_boa() {
@@ -914,5 +919,44 @@ mod tests {
         ctx.eval("globalThis.foo = 'bar'").unwrap();
         assert_eq!(ctx.get_global("foo").unwrap(), "bar");
         assert_eq!(ctx.get_global("missing").unwrap(), "undefined");
+    }
+
+    #[test]
+    fn vec_html_element_converts_to_html_elements_variant() {
+        use crate::source::html_element::HTMLElement;
+        use dom_query::Document;
+
+        let doc = Document::from("<div><p>a</p><p>b</p></div>");
+        let root_id = doc.root().id;
+        let els: Vec<HTMLElement> = vec![HTMLElement {
+            document: 0,
+            node_id: root_id,
+            base_uri: None,
+        }];
+        let value = Value::from(els);
+        assert!(
+            matches!(value, Value::HTMLElements(_)),
+            "Vec<HTMLElement> must produce Value::HTMLElements, got {value:?}"
+        );
+    }
+
+    #[test]
+    fn vec_vec_html_element_converts_to_array_variant() {
+        use crate::source::html_element::HTMLElement;
+        use dom_query::Document;
+
+        let doc = Document::from("<div><p>a</p></div>");
+        let root_id = doc.root().id;
+        let inner: Vec<HTMLElement> = vec![HTMLElement {
+            document: 0,
+            node_id: root_id,
+            base_uri: None,
+        }];
+        let nested: Vec<Vec<HTMLElement>> = vec![inner];
+        let value = Value::from(nested);
+        assert!(
+            matches!(value, Value::Array(_)),
+            "Vec<Vec<HTMLElement>> must produce Value::Array, got {value:?}"
+        );
     }
 }

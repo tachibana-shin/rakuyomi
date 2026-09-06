@@ -18,7 +18,6 @@ local langNames = require("utils/languageNames")
 ---@diagnostic disable-next-line: different-requires
 local util = require("util")
 
-local DGENERIC_ICON_SIZE = G_defaults:readSetting("DGENERIC_ICON_SIZE")
 local Font = require("ui/font")
 local SMALL_FONT_FACE = Font:getFace("smallffont")
 

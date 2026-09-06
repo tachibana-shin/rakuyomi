@@ -12,8 +12,6 @@ local ffiutil = require("ffi/util")
 local _ = require("gettext+")
 local IconButton = require("ui/widget/iconbutton")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
-local VerticalGroup = require("ui/widget/verticalgroup")
-local VerticalSpan = require("ui/widget/verticalspan")
 local Button = require("ui/widget/button")
 local md5 = require("ffi/sha2").md5
 local DataStorage = require("datastorage")
@@ -192,7 +190,7 @@ function ChapterListing:patchTitleBar(count_lang)
       width = left_icon_size,
       height = left_icon_size,
       padding = button_padding,
-      padding_bottom = left_icon_size,
+      padding_bottom = button_padding,
       callback = self.title_bar.left_icon_tap_callback,
       hold_callback = self.title_bar.left_icon_hold_callback,
       allow_flash = self.title_bar.left_icon_allow_flash,
@@ -204,7 +202,7 @@ function ChapterListing:patchTitleBar(count_lang)
       width = left_icon_size,
       height = left_icon_size,
       padding = button_padding,
-      padding_bottom = left_icon_size,
+      padding_bottom = button_padding,
       callback = function()
         self:openTrackingMenu()
       end,
@@ -214,23 +212,17 @@ function ChapterListing:patchTitleBar(count_lang)
   }
   if count_lang >= 2 then
     table.insert(self.title_bar.left_button,
-      VerticalGroup:new {
-        Button:new {
-          text = Icons.LANG .. " " .. count_lang,
-          face = SMALL_FONT_FACE,
-          bordersize = 0,
-          enabled = true,
-          width = left_icon_size,
-          height = left_icon_size,
-          text_font_size = 16,
-          text_font_bold = false,
-          callback = function()
-            self:showSelectLanguage()
-          end
-        },
-        VerticalSpan:new {
-          width = left_icon_size / 2
-        }
+      Button:new {
+        text = Icons.LANG .. " " .. count_lang,
+        face = SMALL_FONT_FACE,
+        bordersize = 0,
+        enabled = true,
+        padding = button_padding,
+        padding_bottom = button_padding,
+        text_font_bold = false,
+        callback = function()
+          self:showSelectLanguage()
+        end
       })
   end
 

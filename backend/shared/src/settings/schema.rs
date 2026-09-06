@@ -114,6 +114,63 @@ pub enum LibrarySortingMode {
     SourceDesc,
 }
 
+/// Valid base table aliases for library manga queries.
+pub enum LibraryTableAlias {
+    /// `manga_library` table alias
+    Ml,
+    /// `playlist_mangas` table alias
+    Pm,
+}
+
+impl LibrarySortingMode {
+    /// Returns the ORDER BY clause for library manga queries.
+    /// `table_alias` is the base table alias (`Ml` for library, `Pm` for playlists).
+    pub fn order_by_clause(&self, table_alias: LibraryTableAlias) -> &'static str {
+        match (self, table_alias) {
+            (Self::Ascending, LibraryTableAlias::Ml) => "ORDER BY ml.rowid, mi.title ASC",
+            (Self::Ascending, LibraryTableAlias::Pm) => "ORDER BY pm.rowid, mi.title ASC",
+            (Self::Descending, LibraryTableAlias::Ml) => "ORDER BY ml.rowid DESC, mi.title DESC",
+            (Self::Descending, LibraryTableAlias::Pm) => "ORDER BY pm.rowid DESC, mi.title DESC",
+            (Self::TitleAsc, LibraryTableAlias::Ml) => "ORDER BY mi.title ASC, ml.rowid ASC",
+            (Self::TitleAsc, LibraryTableAlias::Pm) => "ORDER BY mi.title ASC, pm.rowid ASC",
+            (Self::TitleDesc, LibraryTableAlias::Ml) => "ORDER BY mi.title DESC, ml.rowid DESC",
+            (Self::TitleDesc, LibraryTableAlias::Pm) => "ORDER BY mi.title DESC, pm.rowid DESC",
+            (Self::UnreadAsc, LibraryTableAlias::Ml) => {
+                "ORDER BY unread_chapters_count ASC, mi.title ASC"
+            }
+            (Self::UnreadAsc, LibraryTableAlias::Pm) => {
+                "ORDER BY unread_chapters_count ASC, mi.title ASC"
+            }
+            (Self::UnreadDesc, LibraryTableAlias::Ml) => {
+                "ORDER BY unread_chapters_count DESC, mi.title DESC"
+            }
+            (Self::UnreadDesc, LibraryTableAlias::Pm) => {
+                "ORDER BY unread_chapters_count DESC, mi.title DESC"
+            }
+            (Self::LastReadAsc, LibraryTableAlias::Ml) => {
+                "ORDER BY mcs.last_read_time ASC, mi.title ASC"
+            }
+            (Self::LastReadAsc, LibraryTableAlias::Pm) => {
+                "ORDER BY mcs.last_read_time ASC, mi.title ASC"
+            }
+            (Self::LastReadDesc, LibraryTableAlias::Ml) => {
+                "ORDER BY mcs.last_read_time DESC, mi.title DESC"
+            }
+            (Self::LastReadDesc, LibraryTableAlias::Pm) => {
+                "ORDER BY mcs.last_read_time DESC, mi.title DESC"
+            }
+            (Self::SourceAsc, LibraryTableAlias::Ml) => "ORDER BY ml.source_id ASC, mi.title ASC",
+            (Self::SourceAsc, LibraryTableAlias::Pm) => "ORDER BY pm.source_id ASC, mi.title ASC",
+            (Self::SourceDesc, LibraryTableAlias::Ml) => {
+                "ORDER BY ml.source_id DESC, mi.title DESC"
+            }
+            (Self::SourceDesc, LibraryTableAlias::Pm) => {
+                "ORDER BY pm.source_id DESC, mi.title DESC"
+            }
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum LibraryViewMode {

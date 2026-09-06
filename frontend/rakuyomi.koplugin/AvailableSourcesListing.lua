@@ -373,9 +373,16 @@ function AvailableSourcesListing:patchTitleBar()
   -- Insert the filter buttons on the left side of the title bar. Always
   -- insert at position [2] so the close button (if present) is shifted
   -- to [3] instead of being replaced.
+  -- Use idempotent replacement: patchTitleBar may be called multiple times
+  -- (init, language selection, repo selection). table.insert would
+  -- accumulate stale copies on re-call.
   local filter_group = HorizontalGroup:new(buttons)
   self.title_bar.left_button = filter_group
-  table.insert(self.title_bar, 2, filter_group)
+  if self.title_bar[2] then
+    self.title_bar[2] = filter_group
+  else
+    table.insert(self.title_bar, 2, filter_group)
+  end
   self.filter_group = filter_group
 end
 

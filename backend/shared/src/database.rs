@@ -207,7 +207,7 @@ impl Database {
                     ci.source_id,
                     ci.manga_id,
                     MAX(IIF(cs.read = 1, ci.chapter_number, NULL)) AS last_read_chapter,
-                    COALESCE(MAX(cs.last_read), 0) AS last_read_time
+                    MAX(cs.last_read) AS last_read_time
                 FROM chapter_informations ci
                 INNER JOIN chapter_state cs
                     ON ci.source_id = cs.source_id
@@ -228,7 +228,7 @@ impl Database {
                 mi.artist,
                 mi.cover_url,
                 COUNT(ci.chapter_number) AS unread_chapters_count,
-                mcs.last_read_time AS last_read,
+                COALESCE(mcs.last_read_time, 0) AS last_read,
                 COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                 IIF(ms.viewer IS NOT NULL, 1, 0) AS state_viewer
             FROM manga_library ml
@@ -1786,7 +1786,7 @@ impl Database {
                     ci.source_id,
                     ci.manga_id,
                     MAX(IIF(cs.read = 1, ci.chapter_number, NULL)) AS last_read_chapter,
-                    COALESCE(MAX(cs.last_read), 0) AS last_read_time
+                    MAX(cs.last_read) AS last_read_time
                 FROM chapter_informations ci
                 INNER JOIN chapter_state cs
                     ON ci.source_id = cs.source_id
@@ -1807,7 +1807,7 @@ impl Database {
                 mi.artist,
                 mi.cover_url,
                 COUNT(ci.chapter_number) AS unread_chapters_count,
-                mcs.last_read_time AS last_read,
+                COALESCE(mcs.last_read_time, 0) AS last_read,
                 COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                 IIF(ms.viewer IS NOT NULL, 1, 0) AS state_viewer
             FROM playlist_mangas pm

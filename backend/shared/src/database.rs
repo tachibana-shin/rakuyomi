@@ -207,7 +207,7 @@ impl Database {
                     ci.source_id,
                     ci.manga_id,
                     MAX(IIF(cs.read = 1, ci.chapter_number, NULL)) AS last_read_chapter,
-                    MAX(cs.last_read) AS last_read_time
+                    COALESCE(MAX(cs.last_read), 0) AS last_read_time
                 FROM chapter_informations ci
                 INNER JOIN chapter_state cs
                     ON ci.source_id = cs.source_id
@@ -1786,7 +1786,7 @@ impl Database {
                     ci.source_id,
                     ci.manga_id,
                     MAX(IIF(cs.read = 1, ci.chapter_number, NULL)) AS last_read_chapter,
-                    MAX(cs.last_read) AS last_read_time
+                    COALESCE(MAX(cs.last_read), 0) AS last_read_time
                 FROM chapter_informations ci
                 INNER JOIN chapter_state cs
                     ON ci.source_id = cs.source_id

@@ -646,78 +646,85 @@ end
 --- already online.
 --- @param onReturnCallback any
 --- @param retried boolean? whether this call is a retry after a WiFi reconnect
+--- @return nil
 function AvailableSourcesListing:fetchAndShow(onReturnCallback, retried)
-  local installed_sources_response = Backend.listInstalledSources()
-  if installed_sources_response.type == 'ERROR' then
-    ErrorDialog:show(installed_sources_response.message)
-
-    return
-  end
-
-  local installed_sources = installed_sources_response.body
-
-  local available_sources_response = LoadingDialog:showAndRun("Fetching available sources...", function()
-    return Backend.listAvailableSources()
-  end)
-
-  if available_sources_response.type == 'ERROR' then
-    if not NetworkMgr:isConnected() then
-      if retried then
-        -- The reconnect retry also failed while offline: stop here.
-        ErrorDialog:show(available_sources_response.message)
-
-        return
-      end
-
-      -- The fetch failed because we're offline. Try to get back online
-      -- (honoring the "action when Wi-Fi is off" setting), then retry once.
-      local connection_pending = NetworkMgr.pending_connection
-      local wifi_enable = NetworkMgr:beforeWifiAction(function()
-        self:fetchAndShow(onReturnCallback, true)
-      end)
-
-      if wifi_enable == false then
-        ErrorDialog:show(available_sources_response.message)
-      elseif wifi_enable == nil and connection_pending then
-        -- beforeWifiAction dropped our retry callback (EBUSY) because a
-        -- previous connection attempt is still ongoing. Queue the retry for
-        -- when it finishes instead of silently giving up.
-        NetworkMgr:scheduleConnectivityCheck(function()
-          self:fetchAndShow(onReturnCallback, true)
-        end)
-      end
+  -- Establish our own Trapper context (mirroring `ChapterListing:downloadChapter`)
+  -- so the retry callback from `NetworkMgr:beforeWifiAction` /
+  -- `scheduleConnectivityCheck` can re-enter this function asynchronously:
+  -- `LoadingDialog:showAndRun` requires a `Trapper:wrap()` context.
+  Trapper:wrap(function()
+    local installed_sources_response = Backend.listInstalledSources()
+    if installed_sources_response.type == 'ERROR' then
+      ErrorDialog:show(installed_sources_response.message)
 
       return
     end
 
-    ErrorDialog:show(available_sources_response.message)
+    local installed_sources = installed_sources_response.body
 
-    return
-  end
+    local available_sources_response = LoadingDialog:showAndRun("Fetching available sources...", function()
+      return Backend.listAvailableSources()
+    end)
 
-  local available_sources = available_sources_response.body
+    if available_sources_response.type == 'ERROR' then
+      if not NetworkMgr:isConnected() then
+        if retried then
+          -- The reconnect retry also failed while offline: stop here.
+          ErrorDialog:show(available_sources_response.message)
 
-  local settings_response = Backend.getSettings()
-  if settings_response.type == 'ERROR' then
-    ErrorDialog:show(settings_response.message)
+          return
+        end
 
-    return
-  end
-  local settings = settings_response.body
+        -- The fetch failed because we're offline. Try to get back online
+        -- (honoring the "action when Wi-Fi is off" setting), then retry once.
+        local connection_pending = NetworkMgr.pending_connection
+        local wifi_enable = NetworkMgr:beforeWifiAction(function()
+          self:fetchAndShow(onReturnCallback, true)
+        end)
 
-  local ui = AvailableSourcesListing:new {
-    installed_sources = installed_sources,
-    available_sources = available_sources,
-    settings = settings,
-    langs_selected = G_reader_settings:readSetting("rakuyomi_langs_selected", {}),
-    repos_selected = G_reader_settings:readSetting("rakuyomi_repos_selected", {}),
-    on_return_callback = onReturnCallback,
-    covers_fullscreen = true, -- hint for UIManager:_repaint()
-  }
-  ui.on_return_callback = onReturnCallback
-  UIManager:show(ui)
+        if wifi_enable == false then
+          ErrorDialog:show(available_sources_response.message)
+        elseif wifi_enable == nil and connection_pending then
+          -- beforeWifiAction dropped our retry callback (EBUSY) because a
+          -- previous connection attempt is still ongoing. Queue the retry for
+          -- when it finishes instead of silently giving up.
+          NetworkMgr:scheduleConnectivityCheck(function()
+            self:fetchAndShow(onReturnCallback, true)
+          end)
+        end
 
-  Testing:emitEvent("available_sources_listing_shown")
+        return
+      end
+
+      ErrorDialog:show(available_sources_response.message)
+
+      return
+    end
+
+    local available_sources = available_sources_response.body
+
+    local settings_response = Backend.getSettings()
+    if settings_response.type == 'ERROR' then
+      ErrorDialog:show(settings_response.message)
+
+      return
+    end
+    local settings = settings_response.body
+
+    local ui = AvailableSourcesListing:new {
+      installed_sources = installed_sources,
+      available_sources = available_sources,
+      settings = settings,
+      langs_selected = G_reader_settings:readSetting("rakuyomi_langs_selected", {}),
+      repos_selected = G_reader_settings:readSetting("rakuyomi_repos_selected", {}),
+      on_return_callback = onReturnCallback,
+      covers_fullscreen = true, -- hint for UIManager:_repaint()
+    }
+    ui.on_return_callback = onReturnCallback
+    UIManager:show(ui)
+
+    Testing:emitEvent("available_sources_listing_shown")
+  end)
 end
 
 return AvailableSourcesListing

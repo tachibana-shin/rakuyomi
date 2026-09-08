@@ -224,9 +224,7 @@ impl LnReaderSource {
 
         Ok(Self {
             id,
-            features: SourceFeatures {
-                process_page_image: false,
-            },
+            features: SourceFeatures::default(),
             usage,
             path: path.to_path_buf(),
             plugin_code,

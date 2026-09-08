@@ -127,6 +127,26 @@ async fn mangaplus_page_list_issue325() {
     let manga = &mangas[0];
     eprintln!("manga: id={} title={:?}", manga.id, manga.title);
 
+    // The `get_manga_list` call above booted the engine. The outer
+    // `Source::features` (what the chapter downloader gates on) must now
+    // mirror the inner WASM export detection, or MangaPlus pages stay
+    // encrypted in the CBZ (blank pages bug).
+    assert!(
+        source.features.process_page_image(),
+        "MangaPlus must be detected as process_page_image after boot"
+    );
+    assert!(
+        match &source.backend {
+            SourceBackend::Aidoku(backend) => backend
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .features
+                .process_page_image(),
+            _ => panic!("not an aidoku source"),
+        },
+        "inner BlockingSource must detect process_page_image for MangaPlus"
+    );
+
     // 3b. Also test search (was returning 0 results earlier).
     let token = CancellationToken::new();
     let search_result = tokio::task::spawn_blocking({

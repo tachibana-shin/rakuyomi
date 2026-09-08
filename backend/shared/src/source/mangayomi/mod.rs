@@ -360,9 +360,7 @@ impl MangayomiSource {
 
         Ok(Self {
             id: meta.id.clone(),
-            features: SourceFeatures {
-                process_page_image: false,
-            },
+            features: SourceFeatures::default(),
             name: meta.name.clone(),
             lang: meta.lang.clone(),
             item_type: meta.item_type,

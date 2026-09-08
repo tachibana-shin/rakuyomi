@@ -618,7 +618,7 @@ async fn runner_full_offline() {
 
     let source = mangayomi(&source);
     assert!(source.supports_latest());
-    assert!(!source.features.process_page_image);
+    assert!(!source.features.process_page_image());
 
     // Extension-declared preferences become the settings definitions, with
     // defaults collected into the shared settings map.

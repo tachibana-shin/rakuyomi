@@ -103,6 +103,7 @@ hex = "0.4"
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }
 pprof = { version = "0.15", features = ["criterion", "flamegraph"] }
+wat = "1.252.0"
 
 [[bench]]
 name = "chapter_downloader_benchmark"

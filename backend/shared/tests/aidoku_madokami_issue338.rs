@@ -12,6 +12,12 @@
 //! downloader does, and asserts the session cookie made it onto the request —
 //! behaviour that failed with `HTTP 401 Unauthorized` before the fix.
 //!
+//! It also verifies the review-feedback hardening: the cookie is only attached
+//! for https image URLs (never for plaintext `http://`), a bare
+//! `Domain=<host>` cookie still reaches an image subdomain, and cookies scoped
+//! to one path do not leak onto other paths. The User-Agent override remains
+//! unconditional on http.
+//!
 //! Network-dependent: gated behind `#[ignore]` so CI stays offline; run with:
 //!
 //! ```sh
@@ -79,7 +85,13 @@ async fn image_request_carries_cookie_store_session_issue338() {
     let cookie_url = Url::parse(&format!("https://{IMAGE_HOST}/")).unwrap();
     record_set_cookie_headers(
         &cookie_url,
-        &["laravel_session=deadbeefcafe; Path=/".to_string()],
+        &[
+            "laravel_session=deadbeefcafe; Path=/".to_string(),
+            // Bare Domain=host cookie: still reaches an image subdomain.
+            format!("cf_clearance=subok; Domain={IMAGE_HOST}; Path=/"),
+            // Path-scoped cookie must NOT leak onto other paths.
+            format!("admin_only=secret; Domain={IMAGE_HOST}; Path=/admin; Secure"),
+        ],
     );
 
     // 3. Provide the Basic-auth credentials the extension reads via
@@ -116,28 +128,32 @@ async fn image_request_carries_cookie_store_session_issue338() {
         .clone();
 
     // 4. Build an image request exactly like `chapter_downloader.rs` does.
+    let build_request = {
+        let source = source.clone();
+        move |image_url: Url| {
+            let mut backend = match &source.backend {
+                SourceBackend::Aidoku(backend) => backend.lock().unwrap(),
+                _ => panic!("not an aidoku source"),
+            };
+            backend
+                .get_image_request(image_url, None)
+                .unwrap_or_else(|err| panic!("get_image_request failed: {err:#}"))
+        }
+    };
+
+    // 5a. https image URL: the store's session cookie must be on the wire.
+    //     Before the fix the image request carried only what the extension
+    //     set (no Cookie), so Madokami answered `HTTP 401 Unauthorized`.
     let image_url = Url::parse(&format!(
         "https://{IMAGE_HOST}/reader/image?path=issue338&file=1.jpg"
     ))
     .unwrap();
     let request = tokio::task::spawn_blocking({
-        let source = source.clone();
-        let image_url = image_url.clone();
-        move || {
-            let mut backend = match &source.backend {
-                SourceBackend::Aidoku(backend) => backend.lock().unwrap(),
-                _ => panic!("not an aidoku source"),
-            };
-            backend.get_image_request(image_url, None)
-        }
+        let build = build_request.clone();
+        move || build(image_url)
     })
     .await
-    .unwrap()
-    .unwrap_or_else(|err| panic!("get_image_request failed: {err:#}"));
-
-    // 5. The store's session cookie must be on the wire: before the fix the
-    //    image request carried only what the extension set (no Cookie), so
-    //    Madokami answered `HTTP 401 Unauthorized`.
+    .unwrap();
     let cookie = request
         .headers()
         .get("cookie")
@@ -145,9 +161,49 @@ async fn image_request_carries_cookie_store_session_issue338() {
         .unwrap_or_default();
     assert!(
         cookie.contains("laravel_session=deadbeefcafe"),
-        "image request is missing the cookie-store session cookie, got Cookie: {cookie:?}"
+        "https image request is missing the cookie-store session cookie, got Cookie: {cookie:?}"
     );
-    eprintln!("OK: image request carries Cookie {{ {cookie} }}");
+    // cf_clearance was stored as a domain cookie (bare Domain=host): as long
+    // as the https image URL shares the host, it is included too.
+    assert!(
+        cookie.contains("cf_clearance=subok"),
+        "domain cookie not applied to same-host image request, got Cookie: {cookie:?}"
+    );
+    assert!(
+        !cookie.contains("admin_only=secret"),
+        "path-scoped cookie leaked onto a non-matching image path, got Cookie: {cookie:?}"
+    );
+    eprintln!("OK: https image request carries Cookie {{ {cookie} }}");
+
+    // 5b. Plaintext http image URL: the cookie must NOT be attached, but the
+    //     User-Agent override stays unconditional.
+    let http_url = Url::parse(&format!("http://{IMAGE_HOST}/reader/image")).unwrap();
+    let request = tokio::task::spawn_blocking({
+        let build = build_request.clone();
+        move || build(http_url)
+    })
+    .await
+    .unwrap();
+    assert!(
+        request.headers().get("cookie").is_none(),
+        "http image request must not carry any cookie, got: {:?}",
+        request
+            .headers()
+            .get("cookie")
+            .map(|v| v.to_str().unwrap_or_default())
+    );
+    let ua = request
+        .headers()
+        .get("user-agent")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or_default();
+    assert!(
+        !ua.is_empty(),
+        "http image request lost its User-Agent override"
+    );
+    eprintln!("OK: http image request carries no Cookie (UA retained)");
+
+    // General note about the published module.
     eprintln!(
         "note: the published {} module exports no get_image_request/modify_image_request, \
          so the built request is url + UA + cookie only",

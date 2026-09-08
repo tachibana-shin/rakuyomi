@@ -1286,16 +1286,15 @@ impl BlockingSource {
     /// authenticated image hosts such as Madokami, whose `/reader/image`
     /// endpoint requires the `laravel_session` cookie the Basic-auth login
     /// set (issue #338). Matching `net.rs`, the per-domain user-agent and
-    /// cookies replace what the extension set.
+    /// cookies replace what the extension set. Cookies are only applied for
+    /// https image URLs (see [`get_user_agent_and_cookie_header_for_url`]),
+    /// while the User-Agent override stays unconditional.
     fn apply_cookie_store_headers(
         headers: &mut std::collections::HashMap<String, String>,
         url: &Url,
     ) {
-        let Some(host) = url.host_str() else {
-            return;
-        };
         let (override_ua, cookie_value) =
-            crate::cookie_store::get_user_agent_and_cookie_header(host);
+            crate::cookie_store::get_user_agent_and_cookie_header_for_url(url);
         if let Some(ua) = override_ua {
             headers.retain(|name, _| !name.eq_ignore_ascii_case("User-Agent"));
             headers.insert("User-Agent".to_string(), ua);

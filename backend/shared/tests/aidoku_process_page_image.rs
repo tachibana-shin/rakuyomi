@@ -9,7 +9,7 @@
 //! Aidoku source that needs `process_page_image` (MangaPlus, mangago,
 //! jmcomic, ...) saved encrypted bytes straight into CBZ files.
 //!
-//! This test builds two minimal `.aix` archives in-memory (one exporting
+//! This test builds two minimal `.aix` archives (one exporting
 //! `process_page_image`, one not), boots both engines and asserts the flag
 //! seen by the downloader (`Source::features.process_page_image()`) mirrors
 //! the inner detection after the lazy boot.
@@ -25,6 +25,7 @@ use shared::{
     source::{Source, SourceBackend},
     source_manager::SourceManager,
 };
+use tempfile::TempDir;
 use url::Url;
 
 const WAT_WITH_PROCESS_PAGE_IMAGE: &str = r#"
@@ -44,7 +45,10 @@ fn write_aix(dir: &Path, id: &str, wat: &str) -> PathBuf {
     let path = dir.join(format!("{id}.aix"));
     let file = std::fs::File::create(&path).unwrap();
     let mut zip = zip::ZipWriter::new(file);
-    let opts =
+    // `FileOptions::default()` cannot infer its `FileOptionExtension`
+    // parameter here (`start_file` is generic over it too), so pin it to the
+    // unit type, the default key-value-less extension.
+    let opts: zip::write::FileOptions<'_, ()> =
         zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
     zip.start_file("Payload/source.json", opts).unwrap();
     zip.write_all(
@@ -57,38 +61,40 @@ fn write_aix(dir: &Path, id: &str, wat: &str) -> PathBuf {
     path
 }
 
-fn setup(wat: &str, id: &str) -> Source {
-    let dir = std::env::temp_dir().join(format!("rakuyomi-process-page-image-{id}"));
-    if dir.exists() {
-        std::fs::remove_dir_all(&dir).unwrap();
-    }
-    std::fs::create_dir_all(&dir).unwrap();
-    let aix = write_aix(&dir, id, wat);
+/// Creates a unique temporary directory (`TempDir`, not a deterministic
+/// path, so concurrent test processes can never delete each other's
+/// archives) and returns it alongside the source. The caller keeps the
+/// `TempDir` alive for the whole test: the lazy engine boot opens the
+/// `.aix` file from disk.
+fn setup(wat: &str, id: &str) -> (Source, TempDir) {
+    let dir = tempfile::tempdir().unwrap();
+    let aix = write_aix(dir.path(), id, wat);
 
-    let manager = SourceManager::from_folder(dir, Settings::default()).unwrap();
+    let manager =
+        SourceManager::from_folder(dir.path().to_path_buf(), Settings::default()).unwrap();
     let arc_manager = Arc::new(tokio::sync::Mutex::new(manager.clone()));
     // The source list is empty: `from_aix_file` is called directly on the
     // freshly written archive.
-    Source::from_aix_file(&aix, &manager, &arc_manager).unwrap()
+    let source = Source::from_aix_file(&aix, &manager, &arc_manager).unwrap();
+    (source, dir)
 }
 
-/// Boots the engine through a public wrapper that calls `ensure_booted`
-/// first and then intentionally fails on the missing `get_image_request`
-/// export, so a minimal wasm module suffices.
+/// Boots the engine through a public wrapper: `get_image_request` calls
+/// `BlockingSource::ensure_booted` before anything else, and the lazy boot
+/// is where the `process_page_image` capability detection happens. The
+/// minimal test module lacks the exports some paths touch, so the request
+/// outcome itself is irrelevant; only the boot side effect (engine boot +
+/// flag detection) matters, and the assertions after this call prove it ran.
 async fn boot(source: &Source) {
-    let result = source
+    let _ = source
         .get_image_request(Url::parse("https://example.com/1.jpg").unwrap(), None)
         .await;
-    assert!(
-        result.is_err(),
-        "expected missing get_image_request export on the minimal module"
-    );
 }
 
 #[tokio::test]
 async fn process_page_image_flag_mirrors_wasm_exports_after_lazy_boot() {
     // 1. Module exporting `process_page_image` (the MangaPlus shape).
-    let source = setup(WAT_WITH_PROCESS_PAGE_IMAGE, "with-export");
+    let (source, _dir) = setup(WAT_WITH_PROCESS_PAGE_IMAGE, "with-export");
 
     // Pre-boot snapshot: the outer copy starts false, like the inner one.
     assert!(!source.features.process_page_image());
@@ -113,7 +119,7 @@ async fn process_page_image_flag_mirrors_wasm_exports_after_lazy_boot() {
 
     // 2. Module without the export (plain sources must stay on the raw
     //    pass-through path, never running the wasm round-trip).
-    let source = setup(WAT_WITHOUT_PROCESS_PAGE_IMAGE, "without-export");
+    let (source, _dir) = setup(WAT_WITHOUT_PROCESS_PAGE_IMAGE, "without-export");
     boot(&source).await;
 
     let inner = match &source.backend {

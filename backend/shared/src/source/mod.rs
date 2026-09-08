@@ -545,6 +545,10 @@ pub struct SourceManifest {
     pub source_of_source: Option<String>,
 }
 
+/// Shared capability flags for a source.
+///
+/// Backed by an `Arc` where the detection must be visible after the lazy
+/// boot (see the `process_page_image` field).
 #[derive(Debug, Clone, Default)]
 pub struct SourceFeatures {
     /// Whether the WASM module exports `process_page_image` (Aidoku sources

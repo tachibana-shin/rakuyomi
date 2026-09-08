@@ -11,6 +11,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local LoadingDialog = require("LoadingDialog")
 local Menu = require("widgets/Menu")
+local NetworkMgr = require("ui/network/manager")
 local _ = require("gettext+")
 local Testing = require("testing")
 local CheckboxDialog = require("CheckboxDialog")
@@ -636,8 +637,16 @@ function AvailableSourcesListing:refreshAfterInstall(source_information)
 end
 
 --- Fetches and shows the available sources. Must be called from a function wrapped with `Trapper:wrap()`.
+---
+--- When the fetch fails while the device is offline, the WiFi-reconnect
+--- dance from `ChapterListing:downloadChapter` (issue #277) is replayed:
+--- `NetworkMgr:beforeWifiAction` (which honors the "action when Wi-Fi is
+--- off" setting) brings the device back online and the fetch is retried
+--- once; the error is only shown when reconnecting fails or the device is
+--- already online.
 --- @param onReturnCallback any
-function AvailableSourcesListing:fetchAndShow(onReturnCallback)
+--- @param retried boolean? whether this call is a retry after a WiFi reconnect
+function AvailableSourcesListing:fetchAndShow(onReturnCallback, retried)
   local installed_sources_response = Backend.listInstalledSources()
   if installed_sources_response.type == 'ERROR' then
     ErrorDialog:show(installed_sources_response.message)
@@ -652,6 +661,35 @@ function AvailableSourcesListing:fetchAndShow(onReturnCallback)
   end)
 
   if available_sources_response.type == 'ERROR' then
+    if not NetworkMgr:isConnected() then
+      if retried then
+        -- The reconnect retry also failed while offline: stop here.
+        ErrorDialog:show(available_sources_response.message)
+
+        return
+      end
+
+      -- The fetch failed because we're offline. Try to get back online
+      -- (honoring the "action when Wi-Fi is off" setting), then retry once.
+      local connection_pending = NetworkMgr.pending_connection
+      local wifi_enable = NetworkMgr:beforeWifiAction(function()
+        self:fetchAndShow(onReturnCallback, true)
+      end)
+
+      if wifi_enable == false then
+        ErrorDialog:show(available_sources_response.message)
+      elseif wifi_enable == nil and connection_pending then
+        -- beforeWifiAction dropped our retry callback (EBUSY) because a
+        -- previous connection attempt is still ongoing. Queue the retry for
+        -- when it finishes instead of silently giving up.
+        NetworkMgr:scheduleConnectivityCheck(function()
+          self:fetchAndShow(onReturnCallback, true)
+        end)
+      end
+
+      return
+    end
+
     ErrorDialog:show(available_sources_response.message)
 
     return

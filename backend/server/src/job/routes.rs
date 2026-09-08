@@ -173,7 +173,7 @@ async fn create_download_unread_chapters_job(
     Ok(Json(id))
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize)]
 struct CreateDownloadScanlatorChaptersJobBody {
     source_id: String,
     manga_id: String,
@@ -199,8 +199,13 @@ async fn create_download_scanlator_chapters_job(
     StateExtractor(State { job_registry }): StateExtractor<State>,
     Json(body): Json<CreateDownloadScanlatorChaptersJobBody>,
 ) -> Result<Json<Uuid>, AppError> {
-    let langs = body.langs.clone().unwrap_or_default();
-    let manga_id = MangaId::from(body.clone());
+    let langs = body.langs.to_owned().unwrap_or_default();
+    let scanlator_filter = ScanlatorFilter {
+        amount: body.amount,
+        scanlator: body.scanlator.to_owned(),
+    };
+
+    let manga_id = MangaId::from(body);
 
     let chapter_storage = chapter_storage.lock().await.clone();
     let source = {
@@ -210,11 +215,6 @@ async fn create_download_scanlator_chapters_job(
             .clone()
     };
     let settings = settings.lock().await;
-
-    let scanlator_filter = ScanlatorFilter {
-        scanlator: body.scanlator,
-        amount: body.amount,
-    };
 
     let id = Uuid::new_v4();
     let job = DownloadScanlatorChaptersJob::spawn_new(

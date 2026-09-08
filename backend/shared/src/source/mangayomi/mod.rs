@@ -755,9 +755,32 @@ impl MangayomiSource {
             );
         }
         builder = builder.headers(header_map);
-        let request = builder
+        let mut request = builder
             .build()
             .with_context(|| format!("failed to build image request for {}", url))?;
+
+        // Apply the same per-domain user-agent / cookie overrides as the
+        // extension runtime, so cookie-synced sessions reach image hosts too
+        // (issue #338).
+        if let Some(host) = request.url().host_str() {
+            let (override_ua, cookie_value) =
+                crate::cookie_store::get_user_agent_and_cookie_header(host);
+            if let Some(ua) = override_ua {
+                if let Ok(header) = reqwest::header::HeaderValue::from_str(&ua) {
+                    request
+                        .headers_mut()
+                        .insert(reqwest::header::USER_AGENT, header);
+                }
+            }
+            if let Some(cookies) = cookie_value {
+                if let Ok(header) = reqwest::header::HeaderValue::from_str(&cookies) {
+                    request
+                        .headers_mut()
+                        .insert(reqwest::header::COOKIE, header);
+                }
+            }
+        }
+
         Ok(request)
     }
 

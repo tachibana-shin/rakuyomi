@@ -6,7 +6,10 @@ use std::{
     fs,
     io::Read,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
 };
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
@@ -249,6 +252,11 @@ impl Source {
         #[cfg(not(feature = "all"))]
         let blocking_source = BlockingSource::from_aix_file(path, manager, arc_manager)?;
 
+        // `SourceFeatures` shares an `Arc`-backed cell, so this clone links
+        // the outer `Source` to the inner `BlockingSource`: the lazy-boot
+        // detection of `process_page_image` (see
+        // `BlockingSource::ensure_booted`) is visible here too, where the
+        // chapter downloader reads it.
         let features = { blocking_source.features.clone() };
 
         Ok(Self {
@@ -537,9 +545,34 @@ pub struct SourceManifest {
     pub source_of_source: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+/// Shared capability flags for a source.
+///
+/// Backed by an `Arc` where the detection must be visible after the lazy
+/// boot (see the `process_page_image` field).
+#[derive(Debug, Clone, Default)]
 pub struct SourceFeatures {
-    pub process_page_image: bool,
+    /// Whether the WASM module exports `process_page_image` (Aidoku sources
+    /// serving server-side encrypted images, e.g. MangaPlus). Backed by an
+    /// `Arc` so the copy on the outer [`Source`] shares state with the inner
+    /// [`BlockingSource`]: the lazy-boot detection in
+    /// [`BlockingSource::ensure_booted`] therefore lands on both views, and
+    /// the chapter downloader (which reads the outer copy) decodes encrypted
+    /// images exactly like the pre-lazy-boot code did.
+    process_page_image: Arc<AtomicBool>,
+}
+
+impl SourceFeatures {
+    /// Whether page images must go through the WASM `process_page_image`
+    /// round-trip before being stored.
+    pub fn process_page_image(&self) -> bool {
+        self.process_page_image.load(Ordering::Relaxed)
+    }
+
+    /// Records the capability once the engine is booted. Sharing the
+    /// `Arc`-backed cell means the outer `Source` sees the same value.
+    pub(crate) fn set_process_page_image(&self, value: bool) {
+        self.process_page_image.store(value, Ordering::Relaxed);
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -649,16 +682,17 @@ impl BlockingSource {
             (manifest, is_next_sdk)
         };
 
-        let url_settings = {
-            let manifest = manifest.clone();
-            manifest.info.urls.map(|urls| SettingDefinition::Select {
+        let url_settings = manifest
+            .info
+            .urls
+            .as_ref()
+            .map(|urls| SettingDefinition::Select {
                 title: "URL".to_owned(),
                 key: "url".to_owned(),
                 default: Some(urls.first().unwrap_or(&"".to_owned()).to_string()),
-                values: urls,
+                values: urls.clone(),
                 titles: None,
-            })
-        };
+            });
         let url_settings_support = url_settings.is_some();
 
         let mut setting_definitions: Vec<SettingDefinition> =
@@ -691,8 +725,8 @@ impl BlockingSource {
             arc_manager,
         )?;
         if !url_settings_support && source_settings.get(&"url".to_string()).is_none() {
-            if let Some(url) = manifest.info.url.clone() {
-                source_settings.set("url", SourceSettingValue::String(url));
+            if let Some(url) = manifest.info.url.as_deref() {
+                source_settings.set("url", SourceSettingValue::String(url.to_owned()));
             }
         }
 
@@ -706,9 +740,7 @@ impl BlockingSource {
             manifest,
             next_sdk: false,
             setting_definitions,
-            features: SourceFeatures {
-                process_page_image: false,
-            },
+            features: SourceFeatures::default(),
             path: path.to_path_buf(),
             source_settings: Some(source_settings),
             manager_settings: manager.settings.clone(),
@@ -741,11 +773,11 @@ impl BlockingSource {
             }
         };
 
-        self.features.process_page_image = instance
-            .get_typed_func::<(i32, i32), i32>(&mut store, "process_page_image")
-            .map(|_| true)
-            .ok()
-            .unwrap_or_default();
+        self.features.set_process_page_image(
+            instance
+                .get_typed_func::<(i32, i32), i32>(&mut store, "process_page_image")
+                .is_ok(),
+        );
         self.next_sdk = sdk_next;
 
         if self.aidoku_sdk_next_from_meta != Some(sdk_next) {

@@ -350,7 +350,7 @@ where
 
                                 let response_bytes = response.bytes().await?;
 
-                                if source.features.process_page_image {
+                                if source.features.process_page_image() {
                                     Bytes::from(
                                         source
                                             .process_page_image(
@@ -372,7 +372,7 @@ where
                             };
 
                             let (final_bytes, error_info) =
-                                if source.features.process_page_image {
+                                if source.features.process_page_image() {
                                     (response_bytes.to_vec(), None)
                                 } else if optimize_image {
                                         (

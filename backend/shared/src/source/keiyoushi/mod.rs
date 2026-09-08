@@ -672,9 +672,7 @@ impl KeiyoushiSource {
                 id,
                 manifest,
                 setting_definitions: probe.setting_definitions.clone(),
-                features: SourceFeatures {
-                    process_page_image: false,
-                },
+                features: SourceFeatures::default(),
                 base_url: String::new(),
                 name: name.clone(),
                 lang: lang.clone(),

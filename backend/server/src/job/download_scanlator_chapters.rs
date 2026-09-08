@@ -28,7 +28,7 @@ pub struct DownloadScanlatorChaptersJob {
     progress: Arc<Mutex<SerializableProgress>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ScanlatorFilter {
     pub scanlator: String,
     pub amount: Option<usize>,

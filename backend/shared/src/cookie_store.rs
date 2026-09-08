@@ -65,19 +65,20 @@ impl CookieStoreData {
         result
     }
 
-    /// RFC 6265 §5.1.4 path matching. An entry without a stored path matches
-    /// every request path: the store does not retain the default path of the
-    /// request that set the cookie, so it stays permissive for those entries.
+    /// RFC 6265 §5.1.4 path matching: the request path matches the stored
+    /// cookie path when they are identical, when the cookie path is a prefix
+    /// of the request path and its last character is "/", or when the cookie
+    /// path is a prefix of the request path and the first request-path
+    /// character not included in the cookie path is "/". Entries without a
+    /// stored path (legacy cookies persisted before the default-path
+    /// derivation) stay permissive and match every request path.
     pub fn path_matches(stored_path: Option<&str>, request_path: &str) -> bool {
         let Some(path) = stored_path else {
             return true;
         };
-        let path = path.trim_end_matches('/');
-        if path.is_empty() {
-            // Stored path was "/": matches every request path.
-            return true;
-        }
-        request_path == path || request_path.starts_with(&format!("{path}/"))
+        request_path == path
+            || (request_path.starts_with(path)
+                && (path.ends_with('/') || request_path.as_bytes().get(path.len()) == Some(&b'/')))
     }
 
     /// Collect cookies for a full request URL. A cookie only applies when its
@@ -197,13 +198,33 @@ enum CookieAction {
     Delete(String, String),
 }
 
+/// RFC 6265 §5.1.4 step 2 — the default path of a request URI: "/" when the
+/// path is empty or has no more than one "/", otherwise everything up to
+/// (but not including) the rightmost "/".
+fn default_path_for(uri_path: &str) -> String {
+    if uri_path.is_empty() || !uri_path.starts_with('/') || uri_path.matches('/').count() <= 1 {
+        return "/".to_string();
+    }
+    let idx = uri_path
+        .rfind('/')
+        .expect("checked above: at least two slashes");
+    uri_path[..idx].to_string()
+}
+
 /// Parses a single `Set-Cookie` header value per RFC 6265 (name=value plus
 /// the Domain/Path/Max-Age/Expires/Secure attributes; quoted values are not
 /// supported) into the action to apply to the store.
 ///
-/// `host` is the request host and `secure` whether the request URL was
-/// https; both shape the effective storage domain.
-fn parse_set_cookie(header: &str, host: &str, secure: bool) -> Option<CookieAction> {
+/// `host` is the request host, `request_path` the request URI path (used to
+/// derive the default cookie path per RFC 6265 §5.1.4 when the `Path`
+/// attribute is absent) and `secure` whether the request URL was https; the
+/// three shape the effective storage.
+fn parse_set_cookie(
+    header: &str,
+    host: &str,
+    request_path: &str,
+    secure: bool,
+) -> Option<CookieAction> {
     let mut parts = header.split(';');
     let first = parts.next()?.trim();
     let (name, value) = first.split_once('=')?;
@@ -227,7 +248,10 @@ fn parse_set_cookie(header: &str, host: &str, secure: bool) -> Option<CookieActi
         match key.as_str() {
             "domain" => {
                 if let Some(d) = val {
-                    let normalized = d.strip_prefix('.').unwrap_or(d).to_string();
+                    // Domain names are case-insensitive: canonicalize to
+                    // lowercase so the stored key matches the lowercased
+                    // request host from the URL.
+                    let normalized = d.strip_prefix('.').unwrap_or(d).to_ascii_lowercase();
                     declared_domain = Some(normalized.clone());
                     domain = normalized;
                 }
@@ -250,6 +274,12 @@ fn parse_set_cookie(header: &str, host: &str, secure: bool) -> Option<CookieActi
             "secure" => secure_only = true,
             _ => {}
         }
+    }
+
+    // RFC 6265 §5.1.4: without a Path attribute the default path is derived
+    // from the request URI path.
+    if path.is_none() {
+        path = Some(default_path_for(request_path));
     }
 
     // Max-Age=0 (or negative) and an expiry in the past both mean "delete".
@@ -346,7 +376,7 @@ pub fn record_set_cookie_headers(url: &Url, set_cookie_headers: &[String]) {
         };
         let mut changed = false;
         for header in set_cookie_headers {
-            match parse_set_cookie(header, host, secure) {
+            match parse_set_cookie(header, host, url.path(), secure) {
                 Some(CookieAction::Set(key, entry)) => {
                     let cookies = store.domains.entry(key).or_default();
                     if let Some(existing) = cookies.iter_mut().find(|c| c.name == entry.name) {
@@ -842,8 +872,13 @@ mod tests {
 
     #[test]
     fn test_parse_set_cookie_host_only() {
-        let action = parse_set_cookie("session=abc123; Path=/; HttpOnly", "example.com", true)
-            .expect("parseable");
+        let action = parse_set_cookie(
+            "session=abc123; Path=/; HttpOnly",
+            "example.com",
+            "/page",
+            true,
+        )
+        .expect("parseable");
         match action {
             CookieAction::Set(key, entry) => {
                 assert_eq!(key, "example.com");
@@ -861,6 +896,7 @@ mod tests {
         let action = parse_set_cookie(
             "cf=clearance; Domain=.example.com; Path=/; Secure",
             "sub.example.com",
+            "/",
             true,
         )
         .expect("parseable");
@@ -878,10 +914,52 @@ mod tests {
         // A Domain attribute equal to the response host still makes the cookie
         // a domain cookie: image subdomains must receive it too (issue #338
         // review feedback).
-        let action = parse_set_cookie("session=abc; Domain=example.com", "example.com", true)
+        let action = parse_set_cookie("session=abc; Domain=example.com", "example.com", "/", true)
             .expect("parseable");
         match action {
             CookieAction::Set(key, _) => assert_eq!(key, ".example.com"),
+            other => panic!("expected Set, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_mixed_case_domain() {
+        // Domain attributes are case-insensitive: store them lowercased so
+        // `domain_matches` finds them for the lowercased URL host.
+        let action = parse_set_cookie(
+            "sess=xyz; Domain=EXAMPLE.COM; Path=/; Secure",
+            "sub.example.com",
+            "/",
+            true,
+        )
+        .expect("parseable");
+        match action {
+            CookieAction::Set(key, entry) => {
+                assert_eq!(key, ".example.com");
+                assert_eq!(entry.domain, "example.com");
+            }
+            other => panic!("expected Set, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_set_cookie_default_path() {
+        // RFC 6265 §5.1.4: no Path attribute -> default path derived from the
+        // request URI path.
+        let deep =
+            parse_set_cookie("sess=1", "example.com", "/admin/users", true).expect("parseable");
+        match deep {
+            CookieAction::Set(_, entry) => assert_eq!(entry.path.as_deref(), Some("/admin")),
+            other => panic!("expected Set, got {other:?}"),
+        }
+        let shallow = parse_set_cookie("sess=2", "example.com", "/login", true).expect("parseable");
+        match shallow {
+            CookieAction::Set(_, entry) => assert_eq!(entry.path.as_deref(), Some("/")),
+            other => panic!("expected Set, got {other:?}"),
+        }
+        let root = parse_set_cookie("sess=3", "example.com", "/", true).expect("parseable");
+        match root {
+            CookieAction::Set(_, entry) => assert_eq!(entry.path.as_deref(), Some("/")),
             other => panic!("expected Set, got {other:?}"),
         }
     }
@@ -943,14 +1021,34 @@ mod tests {
     }
 
     #[test]
+    fn test_path_matches_trailing_slash() {
+        // RFC 6265 §5.1.4: "Path=/admin/" does not match "/admin".
+        assert!(!CookieStoreData::path_matches(Some("/admin/"), "/admin"));
+        assert!(CookieStoreData::path_matches(Some("/admin/"), "/admin/"));
+        assert!(CookieStoreData::path_matches(
+            Some("/admin/"),
+            "/admin/secret"
+        ));
+        // "Path=/admin" matches "/admin/users" but not "/administrator".
+        assert!(CookieStoreData::path_matches(
+            Some("/admin"),
+            "/admin/users"
+        ));
+        assert!(!CookieStoreData::path_matches(
+            Some("/admin"),
+            "/administrator"
+        ));
+    }
+
+    #[test]
     fn test_parse_set_cookie_secure_over_http_ignored() {
-        assert!(parse_set_cookie("tok=x; Secure", "example.com", false).is_none());
-        assert!(parse_set_cookie("tok=x; Secure", "example.com", true).is_some());
+        assert!(parse_set_cookie("tok=x; Secure", "example.com", "/", false).is_none());
+        assert!(parse_set_cookie("tok=x; Secure", "example.com", "/", true).is_some());
     }
 
     #[test]
     fn test_parse_set_cookie_max_age_zero_deletes() {
-        match parse_set_cookie("session=gone; Max-Age=0", "example.com", true) {
+        match parse_set_cookie("session=gone; Max-Age=0", "example.com", "/", true) {
             Some(CookieAction::Delete(key, name)) => {
                 assert_eq!(key, "example.com");
                 assert_eq!(name, "session");
@@ -963,7 +1061,12 @@ mod tests {
     fn test_parse_set_cookie_expired_deletes() {
         let past = chrono::Utc::now() - chrono::Duration::hours(1);
         let date = past.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
-        match parse_set_cookie(&format!("session=x; Expires={date}"), "example.com", true) {
+        match parse_set_cookie(
+            &format!("session=x; Expires={date}"),
+            "example.com",
+            "/",
+            true,
+        ) {
             Some(CookieAction::Delete(key, name)) => {
                 assert_eq!(key, "example.com");
                 assert_eq!(name, "session");
@@ -976,7 +1079,7 @@ mod tests {
     fn test_parse_set_cookie_future_expires_stores() {
         let future = chrono::Utc::now() + chrono::Duration::days(1);
         let date = future.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
-        let action = parse_set_cookie(&format!("tok=y; Expires={date}"), "example.com", true)
+        let action = parse_set_cookie(&format!("tok=y; Expires={date}"), "example.com", "/", true)
             .expect("parseable");
         assert!(matches!(action, CookieAction::Set(..)));
     }

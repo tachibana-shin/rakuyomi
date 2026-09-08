@@ -1279,6 +1279,32 @@ impl BlockingSource {
             self.get_image_request_inner(url)
         }
     }
+    /// Apply the shared cookie store (`cookies.json`) to an image request the
+    /// host built on the extension's behalf, mirroring what the wasm
+    /// `net.send` path does for regular requests. Image requests skip that
+    /// machinery, so without this a session cookie can never reach
+    /// authenticated image hosts such as Madokami, whose `/reader/image`
+    /// endpoint requires the `laravel_session` cookie the Basic-auth login
+    /// set (issue #338). Matching `net.rs`, the per-domain user-agent and
+    /// cookies replace what the extension set. Cookies are only applied for
+    /// https image URLs (see [`get_user_agent_and_cookie_header_for_url`]),
+    /// while the User-Agent override stays unconditional.
+    fn apply_cookie_store_headers(
+        headers: &mut std::collections::HashMap<String, String>,
+        url: &Url,
+    ) {
+        let (override_ua, cookie_value) =
+            crate::cookie_store::get_user_agent_and_cookie_header_for_url(url);
+        if let Some(ua) = override_ua {
+            headers.retain(|name, _| !name.eq_ignore_ascii_case("User-Agent"));
+            headers.insert("User-Agent".to_string(), ua);
+        }
+        if let Some(cookies) = cookie_value {
+            headers.retain(|name, _| !name.eq_ignore_ascii_case("Cookie"));
+            headers.insert("Cookie".to_string(), cookies);
+        }
+    }
+
     pub fn get_image_request_inner(&mut self, url: Url) -> Result<Request> {
         let request_descriptor = self.engine_store_mut()?.data_mut().create_request();
 
@@ -1303,7 +1329,6 @@ impl BlockingSource {
                 .insert("User-Agent".to_string(), DEFAULT_USER_AGENT.to_string());
         };
 
-        // TODO add support for cookies
         // it seems that it's fine for an extension to not have this function defined, so we only
         // call it if it exists
         {
@@ -1327,6 +1352,10 @@ impl BlockingSource {
             RequestState::Building(building_state) => building_state,
             _ => return Err(anyhow::anyhow!("expected request to be in Building state")),
         };
+
+        if let Some(url) = &request_building_state.url {
+            Self::apply_cookie_store_headers(&mut request_building_state.headers, url);
+        }
 
         (request_building_state as &RequestBuildingState).try_into()
     }
@@ -1596,6 +1625,10 @@ impl BlockingSource {
             building_state
                 .headers
                 .insert("User-Agent".to_string(), DEFAULT_USER_AGENT.to_string());
+        }
+
+        if let Some(url) = &building_state.url {
+            Self::apply_cookie_store_headers(&mut building_state.headers, url);
         }
 
         (&*building_state).try_into()

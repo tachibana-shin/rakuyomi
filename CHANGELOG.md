@@ -1,3 +1,10 @@
+## [1.41.8](https://github.com/tachibana-shin/rakuyomi/compare/v1.41.7...v1.41.8) (2026-09-08)
+
+
+### Bug Fixes
+
+* **aidoku:** sync process_page_image on lazy boot ([#342](https://github.com/tachibana-shin/rakuyomi/issues/342)) ([82087f7](https://github.com/tachibana-shin/rakuyomi/commit/82087f74f42d88ebbb12b3df388df61f7c46874c))
+
 ## [1.41.7](https://github.com/tachibana-shin/rakuyomi/compare/v1.41.6...v1.41.7) (2026-09-08)
 
 

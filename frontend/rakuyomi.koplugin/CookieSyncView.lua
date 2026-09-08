@@ -56,6 +56,7 @@ function CookieSyncView:init()
   local title_bar = TitleBar:new {
     width = self.dimen.w,
     title = _("Cookie Sync"),
+    with_bottom_line = false,
     left_icon = "chevron.left",
     left_icon_tap_callback = function()
       self:onReturn()

@@ -8,6 +8,7 @@ local TopZoneHandler = require("widgets/TopZoneHandler")
 
 local Menu = BaseMenu:extend {
   with_context_menu = false,
+  with_bottom_line = false,
 }
 
 function Menu:init()

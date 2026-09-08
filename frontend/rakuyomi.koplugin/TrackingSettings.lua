@@ -427,6 +427,7 @@ function TrackingSettings:init()
     title = _("Tracking"),
     fullscreen = true,
     width = self.dimen.w,
+    with_bottom_line = false,
     left_icon = "chevron.left",
     left_icon_tap_callback = function()
       self:onReturn()

@@ -119,6 +119,7 @@ function MangaInfoWidget:getStatusContent(width, manga)
     width = width,
     bottom_v_padding = 0,
     close_callback = function() self:onClose() end,
+    with_bottom_line = false,
     left_icon = "appbar.menu",
     left_icon_tap_callback = function()
       local raw_manga = self.raw_manga

@@ -128,6 +128,7 @@ function ChapterListPopup:init()
   self.title_bar = TitleBar:new {
     title = _("Chapters"),
     width = self.popup_width,
+    with_bottom_line = false,
     close_callback = function() self:onClose() end,
     show_parent = self,
   }

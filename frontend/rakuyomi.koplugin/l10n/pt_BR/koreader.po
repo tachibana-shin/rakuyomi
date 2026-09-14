@@ -974,7 +974,7 @@ msgstr "Sugestivo"
 
 #: ../MangaInfoWidget.lua:572 ../MangaSearchResults.lua:388
 msgid "Refreshing details..."
-msgstr "Detalhes refrescantes..."
+msgstr "Atualizando detalhes..."
 
 #: ../MangaInfoWidget.lua:584 ../MangaSearchResults.lua:394
 msgid "Refresh details cancelled."

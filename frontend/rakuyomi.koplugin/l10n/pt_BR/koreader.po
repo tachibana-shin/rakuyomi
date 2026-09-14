@@ -140,7 +140,7 @@ msgstr "Bloqueado"
 
 #: ../ChapterListing.lua:471 ../ChapterListing.lua:690
 msgid "Refreshing chapters..."
-msgstr "Capítulos refrescantes..."
+msgstr "Atualizando Capítulos..."
 
 #: ../ChapterListing.lua:479 ../ChapterListing.lua:697
 #: ../ChapterListing.lua:1450

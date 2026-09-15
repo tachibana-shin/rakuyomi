@@ -20,8 +20,11 @@ jobs:
       - name: Install Lua and luacheck
         run: |
           sudo apt-get update
-          sudo apt-get install -y lua5.1 luarocks
+          sudo apt-get install -y lua5.1 luajit luarocks
           sudo luarocks install luacheck
 
       - name: Run luacheck
         run: luacheck frontend/
+
+      - name: Test chapter language refresh and selection
+        run: luajit frontend/tests/chapter_languages.lua

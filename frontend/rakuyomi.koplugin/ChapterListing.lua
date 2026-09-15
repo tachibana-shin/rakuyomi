@@ -211,7 +211,7 @@ function ChapterListing:patchTitleBar(count_lang)
       show_parent = self.title_bar.show_parent,
     },
   }
-  if count_lang >= 2 then
+  if #self.langs >= 2 then
     table.insert(self.title_bar.left_button,
       VerticalGroup:new {
         Button:new {
@@ -713,6 +713,8 @@ function ChapterListing:refreshChapters()
       return
     end
 
+    -- Reload the backend's refreshed chapters instead of reusing the old list.
+    self.raw_chapters = {}
     self:updateChapterList()
   end)
 end

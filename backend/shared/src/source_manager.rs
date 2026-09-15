@@ -392,6 +392,7 @@ impl SourceManager {
         candidates
             .into_iter()
             .chain([
+                self.source_path(id),
                 self.lnreader_source_path(id),
                 self.mangayomi_source_path(id),
                 self.mangayomi_js_source_path(id),

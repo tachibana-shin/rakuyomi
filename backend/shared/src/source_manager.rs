@@ -329,12 +329,19 @@ impl SourceManager {
         settings: Settings,
         manager: &Arc<Mutex<SourceManager>>,
     ) -> Result<()> {
-        // Only the per-source stored settings affect the loaded sources;
-        // global settings (source lists, languages, ...) must not tear down
-        // every extension. Reload just the files backing the sources whose
-        // settings changed, instead of re-scanning and re-probing the whole
-        // collection.
-        let changed = self.changed_source_ids(&settings);
+        // Aidoku sources snapshot the global languages when loaded, even
+        // before their WASM engine boots. Reload them when that preference
+        // changes so defaults.get("languages") sees the current selection.
+        // Other global settings do not require reloading extensions.
+        let mut changed = self.changed_source_ids(&settings);
+        if self.settings.languages != settings.languages {
+            changed.extend(
+                self.sources_by_id
+                    .iter()
+                    .filter(|(_, source)| matches!(&source.backend, SourceBackend::Aidoku(_)))
+                    .map(|(id, _)| id.clone()),
+            );
+        }
         self.settings = settings;
         if changed.is_empty() {
             return Ok(());

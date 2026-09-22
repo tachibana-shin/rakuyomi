@@ -48,6 +48,10 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                 return;
             }
         };
+        // Capture the no-chapters error message before `filter` is moved into
+        // `apply_chapter_filter`.
+        let no_chapters_message = no_chapters_error_message(&filter);
+
         let chapters_to_download = match apply_chapter_filter(db, all_chapters, filter, langs).await {
             Ok(v) => v,
             Err(e) => {
@@ -55,6 +59,11 @@ pub fn fetch_manga_chapters_in_batch<'a>(
                 return;
             }
         };
+
+        if chapters_to_download.is_empty() {
+            yield ProgressReport::Errored(Error::Other(anyhow::anyhow!(no_chapters_message)));
+            return;
+        }
 
         let total = chapters_to_download.len();
         yield ProgressReport::Progressing { downloaded: 0, total };
@@ -212,6 +221,26 @@ async fn apply_chapter_filter(
     };
 
     Ok(filtered_chapters)
+}
+
+/// User-facing message used when a filter selects zero chapters. Kept as a
+/// pure function so the failure mode (previously a fake "download complete!")
+/// can be unit tested without constructing a [`Source`].
+fn no_chapters_error_message(filter: &Filter) -> String {
+    match filter {
+        Filter::NextUnreadChapters(_) | Filter::AllUnreadChapters => {
+            "No unread chapters to download. If the manga has no unread chapters, \
+            use the specific-chapters download option to re-download already-read \
+            ones (e.g. \"1-4, 10, 12\")."
+                .to_owned()
+        }
+        Filter::ScanlatorChapters { scanlator, .. } => {
+            format!(
+                "No chapters to download from scanlator \"{scanlator}\"; all of its \
+                chapters are already read or excluded by the language filter."
+            )
+        }
+    }
 }
 
 pub enum Filter {
@@ -476,5 +505,44 @@ mod tests {
 
     fn ids(chapters: &[ChapterInformation]) -> Vec<&str> {
         chapters.iter().map(|c| c.id.value().as_str()).collect()
+    }
+
+    #[test]
+    fn no_chapters_error_message_is_explanatory_per_filter() {
+        let unread = no_chapters_error_message(&Filter::NextUnreadChapters(5));
+        assert!(unread.contains("No unread chapters to download"));
+        assert!(unread.contains("1-4, 10, 12"));
+
+        let all = no_chapters_error_message(&Filter::AllUnreadChapters);
+        assert!(all.contains("No unread chapters to download"));
+
+        let scanlator = no_chapters_error_message(&Filter::ScanlatorChapters {
+            scanlator: "SomeTL".to_owned(),
+            amount: None,
+        });
+        assert!(scanlator.contains("SomeTL"));
+    }
+
+    #[test]
+    fn empty_selection_message_does_not_say_download_complete() {
+        // Regression guard for #347: a zero-chapter selection must never be
+        // reported as a successful download. The message wording is the only
+        // user-visible part we can cheaply assert here; the empty-selection
+        // behaviour itself is covered by `unnumbered_chapter_not_selected_after_read_zero`.
+        for filter in [
+            Filter::NextUnreadChapters(10),
+            Filter::AllUnreadChapters,
+            Filter::ScanlatorChapters {
+                scanlator: "TL".to_owned(),
+                amount: None,
+            },
+        ] {
+            let message = no_chapters_error_message(&filter);
+            assert!(
+                !message.contains("complete"),
+                "message must not claim success: {message}"
+            );
+            assert!(!message.is_empty());
+        }
     }
 }

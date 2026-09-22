@@ -23,6 +23,7 @@ local NetworkMgr = require("ui/network/manager")
 local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
 local DownloadUnreadChapters = require("jobs/DownloadUnreadChapters")
+local DownloadSpecificChapters = require("jobs/DownloadSpecificChapters")
 local DownloadUnreadChaptersJobDialog = require("DownloadUnreadChaptersJobDialog")
 local Icons = require("Icons")
 local Menu = require("widgets/Menu")
@@ -1206,6 +1207,14 @@ function ChapterListing:openMenu()
 
           self:onDownloadUnreadChapters()
         end
+      },
+      {
+        text = Icons.FA_DOWNLOAD .. " " .. _("Download specific chapters…"),
+        callback = function()
+          UIManager:close(dialog)
+
+          self:onDownloadSpecificChapters()
+        end
       }
     }
   }
@@ -1428,6 +1437,69 @@ function ChapterListing:createDownloadJob(amount)
     scanlator = self.selected_scanlator,
     langs = self.langs_selected,
   })
+end
+
+function ChapterListing:onDownloadSpecificChapters()
+  local input_dialog
+  input_dialog = InputDialog:new {
+    title = _("Download specific chapters..."),
+    input_type = "text",
+    input_hint = _("1-4, 10, 12"),
+    description = _("Download the chapters matching the given numbers or ranges, separated by commas.") ..
+        "\n\n" .. _("Example: 1-4, 10, 12") .. "\n\n" ..
+        _("Only chapters of the currently selected language are downloaded."),
+    buttons = {
+      {
+        {
+          text = _("Cancel"),
+          id = "close",
+          callback = function()
+            UIManager:close(input_dialog)
+          end,
+        },
+        {
+          text = _("Download"),
+          is_enter_default = true,
+          callback = function()
+            UIManager:close(input_dialog)
+
+            local chapter_ranges = input_dialog:getInputText()
+            if chapter_ranges == nil or chapter_ranges:match("^%s*$") then
+              ErrorDialog:show(_("Enter at least one chapter number or range!"))
+
+              return
+            end
+
+            local job = DownloadSpecificChapters:new({
+              source_id = self.manga.source.id,
+              manga_id = self.manga.id,
+              chapter_ranges = chapter_ranges,
+              langs = self.langs_selected,
+            })
+            if job then
+              ---@diagnostic disable-next-line: undefined-field
+              local dialog = DownloadUnreadChaptersJobDialog:new({
+                show_parent = self,
+                job = job,
+                dismiss_callback = function()
+                  self:updateChapterList()
+                end
+              })
+
+              dialog:show()
+            else
+              UIManager:show(InfoMessage:new {
+                text = _("Failed to start download. Check the chapter numbers or ranges."),
+                timeout = 2,
+              })
+            end
+          end,
+        },
+      }
+    }
+  }
+
+  UIManager:show(input_dialog)
 end
 
 function ChapterListing:onDownloadAllChapters()

@@ -1003,6 +1003,21 @@ function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, la
   })
 end
 
+--- Creates a new download specific chapters job (chapter ranges like "1-4, 10, 12").
+--- @return SuccessfulResponse<string>|ErrorResponse
+function Backend.createDownloadSpecificChaptersJob(source_id, manga_id, chapter_ranges, langs)
+  return Backend.requestJson({
+    path = "/jobs/download-specific-chapters",
+    method = 'POST',
+    body = {
+      source_id = source_id,
+      manga_id = manga_id,
+      chapter_ranges = chapter_ranges,
+      langs = #langs > 0 and langs or nil,
+    }
+  })
+end
+
 --- Creates a new download scanlator chapters job. Returns the job's UUID.
 --- @return SuccessfulResponse<string>|ErrorResponse
 function Backend.createDownloadScanlatorChaptersJob(source_id, manga_id, scanlator, amount, langs)

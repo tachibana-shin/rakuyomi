@@ -1004,6 +1004,10 @@ function Backend.createDownloadUnreadChaptersJob(source_id, manga_id, amount, la
 end
 
 --- Creates a new download specific chapters job (chapter ranges like "1-4, 10, 12").
+--- @param source_id string The ID of the source.
+--- @param manga_id string The ID of the manga.
+--- @param chapter_ranges string The chapter selector, e.g. "1-4, 10, 12".
+--- @param langs string[] The languages to download. Empty selects all languages.
 --- @return SuccessfulResponse<string>|ErrorResponse
 function Backend.createDownloadSpecificChaptersJob(source_id, manga_id, chapter_ranges, langs)
   return Backend.requestJson({

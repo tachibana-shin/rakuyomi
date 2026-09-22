@@ -1439,6 +1439,8 @@ function ChapterListing:createDownloadJob(amount)
   })
 end
 
+--- Opens the dialog for downloading specific chapters by number or range (e.g. "1-4, 10, 12").
+--- @return nil
 function ChapterListing:onDownloadSpecificChapters()
   local input_dialog
   input_dialog = InputDialog:new {

@@ -226,7 +226,6 @@ async fn apply_chapter_filter(
                     chapter
                         .chapter_number
                         .map(|number| {
-                            let number = number as f64;
                             ranges
                                 .iter()
                                 .any(|(start, stop)| number >= *start && number <= *stop)
@@ -242,23 +241,45 @@ async fn apply_chapter_filter(
 
 /// Parses a user-supplied chapter spec such as `"1-4, 10, 12"` into inclusive
 /// `(start, stop)` float ranges. A bare number like `10` becomes `(10, 10)`.
-fn parse_specific_chapter_ranges(text: &str) -> anyhow::Result<Vec<(f64, f64)>> {
+///
+/// Chapter numbers are stored as `f32`, so the bounds are parsed as `f32` too —
+/// casting the stored `f32` to `f64` would make exact matches like `10.1` fail
+/// for values that are not exactly representable in binary.
+///
+/// Malformed input is rejected instead of silently selecting nothing: empty
+/// components (`","`, `"1,,2"`), a completely empty selector, and non-finite
+/// endpoints (`NaN`, `inf`) are all errors.
+fn parse_specific_chapter_ranges(text: &str) -> anyhow::Result<Vec<(f32, f32)>> {
     let mut ranges = Vec::new();
 
-    for part in text.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()) {
-        if let Some((start_raw, stop_raw)) = part.split_once('-') {
-            let start: f64 = start_raw.trim().parse().context("invalid range start")?;
-            let stop: f64 = stop_raw.trim().parse().context("invalid range stop")?;
+    for part in text.split(',').map(str::trim) {
+        if part.is_empty() {
+            anyhow::bail!("chapter selector contains an empty part");
+        }
 
+        if let Some((start_raw, stop_raw)) = part.split_once('-') {
+            let start: f32 = start_raw.trim().parse().context("invalid range start")?;
+            let stop: f32 = stop_raw.trim().parse().context("invalid range stop")?;
+
+            if !start.is_finite() || !stop.is_finite() {
+                anyhow::bail!("invalid range {part}: endpoints must be finite");
+            }
             if start > stop {
                 anyhow::bail!("invalid range {part}: start > stop");
             }
 
             ranges.push((start, stop));
         } else {
-            let value: f64 = part.trim().parse().context("invalid chapter number")?;
+            let value: f32 = part.trim().parse().context("invalid chapter number")?;
+            if !value.is_finite() {
+                anyhow::bail!("invalid chapter number {part}: must be finite");
+            }
             ranges.push((value, value));
         }
+    }
+
+    if ranges.is_empty() {
+        anyhow::bail!("chapter selector is empty");
     }
 
     Ok(ranges)
@@ -630,6 +651,47 @@ mod tests {
         .await;
 
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_matches_decimal_chapter_numbers() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // Decimal values that are not exactly representable in binary f32.
+        // The selector must match the stored f32 value without widening.
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(1.1)),
+            chapter(&manga_id, 1, Some(2.0)),
+            chapter(&manga_id, 2, Some(10.1)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::SpecificChapters("1.1, 1.9-2.1, 10.1".to_owned()),
+            &[],
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(ids(&filtered), vec!["chapter-0", "chapter-1", "chapter-2"]);
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_rejects_malformed_selectors() {
+        for selector in [",", "1,,2", "1, ,2", "NaN", "inf", "-inf", ""] {
+            let result = parse_specific_chapter_ranges(selector);
+            assert!(
+                result.is_err(),
+                "selector {selector:?} should be rejected, got {result:?}"
+            );
+        }
     }
 
     fn ids(chapters: &[ChapterInformation]) -> Vec<&str> {

@@ -660,7 +660,19 @@ function ChapterListing:markChapterAs(chapter, value)
       return
     end
 
-    chapter.read = value
+    -- Mirror the backend state (Database::mark_chapter_as_read): marking read
+    -- writes last_read = now, marking unread clears it. Keeping the in-memory
+    -- copy in sync matters because findLastRead picks the resume chapter from
+    -- `chapter.last_read or chapter.read` and the chapter info line also reads
+    -- `chapter.last_read`; otherwise a chapter just marked unread still counts
+    -- as read until the next full chapter refresh.
+    if value then
+      chapter.read = true
+      chapter.last_read = os.time()
+    else
+      chapter.read = false
+      chapter.last_read = nil
+    end
     self:updateItems()
   end)
 end

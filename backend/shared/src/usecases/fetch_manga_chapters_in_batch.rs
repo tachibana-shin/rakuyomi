@@ -41,29 +41,13 @@ pub fn fetch_manga_chapters_in_batch<'a>(
             }
         };
 
-        let all_chapters = match db.find_cached_chapter_informations(&id).await {
+        let chapters_to_download = match collect_chapters_to_download(db, &id, filter, langs).await {
             Ok(v) => v,
             Err(e) => {
-                yield ProgressReport::Errored(Error::Other(e));
+                yield ProgressReport::Errored(e);
                 return;
             }
         };
-        // Capture the no-chapters error message before `filter` is moved into
-        // `apply_chapter_filter`.
-        let no_chapters_message = no_chapters_error_message(&filter);
-
-        let chapters_to_download = match apply_chapter_filter(db, all_chapters, filter, langs).await {
-            Ok(v) => v,
-            Err(e) => {
-                yield ProgressReport::Errored(Error::Other(e));
-                return;
-            }
-        };
-
-        if chapters_to_download.is_empty() {
-            yield ProgressReport::Errored(Error::Other(anyhow::anyhow!(no_chapters_message)));
-            return;
-        }
 
         let total = chapters_to_download.len();
         yield ProgressReport::Progressing { downloaded: 0, total };
@@ -221,6 +205,34 @@ async fn apply_chapter_filter(
     };
 
     Ok(filtered_chapters)
+}
+
+/// Fetches the cached chapters for `id` and applies `filter`, turning the
+/// "selection is empty" case into a `Error::Other` instead of a successful
+/// zero-chapter download (which used to surface as a fake "Download
+/// complete!" in the UI). Kept separate from the stream so the failure mode
+/// can be tested without constructing a [`Source`].
+async fn collect_chapters_to_download(
+    db: &Database,
+    id: &MangaId,
+    filter: Filter,
+    langs: &[&str],
+) -> Result<Vec<ChapterInformation>, Error> {
+    let all_chapters = db
+        .find_cached_chapter_informations(id)
+        .await
+        .map_err(Error::Other)?;
+    // Capture the message before `filter` is moved into `apply_chapter_filter`.
+    let no_chapters_message = no_chapters_error_message(&filter);
+    let chapters = apply_chapter_filter(db, all_chapters, filter, langs)
+        .await
+        .map_err(Error::Other)?;
+
+    if chapters.is_empty() {
+        return Err(Error::Other(anyhow::anyhow!(no_chapters_message)));
+    }
+
+    Ok(chapters)
 }
 
 /// User-facing message used when a filter selects zero chapters. Kept as a
@@ -523,26 +535,61 @@ mod tests {
         assert!(scanlator.contains("SomeTL"));
     }
 
-    #[test]
-    fn empty_selection_message_does_not_say_download_complete() {
-        // Regression guard for #347: a zero-chapter selection must never be
-        // reported as a successful download. The message wording is the only
-        // user-visible part we can cheaply assert here; the empty-selection
-        // behaviour itself is covered by `unnumbered_chapter_not_selected_after_read_zero`.
-        for filter in [
-            Filter::NextUnreadChapters(10),
-            Filter::AllUnreadChapters,
-            Filter::ScanlatorChapters {
-                scanlator: "TL".to_owned(),
-                amount: None,
-            },
+    #[tokio::test]
+    async fn empty_selection_errors_instead_of_downloading_nothing() {
+        // Regression guard for #347: an empty chapter selection must surface as
+        // an error (shown as an error dialog by the UI), never as a successful
+        // zero-chapter download.
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // All chapters read -> AllUnreadChapters selects nothing.
+        let chapters: Vec<_> = (0..3)
+            .map(|i| chapter(&manga_id, i, Some(i as f32)))
+            .collect();
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        for c in &chapters {
+            db.upsert_chapter_state(
+                &c.id,
+                ChapterState {
+                    read: true,
+                    last_read: None,
+                },
+            )
+            .await
+            .unwrap();
+        }
+
+        for (filter, expected_in_message) in [
+            (
+                Filter::NextUnreadChapters(10),
+                "No unread chapters to download",
+            ),
+            (Filter::AllUnreadChapters, "No unread chapters to download"),
+            (
+                Filter::ScanlatorChapters {
+                    scanlator: "SomeTL".to_owned(),
+                    amount: None,
+                },
+                "SomeTL",
+            ),
         ] {
-            let message = no_chapters_error_message(&filter);
-            assert!(
-                !message.contains("complete"),
-                "message must not claim success: {message}"
-            );
-            assert!(!message.is_empty());
+            let result = collect_chapters_to_download(&db, &manga_id, filter, &[]).await;
+            match result {
+                Err(Error::Other(e)) => {
+                    let msg = format!("{e:#}");
+                    assert!(
+                        msg.contains(expected_in_message),
+                        "expected {expected_in_message:?} in message, got {msg:?}"
+                    );
+                    assert!(
+                        !msg.contains("complete"),
+                        "message must not claim success: {msg:?}"
+                    );
+                }
+                Err(_) => panic!("unexpected error variant"),
+                Ok(_) => panic!("expected an error for empty selection"),
+            }
         }
     }
 }

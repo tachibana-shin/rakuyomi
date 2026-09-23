@@ -237,7 +237,17 @@ function OAuthFlowView:doPoll()
         self:updateStatus(_("Failed to save tokens. Please try again."))
       end
     elseif body.status == "error" then
-      self:updateStatus(_("Error: ") .. (body.message or "unknown"))
+      if self.service == "mangabaka" then
+        -- MangaBaka's OAuth sign-in page is behind Cloudflare and can block
+        -- some users (HTTP 403). A Personal Access Token pasted in Tracking
+        -- Settings bypasses the captcha entirely, so suggest it here.
+        self:updateStatus(
+          _("Error: ") .. (body.message or "unknown") .. "\n\n" ..
+          _("If MangaBaka sign-in is blocked by Cloudflare, paste your MangaBaka API key (mb-...) in Tracking Settings instead.")
+        )
+      else
+        self:updateStatus(_("Error: ") .. (body.message or "unknown"))
+      end
     end
   end)
 end

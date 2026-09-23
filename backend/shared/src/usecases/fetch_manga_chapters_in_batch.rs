@@ -254,7 +254,7 @@ async fn collect_chapters_to_download(
         .map_err(Error::Other)?;
 
     if chapters.is_empty() {
-        return Err(Error::Other(anyhow::anyhow!(no_chapters_message)));
+        return Err(Error::NoChapters(no_chapters_message));
     }
 
     Ok(chapters)
@@ -376,6 +376,13 @@ pub enum Error {
     DownloadError(#[source] anyhow::Error),
     #[error("unknown error")]
     Other(#[from] anyhow::Error),
+    /// The filter selected zero chapters, carrying the user-facing guidance
+    /// message. Kept as a real variant (instead of wrapping it in
+    /// `Error::Other`) so the message survives `to_string()` — the job poller
+    /// turns the error into a `JobState::Errored` via `e.to_string()`, and
+    /// `Error::Other` would surface as the useless literal "unknown error".
+    #[error("{0}")]
+    NoChapters(String),
 }
 
 #[cfg(test)]
@@ -811,8 +818,12 @@ mod tests {
         ] {
             let result = collect_chapters_to_download(&db, &manga_id, filter, &[]).await;
             match result {
-                Err(Error::Other(e)) => {
-                    let msg = format!("{e:#}");
+                Err(e) => {
+                    // Job-visible string: the poller maps Errored(e) to
+                    // JobState::Errored via e.to_string(), so the guidance must
+                    // survive Display — not be swallowed by the "unknown error"
+                    // literal of the Error::Other variant.
+                    let msg = e.to_string();
                     assert!(
                         msg.contains(expected_in_message),
                         "expected {expected_in_message:?} in message, got {msg:?}"
@@ -822,7 +833,6 @@ mod tests {
                         "message must not claim success: {msg:?}"
                     );
                 }
-                Err(_) => panic!("unexpected error variant"),
                 Ok(_) => panic!("expected an error for empty selection"),
             }
         }

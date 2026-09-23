@@ -768,7 +768,8 @@ mod tests {
         });
         assert!(scanlator.contains("SomeTL"));
 
-        let specific = no_chapters_error_message(&Filter::SpecificChapters("1-4, 10, 12".to_owned()));
+        let specific =
+            no_chapters_error_message(&Filter::SpecificChapters("1-4, 10, 12".to_owned()));
         assert!(specific.contains("1-4, 10, 12"));
         assert!(!specific.contains("complete"));
     }
@@ -811,10 +812,7 @@ mod tests {
                 },
                 "SomeTL",
             ),
-            (
-                Filter::SpecificChapters("99-100".to_owned()),
-                "99-100",
-            ),
+            (Filter::SpecificChapters("99-100".to_owned()), "99-100"),
         ] {
             let result = collect_chapters_to_download(&db, &manga_id, filter, &[]).await;
             match result {

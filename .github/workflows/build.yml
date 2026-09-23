@@ -44,8 +44,6 @@ jobs:
         persist-credentials: false
     - name: Setup Node.js
       uses: actions/setup-node@v3
-      with:
-        node-version: "lts/*"
 
     - name: Install system deps (Linux)
       if: runner.os == 'Linux'
@@ -133,7 +131,7 @@ jobs:
         distribution: temurin
         java-version: 17
 
-    - uses: android-actions/setup-android@v3
+    - uses: android-actions/setup-android@v4
       if: ${{ startsWith(matrix.target, 'android') }}
 
     - name: Install Android NDK (r23b)

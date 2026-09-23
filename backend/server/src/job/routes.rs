@@ -34,6 +34,10 @@ pub fn routes() -> Router<AppState> {
             post(create_download_unread_chapters_job),
         )
         .route(
+            "/jobs/download-specific-chapters",
+            post(create_download_specific_chapters_job),
+        )
+        .route(
             "/jobs/download-scanlator-chapters",
             post(create_download_scanlator_chapters_job),
         )
@@ -141,6 +145,71 @@ async fn create_download_unread_chapters_job(
         Some(amount) => ChaptersToDownloadFilter::NextUnreadChapters(amount),
         None => ChaptersToDownloadFilter::AllUnreadChapters,
     };
+    let manga_id = MangaId::from(body);
+
+    let chapter_storage = chapter_storage.lock().await.clone();
+    let source = {
+        let sm = source_manager.lock().await;
+        sm.get_by_id(manga_id.source_id())
+            .ok_or(AppError::SourceNotFound)?
+            .clone()
+    };
+    let settings = settings.lock().await;
+
+    let id = Uuid::new_v4();
+    let job = DownloadUnreadChaptersJob::spawn_new(
+        source,
+        database,
+        chapter_storage,
+        manga_id,
+        filter,
+        langs,
+        settings.concurrent_requests_pages.unwrap_or(4),
+        settings.optimize_image,
+        settings.chapter_title_format,
+    );
+
+    job_registry
+        .lock()
+        .await
+        .insert(id, RunningJob::UnreadChapters(job));
+
+    Ok(Json(id))
+}
+
+#[derive(Deserialize)]
+struct CreateDownloadSpecificChaptersJobBody {
+    source_id: String,
+    manga_id: String,
+    chapter_ranges: String,
+    langs: Option<Vec<String>>,
+}
+
+impl From<CreateDownloadSpecificChaptersJobBody> for MangaId {
+    fn from(value: CreateDownloadSpecificChaptersJobBody) -> Self {
+        MangaId::from_strings(value.source_id, value.manga_id)
+    }
+}
+
+async fn create_download_specific_chapters_job(
+    StateExtractor(AppState {
+        source_manager,
+        database,
+        chapter_storage,
+        settings,
+        ..
+    }): StateExtractor<AppState>,
+    StateExtractor(State { job_registry }): StateExtractor<State>,
+    Json(body): Json<CreateDownloadSpecificChaptersJobBody>,
+) -> Result<Json<Uuid>, AppError> {
+    if body.chapter_ranges.trim().is_empty() {
+        return Err(AppError::Other(anyhow::anyhow!(
+            "chapter_ranges must not be empty"
+        )));
+    }
+
+    let langs = body.langs.clone().unwrap_or_default();
+    let filter = ChaptersToDownloadFilter::SpecificChapters(body.chapter_ranges.clone());
     let manga_id = MangaId::from(body);
 
     let chapter_storage = chapter_storage.lock().await.clone();

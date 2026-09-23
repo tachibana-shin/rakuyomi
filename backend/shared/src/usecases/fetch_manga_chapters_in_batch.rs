@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use async_stream::stream;
 use futures::Stream;
 use std::collections::{HashMap, HashSet};
@@ -162,7 +162,8 @@ async fn apply_chapter_filter(
     // Collect unread chapters (oldest-to-newest), skipping everything at or
     // before the read boundary index.
     let unread_chapters: Vec<_> = all_chapters
-        .into_iter()
+        .iter()
+        .cloned()
         .enumerate()
         .filter(|(_, chapter)| {
             if use_lang_filter {
@@ -209,9 +210,79 @@ async fn apply_chapter_filter(
                 scanlator_chapters
             }
         }
+        Filter::SpecificChapters(text) => {
+            let ranges = parse_specific_chapter_ranges(&text)?;
+
+            all_chapters
+                .into_iter()
+                .filter(|chapter| {
+                    if use_lang_filter {
+                        let ch_lang = chapter.lang.as_deref().unwrap_or("unknown");
+                        if !langs.contains(&ch_lang) {
+                            return false;
+                        }
+                    }
+
+                    chapter
+                        .chapter_number
+                        .map(|number| {
+                            ranges
+                                .iter()
+                                .any(|(start, stop)| number >= *start && number <= *stop)
+                        })
+                        .unwrap_or(false)
+                })
+                .collect()
+        }
     };
 
     Ok(filtered_chapters)
+}
+
+/// Parses a user-supplied chapter spec such as `"1-4, 10, 12"` into inclusive
+/// `(start, stop)` float ranges. A bare number like `10` becomes `(10, 10)`.
+///
+/// Chapter numbers are stored as `f32`, so the bounds are parsed as `f32` too —
+/// casting the stored `f32` to `f64` would make exact matches like `10.1` fail
+/// for values that are not exactly representable in binary.
+///
+/// Malformed input is rejected instead of silently selecting nothing: empty
+/// components (`","`, `"1,,2"`), a completely empty selector, and non-finite
+/// endpoints (`NaN`, `inf`) are all errors.
+fn parse_specific_chapter_ranges(text: &str) -> anyhow::Result<Vec<(f32, f32)>> {
+    let mut ranges = Vec::new();
+
+    for part in text.split(',').map(str::trim) {
+        if part.is_empty() {
+            anyhow::bail!("chapter selector contains an empty part");
+        }
+
+        if let Some((start_raw, stop_raw)) = part.split_once('-') {
+            let start: f32 = start_raw.trim().parse().context("invalid range start")?;
+            let stop: f32 = stop_raw.trim().parse().context("invalid range stop")?;
+
+            if !start.is_finite() || !stop.is_finite() {
+                anyhow::bail!("invalid range {part}: endpoints must be finite");
+            }
+            if start > stop {
+                anyhow::bail!("invalid range {part}: start > stop");
+            }
+
+            ranges.push((start, stop));
+        } else {
+            let value: f32 = part.trim().parse().context("invalid chapter number")?;
+            if !value.is_finite() {
+                anyhow::bail!("invalid chapter number {part}: must be finite");
+            }
+            ranges.push((value, value));
+        }
+    }
+
+    if ranges.is_empty() {
+        anyhow::bail!("chapter selector is empty");
+    }
+
+    Ok(ranges)
 }
 
 pub enum Filter {
@@ -221,6 +292,10 @@ pub enum Filter {
         scanlator: String,
         amount: Option<usize>,
     },
+    /// Download the chapters matching a user-supplied list of chapter ranges,
+    /// e.g. "1-4, 10, 12". Only chapters whose `chapter_number` falls inside
+    /// any of the parsed ranges are selected.
+    SpecificChapters(String),
 }
 
 /// Grouping key for `NextUnreadChapters` deduplication: numbered chapters
@@ -472,6 +547,151 @@ mod tests {
 
         // Each unnumbered chapter is its own group; first 2 are taken.
         assert_eq!(ids(&filtered), vec!["chapter-0", "chapter-1"]);
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_selects_ranges_and_singles() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(1.0)),
+            chapter(&manga_id, 1, Some(2.0)),
+            chapter(&manga_id, 2, Some(3.0)),
+            chapter(&manga_id, 3, Some(4.0)),
+            chapter(&manga_id, 4, Some(10.0)),
+            chapter(&manga_id, 5, Some(12.0)),
+            chapter(&manga_id, 6, Some(20.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::SpecificChapters("1-4, 10, 12".to_owned()),
+            &[],
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            ids(&filtered),
+            vec![
+                "chapter-0",
+                "chapter-1",
+                "chapter-2",
+                "chapter-3",
+                "chapter-4",
+                "chapter-5"
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_ignores_read_state() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(1.0)),
+            chapter(&manga_id, 1, Some(2.0)),
+            chapter(&manga_id, 2, Some(3.0)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        // The newest chapter is marked read, which would empty out the unread
+        // list; specific download must still select the requested chapters.
+        db.upsert_chapter_state(
+            &chapters[2].id,
+            ChapterState {
+                read: true,
+                last_read: None,
+            },
+        )
+        .await
+        .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::SpecificChapters("2-3".to_owned()),
+            &[],
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(ids(&filtered), vec!["chapter-1", "chapter-2"]);
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_invalid_range_returns_error() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        let chapters = vec![chapter(&manga_id, 0, Some(1.0))];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let result = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::SpecificChapters("5-2".to_owned()),
+            &[],
+        )
+        .await;
+
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_matches_decimal_chapter_numbers() {
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // Decimal values that are not exactly representable in binary f32.
+        // The selector must match the stored f32 value without widening.
+        let chapters = vec![
+            chapter(&manga_id, 0, Some(1.1)),
+            chapter(&manga_id, 1, Some(2.0)),
+            chapter(&manga_id, 2, Some(10.1)),
+        ];
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+
+        let chapters = db
+            .find_cached_chapter_informations(&manga_id)
+            .await
+            .unwrap();
+        let filtered = apply_chapter_filter(
+            &db,
+            chapters,
+            Filter::SpecificChapters("1.1, 1.9-2.1, 10.1".to_owned()),
+            &[],
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(ids(&filtered), vec!["chapter-0", "chapter-1", "chapter-2"]);
+    }
+
+    #[tokio::test]
+    async fn specific_chapters_rejects_malformed_selectors() {
+        for selector in [",", "1,,2", "1, ,2", "NaN", "inf", "-inf", ""] {
+            let result = parse_specific_chapter_ranges(selector);
+            assert!(
+                result.is_err(),
+                "selector {selector:?} should be rejected, got {result:?}"
+            );
+        }
     }
 
     fn ids(chapters: &[ChapterInformation]) -> Vec<&str> {

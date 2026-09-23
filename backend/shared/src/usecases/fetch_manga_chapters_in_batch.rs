@@ -41,17 +41,10 @@ pub fn fetch_manga_chapters_in_batch<'a>(
             }
         };
 
-        let all_chapters = match db.find_cached_chapter_informations(&id).await {
+        let chapters_to_download = match collect_chapters_to_download(db, &id, filter, langs).await {
             Ok(v) => v,
             Err(e) => {
-                yield ProgressReport::Errored(Error::Other(e));
-                return;
-            }
-        };
-        let chapters_to_download = match apply_chapter_filter(db, all_chapters, filter, langs).await {
-            Ok(v) => v,
-            Err(e) => {
-                yield ProgressReport::Errored(Error::Other(e));
+                yield ProgressReport::Errored(e);
                 return;
             }
         };
@@ -239,6 +232,34 @@ async fn apply_chapter_filter(
     Ok(filtered_chapters)
 }
 
+/// Fetches the cached chapters for `id` and applies `filter`, turning the
+/// "selection is empty" case into a `Error::Other` instead of a successful
+/// zero-chapter download (which used to surface as a fake "Download
+/// complete!" in the UI). Kept separate from the stream so the failure mode
+/// can be tested without constructing a [`Source`].
+async fn collect_chapters_to_download(
+    db: &Database,
+    id: &MangaId,
+    filter: Filter,
+    langs: &[&str],
+) -> Result<Vec<ChapterInformation>, Error> {
+    let all_chapters = db
+        .find_cached_chapter_informations(id)
+        .await
+        .map_err(Error::Other)?;
+    // Capture the message before `filter` is moved into `apply_chapter_filter`.
+    let no_chapters_message = no_chapters_error_message(&filter);
+    let chapters = apply_chapter_filter(db, all_chapters, filter, langs)
+        .await
+        .map_err(Error::Other)?;
+
+    if chapters.is_empty() {
+        return Err(Error::NoChapters(no_chapters_message));
+    }
+
+    Ok(chapters)
+}
+
 /// Parses a user-supplied chapter spec such as `"1-4, 10, 12"` into inclusive
 /// `(start, stop)` float ranges. A bare number like `10` becomes `(10, 10)`.
 ///
@@ -285,6 +306,33 @@ fn parse_specific_chapter_ranges(text: &str) -> anyhow::Result<Vec<(f32, f32)>> 
     Ok(ranges)
 }
 
+/// User-facing message used when a filter selects zero chapters. Kept as a
+/// pure function so the failure mode (previously a fake "download complete!")
+/// can be unit tested without constructing a [`Source`].
+fn no_chapters_error_message(filter: &Filter) -> String {
+    match filter {
+        Filter::NextUnreadChapters(_) | Filter::AllUnreadChapters => {
+            "No unread chapters to download. If the manga has no unread chapters, \
+            use the specific-chapters download option to re-download already-read \
+            ones (e.g. \"1-4, 10, 12\")."
+                .to_owned()
+        }
+        Filter::ScanlatorChapters { scanlator, .. } => {
+            format!(
+                "No chapters to download from scanlator \"{scanlator}\"; all of its \
+                chapters are already read or excluded by the language filter."
+            )
+        }
+        Filter::SpecificChapters(selector) => {
+            format!(
+                "No chapters match the requested chapter selection \"{selector}\"; \
+                check that the chapter numbers exist and are not excluded by the \
+                language filter."
+            )
+        }
+    }
+}
+
 pub enum Filter {
     NextUnreadChapters(usize),
     AllUnreadChapters,
@@ -328,6 +376,13 @@ pub enum Error {
     DownloadError(#[source] anyhow::Error),
     #[error("unknown error")]
     Other(#[from] anyhow::Error),
+    /// The filter selected zero chapters, carrying the user-facing guidance
+    /// message. Kept as a real variant (instead of wrapping it in
+    /// `Error::Other`) so the message survives `to_string()` — the job poller
+    /// turns the error into a `JobState::Errored` via `e.to_string()`, and
+    /// `Error::Other` would surface as the useless literal "unknown error".
+    #[error("{0}")]
+    NoChapters(String),
 }
 
 #[cfg(test)]
@@ -696,5 +751,88 @@ mod tests {
 
     fn ids(chapters: &[ChapterInformation]) -> Vec<&str> {
         chapters.iter().map(|c| c.id.value().as_str()).collect()
+    }
+
+    #[test]
+    fn no_chapters_error_message_is_explanatory_per_filter() {
+        let unread = no_chapters_error_message(&Filter::NextUnreadChapters(5));
+        assert!(unread.contains("No unread chapters to download"));
+        assert!(unread.contains("1-4, 10, 12"));
+
+        let all = no_chapters_error_message(&Filter::AllUnreadChapters);
+        assert!(all.contains("No unread chapters to download"));
+
+        let scanlator = no_chapters_error_message(&Filter::ScanlatorChapters {
+            scanlator: "SomeTL".to_owned(),
+            amount: None,
+        });
+        assert!(scanlator.contains("SomeTL"));
+
+        let specific =
+            no_chapters_error_message(&Filter::SpecificChapters("1-4, 10, 12".to_owned()));
+        assert!(specific.contains("1-4, 10, 12"));
+        assert!(!specific.contains("complete"));
+    }
+
+    #[tokio::test]
+    async fn empty_selection_errors_instead_of_downloading_nothing() {
+        // Regression guard for #347: an empty chapter selection must surface as
+        // an error (shown as an error dialog by the UI), never as a successful
+        // zero-chapter download.
+        let (_tmp_dir, db, manga_id) = test_db().await;
+        // All chapters read -> AllUnreadChapters selects nothing.
+        let chapters: Vec<_> = (0..3)
+            .map(|i| chapter(&manga_id, i, Some(i as f32)))
+            .collect();
+        db.upsert_cached_chapter_informations(&manga_id, &chapters)
+            .await
+            .unwrap();
+        for c in &chapters {
+            db.upsert_chapter_state(
+                &c.id,
+                ChapterState {
+                    read: true,
+                    last_read: None,
+                },
+            )
+            .await
+            .unwrap();
+        }
+
+        for (filter, expected_in_message) in [
+            (
+                Filter::NextUnreadChapters(10),
+                "No unread chapters to download",
+            ),
+            (Filter::AllUnreadChapters, "No unread chapters to download"),
+            (
+                Filter::ScanlatorChapters {
+                    scanlator: "SomeTL".to_owned(),
+                    amount: None,
+                },
+                "SomeTL",
+            ),
+            (Filter::SpecificChapters("99-100".to_owned()), "99-100"),
+        ] {
+            let result = collect_chapters_to_download(&db, &manga_id, filter, &[]).await;
+            match result {
+                Err(e) => {
+                    // Job-visible string: the poller maps Errored(e) to
+                    // JobState::Errored via e.to_string(), so the guidance must
+                    // survive Display — not be swallowed by the "unknown error"
+                    // literal of the Error::Other variant.
+                    let msg = e.to_string();
+                    assert!(
+                        msg.contains(expected_in_message),
+                        "expected {expected_in_message:?} in message, got {msg:?}"
+                    );
+                    assert!(
+                        !msg.contains("complete"),
+                        "message must not claim success: {msg:?}"
+                    );
+                }
+                Ok(_) => panic!("expected an error for empty selection"),
+            }
+        }
     }
 }

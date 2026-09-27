@@ -246,34 +246,34 @@ function MangaReader:hookReadHistory()
   end
   ReadHistory._rakuyomi_history_hooked = true
 
-  local function isEnabled()
+  local function is_enabled()
     return self.is_showing and G_reader_settings:isTrue('rakuyomi_disable_read_history')
   end
 
-  local addItem = ReadHistory.addItem
+  local orig_add_item = ReadHistory.addItem
   ReadHistory.addItem = function(history, file, ts, ...)
     -- `ReaderUI` adds the document it opens without `ts`; items imported from the
     -- legacy history folder come with one and are left alone.
-    if ts == nil and file == self.path and isEnabled() then
+    if ts == nil and file == self.path and is_enabled() then
       return
     end
-    return addItem(history, file, ts, ...)
+    return orig_add_item(history, file, ts, ...)
   end
 
   -- `ReaderUI:onClose` refreshes the time of the first history item, assuming it is the
   -- document being closed. For a chapter kept out of the history, that item is another
   -- book (or missing, when the history is empty), so leave it alone.
-  local updateLastBookTime = ReadHistory.updateLastBookTime
-  if updateLastBookTime ~= nil then
+  local orig_update_last_book_time = ReadHistory.updateLastBookTime
+  if orig_update_last_book_time ~= nil then
     ReadHistory.updateLastBookTime = function(history, ...)
       local ui = ReaderUI.instance
-      if isEnabled() and ui ~= nil and ui.document ~= nil then
+      if is_enabled() and ui ~= nil and ui.document ~= nil then
         local top = history.hist[1]
         if top == nil or top.file ~= (realpath(ui.document.file) or ui.document.file) then
           return
         end
       end
-      return updateLastBookTime(history, ...)
+      return orig_update_last_book_time(history, ...)
     end
   end
 end

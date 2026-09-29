@@ -1254,7 +1254,7 @@ dependencies = [
 [[package]]
 name = "dexvm"
 version = "0.2.0"
-source = "git+https://github.com/DermonCode/dexvm?rev=2b0fadd1e8c380807e1d126dedb909f609a232c7#2b0fadd1e8c380807e1d126dedb909f609a232c7"
+source = "git+https://github.com/DermonCode/dexvm?rev=2e418bc1e6b08a663759d427d39d63c71858fde1#2e418bc1e6b08a663759d427d39d63c71858fde1"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",
@@ -1274,7 +1274,6 @@ dependencies = [
  "serde_json",
  "sha1",
  "sha2 0.11.0",
- "thiserror",
  "unicode-normalization",
  "zip 8.6.0",
  "zune-jpeg",

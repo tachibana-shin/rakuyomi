@@ -219,13 +219,13 @@ function LibraryView:patchTitleBar(count_notify)
       show_parent = self.title_bar.show_parent,
     },
     IconButton:new {
-      icon = "column.two",
+      icon = "appbar.search",
       width = left_icon_size,
       height = left_icon_size,
       padding = button_padding,
       padding_bottom = button_padding,
       callback = function()
-        self:openPlaylistDialog()
+        self:openSearchMangasDialog()
       end,
       allow_flash = self.title_bar.left_icon_allow_flash,
       show_parent = self.title_bar.show_parent,
@@ -323,13 +323,13 @@ function LibraryView:patchTitleBar(count_notify)
       end
     },
     IconButton:new {
-      icon = "appbar.search",
+      icon = "column.two",
       width = right_icon_size,
       height = right_icon_size,
       padding = button_padding,
       padding_bottom = button_padding,
       callback = function()
-        self:openSearchMangasDialog()
+        self:openPlaylistDialog()
       end,
     },
   }

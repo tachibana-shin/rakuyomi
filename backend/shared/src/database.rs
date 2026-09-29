@@ -22,6 +22,7 @@ use crate::{
         TrackingBinding, TrackingCandidate, TrackingProgressSnapshot, TrackingService,
         TrackingStatus,
     },
+    settings::LibrarySortingMode,
     source::model::{MangaViewer, PublishingStatus},
     source_collection::SourceCollection,
 };
@@ -194,13 +195,14 @@ impl Database {
             .collect())
     }
 
-    pub async fn get_manga_library_with_read_count(
-        &self,
-        source_collection: &impl SourceCollection,
-        library_sorting_mode: &crate::settings::LibrarySortingMode,
-    ) -> Result<Vec<Manga>> {
-        let order_by = library_sorting_mode.order_by_clause(crate::settings::LibraryTableAlias::Ml);
-        let sql = format!(
+    /// SQL shared by the library and the playlist manga listings.
+    ///
+    /// Both listings alias their base table to `ml`, so a single
+    /// [`LibrarySortingMode::order_by_clause`] serves the two of them and the
+    /// rest of the query cannot drift apart. Only the base table and the
+    /// playlist filter differ.
+    fn manga_listing_sql(base: ListingBase, sorting_mode: &LibrarySortingMode) -> String {
+        format!(
             r#"
             WITH manga_chapter_stats AS (
                 SELECT
@@ -231,7 +233,7 @@ impl Database {
                 COALESCE(mcs.last_read_time, 0) AS last_read,
                 COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                 IIF(ms.viewer IS NOT NULL, 1, 0) AS state_viewer
-            FROM manga_library ml
+            FROM {table} ml
             INNER JOIN manga_informations mi
                 ON mi.source_id = ml.source_id
                 AND mi.manga_id = ml.manga_id
@@ -251,11 +253,22 @@ impl Database {
                     OR ci.scanlator = ms.preferred_scanlator
                     OR ci.scanlator IS NULL)
                 AND ci.chapter_number > COALESCE(mcs.last_read_chapter, -1)
+            {filter}
             GROUP BY ml.source_id, ml.manga_id, mcs.last_read_time
             {order_by}
-            "#
-        );
+            "#,
+            table = base.table(),
+            filter = base.filter(),
+            order_by = sorting_mode.order_by_clause(),
+        )
+    }
 
+    pub async fn get_manga_library_with_read_count(
+        &self,
+        source_collection: &impl SourceCollection,
+        library_sorting_mode: &LibrarySortingMode,
+    ) -> Result<Vec<Manga>> {
+        let sql = Self::manga_listing_sql(ListingBase::Library, library_sorting_mode);
         let rows = sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(&*sql))
             .fetch_all(&*self.pool.read().await)
             .await?;
@@ -288,6 +301,77 @@ impl Database {
         Ok(mangas)
     }
 
+    pub async fn get_manga_library_in_playlist_with_read_count(
+        &self,
+        playlist_id: i64,
+        source_collection: &impl SourceCollection,
+        library_sorting_mode: &LibrarySortingMode,
+    ) -> Result<Vec<Manga>> {
+        let sql = Self::manga_listing_sql(ListingBase::Playlist, library_sorting_mode);
+        let rows = sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(&*sql))
+            .bind(playlist_id)
+            .fetch_all(&*self.pool.read().await)
+            .await?;
+
+        let mangas = rows
+            .into_iter()
+            .filter_map(|row| {
+                let source = source_collection.get_by_id(&SourceId::new(row.source_id.clone()))?;
+                let info = MangaInformation {
+                    id: MangaId::from_strings(row.source_id, row.manga_id),
+                    title: row.title,
+                    author: row.author,
+                    artist: row.artist,
+                    cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
+                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
+                };
+
+                Some(Manga {
+                    source_information: SourceInformation::from(source.manifest()),
+                    information: info,
+                    state: MangaState::default(),
+                    unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
+                    last_read: row.last_read,
+                    in_library: false,
+                    state_viewer: row.state_viewer != 0,
+                })
+            })
+            .collect();
+
+        Ok(mangas)
+    }
+}
+
+/// Which set of mangas a listing query walks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ListingBase {
+    /// The whole library.
+    Library,
+    /// The members of a single playlist.
+    Playlist,
+}
+
+impl ListingBase {
+    /// The base table, aliased to `ml` by the query.
+    fn table(self) -> &'static str {
+        match self {
+            Self::Library => "manga_library",
+            Self::Playlist => "playlist_mangas",
+        }
+    }
+
+    /// The `WHERE` clause narrowing the listing, empty for the whole library.
+    ///
+    /// Binds parameter `?1`, which only the playlist query passes.
+    fn filter(self) -> &'static str {
+        match self {
+            Self::Library => "",
+            Self::Playlist => "WHERE ml.playlist_id = ?1",
+        }
+    }
+}
+
+impl Database {
     pub async fn add_manga_to_library(&self, manga_id: MangaId) -> Result<()> {
         let source_id = manga_id.source_id().value();
         let manga_id = manga_id.value();
@@ -1771,103 +1855,6 @@ impl Database {
 
         Ok(())
     }
-
-    pub async fn get_manga_library_in_playlist_with_read_count(
-        &self,
-        playlist_id: i64,
-        source_collection: &impl SourceCollection,
-        library_sorting_mode: &crate::settings::LibrarySortingMode,
-    ) -> Result<Vec<Manga>> {
-        let order_by = library_sorting_mode.order_by_clause(crate::settings::LibraryTableAlias::Pm);
-        let sql = format!(
-            r#"
-            WITH manga_chapter_stats AS (
-                SELECT
-                    ci.source_id,
-                    ci.manga_id,
-                    MAX(IIF(cs.read = 1, ci.chapter_number, NULL)) AS last_read_chapter,
-                    MAX(cs.last_read) AS last_read_time
-                FROM chapter_informations ci
-                INNER JOIN chapter_state cs
-                    ON ci.source_id = cs.source_id
-                    AND ci.manga_id = cs.manga_id
-                    AND ci.chapter_id = cs.chapter_id
-                LEFT JOIN manga_state ms
-                    ON ms.source_id = ci.source_id AND ms.manga_id = ci.manga_id
-                WHERE (ms.preferred_scanlator IS NULL
-                    OR ci.scanlator = ms.preferred_scanlator
-                    OR ci.scanlator IS NULL)
-                GROUP BY ci.source_id, ci.manga_id
-            )
-            SELECT
-                pm.source_id,
-                pm.manga_id,
-                mi.title,
-                mi.author,
-                mi.artist,
-                mi.cover_url,
-                COUNT(ci.chapter_number) AS unread_chapters_count,
-                COALESCE(mcs.last_read_time, 0) AS last_read,
-                COALESCE(ms.viewer, md.viewer, 0) AS viewer,
-                IIF(ms.viewer IS NOT NULL, 1, 0) AS state_viewer
-            FROM playlist_mangas pm
-            INNER JOIN manga_informations mi
-                ON mi.source_id = pm.source_id
-                AND mi.manga_id = pm.manga_id
-            LEFT JOIN manga_state ms
-                ON ms.source_id = pm.source_id
-                AND ms.manga_id = pm.manga_id
-            LEFT JOIN manga_details md
-                ON md.source_id = pm.source_id
-                AND md.id = pm.manga_id
-            LEFT JOIN manga_chapter_stats mcs
-                ON mcs.source_id = pm.source_id
-                AND mcs.manga_id = pm.manga_id
-            LEFT JOIN chapter_informations ci
-                ON ci.source_id = pm.source_id
-                AND ci.manga_id = pm.manga_id
-                AND (ms.preferred_scanlator IS NULL
-                    OR ci.scanlator = ms.preferred_scanlator
-                    OR ci.scanlator IS NULL)
-                AND ci.chapter_number > COALESCE(mcs.last_read_chapter, -1)
-            WHERE pm.playlist_id = ?1
-            GROUP BY pm.source_id, pm.manga_id, mcs.last_read_time
-            {order_by}
-            "#
-        );
-
-        let rows = sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(&*sql))
-            .bind(playlist_id)
-            .fetch_all(&*self.pool.read().await)
-            .await?;
-
-        let mangas = rows
-            .into_iter()
-            .filter_map(|row| {
-                let source = source_collection.get_by_id(&SourceId::new(row.source_id.clone()))?;
-                let info = MangaInformation {
-                    id: MangaId::from_strings(row.source_id, row.manga_id),
-                    title: row.title,
-                    author: row.author,
-                    artist: row.artist,
-                    cover_url: row.cover_url.and_then(|url| Url::parse(&url).ok()),
-                    viewer: MangaViewer::from(row.viewer.unwrap_or(0) as u8),
-                };
-
-                Some(Manga {
-                    source_information: SourceInformation::from(source.manifest()),
-                    information: info,
-                    state: MangaState::default(),
-                    unread_chapters_count: row.unread_chapters_count.map(|v| v as usize),
-                    last_read: row.last_read,
-                    in_library: false,
-                    state_viewer: row.state_viewer != 0,
-                })
-            })
-            .collect();
-
-        Ok(mangas)
-    }
 }
 
 /// Represents a manga entry in the user's library, joined with its information
@@ -2199,6 +2186,242 @@ mod tests {
             lang: Some(lang.to_string()),
             url: None,
             locked: None,
+        }
+    }
+
+    /// Every sorting mode, so the loop below cannot silently cover fewer.
+    const SORTING_MODES: [LibrarySortingMode; 10] = [
+        LibrarySortingMode::Ascending,
+        LibrarySortingMode::Descending,
+        LibrarySortingMode::TitleAsc,
+        LibrarySortingMode::TitleDesc,
+        LibrarySortingMode::UnreadAsc,
+        LibrarySortingMode::UnreadDesc,
+        LibrarySortingMode::LastReadAsc,
+        LibrarySortingMode::LastReadDesc,
+        LibrarySortingMode::SourceAsc,
+        LibrarySortingMode::SourceDesc,
+    ];
+
+    /// A database with three library entries: `read` fully read, `never` never
+    /// read, `partial` with one of three chapters read. Returns the database
+    /// and the playlist the three entries were also added to.
+    async fn database_with_mixed_read_state() -> (tempfile::TempDir, Database, i64) {
+        let directory = tempdir().unwrap();
+        let database = Database::new(&directory.path().join("database.sqlite"))
+            .await
+            .unwrap();
+
+        let informations = ["read", "never", "partial"]
+            .into_iter()
+            .map(|manga_id| {
+                let id = MangaId::from_strings("source".to_string(), manga_id.to_string());
+                let information = MangaInformation {
+                    id: id.clone(),
+                    title: Some(manga_id.to_string()),
+                    author: None,
+                    artist: None,
+                    cover_url: None,
+                    viewer: MangaViewer::default(),
+                };
+                // Three chapters each, so the unread counts are distinguishable.
+                let chapters = (1..=3)
+                    .map(|number| {
+                        let mut chapter =
+                            chapter_information(&id, &format!("chapter{number}"), "en");
+                        chapter.chapter_number = Some(number as f32);
+                        chapter
+                    })
+                    .collect::<Vec<_>>();
+                (information, chapters)
+            })
+            .collect::<Vec<_>>();
+        for (information, chapters) in &informations {
+            database
+                .upsert_cached_chapter_informations(&information.id, chapters)
+                .await
+                .unwrap();
+        }
+        let informations = informations
+            .into_iter()
+            .map(|(information, _)| information)
+            .collect::<Vec<_>>();
+        database
+            .upsert_cached_manga_information(&informations)
+            .await
+            .unwrap();
+
+        for manga_id in ["read", "never", "partial"] {
+            let id = MangaId::from_strings("source".to_string(), manga_id.to_string());
+            database.add_manga_to_library(id.clone()).await.unwrap();
+        }
+        // "read": every chapter read. "partial": only the first one. "never":
+        // no chapter state at all, so the aggregate sees no rows. The chapter
+        // ids must match the ones the fixture inserted, otherwise the listing
+        // aggregates join on nothing.
+        for (manga_id, chapters) in [
+            ("read", vec!["chapter1", "chapter2", "chapter3"]),
+            ("partial", vec!["chapter1"]),
+        ] {
+            let id = MangaId::from_strings("source".to_string(), manga_id.to_string());
+            for chapter_id in chapters {
+                database
+                    .mark_chapter_as_read(
+                        &ChapterId::new(id.clone(), chapter_id.to_string()),
+                        Some(true),
+                    )
+                    .await
+                    .unwrap();
+            }
+        }
+
+        let playlist = database
+            .create_playlist("listing".to_string())
+            .await
+            .unwrap();
+        for manga_id in ["read", "never", "partial"] {
+            let id = MangaId::from_strings("source".to_string(), manga_id.to_string());
+            database
+                .add_manga_to_playlist(playlist.id, id)
+                .await
+                .unwrap();
+        }
+
+        (directory, database, playlist.id)
+    }
+
+    /// Both listing queries must be valid SQL for every sorting mode.
+    ///
+    /// `order_by_clause` is shared by the library and the playlist listing, so a
+    /// clause naming a column or an alias that does not resolve in one of them
+    /// would only surface at runtime. This runs each one against a populated
+    /// database and fails on any SQL error.
+    #[tokio::test]
+    async fn every_sorting_mode_runs_on_both_listing_queries() {
+        let (_directory, database, playlist_id) = database_with_mixed_read_state().await;
+
+        for mode in SORTING_MODES {
+            let sql = Database::manga_listing_sql(ListingBase::Library, &mode);
+            let rows = sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(
+                sql.as_str(),
+            ))
+            .fetch_all(&*database.pool.read().await)
+            .await
+            .unwrap_or_else(|error| panic!("library listing failed for {mode:?}: {error:#}"));
+            assert_eq!(rows.len(), 3, "library listing for {mode:?}");
+
+            let sql = Database::manga_listing_sql(ListingBase::Playlist, &mode);
+            let rows = sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(
+                sql.as_str(),
+            ))
+            .bind(playlist_id)
+            .fetch_all(&*database.pool.read().await)
+            .await
+            .unwrap_or_else(|error| panic!("playlist listing failed for {mode:?}: {error:#}"));
+            assert_eq!(rows.len(), 3, "playlist listing for {mode:?}");
+        }
+    }
+
+    /// The library and playlist listings only differ by their base table and
+    /// filter, so both must expose the same rows in the same order.
+    #[tokio::test]
+    async fn library_and_playlist_listings_agree() {
+        let (_directory, database, playlist_id) = database_with_mixed_read_state().await;
+
+        for mode in SORTING_MODES {
+            let library = {
+                let sql = Database::manga_listing_sql(ListingBase::Library, &mode);
+                sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(sql.as_str()))
+                    .fetch_all(&*database.pool.read().await)
+                    .await
+                    .unwrap()
+            };
+            let playlist = {
+                let sql = Database::manga_listing_sql(ListingBase::Playlist, &mode);
+                sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(sql.as_str()))
+                    .bind(playlist_id)
+                    .fetch_all(&*database.pool.read().await)
+                    .await
+                    .unwrap()
+            };
+
+            let library_ids = library
+                .iter()
+                .map(|row| row.manga_id.clone())
+                .collect::<Vec<_>>();
+            let playlist_ids = playlist
+                .iter()
+                .map(|row| row.manga_id.clone())
+                .collect::<Vec<_>>();
+            assert_eq!(library_ids, playlist_ids, "order differs for {mode:?}");
+        }
+    }
+
+    /// The unread count and the `last_read` fallback must not drift from what
+    /// the front end displays.
+    #[tokio::test]
+    async fn unread_count_and_last_read_are_reported_per_manga() {
+        let (_directory, database, _playlist_id) = database_with_mixed_read_state().await;
+        let sql = Database::manga_listing_sql(ListingBase::Library, &LibrarySortingMode::Ascending);
+        let rows =
+            sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(sql.as_str()))
+                .fetch_all(&*database.pool.read().await)
+                .await
+                .unwrap();
+
+        let by_id = rows
+            .iter()
+            .map(|row| (row.manga_id.as_str(), row.unread_chapters_count))
+            .collect::<HashMap<_, _>>();
+
+        // Chapters above the last read one count as unread, and the read
+        // chapters themselves do not.
+        assert_eq!(by_id["read"], Some(0), "fully read");
+        assert_eq!(by_id["partial"], Some(2), "one of three read");
+        // Never read: no chapter state at all, so every chapter is unread.
+        assert_eq!(by_id["never"], Some(3), "never read");
+    }
+
+    /// `last_read` is always present, so the Lua front end renders the line.
+    ///
+    /// The front end guards on `if manga.last_read then`, and in Lua `0` is
+    /// truthy while `nil` is not. A `NULL` for a manga that was never read would
+    /// silently drop the line, so the query coalesces it to `0` instead.
+    #[tokio::test]
+    async fn last_read_is_always_present() {
+        let (_directory, database, _playlist_id) = database_with_mixed_read_state().await;
+        let sql = Database::manga_listing_sql(ListingBase::Library, &LibrarySortingMode::Ascending);
+        let rows =
+            sqlx::query_as::<_, MangaLibraryRowWithReadCount>(sqlx::AssertSqlSafe(sql.as_str()))
+                .fetch_all(&*database.pool.read().await)
+                .await
+                .unwrap();
+
+        for row in &rows {
+            assert!(
+                row.last_read.is_some(),
+                "{} must report a last_read, not NULL",
+                row.manga_id
+            );
+        }
+
+        let never_read = rows
+            .iter()
+            .find(|row| row.manga_id == "never")
+            .expect("never-read manga missing");
+        assert_eq!(never_read.last_read, Some(0), "never read coalesces to 0");
+
+        // The read mangas carry a real timestamp rather than the fallback.
+        for manga_id in ["read", "partial"] {
+            let row = rows
+                .iter()
+                .find(|row| row.manga_id == manga_id)
+                .expect("read manga missing");
+            assert!(
+                row.last_read.is_some_and(|last_read| last_read > 0),
+                "{manga_id} should carry its own timestamp, got {:?}",
+                row.last_read
+            );
         }
     }
 

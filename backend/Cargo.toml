@@ -22,4 +22,5 @@ codegen-units = 1
 panic = "abort"
 
 [patch.crates-io]
+dexvm = { git = "https://github.com/DermonCode/dexvm", rev = "8eac9efbc0c07963da9cf6b54b46df64581a0c00" }
 tiff = { git = "https://github.com/image-rs/image-tiff", version = "0.11.3" }

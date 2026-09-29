@@ -10,6 +10,7 @@ use std::{
 use tempfile::NamedTempFile;
 use tokio_util::bytes::Bytes;
 use tokio_util::sync::CancellationToken;
+use url::Url;
 
 use anyhow::{anyhow, Context};
 use tokio::sync::mpsc;
@@ -311,13 +312,41 @@ where
                                         err
                                     })?;
                                 let req_url = request.url().clone();
-                                let req_headers = request.headers().clone();
-                                let response =
+                                let retry_request = request.try_clone();
+                                let mut req_headers = request.headers().clone();
+                                let mut response =
                                     request_with_forced_referer_from_request(&client, request, 10)
                                         .await
                                         .inspect_err(|err| {
                                             eprintln!("Request error: {err}");
                                         })?;
+
+                                // A source may omit Referer even though its image host
+                                // requires one. Retry an HTML/forbidden response once
+                                // using the source's own site URL when available.
+                                let html_response = response
+                                    .headers()
+                                    .get(reqwest::header::CONTENT_TYPE)
+                                    .and_then(|value| value.to_str().ok())
+                                    .is_some_and(|value| value.to_ascii_lowercase().contains("text/html"));
+                                if (response.status() == reqwest::StatusCode::FORBIDDEN || html_response)
+                                    && !req_headers.contains_key(reqwest::header::REFERER)
+                                {
+                                    if let (Some(mut retry), Some(site)) =
+                                        (retry_request, source.manifest().info.url)
+                                    {
+                                        if let Ok(site) = Url::parse(&site) {
+                                            if matches!(site.scheme(), "http" | "https") {
+                                                let referer = format!("{}/", site.as_str().trim_end_matches('/'));
+                                                if let Ok(value) = reqwest::header::HeaderValue::from_str(&referer) {
+                                                    retry.headers_mut().insert(reqwest::header::REFERER, value);
+                                                    req_headers = retry.headers().clone();
+                                                    response = request_with_forced_referer_from_request(&client, retry, 10).await?;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
 
                                 if !response.status().is_success() {
                                     let err = DownloadError {
@@ -438,6 +467,26 @@ where
                             } else {
                                 final_bytes
                             };
+
+                            // Never put an HTML access/error page into a CBZ as an image.
+                            let leading = String::from_utf8_lossy(&final_bytes[..final_bytes.len().min(64)]);
+                            if leading.trim_start().to_ascii_lowercase().starts_with("<!doctype html")
+                                || leading.trim_start().to_ascii_lowercase().starts_with("<html")
+                            {
+                                let reason = "image server returned HTML instead of an image".to_string();
+                                let err = DownloadError {
+                                    page_index: page.index,
+                                    url: page_url.as_ref().map(ToString::to_string).unwrap_or_default(),
+                                    reason: reason.clone(),
+                                    attempts: 1,
+                                };
+                                return Ok((
+                                    page.index,
+                                    format!("{:0>page_index_width$}.jpg", page.index),
+                                    generate_error_image("Error", &reason, 500, 667)?,
+                                    Some(err),
+                                ));
+                            }
 
                             Ok::<_, anyhow::Error>((page.index, filename, final_bytes, error_info))
                         }

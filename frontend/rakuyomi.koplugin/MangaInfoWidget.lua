@@ -507,7 +507,7 @@ function MangaInfoWidget:genSummaryGroup(width, manga)
   }
 end
 
-function MangaInfoWidget:onSwipe(_, ges_ev)
+function MangaInfoWidget:onSwipe(__, ges_ev)
   if ges_ev.direction == "south" then
     -- Allow easier closing with swipe down
     self:onClose()
@@ -528,7 +528,7 @@ function MangaInfoWidget:onSwipe(_, ges_ev)
   end
 end
 
-function MangaInfoWidget:onMultiSwipe(_, _)
+function MangaInfoWidget:onMultiSwipe(__, _)
   -- For consistency with other fullscreen widgets where swipe south can't be
   -- used to close and where we then allow any multiswipe to close, allow any
   -- multiswipe to close this widget too.

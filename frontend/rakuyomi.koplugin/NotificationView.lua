@@ -77,7 +77,7 @@ end
 function NotificationView:updateItems(select_number, no_recalculate_dimen)
   if #self.notifications > 0 then
     local item_table = {}
-    for _, notify in ipairs(self.notifications) do
+    for __, notify in ipairs(self.notifications) do
       table.insert(item_table, {
         notify = notify,
         text = notify.manga_title,

@@ -22,7 +22,7 @@ function Menu:init()
 end
 
 function Menu:updateItems(select_number)
-  for _, item in ipairs(self.item_table) do
+  for __, item in ipairs(self.item_table) do
     if self.with_context_menu and item.select_enabled ~= false then
       item.mandatory = (item.mandatory and (item.mandatory .. " ") or "") .. Icons.FA_ELLIPSIS_VERTICAL
     end
@@ -59,7 +59,7 @@ function Menu:onPrimaryMenuChoice(entry, _)
   return true
 end
 
-function Menu:onContextMenuChoice(_, _)
+function Menu:onContextMenuChoice(__, _)
 end
 
 ---@private

@@ -165,7 +165,7 @@ function SourceSettings:init()
         })
       end
 
-      for _, child in ipairs(def.items or {}) do
+      for __, child in ipairs(def.items or {}) do
         renderDefinition(child, current_group)
       end
 
@@ -210,7 +210,7 @@ function SourceSettings:init()
     table.insert(current_group, setting_item)
   end
 
-  for _, def in ipairs(self.setting_definitions or {}) do
+  for __, def in ipairs(self.setting_definitions or {}) do
     renderDefinition(def, vertical_group)
   end
 

@@ -197,9 +197,9 @@ function BasicJobDialog:updateWidget(data)
     end
 
     if data and data.errors then
-        for _, err in ipairs(data.errors) do
+        for __, err in ipairs(data.errors) do
             local exists = false
-            for _, existing_err in ipairs(self.errors) do
+            for __, existing_err in ipairs(self.errors) do
                 if existing_err == err then
                     exists = true
                     break
@@ -228,7 +228,7 @@ function BasicJobDialog:onJobFinished(state)
     if state.type == 'SUCCESS' then
         if state.body and type(state.body) == 'table' then
             -- Collect final errors if any
-            for _, err in ipairs(state.body) do
+            for __, err in ipairs(state.body) do
                 table.insert(self.errors, err)
             end
         end

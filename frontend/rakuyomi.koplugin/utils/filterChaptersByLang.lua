@@ -11,13 +11,13 @@ local function filterChaptersByLang(raw_chapters, langs_selected)
   -- Build fast lookup table for langs
   -- { en = true, jp = true, ... }
   local lang_map = {}
-  for _, lang in ipairs(langs_selected) do
+  for __, lang in ipairs(langs_selected) do
     lang_map[lang] = true
   end
 
   -- Filter chapters
   local result = {}
-  for _, chapter in ipairs(raw_chapters) do
+  for __, chapter in ipairs(raw_chapters) do
     local lang = chapter.lang or "unknown"
     -- chapter.lang may be nil → safe check
     if lang_map[lang] then

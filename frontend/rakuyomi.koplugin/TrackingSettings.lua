@@ -37,7 +37,7 @@ local function get_nested(t, path)
     table.insert(parts, part)
   end
   local current = t
-  for _, part in ipairs(parts) do
+  for __, part in ipairs(parts) do
     if type(current) ~= "table" then return nil end
     current = current[part]
   end
@@ -267,7 +267,7 @@ TrackingSettings.tracking_value_definitions = {
 function TrackingSettings:init()
   self.tracking_value_definitions = shallow_clone(TrackingSettings.tracking_value_definitions)
 
-  for _, svc in ipairs(service_configs) do
+  for __, svc in ipairs(service_configs) do
     table.insert(self.tracking_value_definitions, {
       nil,
       {
@@ -277,7 +277,7 @@ function TrackingSettings:init()
       }
     })
 
-    for _, field in ipairs(svc.fields) do
+    for __, field in ipairs(svc.fields) do
       table.insert(self.tracking_value_definitions, {
         svc.id .. '.' .. field.key,
         {
@@ -329,7 +329,7 @@ function TrackingSettings:init()
     align = "left",
   }
 
-  for _, tuple in ipairs(self.tracking_value_definitions) do
+  for __, tuple in ipairs(self.tracking_value_definitions) do
     local key = tuple[1]
     local definition = tuple[2]
     if definition.type == 'divider' then
@@ -542,7 +542,7 @@ end
 --- Show usernames from settings, and fetch from API for services with token but no username.
 function TrackingSettings:fetchAllUsernames()
   local services = { "anilist", "myanimelist", "shikimori", "bangumi", "mangabaka" }
-  for _, service in ipairs(services) do
+  for __, service in ipairs(services) do
     self:showUsername(service)
     local svc = self.settings[service] or {}
     local has_token = (svc.access_token ~= nil and svc.access_token ~= "")

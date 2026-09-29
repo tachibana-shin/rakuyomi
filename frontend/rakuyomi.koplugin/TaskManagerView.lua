@@ -102,7 +102,7 @@ end
 
 --- @private
 local function columnByKey(key)
-  for _, column in ipairs(COLUMNS) do
+  for __, column in ipairs(COLUMNS) do
     if column.key == key then
       return column
     end
@@ -244,19 +244,19 @@ function TaskManagerView:loadColumnPrefs()
   local hidden = G_reader_settings:readSetting(KEY_HIDDEN_COLUMNS) or {}
   self.column_order = {}
   self.hidden_columns = {}
-  for _, key in ipairs(hidden) do
+  for __, key in ipairs(hidden) do
     self.hidden_columns[key] = true
   end
   local seen = {}
   if order then
-    for _, key in ipairs(order) do
+    for __, key in ipairs(order) do
       if columnByKey(key) and not seen[key] then
         table.insert(self.column_order, key)
         seen[key] = true
       end
     end
   end
-  for _, column in ipairs(COLUMNS) do
+  for __, column in ipairs(COLUMNS) do
     if not seen[column.key] then
       table.insert(self.column_order, column.key)
     end
@@ -279,7 +279,7 @@ end
 --- @private
 function TaskManagerView:visibleColumns()
   local visible = {}
-  for _, key in ipairs(self.column_order) do
+  for __, key in ipairs(self.column_order) do
     if not self.hidden_columns[key] then
       table.insert(visible, columnByKey(key))
     end
@@ -291,7 +291,7 @@ end
 --- @private
 function TaskManagerView:countVisibleColumns()
   local count = 0
-  for _, key in ipairs(self.column_order) do
+  for __, key in ipairs(self.column_order) do
     if not self.hidden_columns[key] then
       count = count + 1
     end
@@ -306,7 +306,7 @@ end
 function TaskManagerView:computeColumnWidths()
   self.column_widths = {}
   local used = 0
-  for _, column in ipairs(self:visibleColumns()) do
+  for __, column in ipairs(self:visibleColumns()) do
     if column.key ~= "name" then
       local width = math.floor(self.content_width * column.weight)
       self.column_widths[column.key] = width
@@ -319,7 +319,7 @@ end
 --- @private
 function TaskManagerView:getItems()
   local items = {}
-  for _, source_information in ipairs(self.installed_sources) do
+  for __, source_information in ipairs(self.installed_sources) do
     table.insert(items, {
       source_information = source_information,
       usage = self.usages[source_information.id],
@@ -445,7 +445,7 @@ end
 --- @private
 function TaskManagerView:buildHeaderRow()
   local cells = {}
-  for _, column in ipairs(self:visibleColumns()) do
+  for __, column in ipairs(self:visibleColumns()) do
     local label = column.label
     if column.key == self.sort_column then
       label = label .. (self.sort_ascending and SORT_ASC or SORT_DESC)
@@ -520,7 +520,7 @@ end
 --- @private
 function TaskManagerView:buildRow(item)
   local cells = {}
-  for _, column in ipairs(self:visibleColumns()) do
+  for __, column in ipairs(self:visibleColumns()) do
     table.insert(cells, self:buildCell(
       self:cellText(item, column),
       self.column_widths[column.key],
@@ -574,7 +574,7 @@ function TaskManagerView:rebuildTable()
       nil
     ))
   else
-    for _, item in ipairs(items) do
+    for __, item in ipairs(items) do
       table.insert(rows, self:buildRow(item))
     end
   end
@@ -653,7 +653,7 @@ end
 --- @private
 function TaskManagerView:onResetColumns()
   self.column_order = {}
-  for _, column in ipairs(COLUMNS) do
+  for __, column in ipairs(COLUMNS) do
     table.insert(self.column_order, column.key)
   end
   self.hidden_columns = {}
@@ -831,7 +831,7 @@ function TaskManagerSettingsView:onColumnOrder()
   ---@type any
   local parent = self.parent
   local item_table = {}
-  for _, key in ipairs(parent.column_order) do
+  for __, key in ipairs(parent.column_order) do
     local key_local = key
     local item = {
       key = key,
@@ -852,7 +852,7 @@ function TaskManagerSettingsView:onColumnOrder()
     item_table = item_table,
     callback = function()
       local new_order = {}
-      for _, item in ipairs(item_table) do
+      for __, item in ipairs(item_table) do
         table.insert(new_order, item.key)
       end
       parent.column_order = new_order

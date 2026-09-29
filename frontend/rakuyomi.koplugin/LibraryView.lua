@@ -253,7 +253,7 @@ function LibraryView:patchTitleBar(count_notify)
           local tuple = findEntries(Settings.setting_value_definitions, key)
 
           local radio_buttons = {}
-          for _, option in ipairs(tuple.options) do
+          for __, option in ipairs(tuple.options) do
             table.insert(radio_buttons, {
               {
                 text = option.label,
@@ -415,7 +415,7 @@ function LibraryView:generateItemTableFromMangas(mangas)
   local item_table = {}
   local is_cover = self:getLibraryViewMode() == "cover"
 
-  for _, manga in ipairs(mangas) do
+  for __, manga in ipairs(mangas) do
     local mandatory_parts = {}
 
     if is_cover then
@@ -721,7 +721,7 @@ function LibraryView:_handleContinueReading(manga)
 
     local langs_set = {}
     local langs_list = {}
-    for _, chapter in ipairs(chapter_results) do
+    for __, chapter in ipairs(chapter_results) do
       local lang = chapter.lang or "unknown"
       if not langs_set[lang] then
         langs_set[lang] = true
@@ -1226,7 +1226,7 @@ function LibraryView:openSettingsSearchDialog()
   local key = "exlucde_source_ids_select_search"
   local options = {}
   local format_languages = require("utils/formatLanguages")
-  for _, source_information in ipairs(response.body) do
+  for __, source_information in ipairs(response.body) do
     local name = source_information.name
     local languages_text = format_languages(source_information.languages)
     if languages_text then

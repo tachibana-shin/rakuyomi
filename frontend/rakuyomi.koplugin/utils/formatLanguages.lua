@@ -11,7 +11,7 @@ return function(languages)
   end
   local normalized = {}
   local seen = {}
-  for _, lang in ipairs(languages) do
+  for __, lang in ipairs(languages) do
     local key = langNames.normalize(lang)
     if not seen[key] then
       seen[key] = true

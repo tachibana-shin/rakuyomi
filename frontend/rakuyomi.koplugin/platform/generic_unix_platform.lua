@@ -278,7 +278,7 @@ end
 function UnixServer:handleLogOutput(contents)
   if self.disable_logging then return end
   local newLines = util.splitToArray(contents, '\n')
-  for _, line in ipairs(newLines) do
+  for __, line in ipairs(newLines) do
     logger.info("Server output: " .. line)
 
     table.insert(self.logBuffer, line)

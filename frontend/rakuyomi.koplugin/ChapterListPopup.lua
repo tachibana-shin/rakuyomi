@@ -300,9 +300,9 @@ function ChapterListPopup:onMenuSelect(chapter)
   end
 end
 
-function ChapterListPopup:onTapClose(_, ges)
+function ChapterListPopup:onTapClose(__, ges)
   local pos = ges.pos
-  for _, child in ipairs(self.content) do
+  for __, child in ipairs(self.content) do
     if child.frame and child.frame.dimen and child.frame.dimen:contains(pos) then
       return true
     end
@@ -314,7 +314,7 @@ function ChapterListPopup:onTapClose(_, ges)
   return true
 end
 
-function ChapterListPopup:onSwipe(_, ges)
+function ChapterListPopup:onSwipe(__, ges)
   if ges.direction == "west" or ges.direction == "north" then
     self:nextPage()
   elseif ges.direction == "east" or ges.direction == "south" then

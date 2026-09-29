@@ -88,13 +88,13 @@ end
 --- @return string[]
 local function sanitize_selection(current, options, transform)
   local valid = {}
-  for _, option in ipairs(options) do
+  for __, option in ipairs(options) do
     valid[option.id] = true
   end
 
   local cleaned = {}
   local seen = {}
-  for _, id in ipairs(current or {}) do
+  for __, id in ipairs(current or {}) do
     local key = transform(id)
     if valid[key] and not seen[key] then
       seen[key] = true
@@ -198,15 +198,15 @@ function AvailableSourcesListing:extractAvailableLangs()
   -- The languages managed in the Languages screen are stored in the
   -- global reader settings; read them from there so both screens share one
   -- source of truth.
-  for _, lang in ipairs(G_reader_settings:readSetting("rakuyomi_languages", {})) do
+  for __, lang in ipairs(G_reader_settings:readSetting("rakuyomi_languages", {})) do
     local key = langNames.normalize(lang)
     if not langs_set[key] then
       langs_set[key] = true
       table.insert(langs_list, key)
     end
   end
-  for _, source_information in ipairs(self.available_sources) do
-    for _, lang in ipairs(source_information.languages) do
+  for __, source_information in ipairs(self.available_sources) do
+    for __, lang in ipairs(source_information.languages) do
       local key = langNames.normalize(lang)
       if not langs_set[key] then
         langs_set[key] = true
@@ -220,7 +220,7 @@ function AvailableSourcesListing:extractAvailableLangs()
   -- against, and `sanitize_selection` validates; ordering is purely a
   -- display concern, so changing it cannot break selection/normalisation.
   self.langs = {}
-  for _, lang in ipairs(langs_list) do
+  for __, lang in ipairs(langs_list) do
     table.insert(self.langs, { id = lang, name = langNames.nameFor(lang) })
   end
   table.sort(self.langs, function(a, b)
@@ -236,7 +236,7 @@ end
 --- @private
 function AvailableSourcesListing:extractAvailableRepos()
   local repos_list = {}
-  for _, list in ipairs(self.settings.source_lists or {}) do
+  for __, list in ipairs(self.settings.source_lists or {}) do
     local repo = source_list_key(list.url)
     if repo ~= "" then
       table.insert(repos_list, repo)
@@ -246,7 +246,7 @@ function AvailableSourcesListing:extractAvailableRepos()
   table.sort(repos_list)
 
   self.repos = {}
-  for _, repo in ipairs(repos_list) do
+  for __, repo in ipairs(repos_list) do
     table.insert(self.repos, { id = repo, name = repo })
   end
 end
@@ -259,18 +259,18 @@ end
 --- @return SourceInformation[]
 function AvailableSourcesListing:filterAvailableSources()
   local langs_set = {}
-  for _, lang in ipairs(self.langs_selected) do
+  for __, lang in ipairs(self.langs_selected) do
     langs_set[lang] = true
   end
   local repos_set = {}
-  for _, repo in ipairs(self.repos_selected) do
+  for __, repo in ipairs(self.repos_selected) do
     repos_set[repo] = true
   end
 
   local filtered = {}
   for __, source_information in ipairs(self.available_sources) do
     local lang_matches = #self.langs_selected == 0 or #source_information.languages == 0
-    for _, lang in ipairs(source_information.languages) do
+    for __, lang in ipairs(source_information.languages) do
       if langs_set[langNames.normalize(lang)] then
         lang_matches = true
         break
@@ -449,7 +449,7 @@ end
 function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSources(installed_sources, available_sources)
   --- Map installed by unique key (id@source)
   local installed_sources_by_key = {}
-  for _, src in ipairs(installed_sources) do
+  for __, src in ipairs(installed_sources) do
     local key = src.id .. "@" .. (src.source_of_source or "")
     installed_sources_by_key[key] = src
   end
@@ -458,7 +458,7 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
   local items_available = {}
 
   --- Generate two lists: installed-first & available-after
-  for _, source_information in ipairs(available_sources) do
+  for __, source_information in ipairs(available_sources) do
     local key = source_information.id .. "@" .. (source_information.source_of_source or "")
     local installed_info = installed_sources_by_key[key]
 
@@ -473,8 +473,8 @@ function AvailableSourcesListing:generateItemTableFromInstalledAndAvailableSourc
 
   --- Merge: installed first, available later
   local final = {}
-  for _, v in ipairs(items_installed) do table.insert(final, v) end
-  for _, v in ipairs(items_available) do table.insert(final, v) end
+  for __, v in ipairs(items_installed) do table.insert(final, v) end
+  for __, v in ipairs(items_available) do table.insert(final, v) end
 
   return final
 end
@@ -548,13 +548,13 @@ end
 --- @param outcome InstallOutcomeSelectionRequired
 function AvailableSourcesListing:showLanguageSelection(source_information, outcome)
   local name_counts = {}
-  for _, lang in ipairs(outcome.languages) do
+  for __, lang in ipairs(outcome.languages) do
     local display = langNames.nameFor(lang)
     name_counts[display] = (name_counts[display] or 0) + 1
   end
 
   local options = {}
-  for _, lang in ipairs(outcome.languages) do
+  for __, lang in ipairs(outcome.languages) do
     local display = langNames.nameFor(lang)
     if name_counts[display] > 1 then
       display = display .. " (" .. lang .. ")"
@@ -573,7 +573,7 @@ function AvailableSourcesListing:showLanguageSelection(source_information, outco
   -- source metadata IDs) in `current` because the backend validates
   -- languages by exact string against `bundled.contains()`.
   local outcome_ids = {}
-  for _, lang in ipairs(outcome.languages) do
+  for __, lang in ipairs(outcome.languages) do
     local key = langNames.normalize(lang)
     outcome_ids[key] = outcome_ids[key] or {}
     table.insert(outcome_ids[key], lang)
@@ -582,8 +582,8 @@ function AvailableSourcesListing:showLanguageSelection(source_information, outco
   local current = {}
   local current_set = {}
   if source_information.languages then
-    for _, lang in ipairs(source_information.languages) do
-      for _, outcome_lang in ipairs(outcome_ids[langNames.normalize(lang)] or {}) do
+    for __, lang in ipairs(source_information.languages) do
+      for __, outcome_lang in ipairs(outcome_ids[langNames.normalize(lang)] or {}) do
         if not current_set[outcome_lang] then
           current_set[outcome_lang] = true
           table.insert(current, outcome_lang)

@@ -436,7 +436,7 @@ function CookieSyncView:showCookies()
 
   local domains = resp.body.domains or {}
   local lines = {}
-  for _, entry in ipairs(domains) do
+  for __, entry in ipairs(domains) do
     local domain = entry[1]
     local info = entry[2]
     table.insert(lines, domain .. " (" .. #info.cookies .. " cookies)")

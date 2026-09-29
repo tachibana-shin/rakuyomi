@@ -1,5 +1,5 @@
 local hasValue = function(list, value)
-  for _, v in ipairs(list) do if v == value then return true end end
+  for __, v in ipairs(list) do if v == value then return true end end
   return false
 end
 

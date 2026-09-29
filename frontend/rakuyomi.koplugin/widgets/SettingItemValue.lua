@@ -80,7 +80,7 @@ function SettingItemValue:createValueWidget()
   -- REFACT maybe split this into multiple widgets, one for each value definition type
   if self.value_definition.type == "enum" then
     local label_for_value = {}
-    for _, option in ipairs(self.value_definition.options) do
+    for __, option in ipairs(self.value_definition.options) do
       label_for_value[option.value] = option.label
     end
 
@@ -98,14 +98,14 @@ function SettingItemValue:createValueWidget()
     }
   elseif self.value_definition.type == "multi-enum" then
     local label_for_value = {}
-    for _, option in ipairs(self.value_definition.options) do
+    for __, option in ipairs(self.value_definition.options) do
       label_for_value[option.value] = option.label
     end
 
     local keys = self:getCurrentValue()
 
     local labels = {}
-    for _, key in ipairs(keys) do
+    for __, key in ipairs(keys) do
       local label = label_for_value[key]
       if label then
         table.insert(labels, label)
@@ -258,7 +258,7 @@ function SettingItemValue:onTap()
     end
   elseif self.value_definition.type == "enum" then
     local radio_buttons = {}
-    for _, option in ipairs(self.value_definition.options) do
+    for __, option in ipairs(self.value_definition.options) do
       table.insert(radio_buttons, {
         {
           text = option.label,

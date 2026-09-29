@@ -72,7 +72,7 @@ function MenuItem:getGesPosition(ges)
   }
 end
 
-function MenuItem:onTapSelect(_, ges)
+function MenuItem:onTapSelect(__, ges)
   -- Abort if the menu hasn't been painted yet.
   if not self[1].dimen then return end
 
@@ -106,7 +106,7 @@ function MenuItem:onTapSelect(_, ges)
   return true
 end
 
-function MenuItem:onHoldSelect(_, ges)
+function MenuItem:onHoldSelect(__, ges)
   if not self[1].dimen then return end
 
   local pos = self:getGesPosition(ges)

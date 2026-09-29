@@ -319,7 +319,7 @@ function MangaReader:addRakuOptionsToReader(ui)
     if panel.icon == "appbar.pageview" then
       -- Check if the option was already added (e.g. on document switch without closing reader).
       local already_added = false
-      for _, opt in ipairs(panel.options) do
+      for __, opt in ipairs(panel.options) do
         if opt.name == "rakuyomi_view_mode" then
           already_added = true
           break
@@ -363,7 +363,7 @@ Options: Default (follow source), RTL (right-to-left for Japanese manga), LTR (l
               { name = "Vertical",      label = _("Vertical") },
               { name = "Scroll",        label = _("Scroll") },
             }
-            for _, opt in ipairs(viewer_options) do
+            for __, opt in ipairs(viewer_options) do
               local suffix = current == opt.name and " *" or ""
               table.insert(buttons, { {
                 text = opt.label .. suffix,

@@ -136,7 +136,7 @@ function ChapterListing:updateChapterList()
   if self._refresh_langs_selected == true then
     local langs_set = {}
     local langs_list = {}
-    for _, chapter in ipairs(self.raw_chapters) do
+    for __, chapter in ipairs(self.raw_chapters) do
       local lang = chapter.lang or "unknown"
       if not langs_set[lang] then
         langs_set[lang] = true
@@ -148,7 +148,7 @@ function ChapterListing:updateChapterList()
     if #langs_list >= 2 then
       table.sort(langs_list)
       self.langs = {}
-      for _, lang in ipairs(langs_list) do
+      for __, lang in ipairs(langs_list) do
         table.insert(self.langs, { id = lang, name = lang })
       end
       local key = self:hashMangaId() .. "_lang"
@@ -287,7 +287,7 @@ function ChapterListing:loadSavedScanlatorPreference()
   self._scanlator_loaded = true
 
   if response.type == 'SUCCESS' and response.body then
-    for _, available_scanlator in ipairs(self.available_scanlators) do
+    for __, available_scanlator in ipairs(self.available_scanlators) do
       if available_scanlator == response.body then
         self.selected_scanlator = response.body
         break
@@ -335,7 +335,7 @@ end
 -- ---@param chapter Chapter
 -- ---@return Chapter
 -- function ChapterListing:findRootChapter(chapter)
---   for _, root in ipairs(self.chapters) do
+--   for __, root in ipairs(self.chapters) do
 --     if root.id == chapter.id then
 --       return root
 --     end
@@ -574,7 +574,7 @@ function ChapterListing:onContextMenuChoice(item)
           UIManager:close(dialog_context_menu)
 
           self:revokeChapter(chapter, false)
-          self:downloadChapter(chapter, nil, function(_)
+          self:downloadChapter(chapter, nil, function(__)
             UIManager:show(InfoMessage:new { text = _("Chapter refreshed") })
           end)
         end
@@ -600,7 +600,7 @@ function ChapterListing:onContextMenuChoice(item)
           if chapter.downloaded then
             self:revokeChapter(chapter)
           else
-            self:downloadChapter(chapter, nil, function(_)
+            self:downloadChapter(chapter, nil, function(__)
               UIManager:show(InfoMessage:new { text = _("Chapter downloaded") })
             end)
           end

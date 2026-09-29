@@ -139,7 +139,7 @@ function MangaSearchResults:generateItemTableFromSearchResults(results)
   local item_table = {}
   local is_cover = self.search_view_mode == "cover"
 
-  for _, manga in ipairs(results) do
+  for __, manga in ipairs(results) do
     local mandatory_parts = {}
     if manga.last_read then
       table.insert(mandatory_parts, calcLastReadText(manga.last_read) .. " ")
@@ -308,7 +308,7 @@ function MangaSearchResults:loadNextPage()
     local results = response.body[1]
     self.has_next_page = response.body[3] == true
 
-    for _, manga in ipairs(results) do
+    for __, manga in ipairs(results) do
       table.insert(self.results, manga)
     end
     self.result_page = next_page

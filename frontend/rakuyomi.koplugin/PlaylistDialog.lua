@@ -292,7 +292,7 @@ function PlaylistDialog:_buildAndShow(playlists, on_select_override, on_return_c
   if #playlists == 0 then
     table.insert(options, { _type = "empty" })
   else
-    for _, p in ipairs(playlists) do
+    for __, p in ipairs(playlists) do
       table.insert(options, { _type = "playlist", playlist = p })
     end
   end

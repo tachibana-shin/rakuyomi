@@ -53,7 +53,7 @@ local function formatTrackingCandidate(candidate)
 end
 
 local function findTrackingBinding(bindings, service)
-  for _, binding in ipairs(bindings or {}) do
+  for __, binding in ipairs(bindings or {}) do
     if binding.service == service then
       return binding
     end
@@ -106,7 +106,7 @@ function TrackingMenu.openTrackingServicePicker(manga, on_pull_completed)
   local settings_response = Backend.getSettings()
   local settings = (settings_response.type == "SUCCESS") and settings_response.body or nil
 
-  for _, s in ipairs(services) do
+  for __, s in ipairs(services) do
     table.insert(buttons, {
       {
         text = TrackingServices.getLabel(s),
@@ -343,7 +343,7 @@ function TrackingMenu.syncTrackingService(manga, service, direction, on_pull_com
     end
 
     local messages = {}
-    for _, result in ipairs(response.body) do
+    for __, result in ipairs(response.body) do
       table.insert(messages, result.message)
     end
 

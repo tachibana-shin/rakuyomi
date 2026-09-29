@@ -10,7 +10,7 @@
 local function findPreviousChapter(chapters, current_chapter, is_desc)
   local best_candidate = nil
 
-  for _, candidate in ipairs(chapters) do
+  for __, candidate in ipairs(chapters) do
     if candidate.chapter_num ~= nil and current_chapter.chapter_num ~= nil then
       if candidate.chapter_num >= current_chapter.chapter_num then
         goto continue

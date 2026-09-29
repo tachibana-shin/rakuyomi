@@ -7,7 +7,7 @@ local function findLastRead(chapters)
     return nil
   end
 
-  for _, chapter in ipairs(chapters) do
+  for __, chapter in ipairs(chapters) do
     if chapter.last_read ~= nil or chapter.read then
       return chapter
     end

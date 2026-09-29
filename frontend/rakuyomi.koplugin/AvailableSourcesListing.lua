@@ -370,15 +370,14 @@ function AvailableSourcesListing:patchTitleBar()
     }
   end
 
-  -- The filter buttons take the left slot and the close button keeps the
-  -- right one. This screen sets no `title_bar_left_icon`, so the close button
-  -- Menu inherits lands at [2] and has to be pushed to [3]: assigning [2]
-  -- alone would destroy it. Idempotent, because [3] always receives the widget
-  -- KOReader built rather than the group left by a previous call.
+  -- With with_bottom_line, KOReader places the bottom-line group at [2]
+  -- and this menu's close button at [3]: the filter group and the close
+  -- button take the next two slots so the separator line is preserved.
+  -- Idempotent: patchTitleBar may run on init and on every filter change.
   local filter_group = HorizontalGroup:new(buttons)
   self.title_bar.left_button = filter_group
-  self.title_bar[2] = filter_group
-  self.title_bar[3] = self.title_bar.right_button
+  self.title_bar[3] = filter_group
+  self.title_bar[4] = self.title_bar.right_button
   self.filter_group = filter_group
 end
 

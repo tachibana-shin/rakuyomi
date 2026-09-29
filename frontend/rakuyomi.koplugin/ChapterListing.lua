@@ -227,10 +227,11 @@ function ChapterListing:patchTitleBar(count_lang)
   end
 
   --- [1] title
-  --- [2] left button
-  --- [3] right button
-  if self.title_bar[2] ~= nil then
-    self.title_bar[2] = self.title_bar.left_button
+  --- [2] bottom line
+  --- [3] left button
+  --- [4] right button
+  if self.title_bar[3] ~= nil then
+    self.title_bar[3] = self.title_bar.left_button
   end
 end
 

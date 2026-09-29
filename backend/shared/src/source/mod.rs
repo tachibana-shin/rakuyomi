@@ -615,7 +615,7 @@ pub struct BlockingSource {
     pub next_sdk: bool,
     pub features: SourceFeatures,
     path: PathBuf,
-    source_settings: Option<SourceSettings>,
+    pub(crate) source_settings: Option<SourceSettings>,
     manager_settings: Settings,
     /// The SDK mode recorded in the sidecar meta file after the first boot
     /// (`None` until then), so the first boot attempt matches the mode the
@@ -634,7 +634,7 @@ pub struct BlockingSource {
     pub next_sdk: bool,
     pub features: SourceFeatures,
     path: PathBuf,
-    source_settings: Option<SourceSettings>,
+    pub(crate) source_settings: Option<SourceSettings>,
     manager_settings: Settings,
     /// The SDK mode recorded in the sidecar meta file after the first boot
     /// (`None` until then), so the first boot attempt matches the mode the

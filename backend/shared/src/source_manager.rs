@@ -686,5 +686,19 @@ mod tests {
             !std::sync::Arc::ptr_eq(&before, &after),
             "update_settings must replace the live source so it re-reads its settings"
         );
+        // Replacement alone is not enough: the fresh instance must carry the
+        // updated stored value (the engine is never booted here, so the
+        // load-time snapshot is still in place to inspect).
+        let stored = after
+            .lock()
+            .unwrap()
+            .source_settings
+            .as_ref()
+            .and_then(|settings| settings.get(&"hideWatermark".to_string()));
+        assert_eq!(
+            stored,
+            Some(SourceSettingValue::Bool(true)),
+            "reloaded source must read the updated stored setting"
+        );
     }
 }

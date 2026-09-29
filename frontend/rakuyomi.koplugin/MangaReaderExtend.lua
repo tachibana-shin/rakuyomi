@@ -6,7 +6,6 @@ local HorizontalSpan = require("ui/widget/horizontalspan")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local LineWidget = require("ui/widget/linewidget")
 local Geom = require("ui/geometry")
-local Blitbuffer = require("ffi/blitbuffer")
 local Device = require("device")
 local Size = require("ui/size")
 local getChapterDisplayName = require("utils/getChapterDisplayName")
@@ -91,7 +90,6 @@ function MangaReaderExtend:init()
   local spacing_width = math.max(min_spacing, math.floor((available_width - prev_width - next_width - label_width) / 2))
 
   local separator = LineWidget:new {
-    background = Blitbuffer.COLOR_GRAY_1,
     dimen = Geom:new {
       w = available_width,
       h = Size.line.thick,

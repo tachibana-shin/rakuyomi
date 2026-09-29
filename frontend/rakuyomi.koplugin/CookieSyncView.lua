@@ -9,7 +9,6 @@ local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local InputDialog = require("ui/widget/inputdialog")
-local LineWidget = require("ui/widget/linewidget")
 local OverlapGroup = require("ui/widget/overlapgroup")
 local Screen = require("device").screen
 local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
@@ -56,7 +55,7 @@ function CookieSyncView:init()
   local title_bar = TitleBar:new {
     width = self.dimen.w,
     title = _("Cookie Sync"),
-    with_bottom_line = false,
+    with_bottom_line = true,
     left_icon = "chevron.left",
     left_icon_tap_callback = function()
       self:onReturn()
@@ -195,12 +194,6 @@ function CookieSyncView:buildStatusWidget()
   end
 
   table.insert(items, VerticalSpan:new { width = Size.span.vertical_large })
-  table.insert(items, LineWidget:new {
-    dimen = Geom:new {
-      w = item_width,
-      h = 1,
-    },
-  })
 
   return items
 end

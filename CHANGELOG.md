@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.0...v1.42.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* don't use `_` for space param ([e78e255](https://github.com/tachibana-shin/rakuyomi/commit/e78e255f03cfafadd7ac1037870c26ca0f452457))
+
 # [1.42.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.41.8...v1.42.0) (2026-09-23)
 
 

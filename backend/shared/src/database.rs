@@ -230,7 +230,7 @@ impl Database {
                 mi.artist,
                 mi.cover_url,
                 COUNT(ci.chapter_number) AS unread_chapters_count,
-                COALESCE(mcs.last_read_time, 0) AS last_read,
+                mcs.last_read_time AS last_read,
                 COALESCE(ms.viewer, md.viewer, 0) AS viewer,
                 IIF(ms.viewer IS NOT NULL, 1, 0) AS state_viewer
             FROM {table} ml
@@ -2382,13 +2382,15 @@ mod tests {
         assert_eq!(by_id["never"], Some(3), "never read");
     }
 
-    /// `last_read` is always present, so the Lua front end renders the line.
+    /// A manga that was never read reports no `last_read`, so the Lua front
+    /// end hides the line instead of rendering the Unix epoch as an age.
     ///
-    /// The front end guards on `if manga.last_read then`, and in Lua `0` is
-    /// truthy while `nil` is not. A `NULL` for a manga that was never read would
-    /// silently drop the line, so the query coalesces it to `0` instead.
+    /// The front end guards on `if manga.last_read then`, and in Lua only
+    /// `nil` is falsy: a `0` would render. Ordering still uses the raw
+    /// nullable `mcs.last_read_time`, so `LastReadAsc` keeps never-read
+    /// entries first.
     #[tokio::test]
-    async fn last_read_is_always_present() {
+    async fn never_read_manga_reports_no_last_read() {
         let (_directory, database, _playlist_id) = database_with_mixed_read_state().await;
         let sql = Database::manga_listing_sql(ListingBase::Library, &LibrarySortingMode::Ascending);
         let rows =
@@ -2398,18 +2400,19 @@ mod tests {
                 .unwrap();
 
         for row in &rows {
-            assert!(
-                row.last_read.is_some(),
-                "{} must report a last_read, not NULL",
-                row.manga_id
-            );
+            if row.manga_id == "never" {
+                assert_eq!(
+                    row.last_read, None,
+                    "never-read manga must report no timestamp, not 0"
+                );
+            } else {
+                assert!(
+                    row.last_read.is_some(),
+                    "{} must report a last_read, not NULL",
+                    row.manga_id
+                );
+            }
         }
-
-        let never_read = rows
-            .iter()
-            .find(|row| row.manga_id == "never")
-            .expect("never-read manga missing");
-        assert_eq!(never_read.last_read, Some(0), "never read coalesces to 0");
 
         // The read mangas carry a real timestamp rather than the fallback.
         for manga_id in ["read", "partial"] {

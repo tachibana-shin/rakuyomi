@@ -314,22 +314,29 @@ where
                                 let req_url = request.url().clone();
                                 let retry_request = request.try_clone();
                                 let mut req_headers = request.headers().clone();
-                                let mut response =
+                                let response =
                                     request_with_forced_referer_from_request(&client, request, 10)
                                         .await
                                         .inspect_err(|err| {
                                             eprintln!("Request error: {err}");
                                         })?;
+                                let mut status = response.status();
+                                let mut headers = response.headers().clone();
+                                let mut response_bytes = if status.is_success() {
+                                    response.bytes().await?
+                                } else {
+                                    Bytes::new()
+                                };
 
                                 // A source may omit Referer even though its image host
                                 // requires one. Retry an HTML/forbidden response once
                                 // using the source's own site URL when available.
-                                let html_response = response
-                                    .headers()
+                                let html_response = headers
                                     .get(reqwest::header::CONTENT_TYPE)
                                     .and_then(|value| value.to_str().ok())
                                     .is_some_and(|value| value.to_ascii_lowercase().contains("text/html"));
-                                if (response.status() == reqwest::StatusCode::FORBIDDEN || html_response)
+                                if (status == reqwest::StatusCode::FORBIDDEN
+                                    || (html_response && detect_image_extension(&response_bytes).is_none()))
                                     && !req_headers.contains_key(reqwest::header::REFERER)
                                 {
                                     if let (Some(mut retry), Some(site)) =
@@ -341,18 +348,25 @@ where
                                                 if let Ok(value) = reqwest::header::HeaderValue::from_str(&referer) {
                                                     retry.headers_mut().insert(reqwest::header::REFERER, value);
                                                     req_headers = retry.headers().clone();
-                                                    response = request_with_forced_referer_from_request(&client, retry, 10).await?;
+                                                    let retry_response = request_with_forced_referer_from_request(&client, retry, 10).await?;
+                                                    status = retry_response.status();
+                                                    headers = retry_response.headers().clone();
+                                                    response_bytes = if status.is_success() {
+                                                        retry_response.bytes().await?
+                                                    } else {
+                                                        Bytes::new()
+                                                    };
                                                 }
                                             }
                                         }
                                     }
                                 }
 
-                                if !response.status().is_success() {
+                                if !status.is_success() {
                                     let err = DownloadError {
                                         page_index: page.index,
                                         url: req_url.to_string(),
-                                        reason: format!("HTTP {}", response.status()),
+                                        reason: format!("HTTP {}", status),
                                         attempts: 1,
                                     };
 
@@ -362,22 +376,14 @@ where
                                         page.index,
                                         format!("{:0>page_index_width$}.{}", page.index, extension),
                                         generate_error_image(
-                                            &response.status().as_u16().to_string(),
-                                            response
-                                                .status()
-                                                .canonical_reason()
-                                                .unwrap_or("Unknown Error"),
+                                            &status.as_u16().to_string(),
+                                            status.canonical_reason().unwrap_or("Unknown Error"),
                                             500,
                                             667,
                                         )?,
                                         Some(err),
                                     ));
                                 }
-
-                                let status = response.status();
-                                let headers = response.headers().clone();
-
-                                let response_bytes = response.bytes().await?;
 
                                 if source.features.process_page_image() {
                                     Bytes::from(
@@ -469,10 +475,22 @@ where
                             };
 
                             // Never put an HTML access/error page into a CBZ as an image.
-                            let leading = String::from_utf8_lossy(&final_bytes[..final_bytes.len().min(64)]);
-                            if leading.trim_start().to_ascii_lowercase().starts_with("<!doctype html")
-                                || leading.trim_start().to_ascii_lowercase().starts_with("<html")
-                            {
+                            let mut leading = final_bytes.trim_ascii_start();
+                            if let Some(rest) = leading.strip_prefix(b"\xef\xbb\xbf") {
+                                leading = rest.trim_ascii_start();
+                            }
+                            let is_html = loop {
+                                if let Some(comment) = leading.strip_prefix(b"<!--") {
+                                    let Some(end) = comment.windows(3).position(|part| part == b"-->") else {
+                                        break true;
+                                    };
+                                    leading = comment[end + 3..].trim_ascii_start();
+                                    continue;
+                                }
+                                break leading.get(..14).is_some_and(|head| head.eq_ignore_ascii_case(b"<!doctype html"))
+                                    || leading.get(..5).is_some_and(|head| head.eq_ignore_ascii_case(b"<html"));
+                            };
+                            if is_html {
                                 let reason = "image server returned HTML instead of an image".to_string();
                                 let err = DownloadError {
                                     page_index: page.index,

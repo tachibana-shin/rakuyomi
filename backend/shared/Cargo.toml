@@ -88,7 +88,7 @@ ordered-float = "5.3.0"
 dom_query = { version = "0.28.0", features = ["atomic"] }
 d4rt_rs = "0.1.4"
 rquickjs = { version = "0.12.2", features = ["futures", "bindgen"] }
-dexvm = { version = "0.2.0", features = ["keiyoushi"] }
+dexvm = { git = "https://github.com/DermonCode/dexvm", rev = "2e418bc1e6b08a663759d427d39d63c71858fde1", features = ["keiyoushi"] }
 zune-png = "0.5.2"
 zune-jpeg = "0.5.15"
 zune-core = "0.5.1"

@@ -195,12 +195,8 @@ impl Database {
             .collect())
     }
 
-    /// SQL shared by the library and the playlist manga listings.
-    ///
-    /// Both listings alias their base table to `ml`, so a single
-    /// [`LibrarySortingMode::order_by_clause`] serves the two of them and the
-    /// rest of the query cannot drift apart. Only the base table and the
-    /// playlist filter differ.
+    /// Complete listing query (including `ORDER BY`) shared by library and playlist,
+    /// so the two cannot drift apart.
     fn manga_listing_sql(base: ListingBase, sorting_mode: &LibrarySortingMode) -> String {
         format!(
             r#"
@@ -342,17 +338,14 @@ impl Database {
     }
 }
 
-/// Which set of mangas a listing query walks.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ListingBase {
-    /// The whole library.
     Library,
-    /// The members of a single playlist.
     Playlist,
 }
 
 impl ListingBase {
-    /// The base table, aliased to `ml` by the query.
+    /// Table name, aliased to `ml` in the query.
     fn table(self) -> &'static str {
         match self {
             Self::Library => "manga_library",
@@ -360,9 +353,7 @@ impl ListingBase {
         }
     }
 
-    /// The `WHERE` clause narrowing the listing, empty for the whole library.
-    ///
-    /// Binds parameter `?1`, which only the playlist query passes.
+    /// Binds `?1`; only the playlist query passes it.
     fn filter(self) -> &'static str {
         match self {
             Self::Library => "",
@@ -2203,9 +2194,6 @@ mod tests {
         LibrarySortingMode::SourceDesc,
     ];
 
-    /// A database with three library entries: `read` fully read, `never` never
-    /// read, `partial` with one of three chapters read. Returns the database
-    /// and the playlist the three entries were also added to.
     async fn database_with_mixed_read_state() -> (tempfile::TempDir, Database, i64) {
         let directory = tempdir().unwrap();
         let database = Database::new(&directory.path().join("database.sqlite"))
@@ -2255,10 +2243,7 @@ mod tests {
             let id = MangaId::from_strings("source".to_string(), manga_id.to_string());
             database.add_manga_to_library(id.clone()).await.unwrap();
         }
-        // "read": every chapter read. "partial": only the first one. "never":
-        // no chapter state at all, so the aggregate sees no rows. The chapter
-        // ids must match the ones the fixture inserted, otherwise the listing
-        // aggregates join on nothing.
+        // Chapter ids must match the fixture, otherwise the aggregates join on nothing.
         for (manga_id, chapters) in [
             ("read", vec!["chapter1", "chapter2", "chapter3"]),
             ("partial", vec!["chapter1"]),
@@ -2290,12 +2275,7 @@ mod tests {
         (directory, database, playlist.id)
     }
 
-    /// Both listing queries must be valid SQL for every sorting mode.
-    ///
-    /// `order_by_clause` is shared by the library and the playlist listing, so a
-    /// clause naming a column or an alias that does not resolve in one of them
-    /// would only surface at runtime. This runs each one against a populated
-    /// database and fails on any SQL error.
+    /// `order_by_clause` is shared, so a bad column would only fail at runtime.
     #[tokio::test]
     async fn every_sorting_mode_runs_on_both_listing_queries() {
         let (_directory, database, playlist_id) = database_with_mixed_read_state().await;
@@ -2322,8 +2302,6 @@ mod tests {
         }
     }
 
-    /// The library and playlist listings only differ by their base table and
-    /// filter, so both must expose the same rows in the same order.
     #[tokio::test]
     async fn library_and_playlist_listings_agree() {
         let (_directory, database, playlist_id) = database_with_mixed_read_state().await;
@@ -2357,8 +2335,6 @@ mod tests {
         }
     }
 
-    /// The unread count and the `last_read` fallback must not drift from what
-    /// the front end displays.
     #[tokio::test]
     async fn unread_count_and_last_read_are_reported_per_manga() {
         let (_directory, database, _playlist_id) = database_with_mixed_read_state().await;
@@ -2374,21 +2350,13 @@ mod tests {
             .map(|row| (row.manga_id.as_str(), row.unread_chapters_count))
             .collect::<HashMap<_, _>>();
 
-        // Chapters above the last read one count as unread, and the read
-        // chapters themselves do not.
         assert_eq!(by_id["read"], Some(0), "fully read");
         assert_eq!(by_id["partial"], Some(2), "one of three read");
-        // Never read: no chapter state at all, so every chapter is unread.
         assert_eq!(by_id["never"], Some(3), "never read");
     }
 
-    /// A manga that was never read reports no `last_read`, so the Lua front
-    /// end hides the line instead of rendering the Unix epoch as an age.
-    ///
-    /// The front end guards on `if manga.last_read then`, and in Lua only
-    /// `nil` is falsy: a `0` would render. Ordering still uses the raw
-    /// nullable `mcs.last_read_time`, so `LastReadAsc` keeps never-read
-    /// entries first.
+    /// Never-read manga reports no `last_read`: in Lua only `nil` is falsy, so `0` would render.
+    /// Ordering still uses nullable `mcs.last_read_time`, keeping never-read entries first.
     #[tokio::test]
     async fn never_read_manga_reports_no_last_read() {
         let (_directory, database, _playlist_id) = database_with_mixed_read_state().await;
@@ -2414,7 +2382,6 @@ mod tests {
             }
         }
 
-        // The read mangas carry a real timestamp rather than the fallback.
         for manga_id in ["read", "partial"] {
             let row = rows
                 .iter()

@@ -370,10 +370,11 @@ function AvailableSourcesListing:patchTitleBar()
     }
   end
 
-  -- With with_bottom_line, KOReader places the bottom-line group at [2]
-  -- and this menu's close button at [3]: the filter group and the close
-  -- button take the next two slots so the separator line is preserved.
-  -- Idempotent: patchTitleBar may run on init and on every filter change.
+  --- [1] title
+  --- [2] bottom line (inserted by KOReader when with_bottom_line is set)
+  --- [3] filter group
+  --- [4] close button
+  -- Idempotent: patchTitleBar reruns on init and on every filter change.
   local filter_group = HorizontalGroup:new(buttons)
   self.title_bar.left_button = filter_group
   self.title_bar[3] = filter_group

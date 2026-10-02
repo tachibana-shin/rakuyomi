@@ -7,7 +7,6 @@ local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local InputContainer = require("ui/widget/container/inputcontainer")
-local LineWidget = require("ui/widget/linewidget")
 local OverlapGroup = require("ui/widget/overlapgroup")
 local Screen = require("device").screen
 local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
@@ -154,13 +153,13 @@ function TaskManagerView:init()
   local title_bar = TitleBar:new {
     width = self.dimen.w,
     title = self.title,
-    left_icon = "chevron.left",
+    with_bottom_line = true,
+    left_icon = "appbar.settings",
     left_icon_tap_callback = function()
-      self:onReturn()
-    end,
-    right_icon = "appbar.settings",
-    right_icon_tap_callback = function()
       self:showSettings()
+    end,
+    close_callback = function()
+      self:onClose()
     end,
   }
   self.title_bar = title_bar
@@ -586,10 +585,7 @@ function TaskManagerView:rebuildTable()
   -- style; only the rows scroll away.
   self.table_group[1] = self:buildHeaderRow()
   self.table_group[2] = VerticalSpan:new { width = Size.span.vertical_small }
-  self.table_group[3] = LineWidget:new {
-    dimen = Geom:new { w = self.content_width, h = 1 },
-  }
-  self.table_group[4] = self.scrollable
+  self.table_group[3] = self.scrollable
 end
 
 --- @private
@@ -705,9 +701,10 @@ function TaskManagerSettingsView:init()
     title = self.title,
     fullscreen = true,
     with_bottom_line = true,
-    bottom_line_color = Blitbuffer.COLOR_DARK_GRAY,
-    bottom_line_h_padding = padding,
     left_icon = "chevron.left",
+    -- No flash: like the close button, this chevron closes its container,
+    -- and the highlight repaint would delay onClose by a full cycle.
+    left_icon_allow_flash = false,
     left_icon_tap_callback = function()
       self:onClose()
     end,

@@ -46,6 +46,7 @@ local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
 local CheckboxDialog = require("CheckboxDialog")
+local titleBarTextButtonHeight = require("widgets/TitleBarButtonHeight")
 
 local RefreshLibraryChapters = require("jobs/RefreshLibraryChapters")
 local RefreshLibraryDetails = require("jobs/RefreshLibraryDetails")
@@ -206,6 +207,7 @@ function LibraryView:patchTitleBar(count_notify)
   local button_padding = Screen:scaleBySize(11)
 
   self.title_bar.left_button = HorizontalGroup:new {
+    align = "top",
     IconButton:new {
       icon = "appbar.settings",
       icon_rotation_angle = self.left_icon_rotation_angle,
@@ -235,8 +237,8 @@ function LibraryView:patchTitleBar(count_notify)
       face = SMALL_FONT_FACE,
       bordersize = 0,
       enabled = true,
+      height = titleBarTextButtonHeight(self.title_bar, left_icon_size, button_padding),
       padding = button_padding,
-      padding_bottom = button_padding,
       text_font_bold = false,
       callback = function()
         Trapper:wrap(function()

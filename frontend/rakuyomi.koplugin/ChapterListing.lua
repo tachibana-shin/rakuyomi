@@ -29,6 +29,7 @@ local ErrorDialog = require("ErrorDialog")
 local MangaReader = require("MangaReader")
 local MangaInfoWidget = require("MangaInfoWidget")
 local CheckboxDialog = require("CheckboxDialog")
+local titleBarTextButtonHeight = require("widgets/TitleBarButtonHeight")
 local Testing = require("testing")
 local calcLastReadText = require("utils/calcLastReadText")
 local isBeforeChapter = require("utils/isBeforeChapter")
@@ -184,6 +185,7 @@ function ChapterListing:patchTitleBar(count_lang)
   local button_padding = Screen:scaleBySize(11)
 
   self.title_bar.left_button = HorizontalGroup:new {
+    align = "top",
     IconButton:new {
       icon = "appbar.menu",
       icon_rotation_angle = self.left_icon_rotation_angle,
@@ -217,8 +219,8 @@ function ChapterListing:patchTitleBar(count_lang)
         face = SMALL_FONT_FACE,
         bordersize = 0,
         enabled = true,
+        height = titleBarTextButtonHeight(self.title_bar, left_icon_size, button_padding),
         padding = button_padding,
-        padding_bottom = button_padding,
         text_font_bold = false,
         callback = function()
           self:showSelectLanguage()

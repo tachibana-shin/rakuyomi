@@ -376,22 +376,25 @@ function AvailableSourcesListing:patchTitleBar()
     }
   end
 
+-- HorizontalGroup centres by default, which pushes a shorter child down by
+  -- (tallest - own) / 2 and eats into the margin above the bottom line.
+  buttons.align = "top"
+  local filter_group = HorizontalGroup:new(buttons)
   --- [1] title
   --- [2] bottom line (inserted by KOReader when with_bottom_line is set)
   --- [3] filter group
   --- [4] close button
-  -- Idempotent: patchTitleBar reruns on init and on every filter change.
-  -- HorizontalGroup centres by default, which pushes a shorter child down by
-  -- (tallest - own) / 2 and eats into the margin above the bottom line.
-  buttons.align = "top"
-  local filter_group = HorizontalGroup:new(buttons)
-  self.title_bar.left_button = filter_group
-  if self.title_bar[3] ~= nil then
+  -- This menu sets no title_bar_left_icon, so KOReader puts the inherited
+  -- close button at [3] and leaves [4] absent. Inserting the group before it
+  -- shifts the close button to [4] instead of overwriting it.
+  -- patchTitleBar reruns on init and on every filter change, so afterwards
+  -- replace the group already inserted rather than adding a second one.
+  if self.filter_group then
     self.title_bar[3] = filter_group
+  else
+    table.insert(self.title_bar, 3, filter_group)
   end
-  if self.title_bar[4] ~= nil then
-    self.title_bar[4] = self.title_bar.right_button
-  end
+  self.title_bar.left_button = filter_group
   self.filter_group = filter_group
 end
 

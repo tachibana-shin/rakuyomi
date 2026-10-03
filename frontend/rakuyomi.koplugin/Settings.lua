@@ -346,6 +346,15 @@ Settings.setting_value_definitions = {
     { type = 'divider', title = _('Recommended reader settings') }
   },
   {
+    'rakuyomi_black_reader_background',
+    {
+      type = 'boolean',
+      title = _('Use black background while reading manga'),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
     'rakuyomi_page_margin',
     {
       type = 'boolean',

@@ -1,4 +1,5 @@
 local ReaderUI = require("apps/reader/readerui")
+local Blitbuffer = require("ffi/blitbuffer")
 local ReadHistory = require("readhistory")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
@@ -104,12 +105,56 @@ end
 --- @param ui unknown The `ReaderUI` instance we're being called from.
 function MangaReader:initializeFromReaderUI(ui)
   if self.is_showing then
+    self:applyReaderAppearance(ui)
     ui.menu:registerToMainMenu(MangaReader)
     self:overrideBtnFileManager(ui.menu)
 
     ui:registerPostInitCallback(function()
       self:hookWithPriorityOntoReaderUiEvents(ui)
     end)
+  end
+end
+
+--- Applies Rakuyomi-specific reader appearance settings.
+--- @private
+--- @param ui unknown The currently active `ReaderUI` instance.
+function MangaReader:applyReaderAppearance(ui)
+  if not G_reader_settings:isTrue("rakuyomi_black_reader_background") then
+    return
+  end
+
+  local view = ui.view
+
+  view.drawPageSurround = function(reader_view, bb, x, y)
+    if reader_view.dimen.h > reader_view.visible_area.h then
+      bb:paintRect(x, y, reader_view.dimen.w, reader_view.state.offset.y, Blitbuffer.COLOR_BLACK)
+      local bottom_margin = y + reader_view.visible_area.h + reader_view.state.offset.y
+      bb:paintRect(
+        x,
+        bottom_margin,
+        reader_view.dimen.w,
+        reader_view.state.offset.y + reader_view.footer:getHeight(),
+        Blitbuffer.COLOR_BLACK
+      )
+    end
+    if reader_view.dimen.w > reader_view.visible_area.w then
+      bb:paintRect(x, y, reader_view.state.offset.x, reader_view.dimen.h, Blitbuffer.COLOR_BLACK)
+      bb:paintRect(
+        x + reader_view.dimen.w - reader_view.state.offset.x - 1,
+        y,
+        reader_view.state.offset.x + 1,
+        reader_view.dimen.h,
+        Blitbuffer.COLOR_BLACK
+      )
+    end
+  end
+
+  view.drawPageBackground = function(reader_view, bb, x, y)
+    bb:paintRect(x, y, reader_view.dimen.w, reader_view.dimen.h, Blitbuffer.COLOR_BLACK)
+  end
+
+  view.drawPageGap = function(reader_view, bb, x, y)
+    bb:paintRect(x, y, reader_view.dimen.w, reader_view.page_gap.height, Blitbuffer.COLOR_BLACK)
   end
 end
 

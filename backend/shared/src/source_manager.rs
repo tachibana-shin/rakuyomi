@@ -385,6 +385,7 @@ impl SourceManager {
         candidates
             .into_iter()
             .chain([
+                self.source_path(id),
                 self.lnreader_source_path(id),
                 self.mangayomi_source_path(id),
                 self.mangayomi_js_source_path(id),
@@ -608,5 +609,96 @@ impl SourceCollection for SourceManager {
 
     fn sources(&self) -> Vec<&Source> {
         self.sources_by_id.values().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::settings::SourceSettingValue;
+    use std::io::Write;
+
+    /// A minimal `.aix` archive: `from_aix_file` only reads these two entries,
+    /// and the WASM engine is booted lazily so no `main.wasm` is needed.
+    fn write_minimal_aix(path: &Path) {
+        let file = std::fs::File::create(path).unwrap();
+        let mut zip = zip::ZipWriter::new(file);
+        let options = zip::write::SimpleFileOptions::default()
+            .compression_method(zip::CompressionMethod::Stored);
+        zip.start_file("Payload/source.json", options).unwrap();
+        zip.write_all(
+            br#"{"info":{"id":"en.test","name":"Test","version":"1.0.0"},"config":null}"#,
+        )
+        .unwrap();
+        zip.start_file("Payload/settings.json", options).unwrap();
+        zip.write_all(
+            br#"[{"type":"switch","key":"hideWatermark","title":"Hide Watermark","default":false}]"#,
+        )
+        .unwrap();
+        zip.finish().unwrap();
+    }
+
+    /// A settings change must replace the live source.
+    ///
+    /// `update_settings` reloads only the files whose source changed, so if
+    /// `source_file_for_id` cannot resolve an `.aix` under the `all` feature the
+    /// reload set is empty and the already-booted source keeps serving the
+    /// settings it snapshotted at boot. The WASM engine only refreshes those
+    /// settings on a fresh instance, so identity of the `Arc` is the boundary
+    /// where the bug lives.
+    #[test]
+    fn hot_update_replaces_the_live_aidoku_source() {
+        let directory = tempfile::tempdir().unwrap();
+        let id = SourceId::new("en.test".to_string());
+        write_minimal_aix(&directory.path().join("en.test.aix"));
+
+        let arc = std::sync::Arc::new(Mutex::new(
+            SourceManager::from_folder(directory.path().to_path_buf(), Settings::default())
+                .unwrap(),
+        ));
+        let mut manager =
+            SourceManager::from_folder(directory.path().to_path_buf(), Settings::default())
+                .unwrap();
+        manager.sources_by_id = manager.load_all_sources(&arc).unwrap();
+        assert!(
+            manager.sources_by_id.contains_key(&id),
+            "the fixture source should have been loaded"
+        );
+
+        let before = match &manager.sources_by_id[&id].backend {
+            SourceBackend::Aidoku(source) => source.clone(),
+            _ => panic!("expected an aidoku source"),
+        };
+
+        // Simulate POST /installed-sources/en.test/stored-settings.
+        let mut next = manager.settings.clone();
+        next.source_settings.insert(
+            "en.test".to_string(),
+            HashMap::from([("hideWatermark".to_string(), SourceSettingValue::Bool(true))]),
+        );
+        manager.update_settings(next, &arc).unwrap();
+
+        let after = match &manager.sources_by_id[&id].backend {
+            SourceBackend::Aidoku(source) => source.clone(),
+            _ => panic!("expected an aidoku source"),
+        };
+        assert!(
+            !std::sync::Arc::ptr_eq(&before, &after),
+            "update_settings must replace the live source so it re-reads its settings"
+        );
+        // Replacement alone is not enough: the fresh instance must carry the
+        // updated stored value (the engine is never booted here, so the
+        // load-time snapshot is still in place to inspect).
+        let stored = after
+            .lock()
+            .unwrap()
+            .source_settings
+            .as_ref()
+            .and_then(|settings| settings.get(&"hideWatermark".to_string()));
+        assert_eq!(
+            stored,
+            Some(SourceSettingValue::Bool(true)),
+            "reloaded source must read the updated stored setting"
+        );
     }
 }

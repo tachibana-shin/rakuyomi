@@ -1,4 +1,6 @@
 local ReaderUI = require("apps/reader/readerui")
+local Blitbuffer = require("ffi/blitbuffer")
+local ReadHistory = require("readhistory")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
@@ -9,6 +11,7 @@ local _ = require("gettext+")
 local Backend = require("Backend")
 local shallow_clone = require("utils/shallowClone")
 local CbzDocument = require("extensions/CbzDocument")
+local realpath = require("ffi/util").realpath
 
 local Testing = require('testing')
 
@@ -22,6 +25,7 @@ local Testing = require('testing')
 --- @field on_end_of_book_callback? fun(no_as_read: boolean): nil
 --- @field on_beginning_of_book_callback? fun(): nil
 --- @field on_close_book_callback? fun(Chapter): nil
+--- @field path? string Path of the chapter file being displayed.
 --- This is a singleton that contains a simpler interface with ReaderUI.
 local MangaReader = {
   on_return_callback = nil,
@@ -57,6 +61,7 @@ function MangaReader:show(options)
   self.on_open_chapter = options.on_open_chapter
   self.chapter = options.chapter
   self.chapters = options.chapters
+  self.path = options.path
   CbzDocument:registerChapterFile(options.path, options.chapter)
   -- Global viewer override takes priority over per-manga/source viewer.
   local global_viewer = G_reader_settings:readSetting('rakuyomi_global_viewer')
@@ -100,12 +105,56 @@ end
 --- @param ui unknown The `ReaderUI` instance we're being called from.
 function MangaReader:initializeFromReaderUI(ui)
   if self.is_showing then
+    self:applyReaderAppearance(ui)
     ui.menu:registerToMainMenu(MangaReader)
     self:overrideBtnFileManager(ui.menu)
 
     ui:registerPostInitCallback(function()
       self:hookWithPriorityOntoReaderUiEvents(ui)
     end)
+  end
+end
+
+--- Applies Rakuyomi-specific reader appearance settings.
+--- @private
+--- @param ui unknown The currently active `ReaderUI` instance.
+function MangaReader:applyReaderAppearance(ui)
+  if not G_reader_settings:isTrue("rakuyomi_black_reader_background") then
+    return
+  end
+
+  local view = ui.view
+
+  view.drawPageSurround = function(reader_view, bb, x, y)
+    if reader_view.dimen.h > reader_view.visible_area.h then
+      bb:paintRect(x, y, reader_view.dimen.w, reader_view.state.offset.y, Blitbuffer.COLOR_BLACK)
+      local bottom_margin = y + reader_view.visible_area.h + reader_view.state.offset.y
+      bb:paintRect(
+        x,
+        bottom_margin,
+        reader_view.dimen.w,
+        reader_view.state.offset.y + reader_view.footer:getHeight(),
+        Blitbuffer.COLOR_BLACK
+      )
+    end
+    if reader_view.dimen.w > reader_view.visible_area.w then
+      bb:paintRect(x, y, reader_view.state.offset.x, reader_view.dimen.h, Blitbuffer.COLOR_BLACK)
+      bb:paintRect(
+        x + reader_view.dimen.w - reader_view.state.offset.x - 1,
+        y,
+        reader_view.state.offset.x + 1,
+        reader_view.dimen.h,
+        Blitbuffer.COLOR_BLACK
+      )
+    end
+  end
+
+  view.drawPageBackground = function(reader_view, bb, x, y)
+    bb:paintRect(x, y, reader_view.dimen.w, reader_view.dimen.h, Blitbuffer.COLOR_BLACK)
+  end
+
+  view.drawPageGap = function(reader_view, bb, x, y)
+    bb:paintRect(x, y, reader_view.dimen.w, reader_view.page_gap.height, Blitbuffer.COLOR_BLACK)
   end
 end
 
@@ -222,6 +271,7 @@ function MangaReader:clean()
   self.on_return_callback = nil
   self.chapter = nil
   self.chapters = nil
+  self.path = nil
   self.viewer = nil
   self.state_viewer = nil
   self.on_rtl_changed = nil
@@ -229,6 +279,48 @@ function MangaReader:clean()
   self.on_end_of_book_callback = nil
   self.on_beginning_of_book_callback = nil
   self.on_close_book_callback = nil
+end
+
+--- Keeps the chapters opened by Rakuyomi out of KOReader's reading history when the
+--- `rakuyomi_disable_read_history` setting is enabled. Reading progress is still saved
+--- by Rakuyomi and in the chapter's sidecar file.
+--- @private
+function MangaReader:hookReadHistory()
+  if ReadHistory._rakuyomi_history_hooked then
+    return
+  end
+  ReadHistory._rakuyomi_history_hooked = true
+
+  local function is_enabled()
+    return self.is_showing and G_reader_settings:isTrue('rakuyomi_disable_read_history')
+  end
+
+  local orig_add_item = ReadHistory.addItem
+  ReadHistory.addItem = function(history, file, ts, ...)
+    -- `ReaderUI` adds the document it opens without `ts`; items imported from the
+    -- legacy history folder come with one and are left alone.
+    if ts == nil and file == self.path and is_enabled() then
+      return
+    end
+    return orig_add_item(history, file, ts, ...)
+  end
+
+  -- `ReaderUI:onClose` refreshes the time of the first history item, assuming it is the
+  -- document being closed. For a chapter kept out of the history, that item is another
+  -- book (or missing, when the history is empty), so leave it alone.
+  local orig_update_last_book_time = ReadHistory.updateLastBookTime
+  if orig_update_last_book_time ~= nil then
+    ReadHistory.updateLastBookTime = function(history, ...)
+      local ui = ReaderUI.instance
+      if is_enabled() and ui ~= nil and ui.document ~= nil then
+        local top = history.hist[1]
+        if top == nil or top.file ~= (realpath(ui.document.file) or ui.document.file) then
+          return
+        end
+      end
+      return orig_update_last_book_time(history, ...)
+    end
+  end
 end
 
 --- To be called when the last page of the manga is read.
@@ -640,5 +732,7 @@ function MangaReader:patchPressAsDefaultAndAddBtnNext(ui)
     return true
   end
 end
+
+MangaReader:hookReadHistory()
 
 return MangaReader

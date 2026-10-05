@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.1...v1.42.2) (2026-09-30)
+
+
+### Bug Fixes
+
+* **source:** reload an Aidoku source when its settings change ([#371](https://github.com/tachibana-shin/rakuyomi/issues/371)) ([856eb06](https://github.com/tachibana-shin/rakuyomi/commit/856eb06fbab89703dbe767846921b920d7a9bb57))
+
 ## [1.42.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.0...v1.42.1) (2026-09-29)
 
 

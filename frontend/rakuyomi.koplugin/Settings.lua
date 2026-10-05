@@ -333,8 +333,26 @@ Settings.setting_value_definitions = {
     }
   },
   {
+    'rakuyomi_disable_read_history',
+    {
+      type = 'boolean',
+      title = _("Don't add chapters to KOReader's reading history"),
+      default = false,
+      is_local = true,
+    }
+  },
+  {
     nil,
     { type = 'divider', title = _('Recommended reader settings') }
+  },
+  {
+    'rakuyomi_black_reader_background',
+    {
+      type = 'boolean',
+      title = _('Use black background while reading manga'),
+      default = false,
+      is_local = true,
+    }
   },
   {
     'rakuyomi_page_margin',

@@ -165,6 +165,7 @@ async fn lnreader_plugin_end_to_end_chrysanthemumgarden() {
 /// Royal Road has no `resolveUrl`, so this also exercises the `site + path`
 /// chapter URL fallback.
 #[tokio::test]
+#[ignore = "wait for update source"]
 async fn lnreader_plugin_end_to_end_royalroad() {
     run_plugin_smoke(
         "royalroad.js",

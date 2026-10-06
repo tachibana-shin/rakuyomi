@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.2...v1.43.0) (2026-10-06)
+
+
+### Features
+
+* add optional black manga reader background ([#1](https://github.com/tachibana-shin/rakuyomi/issues/1)) ([#372](https://github.com/tachibana-shin/rakuyomi/issues/372)) ([11f672b](https://github.com/tachibana-shin/rakuyomi/commit/11f672b4d9f484f1786ff2c853a03802782887ac))
+
 ## [1.42.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.1...v1.42.2) (2026-09-30)
 
 

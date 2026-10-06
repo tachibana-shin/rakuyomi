@@ -114,6 +114,28 @@ pub enum LibrarySortingMode {
     SourceDesc,
 }
 
+impl LibrarySortingMode {
+    /// Returns the ORDER BY clause for the library and playlist manga queries.
+    ///
+    /// Both queries alias their base table (`manga_library` and
+    /// `playlist_mangas` respectively) to the same `ml` alias, so a single
+    /// clause serves both and the queries stay mirror images of each other.
+    pub fn order_by_clause(&self) -> &'static str {
+        match self {
+            Self::Ascending => "ORDER BY ml.rowid ASC, mi.title ASC",
+            Self::Descending => "ORDER BY ml.rowid DESC, mi.title DESC",
+            Self::TitleAsc => "ORDER BY mi.title ASC, ml.rowid ASC",
+            Self::TitleDesc => "ORDER BY mi.title DESC, ml.rowid DESC",
+            Self::UnreadAsc => "ORDER BY unread_chapters_count ASC, mi.title ASC",
+            Self::UnreadDesc => "ORDER BY unread_chapters_count DESC, mi.title DESC",
+            Self::LastReadAsc => "ORDER BY mcs.last_read_time ASC, mi.title ASC",
+            Self::LastReadDesc => "ORDER BY mcs.last_read_time DESC, mi.title DESC",
+            Self::SourceAsc => "ORDER BY ml.source_id ASC, mi.title ASC",
+            Self::SourceDesc => "ORDER BY ml.source_id DESC, mi.title DESC",
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum LibraryViewMode {

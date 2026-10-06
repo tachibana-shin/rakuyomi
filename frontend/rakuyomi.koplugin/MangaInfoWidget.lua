@@ -11,8 +11,6 @@ local HorizontalSpan = require("ui/widget/horizontalspan")
 local ImageWidget = require("ui/widget/imagewidget")
 local ScrollTextWidget = require("ui/widget/scrolltextwidget")
 local TextViewer = require("ui/widget/textviewer")
-local LeftContainer = require("ui/widget/container/leftcontainer")
-local LineWidget = require("ui/widget/linewidget")
 local ProgressWidget = require("ui/widget/progresswidget")
 local Size = require("ui/size")
 local TextBoxWidget = require("ui/widget/textboxwidget")
@@ -119,6 +117,7 @@ function MangaInfoWidget:getStatusContent(width, manga)
     width = width,
     bottom_v_padding = 0,
     close_callback = function() self:onClose() end,
+    with_bottom_line = true,
     left_icon = "appbar.menu",
     left_icon_tap_callback = function()
       local raw_manga = self.raw_manga
@@ -152,8 +151,6 @@ function MangaInfoWidget:getStatusContent(width, manga)
 end
 
 function MangaInfoWidget:genHeader(title)
-  local width, height = Screen:getWidth(), Size.item.height_default
-
   local header_title = TextWidget:new {
     text = title,
     face = self.medium_font_face,
@@ -161,17 +158,6 @@ function MangaInfoWidget:genHeader(title)
   }
 
   local padding_span = HorizontalSpan:new { width = self.padding }
-  local line_width = (width - header_title:getSize().w) / 2 - self.padding * 2
-  local line_container = LeftContainer:new {
-    dimen = Geom:new { w = line_width, h = height },
-    LineWidget:new {
-      background = Blitbuffer.COLOR_LIGHT_GRAY,
-      dimen = Geom:new {
-        w = line_width,
-        h = Size.line.thick,
-      }
-    }
-  }
   local span_top, span_bottom
   if Screen:getScreenMode() == "landscape" then
     span_top = VerticalSpan:new { width = Size.span.horizontal_default }
@@ -186,11 +172,7 @@ function MangaInfoWidget:genHeader(title)
     HorizontalGroup:new {
       align = "center",
       padding_span,
-      line_container,
-      padding_span,
       header_title,
-      padding_span,
-      line_container,
       padding_span,
     },
     span_bottom,

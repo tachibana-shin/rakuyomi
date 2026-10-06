@@ -15,8 +15,6 @@ local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local Button = require("ui/widget/button")
 local Font = require("ui/font")
-local VerticalGroup = require("ui/widget/verticalgroup")
-local VerticalSpan = require("ui/widget/verticalspan")
 local InfoMessage = require("ui/widget/infomessage")
 local addToPlaylist = require("handlers/addToPlaylist")
 local NetworkMgr = require("ui/network/manager")
@@ -48,6 +46,7 @@ local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
 local LoadingDialog = require("LoadingDialog")
 local MangaInfoWidget = require("MangaInfoWidget")
 local CheckboxDialog = require("CheckboxDialog")
+local titleBarTextButtonHeight = require("widgets/TitleBarButtonHeight")
 
 local RefreshLibraryChapters = require("jobs/RefreshLibraryChapters")
 local RefreshLibraryDetails = require("jobs/RefreshLibraryDetails")
@@ -208,37 +207,65 @@ function LibraryView:patchTitleBar(count_notify)
   local button_padding = Screen:scaleBySize(11)
 
   self.title_bar.left_button = HorizontalGroup:new {
+    align = "top",
     IconButton:new {
       icon = "appbar.settings",
       icon_rotation_angle = self.left_icon_rotation_angle,
       width = left_icon_size,
       height = left_icon_size,
       padding = button_padding,
-      padding_bottom = left_icon_size,
+      padding_bottom = button_padding,
       callback = self.title_bar.left_icon_tap_callback,
       hold_callback = self.title_bar.left_icon_hold_callback,
       allow_flash = self.title_bar.left_icon_allow_flash,
       show_parent = self.title_bar.show_parent,
     },
     IconButton:new {
-      icon = "column.two",
+      icon = "appbar.search",
       width = left_icon_size,
       height = left_icon_size,
       padding = button_padding,
-      padding_bottom = right_icon_size,
+      padding_bottom = button_padding,
       callback = function()
-        self:openPlaylistDialog()
+        self:openSearchMangasDialog()
       end,
       allow_flash = self.title_bar.left_icon_allow_flash,
       show_parent = self.title_bar.show_parent,
     },
+    Button:new {
+      text = Icons.FA_BELL .. count_notify,
+      face = SMALL_FONT_FACE,
+      bordersize = 0,
+      enabled = true,
+      height = titleBarTextButtonHeight(self.title_bar, left_icon_size, button_padding),
+      padding = button_padding,
+      text_font_bold = false,
+      callback = function()
+        Trapper:wrap(function()
+          local onReturnCallback = function()
+            self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
+          end
+
+          NotificationView:fetchAndShow(onReturnCallback)
+
+          self:onClose(true)
+        end)
+      end
+    },
+  }
+
+  ---@type boolean
+  local hide_top_close = self.hide_top_close or false
+  local right_widgets = {
+    HorizontalSpan:new {
+      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - (not hide_top_close and (right_icon_size + button_padding) or 0),
+    },
     IconButton:new {
       icon = "align.center",
-      width = left_icon_size,
-      height = left_icon_size,
+      width = right_icon_size,
+      height = right_icon_size,
       padding = button_padding,
-      padding_bottom = right_icon_size,
-      padding_right = 2 * left_icon_size,
+      padding_bottom = button_padding,
       callback = function()
         Trapper:wrap(function()
           local response = Backend.getSettings()
@@ -297,48 +324,14 @@ function LibraryView:patchTitleBar(count_notify)
         end)
       end
     },
-  }
-
-  ---@type boolean
-  local hide_top_close = self.hide_top_close or false
-  local right_widgets = {
-    HorizontalSpan:new {
-      width = Screen:getWidth() - button_padding - right_icon_size - button_padding * 2 - right_icon_size - button_padding * 2 - (not hide_top_close and (right_icon_size + button_padding) or 0),
-    },
-    VerticalGroup:new {
-      Button:new {
-        text = Icons.FA_BELL .. count_notify,
-        face = SMALL_FONT_FACE,
-        bordersize = 0,
-        enabled = true,
-        width = right_icon_size,
-        height = right_icon_size,
-        text_font_size = 16,
-        text_font_bold = false,
-        callback = function()
-          Trapper:wrap(function()
-            local onReturnCallback = function()
-              self:fetchAndShow(self.current_playlist, nil, { hideTopClose = self.hide_top_close })
-            end
-
-            NotificationView:fetchAndShow(onReturnCallback)
-
-            self:onClose(true)
-          end)
-        end
-      },
-      VerticalSpan:new {
-        width = right_icon_size / 2
-      }
-    },
     IconButton:new {
-      icon = "appbar.search",
+      icon = "column.two",
       width = right_icon_size,
       height = right_icon_size,
       padding = button_padding,
-      padding_bottom = right_icon_size,
+      padding_bottom = button_padding,
       callback = function()
-        self:openSearchMangasDialog()
+        self:openPlaylistDialog()
       end,
     },
   }
@@ -349,7 +342,7 @@ function LibraryView:patchTitleBar(count_notify)
       width = right_icon_size,
       height = right_icon_size,
       padding = button_padding,
-      padding_bottom = right_icon_size,
+      padding_bottom = button_padding,
       callback = self.title_bar.right_icon_tap_callback,
       hold_callback = self.title_bar.right_icon_hold_callback,
     })
@@ -358,13 +351,14 @@ function LibraryView:patchTitleBar(count_notify)
   self.title_bar.right_button = HorizontalGroup:new(right_widgets)
 
   --- [1] title
-  --- [2] left button
-  --- [3] right button
-  if self.title_bar[2] ~= nil then
-    self.title_bar[2] = self.title_bar.left_button
-  end
+  --- [2] bottom line
+  --- [3] left button
+  --- [4] right button
   if self.title_bar[3] ~= nil then
-    self.title_bar[3] = self.title_bar.right_button
+    self.title_bar[3] = self.title_bar.left_button
+  end
+  if self.title_bar[4] ~= nil then
+    self.title_bar[4] = self.title_bar.right_button
   end
 end
 

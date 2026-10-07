@@ -395,7 +395,7 @@ function AvailableSourcesListing:patchTitleBar()
   -- copies would be painted on top of the fresh one.
   local filter_group = HorizontalGroup:new(buttons)
   self.title_bar.left_button = filter_group
-  if self.title_bar[2] ~= nil then
+  if self.filter_group and self.title_bar[2] == self.filter_group then
     self.title_bar[2] = filter_group
   else
     table.insert(self.title_bar, 2, filter_group)

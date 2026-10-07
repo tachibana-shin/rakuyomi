@@ -1,3 +1,10 @@
+## [1.43.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.1...v1.43.2) (2026-10-07)
+
+
+### Bug Fixes
+
+* close button for available sources ([#377](https://github.com/tachibana-shin/rakuyomi/issues/377)) ([7a3ab6b](https://github.com/tachibana-shin/rakuyomi/commit/7a3ab6b0797ddc2d7da4dce0d9561086fded79f9))
+
 ## [1.43.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.0...v1.43.1) (2026-10-07)
 
 

@@ -10,8 +10,7 @@ local FrameContainer = require("ui/widget/container/framecontainer")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local MovableContainer = require("ui/widget/container/movablecontainer")
 local ScrollableContainer = require("ui/widget/container/scrollablecontainer")
-local TextWidget = require("ui/widget/textwidget")
-local HorizontalGroup = require("ui/widget/horizontalgroup")
+local TitleBar = require("ui/widget/titlebar")
 local VerticalGroup = require("ui/widget/verticalgroup")
 
 local Screen = require("device").screen
@@ -60,14 +59,18 @@ function CustomDialog:init(sel)
     }
   end
 
-  local navbar = HorizontalGroup:new {
-    align = "center",
-    TextWidget:new { text = self.title, face = self.face },
+  local paddingx4 = self.padding * 4
+  local navbar = TitleBar:new {
+    width = Screen:getWidth() - paddingx4,
+    title = self.title,
+    title_face = self.face,
+    show_parent = self,
+    close_callback = function() self:onTapClose() end,
   }
+  self.navbar_height = navbar:getHeight()
   local body = VerticalGroup:new {
     align = "left"
   }
-  local paddingx4 = self.padding * 4
   local max_height = 0
   local max_width_item = Screen:getWidth() - paddingx4 - ScrollableContainer:getScrollbarWidth()
   for index, option in ipairs(self.options) do
@@ -79,7 +82,7 @@ function CustomDialog:init(sel)
   end
 
 
-  max_height = math.min(max_height, Screen:getHeight() - paddingx4)
+  max_height = math.min(max_height + self.navbar_height, Screen:getHeight() - paddingx4)
 
   local scrollable = ScrollableContainer:new {
     dimen = Geom:new {

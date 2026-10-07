@@ -1,3 +1,10 @@
+## [1.43.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.0...v1.43.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* closing custom dialog ([#375](https://github.com/tachibana-shin/rakuyomi/issues/375)) ([e5c3b37](https://github.com/tachibana-shin/rakuyomi/commit/e5c3b37b94c53f93fe4c8575936f6fbfd78c307a))
+
 # [1.43.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.42.2...v1.43.0) (2026-10-06)
 
 

@@ -65,10 +65,10 @@ export function getOAuthConfigs(): Record<OAuthService, OAuthProviderConfig> {
       client_secret: env.BANGUMI_CLIENT_SECRET ?? "",
     },
     // Endpoints and scopes come from MangaBaka's OIDC discovery document
-    // (https://mangabaka.org/.well-known/openid-configuration). Unlike MAL,
-    // MangaBaka's token endpoint only supports client_secret_basic/post (no
-    // "none" auth method), so a client_secret is required even though PKCE
-    // (S256, mandatory) is also used.
+    // (https://mangabaka.org/.well-known/openid-configuration). The registered
+    // app is a public client (PKCE, no client secret), so
+    // MANGABAKA_CLIENT_SECRET is intentionally unset - the token exchange sends
+    // whatever is configured, which is an empty value here.
     mangabaka: {
       authorize_url: "https://mangabaka.org/auth/oauth2/authorize",
       token_url: "https://mangabaka.org/auth/oauth2/token",

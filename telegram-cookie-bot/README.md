@@ -146,14 +146,14 @@ so one `.env` covers both commands.
 | `USE_WEBHOOK`           | No       | Set to `true` for webhook mode (the only one Workers allows)  |
 | `ANILIST_CLIENT_ID`     | No       | AniList OAuth client ID ([create here](https://anilist.co/settings/developer)) |
 | `ANILIST_CLIENT_SECRET` | No       | AniList OAuth client secret                                  |
-| `MAL_CLIENT_ID`         | No       | MyAnimeList OAuth client ID ([create here](https://myanimelist.net/apiv2/team/settings)) |
-| `MAL_CLIENT_SECRET`     | No       | MyAnimeList OAuth client secret                              |
-| `SHIKIMORI_CLIENT_ID`   | No       | Shikimori OAuth client ID ([create here](https://shikimori.one/settings/apps)) |
+| `MAL_CLIENT_ID`         | No       | MyAnimeList OAuth client ID ([create here](https://myanimelist.net/apiconfig)) |
+| `MAL_CLIENT_SECRET`     | No       | MyAnimeList client secret - only for confidential clients     |
+| `SHIKIMORI_CLIENT_ID`   | No       | Shikimori OAuth client ID ([create here](https://shikimori.one/oauth/applications)) |
 | `SHIKIMORI_CLIENT_SECRET` | No    | Shikimori OAuth client secret                                |
 | `BANGUMI_CLIENT_ID`     | No       | Bangumi OAuth client ID ([create here](https://bgm.tv/dev/app/create)) |
 | `BANGUMI_CLIENT_SECRET` | No       | Bangumi OAuth client secret                                  |
-| `MANGABAKA_CLIENT_ID`   | No       | MangaBaka OAuth client ID                                    |
-| `MANGABAKA_CLIENT_SECRET` | No    | MangaBaka OAuth client secret                                |
+| `MANGABAKA_CLIENT_ID`   | No       | MangaBaka OAuth client ID (public client, no secret)         |
+| `MANGABAKA_CLIENT_SECRET` | No    | Unused - the MangaBaka app is a public client               |
 
 Session ID is passed via the `state` OAuth parameter (not in the URL path).
 

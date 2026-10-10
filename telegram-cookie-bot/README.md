@@ -155,19 +155,28 @@ so one `.env` covers both commands.
 | `MANGABAKA_CLIENT_ID`   | No       | MangaBaka OAuth client ID                                    |
 | `MANGABAKA_CLIENT_SECRET` | No    | MangaBaka OAuth client secret                                |
 
+Session ID is passed via the `state` OAuth parameter (not in the URL path).
+
 ### OAuth Redirect URIs
 
-Configure these as the allowed redirect URIs in each service's OAuth app settings:
+Redirect URIs are registered per service, so **they have to be updated whenever
+`PUBLIC_URL` changes** - otherwise every OAuth sign-in is rejected by the
+provider. The migration from Deno Deploy to Cloudflare Workers changed them, so
+all five apps need the new callback URL registered (it is fine to register the
+old and the new one side by side while migrating):
 
-| Service    | Redirect URI                                         |
-| ---------- | ---------------------------------------------------- |
-| AniList    | `https://<your-deploy>/oauth/anilist/callback`       |
-| MAL        | `https://<your-deploy>/oauth/myanimelist/callback`   |
-| Shikimori  | `https://<your-deploy>/oauth/shikimori/callback`     |
-| Bangumi    | `https://<your-deploy>/oauth/bangumi/callback`       |
-| MangaBaka  | `https://<your-deploy>/oauth/mangabaka/callback`     |
+| Service    | Redirect URI                                                          |
+| ---------- | --------------------------------------------------------------------- |
+| AniList    | `https://rakuyomi-cookie-bot.tachibshin.workers.dev/oauth/anilist/callback` |
+| MAL        | `https://rakuyomi-cookie-bot.tachibshin.workers.dev/oauth/myanimelist/callback` |
+| Shikimori  | `https://rakuyomi-cookie-bot.tachibshin.workers.dev/oauth/shikimori/callback` |
+| Bangumi    | `https://rakuyomi-cookie-bot.tachibshin.workers.dev/oauth/bangumi/callback` |
+| MangaBaka  | `https://rakuyomi-cookie-bot.tachibshin.workers.dev/oauth/mangabaka/callback` |
 
-Session ID is passed via the `state` OAuth parameter (not in the URL path).
+Each service also needs its OAuth credentials in production. MAL is the
+exception: it authorizes with PKCE, so it works without a client secret
+(`exchangeMalCode` only sends one when it is set). The other four require a
+client secret.
 
 ## Notes on the Cloudflare migration
 

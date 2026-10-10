@@ -1,3 +1,10 @@
+## [1.43.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.2...v1.43.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* **cookie-bot:** migrate Telegram cookie bot from Deno Deploy to Cloudflare Workers ([#380](https://github.com/tachibana-shin/rakuyomi/issues/380)) ([9f50e82](https://github.com/tachibana-shin/rakuyomi/commit/9f50e825d901831a57338ca4db2d89d08d40d9b5))
+
 ## [1.43.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.1...v1.43.2) (2026-10-07)
 
 

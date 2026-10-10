@@ -1,7 +1,19 @@
-import { createClient } from "@libsql/client"
+import { createClient } from "@libsql/client/web"
 import { getConfig } from "./config.ts"
 
 let client: Awaited<ReturnType<typeof createClient>> | null = null
+
+/**
+ * Turso URLs use the `libsql:` scheme, which the standard-APIs client speaks
+ * over WebSockets. Rewriting them to `https:` keeps the client on the fetch
+ * transport instead, which is the one path that works on every runtime -
+ * Workers and Node alike.
+ */
+function toHttpUrl(url: string): string {
+  return url.startsWith("libsql://")
+    ? `https://${url.slice("libsql://".length)}`
+    : url
+}
 
 export async function getTurso() {
   if (client) return client
@@ -9,7 +21,10 @@ export async function getTurso() {
   const { TURSO_DB_URL, TURSO_AUTH_TOKEN } = getConfig()
   if (!TURSO_DB_URL || !TURSO_AUTH_TOKEN) return null
 
-  client = createClient({ url: TURSO_DB_URL, authToken: TURSO_AUTH_TOKEN })
+  client = createClient({
+    url: toHttpUrl(TURSO_DB_URL),
+    authToken: TURSO_AUTH_TOKEN,
+  })
   await migrate(client)
   return client
 }

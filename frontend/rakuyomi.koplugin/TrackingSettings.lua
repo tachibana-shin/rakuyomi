@@ -259,7 +259,7 @@ TrackingSettings.tracking_value_definitions = {
       type = 'string',
       title = _("OAuth Bridge Server URL"),
       placeholder = 'https://your-bot.deno.dev',
-      default = 'https://rakuyomi.tachibana-shin.deno.net/'
+      default = 'https://rakuyomi-cookie-bot.tachibshin.workers.dev/'
     }
   },
 }

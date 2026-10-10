@@ -1,4 +1,7 @@
 import { strict as assert } from "node:assert"
+import { test } from "node:test"
+import { useTestEnv } from "./setup.ts"
+
 import {
   createPairingCode,
   getPairingPendingCount,
@@ -7,7 +10,9 @@ import {
   resolvePairingCode,
 } from "../src/kv.ts"
 
-Deno.test("pairing — full lifecycle: create -> resolve -> status -> remove", async () => {
+useTestEnv()
+
+test("pairing — full lifecycle: create -> resolve -> status -> remove", async () => {
   const code = "TESTCODE"
 
   await createPairingCode(code)
@@ -31,22 +36,22 @@ Deno.test("pairing — full lifecycle: create -> resolve -> status -> remove", a
   assert.strictEqual(afterRemove.paired, false)
 })
 
-Deno.test("pairing — resolve non-existent code returns null", async () => {
+test("pairing — resolve non-existent code returns null", async () => {
   const result = await resolvePairingCode("NONEXISTENT", 999, "ghost_device")
   assert.strictEqual(result, null)
 })
 
-Deno.test("pairing — status for non-existent code returns unpaired", async () => {
+test("pairing — status for non-existent code returns unpaired", async () => {
   const status = await getPairingStatus("NONEXISTENT")
   assert.strictEqual(status.paired, false)
 })
 
-Deno.test("pairing — remove non-existent device returns false", async () => {
+test("pairing — remove non-existent device returns false", async () => {
   const result = await removePairingByDevice(999, "ghost_device")
   assert.strictEqual(result, false)
 })
 
-Deno.test("pairing — createPairingCode increments pending count", async () => {
+test("pairing — createPairingCode increments pending count", async () => {
   const before = await getPairingPendingCount()
   await createPairingCode("PENDING1")
   await createPairingCode("PENDING2")

@@ -1,2 +1,9 @@
+# Local secrets and Deno-era files
 /.env
 /.env.prod
+/.dev.vars
+/.wrangler/
+
+# Node
+/node_modules/
+/dist/

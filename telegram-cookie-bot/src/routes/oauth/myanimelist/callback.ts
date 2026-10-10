@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getOAuthSession, completeOAuthSession, errorOAuthSession } from "../../../oauth_kv.ts";
-import { getOAuthConfigs } from "../../../config.ts";
+import { getConfig, getOAuthConfigs } from "../../../config.ts";
 import { exchangeMalCode } from "../../../services/oauth/myanimelist.ts";
 import { error, success, validateSession, notifyTelegramBot } from "../../../utils/oauth.tsx";
 
@@ -20,8 +20,8 @@ app.get("/oauth/myanimelist/callback", async (c) => {
     return error(c, "Error", "PKCE verifier not found. Session may have expired.");
   }
 
-  const publicUrl = Deno.env.get("PUBLIC_URL") ?? "";
-  const redirectUri = `${publicUrl}/oauth/myanimelist/callback`;
+  const { PUBLIC_URL } = getConfig();
+  const redirectUri = `${PUBLIC_URL}/oauth/myanimelist/callback`;
 
   try {
     const tokens = await exchangeMalCode(code, redirectUri, check.session.pkce_verifier);

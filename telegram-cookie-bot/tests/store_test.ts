@@ -1,4 +1,7 @@
 import { strict as assert } from "node:assert"
+import { test } from "node:test"
+import { useTestEnv } from "./setup.ts"
+
 import {
   clearAllCookies,
   clearDeviceCookies,
@@ -11,9 +14,11 @@ import {
   ingestCookies,
 } from "../src/store.ts"
 
+useTestEnv()
+
 const CHAT_ID = 12345
 
-Deno.test("ingestCookies — valid JSON stores cookies grouped by domain", async () => {
+test("ingestCookies — valid JSON stores cookies grouped by domain", async () => {
   const raw = JSON.stringify([
     { name: "session", value: "abc", domain: "example.com" },
     { name: "token", value: "xyz", domain: "example.com" },
@@ -31,17 +36,17 @@ Deno.test("ingestCookies — valid JSON stores cookies grouped by domain", async
   assert.strictEqual(deviceMap.get(".cf.com")!.cookies.length, 1)
 })
 
-Deno.test("ingestCookies — invalid JSON returns empty array", async () => {
+test("ingestCookies — invalid JSON returns empty array", async () => {
   const result = await ingestCookies(CHAT_ID, "/all", "not json")
   assert.deepStrictEqual(result, [])
 })
 
-Deno.test("ingestCookies — non-array JSON returns empty array", async () => {
+test("ingestCookies — non-array JSON returns empty array", async () => {
   const result = await ingestCookies(CHAT_ID, "/all", '{"name":"x"}')
   assert.deepStrictEqual(result, [])
 })
 
-Deno.test("ingestCookies — preserves leading dot from domain", async () => {
+test("ingestCookies — preserves leading dot from domain", async () => {
   const raw = JSON.stringify([
     { name: "s", value: "v", domain: ".sub.example.com" },
   ])
@@ -51,7 +56,7 @@ Deno.test("ingestCookies — preserves leading dot from domain", async () => {
   assert.deepStrictEqual(domains, [".sub.example.com"])
 })
 
-Deno.test("ingestCookies — stores user agent", async () => {
+test("ingestCookies — stores user agent", async () => {
   const raw = JSON.stringify([
     { name: "s", value: "v", domain: "x.com" },
   ])
@@ -61,33 +66,33 @@ Deno.test("ingestCookies — stores user agent", async () => {
   assert.strictEqual(deviceMap.get("x.com")!.user_agent, "Mozilla/5.0 Test")
 })
 
-Deno.test("getDevices — returns all device names", async () => {
+test("getDevices — returns all device names", async () => {
   const devices = await getDevices(CHAT_ID)
   assert.ok(devices.includes("/all"))
   assert.ok(devices.includes("device_a"))
   assert.ok(devices.includes("device_b"))
 })
 
-Deno.test("getDevices — unknown chat returns empty array", async () => {
+test("getDevices — unknown chat returns empty array", async () => {
   assert.deepStrictEqual(await getDevices(99999), [])
 })
 
-Deno.test("getDeviceDomains — returns domains for device", async () => {
+test("getDeviceDomains — returns domains for device", async () => {
   const domains = await getDeviceDomains(CHAT_ID, "/all")
   assert.deepStrictEqual(domains.sort(), [".cf.com", "example.com"])
 })
 
-Deno.test("getDeviceDomains — unknown device returns empty array", async () => {
+test("getDeviceDomains — unknown device returns empty array", async () => {
   assert.deepStrictEqual(await getDeviceDomains(CHAT_ID, "nonexistent"), [])
 })
 
-Deno.test("getDeviceCookieCount — counts domains and cookies", async () => {
+test("getDeviceCookieCount — counts domains and cookies", async () => {
   const { domains, cookies } = await getDeviceCookieCount(CHAT_ID, "/all")
   assert.strictEqual(domains, 2)
   assert.strictEqual(cookies, 3)
 })
 
-Deno.test("getDeviceCookieCount — unknown device returns zeros", async () => {
+test("getDeviceCookieCount — unknown device returns zeros", async () => {
   const { domains, cookies } = await getDeviceCookieCount(
     CHAT_ID,
     "nonexistent",
@@ -96,17 +101,17 @@ Deno.test("getDeviceCookieCount — unknown device returns zeros", async () => {
   assert.strictEqual(cookies, 0)
 })
 
-Deno.test("getDomainCookieCount — counts cookies for a domain", async () => {
+test("getDomainCookieCount — counts cookies for a domain", async () => {
   const n = await getDomainCookieCount(CHAT_ID, "/all", "example.com")
   assert.strictEqual(n, 2)
 })
 
-Deno.test("getDomainCookieCount — unknown domain returns 0", async () => {
+test("getDomainCookieCount — unknown domain returns 0", async () => {
   const n = await getDomainCookieCount(CHAT_ID, "/all", "unknown.com")
   assert.strictEqual(n, 0)
 })
 
-Deno.test("getDeviceCookies — fallback from unknown device to /all", async () => {
+test("getDeviceCookies — fallback from unknown device to /all", async () => {
   const raw = JSON.stringify([
     { name: "fallback", value: "ok", domain: "fallback.com" },
   ])
@@ -117,7 +122,7 @@ Deno.test("getDeviceCookies — fallback from unknown device to /all", async () 
   assert.strictEqual(map.get("fallback.com")!.cookies[0].name, "fallback")
 })
 
-Deno.test("clearDeviceDomainCookies — removes single domain", async () => {
+test("clearDeviceDomainCookies — removes single domain", async () => {
   const ok = await clearDeviceDomainCookies(CHAT_ID, "/all", "fallback.com")
   assert.strictEqual(ok, true)
   assert.strictEqual(
@@ -126,13 +131,13 @@ Deno.test("clearDeviceDomainCookies — removes single domain", async () => {
   )
 })
 
-Deno.test("clearDeviceCookies — removes entire device", async () => {
+test("clearDeviceCookies — removes entire device", async () => {
   const ok = await clearDeviceCookies(CHAT_ID, "device_b")
   assert.strictEqual(ok, true)
   assert.strictEqual((await getDevices(CHAT_ID)).includes("device_b"), false)
 })
 
-Deno.test("clearAllCookies — removes all devices for chat", async () => {
+test("clearAllCookies — removes all devices for chat", async () => {
   await clearAllCookies(CHAT_ID)
   assert.deepStrictEqual(await getDevices(CHAT_ID), [])
 })

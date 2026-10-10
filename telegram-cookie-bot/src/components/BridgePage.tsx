@@ -1,5 +1,5 @@
 import type { FC } from "hono/jsx"
-import { getOAuthConfigs } from "../config.ts"
+import { getConfig, getOAuthConfigs } from "../config.ts"
 import type { OAuthService } from "../oauth_kv.ts"
 import { OAUTH_SERVICE_NAMES, OAUTH_SERVICE_COLORS } from "../schemas.ts"
 
@@ -22,8 +22,8 @@ export const BridgePage: FC<BridgePageProps> = ({
 
   let authorizeUrl = ""
   if (cfg) {
-    const publicUrl = Deno.env.get("PUBLIC_URL") ?? ""
-    const redirectUri = `${publicUrl}/oauth/${service}/callback`
+    const { PUBLIC_URL } = getConfig()
+    const redirectUri = `${PUBLIC_URL}/oauth/${service}/callback`
     const params = new URLSearchParams({
       client_id: cfg.client_id,
       redirect_uri: redirectUri,

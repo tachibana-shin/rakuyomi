@@ -317,8 +317,8 @@ fn default_storage_size_limit() -> StorageSizeLimit {
     StorageSizeLimit(Size::from_megabytes(2000))
 }
 
-fn default_oauth_server_url() -> String {
-    "https://rakuyomi.tachibana-shin.deno.net/".to_owned()
+pub(crate) fn default_oauth_server_url() -> String {
+    "https://rakuyomi-cookie-bot.tachibshin.workers.dev/".to_owned()
 }
 
 fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {
@@ -587,6 +587,38 @@ mod tests {
         );
         assert_eq!(settings.source_lists[0].source_type, SourceListType::Aidoku);
         assert_eq!(settings.source_lists[1].source_type, SourceListType::Aidoku);
+    }
+
+    #[test]
+    fn test_migrate_deprecated_bot_url() {
+        let json = r#"{
+            "oauth_server_url": "https://rakuyomi.tachibana-shin.deno.net/",
+            "cookie_sync_server_url": "https://rakuyomi.tachibana-shin.deno.net"
+        }"#;
+        let mut settings: Settings = serde_json::from_str(json).unwrap();
+        settings.migrate_deprecated_bot_url();
+
+        assert_eq!(settings.oauth_server_url, default_oauth_server_url());
+        assert_eq!(
+            settings.cookie_sync_server_url.as_deref(),
+            Some(default_oauth_server_url().as_str())
+        );
+    }
+
+    #[test]
+    fn test_migrate_deprecated_bot_url_keeps_self_hosted() {
+        let json = r#"{
+            "oauth_server_url": "https://bot.example.com/",
+            "cookie_sync_server_url": "https://bot.example.com/"
+        }"#;
+        let mut settings: Settings = serde_json::from_str(json).unwrap();
+        settings.migrate_deprecated_bot_url();
+
+        assert_eq!(settings.oauth_server_url, "https://bot.example.com/");
+        assert_eq!(
+            settings.cookie_sync_server_url.as_deref(),
+            Some("https://bot.example.com/")
+        );
     }
 
     #[test]

@@ -22,6 +22,9 @@ export async function exchangeAnilistCode(
     const err = await res.text()
     throw new Error(`AniList token exchange failed: ${res.status} ${err}`)
   }
-  const data = await res.json()
+  const data = await res.json() as {
+    access_token: string
+    refresh_token?: string
+  }
   return { access_token: data.access_token }
 }

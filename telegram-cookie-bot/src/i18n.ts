@@ -4,7 +4,7 @@ import vi from "./locales/vi.ts"
 import jp from "./locales/jp.ts"
 import zhHk from "./locales/zh-hk.ts"
 import zhCn from "./locales/zh-cn.ts"
-import { LanguageCode } from "grammy/types"
+import type { LanguageCode } from "grammy/types"
 import { getChatLang as getDbChatLang, setChatLang as setDbChatLang } from "./turso.ts"
 
 const locales: Record<string, Locale> = {

@@ -17,6 +17,7 @@ import app from "./src/server.ts"
 import { ensureBot } from "./src/bot/shared.ts"
 import { registerBotCommands } from "./src/bot/mod.ts"
 import { useEnv, type Env } from "./src/env.ts"
+import type { Bot } from "grammy"
 
 // Bun loads `.env` from the working directory into `process.env`, which is
 // exactly what the Env shape expects.
@@ -39,6 +40,7 @@ async function main() {
       "Long polling will delete the bot's webhook; a deployed instance " +
         'has to re-register it. Run with DEV_POLLING=false to skip this.',
     )
+    await warnAboutSharedToken(bot)
     await registerBotCommands(bot)
     bot.start({
       onStart: () => console.log("Bot running in polling mode."),
@@ -49,6 +51,30 @@ async function main() {
     console.log(`Cookie sync API listening on http://localhost:${info.port}`)
     console.log(`OpenAPI docs: http://localhost:${info.port}/doc`)
   })
+}
+
+/**
+ * Checks whether this token is already used by a deployment. Long polling and a
+ * registered webhook are mutually exclusive - Telegram only routes updates to
+ * `getUpdates` while no webhook exists - so a deployed worker that keeps
+ * re-registering its webhook will keep winning.
+ */
+async function warnAboutSharedToken(bot: Bot): Promise<void> {
+  try {
+    const { url } = await bot.api.getWebhookInfo()
+    if (!url || /^https?:\/\/(localhost|127\.|0\.0\.0\.0)/.test(url)) return
+
+    console.warn(
+      `\nThis token is already serving a deployment at:\n  ${url}\n` +
+        "That deployment re-registers its webhook every few minutes, so it\n" +
+        "keeps taking the updates back from this process. Polling with the\n" +
+        "production token is not going to work reliably - use a separate bot\n" +
+        "token for local development (a second bot from @BotFather), or run\n" +
+        "with DEV_POLLING=false to only serve the local API.\n",
+    )
+  } catch (e) {
+    console.warn("Could not check the current webhook state:", e)
+  }
 }
 
 await main()

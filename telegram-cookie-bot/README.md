@@ -95,9 +95,13 @@ bun test             # unit tests (hermetic: no DB, in-memory KV)
 ```
 
 `bun run dev` runs the whole stack in one process, like `deno task dev` used to.
-Careful: long polling calls `deleteWebhook`, so a deployed instance stops
-receiving updates until it re-registers its webhook. Run
-`DEV_POLLING=false bun run dev` to serve the API only.
+It polls with the token from `.env`, so use a **second bot token** for local
+development (a separate bot from @BotFather): long polling and a registered
+webhook are mutually exclusive, and the deployed worker re-registers its
+webhook every five minutes, so sharing the production token means the two keep
+taking the updates back from each other. The entry point detects a token that
+is already serving a deployment and says so instead of failing with opaque
+409s. Run `DEV_POLLING=false bun run dev` to only serve the local API.
 
 `bun run dev:worker` matches production - Workers cannot long-poll, so the bot
 only works through the webhook there. A Worker binds `.env` as secrets as well,

@@ -94,14 +94,18 @@ app.post("/webhook", async (c) => {
 let webhookHandler:
   | ((request: Request) => Response | Promise<Response>)
   | null = null
+let webhookHandlerSecret: string | undefined
 
 async function getWebhookHandler(
   bot: Bot,
 ): Promise<(request: Request) => Response | Promise<Response>> {
-  if (!webhookHandler) {
-    webhookHandler = webhookCallback(bot, "std/http", {
-      secretToken: getEnv().WEBHOOK_SECRET,
-    })
+  const secret = getEnv().WEBHOOK_SECRET
+  // grammY captures the secret when it builds the callback, so a rotated
+  // secret has to invalidate the cached handler as well - otherwise this
+  // isolate keeps verifying updates against the old one.
+  if (!webhookHandler || webhookHandlerSecret !== secret) {
+    webhookHandler = webhookCallback(bot, "std/http", { secretToken: secret })
+    webhookHandlerSecret = secret
   }
   return webhookHandler
 }

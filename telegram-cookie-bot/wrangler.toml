@@ -6,6 +6,11 @@ compatibility_date = "2026-10-01"
 [dev]
 port = 8788
 
+# Restores the Telegram webhook even when no request arrives, which is what
+# happens after local long polling deletes it and nobody opens the app.
+[triggers]
+crons = ["*/5 * * * *"]
+
 # Ephemeral key/value storage: pairing codes and OAuth sessions.
 # A Durable Object is used rather than Workers KV because it is strongly
 # consistent - the Telegram webhook writes a pairing result that the KOReader

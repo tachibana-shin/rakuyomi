@@ -38,6 +38,18 @@ export default {
     ctx.waitUntil(setupTelegram())
     return await app.fetch(request, env, ctx)
   },
+
+  // The refresh in `fetch` only runs when a request arrives, which stops being
+  // true as soon as local long polling takes the webhook away and nobody opens
+  // the app. The cron trigger keeps restoring it without any inbound traffic.
+  async scheduled(
+    _controller: ScheduledController,
+    env: Env,
+    _ctx: ExecutionContext,
+  ): Promise<void> {
+    useEnv(env)
+    await setupTelegram()
+  },
 } satisfies ExportedHandler<Env>
 
 async function setupTelegram(): Promise<void> {

@@ -188,6 +188,9 @@ pub struct ApkProbe {
     /// The `(name, lang, supports_latest)` triple of every source bundled
     /// in the APK.
     pub sources: Vec<(String, String, bool)>,
+    /// Website URLs in the same order as `sources`.
+    #[serde(default)]
+    pub base_urls: Vec<String>,
     /// Preference definitions materialised by the APK's sources.
     pub setting_definitions: Vec<SettingDefinition>,
 }
@@ -215,7 +218,10 @@ fn probe_cache_path(path: &Path) -> PathBuf {
 fn read_probe_cache(path: &Path, apk_len: u64, apk_mtime_ns: u128) -> Option<ApkProbe> {
     let contents = fs::read_to_string(probe_cache_path(path)).ok()?;
     let cache: ProbeCache = serde_json::from_str(&contents).ok()?;
-    (cache.apk_len == apk_len && cache.apk_mtime_ns == apk_mtime_ns).then_some(cache.probe)
+    (cache.apk_len == apk_len
+        && cache.apk_mtime_ns == apk_mtime_ns
+        && cache.probe.base_urls.len() == cache.probe.sources.len())
+        .then_some(cache.probe)
 }
 
 /// Persists the probe next to the APK. Failures are logged, never fatal:
@@ -673,7 +679,7 @@ impl KeiyoushiSource {
                 manifest,
                 setting_definitions: probe.setting_definitions.clone(),
                 features: SourceFeatures::default(),
-                base_url: String::new(),
+                base_url: probe.base_urls.get(index).cloned().unwrap_or_default(),
                 name: name.clone(),
                 lang: lang.clone(),
                 supports_latest: *supports_latest,
@@ -850,9 +856,8 @@ impl KeiyoushiSource {
         }
     }
 
-    /// Implements `get_image_request`: image URLs carry their own
-    /// authentication parameters, so a plain GET with the shared
-    /// user-agent and the per-domain cookie store is enough.
+    /// Implements `get_image_request` with the source site's Referer,
+    /// shared user-agent and per-domain cookies.
     ///
     /// # TODO
     /// maybe is deadcode because matches in chapter_downloader only call fetch_page_image
@@ -870,6 +875,14 @@ impl KeiyoushiSource {
             reqwest::header::USER_AGENT,
             reqwest::header::HeaderValue::from_static(DEFAULT_USER_AGENT),
         );
+        if let Ok(base_url) = Url::parse(&self.base_url) {
+            if matches!(base_url.scheme(), "http" | "https") {
+                let origin = format!("{}/", base_url.origin().ascii_serialization());
+                if let Ok(referer) = reqwest::header::HeaderValue::from_str(&origin) {
+                    header_map.insert(reqwest::header::REFERER, referer);
+                }
+            }
+        }
         if let Some(host) = url.host_str() {
             let (_override_ua, cookie_value) =
                 crate::cookie_store::get_user_agent_and_cookie_header(host);
@@ -1020,11 +1033,13 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
         bail!("keiyoushi extension bundles no sources");
     }
     let mut out = Vec::with_capacity(sources.len());
+    let mut base_urls = Vec::with_capacity(sources.len());
     for source in &sources {
         let name = ext.source_name(source)?;
         let lang = ext.source_lang(source)?;
         let supports_latest = ext.supports_latest(source)?;
         out.push((name, lang, supports_latest));
+        base_urls.push(ext.source_base_url(source).unwrap_or_default());
     }
     let defs = ext
         .preference_definitions(&sources[0])
@@ -1036,6 +1051,7 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
         package_id,
         version_name,
         sources: out,
+        base_urls,
         setting_definitions: defs,
     })
 }
@@ -1307,6 +1323,7 @@ mod tests {
             package_id: "eu.kanade.tachiyomi.extension.en.mangapill".to_string(),
             version_name: Some("1.4.9".to_string()),
             sources: vec![("MangaPill".to_string(), "en".to_string(), true)],
+            base_urls: vec!["https://mangapill.com".to_string()],
             setting_definitions: vec![],
         };
         write_probe_cache(&apk, 14, 12345, &probe);

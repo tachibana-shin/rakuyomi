@@ -1,7 +1,7 @@
 import type { Context } from "hono"
 import type { OAuthSession } from "../oauth_kv.ts"
 import type { OAuthService } from "../schemas.ts"
-import { getBot } from "../bot/shared.ts"
+import { ensureBot } from "../bot/shared.ts"
 import { ResultPage } from "../components/ResultPage.tsx"
 
 export function error(c: Context, title: string, message: string) {
@@ -24,7 +24,8 @@ export function validateSession(
 
 export async function notifyTelegramBot(chatId: number, displayName: string): Promise<void> {
   try {
-    const bot = getBot()
+    const bot = await ensureBot()
+    if (!bot) return
     await bot.api.sendMessage(
       chatId,
       `<b>RakuYomi</b>\n\n` +

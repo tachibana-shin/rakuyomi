@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { getConfig } from "../../../config.ts"
 import { getOAuthSession, completeOAuthSession, errorOAuthSession } from "../../../oauth_kv.ts"
 import { exchangeShikimoriCode } from "../../../services/oauth/shikimori.ts"
 import { error, success, validateSession, notifyTelegramBot } from "../../../utils/oauth.tsx"
@@ -19,8 +20,8 @@ app.get("/oauth/shikimori/callback", async (c) => {
     return error(c, "Error", "PKCE verifier not found. Session may have expired.")
   }
 
-  const publicUrl = Deno.env.get("PUBLIC_URL") ?? ""
-  const redirectUri = `${publicUrl}/oauth/shikimori/callback`
+  const { PUBLIC_URL } = getConfig()
+  const redirectUri = `${PUBLIC_URL}/oauth/shikimori/callback`
 
   try {
     const tokens = await exchangeShikimoriCode(code, redirectUri, check.session.pkce_verifier)

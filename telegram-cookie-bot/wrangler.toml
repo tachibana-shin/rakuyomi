@@ -1,0 +1,31 @@
+name = "rakuyomi-cookie-bot"
+main = "src/worker.ts"
+compatibility_date = "2026-10-01"
+
+# Local development server (`wrangler dev`).
+[dev]
+port = 8788
+
+# Ephemeral key/value storage: pairing codes and OAuth sessions.
+# A Durable Object is used rather than Workers KV because it is strongly
+# consistent - the Telegram webhook writes a pairing result that the KOReader
+# device reads back immediately from another edge location.
+[[durable_objects.bindings]]
+name = "KV_DO"
+class_name = "KvDurableObject"
+
+# Free-plan Durable Objects must be created through a SQLite-backed migration,
+# which is also what new projects should use. `ctx.storage` works the same.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["KvDurableObject"]
+
+# Non-secret defaults. Everything sensitive (BOT_TOKEN, TURSO_DB_URL,
+# TURSO_AUTH_TOKEN, WEBHOOK_SECRET, OAuth credentials) is stored with
+# `wrangler secret put`.
+[vars]
+PUBLIC_URL = "https://rakuyomi-cookie-bot.tachibshin.workers.dev"
+USE_WEBHOOK = "true"
+
+[observability]
+enabled = true

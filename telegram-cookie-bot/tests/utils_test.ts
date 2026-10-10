@@ -1,8 +1,13 @@
 import { strict as assert } from "node:assert"
+import { test } from "node:test"
+import { useTestEnv } from "./setup.ts"
+
 import { extractUserAgent, parseCookieArray } from "../src/utils/cookie.ts"
 import { parseRegistryMessage } from "../src/utils/registry.ts"
 
-Deno.test("parseCookieArray — parses valid array", () => {
+useTestEnv()
+
+test("parseCookieArray — parses valid array", () => {
   const json = JSON.stringify([
     { name: "a", value: "1", domain: ".x.com" },
     { name: "b", value: "2", domain: "y.com", path: "/", secure: true },
@@ -15,22 +20,22 @@ Deno.test("parseCookieArray — parses valid array", () => {
   assert.strictEqual(result![1].path, "/")
 })
 
-Deno.test("parseCookieArray — preserves leading dot in domain", () => {
+test("parseCookieArray — preserves leading dot in domain", () => {
   const result = parseCookieArray(
     '[{"name":"a","value":"1","domain":".example.com"}]',
   )
   assert.strictEqual(result![0].domain, ".example.com")
 })
 
-Deno.test("parseCookieArray — returns null for invalid JSON", () => {
+test("parseCookieArray — returns null for invalid JSON", () => {
   assert.strictEqual(parseCookieArray("not json"), null)
 })
 
-Deno.test("parseCookieArray — returns null for non-array", () => {
+test("parseCookieArray — returns null for non-array", () => {
   assert.strictEqual(parseCookieArray('{"name":"a"}'), null)
 })
 
-Deno.test("parseCookieArray — fills missing fields with defaults", () => {
+test("parseCookieArray — fills missing fields with defaults", () => {
   const result = parseCookieArray('[{"name":"a","value":"1","domain":"x.com"}]')
   assert.strictEqual(result![0].path, undefined)
   assert.strictEqual(result![0].secure, undefined)
@@ -38,23 +43,23 @@ Deno.test("parseCookieArray — fills missing fields with defaults", () => {
   assert.strictEqual(result![0].sameSite, undefined)
 })
 
-Deno.test("extractUserAgent — extracts Mozilla UA", () => {
+test("extractUserAgent — extracts Mozilla UA", () => {
   const ua = extractUserAgent(
     "some text\nMozilla/5.0 (Linux; Android 14)\nmore text",
   )
   assert.strictEqual(ua, "Mozilla/5.0 (Linux; Android 14)")
 })
 
-Deno.test("extractUserAgent — extracts User-Agent header", () => {
+test("extractUserAgent — extracts User-Agent header", () => {
   const ua = extractUserAgent("User-Agent: Mozilla/5.0 Test\ncookie data")
   assert.strictEqual(ua, "Mozilla/5.0 Test")
 })
 
-Deno.test("extractUserAgent — returns null if not found", () => {
+test("extractUserAgent — returns null if not found", () => {
   assert.strictEqual(extractUserAgent("just plain text"), null)
 })
 
-Deno.test("parseRegistryMessage — parses valid registry data", () => {
+test("parseRegistryMessage — parses valid registry data", () => {
   const msg =
     '#REGISTRY_DATA:{"chat_id":1,"device_code":"ABC123","device_name":"kindle"}'
   const result = parseRegistryMessage(msg)
@@ -64,10 +69,10 @@ Deno.test("parseRegistryMessage — parses valid registry data", () => {
   assert.strictEqual(result.device_name, "kindle")
 })
 
-Deno.test("parseRegistryMessage — returns null for non-registry text", () => {
+test("parseRegistryMessage — returns null for non-registry text", () => {
   assert.strictEqual(parseRegistryMessage("random text"), null)
 })
 
-Deno.test("parseRegistryMessage — returns null for invalid JSON", () => {
+test("parseRegistryMessage — returns null for invalid JSON", () => {
   assert.strictEqual(parseRegistryMessage("#REGISTRY_DATA:not-json"), null)
 })

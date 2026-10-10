@@ -318,7 +318,7 @@ fn default_storage_size_limit() -> StorageSizeLimit {
 }
 
 fn default_oauth_server_url() -> String {
-    "https://rakuyomi.tachibana-shin.deno.net/".to_owned()
+    "https://rakuyomi-cookie-bot.tachibshin.workers.dev/".to_owned()
 }
 
 fn is_default_storage_size_limit(size: &StorageSizeLimit) -> bool {

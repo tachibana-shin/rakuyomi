@@ -100,7 +100,3 @@ export async function registerBotCommands(bot: Bot) {
     await new Promise((r) => setTimeout(r, 1000))
   }
 }
-
-export function getWebhookHandler(bot: Bot) {
-  return webhookCallback(bot, "std/http")
-}

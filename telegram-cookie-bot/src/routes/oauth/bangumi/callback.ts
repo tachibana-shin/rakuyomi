@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { getConfig } from "../../../config.ts"
 import { getOAuthSession, completeOAuthSession, errorOAuthSession } from "../../../oauth_kv.ts"
 import { exchangeBangumiCode } from "../../../services/oauth/bangumi.ts"
 import { error, success, validateSession, notifyTelegramBot } from "../../../utils/oauth.tsx"
@@ -16,8 +17,8 @@ app.get("/oauth/bangumi/callback", async (c) => {
   if (!check.ok) return error(c, "Error", "Invalid session.")
   if (!code) return error(c, "Error", "No authorization code received.")
 
-  const publicUrl = Deno.env.get("PUBLIC_URL") ?? ""
-  const redirectUri = `${publicUrl}/oauth/bangumi/callback`
+  const { PUBLIC_URL } = getConfig()
+  const redirectUri = `${PUBLIC_URL}/oauth/bangumi/callback`
 
   try {
     const tokens = await exchangeBangumiCode(code, redirectUri)

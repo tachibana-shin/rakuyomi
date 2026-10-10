@@ -200,6 +200,13 @@ client secret.
 - **Bot delivery** — Workers cannot long-poll, so the deployed Worker only ever
   uses webhooks (`src/worker.ts`); long polling lives in `main.ts` for local
   development.
+- **Webhook registration** — no Cron Trigger. The Free plan allows only 5 per
+  account and gives each of them 10 ms of CPU, which is not enough for the
+  Telegram calls involved. Registration instead re-asserts itself whenever a
+  request arrives, which is the same thing Deno Deploy did at boot, just spread
+  across requests. `bun run dev` on the production token deletes the webhook,
+  and it is restored by the next request or a fresh isolate. When nothing has
+  hit the Worker since, run `bun x wrangler dev --test-scheduled` to force it.
 
 ## API Reference
 

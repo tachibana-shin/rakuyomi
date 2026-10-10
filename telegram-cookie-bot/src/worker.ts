@@ -39,9 +39,15 @@ export default {
     return await app.fetch(request, env, ctx)
   },
 
-  // The refresh in `fetch` only runs when a request arrives, which stops being
-  // true as soon as local long polling takes the webhook away and nobody opens
-  // the app. The cron trigger keeps restoring it without any inbound traffic.
+  // The webhook is re-asserted when requests arrive (see `setupTelegram`), so no
+  // cron is needed - the Workers Free plan allows only 5 Cron Triggers per
+  // account and gives each of them 10 ms of CPU, far too little for the
+  // Telegram calls this does.
+  //
+  // The `scheduled` handler is kept on purpose: it is the documented way to
+  // restore the webhook by hand (`wrangler dev --test-scheduled`) when local
+  // long polling has taken it and traffic has not arrived since. It costs
+  // nothing until a schedule exists in wrangler.toml.
   async scheduled(
     _controller: ScheduledController,
     env: Env,

@@ -78,6 +78,13 @@ app.doc("/doc", {
 // Telegram delivers updates to this route. Requests are rejected unless they
 // carry the secret token handed out by `setWebhook` (see src/worker.ts).
 app.post("/webhook", async (c) => {
+  // grammY compares the incoming header against the configured token, so with
+  // no secret configured both sides are `undefined` and every request is
+  // treated as authentic. Refuse to serve updates instead: anyone could
+  // otherwise forge a `/link` message and steal the pairing token.
+  if (!getEnv().WEBHOOK_SECRET) {
+    return c.text("WEBHOOK_SECRET is not configured", 503)
+  }
   const bot = await ensureBot()
   if (!bot) return c.text("BOT_TOKEN is not configured", 503)
   const handler = await getWebhookHandler(bot)

@@ -1,3 +1,10 @@
+## [1.43.4](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.3...v1.43.4) (2026-10-11)
+
+
+### Performance Improvements
+
+* **cookie-bot:** stop registering bot commands on every cold isolate ([30d8002](https://github.com/tachibana-shin/rakuyomi/commit/30d80029c0566587edc415dd23a57561d948a720))
+
 ## [1.43.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.2...v1.43.3) (2026-10-10)
 
 

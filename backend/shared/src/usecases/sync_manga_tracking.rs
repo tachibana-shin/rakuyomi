@@ -169,6 +169,69 @@ pub async fn sync_manga_tracking_push(
     Ok(results)
 }
 
+/// Reconciles progress right after a manga has been linked to `service`.
+///
+/// The tracker's progress is pulled first, marking those chapters as read
+/// locally. If the local reading history is still ahead of the tracker
+/// afterwards (for example, chapters read before the manga was linked), the
+/// local progress is pushed so the tracker catches up. The tracker's count is
+/// never lowered by this step.
+pub async fn sync_manga_tracking_after_link(
+    db: &Database,
+    chapter_storage: &ChapterStorage,
+    settings: &mut Settings,
+    manga_id: &MangaId,
+    service: TrackingService,
+) -> Result<Vec<TrackingSyncResult>> {
+    let Some(binding) = filter_bindings(db.list_tracking_bindings(manga_id).await?, Some(service))
+        .into_iter()
+        .next()
+    else {
+        return Ok(Vec::new());
+    };
+
+    let remote = tracking::fetch_remote_progress(settings, &binding).await?;
+    let chapters = db
+        .find_cached_chapters(manga_id, chapter_storage, true)
+        .await?;
+    apply_remote_progress(db, manga_id, &chapters, &remote).await?;
+    db.set_tracking_sync_state(
+        manga_id,
+        service,
+        remote.chapter_progress,
+        remote.updated_at,
+        remote.started_at,
+        remote.completed_at,
+    )
+    .await?;
+
+    let local = db.get_local_tracking_progress(manga_id).await?;
+    if local_is_ahead(local.chapter_progress, remote.chapter_progress) {
+        return sync_manga_tracking(
+            db,
+            chapter_storage,
+            settings,
+            manga_id,
+            Some(service),
+            TrackingSyncDirection::Push,
+        )
+        .await;
+    }
+
+    Ok(vec![TrackingSyncResult {
+        service,
+        direction: TrackingSyncDirection::Pull,
+        local_progress: remote.chapter_progress,
+        remote_progress: remote.chapter_progress,
+        message: format!("Pulled progress from {}", service.display_name()),
+    }])
+}
+
+/// Returns true when the local chapter progress is strictly ahead of the remote one.
+fn local_is_ahead(local: Option<i64>, remote: Option<i64>) -> bool {
+    local.unwrap_or(0) > remote.unwrap_or(0)
+}
+
 fn filter_bindings(
     bindings: Vec<crate::model::TrackingBinding>,
     service: Option<TrackingService>,
@@ -266,6 +329,17 @@ fn chapter_ids_from_remote_progress(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn local_is_ahead_only_when_strictly_greater() {
+        assert!(local_is_ahead(Some(41), Some(0)));
+        assert!(local_is_ahead(Some(41), None));
+        assert!(!local_is_ahead(Some(41), Some(41)));
+        assert!(!local_is_ahead(Some(10), Some(41)));
+        assert!(!local_is_ahead(None, None));
+        assert!(!local_is_ahead(None, Some(3)));
+    }
+
     use crate::model::{ChapterInformation, ChapterState, MangaId, SourceId};
 
     fn make_test_chapters(count: usize) -> Vec<crate::model::Chapter> {

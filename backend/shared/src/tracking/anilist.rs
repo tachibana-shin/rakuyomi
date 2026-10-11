@@ -94,7 +94,7 @@ impl Tracker for AnilistTracker {
             query: r#"
                 query ($search: String!) {
                   Page(page: 1, perPage: 5) {
-                    media(search: $search, type: MANGA, sort: SEARCH_MATCH) {
+                    media(search: $search, type: MANGA, format_not: NOVEL, sort: SEARCH_MATCH) {
                       id
                       idMal
                       siteUrl

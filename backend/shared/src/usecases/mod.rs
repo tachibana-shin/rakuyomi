@@ -98,7 +98,9 @@ pub use set_manga_preferred_scanlator::set_manga_preferred_scanlator;
 pub use set_manga_viewer::set_manga_viewer;
 pub use set_source_stored_settings::set_source_stored_settings;
 pub use sync_database::sync_database;
-pub use sync_manga_tracking::{sync_manga_tracking, sync_manga_tracking_push};
+pub use sync_manga_tracking::{
+    sync_manga_tracking, sync_manga_tracking_after_link, sync_manga_tracking_push,
+};
 pub use uninstall_source::uninstall_source;
 pub use unlink_tracking_binding::unlink_tracking_binding;
 pub use update_last_read_chapter::update_last_read_chapter;

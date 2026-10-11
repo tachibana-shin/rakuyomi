@@ -908,16 +908,16 @@ async fn link_tracking_binding(
 
     usecases::link_tracking_binding(&database, &manga_id, &candidate).await?;
 
-    // Automatically pull progress from the newly linked service.
+    // Reconcile with the newly linked service: pull its progress, then push
+    // local progress if the local reading history is ahead of it.
     let mut settings = settings.lock().await;
     let chapter_storage = chapter_storage.lock().await;
-    let _ = usecases::sync_manga_tracking(
+    let _ = usecases::sync_manga_tracking_after_link(
         &database,
         &chapter_storage,
         &mut settings,
         &manga_id,
-        Some(candidate.service),
-        TrackingSyncDirection::Pull,
+        candidate.service,
     )
     .await;
     let _ = settings.save_to_file(&settings_path);

@@ -207,15 +207,46 @@ pub async fn sync_manga_tracking_after_link(
 
     let local = db.get_local_tracking_progress(manga_id).await?;
     if local_is_ahead(local.chapter_progress, remote.chapter_progress) {
-        return sync_manga_tracking(
-            db,
-            chapter_storage,
-            settings,
+        // Build the push snapshot explicitly so we preserve remote-owned fields
+        // that the generic push path cannot see: volume progress and any
+        // non-Planning status (Paused, Dropped, Repeating, Completed).
+        let status = derive_link_push_status(
+            local.chapter_progress,
+            remote.status,
+            binding.total_chapters,
+        );
+        let mut push_snapshot = TrackingProgressSnapshot {
+            status,
+            chapter_progress: local.chapter_progress,
+            // Carry the remote volume count; local progress has no volume data.
+            volume_progress: remote.volume_progress,
+            updated_at: remote.updated_at,
+            started_at: binding.started_at.or(remote.started_at),
+            completed_at: binding.completed_at.or(remote.completed_at),
+        };
+        // Auto-set completed_at when newly completing.
+        if matches!(push_snapshot.status, Some(TrackingStatus::Completed))
+            && push_snapshot.completed_at.is_none()
+        {
+            push_snapshot.completed_at = Some(chrono::Utc::now().timestamp());
+        }
+        let returned = tracking::push_progress(settings, &binding, &push_snapshot).await?;
+        db.set_tracking_sync_state(
             manga_id,
-            Some(service),
-            TrackingSyncDirection::Push,
+            service,
+            returned.chapter_progress,
+            returned.updated_at,
+            returned.started_at,
+            returned.completed_at,
         )
-        .await;
+        .await?;
+        return Ok(vec![TrackingSyncResult {
+            service,
+            direction: TrackingSyncDirection::Push,
+            local_progress: push_snapshot.chapter_progress,
+            remote_progress: returned.chapter_progress,
+            message: format!("Pushed progress to {}", service.display_name()),
+        }]);
     }
 
     Ok(vec![TrackingSyncResult {
@@ -230,6 +261,32 @@ pub async fn sync_manga_tracking_after_link(
 /// Returns true when the local chapter progress is strictly ahead of the remote one.
 fn local_is_ahead(local: Option<i64>, remote: Option<i64>) -> bool {
     local.unwrap_or(0) > remote.unwrap_or(0)
+}
+
+/// Derives the reading status to use when pushing local progress to a tracker
+/// after linking, preserving the remote status in most cases.
+///
+/// When `local_chapters` has reached `total_chapters` the status is promoted to
+/// `Completed`.  A remote status of `Planning` (or no status) becomes `Current`
+/// because reading has now started.  All other statuses — `Paused`, `Dropped`,
+/// `Repeating`, `Current`, `Completed` — are preserved as-is.
+fn derive_link_push_status(
+    local_chapters: Option<i64>,
+    remote_status: Option<TrackingStatus>,
+    total_chapters: Option<i64>,
+) -> Option<TrackingStatus> {
+    let local = local_chapters.unwrap_or(0);
+
+    if let Some(total) = total_chapters {
+        if total > 0 && local >= total {
+            return Some(TrackingStatus::Completed);
+        }
+    }
+
+    match remote_status {
+        Some(TrackingStatus::Planning) | None => Some(TrackingStatus::Current),
+        other => other,
+    }
 }
 
 fn filter_bindings(
@@ -489,5 +546,54 @@ mod tests {
         };
         let ids = chapter_ids_from_remote_progress(&chapters, &remote);
         assert!(ids.is_empty());
+    }
+
+    #[test]
+    fn derive_link_push_status_paused_preserved() {
+        assert_eq!(
+            derive_link_push_status(Some(5), Some(TrackingStatus::Paused), Some(10)),
+            Some(TrackingStatus::Paused),
+        );
+    }
+
+    #[test]
+    fn derive_link_push_status_dropped_preserved() {
+        assert_eq!(
+            derive_link_push_status(Some(5), Some(TrackingStatus::Dropped), Some(10)),
+            Some(TrackingStatus::Dropped),
+        );
+    }
+
+    #[test]
+    fn derive_link_push_status_planning_becomes_current() {
+        assert_eq!(
+            derive_link_push_status(Some(5), Some(TrackingStatus::Planning), Some(10)),
+            Some(TrackingStatus::Current),
+        );
+    }
+
+    #[test]
+    fn derive_link_push_status_none_becomes_current() {
+        assert_eq!(
+            derive_link_push_status(Some(5), None, None),
+            Some(TrackingStatus::Current),
+        );
+    }
+
+    #[test]
+    fn derive_link_push_status_completed_when_reaching_total() {
+        assert_eq!(
+            derive_link_push_status(Some(10), Some(TrackingStatus::Current), Some(10)),
+            Some(TrackingStatus::Completed),
+        );
+    }
+
+    #[test]
+    fn derive_link_push_status_completed_remote_preserved_without_total() {
+        // Already Completed remotely, and we have no known total: keep Completed.
+        assert_eq!(
+            derive_link_push_status(Some(10), Some(TrackingStatus::Completed), None),
+            Some(TrackingStatus::Completed),
+        );
     }
 }

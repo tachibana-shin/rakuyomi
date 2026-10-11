@@ -10,6 +10,7 @@
     "deploy": "bun x wrangler deploy",
     "typecheck": "bun x tsc --noEmit",
     "test": "bun test",
+    "commands": "bun run register-commands.ts",
     "types": "bun x wrangler types"
   },
   "dependencies": {

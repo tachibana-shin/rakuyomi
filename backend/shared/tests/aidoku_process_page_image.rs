@@ -87,7 +87,11 @@ fn setup(wat: &str, id: &str) -> (Source, TempDir) {
 /// flag detection) matters, and the assertions after this call prove it ran.
 async fn boot(source: &Source) {
     let _ = source
-        .get_image_request(Url::parse("https://example.com/1.jpg").unwrap(), None)
+        .get_image_request(
+            tokio_util::sync::CancellationToken::new(),
+            Url::parse("https://example.com/1.jpg").unwrap(),
+            None,
+        )
         .await;
 }
 

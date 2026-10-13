@@ -629,9 +629,14 @@ impl LnReaderSource {
     /// Implements `get_image_request` using the plugin's `imageRequestInit`.
     pub fn get_image_request(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        anyhow::ensure!(
+            !cancellation_token.is_cancelled(),
+            "image request cancelled"
+        );
         let state = self.ensure_probed()?;
         let init = state.props.image_request_init.as_ref();
         let method = init
@@ -790,10 +795,11 @@ impl LnReaderSource {
 
     pub fn get_image_request_next(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
-        self.get_image_request(url, ctx)
+        self.get_image_request(cancellation_token, url, ctx)
     }
 }
 

@@ -648,6 +648,7 @@ async fn js_runner_full_offline() {
     // default user agent.
     let request = source
         .get_image_request(
+            tokio_util::sync::CancellationToken::new(),
             url::Url::parse(&format!("{base}/img/p1.jpg")).unwrap(),
             None,
         )

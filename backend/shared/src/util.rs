@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     net::SocketAddr,
+    sync::Arc,
 };
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -14,6 +15,7 @@ use tokio::net::TcpStream;
 use tokio_util::sync::CancellationToken;
 use url::Url;
 
+use crate::image_downloader::ImageDownloader;
 use crate::source::{model::Page, Source};
 
 pub const DEFAULT_USER_AGENT: &str =
@@ -250,14 +252,17 @@ fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
 
 pub async fn prepare_cover(
     cover_url: Option<Url>,
-    client: &reqwest::Client,
+    downloader: &ImageDownloader,
     source: &Source,
+    token: &CancellationToken,
 ) -> anyhow::Result<Option<Vec<u8>>> {
     if let Some(url) = cover_url {
-        let req = source.get_image_request(url, None).await?;
-        let resp = client.execute(req).await?.error_for_status()?;
-        let bytes = resp.bytes().await?;
-        let bytes_vec = bytes.to_vec();
+        let req = source.get_image_request(token.clone(), url, None).await?;
+        let bytes_vec = downloader
+            .fetch(token, req)
+            .await?
+            .error_for_status()?
+            .bytes;
 
         // Ensure we return JPEG bytes. If already JPEG, return as-is.
         Ok(match image::guess_format(&bytes_vec) {
@@ -293,7 +298,8 @@ pub async fn download_image(
     url: String,
     index: usize,
     source: &Source,
-    client: &Client,
+    downloader: &ImageDownloader,
+    token: &CancellationToken,
 ) -> anyhow::Result<(Vec<u8>, String, String)> {
     let Some(url) = &Url::parse(&url).ok() else {
         bail!("Invalid URL: {}", url);
@@ -320,25 +326,14 @@ pub async fn download_image(
         })?
     } else {
         let request = source
-            .get_image_request(url.clone(), None)
+            .get_image_request(token.clone(), url.clone(), None)
             .await
             .map_err(|err| anyhow!(format!("failed WASM modify request {err}")))?;
-        let req_url = request.url().clone();
-
-        let response = request_with_forced_referer_from_request(client, request, 10)
-            .await
-            .map_err(|err| anyhow!(format!("Request error: {err}")))?;
-
-        response
-            .bytes()
-            .await
-            .map_err(|err| {
-                anyhow!(format!(
-                    "failed to get bytes for page {} from {}: {:?}",
-                    index, req_url, err
-                ))
-            })?
-            .to_vec()
+        downloader
+            .fetch(token, request)
+            .await?
+            .error_for_status()?
+            .bytes
     };
 
     let (ext, mime) = match image::guess_format(&bytes_vec) {
@@ -403,6 +398,7 @@ pub async fn download_all_images(
     source: &Source,
     token: &CancellationToken,
     concurrent_requests: usize,
+    downloader: &Arc<ImageDownloader>,
     #[cfg(not(feature = "all"))] on_progress: impl FnMut(usize, f32, f32) + Send + 'static,
 ) -> anyhow::Result<HashMap<String, anyhow::Result<(Vec<u8>, String, String)>>> {
     #[cfg(not(feature = "all"))]
@@ -413,10 +409,6 @@ pub async fn download_all_images(
 
     // Ensure concurrent_requests is at least 1 to prevent deadlock
     let concurrent_requests = concurrent_requests.max(1);
-
-    let client = crate::tls::client_builder()
-        .timeout(std::time::Duration::from_secs(30))
-        .build()?;
 
     let mut seen = HashSet::<String>::with_capacity(pages.len());
     type Task = std::pin::Pin<
@@ -439,10 +431,12 @@ pub async fn download_all_images(
                 let url = image_url.clone();
                 let index = page.index;
                 let source = source.clone();
-                let client = client.clone();
+                let downloader = downloader.clone();
+                let token = token.clone();
 
                 let task = Box::pin(async move {
-                    let result = download_image(url.to_string(), index, &source, &client).await;
+                    let result =
+                        download_image(url.to_string(), index, &source, &downloader, &token).await;
                     (url.to_string(), result)
                 });
 
@@ -463,10 +457,13 @@ pub async fn download_all_images(
                         let url = src.clone();
                         let index = page.index;
                         let source = source.clone();
-                        let client = client.clone();
+                        let downloader = downloader.clone();
+                        let token = token.clone();
 
                         let task = Box::pin(async move {
-                            let result = download_image(url.clone(), index, &source, &client).await;
+                            let result =
+                                download_image(url.clone(), index, &source, &downloader, &token)
+                                    .await;
                             (url, result)
                         });
 

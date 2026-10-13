@@ -728,9 +728,14 @@ impl MangayomiSource {
     /// Implements `get_image_request` using the extension's `headers` getter.
     pub fn get_image_request(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        anyhow::ensure!(
+            !cancellation_token.is_cancelled(),
+            "image request cancelled"
+        );
         self.ensure_probed()?;
         let headers = self.headers();
         let mut builder = crate::tls::client_builder()
@@ -920,10 +925,11 @@ impl MangayomiSource {
 
     pub fn get_image_request_next(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
-        self.get_image_request(url, ctx)
+        self.get_image_request(cancellation_token, url, ctx)
     }
 }
 

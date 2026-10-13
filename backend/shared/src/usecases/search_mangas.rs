@@ -142,7 +142,11 @@ pub async fn search_mangas(
                                     let _ = timeout(
                                         Duration::from_secs(POSTER_DOWNLOAD_TIMEOUT_SECS),
                                         chapter_storage.cached_poster(&token, &id, || {
-                                            source.get_image_request(url.clone(), None)
+                                            source.get_image_request(
+                                                token.clone(),
+                                                url.clone(),
+                                                None,
+                                            )
                                         }),
                                     )
                                     .await;

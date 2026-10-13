@@ -27,11 +27,20 @@ function Job:poll()
     return self.result
   end
 
+  -- DownloadToast owns backend polling for background downloads, including
+  -- one-shot completion. Other callers must read its parent-process snapshot.
+  if self.download_status ~= nil then
+    return self.download_status
+  end
+
   if self.job_id == nil then
     return { type = 'ERROR', message = 'job not started' }
   end
 
-  local response = Backend.getJobDetails(self.job_id)
+  return self:updateFromResponse(Backend.getJobDetails(self.job_id))
+end
+
+function Job:updateFromResponse(response)
   if response.type == 'ERROR' then
     self.result = response
 

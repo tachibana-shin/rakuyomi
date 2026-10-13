@@ -275,8 +275,12 @@ fn mangapill_popular_search_details_chapters_pages() {
             .image_url
             .clone()
             .expect("keiyoushi pages are image urls");
-        ks.get_image_request(image_url.clone(), None)
-            .unwrap_or_else(|e| panic!("get_image_request failed: {e:#}"));
+        ks.get_image_request(
+            tokio_util::sync::CancellationToken::new(),
+            image_url.clone(),
+            None,
+        )
+        .unwrap_or_else(|e| panic!("get_image_request failed: {e:#}"));
         eprintln!("live: image request for {image_url} built ok");
     }
 }

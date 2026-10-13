@@ -36,7 +36,7 @@ function DownloadChapter:new(source_id, manga_id, chapter_id, chapter_num, curre
   return o
 end
 
---- Starts the job. Should be called automatically when instantiating a job with `new()`.
+--- Starts the backend job in DownloadToast's worker subprocess.
 ---
 --- @publish
 --- @return SuccessfulResponse<string>|ErrorResponse
@@ -60,11 +60,6 @@ function DownloadChapter:start()
   self.start_result = response
 
   return response
-end
-
---- @return SuccessfulResponse<DownloadChapterJobCompleted>|ErrorResponse
-function DownloadChapter:runUntilCompletion(onProgress)
-  return Job.runUntilCompletion(self, onProgress)
 end
 
 return DownloadChapter

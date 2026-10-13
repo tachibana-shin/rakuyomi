@@ -4267,10 +4267,13 @@ dependencies = [
  "serde_json",
  "shared",
  "size",
+ "tempfile",
  "tokio",
  "tokio-util",
  "url",
  "uuid",
+ "wat",
+ "zip 8.6.0",
 ]
 
 [[package]]

@@ -45,3 +45,8 @@ jni = { version = "0.22", optional = true }
 libc = { version = "0.2.186", optional = true }
 nix = { version = "0.31.3", features = ["mount", "fs"], optional = true, default-features = false }
 size = "0.5.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+wat = "1.252.0"
+zip = { version = "8.6.0", default-features = false, features = ["deflate", "bzip2"] }

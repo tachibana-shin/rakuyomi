@@ -103,6 +103,9 @@ pub struct Source {
     pub backend: SourceBackend,
     pub features: SourceFeatures,
     pub usage: ResourceRegistry,
+    // Aidoku package metadata is immutable and must remain accessible while
+    // the VM owns its execution mutex, including after a request times out.
+    manifest: Option<Arc<SourceManifest>>,
 }
 
 /// Like [`wrap_blocking_source_fn!`], but dispatches between the WASM and
@@ -161,21 +164,8 @@ macro_rules! wrap_blocking_source_fn {
             let (result, source_id) = match result {
                 Ok(pair) => pair,
                 Err(e) => {
-                    // The worker panicked before returning its id; read the
-                    // manifest on the async path only in this exceptional
-                    // case so the failure still lands in the usage log.
-                    let source_id = match &self.backend {
-                        SourceBackend::Aidoku(blocking_source) => blocking_source
-                            .lock()
-                            .unwrap_or_else(|e| e.into_inner())
-                            .manifest
-                            .info
-                            .id
-                            .clone(),
-                        SourceBackend::LnReader(lnreader) => lnreader.manifest().info.id.clone(),
-                        SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest().info.id.clone(),
-                        SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.info.id.clone(),
-                    };
+                    // Metadata access must not wait for the source worker.
+                    let source_id = self.manifest().info.id;
                     usage.record(
                         &source_id,
                         Err(format!("worker task failed: {e}")),
@@ -258,11 +248,13 @@ impl Source {
         // `BlockingSource::ensure_booted`) is visible here too, where the
         // chapter downloader reads it.
         let features = { blocking_source.features.clone() };
+        let manifest = Some(Arc::new(blocking_source.manifest.clone()));
 
         Ok(Self {
             backend: SourceBackend::Aidoku(Arc::new(Mutex::new(blocking_source))),
             features,
             usage: ResourceRegistry::default(),
+            manifest,
         })
     }
 
@@ -282,6 +274,7 @@ impl Source {
             backend: SourceBackend::LnReader(Arc::new(source)),
             features,
             usage,
+            manifest: None,
         })
     }
 
@@ -301,6 +294,7 @@ impl Source {
             backend: SourceBackend::Mangayomi(Arc::new(source)),
             features,
             usage,
+            manifest: None,
         })
     }
 
@@ -325,22 +319,25 @@ impl Source {
                     backend: SourceBackend::Keiyoushi(Arc::new(source)),
                     features,
                     usage,
+                    manifest: None,
                 }
             })
             .collect())
     }
 
     pub fn manifest(&self) -> SourceManifest {
-        // FIXME we dont actually need to clone here but yeah it's easier
         match &self.backend {
-            SourceBackend::Aidoku(blocking_source) => blocking_source
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
+            SourceBackend::Aidoku(_) => self
                 .manifest
+                .as_ref()
+                .expect("Aidoku metadata is set at construction")
+                .as_ref()
                 .clone(),
-            SourceBackend::LnReader(lnreader) => lnreader.manifest(),
-            SourceBackend::Mangayomi(mangayomi) => mangayomi.manifest(),
-            SourceBackend::Keiyoushi(keiyoushi) => keiyoushi.manifest.clone(),
+            // These backends can discover metadata lazily; retain their
+            // independently synchronized manifests rather than the snapshot.
+            SourceBackend::LnReader(source) => source.manifest(),
+            SourceBackend::Mangayomi(source) => source.manifest(),
+            SourceBackend::Keiyoushi(source) => source.manifest.clone(),
         }
     }
 

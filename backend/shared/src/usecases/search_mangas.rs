@@ -3,7 +3,7 @@ use crate::{
     database::Database,
     model::{Manga, MangaId, MangaInformation, MangaState, SourceInformation},
     settings::{SearchViewMode, Settings},
-    source_collection::SourceCollection,
+    source::Source,
 };
 use futures::{stream, StreamExt};
 use log::warn;
@@ -24,7 +24,7 @@ pub struct SearchError {
 
 #[allow(clippy::too_many_arguments)]
 pub async fn search_mangas(
-    source_collection: &impl SourceCollection,
+    sources: Vec<Source>,
     db: &Database,
     chapter_storage: &ChapterStorage,
     settings: &Settings,
@@ -36,16 +36,6 @@ pub async fn search_mangas(
 ) -> Result<(Vec<Manga>, Vec<SearchError>, bool), Error> {
     // FIXME this looks awful
     let query = &query;
-
-    // FIXME this kinda of works because cloning a source is cheap
-    // (it has internal mutability yadda yadda).
-    // we can't keep `source_collection` alive across async await points
-    // because lifetimes fuckery
-    let sources = source_collection
-        .sources()
-        .into_iter()
-        .cloned()
-        .collect::<Vec<_>>();
 
     let source_results: Vec<(SourceMangaSearchResults, Option<SearchError>, bool)> =
         stream::iter(sources)

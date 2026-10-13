@@ -28,7 +28,13 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
     c.bench_function("search_mangas", |b| {
         b.to_async(&runtime).iter(|| async {
             let db = Database::new(&PathBuf::from("test.db")).await.unwrap();
-            let source_manager: &SourceManager = &arc_manager.blocking_lock();
+            let sources = arc_manager
+                .lock()
+                .await
+                .sources_by_id
+                .values()
+                .cloned()
+                .collect();
             let chapter_storage = shared::chapter_storage::ChapterStorage::new(
                 PathBuf::from("test.db"),
                 Size::from_mebibytes(100.0),
@@ -38,7 +44,7 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
             let settings = Settings::default();
 
             search_mangas(
-                source_manager,
+                sources,
                 &db,
                 &chapter_storage,
                 &settings,

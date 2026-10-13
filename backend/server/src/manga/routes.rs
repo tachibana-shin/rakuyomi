@@ -301,7 +301,15 @@ async fn get_mangas(
 ) -> Result<Json<(Vec<Manga>, Vec<usecases::search_mangas::SearchError>, bool)>, AppError> {
     let chapter_storage = chapter_storage.lock().await;
     let settings = settings.lock().await;
-    let source_manager = source_manager.lock().await;
+    // A source can save its pagination cursor through this same manager.
+    // Snapshot cheap Source handles, then release the guard before running it.
+    let sources = source_manager
+        .lock()
+        .await
+        .sources_by_id
+        .values()
+        .cloned()
+        .collect();
     let token = create_token(cancel_token_store, cancel_id).await;
 
     let exclude = exclude.map(|v| {
@@ -315,7 +323,7 @@ async fn get_mangas(
     let (mut mangas, errors, has_next_page) =
         cancel_after(&token.0, Duration::from_secs(59), |token| {
             usecases::search_mangas(
-                &*source_manager,
+                sources,
                 &database,
                 &chapter_storage,
                 &settings,
@@ -326,7 +334,7 @@ async fn get_mangas(
                 30,
             )
         })
-        .await
+        .await?
         .map_err(AppError::from_search_mangas_error)?;
 
     if settings.search_view_mode != shared::settings::SearchViewMode::Base {
@@ -463,7 +471,7 @@ async fn handle_source_notification(
     cancel_after(&token.0, Duration::from_secs(120), |token| {
         source.handle_notification_next(token, params.key)
     })
-    .await?;
+    .await??;
 
     Ok(Json(()))
 }
@@ -1115,24 +1123,143 @@ async fn create_token(
     TokenGuard(token, cancel_token_store, cancel_id)
 }
 
-async fn cancel_after<F, Fut>(token: &CancellationToken, duration: Duration, f: F) -> Fut::Output
+async fn cancel_after<F, Fut>(
+    token: &CancellationToken,
+    duration: Duration,
+    f: F,
+) -> Result<Fut::Output, AppError>
 where
     Fut: Future,
     F: FnOnce(CancellationToken) -> Fut + Send,
 {
-    let future = f(token.clone());
+    if token.is_cancelled() {
+        return Err(AppError::Other(anyhow::anyhow!("request was cancelled")));
+    }
+    tokio::select! {
+        biased;
+        _ = token.cancelled() => {
+            Err(AppError::Other(anyhow::anyhow!("request was cancelled")))
+        }
+        _ = tokio::time::sleep(duration) => {
+            token.cancel();
+            Err(AppError::Other(anyhow::anyhow!("request timed out")))
+        }
+        result = f(token.clone()) => Ok(result),
+    }
+}
 
-    let token = token.clone();
-    let request_cancellation_handle = tokio::spawn(async move {
-        tokio::time::sleep(duration).await;
+#[cfg(test)]
+mod cancellation_tests {
+    use super::*;
 
-        warn!("cancellation requested!");
-        token.cancel();
-    });
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn search_finishes_when_a_source_saves_its_cursor() -> anyhow::Result<()> {
+        use std::io::Write;
 
-    let result = future.await;
+        let home = tempfile::tempdir()?;
+        let sources = home.path().join("sources");
+        std::fs::create_dir(&sources)?;
+        std::fs::write(
+            home.path().join("settings.json"),
+            r#"{"search_view_mode":"base","library_view_mode":"base"}"#,
+        )?;
+        let mut archive = zip::ZipWriter::new(std::fs::File::create(sources.join("cursor.aix"))?);
+        let options: zip::write::FileOptions<'_, ()> =
+            zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+        archive.start_file("Payload/source.json", options)?;
+        archive.write_all(
+            br#"{"info":{"id":"test.cursor","lang":"en","name":"Cursor test","version":"1.0.0"},"minAppVersion":"0.7.0"}"#,
+        )?;
+        archive.start_file("Payload/main.wasm", options)?;
+        archive.write_all(&wat::parse_str(
+            r#"(module
+                (import "defaults" "set" (func $set (param i32 i32 i32 i32) (result i32)))
+                (memory (export "memory") 1)
+                (data (i32.const 0) "cursor_search")
+                ;; Length/capacity header followed by postcard's empty entries and false.
+                (data (i32.const 32) "\02\00\00\00\02\00\00\00\00\00")
+                (func (export "start"))
+                (func (export "get_search_manga_list") (param i32 i32 i32) (result i32)
+                    i32.const 0 i32.const 13 i32.const 6 i32.const 0
+                    call $set drop
+                    i32.const 32))"#,
+        )?)?;
+        archive.finish()?;
+        std::fs::write(
+            sources.join(".cursor.source"),
+            r#"{"from":"regression","is_next_sdk":true}"#,
+        )?;
+        let state = crate::build_state(home.path().to_owned()).await?;
+        let manager = state.source_manager.clone();
+        let search = get_mangas(
+            StateExtractor(state),
+            Query(GetMangasQuery {
+                cancel_id: None,
+                exclude: None,
+                q: "cursor".to_owned(),
+                page: Some(1),
+            }),
+        );
+        // Dropping a stalled route releases its guards, letting its worker exit
+        // even in the failing-before case.
+        let result = tokio::time::timeout(Duration::from_secs(2), search).await;
+        assert!(
+            result.is_ok(),
+            "search deadlocked while the source saved its pagination cursor"
+        );
+        let Json((mangas, errors, has_next)) =
+            result?.map_err(|_| anyhow::anyhow!("source search route failed"))?;
+        assert!(mangas.is_empty());
+        assert!(errors.is_empty(), "completed source reported {errors:?}");
+        assert!(!has_next);
+        assert_eq!(
+            manager.lock().await.settings.source_settings["test.cursor"]["cursor_search"],
+            shared::settings::SourceSettingValue::Null,
+        );
+        Ok(())
+    }
 
-    request_cancellation_handle.abort();
+    async fn assert_stalled_request_releases_state(deadline: Duration, cancel_from_client: bool) {
+        let token = CancellationToken::new();
+        let state = Arc::new(Mutex::new(()));
+        let entered = Arc::new(tokio::sync::Notify::new());
+        let request_token = token.clone();
+        let request_state = state.clone();
+        let request_entered = entered.clone();
+        let mut request = tokio::spawn(async move {
+            cancel_after(&request_token, deadline, |_| async {
+                let _guard = request_state.lock().await;
+                request_entered.notify_one();
+                std::future::pending::<()>().await
+            })
+            .await
+        });
+        entered.notified().await;
+        if cancel_from_client {
+            token.cancel();
+        }
+        let completed = tokio::time::timeout(Duration::from_secs(1), &mut request).await;
+        let released = state.try_lock().is_ok();
+        if completed.is_err() {
+            request.abort();
+            let _ = request.await;
+        }
+        assert!(completed.is_ok(), "stalled request ignored cancellation");
+        assert!(
+            completed.unwrap().unwrap().is_err(),
+            "cancelled request reported success"
+        );
+        assert!(released, "cancelled request retained shared state");
+        assert!(token.is_cancelled());
+    }
 
-    result
+    #[tokio::test]
+    async fn client_cancellation_releases_state_even_when_the_source_does_not_finish() {
+        assert_stalled_request_releases_state(Duration::from_secs(60), true).await;
+    }
+
+    #[tokio::test]
+    async fn deadline_releases_state_even_when_the_source_does_not_finish() {
+        assert_stalled_request_releases_state(Duration::from_millis(5), false).await;
+    }
 }

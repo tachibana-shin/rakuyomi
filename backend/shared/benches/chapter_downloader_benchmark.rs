@@ -2,10 +2,12 @@
 #![allow(unreachable_patterns)]
 #![allow(unreachable_code)]
 
+mod pprof_profiler;
+
 #[allow(unused_imports)]
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use futures::executor;
-use pprof::criterion::{Output, PProfProfiler};
+use pprof_profiler::PProfProfiler;
 use shared::{
     cbz_metadata::ComicInfo, chapter_downloader::download_chapter_pages_as_cbz, model::ChapterId,
     settings::Settings, source::Source, source_manager::SourceManager,
@@ -65,7 +67,7 @@ pub fn chapter_downloader_benchmark(c: &mut Criterion) {
 
 criterion_group! {
     name = benches;
-    config = Criterion::default().sample_size(10).with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+    config = Criterion::default().sample_size(10).with_profiler(PProfProfiler::new(100));
     targets = chapter_downloader_benchmark
 }
 criterion_main!(benches);

@@ -45,11 +45,10 @@ fn write_aix(dir: &Path, id: &str, wat: &str) -> PathBuf {
     let path = dir.join(format!("{id}.aix"));
     let file = std::fs::File::create(&path).unwrap();
     let mut zip = zip::ZipWriter::new(file);
-    // `FileOptions::default()` cannot infer its `FileOptionExtension`
-    // parameter here (`start_file` is generic over it too), so pin it to the
-    // unit type, the default key-value-less extension.
-    let opts: zip::write::FileOptions<'_, ()> =
-        zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    // `FileOptions` is generic over both the extension and the file name
+    // buffer lifetime, so use the `SimpleFileOptions` alias to pin them.
+    let opts =
+        zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
     zip.start_file("Payload/source.json", opts).unwrap();
     zip.write_all(
         br#"{"info": {"id": "test.process_unit", "lang": "en", "name": "Test Process Unit", "version": "1.0.0"}}"#,

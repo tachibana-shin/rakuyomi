@@ -78,6 +78,7 @@ pub fn aidoku_wasm_function(_args: OGTokenStream, input: OGTokenStream) -> OGTok
         ReturnType::Type(_, ty) => *ty.clone(),
         ReturnType::Default => Type::Tuple(TypeTuple {
             paren_token: Paren::default(),
+            attrs: Vec::new(),
             elems: Punctuated::default(),
         }),
     };

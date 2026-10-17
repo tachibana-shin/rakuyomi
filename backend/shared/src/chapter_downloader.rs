@@ -201,8 +201,8 @@ where
     let mut processed = 0f32;
 
     let mut writer = ZipWriter::new(output);
-    let file_options: zip::write::FileOptions<'_, ()> =
-        zip::write::FileOptions::default().compression_method(CompressionMethod::Stored);
+    let file_options =
+        zip::write::SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
 
     // Add ComicInfo.xml to the CBZ file
     writer.start_file("ComicInfo.xml", file_options)?;
@@ -591,7 +591,7 @@ where
 
         let mut epub = EpubBuilder::new(ZipLibrary::new()?)?;
         if let Some(lang) = lang {
-            epub.set_lang(lang);
+            epub.add_language(lang);
         }
         epub.set_title(book_name);
 

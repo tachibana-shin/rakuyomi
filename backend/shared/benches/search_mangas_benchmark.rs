@@ -1,6 +1,8 @@
+mod pprof_profiler;
+
 #[allow(unused_imports)]
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use pprof::criterion::{Output, PProfProfiler};
+use criterion::{criterion_group, criterion_main, Criterion};
+use pprof_profiler::PProfProfiler;
 use shared::{
     database::Database, settings::Settings, source_manager::SourceManager, usecases::search_mangas,
 };
@@ -56,7 +58,7 @@ pub fn search_mangas_benchmark(c: &mut Criterion) {
 
 criterion_group! {
     name = benches;
-    config = Criterion::default().sample_size(10).with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+    config = Criterion::default().sample_size(10).with_profiler(PProfProfiler::new(100));
     targets = search_mangas_benchmark
 }
 criterion_main!(benches);

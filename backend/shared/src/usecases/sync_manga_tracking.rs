@@ -171,11 +171,11 @@ pub async fn sync_manga_tracking_push(
 
 /// Reconciles progress right after a manga has been linked to `service`.
 ///
-/// The tracker's progress is pulled first, marking those chapters as read
-/// locally. If the local reading history is still ahead of the tracker
-/// afterwards (for example, chapters read before the manga was linked), the
-/// local progress is pushed so the tracker catches up. The tracker's count is
-/// never lowered by this step.
+/// The local reading history is captured first, then the tracker's progress is
+/// pulled, marking those chapters as read locally. If the captured local
+/// progress is ahead of the tracker (for example, chapters read before the
+/// manga was linked), the local progress is pushed so the tracker catches up.
+/// The tracker's count is never lowered by this step.
 pub async fn sync_manga_tracking_after_link(
     db: &Database,
     chapter_storage: &ChapterStorage,
@@ -194,6 +194,11 @@ pub async fn sync_manga_tracking_after_link(
     let chapters = db
         .find_cached_chapters(manga_id, chapter_storage, true)
         .await?;
+    // Capture the local progress before the pull marks chapters as read:
+    // applying the remote progress first can change the derived local value
+    // (for example, a read-count fallback becomes the highest numeric
+    // chapter), which would hide a local history that is ahead.
+    let local = db.get_local_tracking_progress(manga_id).await?;
     apply_remote_progress(db, manga_id, &chapters, &remote).await?;
     db.set_tracking_sync_state(
         manga_id,
@@ -205,7 +210,6 @@ pub async fn sync_manga_tracking_after_link(
     )
     .await?;
 
-    let local = db.get_local_tracking_progress(manga_id).await?;
     if local_is_ahead(local.chapter_progress, remote.chapter_progress) {
         // Build the push snapshot explicitly so we preserve remote-owned fields
         // that the generic push path cannot see: volume progress and any

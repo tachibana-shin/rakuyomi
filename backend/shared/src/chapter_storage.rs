@@ -383,16 +383,12 @@ impl ChapterStorage {
             return Ok(file);
         }
 
-        let client = crate::tls::client_builder()
-            .timeout(std::time::Duration::from_secs(30))
-            .build()?;
+        let downloader = crate::image_downloader::ImageDownloader::new()?;
         let bytes = tokio::select! {
             _ = token.cancelled() => Err(anyhow::anyhow!("cancelled")),
             result = async {
-                let req = req().await?;
-                let res = client.execute(req).await?.error_for_status()?;
-                let bytes = res.bytes().await?;
-                Ok(bytes)
+                let request = req().await?;
+                Ok(downloader.fetch(token, request).await?.error_for_status()?.bytes)
             } => result,
         }?;
 

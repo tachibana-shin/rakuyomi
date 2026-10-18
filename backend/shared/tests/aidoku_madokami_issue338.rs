@@ -136,7 +136,7 @@ async fn image_request_carries_cookie_store_session_issue338() {
                 _ => panic!("not an aidoku source"),
             };
             backend
-                .get_image_request(image_url, None)
+                .get_image_request(tokio_util::sync::CancellationToken::new(), image_url, None)
                 .unwrap_or_else(|err| panic!("get_image_request failed: {err:#}"))
         }
     };

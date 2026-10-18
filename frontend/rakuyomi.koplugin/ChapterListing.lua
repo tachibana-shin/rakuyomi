@@ -24,7 +24,7 @@ local Backend = require("Backend")
 local DownloadChapter = require("jobs/DownloadChapter")
 local DownloadUnreadChapters = require("jobs/DownloadUnreadChapters")
 local DownloadSpecificChapters = require("jobs/DownloadSpecificChapters")
-local DownloadUnreadChaptersJobDialog = require("DownloadUnreadChaptersJobDialog")
+local DownloadToast = require("DownloadToast")
 local Icons = require("Icons")
 local Menu = require("widgets/Menu")
 local ErrorDialog = require("ErrorDialog")
@@ -104,6 +104,7 @@ function ChapterListing:init()
 end
 
 function ChapterListing:onClose(call_return)
+  self.download_open_request = nil
   UIManager:close(self)
   if self.on_return_callback and call_return ~= false then
     self.on_return_callback()
@@ -833,50 +834,13 @@ function ChapterListing:downloadChapter(chapter, download_job, callback, retried
       return
     end
 
-    local time = require("ui/time")
-    local start_time = time.now()
+    local open_request = {}
+    self.download_open_request = open_request
 
-    local message = _(chapter.downloaded and "Loading chapter..." or "Downloading chapter...")
-        .. '\nCh.' .. (chapter.chapter_num or _('unknown'))
-        .. ' '
-        .. (chapter.title or '')
-    local runnable, onCancel, onConfirmCancel =
-        function(onProgress)
-          local response_start = download_job:start()
-          if response_start.type == 'ERROR' then
-            return response_start
-          end
-
-          return download_job:runUntilCompletion(onProgress)
-        end,
-        function()
-          if download_job.started then
-            download_job:requestCancellation()
-          end
-
-          local cancelledMessage = InfoMessage:new {
-            text = _("Download cancelled."),
-          }
-          UIManager:show(cancelledMessage)
-        end,
-        function(cancel)
-          local confirm = ConfirmBox:new {
-            text = _("Are you sure you want to cancel the download?"),
-            ok_callback = cancel
-          }
-          UIManager:show(confirm)
-
-          return confirm
-        end
-
-    local show_progress = G_reader_settings:isTrue("rakuyomi_show_download_progress", true)
-
-    local response, cancelled
-    if show_progress then
-      response, cancelled = LoadingDialog:showAndRunWithProgress(message, runnable, onCancel, onConfirmCancel)
-    else
-      response, cancelled = LoadingDialog:showAndRun(message, runnable, onCancel, onConfirmCancel)
-    end
+    DownloadToast:add(download_job,
+      self.manga.title .. " · Ch." .. (chapter.chapter_num or chapter.title or "?"),
+      function(response, cancelled)
+        if self.download_open_request ~= open_request then return end
 
     if cancelled or response == nil then
       return
@@ -930,9 +894,11 @@ function ChapterListing:downloadChapter(chapter, download_job, callback, retried
 
     local manga_path = ffiutil.realpath(response.body[1])
 
-    logger.info("Waited ", time.to_ms(time.since(start_time)), "ms for download job to finish.")
-
-    callback(manga_path)
+    if self.download_open_request == open_request then
+      self.download_open_request = nil
+      callback(manga_path)
+    end
+      end)
   end)
 end
 
@@ -965,12 +931,9 @@ function ChapterListing:preloadChapters(chapter)
         current_chapter_id -- current_chapter_id: chapter user is reading
       )
 
-      local job_status = preload_job:start()
-      if job_status.type == 'ERROR' then
-        logger.err("Could not start preload job for chapter ", preloadChapter.id, ": ", job_status.message)
-      else
-        self.preload_jobs[preloadChapter.id] = preload_job
-      end
+      self.preload_jobs[preloadChapter.id] = preload_job
+      DownloadToast:add(preload_job,
+        self.manga.title .. " · Ch." .. (preloadChapter.chapter_num or preloadChapter.title or "?"))
     end
 
     chapter = preloadChapter
@@ -1415,23 +1378,9 @@ function ChapterListing:onDownloadUnreadChapters()
 
             -- Use scanlator-aware download
             local job = self:createDownloadJob(amount)
-            if job then
-              ---@diagnostic disable-next-line: undefined-field
-              local dialog = DownloadUnreadChaptersJobDialog:new({
-                show_parent = self,
-                job = job,
-                dismiss_callback = function()
-                  self:updateChapterList()
-                end
-              })
-
-              dialog:show()
-            else
-              UIManager:show(InfoMessage:new {
-                text = _("No unread chapters found for") .. " " .. (self.selected_scanlator or "this manga"),
-                timeout = 2,
-              })
-            end
+            DownloadToast:add(job, self.manga.title .. " · " .. _("Unread chapters"), function()
+              if UIManager:getNthTopWidget(2) == self then self:updateChapterList() end
+            end)
           end,
         },
       }
@@ -1490,23 +1439,9 @@ function ChapterListing:onDownloadSpecificChapters()
               chapter_ranges = chapter_ranges,
               langs = self.langs_selected,
             })
-            if job then
-              ---@diagnostic disable-next-line: undefined-field
-              local dialog = DownloadUnreadChaptersJobDialog:new({
-                show_parent = self,
-                job = job,
-                dismiss_callback = function()
-                  self:updateChapterList()
-                end
-              })
-
-              dialog:show()
-            else
-              UIManager:show(InfoMessage:new {
-                text = _("Failed to start download. Check the chapter numbers or ranges."),
-                timeout = 2,
-              })
-            end
+            DownloadToast:add(job, self.manga.title .. " · " .. chapter_ranges, function()
+              if UIManager:getNthTopWidget(2) == self then self:updateChapterList() end
+            end)
           end,
         },
       }

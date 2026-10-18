@@ -19,7 +19,7 @@ local DownloadSpecificChapters = Job:extend()
 --- @field langs string[]
 
 --- @param params DownloadSpecificChaptersParams
---- @return self|nil job A new job, or `nil`, if the job could not be created.
+--- @return self job An unstarted job; DownloadToast owns asynchronous startup.
 function DownloadSpecificChapters:new(params)
   local o = {
     source_id = params.source_id,
@@ -30,14 +30,10 @@ function DownloadSpecificChapters:new(params)
   setmetatable(o, self)
   self.__index = self
 
-  if not o:start() then
-    return nil
-  end
-
   return o
 end
 
---- Starts the job. Should be called automatically when instantiating a job with `new()`.
+--- Starts the backend job in DownloadToast's worker subprocess.
 ---
 --- @private
 --- @return boolean success Whether the job started successfully.
@@ -67,9 +63,5 @@ function DownloadSpecificChapters:poll()
   return Job.poll(self)
 end
 
---- @return SuccessfulResponse<nil>|ErrorResponse
-function DownloadSpecificChapters:runUntilCompletion()
-  return Job.runUntilCompletion(self)
-end
 
 return DownloadSpecificChapters

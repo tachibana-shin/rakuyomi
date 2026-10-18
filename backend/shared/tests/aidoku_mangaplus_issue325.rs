@@ -277,7 +277,7 @@ async fn mangaplus_page_list_issue325() {
                         SourceBackend::Aidoku(s) => s.lock().unwrap(),
                         _ => panic!("not an aidoku source"),
                     };
-                    backend.get_image_request(url, ctx)
+                    backend.get_image_request(tokio_util::sync::CancellationToken::new(), url, ctx)
                 })
                 .await
                 .unwrap()

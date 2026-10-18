@@ -858,9 +858,14 @@ impl KeiyoushiSource {
     /// maybe is deadcode because matches in chapter_downloader only call fetch_page_image
     pub fn get_image_request(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         _ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        anyhow::ensure!(
+            !cancellation_token.is_cancelled(),
+            "image request cancelled"
+        );
         let mut builder = crate::tls::client_builder()
             .build()
             .context("failed to build HTTP client")?
@@ -965,10 +970,11 @@ impl KeiyoushiSource {
 
     pub fn get_image_request_next(
         &self,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
-        self.get_image_request(url, ctx)
+        self.get_image_request(cancellation_token, url, ctx)
     }
 
     /// Notifications are not supported by Keiyoushi extensions.

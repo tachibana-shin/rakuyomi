@@ -7,6 +7,7 @@ pub mod cookie_store;
 /// The aidoku-rs types used across the source API.
 pub use aidoku;
 pub mod database;
+pub mod image_downloader;
 pub mod model;
 pub mod resource_usage;
 pub mod settings;

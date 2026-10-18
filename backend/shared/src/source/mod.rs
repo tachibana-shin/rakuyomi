@@ -451,6 +451,7 @@ impl Source {
     wrap_blocking_source_fn!(
         get_image_request,
         Result<Request>,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>
     );
@@ -494,6 +495,7 @@ impl Source {
     wrap_blocking_source_fn!(
         get_image_request_next,
         Result<Request>,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>
     );
@@ -1301,14 +1303,21 @@ impl BlockingSource {
 
     pub fn get_image_request(
         &mut self,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
+        anyhow::ensure!(
+            !cancellation_token.is_cancelled(),
+            "image request cancelled"
+        );
         self.ensure_booted()?;
         if self.next_sdk {
-            self.get_image_request_next(url, ctx)
+            self.get_image_request_next(cancellation_token, url, ctx)
         } else {
-            self.get_image_request_inner(url)
+            self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+                this.get_image_request_inner(url)
+            })
         }
     }
     /// Apply the shared cookie store (`cookies.json`) to an image request the
@@ -1570,10 +1579,18 @@ impl BlockingSource {
 
     pub fn get_image_request_next(
         &mut self,
+        cancellation_token: CancellationToken,
         url: Url,
         ctx: Option<aidoku::PageContext>,
     ) -> Result<Request> {
-        self.get_image_request_next_inner(url, ctx)
+        anyhow::ensure!(
+            !cancellation_token.is_cancelled(),
+            "image request cancelled"
+        );
+        self.ensure_booted()?;
+        self.run_under_context(cancellation_token, OperationContextObject::None, |this| {
+            this.get_image_request_next_inner(url, ctx)
+        })
     }
 
     pub fn get_image_request_next_inner(

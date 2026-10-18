@@ -1,11 +1,9 @@
 use dom_query::Document;
 use futures::{stream, StreamExt};
-use reqwest::redirect::Policy;
 use std::{
     io::{Cursor, Seek, Write},
     path::{Path, PathBuf},
     sync::Arc,
-    time::Duration,
 };
 use tempfile::NamedTempFile;
 use tokio_util::bytes::Bytes;
@@ -20,13 +18,14 @@ use epub_builder::{EpubBuilder, EpubContent, ReferenceType, ZipLibrary};
 use crate::{
     cbz_metadata::ComicInfo,
     chapter_storage::ChapterStorage,
+    image_downloader::ImageDownloader,
     model::{ChapterId, ChapterInformation, MangaInformation},
     settings::ChapterTitleFormat,
     source::{model::Page, Source},
     unscrable_image::{unscrable_image, Block},
     util::{
         create_xhtml, detect_image_extension, download_all_images, generate_error_image,
-        get_image_src, into_html, prepare_cover, request_with_forced_referer_from_request,
+        get_image_src, into_html, prepare_cover,
     },
 };
 
@@ -36,6 +35,14 @@ pub struct DownloadError {
     pub url: String,
     pub reason: String,
     pub attempts: usize,
+}
+
+struct DownloadProducer(tokio::task::JoinHandle<()>);
+
+impl Drop for DownloadProducer {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -149,8 +156,11 @@ pub async fn ensure_chapter_is_in_storage(
         .map_err(Error::DownloadError)?
     };
 
-    // If we succeeded downloading all the chapter pages, persist our temporary
-    // file into the chapter storage definitively.
+    if token.is_cancelled() {
+        return Err(Error::DownloadError(anyhow!("chapter download cancelled")));
+    }
+
+    // Persist only after every page has finished and cancellation is ruled out.
     chapter_storage
         .persist_chapter(&chapter.id, is_novel, temporary_file, &errors, use_ram)
         .await
@@ -208,10 +218,7 @@ where
     writer.start_file("ComicInfo.xml", file_options)?;
     writer.write_all(metadata.to_xml()?.as_bytes())?;
 
-    let client = crate::tls::client_builder()
-        .timeout(Duration::from_secs(30))
-        .redirect(Policy::none())
-        .build()?;
+    let downloader = Arc::new(ImageDownloader::new()?);
 
     let (tx, mut rx) = mpsc::channel::<(usize, String, Vec<u8>, Option<DownloadError>)>(
         concurrent_requests_pages * 2,
@@ -219,8 +226,8 @@ where
 
     let tx_main = tx.clone();
     let chapter_id_str = chapter_id.value().clone();
-    tokio::spawn({
-        let client = client.clone();
+    let _producer = DownloadProducer(tokio::spawn({
+        let downloader = downloader.clone();
         let source = source.clone();
         let cancel_token = cancel_token.clone();
 
@@ -232,7 +239,7 @@ where
             stream::iter(pages)
                 .map(|page| {
                     let tx = tx.clone();
-                    let client = client.clone();
+                    let downloader = downloader.clone();
                     let source = source.clone();
                     let cancel_token = cancel_token.clone();
                     let chapter_id_str = chapter_id_str.clone();
@@ -263,9 +270,10 @@ where
                             ) {
                                 // keiyoushi images may be IMGX-encrypted: fetch through the
                                 // extension's own client so its interceptor decrypts them.
-                                let bytes = source
-                                    .fetch_page_image(&chapter_id_str, image_url.as_str())
-                                    .await
+                                let bytes = cancel_token.run_until_cancelled(
+                                    source.fetch_page_image(&chapter_id_str, image_url.as_str())
+                                )
+                                    .await.context("image download cancelled")?
                                     .map_err(|err| {
                                         eprintln!("Failed keiyoushi image fetch {err}");
                                         anyhow::anyhow!(err)
@@ -301,29 +309,25 @@ where
                                     ));
                                 }
 
-                                Bytes::from(bytes)
+                                bytes
                             } else {
                                 let request = source
-                                    .get_image_request(image_url, page.ctx.clone())
+                                    .get_image_request(cancel_token.clone(), image_url, page.ctx.clone())
                                     .await
                                     .map_err(|err| {
                                         eprintln!("Failed WASM modify request {err}");
                                         err
                                     })?;
                                 let req_url = request.url().clone();
-                                let req_headers = request.headers().clone();
-                                let response =
-                                    request_with_forced_referer_from_request(&client, request, 10)
-                                        .await
-                                        .inspect_err(|err| {
-                                            eprintln!("Request error: {err}");
-                                        })?;
+                                let req_headers = source.features.process_page_image()
+                                    .then(|| request.headers().clone());
+                                let response = downloader.fetch(&cancel_token, request).await?;
 
-                                if !response.status().is_success() {
+                                if !response.status.is_success() {
                                     let err = DownloadError {
                                         page_index: page.index,
                                         url: req_url.to_string(),
-                                        reason: format!("HTTP {}", response.status()),
+                                        reason: format!("HTTP {}", response.status),
                                         attempts: 1,
                                     };
 
@@ -333,11 +337,8 @@ where
                                         page.index,
                                         format!("{:0>page_index_width$}.{}", page.index, extension),
                                         generate_error_image(
-                                            &response.status().as_u16().to_string(),
-                                            response
-                                                .status()
-                                                .canonical_reason()
-                                                .unwrap_or("Unknown Error"),
+                                            &response.status.as_u16().to_string(),
+                                            response.status.canonical_reason().unwrap_or("Unknown Error"),
                                             500,
                                             667,
                                         )?,
@@ -345,27 +346,20 @@ where
                                     ));
                                 }
 
-                                let status = response.status();
-                                let headers = response.headers().clone();
+                                let status = response.status;
+                                let headers = response.headers;
+                                let response_bytes = response.bytes;
 
-                                let response_bytes = response.bytes().await?;
-
-                                if source.features.process_page_image() {
-                                    Bytes::from(
-                                        source
-                                            .process_page_image(
-                                                cancel_token.clone(),
-                                                (req_url, req_headers),
-                                                (status, headers),
-                                                response_bytes,
-                                                page.ctx.clone(),
-                                            )
-                                            .await
-                                            .map_err(|err| {
-                                                eprintln!("Error = {err}");
-                                                err
-                                            })?,
-                                    )
+                                if let Some(req_headers) = req_headers {
+                                    source
+                                        .process_page_image(
+                                            cancel_token.clone(),
+                                            (req_url, req_headers),
+                                            (status, headers),
+                                            Bytes::from(response_bytes),
+                                            page.ctx.clone(),
+                                        )
+                                        .await?
                                 } else {
                                     response_bytes
                                 }
@@ -373,11 +367,11 @@ where
 
                             let (final_bytes, error_info) =
                                 if source.features.process_page_image() {
-                                    (response_bytes.to_vec(), None)
+                                    (response_bytes, None)
                                 } else if optimize_image {
                                         (
                                         tokio::task::spawn_blocking(move || -> anyhow::Result<Vec<u8>> {
-                                            let data = response_bytes.to_vec();
+                                            let data = response_bytes;
                                             if let Some(image) =
                                                 crate::source::decode_image::decode_image_fast(&data)
                                             {
@@ -418,7 +412,7 @@ where
                                         None,
                                     )
                                     } else {
-                                        (response_bytes.to_vec(), None)
+                                        (response_bytes, None)
                                     };
 
                             let final_bytes = if let Some(blocks_json) = page.base64.as_ref() {
@@ -487,13 +481,17 @@ where
 
             drop(tx_main);
         }
-    });
+    }));
 
     // Collect errors
     let mut errors = Vec::<DownloadError>::new();
 
     // Writer task
-    while let Some((_index, filename, data, err)) = rx.recv().await {
+    while let Some((_index, filename, data, err)) = cancel_token
+        .run_until_cancelled(rx.recv())
+        .await
+        .context("chapter download cancelled")?
+    {
         if let Some(e) = err {
             errors.push(e);
         }
@@ -506,7 +504,8 @@ where
         writer.write_all(&data)?;
     }
 
-    let _ = writer.set_comment(zip_comment(chapter_id));
+    writer.set_comment(zip_comment(chapter_id))?;
+    writer.finish()?;
     Ok(errors)
 }
 
@@ -530,9 +529,7 @@ where
     ));
     let stored_process_images_clone = stored_process_images.clone();
 
-    let client = crate::tls::client_builder()
-        .timeout(Duration::from_secs(30))
-        .build()?;
+    let downloader = Arc::new(ImageDownloader::new()?);
 
     let cover_url = chapter.thumbnail.clone();
     let lang = chapter.lang.clone();
@@ -545,7 +542,7 @@ where
         }
     });
 
-    let cover_img = prepare_cover(cover_url, &client, source)
+    let cover_img = prepare_cover(cover_url, &downloader, source, token)
         .await
         .map_err(|e| {
             eprintln!(
@@ -565,6 +562,7 @@ where
         source,
         token,
         concurrent_requests_pages,
+        &downloader,
         #[cfg(not(feature = "all"))]
         move |idx, done, total| {
             let percent = done / total;

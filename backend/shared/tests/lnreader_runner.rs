@@ -600,6 +600,7 @@ async fn runner_full_offline() {
     // image request from imageRequestInit
     let request = source
         .get_image_request(
+            tokio_util::sync::CancellationToken::new(),
             url::Url::parse(&format!("{base}cover/alpha.jpg")).unwrap(),
             None,
         )

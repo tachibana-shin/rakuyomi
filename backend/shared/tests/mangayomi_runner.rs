@@ -810,6 +810,7 @@ async fn runner_full_offline() {
     // Image requests get the default user agent
     let request = source
         .get_image_request(
+            tokio_util::sync::CancellationToken::new(),
             url::Url::parse("https://cdn.example.com/p1.jpg").unwrap(),
             None,
         )

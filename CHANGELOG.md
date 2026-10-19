@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.44.0...v1.44.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **tracking:** push local progress on link when ahead of tracker ([#381](https://github.com/tachibana-shin/rakuyomi/issues/381)) ([99d501d](https://github.com/tachibana-shin/rakuyomi/commit/99d501db7d164bdb9094dd01a6e44bb3246cc0ad))
+
 # [1.44.0](https://github.com/tachibana-shin/rakuyomi/compare/v1.43.4...v1.44.0) (2026-10-19)
 
 

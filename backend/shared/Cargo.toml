@@ -108,7 +108,11 @@ unicode-normalization = "0.1.26"
 ordered-float = "5.5.0"
 dom_query = { version = "0.28.0", features = ["atomic"] }
 d4rt_rs = "0.1.5"
-rquickjs = { version = "0.14.0", features = ["futures", "bindgen"] }
+# dexvm depends on rquickjs 0.12, so keep this in the same minor series:
+# a second rquickjs version would link a second QuickJS copy and, because
+# dexvm does not enable `bindgen`, fail on targets without pre-generated
+# bindings (Kindle, Android).
+rquickjs = { version = "0.12.2", features = ["futures", "bindgen"] }
 dexvm = { version = "0.2.1", features = ["keiyoushi"] }
 zune-png = "0.5.2"
 zune-jpeg = "0.5.15"

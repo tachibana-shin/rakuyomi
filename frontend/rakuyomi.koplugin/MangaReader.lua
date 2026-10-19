@@ -10,6 +10,7 @@ local logger = require("logger")
 local _ = require("gettext+")
 local Backend = require("Backend")
 local shallow_clone = require("utils/shallowClone")
+local PageOverlap = require("utils/pageOverlap")
 local CbzDocument = require("extensions/CbzDocument")
 local realpath = require("ffi/util").realpath
 
@@ -194,6 +195,15 @@ function MangaReader:hookWithPriorityOntoReaderUiEvents(ui)
   if ui.paging and not ui.paging._rakuyomi_patched then
     local orig_onGotoViewRel = ui.paging.onGotoViewRel
     ui.paging.onGotoViewRel = function(paging_self, diff, ...)
+      if paging_self.view and paging_self.view.page_scroll then
+        -- Continuous modes: keep the configured percentage of the visible
+        -- content on screen after a page turn instead of jumping a full page.
+        local view_height = paging_self.view.visible_area and paging_self.view.visible_area.h
+        paging_self.overlap = PageOverlap.computePixels(
+          view_height,
+          G_reader_settings:readSetting('rakuyomi_page_overlap')
+        )
+      end
       if diff < 0 then
         local at_beginning = false
         if paging_self.view and paging_self.view.page_scroll then

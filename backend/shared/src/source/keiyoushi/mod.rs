@@ -859,8 +859,10 @@ impl KeiyoushiSource {
     /// Implements `get_image_request` with the source site's Referer,
     /// shared user-agent and per-domain cookies.
     ///
-    /// # TODO
-    /// maybe is deadcode because matches in chapter_downloader only call fetch_page_image
+    /// Chapter page images do not go through this path: the downloader sends
+    /// Keiyoushi pages through [`Self::fetch_page_image`] so the extension's
+    /// own client and its interceptors run. This method covers the direct
+    /// requests built on the source's behalf, such as cover downloads.
     pub fn get_image_request(
         &self,
         url: Url,
@@ -1038,8 +1040,17 @@ fn probe_apk(bytes: &[u8]) -> Result<ApkProbe> {
         let name = ext.source_name(source)?;
         let lang = ext.source_lang(source)?;
         let supports_latest = ext.supports_latest(source)?;
+        let base_url = match ext.source_base_url(source) {
+            Ok(base_url) => base_url,
+            Err(err) => {
+                // The site URL only feeds the Referer of direct image
+                // requests; a source without one still works.
+                log::warn!("keiyoushi: could not read the base URL of source `{name}`: {err}");
+                String::new()
+            }
+        };
         out.push((name, lang, supports_latest));
-        base_urls.push(ext.source_base_url(source).unwrap_or_default());
+        base_urls.push(base_url);
     }
     let defs = ext
         .preference_definitions(&sources[0])

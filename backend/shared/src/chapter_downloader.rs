@@ -27,9 +27,24 @@ use crate::{
     unscrable_image::{unscrable_image, Block},
     util::{
         create_xhtml, detect_image_extension, download_all_images, generate_error_image,
-        get_image_src, into_html, prepare_cover, request_with_forced_referer_from_request,
+        get_image_src, into_html, looks_like_html, prepare_cover,
+        request_with_forced_referer_from_request,
     },
 };
+
+/// Builds the `Referer` header used when retrying an image download with the
+/// source site's URL.
+///
+/// Only the origin (`scheme://host[:port]/`) is used so the site's path and
+/// query parameters (which may carry tokens) never leak to image hosts.
+fn image_retry_referer(site: &Url) -> Option<reqwest::header::HeaderValue> {
+    if !matches!(site.scheme(), "http" | "https") {
+        return None;
+    }
+
+    let origin = format!("{}/", site.origin().ascii_serialization());
+    reqwest::header::HeaderValue::from_str(&origin).ok()
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct DownloadError {
@@ -330,12 +345,14 @@ where
 
                                 // A source may omit Referer even though its image host
                                 // requires one. Retry an HTML/forbidden response once
-                                // using the source's own site URL when available.
+                                // using the source site's origin as Referer when the
+                                // source provides a site URL.
                                 let html_response = headers
                                     .get(reqwest::header::CONTENT_TYPE)
                                     .and_then(|value| value.to_str().ok())
                                     .is_some_and(|value| value.to_ascii_lowercase().contains("text/html"));
                                 if (status == reqwest::StatusCode::FORBIDDEN
+                                    || looks_like_html(&response_bytes)
                                     || (html_response && detect_image_extension(&response_bytes).is_none()))
                                     && !req_headers.contains_key(reqwest::header::REFERER)
                                 {
@@ -343,20 +360,18 @@ where
                                         (retry_request, source.manifest().info.url)
                                     {
                                         if let Ok(site) = Url::parse(&site) {
-                                            if matches!(site.scheme(), "http" | "https") {
-                                                let referer = format!("{}/", site.as_str().trim_end_matches('/'));
-                                                if let Ok(value) = reqwest::header::HeaderValue::from_str(&referer) {
-                                                    retry.headers_mut().insert(reqwest::header::REFERER, value);
-                                                    req_headers = retry.headers().clone();
-                                                    let retry_response = request_with_forced_referer_from_request(&client, retry, 10).await?;
-                                                    status = retry_response.status();
-                                                    headers = retry_response.headers().clone();
-                                                    response_bytes = if status.is_success() {
-                                                        retry_response.bytes().await?
-                                                    } else {
-                                                        Bytes::new()
-                                                    };
-                                                }
+                                            if let Some(referer) = image_retry_referer(&site) {
+                                                retry.headers_mut().insert(reqwest::header::REFERER, referer);
+                                                req_headers = retry.headers().clone();
+                                                let retry_response =
+                                                    request_with_forced_referer_from_request(&client, retry, 10).await?;
+                                                status = retry_response.status();
+                                                headers = retry_response.headers().clone();
+                                                response_bytes = if status.is_success() {
+                                                    retry_response.bytes().await?
+                                                } else {
+                                                    Bytes::new()
+                                                };
                                             }
                                         }
                                     }
@@ -475,22 +490,7 @@ where
                             };
 
                             // Never put an HTML access/error page into a CBZ as an image.
-                            let mut leading = final_bytes.trim_ascii_start();
-                            if let Some(rest) = leading.strip_prefix(b"\xef\xbb\xbf") {
-                                leading = rest.trim_ascii_start();
-                            }
-                            let is_html = loop {
-                                if let Some(comment) = leading.strip_prefix(b"<!--") {
-                                    let Some(end) = comment.windows(3).position(|part| part == b"-->") else {
-                                        break true;
-                                    };
-                                    leading = comment[end + 3..].trim_ascii_start();
-                                    continue;
-                                }
-                                break leading.get(..14).is_some_and(|head| head.eq_ignore_ascii_case(b"<!doctype html"))
-                                    || leading.get(..5).is_some_and(|head| head.eq_ignore_ascii_case(b"<html"));
-                            };
-                            if is_html {
+                            if looks_like_html(&final_bytes) {
                                 let reason = "image server returned HTML instead of an image".to_string();
                                 let err = DownloadError {
                                     page_index: page.index,
@@ -781,4 +781,34 @@ where
     .await??;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_image_retry_referer_keeps_only_the_origin() {
+        let site = Url::parse("https://example.com/manga/series?token=secret#page").unwrap();
+
+        let referer = image_retry_referer(&site).unwrap();
+
+        assert_eq!(referer.to_str().unwrap(), "https://example.com/");
+    }
+
+    #[test]
+    fn test_image_retry_referer_keeps_an_explicit_port() {
+        let site = Url::parse("http://example.com:8080/reader?token=secret").unwrap();
+
+        let referer = image_retry_referer(&site).unwrap();
+
+        assert_eq!(referer.to_str().unwrap(), "http://example.com:8080/");
+    }
+
+    #[test]
+    fn test_image_retry_referer_rejects_non_http_schemes() {
+        let site = Url::parse("ftp://example.com/files").unwrap();
+
+        assert!(image_retry_referer(&site).is_none());
+    }
 }

@@ -1253,9 +1253,9 @@ dependencies = [
 
 [[package]]
 name = "dexvm"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6bef34395a2e96f6f22a2debdc7e020070ec4e034c67166de5f98a5c28d5f96"
+checksum = "de0820d9cea783c9f15dbdf5e5438dc2267066b4797e3e57dab173e51bbaee3c"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",

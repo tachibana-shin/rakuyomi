@@ -37,7 +37,7 @@ fn decode_png(data: &[u8]) -> Result<ImageData> {
 
     // RGBA8 -> ARGB u32
     let mut pixels = Vec::with_capacity((width * height) as usize);
-    for chunk in raw.chunks_exact(4) {
+    for chunk in raw.as_chunks::<4>().0 {
         let r = chunk[0] as u32;
         let g = chunk[1] as u32;
         let b = chunk[2] as u32;
@@ -65,7 +65,7 @@ fn decode_jpeg(data: &[u8]) -> Result<ImageData> {
     let height = info.height as i32;
 
     let mut pixels = Vec::with_capacity((width * height) as usize);
-    for chunk in raw.chunks_exact(4) {
+    for chunk in raw.as_chunks::<4>().0 {
         let r = chunk[0] as u32;
         let g = chunk[1] as u32;
         let b = chunk[2] as u32;

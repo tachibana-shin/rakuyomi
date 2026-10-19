@@ -42,7 +42,7 @@ jobs:
 
       - name: Cargo clippy
         working-directory: ./backend
-        run: cargo clippy
+        run: cargo clippy -- -D warnings
 
       - name: Run tests
         working-directory: ./backend

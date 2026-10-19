@@ -149,6 +149,68 @@ pub fn detect_image_extension(bytes: &[u8]) -> Option<&'static str> {
     None
 }
 
+/// Heuristically detects that a payload is an HTML document instead of an
+/// image.
+///
+/// A leading UTF-8 BOM, ASCII whitespace, and complete HTML comments are
+/// skipped before looking for a document marker (`<!doctype html`, `<html`,
+/// `<head`, `<body`, `<meta`, `<script`) near the start of the payload. The
+/// comparison is ASCII case-insensitive and only applies when the payload
+/// starts with `<`, so binary image data is never treated as HTML.
+pub fn looks_like_html(bytes: &[u8]) -> bool {
+    let mut rest = bytes;
+    if let Some(stripped) = rest.strip_prefix(b"\xef\xbb\xbf") {
+        rest = stripped;
+    }
+
+    loop {
+        rest = rest.trim_ascii_start();
+        let Some(comment) = rest.strip_prefix(b"<!--") else {
+            break;
+        };
+        let Some(end) = comment.windows(3).position(|window| window == b"-->") else {
+            // A truncated document that begins a comment is still HTML.
+            return true;
+        };
+        rest = &comment[end + 3..];
+    }
+
+    if rest.first() != Some(&b'<') {
+        return false;
+    }
+
+    // How far into the payload a marker may sit, covering XML prologs and
+    // whitespace inside `<!doctype ...>` declarations.
+    const SCAN_LEN: usize = 512;
+    const MARKERS: [&[u8]; 6] = [
+        b"<!doctype html",
+        b"<html",
+        b"<head",
+        b"<body",
+        b"<meta",
+        b"<script",
+    ];
+
+    let window = &rest[..rest.len().min(SCAN_LEN)];
+    MARKERS
+        .iter()
+        .any(|marker| contains_tag_marker(window, marker))
+}
+
+/// Returns whether `window` contains `marker` followed by a tag-terminating
+/// byte, so `<header>` is not mistaken for `<head`.
+fn contains_tag_marker(window: &[u8], marker: &[u8]) -> bool {
+    window
+        .windows(marker.len())
+        .enumerate()
+        .any(|(index, part)| {
+            part.eq_ignore_ascii_case(marker)
+                && window
+                    .get(index + marker.len())
+                    .is_none_or(|next| matches!(next, b'>' | b'/' | b' ' | b'\t' | b'\r' | b'\n'))
+        })
+}
+
 pub fn generate_error_image(
     status_or_code: &str,
     msg: &str,
@@ -595,6 +657,66 @@ mod tests {
         let result = into_html(input);
         assert!(result.contains("<h1>Hello</h1>"));
         assert!(result.contains("<strong>bold</strong>"));
+    }
+
+    #[test]
+    fn test_looks_like_html_doctype() {
+        assert!(looks_like_html(
+            b"<!DOCTYPE html><html><body>blocked</body></html>"
+        ));
+    }
+
+    #[test]
+    fn test_looks_like_html_case_insensitive_and_bom() {
+        assert!(looks_like_html(b"<HTML><HEAD></HEAD></HTML>"));
+        assert!(looks_like_html(b"\xef\xbb\xbf<html>"));
+    }
+
+    #[test]
+    fn test_looks_like_html_skips_whitespace_and_comments() {
+        assert!(looks_like_html(
+            b" \r\n<!-- served by cache --><!-- second --><html lang=\"en\">"
+        ));
+        assert!(looks_like_html(b"<!-- truncated document"));
+    }
+
+    #[test]
+    fn test_looks_like_html_head_body_meta_script_marks() {
+        assert!(looks_like_html(
+            b"<head><title>Just a moment</title></head>"
+        ));
+        assert!(looks_like_html(b"<body class=\"error\">403</body>"));
+        assert!(looks_like_html(b"<meta charset=\"utf-8\"><body>"));
+        assert!(looks_like_html(b"<script>document.cookie=1</script>"));
+    }
+
+    #[test]
+    fn test_looks_like_html_xml_prolog() {
+        assert!(looks_like_html(
+            b"<?xml version=\"1.0\"?><html xmlns=\"http://www.w3.org/1999/xhtml\">"
+        ));
+    }
+
+    #[test]
+    fn test_looks_like_html_rejects_images_and_plain_data() {
+        assert!(!looks_like_html(&[
+            0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, b'J', b'F', b'I', b'F'
+        ]));
+        assert!(!looks_like_html(&[
+            0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A
+        ]));
+        assert!(!looks_like_html(b""));
+        assert!(!looks_like_html(b"just some plain text"));
+        assert!(!looks_like_html(
+            b"<svg xmlns=\"http://www.w3.org/2000/svg\"/>"
+        ));
+    }
+
+    #[test]
+    fn test_looks_like_html_does_not_match_longer_tags() {
+        assert!(!looks_like_html(
+            b"<metadata><header>fragment</header></metadata>"
+        ));
     }
 
     #[test]

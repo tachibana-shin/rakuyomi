@@ -566,20 +566,24 @@ function MangaReader:applyViewMode(ui)
   end
 
   if self.viewer ~= MangaViewer.DefaultViewer then
-    if G_reader_settings:nilOrFalse('rakuyomi_page_margin') and doc.configurable.page_margin ~= nil and doc.configurable.page_margin > 0 then
+    -- The recommended reader settings are opt-in: each one is only enforced
+    -- when its checkbox is enabled. Otherwise the reader settings configured by
+    -- the user (including the defaults set from KOReader's own menus) are left
+    -- untouched, so choices like "page crop: none" survive a chapter change.
+    if G_reader_settings:isTrue('rakuyomi_page_margin') and doc.configurable.page_margin ~= nil and doc.configurable.page_margin > 0 then
       -- -- recommend option
       ui:handleEvent(Event:new("ConfigChange", "page_margin", 0))
       ui:handleEvent(Event:new("MarginUpdate", 0))
     end
-    if G_reader_settings:nilOrFalse('rakuyomi_trim_page') and doc.configurable.trim_page ~= 1 then
+    if G_reader_settings:isTrue('rakuyomi_trim_page') and doc.configurable.trim_page ~= 1 then
       ui:handleEvent(Event:new("ConfigChange", "trim_page", 1))
       ui:handleEvent(Event:new("PageCrop", "auto"))
     end
-    if G_reader_settings:nilOrFalse('rakuyomi_zoom_mode_type') and doc.configurable.zoom_mode_type ~= 2 then
+    if G_reader_settings:isTrue('rakuyomi_zoom_mode_type') and doc.configurable.zoom_mode_type ~= 2 then
       ui:handleEvent(Event:new("ConfigChange", "zoom_mode_type", 2))
       ui:handleEvent(Event:new("DefineZoom", "full"))
     end
-    if G_reader_settings:nilOrFalse('rakuyomi_zoom_mode_genus') and doc.configurable.zoom_mode_genus ~= 3 then
+    if G_reader_settings:isTrue('rakuyomi_zoom_mode_genus') and doc.configurable.zoom_mode_genus ~= 3 then
       ui:handleEvent(Event:new("ConfigChange", "zoom_mode_genus", 3))
       ui:handleEvent(Event:new("DefineZoom", "content"))
     end

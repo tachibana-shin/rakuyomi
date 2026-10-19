@@ -23,6 +23,7 @@ local Backend = require("Backend")
 local ErrorDialog = require("ErrorDialog")
 local SettingItem = require('widgets/SettingItem')
 local formatBytes = require("utils/formatBytes")
+local PageOverlap = require("utils/pageOverlap")
 
 local ffi = require("ffi")
 
@@ -297,6 +298,17 @@ Settings.setting_value_definitions = {
         { label = _("Scroll"),   value = 'Scroll' },
       },
       default = '',
+      is_local = true,
+    }
+  },
+  {
+    'rakuyomi_page_overlap',
+    {
+      type = 'integer',
+      title = _('Page overlap in continuous mode (%)'),
+      min_value = 0,
+      max_value = PageOverlap.MAX_PERCENT,
+      default = 0,
       is_local = true,
     }
   },

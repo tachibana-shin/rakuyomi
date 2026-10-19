@@ -692,15 +692,15 @@ fn decode_bytes(bytes: &[u8], encoding: &str) -> Result<String> {
         "" | "utf-8" | "utf8" => Ok(String::from_utf8_lossy(bytes).into_owned()),
         "utf-16le" | "utf16le" | "unicode" => {
             let mut u16s = Vec::with_capacity(bytes.len() / 2);
-            for chunk in bytes.chunks_exact(2) {
-                u16s.push(u16::from_le_bytes([chunk[0], chunk[1]]));
+            for chunk in bytes.as_chunks::<2>().0 {
+                u16s.push(u16::from_le_bytes(*chunk));
             }
             Ok(String::from_utf16_lossy(&u16s))
         }
         "utf-16be" | "utf16be" => {
             let mut u16s = Vec::with_capacity(bytes.len() / 2);
-            for chunk in bytes.chunks_exact(2) {
-                u16s.push(u16::from_be_bytes([chunk[0], chunk[1]]));
+            for chunk in bytes.as_chunks::<2>().0 {
+                u16s.push(u16::from_be_bytes(*chunk));
             }
             Ok(String::from_utf16_lossy(&u16s))
         }
@@ -851,5 +851,26 @@ mod tests {
             assert_eq!(result["unpadded"], json!([102]));
             assert_eq!(result["highBytes"], json!([128, 255, 0]));
         });
+    }
+
+    /// TextDecoder support: UTF-16 decodes little and big endian byte pairs
+    /// while a trailing odd byte is dropped, and latin1 maps each byte to the
+    /// code point with the same value.
+    #[test]
+    fn decode_bytes_handles_utf16_and_latin1() {
+        // "hi" in UTF-16LE (h = 0x68 0x00, i = 0x69 0x00).
+        assert_eq!(
+            decode_bytes(&[0x68, 0x00, 0x69, 0x00], "utf-16le").unwrap(),
+            "hi"
+        );
+        // "hi" in UTF-16BE (h = 0x00 0x68, i = 0x00 0x69).
+        assert_eq!(
+            decode_bytes(&[0x00, 0x68, 0x00, 0x69], "utf-16be").unwrap(),
+            "hi"
+        );
+        // A trailing odd byte has no complete pair and is dropped.
+        assert_eq!(decode_bytes(&[0x68, 0x00, 0xFF], "utf-16le").unwrap(), "h");
+        // latin1 maps each byte to the code point with the same value.
+        assert_eq!(decode_bytes(&[0xE9, 0x41], "latin1").unwrap(), "éA");
     }
 }

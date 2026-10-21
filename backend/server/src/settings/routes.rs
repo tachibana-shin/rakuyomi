@@ -38,6 +38,7 @@ async fn update_settings(
         chapter_storage,
         settings,
         settings_path,
+        source_manager,
         ..
     }): StateExtractor<State>,
     Json(updateable_settings): Json<UpdateableSettings>,
@@ -45,6 +46,11 @@ async fn update_settings(
     let mut chapter_storage = chapter_storage.lock().await;
     let mut settings = settings.lock().await;
     usecases::update_settings(&mut settings, &settings_path, updateable_settings)?;
+
+    source_manager
+        .lock()
+        .await
+        .update_settings(settings.clone(), &source_manager)?;
 
     shared::tls::set_proxy_url(settings.proxy_url.clone());
 

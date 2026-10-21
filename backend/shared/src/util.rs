@@ -420,6 +420,12 @@ pub async fn download_image(
 }
 
 pub fn create_xhtml(title: &str, html: &str) -> String {
+    let void_elements = regex::Regex::new(
+        r"(?i)<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)(\b[^<>]*?)(?:\s*/?)>",
+    )
+    .unwrap();
+    let html = void_elements.replace_all(html, "<$1$2 />");
+
     format!(
         r#"<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -733,6 +739,17 @@ mod tests {
         let result = create_xhtml("Test <script>", "<p>Content</p>");
         assert!(result.contains("Test &lt;script&gt;"));
         assert!(!result.contains("<script>"));
+    }
+
+    #[test]
+    fn test_create_xhtml_self_closes_html_void_elements() {
+        let result = create_xhtml(
+            "Test Title",
+            r#"<p>before</p><img src="image.png"><br><p>after</p>"#,
+        );
+        assert!(result.contains(r#"<img src="image.png" />"#));
+        assert!(result.contains("<br />"));
+        assert!(result.contains("<p>after</p>"));
     }
 
     #[test]

@@ -421,7 +421,7 @@ pub async fn download_image(
 
 pub fn create_xhtml(title: &str, html: &str) -> String {
     let void_elements = regex::Regex::new(
-        r"(?i)<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)(\b[^<>]*?)(?:\s*/?)>",
+        r#"(?i)<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)((?:\s+[^\s"'<>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*)\s*/?>"#,
     )
     .unwrap();
     let html = void_elements.replace_all(html, "<$1$2 />");
@@ -745,10 +745,12 @@ mod tests {
     fn test_create_xhtml_self_closes_html_void_elements() {
         let result = create_xhtml(
             "Test Title",
-            r#"<p>before</p><img src="image.png"><br><p>after</p>"#,
+            r#"<p>before</p><img alt="1 > 0" src="image.png"><br><source-list>text</source-list><br-custom>kept</br-custom><p>after</p>"#,
         );
-        assert!(result.contains(r#"<img src="image.png" />"#));
+        assert!(result.contains(r#"<img alt="1 > 0" src="image.png" />"#));
         assert!(result.contains("<br />"));
+        assert!(result.contains("<source-list>text</source-list>"));
+        assert!(result.contains("<br-custom>kept</br-custom>"));
         assert!(result.contains("<p>after</p>"));
     }
 

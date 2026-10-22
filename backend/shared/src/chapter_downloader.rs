@@ -752,10 +752,8 @@ where
                     }
                 }
 
-                let xhtml = create_xhtml(
-                    &title,
-                    document.select_single("body").inner_html().as_ref(),
-                );
+                let xhtml =
+                    create_xhtml(&title, document.select_single("body").inner_html().as_ref());
 
                 epub.add_content(
                     EpubContent::new(format!("pages/page_{}.xhtml", idx + 1), Cursor::new(xhtml))

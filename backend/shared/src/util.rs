@@ -724,7 +724,8 @@ mod tests {
         let result = create_xhtml("Test Title", "<p>Content</p>");
         assert!(result.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
         assert!(result.contains("<title>Test Title</title>"));
-        assert!(result.contains("<p>Content</p>"));
+        assert!(result.contains("<body><p>Content</p></body>"));
+        assert_eq!(result.matches("<body>").count(), 1);
         assert!(result.contains("xmlns=\"http://www.w3.org/1999/xhtml\""));
     }
 

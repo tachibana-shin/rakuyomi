@@ -1,3 +1,10 @@
+## [1.44.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.44.1...v1.44.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **epub:** generate valid XHTML chapter content ([#393](https://github.com/tachibana-shin/rakuyomi/issues/393)) ([a214f47](https://github.com/tachibana-shin/rakuyomi/commit/a214f47c24e7a696caef082d1d57120cc3157814))
+
 ## [1.44.1](https://github.com/tachibana-shin/rakuyomi/compare/v1.44.0...v1.44.1) (2026-10-19)
 
 

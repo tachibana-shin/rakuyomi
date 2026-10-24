@@ -1,3 +1,10 @@
+## [1.44.3](https://github.com/tachibana-shin/rakuyomi/compare/v1.44.2...v1.44.3) (2026-10-24)
+
+
+### Bug Fixes
+
+* mprove UnixServer:stop() with exit wait logic ([d539181](https://github.com/tachibana-shin/rakuyomi/commit/d53918143f9fd3139d98fb14ee034c38f8ebf817)), closes [#394](https://github.com/tachibana-shin/rakuyomi/issues/394)
+
 ## [1.44.2](https://github.com/tachibana-shin/rakuyomi/compare/v1.44.1...v1.44.2) (2026-10-23)
 
 
